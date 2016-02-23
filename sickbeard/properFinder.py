@@ -274,6 +274,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 result.release_group = curProper.release_group
                 result.version = curProper.version
                 result.content = curProper.content
+                result.seeders = curProper.seeders
+                result.leechers = curProper.leechers
+                result.size = curProper.size
 
                 # snatch it
                 snatchEpisode(result, SNATCHED_PROPER)
