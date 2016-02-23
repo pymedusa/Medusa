@@ -107,6 +107,12 @@ class SearchResult(object):
         # size of the release (-1 = n/a)
         self.size = -1
 
+        # seeders of the release
+        self.seeders = -1
+
+        # leechers of the release
+        self.leechers = -1
+
         # release group
         self.release_group = u''
 
@@ -246,7 +252,7 @@ class ShowListUI(object):
 
 
 class Proper(object):
-    def __init__(self, name, url, date, show):
+    def __init__(self, name, url, date, show, seeders, leechers, size):
         self.name = name
         self.url = url
         self.date = date
@@ -254,7 +260,9 @@ class Proper(object):
         self.quality = Quality.UNKNOWN
         self.release_group = None
         self.version = -1
-
+        self.seeders = seeders
+        self.leechers = leechers
+        self.size = size
         self.show = show
         self.indexer = None
         self.indexerid = -1
