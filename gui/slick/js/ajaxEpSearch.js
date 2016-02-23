@@ -169,17 +169,13 @@ $(document).ready(function () {
                 url = url.replace("retryEpisode", "searchEpisode");
             }
 
-            url = url + "&downCurQuality=" + (qualityDownload ? '1' : '0');
-
             $.getJSON(url, function(data){
 
                 // if they failed then just put the red X
                 if (data.result.toLowerCase() === 'failure') {
                     imageName = options.noImage;
                     imageResult = 'failed';
-
-                // if the snatch was successful then apply the corresponding class and fill in the row appropriately
-                } else {
+                } else { // if the snatch was successful then apply the corresponding class and fill in the row appropriately
                     imageName = options.loadingImage;
                     imageResult = 'success';
                     // color the row
@@ -219,6 +215,14 @@ $(document).ready(function () {
             } else {
                 manualSearch();
             }
+        });
+
+         $('.epManualSearch').click(function(event){
+            event.preventDefault();
+
+            selectedEpisode = $(this);
+
+            manualSearch();
         });
 
         $('#manualSearchModalFailed .btn').click(function(){
