@@ -177,9 +177,7 @@ $(document).ready(function () {
                 if (data.result.toLowerCase() === 'failure') {
                     imageName = options.noImage;
                     imageResult = 'failed';
-
-                // if the snatch was successful then apply the corresponding class and fill in the row appropriately
-                } else {
+                } else { // if the snatch was successful then apply the corresponding class and fill in the row appropriately
                     imageName = options.loadingImage;
                     imageResult = 'success';
                     // color the row
@@ -221,6 +219,14 @@ $(document).ready(function () {
             }
         });
 
+         $('.epManualSearch').click(function(event){
+            event.preventDefault();
+
+            selectedEpisode = $(this);
+
+            manualSearch();
+        });
+
         $('#manualSearchModalFailed .btn').click(function(){
             failedDownload = ($(this).text().toLowerCase() === 'yes');
             $("#manualSearchModalQuality").modal('show');
@@ -232,3 +238,4 @@ $(document).ready(function () {
         });
     };
 })();
+
