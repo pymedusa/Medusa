@@ -61,8 +61,10 @@ class TorrentProvider(GenericProvider):
 
                     for item in self.search(search_strings[0]):
                         title, url = self._get_title_and_url(item)
+                        seeders, leechers = self._get_result_info(item)
+                        size = self._get_size(item)
 
-                        results.append(Proper(title, url, datetime.today(), show))
+                        results.append(Proper(title, url, datetime.today(), show, seeders, leechers, size))
 
         return results
 
@@ -95,6 +97,20 @@ class TorrentProvider(GenericProvider):
 
     def _get_storage_dir(self):
         return sickbeard.TORRENT_DIR
+
+    def _get_result_info(self, item):
+        if isinstance(item, (dict, FeedParserDict)):
+            seeders = item.get('seeders', '-1')
+            leechers = item.get('leechers', '-1')
+
+        elif isinstance(item, (list, tuple)) and len(item) > 1:
+            seeders = item[3]
+            leechers = item[4]
+        else:
+            seeders = -1
+            leechers = -1
+
+        return seeders, leechers
 
     def _get_title_and_url(self, item):
         if isinstance(item, (dict, FeedParserDict)):
