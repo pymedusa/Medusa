@@ -346,7 +346,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                             if not (title and download_url):
                                 continue
 
-                            seeders = leechers = None
+                            seeders = leechers = -1
                             if 'gingadaddy' in self.url:
                                 size_regex = re.search(r'\d*.?\d* [KMGT]B', str(item.description))
                                 item_size = size_regex.group() if size_regex else -1
@@ -355,9 +355,10 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                                 for attr in item.find_all('newznab:attr') + item.find_all('torznab:attr'):
                                     item_size = attr['value'] if attr['name'] == 'size' else item_size
                                     seeders = try_int(attr['value']) if attr['name'] == 'seeders' else seeders
-                                    leechers = try_int(attr['value']) if attr['name'] == 'peers' else leechers
+                                    peers = try_int(attr['value']) if attr['name'] == 'peers' else None
+                                    leechers = peers - seeders if peers else leechers
 
-                            if not item_size or (torznab and (seeders is None or leechers is None)):
+                            if not item_size or (torznab and (seeders is -1 or leechers is -1)):
                                 continue
 
                             size = convert_size(item_size) or -1
