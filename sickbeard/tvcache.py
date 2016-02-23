@@ -130,35 +130,44 @@ class TVCache(object):
     def _checkItemAuth(self, title, url):  # pylint:disable=unused-argument, no-self-use
         return True
 
-    def updateCache(self):
-        # check if we should update
-        if not self.shouldUpdate():
-            return
+    def updateCache(self, manualData = None):
 
-        try:
-            data = self._getRSSData()
-            if self._checkAuth(data):
-                # clear cache
-                self._clearCache()
+        cl = []
 
-                # set updated
-                self.setLastUpdate()
+        if manualData:
+            for item in manualData:
+                logger.log(u"Adding to cache item found in manual search: {}".format(item.name), logger.DEBUG)
+                ci = self._addCacheEntry(item.name, item.url, item.seeders, item.leechers, item.size)
+                if ci is not None:
+                    cl.append(ci)
+        # check if we should update (providers min time check)
+        elif self.shouldUpdate():
+            try:
+                data = self._getRSSData()
+                if self._checkAuth(data):
+                    # clear cache
+                    self._clearCache()
 
-                cl = []
-                for item in data['entries'] or []:
-                    ci = self._parseItem(item)
-                    if ci is not None:
-                        cl.append(ci)
+                    # set updated
+                    self.setLastUpdate()
 
-                if len(cl) > 0:
-                    cache_db_con = self._getDB()
-                    cache_db_con.mass_action(cl)
+                    for item in data['entries'] or []:
+                        ci = self._parseItem(item)
+                        if ci is not None:
+                            cl.append(ci)
+            except AuthException as e:
+                logger.log(u"Authentication error: " + ex(e), logger.ERROR)
+            except Exception as e:
+                logger.log(u"Error while searching " + self.provider.name + ", skipping: " + repr(e), logger.DEBUG)
 
-        except AuthException as e:
-            logger.log(u"Authentication error: " + ex(e), logger.ERROR)
-        except Exception as e:
-            logger.log(u"Error while searching " + self.provider.name + ", skipping: " + repr(e), logger.DEBUG)
-            logger.log(traceback.format_exc(), logger.DEBUG)
+        if len(cl) > 0:
+            cache_db_con = self._getDB()
+            results = cache_db_con.mass_action(cl)
+
+            if results:
+                return True
+
+        return False
 
     def getRSSFeed(self, url, params=None):
         return getFeed(url, params=params, request_hook=self.provider.get_url)
@@ -182,7 +191,7 @@ class TVCache(object):
             title = self._translateTitle(title)
             url = self._translateLinkURL(url)
 
-            #logger.log(u"Attempting to add item to cache: " + title, logger.DEBUG)
+            # logger.log(u"Attempting to add item to cache: " + title, logger.DEBUG)
             return self._addCacheEntry(title, url, seeders, leechers, size)
 
         else:
@@ -253,10 +262,10 @@ class TVCache(object):
 
     def shouldClearCache(self):
         # if daily search hasn't used our previous results yet then don't clear the cache
-        if self.lastUpdate > self.lastSearch:
-            return False
+        #if self.lastUpdate > self.lastSearch:
+            #return False
 
-        return True
+        return False
 
     def _addCacheEntry(self, name, url, seeders, leechers, size, parse_result=None, indexer_id=0):
 
@@ -302,7 +311,7 @@ class TVCache(object):
             logger.log(u"Added RSS item: [" + name + "] to cache: [" + self.providerID + "]", logger.DEBUG)
 
             return [
-                "INSERT OR REPLACE INTO [" + self.providerID + "] (name, season, episodes, indexerid, url, time, quality, release_group, version, seeders, leechers) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                "INSERT OR REPLACE INTO [" + self.providerID + "] (name, season, episodes, indexerid, url, time, quality, release_group, version, seeders, leechers, size) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                 [name, season, episodeText, parse_result.show.indexerid, url, curTimestamp, quality, release_group, version, seeders, leechers, size]]
 
     def searchCache(self, episode, manualSearch=False, downCurQuality=False):
