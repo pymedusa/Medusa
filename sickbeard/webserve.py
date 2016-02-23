@@ -92,6 +92,8 @@ from tornado.concurrent import run_on_executor
 from concurrent.futures import ThreadPoolExecutor
 from mako.runtime import UNDEFINED
 
+from sickbeard import common
+
 mako_lookup = None
 mako_cache = None
 mako_path = None
@@ -1365,6 +1367,167 @@ class Home(WebRoot):
             action="displayShow"
         )
 
+    def manualSnatchSelect(self, show=None, season=None, episode=None, url=None, downCurQuality=None, quality=None, release_group=None, provider=None, name=None):
+        try:
+            show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
+            showObj = Show.find(sickbeard.showList, show)
+        except (ValueError, TypeError):
+            return self._genericMessage("Error", "Invalid show ID: %s" % str(show))
+
+        if showObj is None:
+            return self._genericMessage("Error", "Show not in show list")
+
+        if url is None or quality is None or release_group is None or provider is None or name is None:
+            return self._genericMessage("Error", "URL not valid")
+
+        # retrieve the episode object and fail if we can't get one
+        ep_obj = self._getEpisode(show, season, episode)
+        if isinstance(ep_obj, str):
+            return json.dumps({'result': 'failure'})
+
+        # make a queue item for it and put it on the queue
+        ep_queue_item = search_queue.ManualSelectQueueItem(ep_obj.show, ep_obj, season, episode, url, quality, release_group, provider, name)
+
+        sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
+
+        if not ep_queue_item.started and ep_queue_item.success is None:
+            return json.dumps(
+                {'result': 'success'})  # I Actually want to call it queued, because the search hasnt been started yet!
+        if ep_queue_item.started and ep_queue_item.success is None:
+            return json.dumps({'result': 'success'})
+        else:
+            return json.dumps({'result': 'failure'})
+
+
+    def manualSelect(self, show=None, season=None, episode=None):
+        # todo: add more comprehensive show validation
+        try:
+            show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
+            showObj = Show.find(sickbeard.showList, show)
+        except (ValueError, TypeError):
+            return self._genericMessage("Error", "Invalid show ID: %s" % str(show))
+
+        if showObj is None:
+            return self._genericMessage("Error", "Show not in show list")
+
+        main_db_con = db.DBConnection('cache.db')
+        sql_results = sql_return = {}
+
+        providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_backlog]
+        for curProvider in providers:
+            sql_return = main_db_con.select(
+            "SELECT * FROM " + curProvider.name + " WHERE episodes = ? AND season = ? AND indexerid = ?",
+            ["|" + episode + "|", season, show]
+            )
+            if sql_return:
+                sql_results.update({curProvider.name: sql_return})
+
+        #if not sql_results:
+        #    return self._genericMessage("Error", "No release in cache")
+
+        t = PageTemplate(rh=self, filename="manualSelect.mako")
+        submenu = [{'title': 'Edit', 'path': 'home/editShow?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-pencil'}]
+
+        try:
+            showLoc = (showObj.location, True)
+        except ShowDirectoryNotFoundException:
+            showLoc = (showObj._location, False)  # pylint: disable=protected-access
+
+        show_message = ''
+
+        if sickbeard.showQueueScheduler.action.isBeingAdded(showObj):
+            show_message = 'This show is in the process of being downloaded - the info below is incomplete.'
+
+        elif sickbeard.showQueueScheduler.action.isBeingUpdated(showObj):
+            show_message = 'The information on this page is in the process of being updated.'
+
+        elif sickbeard.showQueueScheduler.action.isBeingRefreshed(showObj):
+            show_message = 'The episodes below are currently being refreshed from disk'
+
+        elif sickbeard.showQueueScheduler.action.isBeingSubtitled(showObj):
+            show_message = 'Currently downloading subtitles for this show'
+
+        elif sickbeard.showQueueScheduler.action.isInRefreshQueue(showObj):
+            show_message = 'This show is queued to be refreshed.'
+
+        elif sickbeard.showQueueScheduler.action.isInUpdateQueue(showObj):
+            show_message = 'This show is queued and awaiting an update.'
+
+        elif sickbeard.showQueueScheduler.action.isInSubtitleQueue(showObj):
+            show_message = 'This show is queued and awaiting subtitles download.'
+
+        if not sickbeard.showQueueScheduler.action.isBeingAdded(showObj):
+            if not sickbeard.showQueueScheduler.action.isBeingUpdated(showObj):
+                if showObj.paused:
+                    submenu.append({'title': 'Resume', 'path': 'home/togglePause?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-play'})
+                else:
+                    submenu.append({'title': 'Pause', 'path': 'home/togglePause?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-pause'})
+
+                submenu.append({'title': 'Remove', 'path': 'home/deleteShow?show=%d' % showObj.indexerid, 'class': 'removeshow', 'confirm': True, 'icon': 'ui-icon ui-icon-trash'})
+                submenu.append({'title': 'Re-scan files', 'path': 'home/refreshShow?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-refresh'})
+                submenu.append({'title': 'Force Full Update', 'path': 'home/updateShow?show=%d&amp;force=1' % showObj.indexerid, 'icon': 'ui-icon ui-icon-transfer-e-w'})
+                submenu.append({'title': 'Update show in KODI', 'path': 'home/updateKODI?show=%d' % showObj.indexerid, 'requires': self.haveKODI(), 'icon': 'submenu-icon-kodi'})
+                submenu.append({'title': 'Update show in Emby', 'path': 'home/updateEMBY?show=%d' % showObj.indexerid, 'requires': self.haveEMBY(), 'icon': 'ui-icon ui-icon-refresh'})
+                submenu.append({'title': 'Preview Rename', 'path': 'home/testRename?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-tag'})
+
+                if sickbeard.USE_SUBTITLES and not sickbeard.showQueueScheduler.action.isBeingSubtitled(
+                        showObj) and showObj.subtitles:
+                    submenu.append({'title': 'Download Subtitles', 'path': 'home/subtitleShow?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-comment'})
+
+        def titler(x):
+            return (helpers.remove_article(x), x)[not x or sickbeard.SORT_ARTICLE]
+
+        if sickbeard.ANIME_SPLIT_HOME:
+            shows = []
+            anime = []
+            for show in sickbeard.showList:
+                if show.is_anime:
+                    anime.append(show)
+                else:
+                    shows.append(show)
+            sortedShowLists = [["Shows", sorted(shows, lambda x, y: cmp(titler(x.name), titler(y.name)))],
+                               ["Anime", sorted(anime, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+        else:
+            sortedShowLists = [
+                ["Shows", sorted(sickbeard.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+
+        bwl = None
+        if showObj.is_anime:
+            bwl = showObj.release_groups
+
+        showObj.exceptions = sickbeard.scene_exceptions.get_scene_exceptions(showObj.indexerid)
+
+        indexerid = int(showObj.indexerid)
+        indexer = int(showObj.indexer)
+
+        # Delete any previous occurrances
+        for index, recentShow in enumerate(sickbeard.SHOWS_RECENT):
+            if recentShow['indexerid'] == indexerid:
+                del sickbeard.SHOWS_RECENT[index]
+
+        # Only track 5 most recent shows
+        del sickbeard.SHOWS_RECENT[4:]
+
+        # Insert most recent show
+        sickbeard.SHOWS_RECENT.insert(0, {
+            'indexerid': indexerid,
+            'name': showObj.name,
+        })
+
+        return t.render(
+            submenu=submenu, showLoc=showLoc, show_message=show_message,
+            show=showObj, sql_results=sql_results, episode=episode,
+            sortedShowLists=sortedShowLists, bwl=bwl, season=season,
+            all_scene_exceptions=showObj.exceptions,
+            scene_numbering=get_scene_numbering_for_show(indexerid, indexer),
+            xem_numbering=get_xem_numbering_for_show(indexerid, indexer),
+            scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexerid, indexer),
+            xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexerid, indexer),
+            title=showObj.name,
+            controller="home",
+            action="displayShow"
+        )
+
     @staticmethod
     def plotDetails(show, season, episode):
         main_db_con = db.DBConnection()
@@ -1955,7 +2118,7 @@ class Home(WebRoot):
 
         return self.redirect("/home/displayShow?show=" + show)
 
-    def searchEpisode(self, show=None, season=None, episode=None, downCurQuality=0):
+    def searchEpisode(self, show=None, season=None, episode=None, downCurQuality=0, manualSelect=None):
 
         # retrieve the episode object and fail if we can't get one
         ep_obj = self._getEpisode(show, season, episode)
@@ -1963,9 +2126,15 @@ class Home(WebRoot):
             return json.dumps({'result': 'failure'})
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(downCurQuality)))
+        if manualSelect is not None:
+            ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(downCurQuality)), True)
+        else:
+            ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(downCurQuality)), False)
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
+
+        # give the CPU a break and some time to start the queue
+        time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
 
         if not ep_queue_item.started and ep_queue_item.success is None:
             return json.dumps(
@@ -1987,7 +2156,7 @@ class Home(WebRoot):
                 logger.log(u'No Show Object found for show with indexerID: ' + str(searchThread.show.indexerid), logger.ERROR)
                 return results
 
-            if isinstance(searchThread, sickbeard.search_queue.ManualSearchQueueItem):
+            if isinstance(searchThread, (sickbeard.search_queue.ManualSearchQueueItem, sickbeard.search_queue.ManualSelectQueueItem)):
                 results.append({
                     'show': searchThread.show.indexerid,
                     'episode': searchThread.segment.episode,
@@ -2036,11 +2205,11 @@ class Home(WebRoot):
                 if not str(searchThread.show.indexerid) == show:
                     continue
 
-            if isinstance(searchThread, sickbeard.search_queue.ManualSearchQueueItem):
+            if isinstance(searchThread, (sickbeard.search_queue.ManualSearchQueueItem, sickbeard.search_queue.ManualSelectQueueItem)):
                 if not [x for x in episodes if x['episodeindexid'] == searchThread.segment.indexerid]:
                     episodes += getEpisodes(searchThread, searchstatus)
             else:
-                # ## These are only Failed Downloads/Retry SearchThreadItems.. lets loop through the segement/episodes
+                # ## These are only Failed Downloads/Retry SearchThreadItems.. lets loop through the segment/episodes
                 if not [i for i, j in zip(searchThread.segment, episodes) if i.indexerid == j['episodeindexid']]:
                     episodes += getEpisodes(searchThread, searchstatus)
 
