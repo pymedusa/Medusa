@@ -253,20 +253,40 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             if isSame:
                 logger.log(u"This proper is already in history, skipping it", logger.DEBUG)
                 continue
-            # get the episode object
-            epObj = curProper.show.getEpisode(curProper.season, curProper.episode)
-            # make the result object
-            result = curProper.provider.get_result([epObj])
-            result.show = curProper.show
-            result.url = curProper.url
-            result.name = curProper.name
-            result.quality = curProper.quality
-            result.release_group = curProper.release_group
-            result.version = curProper.version
-            result.content = curProper.content
-            # snatch it
-            snatchEpisode(result, SNATCHED_PROPER)
-            time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+
+            else:
+
+                # make sure that none of the existing history downloads are the same proper we're trying to download
+                clean_proper_name = self._genericName(helpers.remove_non_release_groups(curProper.name))
+                isSame = False
+                for curResult in historyResults:
+                    # if the result exists in history already we need to skip it
+                    if self._genericName(helpers.remove_non_release_groups(curResult["resource"])) == clean_proper_name:
+                        isSame = True
+                        break
+                if isSame:
+                    logger.log(u"This proper is already in history, skipping it", logger.DEBUG)
+                    continue
+
+                # get the episode object
+                epObj = curProper.show.getEpisode(curProper.season, curProper.episode)
+
+                # make the result object
+                result = curProper.provider.get_result([epObj])
+                result.show = curProper.show
+                result.url = curProper.url
+                result.name = curProper.name
+                result.quality = curProper.quality
+                result.release_group = curProper.release_group
+                result.version = curProper.version
+                result.content = curProper.content
+                result.seeders = curProper.seeders
+                result.leechers = curProper.leechers
+                result.size = curProper.size
+
+                # snatch it
+                snatchEpisode(result, SNATCHED_PROPER)
+                time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 
     @staticmethod
     def _genericName(name):
