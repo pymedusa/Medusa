@@ -169,6 +169,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         for item in items_list:
             (title, url) = self._get_title_and_url(item)
+            (seeders, leechers) = self._get_result_info(item)
+            size = self._get_size(item)
 
             try:
                 parse_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]).parse(title)
@@ -253,7 +255,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                 logger.log(u'Adding item from search to cache: %s' % title, logger.DEBUG)
                 # pylint: disable=protected-access
                 # Access to a protected member of a client class
-                ci = self.cache._addCacheEntry(title, url, parse_result=parse_result)
+                ci = self.cache._addCacheEntry(title, url, seeders, leechers, size, parse_result=parse_result)
 
                 if ci is not None:
                     cl.append(ci)
@@ -281,6 +283,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             result = self.get_result(episode_object)
             result.show = show_object
             result.url = url
+            result.seeders = seeders
+            result.leechers = leechers
             result.name = title
             result.quality = quality
             result.release_group = release_group
@@ -429,6 +433,9 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
     def _get_storage_dir(self):  # pylint: disable=no-self-use
         return ''
+
+    def _get_result_info(self, item):  # pylint: disable=no-self-use
+        return -1, -1
 
     def _get_title_and_url(self, item):  # pylint: disable=no-self-use
         if not item:
