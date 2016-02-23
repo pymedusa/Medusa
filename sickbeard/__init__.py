@@ -138,7 +138,7 @@ GIT_PASSWORD = None
 GIT_PATH = None
 DEVELOPER = False
 
-NEWS_URL = 'http://sickrage.github.io/sickrage-news/news.md'
+NEWS_URL = 'https://raw.githubusercontent.com/pymedusa/sickrage.github.io/master/sickrage-news/news.md'
 NEWS_LAST_READ = None
 NEWS_LATEST = None
 NEWS_UNREAD = 0
@@ -724,7 +724,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                            'https://github.com/%s/%s.git' % (GIT_ORG, GIT_REPO))
 
         if 'sickragetv' in GIT_REMOTE_URL.lower():
-            GIT_REMOTE_URL = 'https://github.com/SickRage/SickRage.git'
+            GIT_REMOTE_URL = 'https://github.com/PyMedusa/SickRage.git'
 
         # current commit hash
         CUR_COMMIT_HASH = check_setting_str(CFG, 'General', 'cur_commit_hash', '')

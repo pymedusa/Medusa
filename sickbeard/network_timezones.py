@@ -1,7 +1,7 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
-# URL: https://sickrage.github.io
-# Git: https://github.com/SickRage/SickRage.git
+
+# Git: https://github.com/PyMedusa/SickRage.git
 #
 # This file is part of SickRage.
 #
@@ -39,7 +39,7 @@ sb_timezone = tz.tzwinlocal() if tz.tzwinlocal else tz.tzlocal()
 def update_network_dict():
     """Update timezone information from SR repositories"""
 
-    url = 'http://sickrage.github.io/sb_network_timezones/network_timezones.txt'
+    url = 'https://raw.githubusercontent.com/pymedusa/sickrage.github.io/master/sb_network_timezones/network_timezones.txt'
     url_data = helpers.getURL(url, session=requests.Session(), returns='text')
     if not url_data:
         logger.log(u'Updating network timezones failed, this can happen from time to time. URL: %s' % url, logger.WARNING)

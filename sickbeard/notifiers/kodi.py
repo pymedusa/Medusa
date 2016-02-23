@@ -43,7 +43,7 @@ except ImportError:
 
 
 class Notifier(object):
-    sr_logo_url = 'https://raw.githubusercontent.com/SickRage/SickRage/master/gui/slick/images/sickrage-shark-mascot.png'
+    sr_logo_url = 'https://raw.githubusercontent.com/PyMedusa/SickRage/master/gui/slick/images/sickrage-shark-mascot.png'
 
     def _get_kodi_version(self, host, username, password, dest_app="KODI"):
         """Returns KODI JSON-RPC API version (odd # = dev, even # = stable)

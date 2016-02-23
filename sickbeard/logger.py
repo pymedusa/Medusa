@@ -1,7 +1,7 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
-# URL: https://sickrage.github.io
-# Git: https://github.com/SickRage/SickRage.git
+
+# Git: https://github.com/PyMedusa/SickRage.git
 #
 # This file is part of SickRage.
 #
@@ -324,7 +324,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
                     'Operating System: **%s**' % platform.platform(),
                     'Locale: %s' % locale_name,
                     'Branch: **%s**' % sickbeard.BRANCH,
-                    'Commit: SickRage/SickRage@%s' % sickbeard.CUR_COMMIT_HASH,
+                    'Commit: PyMedusa/SickRage@%s' % sickbeard.CUR_COMMIT_HASH,
                     log_link,
                     '### ERROR',
                     '```',

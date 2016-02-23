@@ -2,7 +2,7 @@
 # Author: medariox <dariox@gmx.com>,
 # based on Antoine Bertin's <diaoulael@gmail.com> work
 # and originally written by Nyaran <nyayukko@gmail.com>
-# URL: https://github.com/SickRage/SickRage/
+# URL: https://github.com/PyMedusa/SickRage/
 #
 # This file is part of SickRage.
 #

@@ -1,7 +1,7 @@
 # coding=utf-8
 # Author: Jodi Jones <venom@gen-x.co.nz>
 # Rewrite: Gonçalo M. (aka duramato/supergonkas) <supergonkas@gmail.com>
-# URL: https://sickrage.github.io
+
 #
 # This file is part of SickRage.
 #

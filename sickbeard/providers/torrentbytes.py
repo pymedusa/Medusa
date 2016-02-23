@@ -1,7 +1,7 @@
 ﻿# coding=utf-8
 # Author: Idan Gutman
 #
-# URL: https://sickrage.github.io
+
 #
 # This file is part of SickRage.
 #

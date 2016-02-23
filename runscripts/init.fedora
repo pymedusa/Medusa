@@ -26,7 +26,7 @@ lockfile=/var/lock/subsys/$prog
 username=${SR_USER-sickrage}
 homedir=${SR_HOME-/opt/sickrage}
 datadir=${SR_DATA-/opt/sickrage}
-pidfile=${SR_PIDFILE-/var/run/sickrage/sickrage.pid}
+pidfile=${SR_PIDFILE-/var/run/PyMedusa/SickRage.pid}
 nice=${SR_NICE-}
 python_bin=${PYTHON_BIN-/usr/bin/python2.7}
 ##

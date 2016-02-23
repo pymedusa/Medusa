@@ -1,5 +1,5 @@
 # coding=UTF-8
-# URL: https://github.com/SickRage/SickRage
+# URL: https://github.com/PyMedusa/SickRage
 #
 # This file is part of SickRage.
 #

@@ -35,7 +35,7 @@ load_rc_config ${name}
 : ${sickrage_dir:="/usr/local/sickrage"}
 : ${sickrage_datadir:="${sickrage_dir}"}
 
-pidfile="/var/run/sickrage/sickrage.pid"
+pidfile="/var/run/PyMedusa/SickRage.pid"
 command="/usr/local/bin/python2.7"
 command_args="${sickrage_dir}/SickBeard.py --datadir ${sickrage_datadir} -d --pidfile ${pidfile} --quiet --nolaunch"
 

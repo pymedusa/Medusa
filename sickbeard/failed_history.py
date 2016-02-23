@@ -1,7 +1,7 @@
 # coding=utf-8
 # Author: Tyler Fenby <tylerfenby@gmail.com>
-# URL: https://sickrage.github.io
-# Git: https://github.com/SickRage/SickRage.git
+
+# Git: https://github.com/PyMedusa/SickRage.git
 #
 # This file is part of SickRage.
 #

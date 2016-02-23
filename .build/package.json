@@ -4,12 +4,12 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SickRage/SickRage.git"
+    "url": "git+https://github.com/PyMedusa/SickRage.git"
   },
   "bugs": {
-    "url": "https://github.com/SickRage/SickRage/issues"
+    "url": "https://github.com/PyMedusa/SickRage/issues"
   },
-  "homepage": "https://github.com/SickRage/SickRage#readme",
+  "homepage": "https://github.com/PyMedusa/SickRage#readme",
   "scripts": {
     "test": "grunt travis",
     "security": "snyk test"

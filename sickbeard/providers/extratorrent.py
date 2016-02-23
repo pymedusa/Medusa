@@ -2,7 +2,7 @@
 # Author: Gonçalo M. (aka duramato/supergonkas) <supergonkas@gmail.com>
 # Author: Dustyn Gibson <miigotu@gmail.com>
 #
-# URL: https://sickrage.github.io
+
 #
 # This file is part of SickRage.
 #

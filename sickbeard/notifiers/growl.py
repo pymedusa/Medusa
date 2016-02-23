@@ -27,7 +27,7 @@ from libgrowl import gntp
 
 
 class Notifier(object):
-    sr_logo_url = 'https://raw.githubusercontent.com/SickRage/SickRage/master/gui/slick/images/sickrage-shark-mascot.png'
+    sr_logo_url = 'https://raw.githubusercontent.com/PyMedusa/SickRage/master/gui/slick/images/sickrage-shark-mascot.png'
 
     def test_notify(self, host, password):
         self._sendRegistration(host, password, 'Test')

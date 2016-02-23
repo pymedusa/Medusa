@@ -1,7 +1,7 @@
 # coding=utf-8
 # Author: raver2046 <raver2046@gmail.com>
 #
-# URL: https://sickrage.github.io
+
 #
 # This file is part of SickRage.
 #
