@@ -49,5 +49,15 @@ class NZBProvider(GenericProvider):
 
         return try_int(size, -1)
 
+    def _get_result_info(self, item):
+        # Get seeders/leechers for Torznab
+        try:
+            seeders = item.get('seeders')
+            leechers = item.get('leechers')
+        except (AttributeError, IndexError, TypeError):
+            seeders = leechers = -1
+
+        return try_int(seeders, -1), try_int(leechers, -1)
+
     def _get_storage_dir(self):
         return sickbeard.NZB_DIR
