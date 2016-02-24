@@ -5225,7 +5225,7 @@ class ErrorLogs(WebRoot):
 
         return self.redirect("/errorlogs/viewlog/")
 
-    def viewlog(self, minLevel=logger.INFO, logFilter="<NONE>", logSearch=None, maxLines=500):
+    def viewlog(self, minLevel=logger.INFO, logFilter="<NONE>", logSearch=None, maxLines=1000):
 
         def Get_Data(Levelmin, data_in, lines_in, regex, Filter, Search, mlines):
 
@@ -5283,6 +5283,10 @@ class ErrorLogs(WebRoot):
             'SEARCHQUEUE-MANUAL': u'Search Queue (Manual)',
             'SEARCHQUEUE-RETRY': u'Search Queue (Retry/Failed)',
             'SEARCHQUEUE-RSS': u'Search Queue (RSS)',
+            'SHOWQUEUE-FORCE-UPDATE': u'Search Queue (Forced Update)',
+            'SHOWQUEUE-UPDATE': u'Search Queue (Update)',
+            'SHOWQUEUE-REFRESH': u'Search Queue (Refresh)',
+            'SHOWQUEUE-FORCE-REFRESH': u'Search Queue (Forced Refresh)',
             'FINDPROPERS': u'Find Propers',
             'POSTPROCESSER': u'Postprocesser',
             'FINDSUBTITLES': u'Find Subtitles',
