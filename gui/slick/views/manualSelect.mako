@@ -5,7 +5,7 @@
     import ntpath
     import os.path
     import sickbeard
-    from sickbeard import providers, subtitles, sbdatetime, network_timezones
+    from sickbeard import providers, subtitles, sbdatetime, network_timezones, helpers
     import sickbeard.helpers
 
     from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
@@ -196,8 +196,8 @@
             % for hItem in sql_results[provider]:
                 <% provider_img = providers.getProviderClass(GenericProvider.make_id(provider)) %>
                 <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
-                    <td class="tvShow" class="col-name" width="35%">${hItem["name"]}</td>
-                    <td align="center">${hItem["release_group"]}</td>
+                    <td class="tvShow" class="col-name" width="35%">${helpers.remove_non_release_groups(hItem["name"])}</td>
+                    <td align="center">${helpers.remove_non_release_groups(hItem["release_group"])}</td>
                     <td align="center">
                         % if provider_img is not None:
                             <img src="${srRoot}/images/providers/${provider_img.image_name()}" width="16" height="16" style="vertical-align:middle;" alt="${provider}" style="cursor: help;" title="${provider}"/> ${provider}
@@ -211,7 +211,7 @@
                     <td align="center">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
                     <td align="center">${provider_img.provider_type.title()}</td>
                     <td align="center" class="col-status">Ignored</td>
-                    <td align="center" class="col-search" width="5%"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="manualSnatchSelect?show=${show.indexerid}&amp;season=${season}&amp;episode=${episode}&amp;url=${hItem["url"]}&amp;quality=${hItem["quality"]}&amp;release_group=${hItem["release_group"]}&amp;provider=${provider}&amp;name=${hItem["name"]}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
+                    <td align="center" class="col-search" width="5%"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="manualSnatchSelect?show=${show.indexerid}&amp;season=${season}&amp;episode=${episode}&amp;url=${urllib.quote_plus(hItem["url"])}&amp;quality=${hItem["quality"]}&amp;release_group=${hItem["release_group"]}&amp;provider=${provider}&amp;name=${hItem["name"]}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                 </tr>
             % endfor
         % endfor
