@@ -35,7 +35,7 @@ from sickrage.helper.exceptions import CantRefreshShowException, CantRemoveShowE
 from sickrage.helper.exceptions import EpisodeDeletedException, ex, MultipleShowObjectsException
 from sickrage.helper.exceptions import ShowDirectoryNotFoundException
 from sickbeard.helpers import get_showname_from_indexer
-from libtrakt import TraktAPI
+from libtrakt.trakt import TraktApi as TraktAPI
 from sickrage.helper.encoding import ek
 from sickbeard.helpers import makeDir, chmodAsParent
 from sickrage.helper.common import sanitize_filename
