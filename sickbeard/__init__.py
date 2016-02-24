@@ -138,7 +138,7 @@ GIT_PASSWORD = None
 GIT_PATH = None
 DEVELOPER = False
 
-NEWS_URL = 'https://raw.githubusercontent.com/pymedusa/sickrage.github.io/master/sickrage-news/news.md'
+NEWS_URL = 'https://api.pymedusa.com/news.md'
 NEWS_LAST_READ = None
 NEWS_LATEST = None
 NEWS_UNREAD = 0
