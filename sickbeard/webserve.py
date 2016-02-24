@@ -5241,8 +5241,6 @@ class ErrorLogs(WebRoot):
                 if match:
                     level = match.group(7)
                     logName = match.group(8)
-                    if not sickbeard.DEBUG and (level == 'DEBUG' or level == 'DB'):
-                        continue
                     if level not in logger.LOGGING_LEVELS:
                         lastLine = False
                         continue
