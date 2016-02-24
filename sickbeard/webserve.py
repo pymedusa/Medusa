@@ -77,9 +77,16 @@ from sickbeard.scene_numbering import (
 from sickbeard.versionChecker import CheckVersion
 from sickbeard.webapi import function_mapper
 
-from sickrage.helper.common import (
-    episode_num, sanitize_filename, try_int, enabled_providers,
-)
+from sickbeard.imdbPopular import imdb_popular
+from sickbeard.helpers import get_showname_from_indexer
+from sickrage.show.recommendations.trakt import TraktPopular
+
+from dateutil import tz
+from unrar2 import RarFile
+import adba
+from libtrakt.trakt import TraktApi
+from libtrakt.exceptions import TraktException
+from sickrage.helper.common import sanitize_filename, try_int, episode_num, enabled_providers
 from sickrage.helper.encoding import ek, ss
 from sickrage.helper.exceptions import (
     ex,
@@ -1029,7 +1036,13 @@ class Home(WebRoot):
     @staticmethod
     def getTraktToken(trakt_pin=None):
 
-        trakt_api = TraktAPI(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
+        trakt_settings = {"trakt_api_key": sickbeard.TRAKT_API_KEY,
+                          "trakt_api_secret": sickbeard.TRAKT_API_SECRET}
+        trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
+        (access_token, refresh_token) = trakt_api.get_token(sickbeard.TRAKT_REFRESH_TOKEN, trakt_pin=trakt_pin)
+        if access_token:
+            sickbeard.TRAKT_ACCESS_TOKEN = access_token
+            sickbeard.TRAKT_REFRESH_TOKEN = refresh_token
         response = trakt_api.traktToken(trakt_pin)
         if response:
             return "Trakt Authorized"
@@ -2783,14 +2796,15 @@ class HomeAddShows(Home):
 
         t = PageTemplate(rh=self, filename="addShows_trendingShows.mako")
         return t.render(title=page_title, header=page_title, enable_anime_options=False,
-                        traktList=traktList, controller="addShows", action="trendingShows")
+                        traktList=traktList, controller="addShows", action="recommendedShows")
 
     def getTrendingShows(self, traktList=None):
         """
         Display the new show page which collects a tvdb id, folder, and extra options and
         posts them to addNewShow
         """
-        t = PageTemplate(rh=self, filename="trendingShows.mako")
+        e = None
+        t = PageTemplate(rh=self, filename="addShows_recommended.mako")
         if traktList is None:
             traktList = ""
 
@@ -2817,61 +2831,13 @@ class HomeAddShows(Home):
         else:
             page_url = "shows/anticipated"
 
-        trending_shows = []
-
-        trakt_api = TraktAPI(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
-
         try:
-            not_liked_show = ""
-            if sickbeard.TRAKT_ACCESS_TOKEN != '':
-                library_shows = trakt_api.traktRequest("sync/collection/shows?extended=full") or []
-                if sickbeard.TRAKT_BLACKLIST_NAME is not None and sickbeard.TRAKT_BLACKLIST_NAME:
-                    not_liked_show = trakt_api.traktRequest("users/" + sickbeard.TRAKT_USERNAME + "/lists/" + sickbeard.TRAKT_BLACKLIST_NAME + "/items") or []
-                else:
-                    logger.log(u"Trakt blacklist name is empty", logger.DEBUG)
+            (blacklist, recommended_shows) = TraktPopular().fetch_popular_shows(page_url=page_url, trakt_list=traktList)
+        except Exception as e:
+            # print traceback.format_exc()
+            recommended_shows = None
 
-            if traktList not in ["recommended", "newshow", "newseason"]:
-                limit_show = "?limit=" + str(100 + len(not_liked_show)) + "&"
-            else:
-                limit_show = "?"
-
-            shows = trakt_api.traktRequest(page_url + limit_show + "extended=full,images") or []
-
-            if sickbeard.TRAKT_ACCESS_TOKEN != '':
-                library_shows = trakt_api.traktRequest("sync/collection/shows?extended=full") or []
-
-            for show in shows:
-                try:
-                    if 'show' not in show:
-                        show['show'] = show
-
-                    if not Show.find(sickbeard.showList, [int(show['show']['ids']['tvdb'])]):
-                        if sickbeard.TRAKT_ACCESS_TOKEN != '':
-                            if show['show']['ids']['tvdb'] not in (lshow['show']['ids']['tvdb'] for lshow in library_shows):
-                                if not_liked_show:
-                                    if show['show']['ids']['tvdb'] not in (show['show']['ids']['tvdb'] for show in not_liked_show if show['type'] == 'show'):
-                                        trending_shows += [show]
-                                else:
-                                    trending_shows += [show]
-                        else:
-                            if not_liked_show:
-                                if show['show']['ids']['tvdb'] not in (show['show']['ids']['tvdb'] for show in not_liked_show if show['type'] == 'show'):
-                                    trending_shows += [show]
-                            else:
-                                trending_shows += [show]
-
-                except MultipleShowObjectsException:
-                    continue
-
-            if sickbeard.TRAKT_BLACKLIST_NAME != '':
-                blacklist = True
-            else:
-                blacklist = False
-
-        except traktException as e:
-            logger.log(u"Could not connect to Trakt service: %s" % ex(e), logger.WARNING)
-
-        return t.render(blacklist=blacklist, trending_shows=trending_shows)
+        return t.render(blacklist=blacklist, recommended_shows=recommended_shows, exception=e, enable_anime_options=False)
 
     def popularShows(self):
         """
@@ -2895,9 +2861,9 @@ class HomeAddShows(Home):
         # URL parameters
         data = {'shows': [{'ids': {'tvdb': indexer_id}}]}
 
-        trakt_api = TraktAPI(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
+        trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
 
-        trakt_api.traktRequest("users/" + sickbeard.TRAKT_USERNAME + "/lists/" + sickbeard.TRAKT_BLACKLIST_NAME + "/items", data, method='POST')
+        trakt_api.trakt_request("users/" + sickbeard.TRAKT_USERNAME + "/lists/" + sickbeard.TRAKT_BLACKLIST_NAME + "/items", data, method='POST')
 
         return self.redirect('/addShows/trendingShows/')
 
@@ -2910,14 +2876,19 @@ class HomeAddShows(Home):
                         header='Existing Show', topmenu="home",
                         controller="addShows", action="addExistingShow")
 
-    def addShowByID(self, indexer_id, show_name, indexer="TVDB", which_series=None,
+    def addShowByID(self, indexer_id, show_name=None, indexer="TVDB", which_series=None,
                     indexer_lang=None, root_dir=None, default_status=None,
                     quality_preset=None, any_qualities=None, best_qualities=None,
                     flatten_folders=None, subtitles=None, full_show_path=None,
                     other_shows=None, skip_show=None, provided_indexer=None,
                     anime=None, scene=None, blacklist=None, whitelist=None,
                     default_status_after=None, default_flatten_folders=None,
-                    configure_show_options=None):
+                    configure_show_options=False):
+
+        """
+        Add's a new show with provided show options by indexer_id.
+        Currently only TVDB and IMDB id's supported.
+        """
 
         if indexer != "TVDB":
             tvdb_id = helpers.getTVDBFromID(indexer_id, indexer.upper())

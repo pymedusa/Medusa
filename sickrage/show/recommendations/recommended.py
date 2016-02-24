@@ -34,8 +34,8 @@ class RecommendedShow(object):
     """
     Base class for show recommendations
     """
-    def __init__(self, show_id, title, indexer, indexer_id, cache_subfolder=u'recommended',
-                 rating=None, votes=None, image_href=None, image_src=None):
+    def __init__(self, rec_show_prov, show_id, title, indexer, indexer_id, cache_subfolder=u'recommended',
+                 rating=None, votes=None, image_href=None, image_src=None, default_img_src=None):
         """
         Create a show recommendation
 
@@ -49,11 +49,14 @@ class RecommendedShow(object):
         :param image_href: the href when clicked on the show image (poster)
         :param image_src: the url to the "cached" image (poster)
         """
+        self.recommender = rec_show_prov.recommender
+        self.cache_subfolder = rec_show_prov.cache_subfolder
+        self.default_img_src = rec_show_prov.default_img_src
+
         self.show_id = show_id
         self.title = title
         self.indexer = indexer
         self.indexer_id = indexer_id
-        self.cache_subfolder = cache_subfolder
         self.rating = rating
         self.votes = votes
         self.image_href = image_href
@@ -79,7 +82,10 @@ class RecommendedShow(object):
         if not ek(os.path.exists, path):
             ek(os.makedirs, path)
 
-        full_path = ek(posixpath.join, path, ek(os.path.basename, image_url))
+        full_path = ek(os.path.join, path, ek(os.path.basename, image_url))
 
         if not ek(os.path.isfile, full_path):
             helpers.download_file(image_url, full_path, session=self.session)
+
+    def __str__(self):
+        return 
