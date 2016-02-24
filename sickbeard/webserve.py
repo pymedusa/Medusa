@@ -2234,7 +2234,7 @@ class HomeChangeLog(Home):
 
     def index(self):
         try:
-            changes = helpers.getURL('https://raw.githubusercontent.com/pymedusa/sickrage.github.io/master/sickrage-news/CHANGES.md', session=requests.Session(), returns='text')
+            changes = helpers.getURL('https://api.pymedusa.com/changelog.md', session=requests.Session(), returns='text')
         except Exception:
             logger.log(u'Could not load changes from repo, giving a link!', logger.DEBUG)
             changes = 'Could not load changes from the repo. [Click here for CHANGES.md](https://raw.githubusercontent.com/pymedusa/sickrage.github.io/master/sickrage-news/CHANGES.md)'
