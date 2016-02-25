@@ -1415,9 +1415,10 @@ class Home(WebRoot):
 
         providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_backlog]
         for curProvider in providers:
+            # TODO handle multi episodes like: 11|12 
             sql_return = main_db_con.select(
-            "SELECT * FROM " + curProvider.name + " WHERE episodes = ? AND season = ? AND indexerid = ?",
-            ["|" + episode + "|", season, show]
+            "SELECT * FROM " + '`' + curProvider.name + '`' + " WHERE episodes LIKE ? AND season = ? AND indexerid = ?",
+            ["%|" + episode + "|%", season, show]
             )
             if sql_return:
                 sql_results.update({curProvider.name: sql_return})
