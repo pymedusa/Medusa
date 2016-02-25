@@ -1441,7 +1441,7 @@ class Home(WebRoot):
                                             % (curProvider.get_id()), ["%|" + episode + "|%", season, show])
 
             if sql_return:
-                sql_results.update({curProvider.name: sql_return})
+                sql_results.update({curProvider.get_id(): sql_return})
 
         # if not sql_results:
         #    return self._genericMessage("Error", "No release in cache")
