@@ -119,7 +119,7 @@ class PhxBitProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
                 search_url = self.urls['search'] + urlencode(search_params)
                 logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
 
-                data = self.get_url(search_url)
+                data = self.get_url(search_url, echo=False, returns='text')
                 if not data:
                     continue
 

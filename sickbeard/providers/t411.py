@@ -100,7 +100,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                 search_urlS = ([self.urls['search'] % (search_string, u) for u in self.subcategories], [self.urls['rss']])[mode == 'RSS']
                 for search_url in search_urlS:
                     logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
-                    data = self.get_url(search_url, json=True)
+                    data = self.get_url(search_url, json=True, echo=False)
                     if not data:
                         continue
 
