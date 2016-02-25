@@ -169,8 +169,6 @@ $(document).ready(function () {
                 url = url.replace("retryEpisode", "searchEpisode");
             }
 
-            url = url + "&downCurQuality=" + (qualityDownload ? '1' : '0');
-
             $.getJSON(url, function(data){
 
                 // if they failed then just put the red X
