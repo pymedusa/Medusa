@@ -1367,8 +1367,16 @@ class Home(WebRoot):
             action="displayShow"
         )
 
-    def manualSnatchSelect(self, show=None, season=None, episode=None, url=None, downCurQuality=None,
-                           quality=None, release_group=None, provider=None, name=None):
+    def manualSnatchSelect(self, show=None, season=None, episode=None, provider=None, rowid=None):
+
+        # Try to retrieve the cached result from the providers cache table.
+        # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
+        sql_results = []
+        main_db_con = db.DBConnection('cache.db')
+
+        sql_return = main_db_con.action("SELECT * FROM %s WHERE rowid = ?" %
+                                        (sickbeard.providers.getProviderClass(provider).get_id()), [rowid], fetchone=True)
+
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
             showObj = Show.find(sickbeard.showList, show)
@@ -1378,7 +1386,9 @@ class Home(WebRoot):
         if showObj is None:
             return self._genericMessage("Error", "Show not in show list")
 
-        if url is None or quality is None or release_group is None or provider is None or name is None:
+        if (sql_return['url'] is None or sql_return['quality'] is None or
+            sql_return['release_group'] is None or
+            provider is None or sql_return['name'] is None):
             return self._genericMessage("Error", "URL not valid")
 
         # retrieve the episode object and fail if we can't get one
@@ -1387,7 +1397,9 @@ class Home(WebRoot):
             return json.dumps({'result': 'failure'})
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ManualSelectQueueItem(ep_obj.show, ep_obj, season, episode, url, quality, release_group, provider, name)
+        ep_queue_item = search_queue.ManualSelectQueueItem(ep_obj.show, ep_obj, season, episode,
+                                                           sql_return['url'], sql_return['quality'],
+                                                           sql_return['release_group'], provider, sql_return['name'])
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
@@ -1419,6 +1431,7 @@ class Home(WebRoot):
             # Let's check if this provider table already exists
             table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [curProvider.get_id()])
             if not table_exists:
+                logger.log(u"Can't find the provider table {0}".format(curProvider.get_id()), logger.WARNING)
                 continue
 
             # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
