@@ -68,7 +68,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
                 logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
 
-                data = self.get_url(search_url, params=self.search_params)
+                data = self.get_url(search_url, params=self.search_params, echo=False, returns='text')
                 if not data:
                     logger.log(u"No data returned from provider", logger.DEBUG)
                     continue

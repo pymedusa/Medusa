@@ -106,7 +106,7 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 search_url += ';o=seeders' if mode != 'RSS' else ''
                 logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
 
-                data = self.get_url(search_url)
+                data = self.get_url(search_url, echo=False, returns='text')
                 if not data:
                     continue
 

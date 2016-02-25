@@ -115,7 +115,7 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                 search_url = self.urls['search'] + "?" + urlencode(search_params)
                 logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
 
-                data = self.get_url(self.urls['search'], params=search_params)
+                data = self.get_url(self.urls['search'], params=search_params, echo=False, returns='text')
                 if not data:
                     logger.log(u"No data returned from provider", logger.DEBUG)
                     continue

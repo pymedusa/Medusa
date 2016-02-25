@@ -103,7 +103,7 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                 logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
 
-                data = self.get_url(search_url)
+                data = self.get_url(search_url, echo=False, returns='text')
                 if not data or 'please try later' in data:
                     logger.log(u"No data returned from provider", logger.DEBUG)
                     continue
