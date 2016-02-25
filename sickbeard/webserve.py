@@ -1427,7 +1427,8 @@ class Home(WebRoot):
             return self._genericMessage("Error", "Show not in show list")
 
         main_db_con = db.DBConnection('cache.db')
-        sql_results = sql_return = {}
+        sql_return = {}
+        found_items = []
 
         providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_backlog]
         for curProvider in providers:
@@ -1440,19 +1441,21 @@ class Home(WebRoot):
 
             # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
             if not int(show_all_results):
-                sql_return = main_db_con.select("SELECT rowid, name, season, episodes, indexerid, url, time, \
+                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', name, season, episodes, indexerid, url, time, \
                                                 quality, release_group, version, seeders, leechers, size \
                                                 FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ?"
-                                                % (curProvider.get_id()), ["%|" + episode + "|%", season, show])
+                                                % (curProvider.get_id()), [curProvider.name, "%|" + episode + "|%", season, show])
             else:
-                sql_return = main_db_con.select("SELECT rowid, name, season, episodes, indexerid, url, time, \
+                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', name, season, episodes, indexerid, url, time, \
                                                 quality, release_group, version, seeders, leechers, size \
-                                                FROM '%s' WHERE indexerid = ?" % (curProvider.get_id()), [show])
+                                                FROM '%s' WHERE indexerid = ?" % (curProvider.get_id()), [curProvider.name, show])
 
             if sql_return:
-                sql_results.update({curProvider.name: sql_return})
+                for item in sql_return:
+                    found_items.append(dict(item))
+                found_items = sorted(found_items, key=lambda k: (k['quality'], k['seeders']), reverse=True)
 
-        if not sql_results or int(perform_search):
+        if not found_items or int(perform_search):
             # retrieve the episode object and fail if we can't get one
             ep_obj = self._getEpisode(show, season, episode)
             if isinstance(ep_obj, str):
@@ -1558,7 +1561,7 @@ class Home(WebRoot):
 
         return t.render(
             submenu=submenu, showLoc=showLoc, show_message=show_message,
-            show=showObj, sql_results=sql_results, episode=episode,
+            show=showObj, sql_results=found_items, episode=episode,
             sortedShowLists=sortedShowLists, bwl=bwl, season=season,
             all_scene_exceptions=showObj.exceptions,
             scene_numbering=get_scene_numbering_for_show(indexerid, indexer),
