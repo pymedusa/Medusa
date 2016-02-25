@@ -1367,7 +1367,8 @@ class Home(WebRoot):
             action="displayShow"
         )
 
-    def manualSnatchSelect(self, show=None, season=None, episode=None, url=None, downCurQuality=None, quality=None, release_group=None, provider=None, name=None):
+    def manualSnatchSelect(self, show=None, season=None, episode=None, url=None, downCurQuality=None,
+                           quality=None, release_group=None, provider=None, name=None):
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
             showObj = Show.find(sickbeard.showList, show)
@@ -1398,7 +1399,6 @@ class Home(WebRoot):
         else:
             return json.dumps({'result': 'failure'})
 
-
     def manualSelect(self, show=None, season=None, episode=None):
         # todo: add more comprehensive show validation
         try:
@@ -1415,15 +1415,22 @@ class Home(WebRoot):
 
         providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_backlog]
         for curProvider in providers:
-            # TODO handle multi episodes like: 11|12 
-            sql_return = main_db_con.select(
-            "SELECT * FROM " + '`' + curProvider.name + '`' + " WHERE episodes LIKE ? AND season = ? AND indexerid = ?",
-            ["%|" + episode + "|%", season, show]
-            )
-            if sql_return:
-                sql_results.update({curProvider.name: sql_return})
 
-        #if not sql_results:
+            # Let's check if this provider table already exists
+            table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [curProvider.get_id()])
+            if not table_exists:
+                continue
+
+            # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
+            sql_return = main_db_con.select("SELECT rowid, name, season, episodes, indexerid, url, time, \
+                                            quality, release_group, version, seeders, leechers, size \
+                                            FROM %s WHERE episodes LIKE ? AND season = ? AND indexerid = ?"
+                                            % (curProvider.get_id()), ["%|" + episode + "|%", season, show])
+
+            if sql_return:
+                sql_results.update({curProvider.get_id(): sql_return})
+
+        # if not sql_results:
         #    return self._genericMessage("Error", "No release in cache")
 
         t = PageTemplate(rh=self, filename="manualSelect.mako")
