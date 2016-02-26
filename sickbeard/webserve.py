@@ -1378,7 +1378,7 @@ class Home(WebRoot):
         sql_results = []
         main_db_con = db.DBConnection('cache.db')
 
-        sql_return = main_db_con.action("SELECT * FROM %s WHERE rowid = ?" %
+        sql_return = main_db_con.action("SELECT * FROM '%s' WHERE rowid = ?" %
                                         (sickbeard.providers.getProviderClass(provider).get_id()), [rowid], fetchone=True)
 
         try:
