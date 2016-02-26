@@ -1441,14 +1441,14 @@ class Home(WebRoot):
 
             # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
             if not int(show_all_results):
-                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', name, season, episodes, indexerid, url, time, \
+                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, episodes, indexerid, url, time, \
                                                 quality, release_group, version, seeders, leechers, size \
                                                 FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ?"
-                                                % (curProvider.get_id()), [curProvider.get_id(), "%|" + episode + "|%", season, show])
+                                                % (curProvider.get_id()), [curProvider.name, curProvider.get_id(), "%|" + episode + "|%", season, show])
             else:
-                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', name, season, episodes, indexerid, url, time, \
+                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, episodes, indexerid, url, time, \
                                                 quality, release_group, version, seeders, leechers, size \
-                                                FROM '%s' WHERE indexerid = ?" % (curProvider.get_id()), [curProvider.get_id(), show])
+                                                FROM '%s' WHERE indexerid = ?" % (curProvider.name, curProvider.get_id()), [curProvider.get_id(), show])
 
             if sql_return:
                 for item in sql_return:
