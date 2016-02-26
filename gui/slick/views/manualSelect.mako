@@ -166,56 +166,56 @@
     </div>
 
     <div class="clearfix"></div>
-
-    <table id="showTable" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
-        <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
-        <tr style="height: 60px;" role="row">
-            <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader displayShowTable">
-                <h3 style="display: inline;"><a name="season-${season}" style="position: absolute; font-size: 1px; visibility: hidden;">.</a>Season ${season} Episode ${episode}</h3>
-            </th>
-        </tr>
-        </tbody>
-
-        <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
-            <tr>
-                <th class="col-name">Release</th>
-                <th>Group</th>
-                <th>Provider</th>
-                <th>Quality</th>
-                <th>Seeds</th>
-                <th>Peers</th>
-                <th>Size</th>
-                <th>Type</th>
-                <th class="col-status">Status</th>
-                <th class="col-search">Download</th>
+    <div id="container">
+        <table id="showTable" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
+            <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
+            <tr style="height: 60px;" role="row">
+                <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader displayShowTable">
+                    <h3 style="display: inline;"><a name="season-${season}" style="position: absolute; font-size: 1px; visibility: hidden;">.</a>Season ${season} Episode ${episode}</h3>
+                </th>
             </tr>
-        </tbody>
-
-        <tbody aria-live="polite" aria-relevant="all">
-        % for provider in sql_results:
-            % for hItem in sql_results[provider]:
-                <% provider_img = providers.getProviderClass(GenericProvider.make_id(provider)) %>
-                <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
-                    <td class="tvShow" class="col-name" width="35%">${helpers.remove_non_release_groups(hItem["name"])}</td>
-                    <td align="center">${helpers.remove_non_release_groups(hItem["release_group"])}</td>
-                    <td align="center">
-                        % if provider_img is not None:
-                            <img src="${srRoot}/images/providers/${provider_img.image_name()}" width="16" height="16" style="vertical-align:middle;" alt="${provider}" style="cursor: help;" title="${provider}"/> ${provider}
-                        % else:
-                            <img src="${srRoot}/images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="missing provider"/> ${provider}
-                        % endif
-                    </td>
-                    <td align="center">${renderQualityPill(int(hItem["quality"]))}</td>
-                    <td align="center">${hItem["seeders"] if hItem["seeders"] > -1 else 'N/A'}</td>
-                    <td align="center">${hItem["leechers"] if hItem["leechers"] > -1 else 'N/A'}</td>
-                    <td align="center">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
-                    <td align="center">${provider_img.provider_type.title()}</td>
-                    <td align="center" class="col-status">Ignored</td>
-                    <td align="center" class="col-search" width="5%"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="manualSnatchSelect?provider=${provider}&amp;rowid=${hItem["rowid"]}&show=${show.indexerid}&amp;season=${season}&amp;episode=${episode}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
+            </tbody>
+   
+            <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
+                <tr>
+                    <th class="col-name">Release</th>
+                    <th>Group</th>
+                    <th>Provider</th>
+                    <th>Quality</th>
+                    <th>Seeds</th>
+                    <th>Peers</th>
+                    <th>Size</th>
+                    <th>Type</th>
+                    <th class="col-status">Status</th>
+                    <th class="col-search">Download</th>
                 </tr>
-            % endfor
-        % endfor
-        </tbody>
-    </table>
+            </tbody>
 
+            <tbody aria-live="polite" aria-relevant="all">
+            % for provider in sql_results:
+                % for hItem in sql_results[provider]:
+                    <% provider_img = providers.getProviderClass(GenericProvider.make_id(provider)) %>
+                    <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
+                        <td class="tvShow" class="col-name" width="35%">${helpers.remove_non_release_groups(hItem["name"])}</td>
+                        <td align="center">${helpers.remove_non_release_groups(hItem["release_group"])}</td>
+                        <td align="center">
+                            % if provider_img is not None:
+                                <img src="${srRoot}/images/providers/${provider_img.image_name()}" width="16" height="16" style="vertical-align:middle;" alt="${provider}" style="cursor: help;" title="${provider}"/> ${provider}
+                            % else:
+                                <img src="${srRoot}/images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="missing provider"/> ${provider}
+                            % endif
+                        </td>
+                        <td align="center">${renderQualityPill(int(hItem["quality"]))}</td>
+                        <td align="center">${hItem["seeders"] if hItem["seeders"] > -1 else 'N/A'}</td>
+                        <td align="center">${hItem["leechers"] if hItem["leechers"] > -1 else 'N/A'}</td>
+                        <td align="center">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
+                        <td align="center">${provider_img.provider_type.title()}</td>
+                        <td align="center" class="col-status">Ignored</td>
+                        <td align="center" class="col-search" width="5%"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="manualSnatchSelect?provider=${provider}&amp;rowid=${hItem["rowid"]}&show=${show.indexerid}&amp;season=${season}&amp;episode=${episode}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
+                    </tr>
+                % endfor
+            % endfor
+            </tbody>
+        </table>
+    </div>
 </%block>

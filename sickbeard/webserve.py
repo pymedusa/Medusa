@@ -1415,7 +1415,7 @@ class Home(WebRoot):
         else:
             return json.dumps({'result': 'failure'})
 
-    def manualSelect(self, show=None, season=None, episode=None):
+    def manualSelect(self, show=None, season=None, episode=None, perform_search=None, down_cur_quality=0, show_all_results=None):
         # todo: add more comprehensive show validation
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
@@ -1439,16 +1439,33 @@ class Home(WebRoot):
                 continue
 
             # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
-            sql_return = main_db_con.select("SELECT rowid, name, season, episodes, indexerid, url, time, \
-                                            quality, release_group, version, seeders, leechers, size \
-                                            FROM [%s] WHERE episodes LIKE ? AND season = ? AND indexerid = ?"
-                                            % (curProvider.get_id()), ["%|" + episode + "|%", season, show])
+            if not int(show_all_results):
+                sql_return = main_db_con.select("SELECT rowid, name, season, episodes, indexerid, url, time, \
+                                                quality, release_group, version, seeders, leechers, size \
+                                                FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ?"
+                                                % (curProvider.get_id()), ["%|" + episode + "|%", season, show])
+            else:
+                sql_return = main_db_con.select("SELECT rowid, name, season, episodes, indexerid, url, time, \
+                                                quality, release_group, version, seeders, leechers, size \
+                                                FROM '%s' WHERE indexerid = ?" % (curProvider.get_id()), [show])
 
             if sql_return:
                 sql_results.update({curProvider.name: sql_return})
 
-        # if not sql_results:
-        #    return self._genericMessage("Error", "No release in cache")
+        if not sql_results or int(perform_search):
+            # retrieve the episode object and fail if we can't get one
+            ep_obj = self._getEpisode(show, season, episode)
+            if isinstance(ep_obj, str):
+                ui.notifications.error(u"Something went wrong when starting the manual search for show {0}, and episode: {1}x{2}".
+                                       format(showObj.name, season, episode))
+
+            # make a queue item for it and put it on the queue
+            ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True)
+
+            sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
+
+            # give the CPU a break and some time to start the queue
+            time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
 
         t = PageTemplate(rh=self, filename="manualSelect.mako")
         submenu = [{'title': 'Edit', 'path': 'home/editShow?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-pencil'}]
@@ -1550,7 +1567,7 @@ class Home(WebRoot):
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexerid, indexer),
             title=showObj.name,
             controller="home",
-            action="displayShow"
+            action="manualSelect"
         )
 
     @staticmethod

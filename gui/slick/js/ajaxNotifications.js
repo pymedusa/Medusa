@@ -28,10 +28,6 @@ function check_notifications() {
         $.getJSON(message_url, function (data) {
             $.each(data, function (name, data) {
                 displayPNotify(data.type, data.title, data.message);
-                if (data.message.indexOf("promptly") > -1) {
-                    var numbers = data.title.match(/\d+/g).map(Number);
-                    window.location = srRoot + '/home/manualSelect?show=' + getParameterByName('show') + '&season=' + numbers[0] + '&episode=' + numbers[1];
-                }
             });
         });
     }
