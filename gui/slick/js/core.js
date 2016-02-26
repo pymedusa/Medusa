@@ -2449,17 +2449,30 @@ var SICKRAGE = {
                 });
             };
 
-            $('input.manualSearchButton').on('click', function(){
-                show = $(this).attr('data-show');
-                season = $(this).attr('data-season');
-                episode = $(this).attr('data-episode');
-                performSearch = $(this).attr('data-force-search');
+            $('body').on('click', '.manualSearchButton', function(event){
+                event.preventDefault();
+                var show = $(this).attr('data-show');
+                var season = $(this).attr('data-season');
+                var episode = $(this).attr('data-episode');
+                var performSearch = $(this).attr('data-force-search');
 
                 $('#wrapper').loadContainer(
                         '/home/manualSelect?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=' + performSearch,
                         'Loading new search results...',
                         'Time out, refresh page to try again'
                 );
+            });
+            
+            $('body').on('click', '.epManualSnatch', function(event){
+                event.preventDefault();
+                var link = this;
+                $.getJSON(this.href, 
+                    function (data) {
+                    if (data.result === "success") {
+                        $(link).children('img').attr('src', srRoot + '/images/save.png');
+                    }
+                });
+                
             });
         },
         postProcess: function() {
