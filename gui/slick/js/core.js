@@ -2449,14 +2449,14 @@ var SICKRAGE = {
                 });
             };
 
-            $('#reloadResults').on('click', function(){
+            $('input.manualSearchButton').on('click', function(){
                 show = $(this).attr('data-show');
                 season = $(this).attr('data-season');
                 episode = $(this).attr('data-episode');
-                debugger;
-                
+                performSearch = $(this).attr('data-force-search');
+
                 $('#wrapper').loadContainer(
-                        '/home/manualSelect?show=' + show + '&season=' + season + '&episode=' + episode,
+                        '/home/manualSelect?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=' + performSearch,
                         'Loading new search results...',
                         'Time out, refresh page to try again'
                 );
