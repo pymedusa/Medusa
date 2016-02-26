@@ -1453,7 +1453,7 @@ class Home(WebRoot):
             if sql_return:
                 for item in sql_return:
                     found_items.append(dict(item))
-                found_items = sorted(found_items, key=lambda k: (k['quality'], k['seeders']), reverse=True)
+                found_items = sorted(found_items, key=lambda k: (int(k['quality']), int(k['seeders'])), reverse=True)
 
         if not found_items or int(perform_search):
             # retrieve the episode object and fail if we can't get one
