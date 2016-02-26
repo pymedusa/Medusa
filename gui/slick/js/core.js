@@ -2440,6 +2440,27 @@ var SICKRAGE = {
 
         },
         manualSelect: function() {
+            $.fn.loadContainer = function(path, loadingTxt, errorTxt) {
+                $(this).html('<img id="searchingAnim" src="' + srRoot + '/images/loading32' + themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
+                $(this).load(srRoot + path + ' #container', function(response, status) {
+                    if (status === "error") {
+                        $(this).empty().html(errorTxt);
+                    }
+                });
+            };
+
+            $('#reloadResults').on('click', function(){
+                show = $(this).attr('data-show');
+                season = $(this).attr('data-season');
+                episode = $(this).attr('data-episode');
+                debugger;
+                
+                $('#wrapper').loadContainer(
+                        '/home/manualSelect?show=' + show + '&season=' + season + '&episode=' + episode,
+                        'Loading new search results...',
+                        'Time out, refresh page to try again'
+                );
+            });
         },
         postProcess: function() {
             $('#episodeDir').fileBrowser({ title: 'Select Unprocessed Episode Folder', key: 'postprocessPath' });
