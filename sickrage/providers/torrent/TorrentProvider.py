@@ -62,8 +62,9 @@ class TorrentProvider(GenericProvider):
                     for item in self.search(search_strings[0]):
                         title, url = self._get_title_and_url(item)
                         seeders, leechers = self._get_result_info(item)
+                        size = self._get_size(item)
 
-                        results.append(Proper(title, url, seeders, leechers, datetime.today(), show))
+                        results.append(Proper(title, url, seeders, leechers, size, datetime.today(), show))
 
         return results
 
