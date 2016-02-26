@@ -1436,24 +1436,26 @@ class Home(WebRoot):
             # Let's check if this provider table already exists
             table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [curProvider.get_id()])
             if not table_exists:
-                logger.log(u"Can't find the provider table {0}".format(curProvider.get_id()), logger.WARNING)
                 continue
 
             # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
             if not int(show_all_results):
-                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', name, season, episodes, indexerid, url, time, \
+                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, episodes, indexerid, url, time, \
                                                 quality, release_group, version, seeders, leechers, size \
                                                 FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ?"
-                                                % (curProvider.get_id()), [curProvider.get_id(), "%|" + episode + "|%", season, show])
+                                                % (curProvider.get_id()), [curProvider.name, curProvider.get_id(), "%|" + episode + "|%", season, show])
             else:
-                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', name, season, episodes, indexerid, url, time, \
+                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, episodes, indexerid, url, time, \
                                                 quality, release_group, version, seeders, leechers, size \
-                                                FROM '%s' WHERE indexerid = ?" % (curProvider.get_id()), [curProvider.get_id(), show])
+                                                FROM '%s' WHERE indexerid = ?" % (curProvider.name, curProvider.get_id()), [curProvider.get_id(), show])
 
             if sql_return:
                 for item in sql_return:
                     found_items.append(dict(item))
-                found_items = sorted(found_items, key=lambda k: (k['quality'], k['seeders']), reverse=True)
+                found_items = sorted(found_items, key=lambda k: (int(k['quality']), int(k['seeders'])), reverse=True)
+                # Make unknown qualities at the botton
+                found_items = [d for d in found_items if int(d['quality']) < 32768] + [d for d in found_items if int(d['quality']) == 32768]
+
 
         if not found_items or int(perform_search):
             # retrieve the episode object and fail if we can't get one
