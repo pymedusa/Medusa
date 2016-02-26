@@ -1436,7 +1436,6 @@ class Home(WebRoot):
             # Let's check if this provider table already exists
             table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [curProvider.get_id()])
             if not table_exists:
-                logger.log(u"Can't find the provider table {0}".format(curProvider.get_id()), logger.WARNING)
                 continue
 
             # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
