@@ -43,7 +43,6 @@
     </div>
 % endif
 
-    <div id="container">
         <div id="posterCol">
             <a href="${srRoot}/showPoster/?show=${show.indexerid}&amp;which=poster" rel="dialog" title="View Poster for ${show.name}"><img src="${srRoot}/showPoster/?show=${show.indexerid}&amp;which=poster_thumb" class="tvshowImg" alt=""/></a>
         </div>
@@ -163,9 +162,12 @@
                 </table>
             </div>
         </div>
-    </div>
 
+    
+    <input class="btn" type="button" id="reloadResults" value="Reload Results" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" />
+    
     <div class="clearfix"></div>
+    <div id="wrapper">
     <div id="container">
         <table id="showTable" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
             <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
@@ -215,5 +217,6 @@
             % endfor
             </tbody>
         </table>
+    </div>
     </div>
 </%block>
