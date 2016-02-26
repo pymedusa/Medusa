@@ -164,7 +164,8 @@
         </div>
 
     
-    <input class="btn" type="button" id="reloadResults" value="Reload Results" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" />
+    <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-force-search="0" />
+    <input class="btn manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-force-search="1" />
     
     <div class="clearfix"></div>
     <div id="wrapper">
