@@ -198,7 +198,7 @@
             % for hItem in sql_results:
                 <% provider_img = providers.getProviderClass(GenericProvider.make_id(hItem["provider"])) %>
                 <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
-                    <td class="tvShow" class="col-name" width="35%">${helpers.remove_non_release_groups(hItem["name"])}</td>
+                    <td class="tvShow" class="col-name" width="35%">${hItem["name"]}</td>
                     <td align="center">${helpers.remove_non_release_groups(hItem["release_group"])}</td>
                     <td align="center">
                         % if provider_img is not None:
