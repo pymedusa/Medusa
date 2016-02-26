@@ -1,11 +1,13 @@
 <%!
-    import datetime
-    import re
     import sickbeard
+    import calendar
+    import re
+    import datetime
+    from time import time
+    from sickbeard import sbdatetime
     from sickbeard import network_timezones
     from sickrage.helper.common import pretty_file_size
     from sickrage.show.Show import Show
-    from time import time
 
     # resource module is unix only
     has_resource_module = True
@@ -18,7 +20,7 @@
     srRoot = sickbeard.WEB_ROOT
 %>
 <!DOCTYPE html>
-<html>
+<html lang="en" ng-app="sickrage">
     <head>
         <meta charset="utf-8">
         <meta name="robots" content="noindex, nofollow">
@@ -99,20 +101,20 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="${srRoot}/home/" title="SickRage"><img alt="SickRage" src="${srRoot}/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
+                    <a class="navbar-brand" ui-sref="home" title="Medusa"><img alt="Medusa" src="${srRoot}/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
                 </div>
 
             % if srLogin:
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav navbar-right">
                         <li id="NAVhome" class="navbar-split dropdown${('', ' active')[topmenu == 'home']}">
-                            <a href="${srRoot}/home/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
+                            <a ui-sref="home" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
                             <b class="caret"></b>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a href="${srRoot}/home/"><i class="menu-icon-home"></i>&nbsp;Show List</a></li>
-                                <li><a href="${srRoot}/addShows/"><i class="menu-icon-addshow"></i>&nbsp;Add Shows</a></li>
-                                <li><a href="${srRoot}/home/postprocess/"><i class="menu-icon-postprocess"></i>&nbsp;Manual Post-Processing</a></li>
+                                <li><a ui-sref="home"><i class="menu-icon-home"></i>&nbsp;Show List</a></li>
+                                <li><a ui-sref="addShows"><i class="menu-icon-addshow"></i>&nbsp;Add Shows</a></li>
+                                <li><a ui-sref="postprocess"><i class="menu-icon-postprocess"></i>&nbsp;Manual Post-Processing</a></li>
                                 % if sickbeard.SHOWS_RECENT:
                                     <li role="separator" class="divider"></li>
                                     % for recentShow in sickbeard.SHOWS_RECENT:
@@ -124,15 +126,15 @@
                         </li>
 
                         <li id="NAVschedule"${('', ' class="active"')[topmenu == 'schedule']}>
-                            <a href="${srRoot}/schedule/">Schedule</a>
+                            <a ui-sref="schedule">Schedule</a>
                         </li>
 
                         <li id="NAVhistory"${('', ' class="active"')[topmenu == 'history']}>
-                            <a href="${srRoot}/history/">History</a>
+                            <a ui-sref="history">History</a>
                         </li>
 
                         <li id="NAVmanage" class="navbar-split dropdown${('', ' active')[topmenu == 'manage']}">
-                            <a href="${srRoot}/manage/episodeStatuses/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Manage</span>
+                            <a ui-sref="manage/episodeStatuses" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Manage</span>
                             <b class="caret"></b>
                             </a>
                             <ul class="dropdown-menu">
@@ -272,8 +274,7 @@
         % endif
 
         <div id="contentWrapper">
-            <div id="content">
-                <%block name="content" />
+            <div id="content" ui-view>
             </div> <!-- /content -->
         </div> <!-- /contentWrapper -->
     % if srLogin:
@@ -307,22 +308,14 @@
                 </div>
             </div>
         </footer>
-        <script type="text/javascript" src="${srRoot}/js/vender.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/lib/jquery.cookiejar.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/lib/jquery.form.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/lib/jquery.json-2.2.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/lib/jquery.selectboxes.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/lib/formwizard.js?${sbPID}"></script><!-- Can't be added to bower -->
-        <script type="text/javascript" src="${srRoot}/js/parsers.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/rootDirs.js?${sbPID}"></script>
-        % if sickbeard.DEVELOPER:
-        <script type="text/javascript" src="${srRoot}/js/core.js?${sbPID}"></script>
-        % else:
-        <script type="text/javascript" src="${srRoot}/js/core.min.js?${sbPID}"></script>
-        % endif
-        <script type="text/javascript" src="${srRoot}/js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/browser.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/ajaxNotifications.js?${sbPID}"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-ui-router.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-animate.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-aria.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-material.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-messages.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-resource.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/app.js"></script>
     % endif
         <%block name="scripts" />
     </body>

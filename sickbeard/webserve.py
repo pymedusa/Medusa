@@ -360,7 +360,9 @@ class WebRoot(WebHandler):
         super(WebRoot, self).__init__(*args, **kwargs)
 
     def index(self):
-        return self.redirect('/' + sickbeard.DEFAULT_PAGE + '/')
+        t = PageTemplate(rh=self, filename="index.mako")
+        stats = Home.show_statistics()
+        return t.render(title="Home", show_stat=stats[0], max_download_count=stats[1])
 
     def robots_txt(self):
         """ Keep web crawlers out """

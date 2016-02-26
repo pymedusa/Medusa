@@ -1,4 +1,4 @@
-<%inherit file="/layouts/main.mako"/>
+
 <%!
     from sickbeard import subtitles
     import datetime

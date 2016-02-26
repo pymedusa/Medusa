@@ -1,4 +1,4 @@
-<%inherit file="/layouts/main.mako"/>
+
 <%!
     import os.path
     import urllib

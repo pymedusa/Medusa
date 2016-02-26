@@ -1,4 +1,3 @@
-<%inherit file="/layouts/main.mako"/>
 <%!
     import sickbeard
     from sickbeard.helpers import anon_url
@@ -17,7 +16,6 @@
 #contentWrapper {padding-top:30px;}
 </style>
 </%block>
-<%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <h1 class="header">${header}</h1>
 <div class="h2footer pull-right">
@@ -412,4 +410,3 @@
 % endif
 
 <div class="clearfix"></div>
-</%block>
