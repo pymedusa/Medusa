@@ -27,7 +27,7 @@ function updateImages(data) {
         var htmlContent = '';
         //Try to get the <a> Element
         var el = $('a[id=' + ep.show + 'x' + ep.season + 'x' + ep.episode+']');
-        var img = el.children('img');
+        var img = el.children('img[data-ep-search]');
         var parent = el.parent();
         if (el) {
             var rSearchTerm = '';
@@ -219,10 +219,7 @@ $(document).ready(function () {
 
          $('.epManualSearch').click(function(event){
             event.preventDefault();
-
-            selectedEpisode = $(this);
-
-            manualSearch();
+            window.location = this.href;
         });
 
         $('#manualSearchModalFailed .btn').click(function(){
