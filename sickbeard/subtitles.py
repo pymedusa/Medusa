@@ -390,6 +390,14 @@ class SubtitlesFinder(object):
                                 logger.log(u"Couldn't delete subtitle: {}. Error: {}".format(filename, ex(error)), logger.DEBUG)
 
                     if isMediaFile(filename) and processTV.subtitles_enabled(filename):
+
+                        try:
+                            if sickbeard.SUBTITLES_PRE_SCRIPTS and not sickbeard.EMBEDDED_SUBTITLES_ALL:
+                                run_subs_pre_scripts(sickbeard.TV_DOWNLOAD_DIR, filename)
+                        except Exception as error:
+                            logger.log(u'Error occurred running subtitles pre-scripts for: {}. Error: {}'.format
+                                       (os.path.join(root, filename), ex(error)))
+
                         try:
                             video = subliminal.scan_video(os.path.join(root, filename),
                                                           subtitles=False, embedded_subtitles=False)
@@ -588,6 +596,26 @@ def run_subs_extra_scripts(episode_object, subtitle, video, single=False):
                                   episode_object['show_name'], str(episode_object['season']),
                                   str(episode_object['episode']), episode_object['name'],
                                   str(episode_object['show_indexerid'])]
+
+        # use subprocess to run the command and capture output
+        logger.log(u'Executing command: {}'.format(inner_cmd))
+        try:
+            process = subprocess.Popen(inner_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                       stderr=subprocess.STDOUT, cwd=sickbeard.PROG_DIR)
+            out, _ = process.communicate()  # @UnusedVariable
+            logger.log(u'Script result: {}'.format(out), logger.DEBUG)
+
+        except Exception as error:
+            logger.log(u'Unable to run subs_extra_script: {}'.format(ex(error)))
+
+
+def run_subs_pre_scripts(video_path, video_filename):
+    for script_name in sickbeard.SUBTITLES_PRE_SCRIPTS:
+        script_cmd = [piece for piece in re.split("( |\\\".*?\\\"|'.*?')", script_name) if piece.strip()]
+        script_cmd[0] = os.path.abspath(script_cmd[0])
+        logger.log(u'Absolute path to script: {}'.format(script_cmd[0]), logger.DEBUG)
+
+        inner_cmd = script_cmd + ['/'.join([video_path, video_filename])]
 
         # use subprocess to run the command and capture output
         logger.log(u'Executing command: {}'.format(inner_cmd))
