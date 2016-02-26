@@ -88,7 +88,7 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                 search_url = self.urls['search'] % (quote(search_string), self.categories)
                 logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
 
-                data = self.get_url(search_url)
+                data = self.get_url(search_url, echo=False, returns='text')
                 if not data:
                     continue
 

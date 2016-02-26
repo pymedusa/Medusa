@@ -91,7 +91,7 @@ class elitetorrentProvider(TorrentProvider):
                 search_url = self.urls['search'] + '?' + urllib.parse.urlencode(self.search_params)
                 logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
 
-                data = self.get_url(search_url, timeout=30)
+                data = self.get_url(search_url, echo=False, returns='text')
                 if not data:
                     continue
 

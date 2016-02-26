@@ -71,7 +71,7 @@ class TokyoToshokanProvider(TorrentProvider):  # pylint: disable=too-many-instan
                 }
 
                 logger.log(u"Search URL: %s" % self.urls['search'] + '?' + urlencode(search_params), logger.DEBUG)
-                data = self.get_url(self.urls['search'], params=search_params)
+                data = self.get_url(self.urls['search'], params=search_params, echo=False, returns='text')
                 if not data:
                     continue
 

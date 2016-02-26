@@ -28,6 +28,7 @@ from sickbeard import common
 from sickbeard import network_timezones
 from sickrage.show.Show import Show
 from sickrage.helper.exceptions import MultipleShowObjectsException
+from sickrage.helper.common import try_int
 
 
 class DailySearcher(object):  # pylint:disable=too-few-public-methods
@@ -80,12 +81,10 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
 
             if show.airs and show.network:
                 # This is how you assure it is always converted to local time
-                air_time = network_timezones.parse_date_time(sqlEp['airdate'], show.airs, show.network).astimezone(network_timezones.sb_timezone)
+                end_time = network_timezones.parse_date_time(sqlEp['airdate'], show.airs, show.network).astimezone(network_timezones.sb_timezone) + datetime.timedelta(minutes=try_int(show.runtime, 60))
 
                 # filter out any episodes that haven't started airing yet,
-                # but set them to the default status while they are airing
-                # so they are snatched faster
-                if air_time > curTime:
+                if end_time > curTime:
                     continue
 
             ep = show.getEpisode(sqlEp["season"], sqlEp["episode"])

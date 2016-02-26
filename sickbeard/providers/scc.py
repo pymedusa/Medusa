@@ -107,7 +107,7 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
 
                 try:
                     logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
-                    data = self.get_url(search_url)
+                    data = self.get_url(search_url, echo=False, returns='text')
                     time.sleep(cpu_presets[sickbeard.CPU_PRESET])
                 except Exception as e:
                     logger.log(u"Unable to fetch data. Error: %s" % repr(e), logger.WARNING)
