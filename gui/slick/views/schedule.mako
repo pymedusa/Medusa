@@ -124,7 +124,7 @@
                     <time datetime="${ends.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(ends)}</time>
                 </td>
 
-                <td class="tvShow" nowrap="nowrap"><a href="${srRoot}/home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}</a>
+                <td class="tvShow" nowrap="nowrap"><a href="#/displayShow?showId=${cur_result['showid']}">${cur_result['show_name']}</a>
     % if int(cur_result['paused']):
                     <span class="pause">[paused]</span>
     % endif
@@ -288,7 +288,7 @@
             <table width="100%" border="0" cellpadding="0" cellspacing="0">
             <tr>
                 <th ${('class="nobg"', 'rowspan="2"')[layout == 'poster']} valign="top">
-                    <a href="${srRoot}/home/displayShow?show=${cur_result['showid']}">
+                    <a href="#/displayShow?showId=${cur_result['showid']}">
                         <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" src="${srRoot}/showPoster/?show=${cur_result['showid']}&amp;which=${(layout, 'poster_thumb')[layout == 'poster']}" />
                     </a>
                 </th>
@@ -299,7 +299,7 @@
                 <td class="next_episode">
                     <div class="clearfix">
                         <span class="tvshowTitle">
-                            <a href="${srRoot}/home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}
+                            <a href="#/displayShow?showId=${cur_result['showid']}">${cur_result['show_name']}
                                 ${('', '<span class="pause">[paused]</span>')[int(cur_result['paused'])]}
                             </a>
                         </span>
@@ -384,7 +384,7 @@
                     <tr>
                         <td class="calendarShow">
                             <div class="poster">
-                                <a title="${cur_result['show_name']}" href="${srRoot}/home/displayShow?show=${cur_result['showid']}"><img alt="" src="${srRoot}/showPoster/?show=${cur_result['showid']}&amp;which=poster_thumb" /></a>
+                                <a title="${cur_result['show_name']}" href="#/displayShow?showId=${cur_result['showid']}"><img alt="" src="${srRoot}/showPoster/?show=${cur_result['showid']}&amp;which=poster_thumb" /></a>
                             </div>
                             <div class="text">
                                 <span class="airtime">

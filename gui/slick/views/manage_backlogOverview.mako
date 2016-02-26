@@ -62,7 +62,7 @@ Jump to Show:
     % endif
     <tr class="seasonheader" id="show-${curShow.indexerid}">
         <td colspan="3" class="align-left" style="position: relative;">
-            <h2 style="display: inline-block;"><a href="${srRoot}/home/displayShow?show=${curShow.indexerid}">${curShow.name}</a></h2>
+            <h2 style="display: inline-block;"><a href="#/displayShow?showId=${curShow.indexerid}">${curShow.name}</a></h2>
             <div style="position: absolute; bottom: 10px; right: 0;">
                 % if showCounts[curShow.indexerid][Overview.WANTED] > 0:
                 <span class="listing-key wanted">Wanted: <b>${showCounts[curShow.indexerid][Overview.WANTED]}</b></span>
