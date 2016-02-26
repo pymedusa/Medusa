@@ -220,7 +220,6 @@ $(document).ready(function () {
          $('.epManualSearch').click(function(event){
             event.preventDefault();
             var performSearch = '0';
-            var downCurQuality = '0';
             var showAllResults = '0';
  
             window.location = this.href + '&perform_search=' + performSearch + '&show_all_results=' + showAllResults;
