@@ -1453,6 +1453,9 @@ class Home(WebRoot):
                 for item in sql_return:
                     found_items.append(dict(item))
                 found_items = sorted(found_items, key=lambda k: (int(k['quality']), int(k['seeders'])), reverse=True)
+                # Make unknown qualities at the botton
+                found_items = [d for d in found_items if int(d['quality']) < 32768] + [d for d in found_items if int(d['quality']) == 32768]
+
 
         if not found_items or int(perform_search):
             # retrieve the episode object and fail if we can't get one
