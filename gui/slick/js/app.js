@@ -1,24 +1,52 @@
 // @TODO: The line below needs to be moved to jshint
 /* global angular */
+/* global SICKRAGE */
 
-var myapp = angular.module('sickrage', ['ui.router', 'ngResource']);
+var sickrage = angular.module('sickrage', ['ui.router', 'ngResource']);
 
-myapp.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider){
+sickrage.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider){
     // For any unmatched url, send to /route1
     $urlRouterProvider.otherwise('/');
 
     $stateProvider.state('home', {
         url: '/',
         templateUrl: '/home'
-    }).state('schedule', {
+    });
+
+    $stateProvider.state('schedule', {
         url: '/schedule',
         templateUrl: '/schedule'
-    }).state('history', {
+    });
+
+    $stateProvider.state('history', {
         url: '/history',
         templateUrl: '/history'
     });
+
+    $stateProvider.state('displayShow', {
+        url: '/displayShow?showId',
+        templateProvider: function($stateParams, $templateRequest) {
+            return $templateRequest('/home/displayShow?show=' + $stateParams.showId);
+        }
+    });
 }]);
 
-myapp.controller('homeController', function($scope) {
+sickrage.controller('homeController', function($scope) {
     $scope.name = 'John';
+    SICKRAGE.home.index();
+});
+
+sickrage.controller('scheduleController', function($scope) {
+    $scope.name = 'John';
+    SICKRAGE.schedule.index();
+});
+
+sickrage.controller('historyController', function($scope) {
+    $scope.name = 'John';
+    SICKRAGE.schedule.index();
+});
+
+sickrage.controller('displayShowController', function($scope) {
+    $scope.name = 'John';
+    SICKRAGE.home.displayShow();
 });

@@ -308,6 +308,23 @@
                 </div>
             </div>
         </footer>
+        <script type="text/javascript" src="${srRoot}/js/vender.min.js?${sbPID}"></script>
+        <script type="text/javascript" src="${srRoot}/js/lib/jquery.cookiejar.js?${sbPID}"></script>
+        <script type="text/javascript" src="${srRoot}/js/lib/jquery.form.min.js?${sbPID}"></script>
+        <script type="text/javascript" src="${srRoot}/js/lib/jquery.json-2.2.min.js?${sbPID}"></script>
+        <script type="text/javascript" src="${srRoot}/js/lib/jquery.selectboxes.min.js?${sbPID}"></script>
+        <script type="text/javascript" src="${srRoot}/js/lib/formwizard.js?${sbPID}"></script><!-- Can't be added to bower -->
+        <script type="text/javascript" src="${srRoot}/js/parsers.js?${sbPID}"></script>
+        <script type="text/javascript" src="${srRoot}/js/rootDirs.js?${sbPID}"></script>
+        % if sickbeard.DEVELOPER:
+        <script type="text/javascript" src="${srRoot}/js/core.js?${sbPID}"></script>
+        % else:
+        <script type="text/javascript" src="${srRoot}/js/core.min.js?${sbPID}"></script>
+        % endif
+        <script type="text/javascript" src="${srRoot}/js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
+        <script type="text/javascript" src="${srRoot}/js/browser.js?${sbPID}"></script>
+        <script type="text/javascript" src="${srRoot}/js/ajaxNotifications.js?${sbPID}"></script>
+
         <script type="text/javascript" src="${srRoot}/js/dependencies/angular.min.js"></script>
         <script type="text/javascript" src="${srRoot}/js/dependencies/angular-ui-router.min.js"></script>
         <script type="text/javascript" src="${srRoot}/js/dependencies/angular-animate.min.js"></script>
