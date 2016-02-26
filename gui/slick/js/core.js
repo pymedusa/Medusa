@@ -2486,6 +2486,8 @@ var SICKRAGE = {
                 setSeasonSceneException(data);
             });
         },
+        manualSelect: function() {
+        },
         postProcess: function() {
             $('#episodeDir').fileBrowser({ title: 'Select Unprocessed Episode Folder', key: 'postprocessPath' });
         },
