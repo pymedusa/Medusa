@@ -88,12 +88,8 @@ from tornado.routes import route
 from tornado.web import RequestHandler, HTTPError, authenticated
 from tornado.gen import coroutine
 from tornado.ioloop import IOLoop
-
-from concurrent.futures import ThreadPoolExecutor
-from tornado.process import cpu_count
-
 from tornado.concurrent import run_on_executor
-
+from concurrent.futures import ThreadPoolExecutor
 from mako.runtime import UNDEFINED
 
 mako_lookup = None
@@ -259,7 +255,7 @@ class WebHandler(BaseHandler):
         super(WebHandler, self).__init__(*args, **kwargs)
         self.io_loop = IOLoop.current()
 
-    executor = ThreadPoolExecutor(cpu_count())
+    executor = ThreadPoolExecutor(50)
 
     @authenticated
     @coroutine
@@ -2238,7 +2234,7 @@ class HomeChangeLog(Home):
 
     def index(self):
         try:
-            changes = helpers.getURL('https://api.pymedusa.com/changelog.md', session=requests.Session(), returns='text')
+            changes = helpers.getURL('https://raw.githubusercontent.com/pymedusa/sickrage.github.io/master/sickrage-news/CHANGES.md', session=requests.Session(), returns='text')
         except Exception:
             logger.log(u'Could not load changes from repo, giving a link!', logger.DEBUG)
             changes = 'Could not load changes from the repo. [Click here for CHANGES.md](https://raw.githubusercontent.com/pymedusa/sickrage.github.io/master/sickrage-news/CHANGES.md)'
@@ -4061,7 +4057,7 @@ class ConfigSearch(Config):
                    torrent_dir=None, torrent_username=None, torrent_password=None, torrent_host=None,
                    torrent_label=None, torrent_label_anime=None, torrent_path=None, torrent_verify_cert=None,
                    torrent_seed_time=None, torrent_paused=None, torrent_high_bandwidth=None,
-                   torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, trackers_list=None, require_words=None, ignored_subs_list=None):
+                   torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, prefered_words=None, undesired_words=None, trackers_list=None, require_words=None, ignored_subs_list=None):
 
         results = []
 
@@ -4084,6 +4080,8 @@ class ConfigSearch(Config):
         sickbeard.USENET_RETENTION = try_int(usenet_retention, 500)
 
         sickbeard.IGNORE_WORDS = ignore_words if ignore_words else ""
+        sickbeard.PREFERED_WORDS = prefered_words if prefered_words else ""
+        sickbeard.UNDESIRED_WORDS = undesired_words if undesired_words else ""
         sickbeard.TRACKERS_LIST = trackers_list if trackers_list else ""
         sickbeard.REQUIRE_WORDS = require_words if require_words else ""
         sickbeard.IGNORED_SUBS_LIST = ignored_subs_list if ignored_subs_list else ""
@@ -5229,7 +5227,7 @@ class ErrorLogs(WebRoot):
 
         return self.redirect("/errorlogs/viewlog/")
 
-    def viewlog(self, minLevel=logger.INFO, logFilter="<NONE>", logSearch=None, maxLines=1000):
+    def viewlog(self, minLevel=logger.INFO, logFilter="<NONE>", logSearch=None, maxLines=500):
 
         def Get_Data(Levelmin, data_in, lines_in, regex, Filter, Search, mlines):
 
@@ -5245,6 +5243,8 @@ class ErrorLogs(WebRoot):
                 if match:
                     level = match.group(7)
                     logName = match.group(8)
+                    if not sickbeard.DEBUG and (level == 'DEBUG' or level == 'DB'):
+                        continue
                     if level not in logger.LOGGING_LEVELS:
                         lastLine = False
                         continue
@@ -5287,10 +5287,6 @@ class ErrorLogs(WebRoot):
             'SEARCHQUEUE-MANUAL': u'Search Queue (Manual)',
             'SEARCHQUEUE-RETRY': u'Search Queue (Retry/Failed)',
             'SEARCHQUEUE-RSS': u'Search Queue (RSS)',
-            'SHOWQUEUE-FORCE-UPDATE': u'Search Queue (Forced Update)',
-            'SHOWQUEUE-UPDATE': u'Search Queue (Update)',
-            'SHOWQUEUE-REFRESH': u'Search Queue (Refresh)',
-            'SHOWQUEUE-FORCE-REFRESH': u'Search Queue (Forced Refresh)',
             'FINDPROPERS': u'Find Propers',
             'POSTPROCESSER': u'Postprocesser',
             'FINDSUBTITLES': u'Find Subtitles',
