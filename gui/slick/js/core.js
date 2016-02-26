@@ -2440,7 +2440,6 @@ var SICKRAGE = {
 
         },
         manualSelect: function() {
-            alert('loaded the new action');
         },
         postProcess: function() {
             $('#episodeDir').fileBrowser({ title: 'Select Unprocessed Episode Folder', key: 'postprocessPath' });
