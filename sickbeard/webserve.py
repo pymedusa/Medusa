@@ -1415,7 +1415,7 @@ class Home(WebRoot):
         else:
             return json.dumps({'result': 'failure'})
 
-    def manualSelect(self, show=None, season=None, episode=None, perform_search=None, down_cur_quality=0, show_all_results=None):
+    def manualSelect(self, show=None, season=None, episode=None, perform_search=0, down_cur_quality=0, show_all_results=0):
         # todo: add more comprehensive show validation
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
