@@ -1417,7 +1417,10 @@ class Home(WebRoot):
 
     def manualSelectCheckCache(self, show, season, episode, **kwargs):
         # Only need the first provided dict
-        last_prov_updates = [arg for arg in kwargs][0] if [arg for arg in kwargs] else 0
+        if not kwargs:
+            return {'result': 'idle'}
+
+        last_prov_updates = kwargs.items()[0][0]
         last_prov_updates = json.loads(last_prov_updates.replace("'", '"'))
         main_db_con = db.DBConnection('cache.db')
 
