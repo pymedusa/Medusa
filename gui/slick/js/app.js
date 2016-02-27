@@ -5,7 +5,7 @@
 var sickrage = angular.module('sickrage', ['ui.router', 'ngResource']);
 
 sickrage.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider){
-    // For any unmatched url, send to /route1
+    // For any unmatched url, send to home
     $urlRouterProvider.otherwise('/');
 
     $stateProvider.state('home', {
@@ -82,7 +82,7 @@ sickrage.config(['$stateProvider', '$urlRouterProvider', function($stateProvider
 
     $stateProvider.state('config', {
         url: '/config',
-        templateUrl: '/config'
+        templateUrl: '/templates/config.html'
     });
 
     $stateProvider.state('config/general', {

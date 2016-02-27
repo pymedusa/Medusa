@@ -1442,13 +1442,22 @@ h2.day, h2.network {
 config*.mako
 ========================================================================== */
 
-#config-content {
-    display: block;
+.config-panel {
     width: 960px;
-    padding: 0 0 40px;
     margin: 0 auto;
-    clear: both;
-    text-align: left;
+}
+
+.config-panel table {
+    width: 100%;
+}
+
+.config-panel tr td:first-child {
+    vertical-align: top;
+    min-width: 140px;
+}
+
+.config-panel tr td {
+    padding: 5px;
 }
 
 .component-group {
@@ -1583,17 +1592,8 @@ select .selected {
     width: 220px !important;
 }
 
-.infoTableHeader,
-.infoTableCell {
-    padding: 5px;
-}
-
 .infoTableSeperator {
     border-top: 1px dotted #666666;
-}
-
-.infoTableHeader {
-    vertical-align: top;
 }
 
 [class^="icon16-config-"], [class*=" icon16-config-"] {
