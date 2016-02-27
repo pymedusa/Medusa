@@ -138,46 +138,46 @@
                             <b class="caret"></b>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a href="${srRoot}/manage/"><i class="menu-icon-manage"></i>&nbsp;Mass Update</a></li>
-                                <li><a href="${srRoot}/manage/backlogOverview/"><i class="menu-icon-backlog-view"></i>&nbsp;Backlog Overview</a></li>
-                                <li><a href="${srRoot}/manage/manageSearches/"><i class="menu-icon-manage-searches"></i>&nbsp;Manage Searches</a></li>
-                                <li><a href="${srRoot}/manage/episodeStatuses/"><i class="menu-icon-manage2"></i>&nbsp;Episode Status Management</a></li>
+                                <li><a ui-sref="manage"><i class="menu-icon-manage"></i>&nbsp;Mass Update</a></li>
+                                <li><a ui-sref="manage/backlogOverview"><i class="menu-icon-backlog-view"></i>&nbsp;Backlog Overview</a></li>
+                                <li><a ui-sref="manage/manageSearches"><i class="menu-icon-manage-searches"></i>&nbsp;Manage Searches</a></li>
+                                <li><a ui-sref="manage/episodeStatuses"><i class="menu-icon-manage2"></i>&nbsp;Episode Status Management</a></li>
                             % if sickbeard.USE_PLEX_SERVER and sickbeard.PLEX_SERVER_HOST != "":
-                                <li><a href="${srRoot}/home/updatePLEX/"><i class="menu-icon-plex"></i>&nbsp;Update PLEX</a></li>
+                                <li><a ui-sref="updatePLEX"><i class="menu-icon-plex"></i>&nbsp;Update PLEX</a></li>
                             % endif
                             % if sickbeard.USE_KODI and sickbeard.KODI_HOST != "":
-                                <li><a href="${srRoot}/home/updateKODI/"><i class="menu-icon-kodi"></i>&nbsp;Update KODI</a></li>
+                                <li><a ui-sref="updateKODI"><i class="menu-icon-kodi"></i>&nbsp;Update KODI</a></li>
                             % endif
                             % if sickbeard.USE_EMBY and sickbeard.EMBY_HOST != "" and sickbeard.EMBY_APIKEY != "":
-                                <li><a href="${srRoot}/home/updateEMBY/"><i class="menu-icon-emby"></i>&nbsp;Update Emby</a></li>
+                                <li><a ui-sref="updateEMBY"><i class="menu-icon-emby"></i>&nbsp;Update Emby</a></li>
                             % endif
                             % if sickbeard.USE_TORRENTS and sickbeard.TORRENT_METHOD != 'blackhole' and (sickbeard.ENABLE_HTTPS and sickbeard.TORRENT_HOST[:5] == 'https' or not sickbeard.ENABLE_HTTPS and sickbeard.TORRENT_HOST[:5] == 'http:'):
-                                <li><a href="${srRoot}/manage/manageTorrents/"><i class="menu-icon-bittorrent"></i>&nbsp;Manage Torrents</a></li>
+                                <li><a ui-sref="manage/manageTorrents"><i class="menu-icon-bittorrent"></i>&nbsp;Manage Torrents</a></li>
                             % endif
                             % if sickbeard.USE_FAILED_DOWNLOADS:
-                                <li><a href="${srRoot}/manage/failedDownloads/"><i class="menu-icon-failed-download"></i>&nbsp;Failed Downloads</a></li>
+                                <li><a ui-sref="manage/failedDownloads"><i class="menu-icon-failed-download"></i>&nbsp;Failed Downloads</a></li>
                             % endif
                             % if sickbeard.USE_SUBTITLES:
-                                <li><a href="${srRoot}/manage/subtitleMissed/"><i class="menu-icon-backlog"></i>&nbsp;Missed Subtitle Management</a></li>
+                                <li><a ui-sref="manage/subtitleMissed"><i class="menu-icon-backlog"></i>&nbsp;Missed Subtitle Management</a></li>
                             % endif
                             </ul>
                             <div style="clear:both;"></div>
                         </li>
 
                         <li id="NAVconfig" class="navbar-split dropdown${('', ' active')[topmenu == 'config']}">
-                            <a href="${srRoot}/config/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Config</span><img src="${srRoot}/images/menu/system18.png" class="navbaricon hidden-xs" />
+                            <a ui-sref="config" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Config</span><img src="${srRoot}/images/menu/system18.png" class="navbaricon hidden-xs" />
                             <b class="caret"></b>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a href="${srRoot}/config/"><i class="menu-icon-help"></i>&nbsp;Help &amp; Info</a></li>
-                                <li><a href="${srRoot}/config/general/"><i class="menu-icon-config"></i>&nbsp;General</a></li>
-                                <li><a href="${srRoot}/config/backuprestore/"><i class="menu-icon-backup"></i>&nbsp;Backup &amp; Restore</a></li>
-                                <li><a href="${srRoot}/config/search/"><i class="menu-icon-manage-searches"></i>&nbsp;Search Settings</a></li>
-                                <li><a href="${srRoot}/config/providers/"><i class="menu-icon-provider"></i>&nbsp;Search Providers</a></li>
-                                <li><a href="${srRoot}/config/subtitles/"><i class="menu-icon-backlog"></i>&nbsp;Subtitles Settings</a></li>
-                                <li><a href="${srRoot}/config/postProcessing/"><i class="menu-icon-postprocess"></i>&nbsp;Post Processing</a></li>
-                                <li><a href="${srRoot}/config/notifications/"><i class="menu-icon-notification"></i>&nbsp;Notifications</a></li>
-                                <li><a href="${srRoot}/config/anime/"><i class="menu-icon-anime"></i>&nbsp;Anime</a></li>
+                                <li><a ui-sref="config"><i class="menu-icon-help"></i>&nbsp;Help &amp; Info</a></li>
+                                <li><a ui-sref="config/general"><i class="menu-icon-config"></i>&nbsp;General</a></li>
+                                <li><a ui-sref="config/backuprestore"><i class="menu-icon-backup"></i>&nbsp;Backup &amp; Restore</a></li>
+                                <li><a ui-sref="config/search"><i class="menu-icon-manage-searches"></i>&nbsp;Search Settings</a></li>
+                                <li><a ui-sref="config/providers"><i class="menu-icon-provider"></i>&nbsp;Search Providers</a></li>
+                                <li><a ui-sref="config/subtitles"><i class="menu-icon-backlog"></i>&nbsp;Subtitles Settings</a></li>
+                                <li><a ui-sref="config/postProcessing"><i class="menu-icon-postprocess"></i>&nbsp;Post Processing</a></li>
+                                <li><a ui-sref="config/notifications"><i class="menu-icon-notification"></i>&nbsp;Notifications</a></li>
+                                <li><a ui-sref="config/anime"><i class="menu-icon-anime"></i>&nbsp;Anime</a></li>
                             </ul>
                             <div style="clear:both;"></div>
                         </li>

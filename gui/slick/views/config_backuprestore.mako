@@ -1,4 +1,3 @@
-
 <%!
     import datetime
     import locale
@@ -10,75 +9,75 @@
     from sickbeard import metadata
     from sickbeard.metadata.generic import GenericMetadata
 %>
-<%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
+<div ng-controller="configController">
+    <div ng-controller="configBackupRestoreController">
+        % if not header is UNDEFINED:
+            <h1 class="header">${header}</h1>
+        % else:
+            <h1 class="title">${title}</h1>
+        % endif
 
-<% indexer = 0 %>
-% if sickbeard.INDEXER_DEFAULT:
-    <% indexer = sickbeard.INDEXER_DEFAULT %>
-% endif
-<div id="config">
-    <div id="config-content">
+        <% indexer = 0 %>
+        % if sickbeard.INDEXER_DEFAULT:
+            <% indexer = sickbeard.INDEXER_DEFAULT %>
+        % endif
+        <div id="config">
+            <div id="config-content">
 
-        <form name="configForm" method="post" action="backuprestore">
-            <div id="config-components">
-                <ul>
-                    <li><a href="#backup">Backup</a></li>
-                    <li><a href="#restore">Restore</a></li>
-                </ul>
+                <form name="configForm" method="post" action="backuprestore">
+                    <div id="config-components">
+                        <ul>
+                            <li><a href="#backup">Backup</a></li>
+                            <li><a href="#restore">Restore</a></li>
+                        </ul>
 
-                <div id="backup" class="component-group clearfix">
-                    <div class="component-group-desc">
-                        <h3>Backup</h3>
-                        <p><b>Backup your main database file and config.</b></p>
-                    </div>
+                        <div id="backup" class="component-group clearfix">
+                            <div class="component-group-desc">
+                                <h3>Backup</h3>
+                                <p><b>Backup your main database file and config.</b></p>
+                            </div>
 
-                    <fieldset class="component-group-list">
-                        <div class="field-pair">
-                            Select the folder you wish to save your backup file to:
+                            <fieldset class="component-group-list">
+                                <div class="field-pair">
+                                    Select the folder you wish to save your backup file to:
 
-                            <br><br>
+                                    <br><br>
 
-                            <input type="text" name="backupDir" id="backupDir" class="form-control input-sm input350" autocapitalize="off" />
-                            <input class="btn btn-inline" type="button" value="Backup" id="Backup" />
+                                    <input type="text" name="backupDir" id="backupDir" class="form-control input-sm input350" autocapitalize="off" />
+                                    <input class="btn btn-inline" type="button" value="Backup" id="Backup" />
 
-                            <br>
+                                    <br>
 
-                        </div>
-                        <div class="Backup" id="Backup-result"></div>
-                    </fieldset>
+                                </div>
+                                <div class="Backup" id="Backup-result"></div>
+                            </fieldset>
 
-                </div><!-- /component-group1 //-->
+                        </div><!-- /component-group1 //-->
 
-                <div id="restore" class="component-group clearfix">
-                    <div class="component-group-desc">
-                        <h3>Restore</h3>
-                        <p><b>Restore your main database file and config.</b></p>
-                    </div>
+                        <div id="restore" class="component-group clearfix">
+                            <div class="component-group-desc">
+                                <h3>Restore</h3>
+                                <p><b>Restore your main database file and config.</b></p>
+                            </div>
 
-                    <fieldset class="component-group-list">
-                        <div class="field-pair">
-                            Select the backup file you wish to restore:
+                            <fieldset class="component-group-list">
+                                <div class="field-pair">
+                                    Select the backup file you wish to restore:
 
-                            <br><br>
+                                    <br><br>
 
-                            <input type="text" name="backupFile" id="backupFile" class="form-control input-sm input350" autocapitalize="off" />
-                            <input class="btn btn-inline" type="button" value="Restore" id="Restore" />
+                                    <input type="text" name="backupFile" id="backupFile" class="form-control input-sm input350" autocapitalize="off" />
+                                    <input class="btn btn-inline" type="button" value="Restore" id="Restore" />
 
-                            <br>
+                                    <br>
 
-                        </div>
-                        <div class="Restore" id="Restore-result"></div>
-                    </fieldset>
-                </div><!-- /component-group2 //-->
-            </div><!-- /config-components -->
-        </form>
+                                </div>
+                                <div class="Restore" id="Restore-result"></div>
+                            </fieldset>
+                        </div><!-- /component-group2 //-->
+                    </div><!-- /config-components -->
+                </form>
+            </div>
+        </div>
     </div>
 </div>
-
-<div class="clearfix"></div>
-</%block>
