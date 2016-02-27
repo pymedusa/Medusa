@@ -4,13 +4,27 @@
 
 var sickrage = angular.module('sickrage', ['ui.router', 'ngResource']);
 
-sickrage.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider){
+sickrage.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$compileProvider', function($stateProvider, $urlRouterProvider, $locationProvider, $compileProvider){ // jshint ignore:line
+    // Enable HTML5's history API to allow / instead of #/
+    // Currently we use #/ since mako is still inside of Sickrage
+    // $locationProvider.html5Mode(true);
+
+    // Currently we can't use this as we're still developing but we'll want this to be false as it helps with performace
+    // but does so at the expense of removing debug info which is useful for developers
+    // $compileProvider.debugInfoEnabled(false);
+
     // For any unmatched url, send to home
     $urlRouterProvider.otherwise('/');
 
     $stateProvider.state('home', {
         url: '/',
-        templateUrl: '/home'
+        templateUrl: '/templates/home.html',
+        controller: 'homeController'
+    });
+
+    $stateProvider.state('home.poster', {
+        templateUrl: '/templates/partials/home/poster.html',
+        controller: 'posterController'
     });
 
     $stateProvider.state('schedule', {
@@ -126,8 +140,28 @@ sickrage.config(['$stateProvider', '$urlRouterProvider', function($stateProvider
     });
 }]);
 
-sickrage.controller('homeController', function() {
-    SICKRAGE.home.index();
+// @TODO: All of the controllers need to be moved into a controller directory and/or file
+
+sickrage.controller('homeController', function($state) {
+    $state.transitionTo('home.poster');
+});
+
+sickrage.controller('posterController', function($scope, $http) {
+    $http({
+        method: 'GET',
+        url: '/home'
+    }).then(function successCallback(response) {
+        $scope.shows = [];
+
+        response.data.replace(/\s+/g, " ").match(/{(.*?)},/g).forEach(function(show){
+            $scope.shows.push(JSON.parse(show.replace('},', '}')));
+        });
+        // SICKRAGE.home.index();
+    }, function errorCallback(response) {
+        // Error?
+        console.log(response);
+    });
+
 });
 
 sickrage.controller('scheduleController', function() {
@@ -135,7 +169,7 @@ sickrage.controller('scheduleController', function() {
 });
 
 sickrage.controller('historyController', function() {
-    SICKRAGE.schedule.index();
+    SICKRAGE.history.index();
 });
 
 sickrage.controller('displayShowController', function() {

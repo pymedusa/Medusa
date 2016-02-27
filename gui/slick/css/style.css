@@ -7,10 +7,6 @@ inc_top.mako
     margin-bottom: -15px;
 }
 
-#contentWrapper {
-/*	background: url("../images/bg.png") repeat 0 0 transparent; */
-}
-
 .icon-white {
     background-image: url("../images/glyphicons-halflings-white.png");
 }
@@ -529,6 +525,12 @@ span.show-option {
 .show-details {
     height: 32px;
     overflow: hidden;
+}
+
+.show-details td {
+    text-align:center;
+    vertical-align:middle;
+    width: 33%
 }
 
 .show-image {

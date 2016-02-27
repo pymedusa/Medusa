@@ -1,11 +1,7 @@
-
 <%!
     from sickbeard.helpers import anon_url
     import sickbeard
 %>
-<%block name="metas">
-<meta data-var="sickbeard.SORT_ARTICLE" data-content="${sickbeard.SORT_ARTICLE}">
-</%block>
 <%block name="content">
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>

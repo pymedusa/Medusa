@@ -3,6 +3,7 @@
 import sickbeard
 %>
 <%block name="metas">
+## @TODO: We need to change this to just ${srRoot} since we're now using relative routes
 <meta data-var="srDefaultPage" data-content="${sbDefaultPage}">
 </%block>
 
