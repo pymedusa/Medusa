@@ -301,7 +301,7 @@ class LoginHandler(BaseHandler):
             self.redirect('/' + sickbeard.DEFAULT_PAGE + '/')
         else:
             t = PageTemplate(rh=self, filename="login.mako")
-            self.finish(t.render(title="Login", header="Login", topmenu="login"))
+            self.finish(t.render(title="Login"))
 
     def post(self, *args, **kwargs):
 
@@ -324,7 +324,7 @@ class LoginHandler(BaseHandler):
         else:
             logger.log(u'User attempted a failed login to the Medusa web interface from IP: ' + self.request.remote_ip, logger.WARNING)
 
-        self.redirect('/' + sickbeard.DEFAULT_PAGE + '/')
+        self.redirect('/#/' + sickbeard.DEFAULT_PAGE)
 
 
 class LogoutHandler(BaseHandler):
@@ -531,8 +531,7 @@ class WebRoot(WebHandler):
 
         t = PageTemplate(rh=self, filename='schedule.mako')
         return t.render(submenu=submenu, next_week=next_week1, today=today, results=results, layout=layout,
-                        title='Schedule', header='Schedule', topmenu='schedule',
-                        controller="schedule", action="index")
+                        title='Schedule', header='Schedule')
 
 
 class CalendarHandler(BaseHandler):
@@ -674,7 +673,7 @@ class Home(WebRoot):
 
     def _genericMessage(self, subject, message):
         t = PageTemplate(rh=self, filename="genericMessage.mako")
-        return t.render(message=message, subject=subject, topmenu="home", title="")
+        return t.render(message=message, subject=subject, title="")
 
     @staticmethod
     def _getEpisode(show, season=None, episode=None, absolute=None):
@@ -713,7 +712,7 @@ class Home(WebRoot):
             showlists = [["Shows", sickbeard.showList]]
 
         stats = self.show_statistics()
-        return t.render(title="Home", header="Show List", topmenu="home", showlists=showlists, show_stat=stats[0], max_download_count=stats[1], controller="home", action="index")
+        return t.render(title="Home", header="Show List", showlists=showlists, show_stat=stats[0], max_download_count=stats[1])
 
     @staticmethod
     def show_statistics():
@@ -1142,9 +1141,8 @@ class Home(WebRoot):
                 rootDir[subject] = helpers.getDiskSpaceUsage(subject)
 
         t = PageTemplate(rh=self, filename="status.mako")
-        return t.render(title='Status', header='Status', topmenu='system',
-                        tvdirFree=tvdirFree, rootDir=rootDir,
-                        controller="home", action="status")
+        return t.render(title='Status', header='Status',
+                        tvdirFree=tvdirFree, rootDir=rootDir)
 
     def shutdown(self, pid=None):
         if not Shutdown.stop(pid):
@@ -1161,8 +1159,7 @@ class Home(WebRoot):
 
         t = PageTemplate(rh=self, filename="restart.mako")
 
-        return t.render(title="Home", header="Restarting Medusa", topmenu="system",
-                        controller="home", action="restart")
+        return t.render(title="Home", header="Restarting Medusa")
 
     def updateCheck(self, pid=None):
         if str(pid) != str(sickbeard.PID):
@@ -1190,8 +1187,7 @@ class Home(WebRoot):
                 sickbeard.events.put(sickbeard.events.SystemEvent.RESTART)
 
                 t = PageTemplate(rh=self, filename="restart.mako")
-                return t.render(title="Home", header="Restarting Medusa", topmenu="home",
-                                controller="home", action="restart")
+                return t.render(title="Home", header="Restarting Medusa")
             else:
                 return self._genericMessage("Update Failed",
                                             "Update wasn't successful, not restarting. Check your log for more information.")
@@ -1366,9 +1362,7 @@ class Home(WebRoot):
             xem_numbering=get_xem_numbering_for_show(indexerid, indexer),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexerid, indexer),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexerid, indexer),
-            title=showObj.name,
-            controller="home",
-            action="displayShow"
+            title=showObj.name
         )
 
     @staticmethod
@@ -1444,10 +1438,9 @@ class Home(WebRoot):
 
             if showObj.is_anime:
                 return t.render(show=show, scene_exceptions=scene_exceptions, groups=groups, whitelist=whitelist,
-                                blacklist=blacklist, title='Edit Show', header='Edit Show', controller="home", action="editShow")
+                                blacklist=blacklist, title='Edit Show', header='Edit Show')
             else:
-                return t.render(show=show, scene_exceptions=scene_exceptions, title='Edit Show', header='Edit Show',
-                                controller="home", action="editShow")
+                return t.render(show=show, scene_exceptions=scene_exceptions, title='Edit Show', header='Edit Show')
 
         flatten_folders = not config.checkbox_to_value(flatten_folders)  # UI inverts this value
         dvdorder = config.checkbox_to_value(dvdorder)
@@ -1910,8 +1903,7 @@ class Home(WebRoot):
 
         return t.render(submenu=submenu, ep_obj_list=ep_obj_rename_list,
                         show=showObj, title='Preview Rename',
-                        header='Preview Rename',
-                        controller="home", action="previewRename")
+                        header='Preview Rename')
 
     def doRename(self, show=None, eps=None):
         if show is None or eps is None:
@@ -2208,7 +2200,7 @@ class HomeIRC(Home):
     def index(self):
 
         t = PageTemplate(rh=self, filename="IRC.mako")
-        return t.render(topmenu="system", header="IRC", title="IRC", controller="IRC", action="index")
+        return t.render(topmenu="system", title="IRC")
 
 
 @route('/news(/?.*)')
@@ -2230,7 +2222,7 @@ class HomeNews(Home):
         t = PageTemplate(rh=self, filename="markdown.mako")
         data = markdown2.markdown(news if news else "The was a problem connecting to github, please refresh and try again", extras=['header-ids'])
 
-        return t.render(title="News", header="News", topmenu="system", data=data, controller="news", action="index")
+        return t.render(title="News", data=data)
 
 
 @route('/changes(/?.*)')
@@ -2248,7 +2240,7 @@ class HomeChangeLog(Home):
         t = PageTemplate(rh=self, filename="markdown.mako")
         data = markdown2.markdown(changes if changes else "The was a problem connecting to github, please refresh and try again", extras=['header-ids'])
 
-        return t.render(title="Changelog", header="Changelog", topmenu="system", data=data, controller="changes", action="index")
+        return t.render(title="Changelog", data=data)
 
 
 @route('/home/postprocess(/?.*)')
@@ -2258,7 +2250,7 @@ class HomePostProcess(Home):
 
     def index(self):
         t = PageTemplate(rh=self, filename="home_postprocess.mako")
-        return t.render(title='Post Processing', header='Post Processing', topmenu='home', controller="home", action="postProcess")
+        return t.render(title='Post Processing', header='Post Processing')
 
     # TODO: PR to NZBtoMedia so that we can rename dir to proc_dir, and type to proc_type. Using names of builtins as var names is bad
     # pylint: disable=redefined-builtin
@@ -2302,7 +2294,7 @@ class HomeAddShows(Home):
 
     def index(self):
         t = PageTemplate(rh=self, filename="addShows.mako")
-        return t.render(title='Add Shows', header='Add Shows', topmenu='home', controller="addShows", action="index")
+        return t.render(title='Add Shows', header='Add Shows')
 
     @staticmethod
     def getIndexerLanguages():
@@ -2486,8 +2478,7 @@ class HomeAddShows(Home):
             provided_show_dir=show_dir, provided_indexer_id=provided_indexer_id,
             provided_indexer_name=provided_indexer_name, provided_indexer=provided_indexer,
             indexers=sickbeard.indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
-            title='New Show', header='New Show', topmenu='home',
-            controller="addShows", action="newShow"
+            title='New Show', header='New Show'
         )
 
     def trendingShows(self, traktList=None):
@@ -2523,7 +2514,7 @@ class HomeAddShows(Home):
 
         t = PageTemplate(rh=self, filename="addShows_trendingShows.mako")
         return t.render(title=page_title, header=page_title, enable_anime_options=False,
-                        traktList=traktList, controller="addShows", action="trendingShows")
+                        traktList=traktList)
 
     def getTrendingShows(self, traktList=None):
         """
@@ -2627,9 +2618,7 @@ class HomeAddShows(Home):
             popular_shows = None
 
         return t.render(title="Popular Shows", header="Popular Shows",
-                        popular_shows=popular_shows, imdb_exception=e,
-                        topmenu="home",
-                        controller="addShows", action="popularShows")
+                        popular_shows=popular_shows, imdb_exception=e)
 
     def addShowToBlacklist(self, indexer_id):
         # URL parameters
@@ -2647,8 +2636,7 @@ class HomeAddShows(Home):
         """
         t = PageTemplate(rh=self, filename="addShows_addExistingShow.mako")
         return t.render(enable_anime_options=False, title='Existing Show',
-                        header='Existing Show', topmenu="home",
-                        controller="addShows", action="addExistingShow")
+                        header='Existing Show')
 
     def addShowByID(self, indexer_id, show_name, indexer="TVDB", which_series=None,
                     indexer_lang=None, root_dir=None, default_status=None,
@@ -2954,7 +2942,7 @@ class Manage(Home, WebRoot):
 
     def index(self):
         t = PageTemplate(rh=self, filename="manage.mako")
-        return t.render(title='Mass Update', header='Mass Update', topmenu='manage', controller="manage", action="index")
+        return t.render(title='Mass Update', header='Mass Update')
 
     @staticmethod
     def showEpisodeStatuses(indexer_id, whichStatus):
@@ -2993,9 +2981,8 @@ class Manage(Home, WebRoot):
         if not status_list:
             return t.render(
                 title="Episode Overview", header="Episode Overview",
-                topmenu="manage", show_names=None, whichStatus=whichStatus,
-                ep_counts=None, sorted_show_ids=None,
-                controller="manage", action="episodeStatuses")
+                show_names=None, whichStatus=whichStatus,
+                ep_counts=None, sorted_show_ids=None)
 
         main_db_con = db.DBConnection()
         status_results = main_db_con.select(
@@ -3020,9 +3007,8 @@ class Manage(Home, WebRoot):
 
         return t.render(
             title="Episode Overview", header="Episode Overview",
-            topmenu='manage', whichStatus=whichStatus,
-            show_names=show_names, ep_counts=ep_counts, sorted_show_ids=sorted_show_ids,
-            controller="manage", action="episodeStatuses")
+            whichStatus=whichStatus, show_names=show_names,
+            ep_counts=ep_counts, sorted_show_ids=sorted_show_ids)
 
     def changeEpisodeStatuses(self, oldStatus, newStatus, *args, **kwargs):
         status_list = [int(oldStatus)]
@@ -3095,9 +3081,8 @@ class Manage(Home, WebRoot):
 
         if not whichSubs:
             return t.render(whichSubs=whichSubs, title='Episode Overview',
-                            header='Episode Overview', topmenu='manage',
-                            show_names=None, ep_counts=None, sorted_show_ids=None,
-                            controller="manage", action="subtitleMissed")
+                            header='Episode Overview', show_names=None,
+                            ep_counts=None, sorted_show_ids=None)
 
         main_db_con = db.DBConnection()
         status_results = main_db_con.select(
@@ -3127,8 +3112,7 @@ class Manage(Home, WebRoot):
                 sorted_show_ids.append(cur_indexer_id)
 
         return t.render(whichSubs=whichSubs, show_names=show_names, ep_counts=ep_counts, sorted_show_ids=sorted_show_ids,
-                        title='Missing Subtitles', header='Missing Subtitles', topmenu='manage',
-                        controller="manage", action="subtitleMissed")
+                        title='Missing Subtitles', header='Missing Subtitles')
 
     def downloadSubtitleMissed(self, *args, **kwargs):
         to_download = {}
@@ -3209,9 +3193,8 @@ class Manage(Home, WebRoot):
 
         return t.render(
             showCounts=showCounts, showCats=showCats,
-            showSQLResults=showSQLResults, controller='manage',
-            action='backlogOverview', title='Backlog Overview',
-            header='Backlog Overview', topmenu='manage')
+            showSQLResults=showSQLResults, title='Backlog Overview',
+            header='Backlog Overview')
 
     def massEdit(self, toEdit=None):
         t = PageTemplate(rh=self, filename="manage_massEdit.mako")
@@ -3335,7 +3318,7 @@ class Manage(Home, WebRoot):
         return t.render(showList=toEdit, showNames=showNames, default_ep_status_value=default_ep_status_value,
                         paused_value=paused_value, anime_value=anime_value, flatten_folders_value=flatten_folders_value,
                         quality_value=quality_value, subtitles_value=subtitles_value, scene_value=scene_value, sports_value=sports_value,
-                        air_by_date_value=air_by_date_value, root_dir_list=root_dir_list, title='Mass Edit', header='Mass Edit', topmenu='manage')
+                        air_by_date_value=air_by_date_value, root_dir_list=root_dir_list, title='Mass Edit', header='Mass Edit')
 
     def massEditSubmit(self, paused=None, default_ep_status=None,
                        anime=None, sports=None, scene=None, flatten_folders=None, quality_preset=None,
@@ -3585,7 +3568,7 @@ class Manage(Home, WebRoot):
 
         return t.render(
             webui_url=webui_url, info_download_station=info_download_station,
-            title='Manage Torrents', header='Manage Torrents', topmenu='manage')
+            title='Manage Torrents', header='Manage Torrents')
 
     def failedDownloads(self, limit=100, toRemove=None):
         failed_db_con = db.DBConnection('failed.db')
@@ -3606,9 +3589,7 @@ class Manage(Home, WebRoot):
         t = PageTemplate(rh=self, filename="manage_failedDownloads.mako")
 
         return t.render(limit=limit, failedResults=sql_results,
-                        title='Failed Downloads', header='Failed Downloads',
-                        topmenu='manage', controller="manage",
-                        action="failedDownloads")
+                        title='Failed Downloads', header='Failed Downloads')
 
 
 @route('/manage/manageSearches(/?.*)')
@@ -3624,8 +3605,7 @@ class ManageSearches(Manage):
                         backlogRunning=sickbeard.searchQueueScheduler.action.is_backlog_in_progress(), dailySearchStatus=sickbeard.dailySearchScheduler.action.amActive,
                         findPropersStatus=sickbeard.properFinderScheduler.action.amActive, queueLength=sickbeard.searchQueueScheduler.action.queue_length(),
                         subtitlesFinderStatus=sickbeard.subtitlesFinderScheduler.action.amActive,
-                        title='Manage Searches', header='Manage Searches', topmenu='manage',
-                        controller="manage", action="manageSearches")
+                        title='Manage Searches', header='Manage Searches')
 
     def forceBacklog(self):
         # force it to run the next time it looks
@@ -3737,8 +3717,7 @@ class History(WebRoot):
         ]
 
         return t.render(historyResults=data, compactResults=compact, limit=limit,
-                        submenu=submenu, title='History', header='History',
-                        topmenu="history", controller="history", action="index")
+                        submenu=submenu, title='History', header='History')
 
     def clearHistory(self):
         self.history.clear()
@@ -3809,7 +3788,7 @@ class Config(WebRoot):
 
         return t.render(
             submenu=self.ConfigMenu(), title='Medusa Configuration',
-            header='Medusa Configuration', topmenu="config",
+            header='Medusa Configuration',
             sr_user=sr_user, sr_locale=sr_locale, ssl_version=ssl_version,
             sr_version=sr_version
         )
@@ -3824,8 +3803,7 @@ class ConfigGeneral(Config):
         t = PageTemplate(rh=self, filename="config_general.mako")
 
         return t.render(title='Config - General', header='General Configuration',
-                        topmenu='config', submenu=self.ConfigMenu(),
-                        controller="config", action="index")
+                        submenu=self.ConfigMenu())
 
     @staticmethod
     def generateApiKey():
@@ -3987,8 +3965,7 @@ class ConfigBackupRestore(Config):
         t = PageTemplate(rh=self, filename="config_backuprestore.mako")
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Backup/Restore',
-                        header='Backup/Restore', topmenu='config',
-                        controller="config", action="backupRestore")
+                        header='Backup/Restore')
 
     @staticmethod
     def backup(backupDir=None):
@@ -4050,8 +4027,7 @@ class ConfigSearch(Config):
         t = PageTemplate(rh=self, filename="config_search.mako")
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Episode Search',
-                        header='Search Settings', topmenu='config',
-                        controller="config", action="search")
+                        header='Search Settings')
 
     def saveSearch(self, use_nzbs=None, use_torrents=None, nzb_dir=None, sab_username=None, sab_password=None,
                    sab_apikey=None, sab_category=None, sab_category_anime=None, sab_category_backlog=None, sab_category_anime_backlog=None, sab_host=None, nzbget_username=None,
@@ -4158,8 +4134,7 @@ class ConfigPostProcessing(Config):
         t = PageTemplate(rh=self, filename="config_postProcessing.mako")
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Post Processing',
-                        header='Post Processing', topmenu='config',
-                        controller="config", action="postProcessing")
+                        header='Post Processing')
 
     def savePostProcessing(self, kodi_data=None, kodi_12plus_data=None,
                            mediabrowser_data=None, sony_ps3_data=None,
@@ -4362,8 +4337,7 @@ class ConfigProviders(Config):
         t = PageTemplate(rh=self, filename="config_providers.mako")
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Providers',
-                        header='Search Providers', topmenu='config',
-                        controller="config", action="providers")
+                        header='Search Providers')
 
     @staticmethod
     def canAddNewznabProvider(name):
@@ -4855,8 +4829,7 @@ class ConfigNotifications(Config):
         t = PageTemplate(rh=self, filename="config_notifications.mako")
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Notifications',
-                        header='Notifications', topmenu='config',
-                        controller="config", action="notifications")
+                        header='Notifications')
 
     def saveNotifications(self, use_kodi=None, kodi_always_on=None, kodi_notify_onsnatch=None,
                           kodi_notify_ondownload=None,
@@ -5096,8 +5069,7 @@ class ConfigSubtitles(Config):
         t = PageTemplate(rh=self, filename="config_subtitles.mako")
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Subtitles',
-                        header='Subtitles', topmenu='config',
-                        controller="config", action="subtitles")
+                        header='Subtitles')
 
     def saveSubtitles(self, use_subtitles=None, subtitles_plugins=None, subtitles_languages=None, subtitles_dir=None, subtitles_perfect_match=None,
                       service_order=None, subtitles_history=None, subtitles_finder_frequency=None,
@@ -5164,8 +5136,7 @@ class ConfigAnime(Config):
         t = PageTemplate(rh=self, filename="config_anime.mako")
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Anime',
-                        header='Anime', topmenu='config',
-                        controller="config", action="anime")
+                        header='Anime')
 
     def saveAnime(self, use_anidb=None, anidb_username=None, anidb_password=None, anidb_use_mylist=None,
                   split_home=None):
@@ -5213,8 +5184,8 @@ class ErrorLogs(WebRoot):
 
         t = PageTemplate(rh=self, filename="errorlogs.mako")
         return t.render(header="Logs &amp; Errors", title="Logs &amp; Errors",
-                        topmenu="system", submenu=self.ErrorLogsMenu(level),
-                        logLevel=level, controller="errorlogs", action="index")
+                        submenu=self.ErrorLogsMenu(level),
+                        logLevel=level)
 
     @staticmethod
     def haveErrors():
@@ -5324,10 +5295,9 @@ class ErrorLogs(WebRoot):
                     data += Get_Data(minLevel, f.readlines(), len(data), regex, logFilter, logSearch, maxLines)
 
         return t.render(
-            header="Log File", title="Logs", topmenu="system",
+            header="Log File", title="Logs",
             logLines=u"".join(data), minLevel=minLevel, logNameFilters=logNameFilters,
-            logFilter=logFilter, logSearch=logSearch,
-            controller="errorlogs", action="viewlogs")
+            logFilter=logFilter, logSearch=logSearch)
 
     def submit_errors(self):
         submitter_result, issue_id = logger.submit_errors()
