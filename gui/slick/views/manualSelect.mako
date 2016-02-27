@@ -161,14 +161,18 @@
                 </table>
             </div>
         </div>
-
     
-    <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-force-search="0" />
-    <input class="btn manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-force-search="1" />
+    <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
+    <input class="btn manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-force-search="1" />
     
     <div class="clearfix"></div>
     <div id="wrapper">
     <div id="container">
+    
+    <!-- @TODO: Change this to use the REST API -->
+    <!-- add provider meta data -->
+    <meta data-last-prov-updates="${last_prov_updates}" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}">
+    
         <table id="showTable" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
             <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
             <tr style="height: 60px;" role="row">
