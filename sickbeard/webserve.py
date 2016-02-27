@@ -1420,7 +1420,7 @@ class Home(WebRoot):
         if not kwargs:
             return {'result': 'idle'}
 
-        last_prov_updates = kwargs.items()[0][0]
+        last_prov_updates = kwargs.iteritems().next()[0]
         last_prov_updates = json.loads(last_prov_updates.replace("'", '"'))
         main_db_con = db.DBConnection('cache.db')
 
