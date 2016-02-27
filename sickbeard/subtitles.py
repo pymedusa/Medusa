@@ -208,7 +208,7 @@ def download_subtitles(subtitles_info):  # pylint: disable=too-many-locals, too-
         subtitle_path = subliminal.subtitle.get_subtitle_path(video.name,
                                                               None if not sickbeard.SUBTITLES_MULTI else
                                                               subtitle.language)
-        if subtitles_path is not None:
+        if subtitles_path:
             subtitle_path = os.path.join(subtitles_path, os.path.split(subtitle_path)[1])
 
         sickbeard.helpers.chmodAsParent(subtitle_path)
@@ -222,7 +222,7 @@ def download_subtitles(subtitles_info):  # pylint: disable=too-many-locals, too-
                                 subtitles_info['episode'], subtitles_info['status'], subtitle)
 
         if sickbeard.SUBTITLES_EXTRA_SCRIPTS and isMediaFile(video_path) and not sickbeard.EMBEDDED_SUBTITLES_ALL:
-            run_subs_extra_scripts(subtitles_info, subtitle, video, single=not sickbeard.SUBTITLES_MULTI)
+            run_subs_scripts(subtitles_info, subtitle.language, subtitle_path, video.name)
 
     new_subtitles = sorted({subtitle.language.opensubtitles for subtitle in found_subtitles})
     current_subtitles = sorted({subtitle for subtitle in new_subtitles + existing_subtitles}) if existing_subtitles else new_subtitles
@@ -390,6 +390,9 @@ class SubtitlesFinder(object):
                                 logger.log(u"Couldn't delete subtitle: {}. Error: {}".format(filename, ex(error)), logger.DEBUG)
 
                     if isMediaFile(filename) and processTV.subtitles_enabled(filename):
+                        if sickbeard.SUBTITLES_PRE_SCRIPTS and not sickbeard.EMBEDDED_SUBTITLES_ALL:
+                            run_subs_scripts(None, None, None, filename, is_pre=True)
+
                         try:
                             video = subliminal.scan_video(os.path.join(root, filename),
                                                           subtitles=False, embedded_subtitles=False)
@@ -429,7 +432,7 @@ class SubtitlesFinder(object):
                                 subtitle_path = subliminal.subtitle.get_subtitle_path(video.name,
                                                                                       None if subtitles_multi else
                                                                                       subtitle.language)
-                                if root is not None:
+                                if root:
                                     subtitle_path = os.path.join(root, os.path.split(subtitle_path)[1])
                                 sickbeard.helpers.chmodAsParent(subtitle_path)
                                 sickbeard.helpers.fixSetGroupID(subtitle_path)
@@ -576,18 +579,19 @@ class SubtitlesFinder(object):
         self.amActive = False
 
 
-def run_subs_extra_scripts(episode_object, subtitle, video, single=False):
+def run_subs_scripts(subtitles_info, subtitle_language, subtitle_path, video_filename, is_pre=None):
     for script_name in sickbeard.SUBTITLES_EXTRA_SCRIPTS:
         script_cmd = [piece for piece in re.split("( |\\\".*?\\\"|'.*?')", script_name) if piece.strip()]
         script_cmd[0] = os.path.abspath(script_cmd[0])
         logger.log(u'Absolute path to script: {}'.format(script_cmd[0]), logger.DEBUG)
 
-        subtitle_path = subliminal.subtitle.get_subtitle_path(video.name, None if single else subtitle.language)
-
-        inner_cmd = script_cmd + [video.name, subtitle_path, subtitle.language.opensubtitles,
-                                  episode_object['show_name'], str(episode_object['season']),
-                                  str(episode_object['episode']), episode_object['name'],
-                                  str(episode_object['show_indexerid'])]
+        if is_pre:
+            inner_cmd = script_cmd + ['/'.join([sickbeard.TV_DOWNLOAD_DIR, video_filename])]
+        else:
+            inner_cmd = script_cmd + [video_filename, subtitle_path, subtitle_language.opensubtitles,
+                                      subtitles_info['show_name'], str(subtitles_info['season']),
+                                      str(subtitles_info['episode']), subtitles_info['name'],
+                                      str(subtitles_info['show_indexerid'])]
 
         # use subprocess to run the command and capture output
         logger.log(u'Executing command: {}'.format(inner_cmd))
@@ -598,4 +602,4 @@ def run_subs_extra_scripts(episode_object, subtitle, video, single=False):
             logger.log(u'Script result: {}'.format(out), logger.DEBUG)
 
         except Exception as error:
-            logger.log(u'Unable to run subs_extra_script: {}'.format(ex(error)))
+            logger.log(u'Unable to run subtitles script: {}'.format(ex(error)))
