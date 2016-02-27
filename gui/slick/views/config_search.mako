@@ -149,7 +149,6 @@
                             </label>
                         </div>
 
-
                         <div class="field-pair">
                             <label>
                                 <span class="component-title">Trackers list</span>
