@@ -528,10 +528,10 @@ class SubtitlesFinder(object):
                 if not force:
                     now = datetime.datetime.now()
                     days = int(ep_to_sub['age'])
-                    delay_time = datetime.timedelta(hours=8 if days < 10 else 7 * 24 if days < 30 else 30 * 24)
+                    delay_time = datetime.timedelta(hours=1 if days <= 10 else 8 if days <= 30 else 30 * 24)
 
-                    # Search every hour for the first 24 hours since aired, then every 8 hours until 10 days passes
-                    # After 10 days, search every 7 days, after 30 days search once a month
+                    # Search every hour until 10 days passes
+                    # After 10 days, search every 8 hours, after 30 days search once a month
                     # Will always try an episode regardless of age at least 2 times
                     if lastsearched + delay_time > now and int(ep_to_sub['searchcount']) > 2 and days:
                         logger.log(u'Subtitle search for {} {} delayed for {}'.format
