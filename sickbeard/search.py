@@ -246,9 +246,9 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
                                                                            cur_result.provider.name):
                 logger.log(cur_result.name + u" has previously failed, rejecting it")
                 continue
-        prefered_words = ''
-        if sickbeard.PREFERED_WORDS:
-            prefered_words = sickbeard.PREFERED_WORDS.lower().split(',')
+        preferred_words = ''
+        if sickbeard.PREFERRED_WORDS:
+            preferred_words = sickbeard.PREFERRED_WORDS.lower().split(',')
         undesired_words = ''
         if sickbeard.UNDESIRED_WORDS:
             undesired_words = sickbeard.UNDESIRED_WORDS.lower().split(',')
@@ -260,7 +260,7 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
         elif cur_result.quality in anyQualities and bestResult.quality not in bestQualities and bestResult.quality < cur_result.quality:
             bestResult = cur_result
         elif bestResult.quality == cur_result.quality:
-            if any(ext in cur_result.name.lower() for ext in prefered_words):
+            if any(ext in cur_result.name.lower() for ext in preferred_words):
                 logger.log(u"Preferring " + cur_result.name + " (preferred words)")
                 bestResult = cur_result
             if "proper" in cur_result.name.lower() or "real" in cur_result.name.lower() or "repack" in cur_result.name.lower():
