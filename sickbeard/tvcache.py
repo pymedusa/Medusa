@@ -137,7 +137,7 @@ class TVCache(object):
         if manualData:
             for item in manualData:
                 logger.log(u"Adding to cache item found in manual search: {}".format(item.name), logger.DEBUG)
-                ci = self._addCacheEntry(item.name, item.url, item.seeders, item.leechers, item.size)
+                ci = self._addCacheEntry(item.name, item.url, seeders=item.seeders, leechers=item.leechers, size=item.size)
                 if ci is not None:
                     cl.append(ci)
         # check if we should update (providers min time check)
@@ -192,7 +192,7 @@ class TVCache(object):
             url = self._translateLinkURL(url)
 
             # logger.log(u"Attempting to add item to cache: " + title, logger.DEBUG)
-            return self._addCacheEntry(title, url, seeders, leechers, size)
+            return self._addCacheEntry(title, url, seeders=seeders, leechers=leechers, size=size)
 
         else:
             logger.log(
@@ -267,7 +267,7 @@ class TVCache(object):
 
         return False
 
-    def _addCacheEntry(self, name, url, seeders, leechers, size, parse_result=None, indexer_id=0):
+    def _addCacheEntry(self, name, url, seeders=None, leechers=None, size=None, parse_result=None, indexer_id=0):
 
         # check if we passed in a parsed result or should we try and create one
         if not parse_result:
