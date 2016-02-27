@@ -2449,11 +2449,12 @@ var SICKRAGE = {
                 });
             };
 
+            // Click event for the reload results and force search buttons
             $('body').on('click', '.manualSearchButton', function(event){
                 event.preventDefault();
-                var show = $(this).attr('data-show');
-                var season = $(this).attr('data-season');
-                var episode = $(this).attr('data-episode');
+                var show = $('meta[data-last-prov-updates]').attr('data-show');
+                var season = $('meta[data-last-prov-updates]').attr('data-season');
+                var episode = $('meta[data-last-prov-updates]').attr('data-episode');
                 var performSearch = $(this).attr('data-force-search');
 
                 $('#wrapper').loadContainer(
@@ -2463,6 +2464,7 @@ var SICKRAGE = {
                 );
             });
             
+            // Click event for the download button for snatching a result
             $('body').on('click', '.epManualSnatch', function(event){
                 event.preventDefault();
                 var link = this;
@@ -2471,9 +2473,46 @@ var SICKRAGE = {
                     if (data.result === "success") {
                         $(link).children('img').attr('src', srRoot + '/images/save.png');
                     }
-                });
-                
+                });   
             });
+            
+            function checkCacheUpdates() {
+                var pollInterval = 5000;
+                
+                
+                var show = $('meta[data-last-prov-updates]').attr('data-show');
+                var season = $('meta[data-last-prov-updates]').attr('data-season');
+                var episode = $('meta[data-last-prov-updates]').attr('data-episode');
+                var data = $('meta[data-last-prov-updates]').data('last-prov-updates');
+
+                var url = '/home/manualSelectCheckCache?show='+show+'&season='+season+'&episode='+episode;
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    data: data,
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.result === 'refresh') {
+                            pollInterval = 5000;
+                            $('#wrapper').loadContainer(
+                                    '/home/manualSelect?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=0',
+                                    'Loading new search results...',
+                                    'Time out, refresh page to try again'
+                            );
+                        } else {
+                            pollInterval = 15000;
+                        }
+                    },
+                    error: function () {
+                        pollInterval = 30000;
+                    },
+                    complete: function () {
+                        setTimeout(checkCacheUpdates, pollInterval);
+                    },
+                    timeout: 15000 // timeout every 15 secs
+                });
+            }
+            checkCacheUpdates();
         },
         postProcess: function() {
             $('#episodeDir').fileBrowser({ title: 'Select Unprocessed Episode Folder', key: 'postprocessPath' });
