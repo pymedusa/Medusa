@@ -1415,6 +1415,26 @@ class Home(WebRoot):
         else:
             return json.dumps({'result': 'failure'})
 
+    def manualSelectCheckCache(self, show, season, episode, **kwargs):
+        # Only need the first provided dict
+        if not kwargs:
+            return {'result': 'idle'}
+
+        last_prov_updates = kwargs.iteritems().next()[0]
+        last_prov_updates = json.loads(last_prov_updates.replace("'", '"'))
+        main_db_con = db.DBConnection('cache.db')
+
+        for provider, last_update in last_prov_updates.iteritems():
+            # Check if the cache table has a result for this show + season + ep wich has a later timestamp, then last_update
+            needs_update = main_db_con.select("SELECT * FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ? \
+                                              AND time > ?"
+                                              % (provider), ["%|" + episode + "|%", season, show, int(last_update)])
+
+            if needs_update:
+                return {'result': 'refresh'}
+
+        return {'result': 'idle'}
+
     def manualSelect(self, show=None, season=None, episode=None, perform_search=0, down_cur_quality=0, show_all_results=0):
         # todo: add more comprehensive show validation
         try:
@@ -1429,6 +1449,7 @@ class Home(WebRoot):
         main_db_con = db.DBConnection('cache.db')
         sql_return = {}
         found_items = []
+        last_prov_updates = {}
 
         providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_backlog]
         for curProvider in providers:
@@ -1440,22 +1461,29 @@ class Home(WebRoot):
 
             # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
             if not int(show_all_results):
-                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, episodes, indexerid, url, time, \
-                                                quality, release_group, version, seeders, leechers, size \
+                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, \
+                                                episodes, indexerid, url, time, (select max(time) from '%s') as lastupdate, \
+                                                quality, release_group, version, seeders, leechers, size, time \
                                                 FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ?"
-                                                % (curProvider.get_id()), [curProvider.name, curProvider.get_id(), "%|" + episode + "|%", season, show])
+                                                % (curProvider.get_id(), curProvider.get_id()),
+                                                [curProvider.name, curProvider.get_id(),
+                                                 "%|" + episode + "|%", season, show])
+
             else:
-                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, episodes, indexerid, url, time, \
-                                                quality, release_group, version, seeders, leechers, size \
-                                                FROM '%s' WHERE indexerid = ?" % (curProvider.name, curProvider.get_id()), [curProvider.get_id(), show])
+                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, \
+                                                episodes, indexerid, url, time, (select max(time) from '%s') as lastupdate, \
+                                                quality, release_group, version, seeders, leechers, size, time \
+                                                FROM '%s' WHERE indexerid = ?" % (curProvider.name, curProvider.get_id()),
+                                                [curProvider.get_id(), show])
 
             if sql_return:
                 for item in sql_return:
                     found_items.append(dict(item))
-                found_items = sorted(found_items, key=lambda k: (int(k['quality']), int(k['seeders'])), reverse=True)
-                # Make unknown qualities at the botton
-                found_items = [d for d in found_items if int(d['quality']) < 32768] + [d for d in found_items if int(d['quality']) == 32768]
 
+                # Store the last table update, we'll need this to compare later
+                last_prov_updates[curProvider.get_id()] = str(sql_return[0]['lastupdate'])
+            else:
+                last_prov_updates[curProvider.get_id()] = "0"
 
         if not found_items or int(perform_search):
             # retrieve the episode object and fail if we can't get one
@@ -1471,6 +1499,12 @@ class Home(WebRoot):
 
             # give the CPU a break and some time to start the queue
             time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
+        else:
+            # Sort the list of found items
+            found_items = sorted(found_items, key=lambda k: (int(k['quality']), int(k['seeders'])), reverse=True)
+            # Make unknown qualities at the botton
+            found_items = [d for d in found_items if int(d['quality']) < 32768] + [d for d in found_items if int(d['quality']) == 32768]
+
 
         t = PageTemplate(rh=self, filename="manualSelect.mako")
         submenu = [{'title': 'Edit', 'path': 'home/editShow?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-pencil'}]
@@ -1563,7 +1597,7 @@ class Home(WebRoot):
 
         return t.render(
             submenu=submenu, showLoc=showLoc, show_message=show_message,
-            show=showObj, sql_results=found_items, episode=episode,
+            show=showObj, sql_results=found_items, last_prov_updates=last_prov_updates, episode=episode,
             sortedShowLists=sortedShowLists, bwl=bwl, season=season,
             all_scene_exceptions=showObj.exceptions,
             scene_numbering=get_scene_numbering_for_show(indexerid, indexer),
