@@ -127,6 +127,31 @@
 
                         <div class="field-pair">
                             <label>
+                                <span class="component-title">Preferred words</span>
+                                <span class="component-desc">
+                                    <input type="text" name="prefered_words" value="${sickbeard.PREFERED_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
+                                    <div class="clear-left">results with one or more word from this list will be chosen over others<br>
+                                    separate words with a comma, e.g. "word1,word2,word3"
+                                    </div>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="field-pair">
+                            <label>
+                                <span class="component-title">Undesired words</span>
+                                <span class="component-desc">
+                                    <input type="text" name="undesired_words" value="${sickbeard.UNDESIRED_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
+                                    <div class="clear-left">results withouth words from this list will be prefered<br>
+                                    separate words with a comma, e.g. "word1,word2,word3"
+                                    </div>
+                                </span>
+                            </label>
+                        </div>
+
+
+                        <div class="field-pair">
+                            <label>
                                 <span class="component-title">Trackers list</span>
                                 <span class="component-desc">
                                     <input type="text" name="trackers_list" value="${sickbeard.TRACKERS_LIST}" class="form-control input-sm input350" autocapitalize="off" />
