@@ -2449,7 +2449,7 @@ var SICKRAGE = {
                 });
             };
 
-            $('input.manualSearchButton').on('click', function(event){
+            $('body').on('click', '.manualSearchButton', function(event){
                 event.preventDefault();
                 var show = $(this).attr('data-show');
                 var season = $(this).attr('data-season');
@@ -2463,7 +2463,7 @@ var SICKRAGE = {
                 );
             });
             
-            $('a.epManualSnatch').on('click', function(event){
+            $('body').on('click', '.epManualSnatch', function(event){
                 event.preventDefault();
                 var link = this;
                 $.getJSON(this.href, 
