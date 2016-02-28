@@ -721,9 +721,11 @@ class Home(WebRoot):
                 "sports": show.sports,
                 "anime": show.anime,
                 "airsNext": stats[0][show.indexerid]['ep_airs_next'],
-                "snatched": stats[0][show.indexerid]['ep_snatched'],
-                "downloaded": stats[0][show.indexerid]['ep_downloaded'],
-                "total": stats[0][show.indexerid]['ep_total']
+                "stats": {
+                    "snatched": stats[0][show.indexerid]['ep_snatched'],
+                    "downloaded": stats[0][show.indexerid]['ep_downloaded'],
+                    "total": stats[0][show.indexerid]['ep_total']
+                }
             }
 
             if show.is_anime:

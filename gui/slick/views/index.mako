@@ -326,6 +326,7 @@
         <script type="text/javascript" src="${srRoot}/js/ajaxNotifications.js?${sbPID}"></script>
 
         <script type="text/javascript" src="${srRoot}/js/dependencies/angular.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-sanitize.min.js"></script>
         <script type="text/javascript" src="${srRoot}/js/dependencies/angular-ui-router.min.js"></script>
         <script type="text/javascript" src="${srRoot}/js/dependencies/angular-animate.min.js"></script>
         <script type="text/javascript" src="${srRoot}/js/dependencies/angular-aria.min.js"></script>
