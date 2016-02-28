@@ -151,12 +151,71 @@ sickrage.controller('posterController', function($scope, $http) {
         method: 'GET',
         url: '/home'
     }).then(function successCallback(response) {
-        $scope.shows = [];
+        $scope.shows = response.data.showLists.shows;
+        $scope.maxDownloadCount = response.data.maxDownloadCount;
 
-        response.data.replace(/\s+/g, " ").match(/{(.*?)},/g).forEach(function(show){
-            $scope.shows.push(JSON.parse(show.replace('},', '}')));
-        });
-        // SICKRAGE.home.index();
+
+        SICKRAGE.home.index();
+        /*
+        cur_airs_next = ''
+        cur_snatched = 0
+        cur_downloaded = 0
+        cur_total = 0
+        download_stat_tip = ''
+        display_status = curShow.status
+
+        if None is not display_status:
+            if re.search(r'(?i)(?:new|returning)\s*series', curShow.status):
+                display_status = 'Continuing'
+            elif re.search(r'(?i)(?:nded)', curShow.status):
+                display_status = 'Ended'
+
+        if curShow.indexerid in show_stat:
+            cur_airs_next = show_stat[curShow.indexerid]['ep_airs_next']
+
+            cur_snatched = show_stat[curShow.indexerid]['ep_snatched']
+            if not cur_snatched:
+                cur_snatched = 0
+
+            cur_downloaded = show_stat[curShow.indexerid]['ep_downloaded']
+            if not cur_downloaded:
+                cur_downloaded = 0
+
+            cur_total = show_stat[curShow.indexerid]['ep_total']
+            if not cur_total:
+                cur_total = 0
+
+        download_stat = str(cur_downloaded)
+        download_stat_tip = "Downloaded: " + str(cur_downloaded)
+
+        if cur_snatched:
+            download_stat = download_stat + "+" + str(cur_snatched)
+            download_stat_tip = download_stat_tip + "&#013;" + "Snatched: " + str(cur_snatched)
+
+        download_stat = download_stat + " / " + str(cur_total)
+        download_stat_tip = download_stat_tip + "&#013;" + "Total: " + str(cur_total)
+
+        nom = cur_downloaded
+        if cur_total:
+            den = cur_total
+        else:
+            den = 1
+            download_stat_tip = "Unaired"
+
+        progressbar_percent = nom * 100 / den
+
+        data_date = '6000000000.0'
+        if cur_airs_next:
+            data_date = calendar.timegm(sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, curShow.airs, curShow.network)).timetuple())
+        elif None is not display_status:
+            if 'nded' not in display_status and 1 == int(curShow.paused):
+                data_date = '5000000500.0'
+            elif 'ontinu' in display_status:
+                data_date = '5000000000.0'
+            elif 'nded' in display_status:
+                data_date = '5000000100.0'
+
+        */
     }, function errorCallback(response) {
         // Error?
         console.log(response);

@@ -698,21 +698,43 @@ class Home(WebRoot):
         return epObj
 
     def index(self):
-        t = PageTemplate(rh=self, filename="home.mako")
-        if sickbeard.ANIME_SPLIT_HOME:
-            shows = []
-            anime = []
-            for show in sickbeard.showList:
-                if show.is_anime:
-                    anime.append(show)
-                else:
-                    shows.append(show)
-            showlists = [["Shows", shows], ["Anime", anime]]
-        else:
-            showlists = [["Shows", sickbeard.showList]]
-
+        self.set_header('Content-Type', 'application/json')
         stats = self.show_statistics()
-        return t.render(title="Home", header="Show List", showlists=showlists, show_stat=stats[0], max_download_count=stats[1])
+
+        shows = []
+        anime = []
+        for show in sickbeard.showList:
+            my_dict = {
+                "indexerId": show.indexerid,
+                "indexer": show.indexer,
+                "name": show.name,
+                "location": show.location,
+                "network": show.network,
+                "airs": show.airs,
+                "status": show.status,
+                "startyear": show.startyear,
+                "genre": show.genre,
+                "classification": show.classification,
+                "runtime": show.runtime,
+                "quality": show.quality,
+                "scene": show.scene,
+                "sports": show.sports,
+                "anime": show.anime,
+                "airsNext": stats[0][show.indexerid]['ep_airs_next'],
+                "snatched": stats[0][show.indexerid]['ep_snatched'],
+                "downloaded": stats[0][show.indexerid]['ep_downloaded'],
+                "total": stats[0][show.indexerid]['ep_total']
+            }
+
+            if show.is_anime:
+                anime.append(my_dict)
+            else:
+                shows.append(my_dict)
+
+        if sickbeard.ANIME_SPLIT_HOME:
+            return json.JSONEncoder().encode({"showLists": {"shows": shows, "anime": anime}, "maxDownloadCount": stats[1]})
+        else:
+            return json.JSONEncoder().encode({"showLists": {"shows": shows}, "maxDownloadCount": stats[1]})
 
     @staticmethod
     def show_statistics():
