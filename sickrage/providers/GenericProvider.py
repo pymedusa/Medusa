@@ -186,6 +186,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         for item in items_list:
             (title, url) = self._get_title_and_url(item)
             (seeders, leechers) = self._get_result_info(item)
+            size = self._get_size(item)
 
             try:
                 parse_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]).parse(title)
