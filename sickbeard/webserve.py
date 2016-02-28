@@ -706,23 +706,10 @@ class Home(WebRoot):
         shows = []
         anime = []
         for show in sickbeard.showList:
-
-            # If show has date then set it otherwise set fake date for sorting
-            if stats[0][show.indexerid]['ep_airs_next']:
-                date = calendar.timegm(sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(stats[0][show.indexerid]['ep_airs_next'], show.airs, show.network)).timetuple())
-            elif None is not show.status:
-                if 'nded' not in show.status and 1 == int(curShow.paused):
-                    date = '5000000500.0'
-                elif 'ontinu' in show.status:
-                    date = '5000000000.0'
-                elif 'nded' in show.status:
-                    date = '5000000100.0'
-
-            my_dict = {
+            show_dict = {
                 "indexerId": show.indexerid,
                 "indexer": show.indexer,
                 "name": show.name,
-                "date": date,
                 "location": show.location,
                 "network": show.network,
                 "airs": show.airs,
@@ -735,7 +722,8 @@ class Home(WebRoot):
                 "scene": show.scene,
                 "sports": show.sports,
                 "anime": show.anime,
-                "airsNext": stats[0][show.indexerid]['ep_airs_next'],
+                "airsNext": sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(stats[0][show.indexerid]['ep_airs_next'], show.airs, show.network)).isoformat('T'),
+                "airsPrev": sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(stats[0][show.indexerid]['ep_airs_prev'], show.airs, show.network)).isoformat('T'),
                 "stats": {
                     "snatched": stats[0][show.indexerid]['ep_snatched'],
                     "downloaded": stats[0][show.indexerid]['ep_downloaded'],
@@ -743,10 +731,13 @@ class Home(WebRoot):
                 }
             }
 
-            if show.is_anime:
-                anime.append(my_dict)
+            if sickbeard.ANIME_SPLIT_HOME:
+                if show.is_anime:
+                    anime.append(show_dict)
+                else:
+                    shows.append(show_dict)
             else:
-                shows.append(my_dict)
+                shows.append(show_dict)
 
         if sickbeard.ANIME_SPLIT_HOME:
             return json.JSONEncoder().encode({"showLists": {"shows": shows, "anime": anime}, "maxDownloadCount": stats[1]})

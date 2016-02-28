@@ -39,7 +39,7 @@
     <thead>
         <tr>
             <th class="col-checkbox">Edit<br><input type="checkbox" class="bulkCheck" id="editCheck" /></th>
-            <th class="nowrap" style="text-align: left;">Show Name</th>
+            <th  style="text-align: left;">Show Name</th>
             <th class="col-quality">Quality</th>
             <th class="col-legend">Sports</th>
             <th class="col-legend">Scene</th>

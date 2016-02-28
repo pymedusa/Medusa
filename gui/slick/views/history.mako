@@ -49,7 +49,7 @@
         <table id="historyTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
             <thead>
                 <tr>
-                    <th class="nowrap">Time</th>
+                    <th >Time</th>
                     <th>Episode</th>
                     <th>Action</th>
                     <th>Provider</th>
@@ -59,7 +59,7 @@
 
             <tfoot>
                 <tr>
-                    <th class="nowrap" colspan="5">&nbsp;</th>
+                    <th  colspan="5">&nbsp;</th>
                 </tr>
             </tfoot>
 
@@ -112,7 +112,7 @@
         <table id="historyTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
             <thead>
                 <tr>
-                    <th class="nowrap">Time</th>
+                    <th >Time</th>
                     <th>Episode</th>
                     <th>Snatched</th>
                     <th>Downloaded</th>
@@ -125,7 +125,7 @@
 
             <tfoot>
                 <tr>
-                    <th class="nowrap" colspan="6">&nbsp;</th>
+                    <th  colspan="6">&nbsp;</th>
                 </tr>
             </tfoot>
 

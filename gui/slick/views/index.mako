@@ -273,10 +273,8 @@
         </div>
         % endif
 
-        <div id="contentWrapper">
-            <div id="content" ui-view>
-            </div> <!-- /content -->
-        </div> <!-- /contentWrapper -->
+        <div id="content" ui-view>
+        </div>
     % if srLogin:
         <footer>
             <div class="footer clearfix">

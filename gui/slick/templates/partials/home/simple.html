@@ -1,9 +1,8 @@
 <table id="showListTable${curListType}" class="tablesorter" cellspacing="1" border="0" cellpadding="0">
-
     <thead>
         <tr>
-            <th class="nowrap">Next Ep</th>
-            <th class="nowrap">Prev Ep</th>
+            <th >Next Ep</th>
+            <th >Prev Ep</th>
             <th>Show</th>
             <th>Network</th>
             <th>Quality</th>
@@ -13,7 +12,6 @@
             <th>Status</th>
         </tr>
     </thead>
-
     <tfoot class="hidden-print">
         <tr>
             <th rowspan="1" colspan="1" align="center"><a href="${srRoot}/addShows/">Add ${('Show', 'Anime')[curListType == 'Anime']}</a></th>
@@ -27,109 +25,35 @@
             <th>&nbsp;</th>
         </tr>
     </tfoot>
-
-
-% if sickbeard.showQueueScheduler.action.loadingShowList:
-    <tbody class="tablesorter-infoOnly">
-% for curLoadingShow in sickbeard.showQueueScheduler.action.loadingShowList:
-
-    % if curLoadingShow.show is not None and curLoadingShow.show in sickbeard.showList:
-         <% continue %>
-    % endif
-  <tr>
-    <td align="center">(loading)</td>
-    <td></td>
-    <td>
-    % if curLoadingShow.show is None:
-    <span title="">Loading... (${curLoadingShow.show_name})</span>
-    % else:
-    <a href="#/displayShow?showId=${curLoadingShow.show.indexerid}">${curLoadingShow.show.name}</a>
-    % endif
-    </td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-% endfor
-    </tbody>
-% endif
-
     <tbody>
 
 <% myShowList.sort(lambda x, y: cmp(x.name, y.name)) %>
 % for curShow in myShowList:
-<%
-    cur_airs_next = ''
-    cur_airs_prev = ''
-    cur_snatched = 0
-    cur_downloaded = 0
-    cur_total = 0
-    show_size = 0
-    download_stat_tip = ''
-
-    if curShow.indexerid in show_stat:
-        cur_airs_next = show_stat[curShow.indexerid]['ep_airs_next']
-        cur_airs_prev = show_stat[curShow.indexerid]['ep_airs_prev']
-
-        cur_snatched = show_stat[curShow.indexerid]['ep_snatched']
-        if not cur_snatched:
-            cur_snatched = 0
-
-        cur_downloaded = show_stat[curShow.indexerid]['ep_downloaded']
-        if not cur_downloaded:
-            cur_downloaded = 0
-
-        cur_total = show_stat[curShow.indexerid]['ep_total']
-        if not cur_total:
-            cur_total = 0
-
-        show_size = show_stat[curShow.indexerid]['show_size']
-
-    download_stat = str(cur_downloaded)
-    download_stat_tip = "Downloaded: " + str(cur_downloaded)
-
-    if cur_snatched:
-        download_stat = download_stat + "+" + str(cur_snatched)
-        download_stat_tip = download_stat_tip + "&#013;" + "Snatched: " + str(cur_snatched)
-
-    download_stat = download_stat + " / " + str(cur_total)
-    download_stat_tip = download_stat_tip + "&#013;" + "Total: " + str(cur_total)
-
-    nom = cur_downloaded
-    if cur_total:
-        den = cur_total
-    else:
-        den = 1
-        download_stat_tip = "Unaired"
-
-    progressbar_percent = nom * 100 / den
-%>
     <tr>
     % if cur_airs_next:
         <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, curShow.airs, curShow.network)) %>
         % try:
-            <td align="center" class="nowrap">
+            <td align="center" >
                 <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdate(airDate)}</time>
             </td>
         % except ValueError:
-            <td align="center" class="nowrap"></td>
+            <td align="center" ></td>
         % endtry
     % else:
-        <td align="center" class="nowrap"></td>
+        <td align="center" ></td>
     % endif
 
     % if cur_airs_prev:
         <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_prev, curShow.airs, curShow.network)) %>
         % try:
-            <td align="center" class="nowrap">
+            <td align="center" >
                 <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdate(airDate)}</time>
             </td>
         % except ValueError:
-            <td align="center" class="nowrap"></td>
+            <td align="center" ></td>
         % endtry
     % else:
-        <td align="center" class="nowrap"></td>
+        <td align="center" ></td>
     % endif
 
     % if sickbeard.HOME_LAYOUT == 'small':

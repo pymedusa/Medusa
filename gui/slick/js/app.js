@@ -27,6 +27,11 @@ sickrage.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$
         controller: 'posterController'
     });
 
+    $stateProvider.state('home.banner', {
+        templateUrl: '/templates/partials/home/banner.html',
+        controller: 'bannerController'
+    });
+
     $stateProvider.state('schedule', {
         url: '/schedule',
         templateUrl: '/schedule'
@@ -143,7 +148,40 @@ sickrage.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$
 // @TODO: All of the controllers need to be moved into a controller directory and/or file
 
 sickrage.controller('homeController', function($state) {
-    $state.transitionTo('home.poster');
+    $state.transitionTo('home.banner');
+});
+
+sickrage.controller('bannerController', function($scope, $http) {
+    $http({
+        method: 'GET',
+        url: '/home'
+    }).then(function successCallback(response) {
+        $scope.shows = response.data.showLists.shows;
+        $scope.maxDownloadCount = response.data.maxDownloadCount;
+        SICKRAGE.common.init();
+        SICKRAGE.home.index();
+    }, function errorCallback(response) {
+        console.error(response);
+    });
+});
+
+sickrage.controller('bannerShowController', function($scope, $sce) {
+    var show = $scope.show;
+
+    var downloadStat = show.stats.downloaded;
+    var downloadStatTip = "Downloaded: " + show.stats.downloaded;
+    if (show.stats.snatched){
+        downloadStat += "+" + show.stats.snatched;
+        downloadStatTip += "&#13;" + "Snatched: " + show.stats.snatched;
+    }
+
+    downloadStat += " / " + show.stats.total;
+    downloadStatTip += "&#13;" + "Total: " + show.stats.total;
+
+    $scope.downloadStat = downloadStat;
+    // @TODO: This should be HTML so line breaks work
+    $scope.downloadStatTip = show.stats.total ? downloadStatTip : 'Unaired';
+    $scope.progressbarPercentage = (show.stats.downloaded * 100) / (show.stats.total || 1);
 });
 
 sickrage.controller('posterController', function($scope, $http) {
@@ -153,11 +191,11 @@ sickrage.controller('posterController', function($scope, $http) {
     }).then(function successCallback(response) {
         $scope.shows = response.data.showLists.shows;
         $scope.maxDownloadCount = response.data.maxDownloadCount;
+        SICKRAGE.common.init();
+        SICKRAGE.home.index();
     }, function errorCallback(response) {
-        // Error?
-        console.log(response);
+        console.error(response);
     });
-
 });
 
 sickrage.controller('posterShowController', function($scope, $sce) {
@@ -176,7 +214,6 @@ sickrage.controller('posterShowController', function($scope, $sce) {
     $scope.downloadStat = downloadStat;
     // @TODO: This should be HTML so line breaks work
     $scope.downloadStatTip = show.stats.total ? downloadStatTip : 'Unaired';
-
     $scope.progressbarPercentage = (show.stats.downloaded * 100) / (show.stats.total || 1);
 });
 

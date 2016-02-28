@@ -1,0 +1,78 @@
+<table class="tablesorter" cellspacing="1" border="0" cellpadding="0">
+    <thead>
+        <tr>
+            <th class="nowrap">Next Ep</th>
+            <th class="nowrap">Prev Ep</th>
+            <th>Show</th>
+            <th>Network</th>
+            <th>Quality</th>
+            <th>Downloads</th>
+            <th>Size</th>
+            <th>Active</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-controller="bannerShowController" ng-repeat="(i, show) in shows">
+            <td ng-if="show.airsNext" align="center" class="nowrap">
+                <time datetime="{{show.airsNext}}" class="date">{{show.airsNext}}</time>
+            </td>
+            <td ng-if="!show.airsNext" align="center" class="nowrap"></td>
+
+            <td ng-if="show.airsPrev" align="center" class="nowrap">
+                <time datetime="{{show.airsPrev}}" class="date">{{show.airsPrev}}</time>
+            </td>
+            <td ng-if="!show.airsPrev" align="center" class="nowrap"></td>
+
+            <td>
+                <span style="display: none;">{{show.name}}</span>
+                <div class="imgbanner banner">
+                    <a href="{{'#/displayShow?showId=' + show.indexerId}}">
+                    <img src="{{'/showPoster/?show=' + show.indexerId + '&amp;which=banner'}}" class="banner" alt="{{show.indexerId}}" title="{{show.name}}"/>
+                </div>
+            </td>
+
+            <td ng-if="show.network" align="center">
+                <span title="{{show.network}}" class="hidden-print"><img id="network" width="54" height="27" src="{{'/showPoster/?show=' + show.indexerId + '&amp;which=network'}}" alt="{{show.network}}" title="{{show.network}}" /></span>
+                <span class="visible-print-inline">${curShow.network}</span>
+            </td>
+            <td ng-if="!show.network" align="center">
+                <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="/images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
+                <span class="visible-print-inline">No Network</span>
+            </td>
+
+            <!-- @TODO: This needs to be done in the controller -->
+            <td align="center">${renderQualityPill(curShow.quality, showTitle=True)}</td>
+
+            <td align="center">
+                <!-- @TODO: Replace this with some kind of angular funciton to generate a print view -->
+                <span style="display: none;">{{downloadStat}}</span>
+                <div class="progressbar hidden-print" style="position:relative;" data-show-id="{{show.indexerId}}" data-progress-percentage="{{progressbarPercentage}}" data-progress-text="{{downloadStat}}" data-progress-tip="{{downloadStatTip}}"></div>
+                <span class="visible-print-inline">{{downloadStat}}</span>
+            </td>
+
+            <!-- @TODO: This needs to be done in the controller -->
+            <td align="center" data-show-size="${show_size}">${pretty_file_size(show_size)}</td>
+
+            <td align="center">
+                <img ng-if="show.paused || show.status.status.indexOf('ended') >= 0" src="/images/no16.png" alt="Yes" width="16" height="16" />
+                <img ng-if="show.status.indexOf('Continuing') >= 0" src="/images/yes16.png" alt="No" width="16" height="16" />
+            </td>
+
+            <td align="center">{{show.status}}</td>
+        </tr>
+    </tbody>
+    <tfoot class="hidden-print">
+        <tr>
+            <th rowspan="1" colspan="1" align="center"><a href="/addShows/">Add ${('Show', 'Anime')[curListType == 'Anime']}</a></th>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+        </tr>
+    </tfoot>
+</table>

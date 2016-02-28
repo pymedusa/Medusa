@@ -81,7 +81,7 @@ Jump to Show:
         </td>
     </tr>
 
-    <tr class="seasoncols"><th>Episode</th><th>Name</th><th class="nowrap">Airdate</th></tr>
+    <tr class="seasoncols"><th>Episode</th><th>Name</th><th >Airdate</th></tr>
 
     % for curResult in showSQLResults[curShow.indexerid]:
         <%
@@ -94,7 +94,7 @@ Jump to Show:
         %>
         <tr class="seasonstyle ${Overview.overviewStrings[showCats[curShow.indexerid][whichStr]]}">
             <td class="tableleft" align="center">${whichStr}</td>
-            <td class="tableright" align="center" class="nowrap">
+            <td class="tableright" align="center" >
                 ${curResult["name"]}
             </td>
             <td>
