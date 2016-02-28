@@ -26,6 +26,7 @@ import urllib
 import datetime
 import traceback
 import ast
+import calendar
 
 import sickbeard
 from sickbeard import config, sab
@@ -37,6 +38,7 @@ from sickbeard import search_queue
 from sickbeard import naming
 from sickbeard import subtitles
 from sickbeard import network_timezones
+from sickbeard import sbdatetime
 from sickbeard.providers import newznab, rsstorrent
 from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
 from sickbeard.common import SNATCHED, UNAIRED, IGNORED, WANTED, FAILED, SKIPPED
@@ -704,10 +706,23 @@ class Home(WebRoot):
         shows = []
         anime = []
         for show in sickbeard.showList:
+
+            # If show has date then set it otherwise set fake date for sorting
+            if stats[0][show.indexerid]['ep_airs_next']:
+                date = calendar.timegm(sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(stats[0][show.indexerid]['ep_airs_next'], show.airs, show.network)).timetuple())
+            elif None is not show.status:
+                if 'nded' not in show.status and 1 == int(curShow.paused):
+                    date = '5000000500.0'
+                elif 'ontinu' in show.status:
+                    date = '5000000000.0'
+                elif 'nded' in show.status:
+                    date = '5000000100.0'
+
             my_dict = {
                 "indexerId": show.indexerid,
                 "indexer": show.indexer,
                 "name": show.name,
+                "date": date,
                 "location": show.location,
                 "network": show.network,
                 "airs": show.airs,
