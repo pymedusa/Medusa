@@ -283,7 +283,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 logger.log(u"Search URL: {url}".format(url=search_url), logger.DEBUG)
 
                 time.sleep(cpu_presets[sickbeard.CPU_PRESET])
-                data = self.get_url(search_url)
+                data = self.get_url(search_url, echo=False, returns='text')
                 if not data:
                     break
 
@@ -301,7 +301,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                             logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
 
                             time.sleep(cpu_presets[sickbeard.CPU_PRESET])
-                            data = self.get_url(search_url)
+                            data = self.get_url(search_url, echo=False, returns='text')
                             if not data:
                                 break
 

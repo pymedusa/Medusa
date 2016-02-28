@@ -196,10 +196,16 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         :param kwargs: to pass to logger
         """
         cur_thread = threading.currentThread().getName()
-        if sickbeard.CUR_COMMIT_HASH and len(sickbeard.CUR_COMMIT_HASH) > 6 and level in [ERROR, WARNING]:
-            msg += ' [%s]' % sickbeard.CUR_COMMIT_HASH[:7]
+        cur_hash = '[{}] '.format(sickbeard.CUR_COMMIT_HASH[:7]) if all([
+            sickbeard.CUR_COMMIT_HASH,
+            len(sickbeard.CUR_COMMIT_HASH) > 6,
+        ]) else ''
 
-        message = '%s :: %s' % (cur_thread, msg)
+        message = '{thread} :: {hash}{message}'.format(
+            thread = cur_thread,
+            hash = cur_hash,
+            message = msg
+        )
 
         # Change the SSL error to a warning with a link to information about how to fix it.
         # Check for u'error [SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] sslv3 alert handshake failure (_ssl.c:590)'
@@ -260,8 +266,8 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
 
         self.submitter_running = True
 
-        gh_org = sickbeard.GIT_ORG or 'SickRage'
-        gh_repo = 'sickrage-issues'
+        gh_org = sickbeard.GIT_ORG
+        gh_repo = sickbeard.GIT_REPO
 
         git = Github(login_or_token=sickbeard.GIT_USERNAME, password=sickbeard.GIT_PASSWORD, user_agent='SickRage')
 
@@ -331,7 +337,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
                     cur_error.message,
                     '```',
                     '---',
-                    '_STAFF NOTIFIED_: @SickRage/owners @SickRage/moderators',
+                    '_STAFF NOTIFIED_: @SickRage/support @SickRage/moderators',
                 ]
 
                 message = '\n'.join(msg)

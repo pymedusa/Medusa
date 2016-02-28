@@ -71,7 +71,7 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     search_url = posixpath.join(self.custom_url, search_url.split(self.url)[1].lstrip('/'))  # Must use posixpath
 
                 logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
-                torrents = self.get_url(search_url, json=True)
+                torrents = self.get_url(search_url, json=True, echo=False)
                 if not (torrents and "total_found" in torrents and int(torrents["total_found"]) > 0):
                     logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
                     continue

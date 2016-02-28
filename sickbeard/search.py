@@ -246,6 +246,12 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
                                                                            cur_result.provider.name):
                 logger.log(cur_result.name + u" has previously failed, rejecting it")
                 continue
+        preferred_words = ''
+        if sickbeard.PREFERRED_WORDS:
+            preferred_words = sickbeard.PREFERRED_WORDS.lower().split(',')
+        undesired_words = ''
+        if sickbeard.UNDESIRED_WORDS:
+            undesired_words = sickbeard.UNDESIRED_WORDS.lower().split(',')
 
         if not bestResult:
             bestResult = cur_result
@@ -254,6 +260,9 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
         elif cur_result.quality in anyQualities and bestResult.quality not in bestQualities and bestResult.quality < cur_result.quality:
             bestResult = cur_result
         elif bestResult.quality == cur_result.quality:
+            if any(ext in cur_result.name.lower() for ext in preferred_words):
+                logger.log(u"Preferring " + cur_result.name + " (preferred words)")
+                bestResult = cur_result
             if "proper" in cur_result.name.lower() or "real" in cur_result.name.lower() or "repack" in cur_result.name.lower():
                 logger.log(u"Preferring " + cur_result.name + " (repack/proper/real over nuked)")
                 bestResult = cur_result
@@ -262,6 +271,9 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
                 bestResult = cur_result
             elif "xvid" in bestResult.name.lower() and "x264" in cur_result.name.lower():
                 logger.log(u"Preferring " + cur_result.name + " (x264 over xvid)")
+                bestResult = cur_result
+            if any(ext in bestResult.name.lower() and ext not in cur_result.name.lower() for ext in undesired_words):
+                logger.log(u"Dont want this release " + cur_result.name + " (contains undesired word(s))")
                 bestResult = cur_result
 
     if bestResult:
