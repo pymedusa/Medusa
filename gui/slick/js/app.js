@@ -44,9 +44,7 @@ sickrage.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$
 
     $stateProvider.state('displayShow', {
         url: '/displayShow?showId',
-        templateProvider: function($stateParams, $templateRequest) {
-            return $templateRequest('/home/displayShow?show=' + $stateParams.showId);
-        }
+        templateUrl: '/templates/displayShow.html'
     });
 
     $stateProvider.state('manage', {
@@ -151,7 +149,7 @@ sickrage.controller('homeController', function($state) {
     $state.transitionTo('home.banner');
 });
 
-sickrage.controller('bannerController', function($scope, $http) {
+sickrage.controller('bannerController', '$scope', '$http', function($scope, $http) {
     $http({
         method: 'GET',
         url: '/home'
@@ -225,8 +223,28 @@ sickrage.controller('historyController', function() {
     SICKRAGE.history.index();
 });
 
-sickrage.controller('displayShowController', function() {
-    SICKRAGE.home.displayShow();
+sickrage.controller('displayShowController', function($scope, $stateParams, $http) {
+    $http({
+        method: 'GET',
+        url: '/home/displayShow?show=' + $stateParams.showId
+    }).then(function successCallback(response) {
+        var seasons = [];
+        response.data.show.episodes.forEach(function(episode){
+            if(!seasons[episode.season]){
+                seasons[episode.season] = [];
+            }
+            seasons[episode.season][episode.episode] = episode;
+        });
+        $scope.seasons = seasons;
+        $scope.show = response.data.show;
+        $scope.displaySpecials = response.data.displaySpecials;
+        $scope.showLocation = response.data.showLocation;
+        $scope.showMessage = response.data.showMessage;
+        $scope.showMenu = response.data.showMenu;
+    }, function errorCallback(response) {
+        console.error(response);
+    });
+    // SICKRAGE.home.displayShow();
 });
 
 sickrage.controller('configController', function() {

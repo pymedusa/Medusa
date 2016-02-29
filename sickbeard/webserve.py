@@ -39,6 +39,7 @@ from sickbeard import naming
 from sickbeard import subtitles
 from sickbeard import network_timezones
 from sickbeard import sbdatetime
+from sickbeard import GIT_USERNAME
 from sickbeard.providers import newznab, rsstorrent
 from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
 from sickbeard.common import SNATCHED, UNAIRED, IGNORED, WANTED, FAILED, SKIPPED
@@ -362,9 +363,7 @@ class WebRoot(WebHandler):
         super(WebRoot, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename="index.mako")
-        stats = Home.show_statistics()
-        return t.render(title="Home", show_stat=stats[0], max_download_count=stats[1])
+        return PageTemplate(rh=self, filename="index.mako").render()
 
     def robots_txt(self):
         """ Keep web crawlers out """
@@ -424,7 +423,6 @@ class WebRoot(WebHandler):
         return None
 
     def setHomeLayout(self, layout):
-
         if layout not in ('poster', 'small', 'banner', 'simple', 'coverflow'):
             layout = 'poster'
 
@@ -1201,7 +1199,6 @@ class Home(WebRoot):
         return self.redirect('/' + sickbeard.DEFAULT_PAGE + '/')
 
     def update(self, pid=None, branch=None):
-
         if str(pid) != str(sickbeard.PID):
             return self.redirect('/home/')
 
@@ -1235,7 +1232,6 @@ class Home(WebRoot):
 
     @staticmethod
     def getDBcompare():
-
         checkversion = CheckVersion()
         db_status = checkversion.getDBcompare()
 
@@ -1253,9 +1249,10 @@ class Home(WebRoot):
             return json.dumps({"status": "error", 'message': 'General exception'})
 
     def displayShow(self, show=None):
-        # todo: add more comprehensive show validation
+        self.set_header('Content-Type', 'application/json')
+        # @TODO: add more comprehensive show validation
         try:
-            show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
+            show = int(show)  # fails if show id ends in a period PyMedusa/SickRage-issues#65
             showObj = Show.find(sickbeard.showList, show)
         except (ValueError, TypeError):
             return self._genericMessage("Error", "Invalid show ID: %s" % str(show))
@@ -1264,25 +1261,15 @@ class Home(WebRoot):
             return self._genericMessage("Error", "Show not in show list")
 
         main_db_con = db.DBConnection()
-        seasonResults = main_db_con.select(
-            "SELECT DISTINCT season FROM tv_episodes WHERE showid = ? AND season IS NOT NULL ORDER BY season DESC",
-            [showObj.indexerid]
-        )
-
-        min_season = 0 if sickbeard.DISPLAY_SHOW_SPECIALS else 1
-
-        sql_results = main_db_con.select(
+        episodes = main_db_con.select(
             "SELECT * FROM tv_episodes WHERE showid = ? and season >= ? ORDER BY season DESC, episode DESC",
-            [showObj.indexerid, min_season]
+            [showObj.indexerid, 0 if sickbeard.DISPLAY_SHOW_SPECIALS else 1]
         )
-
-        t = PageTemplate(rh=self, filename="displayShow.mako")
-        submenu = [{'title': 'Edit', 'path': 'home/editShow?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-pencil'}]
 
         try:
-            showLoc = (showObj.location, True)
+            showLocation = (showObj.location, True)
         except ShowDirectoryNotFoundException:
-            showLoc = (showObj._location, False)  # pylint: disable=protected-access
+            showLocation = (showObj._location, False)  # pylint: disable=protected-access
 
         show_message = ''
 
@@ -1307,24 +1294,6 @@ class Home(WebRoot):
         elif sickbeard.showQueueScheduler.action.isInSubtitleQueue(showObj):
             show_message = 'This show is queued and awaiting subtitles download.'
 
-        if not sickbeard.showQueueScheduler.action.isBeingAdded(showObj):
-            if not sickbeard.showQueueScheduler.action.isBeingUpdated(showObj):
-                if showObj.paused:
-                    submenu.append({'title': 'Resume', 'path': 'home/togglePause?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-play'})
-                else:
-                    submenu.append({'title': 'Pause', 'path': 'home/togglePause?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-pause'})
-
-                submenu.append({'title': 'Remove', 'path': 'home/deleteShow?show=%d' % showObj.indexerid, 'class': 'removeshow', 'confirm': True, 'icon': 'ui-icon ui-icon-trash'})
-                submenu.append({'title': 'Re-scan files', 'path': 'home/refreshShow?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-refresh'})
-                submenu.append({'title': 'Force Full Update', 'path': 'home/updateShow?show=%d&amp;force=1' % showObj.indexerid, 'icon': 'ui-icon ui-icon-transfer-e-w'})
-                submenu.append({'title': 'Update show in KODI', 'path': 'home/updateKODI?show=%d' % showObj.indexerid, 'requires': self.haveKODI(), 'icon': 'menu-icon-kodi'})
-                submenu.append({'title': 'Update show in Emby', 'path': 'home/updateEMBY?show=%d' % showObj.indexerid, 'requires': self.haveEMBY(), 'icon': 'menu-icon-emby'})
-                submenu.append({'title': 'Preview Rename', 'path': 'home/testRename?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-tag'})
-
-                if sickbeard.USE_SUBTITLES and not sickbeard.showQueueScheduler.action.isBeingSubtitled(
-                        showObj) and showObj.subtitles:
-                    submenu.append({'title': 'Download Subtitles', 'path': 'home/subtitleShow?show=%d' % showObj.indexerid, 'icon': 'menu-icon-backlog'})
-
         epCounts = {
             Overview.SKIPPED: 0,
             Overview.WANTED: 0,
@@ -1337,28 +1306,35 @@ class Home(WebRoot):
         }
         epCats = {}
 
-        for curResult in sql_results:
-            curEpCat = showObj.getOverview(curResult["status"])
-            if curEpCat:
-                epCats[str(curResult["season"]) + "x" + str(curResult["episode"])] = curEpCat
-                epCounts[curEpCat] += 1
+        # for curResult in sql_results:
+        #     curEpCat = showObj.getOverview(curResult["status"])
+        #     if curEpCat:
+        #         epCats[str(curResult["season"]) + "x" + str(curResult["episode"])] = curEpCat
+        #         epCounts[curEpCat] += 1
 
         def titler(x):
             return (helpers.remove_article(x), x)[not x or sickbeard.SORT_ARTICLE]
 
-        if sickbeard.ANIME_SPLIT_HOME:
-            shows = []
-            anime = []
-            for show in sickbeard.showList:
+        shows = []
+        anime = []
+        for show in sickbeard.showList:
+            show_dict = {
+                "indexerId": show.indexerid,
+                "name": show.name,
+            }
+
+            if sickbeard.ANIME_SPLIT_HOME:
                 if show.is_anime:
-                    anime.append(show)
+                    anime.append(show_dict)
                 else:
-                    shows.append(show)
-            sortedShowLists = [["Shows", sorted(shows, lambda x, y: cmp(titler(x.name), titler(y.name)))],
-                               ["Anime", sorted(anime, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+                    shows.append(show_dict)
+            else:
+                shows.append(show_dict)
+
+        if sickbeard.ANIME_SPLIT_HOME:
+            showMenu = json.JSONEncoder().encode({"shows": shows, "anime": anime})
         else:
-            sortedShowLists = [
-                ["Shows", sorted(sickbeard.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+            showMenu = json.JSONEncoder().encode({"shows": shows})
 
         bwl = None
         if showObj.is_anime:
@@ -1383,17 +1359,31 @@ class Home(WebRoot):
             'name': showObj.name,
         })
 
-        return t.render(
-            submenu=submenu, showLoc=showLoc, show_message=show_message,
-            show=showObj, sql_results=sql_results, seasonResults=seasonResults,
-            sortedShowLists=sortedShowLists, bwl=bwl, epCounts=epCounts,
-            epCats=epCats, all_scene_exceptions=showObj.exceptions,
-            scene_numbering=get_scene_numbering_for_show(indexerid, indexer),
-            xem_numbering=get_xem_numbering_for_show(indexerid, indexer),
-            scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexerid, indexer),
-            xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexerid, indexer),
-            title=showObj.name
-        )
+        return json.JSONEncoder().encode({
+            "displaySpecials": sickbeard.DISPLAY_SHOW_SPECIALS,
+            "useSubtitles": sickbeard.USE_SUBTITLES,
+            "show": {
+                "indexerId": showObj.indexerid,
+                "indexer": showObj.indexer,
+                "name": showObj.name,
+                "location": showObj.location,
+                "network": showObj.network,
+                "airs": showObj.airs,
+                "status": showObj.status,
+                "startyear": showObj.startyear,
+                "genre": showObj.genre,
+                "classification": showObj.classification,
+                "runtime": showObj.runtime,
+                "quality": showObj.quality,
+                "scene": showObj.scene,
+                "sports": showObj.sports,
+                "anime": showObj.anime,
+                "location": showLocation,
+                "episodes": json.loads(json.dumps([dict(ix) for ix in episodes]))
+            },
+            "showMessage": show_message,
+            "showMenu": json.loads(showMenu)
+        })
 
     @staticmethod
     def plotDetails(show, season, episode):
@@ -2228,10 +2218,7 @@ class HomeIRC(Home):
         super(HomeIRC, self).__init__(*args, **kwargs)
 
     def index(self):
-
-        t = PageTemplate(rh=self, filename="IRC.mako")
-        return t.render(topmenu="system", title="IRC")
-
+        return json.JSONEncoder().encode({"username": ("SickRageUI|?", GIT_USERNAME)[bool(GIT_USERNAME)]})
 
 @route('/news(/?.*)')
 class HomeNews(Home):
