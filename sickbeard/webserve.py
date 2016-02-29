@@ -1224,6 +1224,26 @@ class Home(WebRoot):
             logger.log(u"Checkout branch couldn't compare DB version.", logger.ERROR)
             return json.dumps({"status": "error", 'message': 'General exception'})
 
+    def getSeasonSceneExceptions(self, indexer, indexer_id):  # @TODO: OMG, You can use this as an example to create the Api for the season exception indicators
+        """Get show name scene exceptions per season
+
+        :param indexer: The shows indexer
+        :param indexer_id: The shows indexer_id
+        :return: A json with the scene exceptions per season.
+        """
+
+        exceptions_list = {}
+        xem_numbering_season = {}
+
+        exceptions_list['seasonExceptions'] = sickbeard.scene_exceptions.get_all_scene_exceptions(indexer_id)
+
+        xem_numbering_season = {tvdb_season_ep[0]: anidb_season_ep[0]
+                                for (tvdb_season_ep, anidb_season_ep)
+                                in get_xem_numbering_for_show(indexer_id, indexer).iteritems()}
+
+        exceptions_list['xemNumbering'] = xem_numbering_season
+        return json.dumps(exceptions_list)
+
     def displayShow(self, show=None):
         # todo: add more comprehensive show validation
         try:
