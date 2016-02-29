@@ -149,7 +149,7 @@ sickrage.controller('homeController', function($state) {
     $state.transitionTo('home.banner');
 });
 
-sickrage.controller('bannerController', '$scope', '$http', function($scope, $http) {
+sickrage.controller('bannerController', function($scope, $http) {
     $http({
         method: 'GET',
         url: '/home'
@@ -241,6 +241,15 @@ sickrage.controller('displayShowController', function($scope, $stateParams, $htt
         $scope.showLocation = response.data.showLocation;
         $scope.showMessage = response.data.showMessage;
         $scope.showMenu = response.data.showMenu;
+        $scope.qualities = response.data.qualities;
+        $scope.qualities.all = [].concat.apply(
+            response.data.qualities.snatched,
+            response.data.qualities.snatchedProper,
+            response.data.qualities.snatchedBest,
+            response.data.qualities.downloaded
+        ).filter(function(item, pos, self) {
+            return self.indexOf(item) == pos;
+        });
     }, function errorCallback(response) {
         console.error(response);
     });

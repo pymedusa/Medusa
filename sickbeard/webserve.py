@@ -1361,7 +1361,9 @@ class Home(WebRoot):
 
         return json.JSONEncoder().encode({
             "displaySpecials": sickbeard.DISPLAY_SHOW_SPECIALS,
+            "displayAllSeasons": sickbeard.DISPLAY_ALL_SEASONS,
             "useSubtitles": sickbeard.USE_SUBTITLES,
+            "useFailedDownloads": sickbeard.USE_FAILED_DOWNLOADS,
             "show": {
                 "indexerId": showObj.indexerid,
                 "indexer": showObj.indexer,
@@ -1382,7 +1384,13 @@ class Home(WebRoot):
                 "episodes": json.loads(json.dumps([dict(ix) for ix in episodes]))
             },
             "showMessage": show_message,
-            "showMenu": json.loads(showMenu)
+            "showMenu": json.loads(showMenu),
+            "qualities": {
+                "snatched": Quality.SNATCHED,
+                "snatchedProper": Quality.SNATCHED_PROPER,
+                "snatchedBest": Quality.SNATCHED_BEST,
+                "downloaded": Quality.DOWNLOADED
+            }
         })
 
     @staticmethod
