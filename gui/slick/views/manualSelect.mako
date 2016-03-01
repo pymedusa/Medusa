@@ -164,6 +164,7 @@
     
     <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
     <input class="btn manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-force-search="1" />
+    <div id="searchNotification"></div>
     
     <div class="clearfix"></div>
     <div id="wrapper">
