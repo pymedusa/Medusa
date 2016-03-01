@@ -2,7 +2,12 @@
 /* global angular */
 /* global SICKRAGE */
 
-var sickrage = angular.module('sickrage', ['ui.router', 'ngResource', 'ngSanitize']);
+var sickrage = angular.module('sickrage', [
+    'ui.router',
+    'ngResource',
+    'ngSanitize',
+    // 'underscore'
+]);
 
 sickrage.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$compileProvider', function($stateProvider, $urlRouterProvider, $locationProvider, $compileProvider){ // jshint ignore:line
     // Enable HTML5's history API to allow / instead of #/
@@ -143,6 +148,10 @@ sickrage.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$
     });
 }]);
 
+sickrage.factory('_', ['$window', function($window) {
+    return $window._;
+}]);
+
 // @TODO: All of the controllers need to be moved into a controller directory and/or file
 
 sickrage.controller('homeController', function($state) {
@@ -237,7 +246,6 @@ sickrage.controller('displayShowController', function($scope, $stateParams, $htt
         });
         $scope.seasons = seasons;
         $scope.show = response.data.show;
-        $scope.displaySpecials = response.data.displaySpecials;
         $scope.showLocation = response.data.showLocation;
         $scope.showMessage = response.data.showMessage;
         $scope.showMenu = response.data.showMenu;
@@ -250,6 +258,65 @@ sickrage.controller('displayShowController', function($scope, $stateParams, $htt
         ).filter(function(item, pos, self) {
             return self.indexOf(item) == pos;
         });
+        $scope.displaySpecials = response.data.displaySpecials;
+        $scope.displayAllSeasons = response.data.displayAllSeasons;
+        $scope.useSubtitles = response.data.useSubtitles;
+        $scope.useFailedDownloads = response.data.useFailedDownloads;
+        $scope.downloadUrl = response.data.downloadUrl;
+        $scope.rootDirs = response.data.rootDirs;
+        $scope.qualityStrings = function(quality){
+            var qualityStrings = {
+                1: 'unaired',
+                2: 'snatched',
+                3: 'wanted',
+                4: 'downloaded',
+                5: 'skipped',
+                6: 'archived',
+                7: 'ignored',
+                9: 'snatched', // SNATCHED_PROPER
+                10: '', // SUBTITLED
+                11: 'failed',
+                12: 'snatched' // SNATCHED_BEST
+            };
+            if(qualityStrings[quality]){
+                return qualityStrings[quality];
+            } else {
+                return 'qual';
+            }
+        };
+        $scope.episodeCounts = function(quality){
+            var qualityStrings = {
+                1: 'unaired',
+                2: 'snatched',
+                3: 'wanted',
+                4: 'downloaded',
+                5: 'skipped',
+                6: 'archived',
+                7: 'ignored',
+                9: 'snatchedProper', // SNATCHED_PROPER
+                10: '', // SUBTITLED
+                11: 'failed',
+                12: 'snatchedBest' // SNATCHED_BEST
+            };
+            var episodeCounts = {
+                "skipped": 0,
+                "wanted": 0,
+                "downloaded": 0,
+                "good": 0,
+                "unaired": 0,
+                "snatched": 0,
+                "snatchedProper": 0,
+                "snatchedBest": 0,
+                "all": 0
+            };
+            seasons.forEach(function(season){
+                season.forEach(function(episode){
+                    episodeCounts['all']++;
+                    episodeCounts[qualityStrings[episode.status]]++;
+                });
+            });
+            return episodeCounts[quality];
+        }
     }, function errorCallback(response) {
         console.error(response);
     });

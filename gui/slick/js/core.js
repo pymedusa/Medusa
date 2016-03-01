@@ -2113,12 +2113,10 @@ var SICKRAGE = {
                 html: true, // required if content has HTML
                 content: '<div id="popover-target"></div>'
             }).on('shown.bs.popover', function () { // bootstrap popover event triggered when the popover opens
-                // call this function to copy the column selection code into the popover
-                $.tablesorter.columnSelector.attachTo( $('#showListTableShows'), '#popover-target');
-                if(metaToBool('sickbeard.ANIME_SPLIT_HOME')){
-                    $.tablesorter.columnSelector.attachTo( $('#showListTableAnime'), '#popover-target');
-                }
-
+                // call this function to copy the column selection code into the popover for each table since we use seperate ones per season
+                $('.tablesorter').each(function(){
+                    $.tablesorter.columnSelector.attachTo($(this), '#popover-target');
+               });
             });
         },
         displayShow: function() {

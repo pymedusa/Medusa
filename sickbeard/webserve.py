@@ -1294,24 +1294,6 @@ class Home(WebRoot):
         elif sickbeard.showQueueScheduler.action.isInSubtitleQueue(showObj):
             show_message = 'This show is queued and awaiting subtitles download.'
 
-        epCounts = {
-            Overview.SKIPPED: 0,
-            Overview.WANTED: 0,
-            Overview.QUAL: 0,
-            Overview.GOOD: 0,
-            Overview.UNAIRED: 0,
-            Overview.SNATCHED: 0,
-            Overview.SNATCHED_PROPER: 0,
-            Overview.SNATCHED_BEST: 0
-        }
-        epCats = {}
-
-        # for curResult in sql_results:
-        #     curEpCat = showObj.getOverview(curResult["status"])
-        #     if curEpCat:
-        #         epCats[str(curResult["season"]) + "x" + str(curResult["episode"])] = curEpCat
-        #         epCounts[curEpCat] += 1
-
         def titler(x):
             return (helpers.remove_article(x), x)[not x or sickbeard.SORT_ARTICLE]
 
@@ -1340,8 +1322,6 @@ class Home(WebRoot):
         if showObj.is_anime:
             bwl = showObj.release_groups
 
-        showObj.exceptions = sickbeard.scene_exceptions.get_scene_exceptions(showObj.indexerid)
-
         indexerid = int(showObj.indexerid)
         indexer = int(showObj.indexer)
 
@@ -1364,6 +1344,8 @@ class Home(WebRoot):
             "displayAllSeasons": sickbeard.DISPLAY_ALL_SEASONS,
             "useSubtitles": sickbeard.USE_SUBTITLES,
             "useFailedDownloads": sickbeard.USE_FAILED_DOWNLOADS,
+            "downloadUrl": sickbeard.DOWNLOAD_URL,
+            "rootDirs": sickbeard.ROOT_DIRS,
             "show": {
                 "indexerId": showObj.indexerid,
                 "indexer": showObj.indexer,
@@ -1381,6 +1363,7 @@ class Home(WebRoot):
                 "sports": showObj.sports,
                 "anime": showObj.anime,
                 "location": showLocation,
+                "exceptions": sickbeard.scene_exceptions.get_scene_exceptions(showObj.indexerid),
                 "episodes": json.loads(json.dumps([dict(ix) for ix in episodes]))
             },
             "showMessage": show_message,

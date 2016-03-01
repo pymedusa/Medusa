@@ -13,7 +13,7 @@
         </tr>
     </thead>
     <tbody>
-        <tr ng-controller="bannerShowController" ng-repeat="(i, show) in shows">
+        <tr ng-controller="bannerShowController" ng-repeat="(i, show) in shows" ng-class-odd="'odd'" ng-class-even="'even'">
             <td ng-if="show.airsNext" align="center" class="nowrap">
                 <time datetime="{{show.airsNext}}" class="date">{{show.airsNext}}</time>
             </td>

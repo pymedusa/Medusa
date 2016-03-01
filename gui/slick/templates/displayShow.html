@@ -113,41 +113,41 @@
                         <tr><td class="showLegend">Default EP Status: </td><td>${statusStrings[show.default_ep_status]}</td></tr>
                         <tr ng-if="show.location[1]"><td class="showLegend">Location: </td><td>{{show.location[0]}}</td></tr>
                         <tr ng-if="!show.location[1]"><td class="showLegend"><span style="color: red;">Location: </span></td><td><span style="color: red;">{{show.location[0]}}</span> (Missing)</td></tr>
-                        <tr><td class="showLegend">Scene Name:</td><td>${(show.name, " | ".join(show.exceptions))[show.exceptions != 0]}</td></tr>
+                        <tr><td class="showLegend">Scene Name:</td><td>{{show.exceptions ? show.exceptions.join(' | ') : show.name}}</td></tr>
 
-                    % if show.rls_require_words:
+                    <!-- % if show.rls_require_words: -->
                         <tr><td class="showLegend">Required Words: </td><td>${show.rls_require_words}</td></tr>
-                    % endif
-                    % if show.rls_ignore_words:
+                    <!-- % endif -->
+                    <!-- % if show.rls_ignore_words: -->
                         <tr><td class="showLegend">Ignored Words: </td><td>${show.rls_ignore_words}</td></tr>
-                    % endif
-                    % if bwl and bwl.whitelist:
+                    <!-- % endif -->
+                    <!-- % if bwl and bwl.whitelist: -->
                         <tr>
                             <td class="showLegend">Wanted Group${("", "s")[len(bwl.whitelist) > 1]}:</td>
                             <td>${', '.join(bwl.whitelist)}</td>
                         </tr>
-                    % endif
-                    % if bwl and bwl.blacklist:
+                    <!-- % endif -->
+                    <!-- % if bwl and bwl.blacklist: -->
                         <tr>
                             <td class="showLegend">Unwanted Group${("", "s")[len(bwl.blacklist) > 1]}:</td>
                             <td>${', '.join(bwl.blacklist)}</td>
                         </tr>
-                    % endif
+                    <!-- % endif -->
 
                         <tr><td class="showLegend">Size:</td><td>${pretty_file_size(sickbeard.helpers.get_size(showLoc[0]))}</td></tr>
                     </table>
 
                     <table style="width:180px; float: right; vertical-align: middle; height: 100%;">
-                        <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %>
+                        <!-- <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %> -->
                         <tr><td class="showLegend">Info Language:</td><td><img src="/images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='/images/flags/unknown.png';"/></td></tr>
-                        <tr ng-if="useSubtitles"><td class="showLegend">Subtitles: </td><td><img src="/images/${("no16.png", "yes16.png")[bool(show.subtitles)]}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
+                        <tr ng-if="useSubtitles"><td class="showLegend">Subtitles: </td><td><img src="{{'/images/' + (show.subtitles ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
                         <tr><td class="showLegend">Season Folders: </td><td><img src="/images/${("no16.png", "yes16.png")[bool(not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS)]}" alt=="${("N", "Y")[bool(not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Paused: </td><td><img src="/images/${("no16.png", "yes16.png")[bool(show.paused)]}" alt="${("N", "Y")[bool(show.paused)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Air-by-Date: </td><td><img src="/images/${("no16.png", "yes16.png")[bool(show.air_by_date)]}" alt="${("N", "Y")[bool(show.air_by_date)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Sports: </td><td><img src="/images/${("no16.png", "yes16.png")[bool(show.is_sports)]}" alt="${("N", "Y")[bool(show.is_sports)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Anime: </td><td><img src="/images/${("no16.png", "yes16.png")[bool(show.is_anime)]}" alt="${("N", "Y")[bool(show.is_anime)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">DVD Order: </td><td><img src="/images/${("no16.png", "yes16.png")[bool(show.dvdorder)]}" alt="${("N", "Y")[bool(show.dvdorder)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Scene Numbering: </td><td><img src="/images/${("no16.png", "yes16.png")[bool(show.scene)]}" alt="${("N", "Y")[bool(show.scene)]}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Paused: </td><td><img src="{{'/images/' + (show.paused ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.paused)]}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Air-by-Date: </td><td><img src="{{'/images/' + (show.air_by_date ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.air_by_date)]}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Sports: </td><td><img src="{{'/images/' + (show.is_sports ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.is_sports)]}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Anime: </td><td><img src="{{'/images/' + (show.is_anime ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.is_anime)]}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">DVD Order: </td><td><img src="{{'/images/' + (show.dvdorder ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.dvdorder)]}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Scene Numbering: </td><td><img src="{{'/images/' + (show.scene ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.scene)]}" width="16" height="16" /></td></tr>
                     </table>
                 </div>
             </div>
@@ -158,7 +158,7 @@
         <div class="pull-left" >
             Change selected episodes to:<br>
             <select id="statusSelect" class="form-control form-control-inline input-sm">
-            <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
+            <!-- <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
             % if not sickbeard.USE_FAILED_DOWNLOADS:
             <% availableStatus.remove(FAILED) %>
             % endif
@@ -166,10 +166,10 @@
                 % if curStatus not in [DOWNLOADED, ARCHIVED]:
                 <option value="${curStatus}">${statusStrings[curStatus]}</option>
                 % endif
-            % endfor
+            % endfor -->
             </select>
-            <input type="hidden" id="showID" value="${show.indexerid}" />
-            <input type="hidden" id="indexer" value="${show.indexer}" />
+            <input type="hidden" id="showID" value="{{show.indexerId}}" />
+            <input type="hidden" id="indexer" value="{{show.indexer}}" />
             <input class="btn btn-inline" type="button" id="changeStatus" value="Go" />
         </div>
 
@@ -177,12 +177,11 @@
 
         <div class="pull-right clearfix" id="checkboxControls">
             <div style="padding-bottom: 5px;">
-                <% total_snatched = epCounts[Overview.SNATCHED] + epCounts[Overview.SNATCHED_PROPER] + epCounts[Overview.SNATCHED_BEST] %>
-                <label for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" /> Wanted: <b>${epCounts[Overview.WANTED]}</b></span></label>
+                <label for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" /> Wanted: <b>{{episodeCounts('wanted')}}</b></span></label>
                 <label for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" /> Allowed: <b>${epCounts[Overview.QUAL]}</b></span></label>
                 <label for="good"><span class="good"><input type="checkbox" id="good" checked="checked" /> Preferred: <b>${epCounts[Overview.GOOD]}</b></span></label>
-                <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" /> Skipped: <b>${epCounts[Overview.SKIPPED]}</b></span></label>
-                <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>${total_snatched}</b></span></label>
+                <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" /> Skipped: <b>{{episodeCounts('skipped')}}</b></span></label>
+                <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>{{episodeCounts('snatched') + episodeCounts('snatchedProper') + episodeCounts('snatchedBest')}}</b></span></label>
             </div>
 
             <button id="popover" type="button" class="btn btn-xs">Select Columns <b class="caret"></b></button>
@@ -202,15 +201,15 @@
                 <th data-sorter="false" class="col-metadata">NFO</th>
                 <th data-sorter="false" class="col-metadata">TBN</th>
                 <th data-sorter="false" class="col-ep">Episode</th>
-                <th data-sorter="false" ${("class=\"col-ep columnSelector-false\"", "class=\"col-ep\"")[bool(show.is_anime)]}>Absolute</th>
-                <th data-sorter="false" ${("class=\"col-ep columnSelector-false\"", "class=\"col-ep\"")[bool(scene)]}>Scene</th>
-                <th data-sorter="false" ${("class=\"col-ep columnSelector-false\"", "class=\"col-ep\"")[bool(scene_anime)]}>Scene Absolute</th>
+                <th data-sorter="false" class="{{'col-ep' + (show.is_anime ? 'columnSelector-false' : '')}}">Absolute</th>
+                <th data-sorter="false" class="{{'col-ep' + ((!show.airByDate && !show.sport && !show.anime && show.scene) ? 'columnSelector-false' : '')}}">Scene</th>
+                <th data-sorter="false" class="{{'col-ep' + (!show.airByDate && !show.sports && show.anime && show.scene) ? 'columnSelector-false' : ''}}">Scene Absolute</th>
                 <th data-sorter="false" class="col-name">Name</th>
                 <th data-sorter="false" class="col-name columnSelector-false">File Name</th>
                 <th data-sorter="false" class="col-ep columnSelector-false">Size</th>
                 <th data-sorter="false" class="col-airdate">Airdate</th>
-                <th data-sorter="false" ${("class=\"col-ep columnSelector-false\"", "class=\"col-ep\"")[bool(sickbeard.DOWNLOAD_URL)]}>Download</th>
-                <th data-sorter="false" ${("class=\"col-ep columnSelector-false\"", "class=\"col-ep\"")[bool(sickbeard.USE_SUBTITLES)]}>Subtitles</th>
+                <th data-sorter="false" class="{{'col-ep' + (downloadUrl ? 'columnSelector-false' : '')}}">Download</th>
+                <th data-sorter="false" class="{{'col-ep' + (useSubtitles ? 'columnSelector-false' : '')}}">Subtitles</th>
                 <th data-sorter="false" class="col-status">Status</th>
                 <th data-sorter="false" class="col-search">Search</th>
             </tr>
@@ -219,9 +218,7 @@
             <tr style="height: 60px;">
                 <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
                     <h3 style="display: inline;"><a name="{{'season-' + seasons.indexOf(season)}}"></a>{{seasons.indexOf(season) === 0 ? 'Specials' : 'Season ' + seasons.indexOf(season)}}</h3>
-                    <!-- % if sickbeard.DISPLAY_ALL_SEASONS is False:
-                        <button id="showseason-${epResult['season']}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
-                    % endif -->
+                    <button ng-if="!displayAllSeasons" id="{{'showseason-' + seasons.indexOf(season)}}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="{{'#collapseSeason-' + seasons.indexOf(season)}}">Show Episodes</button>
                 </th>
             </tr>
         </tbody>
@@ -244,22 +241,16 @@
                 <th class="col-search">Search</th>
             </tr>
         </tbody>
-            <!-- % if sickbeard.DISPLAY_ALL_SEASONS is False:
-            <tbody class="toggle collapse${("", " in")[curSeason == -1]}" id="collapseSeason-${epResult['season']}">
-            % else:
-            <tbody>
-            % endif -->
-            <!-- <% curSeason = int(epResult["season"]) %>
-            % endif -->
-            <tr ng-repeat="(i, episode) in season.slice().reverse()" class="${Overview.overviewStrings[epCats[epStr]]} season-${curSeason} seasonstyle" id="${'S' + str(epResult["season"]) + 'E' + str(epResult["episode"])}">
+        <tbody id="{{'collapseSeason-' + seasons.indexOf(season)}}">
+            <tr ng-repeat="(i, episode) in season.slice().reverse().slice(0, -1)" class="{{qualityStrings(episode.status) + ' season-' + seasons.indexOf(season) + ' seasonstyle'}}" id="{{seasons.indexOf(season) + 'x' + episode.episode}}">
                 <td class="col-checkbox">
-                    <input ng-if="episode.status != 'unaired'" type="checkbox" class="epCheck" id="${str(epResult["season"])+'x'+str(epResult["episode"])}" name="${str(epResult["season"]) +"x"+str(epResult["episode"])}" />
+                    <input ng-if="episode.status != 'unaired'" type="checkbox" class="epCheck" id="{{seasons.indexOf(season) + 'x' + season.episode.episode}}" name="{{seasons.indexOf(season) + 'x' + season.episode.episode}}" />
                 </td>
                 <td align="center"><img src="{{'/images/' + (episode.hasnfo ? 'nfo.gif' : 'nfo-no.gif')}}" alt="{{episode.hasnfo ? 'Y' : 'N'}}" width="23" height="11" /></td>
                 <td align="center"><img src="{{'/images/' + (episode.hastbn ? 'tbn.gif' : 'tbn-no.gif')}}" alt="{{episode.hastbn ? 'Y' : 'N'}}" width="23" height="11" /></td>
                 <td align="center">
-                    <span ng-if="episode.location" title="{{episode.name}}" class="addQTip">{{episode.name}}</span>
-                    <span ng-if="!episode.location">{{episode.name}}</span>
+                    <span ng-if="episode.location" title="{{episode.episode}}" class="addQTip">{{episode.episode}}</span>
+                    <span ng-if="!episode.location">{{episode.episode}}</span>
                 </td>
                 <td align="center">{{episode.absolute_number}}</td>
                 <td align="center">
@@ -287,7 +278,7 @@
                             style="padding: 0; text-align: center; max-width: 60px;" autocapitalize="off" /> -->
                 </td>
                 <td class="col-name">
-                    <img ng-if="episode.description" src="/images/info32.png" width="16" height="16" class="plotInfo" alt="" id="plot_info_${str(show.indexerid)}_${str(epResult["season"])}_${str(epResult["episode"])}" />
+                    <img ng-if="episode.description" src="/images/info32.png" width="16" height="16" class="plotInfo" alt="" id="{{'plot_info_' + show.indexerId + '_' + seasons.indexOf(season) + '_' + episode.episode}}" />
                     <img ng-if="!episode.description" src="/images/info32.png" width="16" height="16" class="plotInfoNone" alt="" />
                     {{episode.name}}
                 </td>
@@ -310,16 +301,15 @@
                     <span ng-if="!episode.airdate">Never</span>
                 </td>
                 <td>
-                    <!-- % if sickbeard.DOWNLOAD_URL and epResult['location']:
-                        <%
-                            filename = epResult['location']
-                            for rootDir in sickbeard.ROOT_DIRS.split('|'):
-                                if rootDir.startswith('/'):
-                                    filename = filename.replace(rootDir, "")
-                            filename = sickbeard.DOWNLOAD_URL + urllib.quote(filename.encode('utf8'))
-                        %>
-                        <center><a href="${filename}">Download</a></center>
-                    % endif -->
+                    <!-- {{
+                        filename = episode.location
+                        rootDirs.split('|').forEach(function(rootDir){
+                            if(rootDir[0] === '/'){
+                                filename = filename.replace(rootDir, '');
+                            }
+                        });
+                    }} -->
+                    <center ng-if="downloadUrl && episode.location"><a href="{{downloadUrl + filename}}">Download</a></center>
                 </td>
                 <td class="col-subtitles" align="center">
                 <!-- % for flag in (epResult["subtitles"] or '').split(','):
@@ -329,9 +319,9 @@
                 % endfor -->
                 </td>
                     <!-- <% curStatus, curQuality = Quality.splitCompositeStatus(int(epResult["status"])) %>
-                    % if curQuality != Quality.NONE:
+                    % if curQuality != Quality.NONE: -->
                         <td class="col-status">${statusStrings[curStatus]} ${renderQualityPill(curQuality)}</td>
-                    % else:
+                    <!-- % else:
                         <td class="col-status">${statusStrings[curStatus]}</td>
                     % endif -->
                 <td class="col-search">
@@ -340,7 +330,7 @@
                         <a ng-if="qualities.all.indexOf(episode.status) === -1" class="epSearch" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="searchEpisode?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="/images/search16.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                     </span>
                     <!-- % if int(epResult["status"]) not in Quality.SNATCHED + Quality.SNATCHED_PROPER and sickbeard.USE_SUBTITLES and show.subtitles and epResult["location"] and subtitles.needs_subtitles(epResult['subtitles']): -->
-                    <a ng-if="useSubtitles && show.subtitles && episode.location && " class="epSubtitlesSearch" href="searchEpisodeSubtitles?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="/images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></a>
+                    <a ng-if="useSubtitles && show.subtitles && episode.location" class="epSubtitlesSearch" href="searchEpisodeSubtitles?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="/images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></a>
                 </td>
             </tr>
         </tbody>
