@@ -1375,11 +1375,15 @@ class Home(WebRoot):
 
         # Try to retrieve the cached result from the providers cache table.
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
-        sql_results = []
-        main_db_con = db.DBConnection('cache.db')
 
-        sql_return = main_db_con.action("SELECT * FROM '%s' WHERE rowid = ?" %
+        sql_results = []
+
+        try:
+            main_db_con = db.DBConnection('cache.db')
+            sql_return = main_db_con.action("SELECT * FROM '%s' WHERE rowid = ?" %
                                         (sickbeard.providers.getProviderClass(provider).get_id()), [rowid], fetchone=True)
+        except Exception as e:
+            return self._genericMessage("Error", "Couldn't read cached results. Error: {}".format(e))
 
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
@@ -1387,13 +1391,11 @@ class Home(WebRoot):
         except (ValueError, TypeError):
             return self._genericMessage("Error", "Invalid show ID: %s" % str(show))
 
-        if showObj is None:
-            return self._genericMessage("Error", "Show not in show list")
+        if not showObj:
+            return self._genericMessage("Error", "Show is not in your library")
 
-        if (sql_return['url'] is None or sql_return['quality'] is None or
-            sql_return['release_group'] is None or
-            provider is None or sql_return['name'] is None):
-            return self._genericMessage("Error", "URL not valid")
+        if not (sql_return['url'] or sql_return['name'] or provider or episode):
+            return self._genericMessage("Error", "Cached result doesn't have all needed info to snatch episode")
 
         # retrieve the episode object and fail if we can't get one
         ep_obj = self._getEpisode(show, season, episode)
