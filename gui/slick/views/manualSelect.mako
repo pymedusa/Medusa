@@ -176,7 +176,7 @@
         <table id="showTable" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
             <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
             <tr style="height: 60px;" role="row">
-                <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader displayShowTable">
+                <th style="vertical-align: bottom; width: auto;" colspan="11" class="row-seasonheader displayShowTable">
                     <h3 style="display: inline;"><a name="season-${season}" style="position: absolute; font-size: 1px; visibility: hidden;">.</a>Season ${season} Episode ${episode}</h3>
                 </th>
             </tr>
