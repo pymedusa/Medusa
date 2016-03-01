@@ -1451,7 +1451,7 @@ class Home(WebRoot):
         found_items = []
         last_prov_updates = {}
 
-        providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_backlog]
+        providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_daily]
         for curProvider in providers:
 
             # Let's check if this provider table already exists
