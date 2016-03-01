@@ -1426,6 +1426,15 @@ class Home(WebRoot):
         last_prov_updates = json.loads(last_prov_updates.replace("'", '"'))
         main_db_con = db.DBConnection('cache.db')
 
+        episodesInSearch = self.collectEpisodesFromSearchThread(show)
+
+        for searchedEpisode in episodesInSearch:
+            if (str(searchedEpisode['show']) in show and
+                str(searchedEpisode['season']) in season and
+                    str(searchedEpisode['episode']) in episode):
+                        if searchedEpisode['searchstatus'] not in 'finished':
+                            return {'result': searchedEpisode['searchstatus']}
+
         for provider, last_update in last_prov_updates.iteritems():
             # Check if the cache table has a result for this show + season + ep wich has a later timestamp, then last_update
             needs_update = main_db_con.select("SELECT * FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ? \
@@ -1435,7 +1444,7 @@ class Home(WebRoot):
             if needs_update:
                 return {'result': 'refresh'}
 
-        return {'result': 'idle'}
+        return {'result': 'finished'}
 
     def manualSelect(self, show=None, season=None, episode=None, perform_search=0, down_cur_quality=0, show_all_results=0):
         # todo: add more comprehensive show validation
@@ -2227,49 +2236,46 @@ class Home(WebRoot):
         else:
             return json.dumps({'result': 'failure'})
 
-    # ## Returns the current ep_queue_item status for the current viewed show.
-    # Possible status: Downloaded, Snatched, etc...
-    # Returns {'show': 279530, 'episodes' : ['episode' : 6, 'season' : 1, 'searchstatus' : 'queued', 'status' : 'running', 'quality': '4013']
-    def getManualSearchStatus(self, show=None):
-        def getEpisodes(searchThread, searchstatus):
-            results = []
-            showObj = Show.find(sickbeard.showList, int(searchThread.show.indexerid))
+    def getEpisodes(self, searchThread, searchstatus):
+        results = []
+        showObj = Show.find(sickbeard.showList, int(searchThread.show.indexerid))
 
-            if not showObj:
-                logger.log(u'No Show Object found for show with indexerID: ' + str(searchThread.show.indexerid), logger.ERROR)
-                return results
-
-            if isinstance(searchThread, (sickbeard.search_queue.ManualSearchQueueItem, sickbeard.search_queue.ManualSelectQueueItem)):
-                results.append({
-                    'show': searchThread.show.indexerid,
-                    'episode': searchThread.segment.episode,
-                    'episodeindexid': searchThread.segment.indexerid,
-                    'season': searchThread.segment.season,
-                    'searchstatus': searchstatus,
-                    'status': statusStrings[searchThread.segment.status],
-                    'quality': self.getQualityClass(searchThread.segment),
-                    'overview': Overview.overviewStrings[showObj.getOverview(searchThread.segment.status)]
-                })
-            else:
-                for epObj in searchThread.segment:
-                    results.append({'show': epObj.show.indexerid,
-                                    'episode': epObj.episode,
-                                    'episodeindexid': epObj.indexerid,
-                                    'season': epObj.season,
-                                    'searchstatus': searchstatus,
-                                    'status': statusStrings[epObj.status],
-                                    'quality': self.getQualityClass(epObj),
-                                    'overview': Overview.overviewStrings[showObj.getOverview(epObj.status)]
-                                    })
-
+        if not showObj:
+            logger.log(u'No Show Object found for show with indexerID: ' + str(searchThread.show.indexerid), logger.ERROR)
             return results
 
+        if isinstance(searchThread, (sickbeard.search_queue.ManualSearchQueueItem, sickbeard.search_queue.ManualSelectQueueItem)):
+            results.append({
+                'show': searchThread.show.indexerid,
+                'episode': searchThread.segment.episode,
+                'episodeindexid': searchThread.segment.indexerid,
+                'season': searchThread.segment.season,
+                'searchstatus': searchstatus,
+                'status': statusStrings[searchThread.segment.status],
+                'quality': self.getQualityClass(searchThread.segment),
+                'overview': Overview.overviewStrings[showObj.getOverview(searchThread.segment.status)]
+            })
+        else:
+            for epObj in searchThread.segment:
+                results.append({'show': epObj.show.indexerid,
+                                'episode': epObj.episode,
+                                'episodeindexid': epObj.indexerid,
+                                'season': epObj.season,
+                                'searchstatus': searchstatus,
+                                'status': statusStrings[epObj.status],
+                                'quality': self.getQualityClass(epObj),
+                                'overview': Overview.overviewStrings[showObj.getOverview(epObj.status)]
+                                })
+
+        return results
+
+    def collectEpisodesFromSearchThread(self, show):
         episodes = []
 
         # Queued Searches
         searchstatus = 'queued'
         for searchThread in sickbeard.searchQueueScheduler.action.get_all_ep_from_queue(show):
-            episodes += getEpisodes(searchThread, searchstatus)
+            episodes += self.getEpisodes(searchThread, searchstatus)
 
         # Running Searches
         searchstatus = 'searching'
@@ -2279,7 +2285,7 @@ class Home(WebRoot):
             if searchThread.success:
                 searchstatus = 'finished'
 
-            episodes += getEpisodes(searchThread, searchstatus)
+            episodes += self.getEpisodes(searchThread, searchstatus)
 
         # Finished Searches
         searchstatus = 'finished'
@@ -2290,11 +2296,21 @@ class Home(WebRoot):
 
             if isinstance(searchThread, (sickbeard.search_queue.ManualSearchQueueItem, sickbeard.search_queue.ManualSelectQueueItem)):
                 if not [x for x in episodes if x['episodeindexid'] == searchThread.segment.indexerid]:
-                    episodes += getEpisodes(searchThread, searchstatus)
+                    episodes += self.getEpisodes(searchThread, searchstatus)
             else:
                 # ## These are only Failed Downloads/Retry SearchThreadItems.. lets loop through the segment/episodes
                 if not [i for i, j in zip(searchThread.segment, episodes) if i.indexerid == j['episodeindexid']]:
-                    episodes += getEpisodes(searchThread, searchstatus)
+                    episodes += self.getEpisodes(searchThread, searchstatus)
+
+        return episodes
+
+    # ## Returns the current ep_queue_item status for the current viewed show.
+    # Possible status: Downloaded, Snatched, etc...
+    # Returns {'show': 279530, 'episodes' : ['episode' : 6, 'season' : 1, 'searchstatus' : 'queued', 'status' : 'running', 'quality': '4013']
+    def getManualSearchStatus(self, show=None):
+        episodes = []
+
+        episodes = self.collectEpisodesFromSearchThread(show)
 
         return json.dumps({'episodes': episodes})
 
