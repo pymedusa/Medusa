@@ -2449,6 +2449,82 @@ var SICKRAGE = {
                 });
             };
 
+            // Click event for the download button for snatching a result
+            $('body').on('click', '.epManualSnatch', function(event){
+                event.preventDefault();
+                var link = this;
+                $.getJSON(this.href, 
+                    function (data) {
+                    if (data.result === "success") {
+                        $(link).children('img').attr('src', srRoot + '/images/save.png');
+                    }
+                });   
+            });
+
+            function checkCacheUpdates(repeat) {
+                var self = this;
+                var pollInterval = 5000;
+                repeat = repeat || true;
+
+                var show = $('meta[data-last-prov-updates]').attr('data-show');
+                var season = $('meta[data-last-prov-updates]').attr('data-season');
+                var episode = $('meta[data-last-prov-updates]').attr('data-episode');
+                var data = $('meta[data-last-prov-updates]').data('last-prov-updates');
+
+                var url = '/home/manualSelectCheckCache?show='+show+'&season='+season+'&episode='+episode;
+
+                self.refreshResults = function() {
+                    $('#wrapper').loadContainer(
+                            '/home/manualSelect?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=0',
+                            'Loading new search results...',
+                            'Time out, refresh page to try again'
+                    );
+                };
+
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    data: data,
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.result === 'refresh') {
+                            self.refreshResults();
+                            repeat = false;
+                            $('#searchNotification').text('Search has finished!');
+                        }
+
+                        if (data.result === 'searching') {
+                            // ep is searched, you will get a results any minute now
+                            pollInterval = 3000;
+                            $('#searchNotification').text('The episode is being searched, please wait...');
+                        }
+
+                        if (data.result === 'queued') {
+                            // ep is queued, this might take some time to get results
+                            pollInterval = 5000;
+                            $('#searchNotification').text('The episode has been queued, because another search is taking place. please wait..');
+                        }
+
+                        if (data.result === 'finished') {
+                            // ep search is finished
+                            $('#searchNotification').text('Search finished, no (new) results found.');
+                            repeat = false;
+                        }
+                    },
+                    error: function () {
+                        repeat = false;
+                    },
+                    complete: function () {
+                        if (repeat) {
+                            setTimeout(checkCacheUpdates, pollInterval);
+                        }
+                    },
+                    timeout: 15000 // timeout after 15s
+                });
+            }
+
+            checkCacheUpdates();
+
             // Click event for the reload results and force search buttons
             $('body').on('click', '.manualSearchButton', function(event){
                 event.preventDefault();
@@ -2462,57 +2538,8 @@ var SICKRAGE = {
                         'Loading new search results...',
                         'Time out, refresh page to try again'
                 );
+                checkCacheUpdates(true);
             });
-            
-            // Click event for the download button for snatching a result
-            $('body').on('click', '.epManualSnatch', function(event){
-                event.preventDefault();
-                var link = this;
-                $.getJSON(this.href, 
-                    function (data) {
-                    if (data.result === "success") {
-                        $(link).children('img').attr('src', srRoot + '/images/save.png');
-                    }
-                });   
-            });
-            
-            function checkCacheUpdates() {
-                var pollInterval = 5000;
-                
-                
-                var show = $('meta[data-last-prov-updates]').attr('data-show');
-                var season = $('meta[data-last-prov-updates]').attr('data-season');
-                var episode = $('meta[data-last-prov-updates]').attr('data-episode');
-                var data = $('meta[data-last-prov-updates]').data('last-prov-updates');
-
-                var url = '/home/manualSelectCheckCache?show='+show+'&season='+season+'&episode='+episode;
-                $.ajax({
-                    url: url,
-                    type: "GET",
-                    data: data,
-                    contentType: "application/json",
-                    success: function (data) {
-                        if (data.result === 'refresh') {
-                            pollInterval = 5000;
-                            $('#wrapper').loadContainer(
-                                    '/home/manualSelect?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=0',
-                                    'Loading new search results...',
-                                    'Time out, refresh page to try again'
-                            );
-                        } else {
-                            pollInterval = 15000;
-                        }
-                    },
-                    error: function () {
-                        pollInterval = 30000;
-                    },
-                    complete: function () {
-                        setTimeout(checkCacheUpdates, pollInterval);
-                    },
-                    timeout: 15000 // timeout every 15 secs
-                });
-            }
-            checkCacheUpdates();
         },
         postProcess: function() {
             $('#episodeDir').fileBrowser({ title: 'Select Unprocessed Episode Folder', key: 'postprocessPath' });
