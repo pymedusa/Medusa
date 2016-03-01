@@ -58,6 +58,8 @@ from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
 from cachecontrol import CacheControl
+# from httpcache import CachingHTTPAdapter
+
 from itertools import izip, cycle
 
 import shutil
@@ -113,14 +115,19 @@ def remove_non_release_groups(name):
         r'\[eztv\]$': 'searchre',
         r'\[ettv\]$': 'searchre',
         r'\[cttv\]$': 'searchre',
+        r'\.\[vtv\]$': 'searchre',
         r'\[vtv\]$': 'searchre',
         r'\[EtHD\]$': 'searchre',
         r'\[GloDLS\]$': 'searchre',
         r'\[silv4\]$': 'searchre',
         r'\[Seedbox\]$': 'searchre',
         r'\[PublicHD\]$': 'searchre',
+        r'-\=\{SPARROW\}\=-$': 'searchre',
+        r'\=\{SPARR$': 'searchre',
+        r'\.\[720P\]\[HEVC\]$': 'searchre',
         r'\[AndroidTwoU\]$': 'searchre',
-        r'\[brassetv]\]$': 'searchre',
+        r'\[brassetv\]]$': 'searchre',
+        r'\[Talamasca32\]]$': 'searchre',
         r'\(musicbolt\.com\)$': 'searchre',
         r'\.\[BT\]$': 'searchre',
         r' \[1044\]$': 'searchre',
@@ -128,6 +135,8 @@ def remove_non_release_groups(name):
         r'\.GiuseppeTnT$': 'searchre',
         r'\.Renc$': 'searchre',
         r'\.gz$': 'searchre',
+        r'\.English$': 'searchre',
+        r'\.German$': 'searchre',
         r'(?<![57])\.1$': 'searchre',
         r'-NZBGEEK$': 'searchre',
         r'-Siklopentan$': 'searchre',
@@ -1374,6 +1383,14 @@ def _getTempDir():
     return ek(os.path.join, tempfile.gettempdir(), "sickrage-%s" % uid)
 
 
+def make_session():
+    session = requests.Session()
+    # session.mount('http://', CachingHTTPAdapter())
+    # session.mount('http://', CachingHTTPAdapter())
+    session = CacheControl(sess=session, cache_etags=True)
+    return session
+
+
 def _setUpSession(session, headers):
     """
     Returns a session initialized with default cache and parameter settings
@@ -1382,9 +1399,6 @@ def _setUpSession(session, headers):
     :param headers: Headers to pass to session
     :return: session object
     """
-
-    # request session
-    session = CacheControl(sess=session, cache_etags=True)
 
     # request session clear residual referer
     # pylint: disable=superfluous-parens
@@ -1753,7 +1767,7 @@ def getDiskSpaceUsage(diskPath=None):
 
 def getTVDBFromID(indexer_id, indexer):  # pylint:disable=too-many-return-statements
 
-    session = requests.Session()
+    session = make_session()
     tvdb_id = ''
     if indexer == 'IMDB':
         url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s" % indexer_id

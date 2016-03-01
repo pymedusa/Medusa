@@ -18,11 +18,9 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import re
-from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
-
 from sickrage.helper.common import convert_size, try_int
 from sickrage.helper.exceptions import AuthException
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
@@ -46,7 +44,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         self.freeleech = None
 
         # URLs
-        self.url = 'https://tvchaosuk.com/'
+        self.url = 'https://www.tvchaosuk.com/'
         self.urls = {
             'login': self.url + 'takelogin.php',
             'index': self.url + 'index.php',
@@ -65,7 +63,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         raise AuthException('Your authentication credentials for ' + self.name + ' are missing, check your config.')
 
     def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
+        if len(self.session.cookies) >= 4:
             return True
 
         login_params = {
@@ -76,8 +74,6 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             'returnto': '/browse.php'
         }
 
-        # Must be done twice, or it isnt really logged in
-        response = self.get_url(self.urls['login'], post_data=login_params, timeout=30)
         response = self.get_url(self.urls['login'], post_data=login_params, timeout=30)
         if not response:
             logger.log(u"Unable to connect to provider", logger.WARNING)

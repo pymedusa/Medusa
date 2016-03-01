@@ -40,7 +40,7 @@ class ShowUpdater(object):  # pylint: disable=too-few-public-methods
         self.lock = threading.Lock()
         self.amActive = False
 
-        self.session = requests.Session()
+        self.session = helpers.make_session()
 
     def run(self, force=False):  # pylint: disable=unused-argument, too-many-locals, too-many-branches, too-many-statements
 

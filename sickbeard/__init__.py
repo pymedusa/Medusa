@@ -18,7 +18,6 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 # pylint: disable=too-many-lines
 
-import webbrowser
 import datetime
 import socket
 import os
@@ -534,6 +533,7 @@ SUBTITLES_HEARING_IMPAIRED = False
 SUBTITLES_FINDER_FREQUENCY = 1
 SUBTITLES_MULTI = False
 SUBTITLES_EXTRA_SCRIPTS = []
+SUBTITLES_PRE_SCRIPTS = []
 SUBTITLES_DOWNLOAD_IN_PP = False
 SUBTITLES_KEEP_ONLY_WANTED = False
 
@@ -552,6 +552,10 @@ DELETE_FAILED = False
 EXTRA_SCRIPTS = []
 
 IGNORE_WORDS = "german,french,core2hd,dutch,swedish,reenc,MrLss"
+
+PREFERRED_WORDS = ""
+
+UNDESIRED_WORDS = ""
 
 TRACKERS_LIST = "udp://coppersurfer.tk:6969/announce,udp://open.demonii.com:1337,"
 TRACKERS_LIST += "udp://exodus.desync.com:6969,udp://9.rarbg.me:2710/announce,"
@@ -629,8 +633,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             NEWZBIN, NEWZBIN_USERNAME, NEWZBIN_PASSWORD, GIT_PATH, MOVE_ASSOCIATED_FILES, SYNC_FILES, POSTPONE_IF_SYNC_FILES, POSTPONE_IF_NO_SUBS, dailySearchScheduler, NFO_RENAME, \
             GUI_NAME, HOME_LAYOUT, HISTORY_LAYOUT, DISPLAY_SHOW_SPECIALS, COMING_EPS_LAYOUT, COMING_EPS_SORT, COMING_EPS_DISPLAY_PAUSED, COMING_EPS_MISSED_RANGE, FUZZY_DATING, TRIM_ZERO, DATE_PRESET, TIME_PRESET, TIME_PRESET_W_SECONDS, THEME_NAME, \
             POSTER_SORTBY, POSTER_SORTDIR, HISTORY_LIMIT, CREATE_MISSING_SHOW_DIRS, ADD_SHOWS_WO_DIR, \
-            METADATA_WDTV, METADATA_TIVO, METADATA_MEDE8ER, IGNORE_WORDS, TRACKERS_LIST, IGNORED_SUBS_LIST, REQUIRE_WORDS, CALENDAR_UNPROTECTED, CALENDAR_ICONS, NO_RESTART, \
-            USE_SUBTITLES, SUBTITLES_LANGUAGES, SUBTITLES_DIR, SUBTITLES_SERVICES_LIST, SUBTITLES_SERVICES_ENABLED, SUBTITLES_HISTORY, SUBTITLES_FINDER_FREQUENCY, SUBTITLES_MULTI, SUBTITLES_DOWNLOAD_IN_PP, SUBTITLES_KEEP_ONLY_WANTED, EMBEDDED_SUBTITLES_ALL, SUBTITLES_EXTRA_SCRIPTS, SUBTITLES_PERFECT_MATCH, subtitlesFinderScheduler, \
+            METADATA_WDTV, METADATA_TIVO, METADATA_MEDE8ER, IGNORE_WORDS, PREFERRED_WORDS, UNDESIRED_WORDS, TRACKERS_LIST, IGNORED_SUBS_LIST, REQUIRE_WORDS, CALENDAR_UNPROTECTED, CALENDAR_ICONS, NO_RESTART, \
+            USE_SUBTITLES, SUBTITLES_LANGUAGES, SUBTITLES_DIR, SUBTITLES_SERVICES_LIST, SUBTITLES_SERVICES_ENABLED, SUBTITLES_HISTORY, SUBTITLES_FINDER_FREQUENCY, SUBTITLES_MULTI, SUBTITLES_DOWNLOAD_IN_PP, SUBTITLES_KEEP_ONLY_WANTED, EMBEDDED_SUBTITLES_ALL, SUBTITLES_EXTRA_SCRIPTS, SUBTITLES_PRE_SCRIPTS, SUBTITLES_PERFECT_MATCH, subtitlesFinderScheduler, \
             SUBTITLES_HEARING_IMPAIRED, ADDIC7ED_USER, ADDIC7ED_PASS, LEGENDASTV_USER, LEGENDASTV_PASS, OPENSUBTITLES_USER, OPENSUBTITLES_PASS, \
             USE_FAILED_DOWNLOADS, DELETE_FAILED, ANON_REDIRECT, LOCALHOST_IP, DEBUG, DBDEBUG, DEFAULT_PAGE, PROXY_SETTING, PROXY_INDEXERS, \
             AUTOPOSTPROCESSER_FREQUENCY, SHOWUPDATE_HOUR, \
@@ -1187,6 +1191,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         SUBTITLES_DOWNLOAD_IN_PP = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_download_in_pp', 0))
         SUBTITLES_KEEP_ONLY_WANTED = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_keep_only_wanted', 0))
         SUBTITLES_EXTRA_SCRIPTS = [x.strip() for x in check_setting_str(CFG, 'Subtitles', 'subtitles_extra_scripts', '').split('|') if x.strip()]
+        SUBTITLES_PRE_SCRIPTS = [x.strip() for x in check_setting_str(CFG, 'Subtitles', 'subtitles_pre_scripts', '').split('|') if x.strip()]
 
         ADDIC7ED_USER = check_setting_str(CFG, 'Subtitles', 'addic7ed_username', '', censor_log=True)
         ADDIC7ED_PASS = check_setting_str(CFG, 'Subtitles', 'addic7ed_password', '', censor_log=True)
@@ -1203,6 +1208,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         GIT_PATH = check_setting_str(CFG, 'General', 'git_path', '')
 
         IGNORE_WORDS = check_setting_str(CFG, 'General', 'ignore_words', IGNORE_WORDS)
+        PREFERRED_WORDS = check_setting_str(CFG, 'General', 'preferred_words', PREFERRED_WORDS)
+        UNDESIRED_WORDS = check_setting_str(CFG, 'General', 'undesired_words', UNDESIRED_WORDS)
         TRACKERS_LIST = check_setting_str(CFG, 'General', 'trackers_list', TRACKERS_LIST)
         REQUIRE_WORDS = check_setting_str(CFG, 'General', 'require_words', REQUIRE_WORDS)
         IGNORED_SUBS_LIST = check_setting_str(CFG, 'General', 'ignored_subs_list', IGNORED_SUBS_LIST)
@@ -1465,11 +1472,12 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                     run_delay=update_interval)
 
         # processors
+        update_interval = datetime.timedelta(minutes=AUTOPOSTPROCESSER_FREQUENCY)
         autoPostProcesserScheduler = scheduler.Scheduler(auto_postprocessor.PostProcessor(),
-                                                         cycleTime=datetime.timedelta(
-                                                             minutes=AUTOPOSTPROCESSER_FREQUENCY),
+                                                         cycleTime=update_interval,
                                                          threadName="POSTPROCESSER",
-                                                         silent=not PROCESS_AUTOMATICALLY)
+                                                         silent=not PROCESS_AUTOMATICALLY,
+                                                         run_delay=update_interval)
 
         traktCheckerScheduler = scheduler.Scheduler(traktChecker.TraktChecker(),
                                                     cycleTime=datetime.timedelta(hours=1),
@@ -1748,6 +1756,8 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['extra_scripts'] = '|'.join(EXTRA_SCRIPTS)
     new_config['General']['git_path'] = GIT_PATH
     new_config['General']['ignore_words'] = IGNORE_WORDS
+    new_config['General']['preferred_words'] = PREFERRED_WORDS
+    new_config['General']['undesired_words'] = UNDESIRED_WORDS
     new_config['General']['trackers_list'] = TRACKERS_LIST
     new_config['General']['require_words'] = REQUIRE_WORDS
     new_config['General']['ignored_subs_list'] = IGNORED_SUBS_LIST
@@ -2137,6 +2147,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['Subtitles']['subtitles_finder_frequency'] = int(SUBTITLES_FINDER_FREQUENCY)
     new_config['Subtitles']['subtitles_multi'] = int(SUBTITLES_MULTI)
     new_config['Subtitles']['subtitles_extra_scripts'] = '|'.join(SUBTITLES_EXTRA_SCRIPTS)
+    new_config['Subtitles']['subtitles_pre_scripts'] = '|'.join(SUBTITLES_PRE_SCRIPTS)
     new_config['Subtitles']['subtitles_download_in_pp'] = int(SUBTITLES_DOWNLOAD_IN_PP)
     new_config['Subtitles']['subtitles_keep_only_wanted'] = int(SUBTITLES_KEEP_ONLY_WANTED)
     new_config['Subtitles']['addic7ed_username'] = ADDIC7ED_USER
@@ -2165,6 +2176,13 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
 
 
 def launchBrowser(protocol='http', startPort=None, web_root='/'):
+
+    try:
+        import webbrowser
+    except ImportError:
+        logger.log(u"Unable to load the webbrowser module, cannot launch the browser.", logger.WARNING)
+        return
+
     if not startPort:
         startPort = WEB_PORT
 
