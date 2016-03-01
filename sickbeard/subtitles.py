@@ -483,17 +483,22 @@ class SubtitlesFinder(object):
         statuses = list({status for status in Quality.DOWNLOADED + Quality.ARCHIVED})
 
         database = db.DBConnection()
-        sql_results = database.select(
-            "SELECT s.show_name, e.showid, e.season, e.episode, "
-            "e.status, e.subtitles, e.subtitles_searchcount AS searchcount, "
-            "e.subtitles_lastsearch AS lastsearch, e.location, (? - e.airdate) as age "
-            "FROM tv_episodes AS e INNER JOIN tv_shows AS s "
-            "ON (e.showid = s.indexer_id) "
-            "WHERE s.subtitles = 1 AND e.subtitles NOT LIKE ? "
-            "AND e.location != '' AND e.status IN (%s) ORDER BY age ASC" %
-            ','.join(['?'] * len(statuses)),
-            [datetime.datetime.now().toordinal(), wanted_languages(True)] + statuses
-        )
+        # Shows with air date <= 30 days, have a limit of 100 results
+        # Shows with air date > 30 days, have a limit of 200 results
+        sql_args = [['<=', 100], ['>', 200]]
+        sql_results = []
+        for args in sql_args:
+            sql_results += database.select(
+                "SELECT s.show_name, e.showid, e.season, e.episode, "
+                "e.status, e.subtitles, e.subtitles_searchcount AS searchcount, "
+                "e.subtitles_lastsearch AS lastsearch, e.location, (? - e.airdate) as age "
+                "FROM tv_episodes AS e INNER JOIN tv_shows AS s "
+                "ON (e.showid = s.indexer_id) "
+                "WHERE s.subtitles = 1 AND age {} 30 AND e.subtitles NOT LIKE ? "
+                "AND e.location != '' AND e.status IN ({}) ORDER BY lastsearch ASC LIMIT {}".format
+                (args[0], ','.join(['?'] * len(statuses)), args[1]),
+                [datetime.datetime.now().toordinal(), wanted_languages(True)] + statuses
+            )
 
         if not sql_results:
             logger.log(u'No subtitles to download', logger.INFO)
