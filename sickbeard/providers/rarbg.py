@@ -65,6 +65,9 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
             "app_id": "sickrage2"
         }
 
+        #Maximum requests allowed are 1req/2sec
+        time.sleep(3)
+
         response = self.get_url(self.urls["api"], params=login_params, timeout=30, returns="json")
         if not response:
             logger.log("Unable to connect to provider", logger.WARNING)
@@ -120,11 +123,12 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                     logger.log("Search string: {}".format(search_string.decode("utf-8")),
                                logger.DEBUG)
 
-                time.sleep(cpu_presets[sickbeard.CPU_PRESET])
-
                 # Check if token is still valid before search
                 if not self.login():
                     continue
+
+                #Maximum requests allowed are 1req/2sec
+                time.sleep(3)
 
                 data = self.get_url(self.urls["api"], params=search_params, returns="json")
                 if not isinstance(data, dict):
