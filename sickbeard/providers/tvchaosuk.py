@@ -63,7 +63,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         raise AuthException('Your authentication credentials for ' + self.name + ' are missing, check your config.')
 
     def login(self):
-        if len(self.session.cookies) >= 4:
+        if (len(self.session.cookies) >= 4 and all([not cookie.is_expired() for cookie in self.session.cookies])):
             return True
 
         login_params = {
