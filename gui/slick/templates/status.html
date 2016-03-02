@@ -41,70 +41,14 @@
             </tr>
         </thead>
         <tbody>
-            % if sickbeard.showQueueScheduler.action.currentItem is not None:
-                <tr>
-                    % try:
-                        <% showindexerid = sickbeard.showQueueScheduler.action.currentItem.show.indexerid %>
-                        <td>${showindexerid}</td>
-                    % except Exception:
-                        <td></td>
-                    % endtry
-                    % try:
-                        <% showname = sickbeard.showQueueScheduler.action.currentItem.show.name %>
-                        <td>${showname}</td>
-                    % except Exception:
-                        % if sickbeard.showQueueScheduler.action.currentItem.action_id == ShowQueueActions.ADD:
-                            <td>${sickbeard.showQueueScheduler.action.currentItem.showDir}</td>
-                        % else:
-                            <td></td>
-                        % endif
-                    % endtry
-                    <td>${sickbeard.showQueueScheduler.action.currentItem.inProgress}</td>
-                    % if sickbeard.showQueueScheduler.action.currentItem.priority == 10:
-                        <td>LOW</td>
-                    % elif sickbeard.showQueueScheduler.action.currentItem.priority == 20:
-                        <td>NORMAL</td>
-                    % elif sickbeard.showQueueScheduler.action.currentItem.priority == 30:
-                        <td>HIGH</td>
-                    % else:
-                        <td>sickbeard.showQueueScheduler.action.currentItem.priority</td>
-                    % endif
-                    <td>${sickbeard.showQueueScheduler.action.currentItem.added.strftime(dateTimeFormat)}</td>
-                    <td>${ShowQueueActions.names[sickbeard.showQueueScheduler.action.currentItem.action_id]}</td>
-                </tr>
-            % endif
-            % for item in sickbeard.showQueueScheduler.action.queue:
-                <tr>
-                    % try:
-                        <% showindexerid = item.show.indexerid %>
-                        <td>${showindexerid}</td>
-                    % except Exception:
-                        <td></td>
-                    % endtry
-                    % try:
-                        <% showname = item.show.name %>
-                        <td>${showname}</td>
-                    % except Exception:
-                        % if item.action_id == ShowQueueActions.ADD:
-                            <td>${item.showDir}</td>
-                        % else:
-                            <td></td>
-                        % endif
-                    % endtry
-                    <td>${item.inProgress}</td>
-                    % if item.priority == 10:
-                        <td>LOW</td>
-                    % elif item.priority == 20:
-                        <td>NORMAL</td>
-                    % elif item.priority == 30:
-                        <td>HIGH</td>
-                    % else:
-                        <td>${item.priority}</td>
-                    % endif
-                    <td>${item.added.strftime(dateTimeFormat)}</td>
-                    <td>${ShowQueueActions.names[item.action_id]}</td>
-                </tr>
-            % endfor
+            <tr ng-repeat="show in showQueue">
+                <td>{{show.indexerId}}</td>
+                <td>{{show.name || show.directory}}</td>
+                <td>{{show.progress}}</td>
+                <td>{{show.priority}}</td>
+                <td>{{show.added}}</td>
+                <td>{{show.queueType}}</td>
+            </tr>
         </tbody>
     </table>
     <h2 class="header">Disk Space</h2>
@@ -120,7 +64,7 @@
             <tr ng-if="downloadDir">
                 <td>TV Download Directory</td>
                 <td>{{downloadDir}}</td>
-                <td ng-if="tvdirFree" align="middle">${tvdirFree}</td>
+                <td ng-if="tvdirFree" align="middle">{{tvdirFree}}</td>
                 <td ng-if="!tvdirFree" align="middle"><i>Missing</i></td>
             </tr>
             <tr>

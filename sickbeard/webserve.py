@@ -200,8 +200,10 @@ class BaseHandler(RequestHandler):
                 url = url[len(sickbeard.WEB_ROOT) + 1:]
 
             if url[:3] != 'api':
-                t = PageTemplate(rh=self, filename="404.mako")
-                return self.finish(t.render(title='404', header='Oops'))
+                self.set_header("Content-Type", "application/json")
+                return {
+                    "status": 404
+                }
             else:
                 self.finish('Wrong API key used')
 
@@ -1206,11 +1208,11 @@ class Home(WebRoot):
             else:
                 service_active = service.action.amActive
 
-            services.append({
+            services.append(json.loads(json.JSONEncoder().encode({
                 "name": schedulerName,
                 "isAlive": service.isAlive(),
                 "isActive": service_active,
-                "startTime": service.start_time,
+                "startTime": str(service.start_time),
                 "timeTillStart": {
                     "seconds": time_till_start,
                     "pretty": time_till_start_text
@@ -1219,10 +1221,10 @@ class Home(WebRoot):
                     "seconds": cycle_time,
                     "pretty": cycle_time_text
                 },
-                "lastRun": service.lastRun.strftime(dateTimeFormat),
+                "lastRun": str(service.lastRun.strftime(dateTimeFormat)),
                 "silent": service.silent,
                 "enabled": service_enabled
-            })
+            })))
 
         show_queue = []
         if sickbeard.showQueueScheduler.action.currentItem is not None:
@@ -1232,7 +1234,7 @@ class Home(WebRoot):
                 "directory": "",
                 "progress": sickbeard.showQueueScheduler.action.currentItem.inProgress,
                 "priority": "",
-                "added": sickbeard.showQueueScheduler.action.currentItem.added.strftime(dateTimeFormat),
+                "added": str(sickbeard.showQueueScheduler.action.currentItem.added.strftime(dateTimeFormat)),
                 "queue_type": ShowQueueActions.names[sickbeard.showQueueScheduler.action.currentItem.action_id]
             }
             try:
@@ -1261,11 +1263,13 @@ class Home(WebRoot):
                 "directory": "",
                 "progress": item.inProgress,
                 "priority": "",
-                "added": item.added.strftime(dateTimeFormat),
+                "added": str(item.added.strftime(dateTimeFormat)),
                 "queue_type": ShowQueueActions.names[item.action_id]
             }
             try:
                 show.indexer_id = item.show.indexerid
+            except Exception:
+                pass
             try:
                 show.name = item.show.name
             except Exception:
@@ -1273,11 +1277,11 @@ class Home(WebRoot):
                     show.directory = item.showDir
             if item.priority == 10:
                 show.priority = "LOW"
-            % elif item.priority == 20:
+            elif item.priority == 20:
                 show.priority = "NORMAL"
-            % elif item.priority == 30:
+            elif item.priority == 30:
                 show.priority = "HIGH"
-            % else:
+            else:
                 show.priority = item.priority
             show_queue.append(show)
 
