@@ -1181,12 +1181,15 @@ class Home(WebRoot):
             cycle_time_text = ""
             time_till_start = ""
             time_till_start_text = ""
+            start_time = ""
             if service.cycleTime is not None:
                 cycle_time = int((service.cycleTime.microseconds + (service.cycleTime.seconds + service.cycleTime.days * 24 * 3600) * 10**6) / 10**6)
                 cycle_time_text = str(helpers.pretty_time_delta(cycle_time))
             if service.start_time is not None:
                 time_till_start = timeLeft = int((service.timeLeft().microseconds + (service.timeLeft().seconds + service.timeLeft().days * 24 * 3600) * 10**6) / 10**6)
                 time_till_start_text = str(helpers.pretty_time_delta(time_till_start))
+            if service.start_time is not None:
+                start_time = service.start_time
 
             service_enabled = False
             if scheduler == 'backlogSearchScheduler':
@@ -1212,7 +1215,7 @@ class Home(WebRoot):
                 "name": schedulerName,
                 "isAlive": service.isAlive(),
                 "isActive": service_active,
-                "startTime": str(service.start_time),
+                "startTime": start_time,
                 "timeTillStart": {
                     "seconds": time_till_start,
                     "pretty": time_till_start_text
@@ -1229,13 +1232,13 @@ class Home(WebRoot):
         show_queue = []
         if sickbeard.showQueueScheduler.action.currentItem is not None:
             show = {
-                "indexer_id": "",
+                "indexerId": "",
                 "name": "",
                 "directory": "",
                 "progress": sickbeard.showQueueScheduler.action.currentItem.inProgress,
                 "priority": "",
                 "added": str(sickbeard.showQueueScheduler.action.currentItem.added.strftime(dateTimeFormat)),
-                "queue_type": ShowQueueActions.names[sickbeard.showQueueScheduler.action.currentItem.action_id]
+                "queueType": ShowQueueActions.names[sickbeard.showQueueScheduler.action.currentItem.action_id]
             }
             try:
                 show.indexer_id = sickbeard.showQueueScheduler.action.currentItem.show.indexerid
@@ -1258,13 +1261,13 @@ class Home(WebRoot):
 
         for item in sickbeard.showQueueScheduler.action.queue:
             show = {
-                "indexer_id": "",
+                "indexerId": "",
                 "name": "",
                 "directory": "",
                 "progress": item.inProgress,
                 "priority": "",
                 "added": str(item.added.strftime(dateTimeFormat)),
-                "queue_type": ShowQueueActions.names[item.action_id]
+                "queueType": ShowQueueActions.names[item.action_id]
             }
             try:
                 show.indexer_id = item.show.indexerid
