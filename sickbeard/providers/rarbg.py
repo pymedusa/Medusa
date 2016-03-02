@@ -121,6 +121,11 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                                logger.DEBUG)
 
                 time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+
+                # Check if token is still valid before search
+                if not self.login():
+                    continue
+
                 data = self.get_url(self.urls["api"], params=search_params, returns="json")
                 if not isinstance(data, dict):
                     logger.log("No data returned from provider", logger.DEBUG)
