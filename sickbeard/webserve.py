@@ -40,6 +40,7 @@ from sickbeard import subtitles
 from sickbeard import network_timezones
 from sickbeard import sbdatetime
 from sickbeard import GIT_USERNAME
+from sickbeard.logger import LOGGING_LEVELS
 from sickbeard.providers import newznab, rsstorrent
 from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
 from sickbeard.common import SNATCHED, UNAIRED, IGNORED, WANTED, FAILED, SKIPPED
@@ -738,9 +739,20 @@ class Home(WebRoot):
                 shows.append(show_dict)
 
         if sickbeard.ANIME_SPLIT_HOME:
-            return json.JSONEncoder().encode({"showLists": {"shows": shows, "anime": anime}, "maxDownloadCount": stats[1]})
+            return {
+                "showLists": {
+                    "shows": shows,
+                    "anime": anime
+                },
+                "maxDownloadCount": stats[1]
+            }
         else:
-            return json.JSONEncoder().encode({"showLists": {"shows": shows}, "maxDownloadCount": stats[1]})
+            return {
+                "showLists": {
+                    "shows": shows
+                },
+                "maxDownloadCount": stats[1]
+            }
 
     @staticmethod
     def show_statistics():
@@ -787,6 +799,7 @@ class Home(WebRoot):
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Access-Control-Allow-Headers', 'x-requested-with')
 
+        # @NOTE: Why doesn't this just return JSON? We don't really need JSONP here.
         if sickbeard.started:
             return callback + '(' + json.dumps(
                 {"msg": str(sickbeard.PID)}) + ');'
@@ -832,7 +845,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testTorrent(torrent_method=None, host=None, username=None, password=None):
-
         host = config.clean_url(host)
 
         client = clients.getClientIstance(torrent_method)
@@ -843,7 +855,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testFreeMobile(freemobile_id=None, freemobile_apikey=None):
-
         result, message = notifiers.freemobile_notifier.test_notify(freemobile_id, freemobile_apikey)
         if result:
             return "SMS sent successfully"
@@ -852,7 +863,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testTelegram(telegram_id=None, telegram_apikey=None):
-
         result, message = notifiers.telegram_notifier.test_notify(telegram_id, telegram_apikey)
         if result:
             return "Telegram notification succeeded. Check your Telegram clients to make sure it worked"
@@ -878,7 +888,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testProwl(prowl_api=None, prowl_priority=0):
-
         result = notifiers.prowl_notifier.test_notify(prowl_api, prowl_priority)
         if result:
             return "Test prowl notice sent successfully"
@@ -887,7 +896,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testBoxcar2(accesstoken=None):
-
         result = notifiers.boxcar2_notifier.test_notify(accesstoken)
         if result:
             return "Boxcar2 notification succeeded. Check your Boxcar2 clients to make sure it worked"
@@ -896,7 +904,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testPushover(userKey=None, apiKey=None):
-
         result = notifiers.pushover_notifier.test_notify(userKey, apiKey)
         if result:
             return "Pushover notification succeeded. Check your Pushover clients to make sure it worked"
@@ -909,7 +916,6 @@ class Home(WebRoot):
 
     @staticmethod
     def twitterStep2(key):
-
         result = notifiers.twitter_notifier._get_credentials(key)  # pylint: disable=protected-access
         logger.log(u"result: " + str(result))
         if result:
@@ -919,7 +925,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testTwitter():
-
         result = notifiers.twitter_notifier.test_notify()
         if result:
             return "Tweet successful, check your twitter to make sure it worked"
@@ -928,7 +933,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testKODI(host=None, username=None, password=None):
-
         host = config.clean_hosts(host)
         finalResult = ''
         for curHost in [x.strip() for x in host.split(",")]:
@@ -983,7 +987,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testLibnotify():
-
         if notifiers.libnotify_notifier.test_notify():
             return "Tried sending desktop notification via libnotify"
         else:
@@ -991,7 +994,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testEMBY(host=None, emby_apikey=None):
-
         host = config.clean_host(host)
         result = notifiers.emby_notifier.test_notify(urllib.unquote_plus(host), emby_apikey)
         if result:
@@ -1001,7 +1003,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testNMJ(host=None, database=None, mount=None):
-
         host = config.clean_host(host)
         result = notifiers.nmj_notifier.test_notify(urllib.unquote_plus(host), database, mount)
         if result:
@@ -1011,7 +1012,6 @@ class Home(WebRoot):
 
     @staticmethod
     def settingsNMJ(host=None):
-
         host = config.clean_host(host)
         result = notifiers.nmj_notifier.notify_settings(urllib.unquote_plus(host))
         if result:
@@ -1022,7 +1022,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testNMJv2(host=None):
-
         host = config.clean_host(host)
         result = notifiers.nmjv2_notifier.test_notify(urllib.unquote_plus(host))
         if result:
@@ -1032,7 +1031,6 @@ class Home(WebRoot):
 
     @staticmethod
     def settingsNMJv2(host=None, dbloc=None, instance=None):
-
         host = config.clean_host(host)
         result = notifiers.nmjv2_notifier.notify_settings(urllib.unquote_plus(host), dbloc, instance)
         if result:
@@ -1044,7 +1042,6 @@ class Home(WebRoot):
 
     @staticmethod
     def getTraktToken(trakt_pin=None):
-
         trakt_api = TraktAPI(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
         response = trakt_api.traktToken(trakt_pin)
         if response:
@@ -1057,7 +1054,6 @@ class Home(WebRoot):
 
     @staticmethod
     def loadShowNotifyLists():
-
         main_db_con = db.DBConnection()
         rows = main_db_con.select("SELECT show_id, show_name, notify_list FROM tv_shows ORDER BY show_name ASC")
 
@@ -1084,7 +1080,6 @@ class Home(WebRoot):
 
     @staticmethod
     def saveShowNotifyList(show=None, emails=None, prowlAPIs=None):
-
         entries = {'emails': '', 'prowlAPIs': ''}
         main_db_con = db.DBConnection()
 
@@ -1111,7 +1106,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testEmail(host=None, port=None, smtp_from=None, use_tls=None, user=None, pwd=None, to=None):
-
         host = config.clean_host(host)
         if notifiers.email_notifier.test_notify(host, port, smtp_from, use_tls, user, pwd, to):
             return 'Test email sent successfully! Check inbox.'
@@ -1120,7 +1114,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testNMA(nma_api=None, nma_priority=0):
-
         result = notifiers.nma_notifier.test_notify(nma_api, nma_priority)
         if result:
             return "Test NMA notice sent successfully"
@@ -1129,7 +1122,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testPushalot(authorizationToken=None):
-
         result = notifiers.pushalot_notifier.test_notify(authorizationToken)
         if result:
             return "Pushalot notification succeeded. Check your Pushalot clients to make sure it worked"
@@ -1138,7 +1130,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testPushbullet(api=None):
-
         result = notifiers.pushbullet_notifier.test_notify(api)
         if result:
             return "Pushbullet notification succeeded. Check your device to make sure it worked"
@@ -1237,16 +1228,28 @@ class Home(WebRoot):
 
         if db_status == 'upgrade':
             logger.log(u"Checkout branch has a new DB version - Upgrade", logger.DEBUG)
-            return json.dumps({"status": "success", 'message': 'upgrade'})
+            return {
+                "status": "success",
+                "message": "upgrade"
+            }
         elif db_status == 'equal':
             logger.log(u"Checkout branch has the same DB version - Equal", logger.DEBUG)
-            return json.dumps({"status": "success", 'message': 'equal'})
+            return {
+                "status": "success",
+                "message": "equal"
+            }
         elif db_status == 'downgrade':
             logger.log(u"Checkout branch has an old DB version - Downgrade", logger.DEBUG)
-            return json.dumps({"status": "success", 'message': 'downgrade'})
+            return {
+                "status": "success",
+                "message": "downgrade"
+            }
         else:
             logger.log(u"Checkout branch couldn't compare DB version.", logger.ERROR)
-            return json.dumps({"status": "error", 'message': 'General exception'})
+            return {
+                "status": "error",
+                "message": "General exception"
+            }
 
     def displayShow(self, show=None):
         self.set_header('Content-Type', 'application/json')
@@ -1314,9 +1317,14 @@ class Home(WebRoot):
                 shows.append(show_dict)
 
         if sickbeard.ANIME_SPLIT_HOME:
-            showMenu = json.JSONEncoder().encode({"shows": shows, "anime": anime})
+            showMenu = {
+                "shows": shows,
+                "anime": anime
+            }
         else:
-            showMenu = json.JSONEncoder().encode({"shows": shows})
+            showMenu = {
+                "shows": shows
+            }
 
         bwl = None
         if showObj.is_anime:
@@ -1339,7 +1347,7 @@ class Home(WebRoot):
             'name': showObj.name,
         })
 
-        return json.JSONEncoder().encode({
+        return {
             "displaySpecials": sickbeard.DISPLAY_SHOW_SPECIALS,
             "displayAllSeasons": sickbeard.DISPLAY_ALL_SEASONS,
             "useSubtitles": sickbeard.USE_SUBTITLES,
@@ -1367,7 +1375,7 @@ class Home(WebRoot):
                 "episodes": json.loads(json.dumps([dict(ix) for ix in episodes]))
             },
             "showMessage": show_message,
-            "showMenu": json.loads(showMenu),
+            "showMenu": showMenu,
             "blackAndWhiteList": bwl,
             "qualities": {
                 "snatched": Quality.SNATCHED,
@@ -1375,7 +1383,7 @@ class Home(WebRoot):
                 "snatchedBest": Quality.SNATCHED_BEST,
                 "downloaded": Quality.DOWNLOADED
             }
-        })
+        }
 
     @staticmethod
     def plotDetails(show, season, episode):
@@ -1648,7 +1656,6 @@ class Home(WebRoot):
         return self.redirect("/home/displayShow?show=" + str(show.indexerid))
 
     def updateShow(self, show=None, force=0):
-
         if show is None:
             return self._genericMessage("Error", "Invalid show ID")
 
@@ -1669,7 +1676,6 @@ class Home(WebRoot):
         return self.redirect("/home/displayShow?show=" + str(showObj.indexerid))
 
     def subtitleShow(self, show=None, force=0):
-
         if show is None:
             return self._genericMessage("Error", "Invalid show ID")
 
@@ -1735,12 +1741,13 @@ class Home(WebRoot):
             return self.redirect('/home/')
 
     def setStatus(self, show=None, eps=None, status=None, direct=False):
-
         if not all([show, eps, status]):
             errMsg = "You must specify a show and at least one episode"
             if direct:
                 ui.notifications.error('Error', errMsg)
-                return json.dumps({'result': 'error'})
+                return {
+                    "result": "error"
+                }
             else:
                 return self._genericMessage("Error", errMsg)
 
@@ -1749,7 +1756,9 @@ class Home(WebRoot):
             errMsg = "Invalid status"
             if direct:
                 ui.notifications.error('Error', errMsg)
-                return json.dumps({'result': 'error'})
+                return {
+                    "result": "error"
+                }
             else:
                 return self._genericMessage("Error", errMsg)
 
@@ -1759,7 +1768,9 @@ class Home(WebRoot):
             errMsg = "Error", "Show not in show list"
             if direct:
                 ui.notifications.error('Error', errMsg)
-                return json.dumps({'result': 'error'})
+                return {
+                    "result": "error"
+                }
             else:
                 return self._genericMessage("Error", errMsg)
 
@@ -1874,12 +1885,13 @@ class Home(WebRoot):
                 ui.notifications.message("Retry Search started", msg)
 
         if direct:
-            return json.dumps({'result': 'success'})
+            return {
+                "result": "success"
+            }
         else:
             return self.redirect("/home/displayShow?show=" + show)
 
     def testRename(self, show=None):
-
         if show is None:
             return self._genericMessage("Error", "You must specify a show")
 
@@ -1966,11 +1978,12 @@ class Home(WebRoot):
         return self.redirect("/home/displayShow?show=" + show)
 
     def searchEpisode(self, show=None, season=None, episode=None, downCurQuality=0):
-
         # retrieve the episode object and fail if we can't get one
         ep_obj = self._getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
-            return json.dumps({'result': 'failure'})
+            return {
+                "result": "failure"
+            }
 
         # make a queue item for it and put it on the queue
         ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(downCurQuality)))
@@ -1978,12 +1991,17 @@ class Home(WebRoot):
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
         if not ep_queue_item.started and ep_queue_item.success is None:
-            return json.dumps(
-                {'result': 'success'})  # I Actually want to call it queued, because the search hasnt been started yet!
+            return {
+                "result": "success" # I Actually want to call it queued, because the search hasnt been started yet!
+            }
         if ep_queue_item.started and ep_queue_item.success is None:
-            return json.dumps({'result': 'success'})
+            return {
+                "result": "success"
+            }
         else:
-            return json.dumps({'result': 'failure'})
+            return {
+                "result": "failure"
+            }
 
     # ## Returns the current ep_queue_item status for the current viewed show.
     # Possible status: Downloaded, Snatched, etc...
@@ -2054,7 +2072,9 @@ class Home(WebRoot):
                 if not [i for i, j in zip(searchThread.segment, episodes) if i.indexerid == j['episodeindexid']]:
                     episodes += getEpisodes(searchThread, searchstatus)
 
-        return json.dumps({'episodes': episodes})
+        return {
+            "episodes": episodes
+        }
 
     @staticmethod
     def getQualityClass(ep_obj):
@@ -2073,12 +2093,16 @@ class Home(WebRoot):
         # retrieve the episode object and fail if we can't get one
         ep_obj = self._getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
-            return json.dumps({'result': 'failure'})
+            return {
+                "result": "failure"
+            }
 
         try:
-            new_subtitles = ep_obj.download_subtitles()  # pylint: disable=no-member
+            new_subtitles = ep_obj.download_subtitles() # pylint: disable=no-member
         except Exception:
-            return json.dumps({'result': 'failure'})
+            return {
+                "result": "failure"
+            }
 
         if new_subtitles:
             new_languages = [subtitles.name_from_code(code) for code in new_subtitles]
@@ -2086,8 +2110,11 @@ class Home(WebRoot):
         else:
             status = 'No subtitles downloaded'
 
-        ui.notifications.message(ep_obj.show.name, status)  # pylint: disable=no-member
-        return json.dumps({'result': status, 'subtitles': ','.join(ep_obj.subtitles)})  # pylint: disable=no-member
+        ui.notifications.message(ep_obj.show.name, status) # pylint: disable=no-member
+        return {
+            "result": status,
+            'subtitles': ','.join(ep_obj.subtitles) # pylint: disable=no-member
+        }
 
     def setSceneNumbering(self, show, indexer, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
                           sceneEpisode=None, sceneAbsolute=None):
@@ -2175,19 +2202,26 @@ class Home(WebRoot):
         # retrieve the episode object and fail if we can't get one
         ep_obj = self._getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
-            return json.dumps({'result': 'failure'})
+            return {
+                "result": "failure"
+            }
 
         # make a queue item for it and put it on the queue
         ep_queue_item = search_queue.FailedQueueItem(ep_obj.show, [ep_obj], bool(int(downCurQuality)))
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
         if not ep_queue_item.started and ep_queue_item.success is None:
-            return json.dumps(
-                {'result': 'success'})  # I Actually want to call it queued, because the search hasnt been started yet!
+            return {
+                "result": "success" # I Actually want to call it queued, because the search hasnt been started yet!
+            }
         if ep_queue_item.started and ep_queue_item.success is None:
-            return json.dumps({'result': 'success'})
+            return {
+                "result": "success"
+            }
         else:
-            return json.dumps({'result': 'failure'})
+            return {
+                "result": "failure"
+            }
 
     @staticmethod
     def fetch_releasegroups(show_name):
@@ -2197,12 +2231,16 @@ class Home(WebRoot):
                 anime = adba.Anime(sickbeard.ADBA_CONNECTION, name=show_name)
                 groups = anime.get_groups()
                 logger.log(u'ReleaseGroups: %s' % groups, logger.INFO)
-                return json.dumps({'result': 'success', 'groups': groups})
+                return {
+                    "result": "success",
+                    "groups": groups
+                }
             except AttributeError as error:
                 logger.log(u'Unable to get ReleaseGroups: %s' % error, logger.DEBUG)
 
-        return json.dumps({'result': 'failure'})
-
+        return {
+            "result": "failure"
+        }
 
 @route('/IRC(/?.*)')
 class HomeIRC(Home):
@@ -2210,7 +2248,9 @@ class HomeIRC(Home):
         super(HomeIRC, self).__init__(*args, **kwargs)
 
     def index(self):
-        return json.JSONEncoder().encode({"username": ("SickRageUI|?", GIT_USERNAME)[bool(GIT_USERNAME)]})
+        return {
+            "username": ("SickRageUI|?", GIT_USERNAME)[bool(GIT_USERNAME)]
+        }
 
 @route('/news(/?.*)')
 class HomeNews(Home):
@@ -2309,7 +2349,9 @@ class HomeAddShows(Home):
     def getIndexerLanguages():
         result = sickbeard.indexerApi().config['valid_languages']
 
-        return json.dumps({'results': result})
+        return {
+            "results": result
+        }
 
     @staticmethod
     def sanitizeFileName(name):
@@ -2361,7 +2403,10 @@ class HomeAddShows(Home):
                                    show['seriesname'], show['firstaired']) for show in shows})
 
         lang_id = sickbeard.indexerApi().config['langabbv_to_id'][lang]
-        return json.dumps({'results': final_results, 'langid': lang_id})
+        return {
+            "results": final_results,
+            "langid": lang_id
+        }
 
     def massAddTable(self, rootDir=None):
         t = PageTemplate(rh=self, filename="home_massAddTable.mako")
@@ -4352,16 +4397,22 @@ class ConfigProviders(Config):
     def canAddNewznabProvider(name):
 
         if not name:
-            return json.dumps({'error': 'No Provider Name specified'})
+            return {
+                "error": "No Provider Name specified"
+            }
 
         providerDict = dict(zip([x.get_id() for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
 
         tempProvider = newznab.NewznabProvider(name, '')
 
         if tempProvider.get_id() in providerDict:
-            return json.dumps({'error': 'Provider Name already exists as ' + providerDict[tempProvider.get_id()].name})
+            return {
+                "error": "Provider Name already exists as " + providerDict[tempProvider.get_id()].name
+            }
         else:
-            return json.dumps({'success': tempProvider.get_id()})
+            return {
+                "success": tempProvider.get_id()
+            }
 
     @staticmethod
     def saveNewznabProvider(name, url, key=''):
@@ -4408,7 +4459,10 @@ class ConfigProviders(Config):
             error += "\nNo Provider Api key specified"
 
         if error != "":
-            return json.dumps({'success': False, 'error': error})
+            return {
+                "success": False,
+                "error": error
+            }
 
         # Get list with Newznabproviders
         # providerDict = dict(zip([x.get_id() for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
@@ -4418,7 +4472,11 @@ class ConfigProviders(Config):
 
         success, tv_categories, error = tempProvider.get_newznab_categories()
 
-        return json.dumps({'success': success, 'tv_categories': tv_categories, 'error': error})
+        return {
+            "success": success,
+            "tv_categories": tv_categories,
+            "error": error
+        }
 
     @staticmethod
     def deleteNewznabProvider(nnid):
@@ -4440,7 +4498,9 @@ class ConfigProviders(Config):
     def canAddTorrentRssProvider(name, url, cookies, titleTAG):
 
         if not name:
-            return json.dumps({'error': 'Invalid name specified'})
+            return {
+                "error": "Invalid name specified"
+            }
 
         providerDict = dict(
             zip([x.get_id() for x in sickbeard.torrentRssProviderList], sickbeard.torrentRssProviderList))
@@ -4448,13 +4508,19 @@ class ConfigProviders(Config):
         tempProvider = rsstorrent.TorrentRssProvider(name, url, cookies, titleTAG)
 
         if tempProvider.get_id() in providerDict:
-            return json.dumps({'error': 'Exists as ' + providerDict[tempProvider.get_id()].name})
+            return {
+                "error": "Exists as " + providerDict[tempProvider.get_id()].name
+            }
         else:
             (succ, errMsg) = tempProvider.validateRSS()
             if succ:
-                return json.dumps({'success': tempProvider.get_id()})
+                return {
+                    "success": tempProvider.get_id()
+                }
             else:
-                return json.dumps({'error': errMsg})
+                return {
+                    "error": errMsg
+                }
 
     @staticmethod
     def saveTorrentRssProvider(name, url, cookies, titleTAG):
@@ -5177,13 +5243,11 @@ class ErrorLogs(WebRoot):
         super(ErrorLogs, self).__init__(*args, **kwargs)
 
     def ErrorLogsMenu(self, level):
-        menu = [
+        return [
             {'title': 'Clear Errors', 'path': 'errorlogs/clearerrors/', 'requires': self.haveErrors() and level == logger.ERROR, 'icon': 'ui-icon ui-icon-trash'},
             {'title': 'Clear Warnings', 'path': 'errorlogs/clearerrors/?level=' + str(logger.WARNING), 'requires': self.haveWarnings() and level == logger.WARNING, 'icon': 'ui-icon ui-icon-trash'},
             {'title': 'Submit Errors', 'path': 'errorlogs/submit_errors/', 'requires': self.haveErrors() and level == logger.ERROR, 'class': 'submiterrors', 'confirm': True, 'icon': 'ui-icon ui-icon-arrowreturnthick-1-n'},
         ]
-
-        return menu
 
     def index(self, level=logger.ERROR):
         self.set_header("Content-Type", "application/json")
@@ -5197,10 +5261,10 @@ class ErrorLogs(WebRoot):
         else:
             errors = classes.ErrorViewer.errors
 
-        return json.loads(json.JSONEncoder().encode({
+        return {
             "level": level,
             "errors": errors
-        }))
+        }
 
     @staticmethod
     def haveErrors():
@@ -5221,6 +5285,7 @@ class ErrorLogs(WebRoot):
         return self.redirect("/errorlogs/viewlog/")
 
     def viewlog(self, minLevel=logger.INFO, logFilter="<NONE>", logSearch=None, maxLines=1000):
+        self.set_header("Content-Type", "application/json")
         def Get_Data(Levelmin, data_in, lines_in, regex, Filter, Search, mlines):
             lastLine = False
             numLines = lines_in
@@ -5259,9 +5324,10 @@ class ErrorLogs(WebRoot):
 
             return finalData
 
-        t = PageTemplate(rh=self, filename="viewlogs.mako")
-
-        minLevel = int(minLevel)
+        try:
+            minLevel = int(minLevel)
+        except Exception:
+            minLevel = logger.INFO
 
         logNameFilters = {
             '<NONE>': u'&lt;No Filter&gt;',
@@ -5307,10 +5373,22 @@ class ErrorLogs(WebRoot):
                 with io.open(logger.log_file + "." + str(i), 'r', encoding='utf-8') as f:
                     data += Get_Data(minLevel, f.readlines(), len(data), regex, logFilter, logSearch, maxLines)
 
-        return t.render(
-            header="Log File", title="Logs",
-            logLines=u"".join(data), minLevel=minLevel, logNameFilters=logNameFilters,
-            logFilter=logFilter, logSearch=logSearch)
+        levels = LOGGING_LEVELS.keys()
+        levels.sort(lambda x, y: cmp(LOGGING_LEVELS[x], LOGGING_LEVELS[y]))
+        if not sickbeard.DEBUG:
+            levels.remove('DEBUG')
+        if not sickbeard.DBDEBUG:
+            levels.remove('DB')
+
+        return {
+            "levels": levels,
+            "logLines": u"".join(data),
+            "loggingLevels": LOGGING_LEVELS,
+            "minLevel": minLevel,
+            "logNameFilters": logNameFilters,
+            "logFilter": logFilter,
+            "logSearch": logSearch,
+        }
 
     def submit_errors(self):
         submitter_result, issue_id = logger.submit_errors()

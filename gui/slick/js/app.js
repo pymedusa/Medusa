@@ -148,7 +148,7 @@ sickrage.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$
     });
 
     $stateProvider.state('logs', {
-        url: '/logs?level',
+        url: '/logs?level&layout',
         templateUrl: '/templates/logs.html'
     });
 }]);
@@ -373,12 +373,29 @@ sickrage.controller('configAnimeController', function() {
 });
 
 sickrage.controller('logsController', function($scope, $http, $stateParams) {
-    $http({
-        method: 'GET',
-        url: '/errorlogs?level=' + $stateParams.level
-    }).then(function successCallback(response) {
-        $scope.errors = response.data.errors;
-    }, function errorCallback(response) {
-        console.error(response);
-    });
+    $scope.layout = $stateParams.layout || 'simple';
+    if($stateParams.layout === "simple"){
+        $http({
+            method: 'GET',
+            url: '/errorlogs?level=' + $stateParams.level
+        }).then(function successCallback(response) {
+            $scope.errors = response.data.errors;
+        }, function errorCallback(response) {
+            console.error(response);
+        });
+    } else {
+        $http({
+            method: 'GET',
+            url: '/errorlogs/viewlog'
+        }).then(function successCallback(response) {
+            $scope.levels = response.data.levels;
+            $scope.logLines = response.data.logLines;
+            $scope.minLevel = response.data.minLevel;
+            $scope.logNameFilters = response.data.logNameFilters;
+            $scope.logFilter = response.data.logFilter;
+            $scope.logSearch = response.data.logSearch;
+        }, function errorCallback(response) {
+            console.error(response);
+        });
+    }
 });
