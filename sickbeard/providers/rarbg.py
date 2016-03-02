@@ -23,8 +23,7 @@ from __future__ import unicode_literals
 import datetime
 import time
 
-import sickbeard
-from sickbeard import logger, tvcache
+from sickbeard import logger, tvcache, CPU_PRESET
 from sickbeard.common import cpu_presets
 from sickbeard.indexers.indexer_config import INDEXER_TVDB
 
@@ -65,8 +64,8 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
             "app_id": "sickrage2"
         }
 
-        #Maximum requests allowed are 1req/2sec
-        time.sleep(3)
+        # Maximum requests allowed are 1req/2sec
+        time.sleep(max(2, cpu_presets[CPU_PRESET]))
 
         response = self.get_url(self.urls["api"], params=login_params, timeout=30, returns="json")
         if not response:
@@ -127,8 +126,8 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                 if not self.login():
                     continue
 
-                #Maximum requests allowed are 1req/2sec
-                time.sleep(3)
+                # Maximum requests allowed are 1req/2sec
+                time.sleep(max(2, cpu_presets[CPU_PRESET]))
 
                 data = self.get_url(self.urls["api"], params=search_params, returns="json")
                 if not isinstance(data, dict):
