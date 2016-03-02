@@ -85,6 +85,32 @@ class ShowQueue(generic_queue.GenericQueue):
     def _getLoadingShowList(self):
         return [x for x in self.queue + [self.currentItem] if x is not None and x.isLoading]
 
+    def getQueueActionMessage(self, show):
+        show_message = None
+
+        if self.isBeingAdded(show):
+            show_message = 'This show is in the process of being downloaded - the info below is incomplete.'
+
+        elif self.isBeingUpdated(show):
+            show_message = 'The information on this page is in the process of being updated.'
+
+        elif self.isBeingRefreshed(show):
+            show_message = 'The episodes below are currently being refreshed from disk'
+
+        elif self.isBeingSubtitled(show):
+            show_message = 'Currently downloading subtitles for this show'
+
+        elif self.isInRefreshQueue(show):
+            show_message = 'This show is queued to be refreshed.'
+
+        elif self.isInUpdateQueue(show):
+            show_message = 'This show is queued and awaiting an update.'
+
+        elif self.isInSubtitleQueue(show):
+            show_message = 'This show is queued and awaiting subtitles download.'
+
+        return show_message
+
     loadingShowList = property(_getLoadingShowList)
 
     def updateShow(self, show, force=False):
