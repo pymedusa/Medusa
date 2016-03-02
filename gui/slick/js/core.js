@@ -2465,14 +2465,19 @@ var SICKRAGE = {
                 var self = this;
                 var pollInterval = 5000;
                 repeat = repeat || true;
-
+                
+                
                 var show = $('meta[data-last-prov-updates]').attr('data-show');
                 var season = $('meta[data-last-prov-updates]').attr('data-season');
                 var episode = $('meta[data-last-prov-updates]').attr('data-episode');
                 var data = $('meta[data-last-prov-updates]').data('last-prov-updates');
 
+                if (!$.isNumeric(show) || !$.isNumeric(season) || !$.isNumeric(episode)) {
+                    setTimeout(function() { checkCacheUpdates(true); }, 200);
+                }
+                
                 var url = '/home/manualSelectCheckCache?show='+show+'&season='+season+'&episode='+episode;
-
+                
                 self.refreshResults = function() {
                     $('#wrapper').loadContainer(
                             '/home/manualSelect?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=0',
@@ -2510,9 +2515,15 @@ var SICKRAGE = {
                             $('#searchNotification').text('Search finished, no (new) results found.');
                             repeat = false;
                         }
+                        if (data.result === 'error') {
+                            // ep search is finished
+                            console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
+                            repeat = true;
+                        }
                     },
                     error: function () {
-                        repeat = false;
+                        //repeat = false;
+                        console.log('Error occurred!!');
                     },
                     complete: function () {
                         if (repeat) {
@@ -2532,13 +2543,15 @@ var SICKRAGE = {
                 var season = $('meta[data-last-prov-updates]').attr('data-season');
                 var episode = $('meta[data-last-prov-updates]').attr('data-episode');
                 var performSearch = $(this).attr('data-force-search');
-
-                $('#wrapper').loadContainer(
-                        '/home/manualSelect?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=' + performSearch,
-                        'Loading new search results...',
-                        'Time out, refresh page to try again'
-                );
-                checkCacheUpdates(true);
+                
+                if ($.isNumeric(show) && $.isNumeric(season) && $.isNumeric(episode)) {
+                    $('#wrapper').loadContainer(
+                            '/home/manualSelect?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=' + performSearch,
+                            'Loading new search results...',
+                            'Time out, refresh page to try again'
+                    );
+                    checkCacheUpdates(true);
+                }
             });
         },
         postProcess: function() {
