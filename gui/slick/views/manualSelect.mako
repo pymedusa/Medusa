@@ -164,6 +164,7 @@
     
     <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
     <input class="btn manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-force-search="1" />
+    <div id="searchNotification"></div>
     
     <div class="clearfix"></div>
     <div id="wrapper">
@@ -171,7 +172,7 @@
     
     <!-- @TODO: Change this to use the REST API -->
     <!-- add provider meta data -->
-    <meta data-last-prov-updates="${last_prov_updates}" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}">
+    <meta data-last-prov-updates="${provider_results['last_prov_updates']}" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}">
     
         <table id="showTable" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
             <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
@@ -198,7 +199,7 @@
             </tbody>
 
             <tbody aria-live="polite" aria-relevant="all">
-            % for hItem in sql_results:
+            % for hItem in provider_results['found_items']:
                 <% provider_img = providers.getProviderClass(GenericProvider.make_id(hItem["provider"])) %>
                 <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
                     <td class="tvShow" class="col-name" width="35%">${hItem["name"]}</td>

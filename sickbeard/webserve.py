@@ -45,6 +45,9 @@ from sickbeard.browser import foldersAtPath
 from sickbeard.scene_numbering import get_scene_numbering, set_scene_numbering, get_scene_numbering_for_show, \
     get_xem_numbering_for_show, get_scene_absolute_numbering_for_show, get_xem_absolute_numbering_for_show, \
     get_scene_absolute_numbering
+from sickbeard.manual_search import (collectEpisodesFromSearchThread, getEpisode, get_provider_cache_results,
+                                     SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING)
+
 from sickbeard.webapi import function_mapper
 
 from sickbeard.imdbPopular import imdb_popular
@@ -675,28 +678,6 @@ class Home(WebRoot):
     def _genericMessage(self, subject, message):
         t = PageTemplate(rh=self, filename="genericMessage.mako")
         return t.render(message=message, subject=subject, topmenu="home", title="")
-
-    @staticmethod
-    def _getEpisode(show, season=None, episode=None, absolute=None):
-        if show is None:
-            return "Invalid show parameters"
-
-        showObj = Show.find(sickbeard.showList, int(show))
-
-        if showObj is None:
-            return "Invalid show paramaters"
-
-        if absolute:
-            epObj = showObj.getEpisode(absolute_number=absolute)
-        elif season and episode:
-            epObj = showObj.getEpisode(season, episode)
-        else:
-            return "Invalid paramaters"
-
-        if epObj is None:
-            return "Episode couldn't be retrieved"
-
-        return epObj
 
     def index(self):
         t = PageTemplate(rh=self, filename="home.mako")
@@ -1398,7 +1379,7 @@ class Home(WebRoot):
             return self._genericMessage("Error", "Cached result doesn't have all needed info to snatch episode")
 
         # retrieve the episode object and fail if we can't get one
-        ep_obj = self._getEpisode(show, season, episode)
+        ep_obj = getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
             return json.dumps({'result': 'failure'})
 
@@ -1418,13 +1399,35 @@ class Home(WebRoot):
             return json.dumps({'result': 'failure'})
 
     def manualSelectCheckCache(self, show, season, episode, **kwargs):
+        """ Periodic check if the searchthread is still running for the selected show/season/ep 
+        and if there are new results in the cache.db
+        """
+
+        REFRESH_RESULTS = 'refresh'
+        ERROR = 'error'
+
         # Only need the first provided dict
+        # @TODO: do something with error handling in js.
         if not kwargs:
-            return {'result': 'idle'}
+            return {'result': ERROR}
 
         last_prov_updates = kwargs.iteritems().next()[0]
         last_prov_updates = json.loads(last_prov_updates.replace("'", '"'))
         main_db_con = db.DBConnection('cache.db')
+
+        episodesInSearch = collectEpisodesFromSearchThread(show)
+
+        # Check if the requested ep is in a search thread
+        searched_item = [search for search in episodesInSearch if (str(search.get('show')) == show and
+                                                                   str(search.get('season')) == season and
+                                                                   str(search.get('episode')) == episode)]
+
+        # If the item is queued multiple times (don't know if this is posible), but then check if as soon as a search has finished
+        # Move on and show results
+        if len(searched_item) and SEARCH_STATUS_FINISHED not in [item.get('searchstatus') for item in searched_item]:
+            return {'result': searched_item[0]['searchstatus']}
+
+        # The episode is not in an active or queued search, let's see if
 
         for provider, last_update in last_prov_updates.iteritems():
             # Check if the cache table has a result for this show + season + ep wich has a later timestamp, then last_update
@@ -1433,11 +1436,14 @@ class Home(WebRoot):
                                               % (provider), ["%|" + episode + "|%", season, show, int(last_update)])
 
             if needs_update:
-                return {'result': 'refresh'}
+                return {'result': REFRESH_RESULTS}
 
-        return {'result': 'idle'}
+        return {'result': SEARCH_STATUS_FINISHED}
 
     def manualSelect(self, show=None, season=None, episode=None, perform_search=0, down_cur_quality=0, show_all_results=0):
+        """ The view with results for the manual selected show/episode """
+
+        INDEXER_TVDB = 1
         # todo: add more comprehensive show validation
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
@@ -1448,65 +1454,9 @@ class Home(WebRoot):
         if showObj is None:
             return self._genericMessage("Error", "Show not in show list")
 
-        main_db_con = db.DBConnection('cache.db')
-        sql_return = {}
-        found_items = []
-        last_prov_updates = {}
-
-        providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_daily]
-        for curProvider in providers:
-
-            # Let's check if this provider table already exists
-            table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [curProvider.get_id()])
-            if not table_exists:
-                continue
-
-            # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
-            if not int(show_all_results):
-                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, \
-                                                episodes, indexerid, url, time, (select max(time) from '%s') as lastupdate, \
-                                                quality, release_group, version, seeders, leechers, size, time \
-                                                FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ?"
-                                                % (curProvider.get_id(), curProvider.get_id()),
-                                                [curProvider.name, curProvider.get_id(),
-                                                 "%|" + episode + "|%", season, show])
-
-            else:
-                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, \
-                                                episodes, indexerid, url, time, (select max(time) from '%s') as lastupdate, \
-                                                quality, release_group, version, seeders, leechers, size, time \
-                                                FROM '%s' WHERE indexerid = ?" % (curProvider.name, curProvider.get_id()),
-                                                [curProvider.get_id(), show])
-
-            if sql_return:
-                for item in sql_return:
-                    found_items.append(dict(item))
-
-                # Store the last table update, we'll need this to compare later
-                last_prov_updates[curProvider.get_id()] = str(sql_return[0]['lastupdate'])
-            else:
-                last_prov_updates[curProvider.get_id()] = "0"
-
-        if not found_items or int(perform_search):
-            # retrieve the episode object and fail if we can't get one
-            ep_obj = self._getEpisode(show, season, episode)
-            if isinstance(ep_obj, str):
-                ui.notifications.error(u"Something went wrong when starting the manual search for show {0}, and episode: {1}x{2}".
-                                       format(showObj.name, season, episode))
-
-            # make a queue item for it and put it on the queue
-            ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True)
-
-            sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
-
-            # give the CPU a break and some time to start the queue
-            time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
-        else:
-            # Sort the list of found items
-            found_items = sorted(found_items, key=lambda k: (try_int(k['quality']), try_int(k['seeders'])), reverse=True)
-            # Make unknown qualities at the botton
-            found_items = [d for d in found_items if int(d['quality']) < 32768] + [d for d in found_items if int(d['quality']) == 32768]
-
+        # Retrieve cache results from providers
+        search_show = {'show': show, 'season': season, 'episode': episode}
+        provider_results = get_provider_cache_results(INDEXER_TVDB, perform_search=0, show_all_results=0, **search_show)
 
         t = PageTemplate(rh=self, filename="manualSelect.mako")
         submenu = [{'title': 'Edit', 'path': 'home/editShow?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-pencil'}]
@@ -1516,28 +1466,7 @@ class Home(WebRoot):
         except ShowDirectoryNotFoundException:
             showLoc = (showObj._location, False)  # pylint: disable=protected-access
 
-        show_message = ''
-
-        if sickbeard.showQueueScheduler.action.isBeingAdded(showObj):
-            show_message = 'This show is in the process of being downloaded - the info below is incomplete.'
-
-        elif sickbeard.showQueueScheduler.action.isBeingUpdated(showObj):
-            show_message = 'The information on this page is in the process of being updated.'
-
-        elif sickbeard.showQueueScheduler.action.isBeingRefreshed(showObj):
-            show_message = 'The episodes below are currently being refreshed from disk'
-
-        elif sickbeard.showQueueScheduler.action.isBeingSubtitled(showObj):
-            show_message = 'Currently downloading subtitles for this show'
-
-        elif sickbeard.showQueueScheduler.action.isInRefreshQueue(showObj):
-            show_message = 'This show is queued to be refreshed.'
-
-        elif sickbeard.showQueueScheduler.action.isInUpdateQueue(showObj):
-            show_message = 'This show is queued and awaiting an update.'
-
-        elif sickbeard.showQueueScheduler.action.isInSubtitleQueue(showObj):
-            show_message = 'This show is queued and awaiting subtitles download.'
+        show_message = sickbeard.showQueueScheduler.action.getQueueActionMessage(showObj)
 
         if not sickbeard.showQueueScheduler.action.isBeingAdded(showObj):
             if not sickbeard.showQueueScheduler.action.isBeingUpdated(showObj):
@@ -1599,7 +1528,7 @@ class Home(WebRoot):
 
         return t.render(
             submenu=submenu, showLoc=showLoc, show_message=show_message,
-            show=showObj, sql_results=found_items, last_prov_updates=last_prov_updates, episode=episode,
+            show=showObj, provider_results=provider_results, episode=episode,
             sortedShowLists=sortedShowLists, bwl=bwl, season=season,
             all_scene_exceptions=showObj.exceptions,
             scene_numbering=get_scene_numbering_for_show(indexerid, indexer),
@@ -2201,24 +2130,24 @@ class Home(WebRoot):
 
         return self.redirect("/home/displayShow?show=" + show)
 
-    def searchEpisode(self, show=None, season=None, episode=None, downCurQuality=0, manualSelect=None):
+    def searchEpisode(self, show=None, season=None, episode=None, manual_select=None):
+        """
+        """
+        down_cur_quality = 0
 
         # retrieve the episode object and fail if we can't get one
-        ep_obj = self._getEpisode(show, season, episode)
+        ep_obj = getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
             return json.dumps({'result': 'failure'})
-
+    
         # make a queue item for it and put it on the queue
-        if manualSelect is not None:
-            ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(downCurQuality)), True)
-        else:
-            ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(downCurQuality)), False)
-
+        ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), bool(manual_select))
+    
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
-
+    
         # give the CPU a break and some time to start the queue
-        time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
-
+        time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+    
         if not ep_queue_item.started and ep_queue_item.success is None:
             return json.dumps(
                 {'result': 'success'})  # I Actually want to call it queued, because the search hasnt been started yet!
@@ -2231,89 +2160,15 @@ class Home(WebRoot):
     # Possible status: Downloaded, Snatched, etc...
     # Returns {'show': 279530, 'episodes' : ['episode' : 6, 'season' : 1, 'searchstatus' : 'queued', 'status' : 'running', 'quality': '4013']
     def getManualSearchStatus(self, show=None):
-        def getEpisodes(searchThread, searchstatus):
-            results = []
-            showObj = Show.find(sickbeard.showList, int(searchThread.show.indexerid))
-
-            if not showObj:
-                logger.log(u'No Show Object found for show with indexerID: ' + str(searchThread.show.indexerid), logger.ERROR)
-                return results
-
-            if isinstance(searchThread, (sickbeard.search_queue.ManualSearchQueueItem, sickbeard.search_queue.ManualSelectQueueItem)):
-                results.append({
-                    'show': searchThread.show.indexerid,
-                    'episode': searchThread.segment.episode,
-                    'episodeindexid': searchThread.segment.indexerid,
-                    'season': searchThread.segment.season,
-                    'searchstatus': searchstatus,
-                    'status': statusStrings[searchThread.segment.status],
-                    'quality': self.getQualityClass(searchThread.segment),
-                    'overview': Overview.overviewStrings[showObj.getOverview(searchThread.segment.status)]
-                })
-            else:
-                for epObj in searchThread.segment:
-                    results.append({'show': epObj.show.indexerid,
-                                    'episode': epObj.episode,
-                                    'episodeindexid': epObj.indexerid,
-                                    'season': epObj.season,
-                                    'searchstatus': searchstatus,
-                                    'status': statusStrings[epObj.status],
-                                    'quality': self.getQualityClass(epObj),
-                                    'overview': Overview.overviewStrings[showObj.getOverview(epObj.status)]
-                                    })
-
-            return results
-
         episodes = []
 
-        # Queued Searches
-        searchstatus = 'queued'
-        for searchThread in sickbeard.searchQueueScheduler.action.get_all_ep_from_queue(show):
-            episodes += getEpisodes(searchThread, searchstatus)
-
-        # Running Searches
-        searchstatus = 'searching'
-        if sickbeard.searchQueueScheduler.action.is_manualsearch_in_progress():
-            searchThread = sickbeard.searchQueueScheduler.action.currentItem
-
-            if searchThread.success:
-                searchstatus = 'finished'
-
-            episodes += getEpisodes(searchThread, searchstatus)
-
-        # Finished Searches
-        searchstatus = 'finished'
-        for searchThread in sickbeard.search_queue.MANUAL_SEARCH_HISTORY:
-            if show is not None:
-                if not str(searchThread.show.indexerid) == show:
-                    continue
-
-            if isinstance(searchThread, (sickbeard.search_queue.ManualSearchQueueItem, sickbeard.search_queue.ManualSelectQueueItem)):
-                if not [x for x in episodes if x['episodeindexid'] == searchThread.segment.indexerid]:
-                    episodes += getEpisodes(searchThread, searchstatus)
-            else:
-                # ## These are only Failed Downloads/Retry SearchThreadItems.. lets loop through the segment/episodes
-                if not [i for i, j in zip(searchThread.segment, episodes) if i.indexerid == j['episodeindexid']]:
-                    episodes += getEpisodes(searchThread, searchstatus)
+        episodes = collectEpisodesFromSearchThread(show)
 
         return json.dumps({'episodes': episodes})
 
-    @staticmethod
-    def getQualityClass(ep_obj):
-        # return the correct json value
-
-        # Find the quality class for the episode
-        _, ep_quality = Quality.splitCompositeStatus(ep_obj.status)
-        if ep_quality in Quality.cssClassStrings:
-            quality_class = Quality.cssClassStrings[ep_quality]
-        else:
-            quality_class = Quality.cssClassStrings[Quality.UNKNOWN]
-
-        return quality_class
-
     def searchEpisodeSubtitles(self, show=None, season=None, episode=None):
         # retrieve the episode object and fail if we can't get one
-        ep_obj = self._getEpisode(show, season, episode)
+        ep_obj = getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
             return json.dumps({'result': 'failure'})
 
@@ -2364,9 +2219,9 @@ class Home(WebRoot):
 
         # retrieve the episode object and fail if we can't get one
         if showObj.is_anime:
-            ep_obj = self._getEpisode(show, absolute=forAbsolute)
+            ep_obj = getEpisode(show, absolute=forAbsolute)
         else:
-            ep_obj = self._getEpisode(show, forSeason, forEpisode)
+            ep_obj = getEpisode(show, forSeason, forEpisode)
 
         if isinstance(ep_obj, str):
             result['success'] = False
@@ -2415,7 +2270,7 @@ class Home(WebRoot):
 
     def retryEpisode(self, show, season, episode, downCurQuality):
         # retrieve the episode object and fail if we can't get one
-        ep_obj = self._getEpisode(show, season, episode)
+        ep_obj = getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
             return json.dumps({'result': 'failure'})
 
