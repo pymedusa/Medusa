@@ -224,7 +224,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         time.sleep(cpu_presets[sickbeard.CPU_PRESET])
     else:
         # Sort the list of found items
-        found_items = sorted(found_items, key=lambda k: (int(k['quality']), int(k['seeders'])), reverse=True)
+        found_items = sorted(found_items, key=lambda k: (try_int(k['quality']), try_int(k['seeders'])), reverse=True)
         # Make unknown qualities at the botton
         found_items = [d for d in found_items if int(d['quality']) < 32768] + [d for d in found_items if int(d['quality']) == 32768]
         provider_results['found_items'] = found_items
