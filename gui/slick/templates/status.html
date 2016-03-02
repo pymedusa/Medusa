@@ -1,0 +1,136 @@
+<div id="config-content" ng-controller="statusController">
+    <h2 class="header">Scheduler</h2>
+    <table id="schedulerStatusTable" class="tablesorter" width="100%">
+        <thead>
+            <tr>
+                <th>Scheduler</th>
+                <th>Alive</th>
+                <th>Enable</th>
+                <th>Active</th>
+                <th>Start Time</th>
+                <th>Cycle Time</th>
+                <th>Next Run</th>
+                <th>Last Run</th>
+                <th>Silent</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="service in services">
+                <td>{{service.name}}</td>
+                <td style="{{service.isAlive ? 'background-color:green' : 'background-color:red'}}">{{service.isAlive}}</td>
+                <td>{{service.enable ? 'True' : 'False'}}</td>
+                <td>{{service.isActive ? 'True' : 'False'}}</td>
+                <td align="right">{{service.startTime}}</td>
+                <td align="right" data-seconds="{{service.cycleTime.seconds}}">{{service.cycleTime.pretty}}</td>
+                <td align="right" data-seconds="{{service.isAlive ? service.timeTillStart.seconds : ''}}">{{service.isAlive ? service.timeTillStart.pretty : ''}}</td>
+                <td>{{service.lastRun}}</td>
+                <td>{{service.silent ? 'True' : 'False'}}</td>
+            </tr>
+       </tbody>
+    </table>
+    <h2 class="header">Show Queue</h2>
+    <table id="queueStatusTable" class="tablesorter" width="100%">
+        <thead>
+            <tr>
+                <th>Show id</th>
+                <th>Show name</th>
+                <th>In Progress</th>
+                <th>Priority</th>
+                <th>Added</th>
+                <th>Queue type</th>
+            </tr>
+        </thead>
+        <tbody>
+            % if sickbeard.showQueueScheduler.action.currentItem is not None:
+                <tr>
+                    % try:
+                        <% showindexerid = sickbeard.showQueueScheduler.action.currentItem.show.indexerid %>
+                        <td>${showindexerid}</td>
+                    % except Exception:
+                        <td></td>
+                    % endtry
+                    % try:
+                        <% showname = sickbeard.showQueueScheduler.action.currentItem.show.name %>
+                        <td>${showname}</td>
+                    % except Exception:
+                        % if sickbeard.showQueueScheduler.action.currentItem.action_id == ShowQueueActions.ADD:
+                            <td>${sickbeard.showQueueScheduler.action.currentItem.showDir}</td>
+                        % else:
+                            <td></td>
+                        % endif
+                    % endtry
+                    <td>${sickbeard.showQueueScheduler.action.currentItem.inProgress}</td>
+                    % if sickbeard.showQueueScheduler.action.currentItem.priority == 10:
+                        <td>LOW</td>
+                    % elif sickbeard.showQueueScheduler.action.currentItem.priority == 20:
+                        <td>NORMAL</td>
+                    % elif sickbeard.showQueueScheduler.action.currentItem.priority == 30:
+                        <td>HIGH</td>
+                    % else:
+                        <td>sickbeard.showQueueScheduler.action.currentItem.priority</td>
+                    % endif
+                    <td>${sickbeard.showQueueScheduler.action.currentItem.added.strftime(dateTimeFormat)}</td>
+                    <td>${ShowQueueActions.names[sickbeard.showQueueScheduler.action.currentItem.action_id]}</td>
+                </tr>
+            % endif
+            % for item in sickbeard.showQueueScheduler.action.queue:
+                <tr>
+                    % try:
+                        <% showindexerid = item.show.indexerid %>
+                        <td>${showindexerid}</td>
+                    % except Exception:
+                        <td></td>
+                    % endtry
+                    % try:
+                        <% showname = item.show.name %>
+                        <td>${showname}</td>
+                    % except Exception:
+                        % if item.action_id == ShowQueueActions.ADD:
+                            <td>${item.showDir}</td>
+                        % else:
+                            <td></td>
+                        % endif
+                    % endtry
+                    <td>${item.inProgress}</td>
+                    % if item.priority == 10:
+                        <td>LOW</td>
+                    % elif item.priority == 20:
+                        <td>NORMAL</td>
+                    % elif item.priority == 30:
+                        <td>HIGH</td>
+                    % else:
+                        <td>${item.priority}</td>
+                    % endif
+                    <td>${item.added.strftime(dateTimeFormat)}</td>
+                    <td>${ShowQueueActions.names[item.action_id]}</td>
+                </tr>
+            % endfor
+        </tbody>
+    </table>
+    <h2 class="header">Disk Space</h2>
+    <table id="DFStatusTable" class="tablesorter" width="50%">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Location</th>
+                <th>Free space</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-if="downloadDir">
+                <td>TV Download Directory</td>
+                <td>{{downloadDir}}</td>
+                <td ng-if="tvdirFree" align="middle">${tvdirFree}</td>
+                <td ng-if="!tvdirFree" align="middle"><i>Missing</i></td>
+            </tr>
+            <tr>
+                <td rowspan="{{rootDir.length}}">Media Root Directories</td>
+                <td ng-repeat="directory in rootDirs">{{directory.path}}</td>
+                <td ng-repeat="directory in rootDirs" align="middle">
+                    <span ng-if="directory.freeSpace">{{directory.freeSpace}}</span>
+                    <span ng-if="!directory.freeSpace"><i>Missing</i></span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

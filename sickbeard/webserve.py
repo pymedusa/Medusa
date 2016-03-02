@@ -59,7 +59,7 @@ from unrar2 import RarFile
 import adba
 from libtrakt import TraktAPI
 from libtrakt.exceptions import traktException
-from sickrage.helper.common import sanitize_filename, try_int, episode_num
+from sickrage.helper.common import sanitize_filename, try_int, episode_num, dateTimeFormat
 from sickrage.helper.encoding import ek, ss
 from sickrage.helper.exceptions import CantRefreshShowException, CantUpdateShowException, ex
 from sickrage.helper.exceptions import MultipleShowObjectsException, NoNFOException, ShowDirectoryNotFoundException
@@ -1147,21 +1147,147 @@ class Home(WebRoot):
             return "Error sending Pushbullet notification"
 
     def status(self):
-        tvdirFree = helpers.getDiskSpaceUsage(sickbeard.TV_DOWNLOAD_DIR)
-        rootDir = {}
+        self.set_header('Content-Type', 'application/json')
+        root_directories = []
         if sickbeard.ROOT_DIRS:
             backend_pieces = sickbeard.ROOT_DIRS.split('|')
             backend_dirs = backend_pieces[1:]
-        else:
-            backend_dirs = []
+            for directory in backend_dirs:
+                root_directories.append({
+                    "path": directory,
+                    "freeSpace": helpers.getDiskSpaceUsage(directory)
+                })
 
-        if len(backend_dirs):
-            for subject in backend_dirs:
-                rootDir[subject] = helpers.getDiskSpaceUsage(subject)
+        schedulerList = {
+            'Daily Search': 'dailySearchScheduler',
+            'Backlog': 'backlogSearchScheduler',
+            'Show Update': 'showUpdateScheduler',
+            'Version Check': 'versionCheckScheduler',
+            'Show Queue': 'showQueueScheduler',
+            'Search Queue': 'searchQueueScheduler',
+            'Proper Finder': 'properFinderScheduler',
+            'Post Process': 'autoPostProcesserScheduler',
+            'Subtitles Finder': 'subtitlesFinderScheduler',
+            'Trakt Checker': 'traktCheckerScheduler',
+        }
 
-        t = PageTemplate(rh=self, filename="status.mako")
-        return t.render(title='Status', header='Status',
-                        tvdirFree=tvdirFree, rootDir=rootDir)
+        services = []
+        for schedulerName, scheduler in schedulerList.iteritems():
+            service = getattr(sickbeard, scheduler)
+
+            cycle_time = ""
+            cycle_time_text = ""
+            time_till_start = ""
+            time_till_start_text = ""
+            if service.cycleTime is not None:
+                cycle_time = int((service.cycleTime.microseconds + (service.cycleTime.seconds + service.cycleTime.days * 24 * 3600) * 10**6) / 10**6)
+                cycle_time_text = str(helpers.pretty_time_delta(cycle_time))
+            if service.start_time is not None:
+                time_till_start = timeLeft = int((service.timeLeft().microseconds + (service.timeLeft().seconds + service.timeLeft().days * 24 * 3600) * 10**6) / 10**6)
+                time_till_start_text = str(helpers.pretty_time_delta(time_till_start))
+
+            service_enabled = False
+            if scheduler == 'backlogSearchScheduler':
+                searchQueue = getattr(sickbeard, 'searchQueueScheduler')
+                if searchQueue.action.is_backlog_paused():
+                    service_enabled = 'Paused'
+                else:
+                    service_enabled = service.enable
+            else:
+                service_enabled = service.enable
+
+            service_active = False
+            if scheduler == 'backlogSearchScheduler':
+                searchQueue = getattr(sickbeard, 'searchQueueScheduler')
+                if searchQueue.action.is_backlog_in_progress():
+                    service_active = True
+                else:
+                    service_enabled = service.action.amActive
+            else:
+                service_active = service.action.amActive
+
+            services.append({
+                "name": schedulerName,
+                "isAlive": service.isAlive(),
+                "isActive": service_active,
+                "startTime": service.start_time,
+                "timeTillStart": {
+                    "seconds": time_till_start,
+                    "pretty": time_till_start_text
+                },
+                "cycleTime": {
+                    "seconds": cycle_time,
+                    "pretty": cycle_time_text
+                },
+                "lastRun": service.lastRun.strftime(dateTimeFormat),
+                "silent": service.silent,
+                "enabled": service_enabled
+            })
+
+        show_queue = []
+        if sickbeard.showQueueScheduler.action.currentItem is not None:
+            show = {
+                "indexer_id": "",
+                "name": "",
+                "directory": "",
+                "progress": sickbeard.showQueueScheduler.action.currentItem.inProgress,
+                "priority": "",
+                "added": sickbeard.showQueueScheduler.action.currentItem.added.strftime(dateTimeFormat),
+                "queue_type": ShowQueueActions.names[sickbeard.showQueueScheduler.action.currentItem.action_id]
+            }
+            try:
+                show.indexer_id = sickbeard.showQueueScheduler.action.currentItem.show.indexerid
+            except Exception:
+                show.indexer_id = ""
+            try:
+                show.name = sickbeard.showQueueScheduler.action.currentItem.show.name
+            except Exception:
+                if sickbeard.showQueueScheduler.action.currentItem.action_id == ShowQueueActions.ADD:
+                    show.directory = sickbeard.showQueueScheduler.action.currentItem.showDir
+            if sickbeard.showQueueScheduler.action.currentItem.priority == 10:
+                show.priority = "LOW"
+            elif sickbeard.showQueueScheduler.action.currentItem.priority == 20:
+                show.priority = "NORMAL"
+            elif sickbeard.showQueueScheduler.action.currentItem.priority == 30:
+                show.priority = "HIGH"
+            else:
+                show.priority = sickbeard.showQueueScheduler.action.currentItem.priority
+            show_queue.append(show)
+
+        for item in sickbeard.showQueueScheduler.action.queue:
+            show = {
+                "indexer_id": "",
+                "name": "",
+                "directory": "",
+                "progress": item.inProgress,
+                "priority": "",
+                "added": item.added.strftime(dateTimeFormat),
+                "queue_type": ShowQueueActions.names[item.action_id]
+            }
+            try:
+                show.indexer_id = item.show.indexerid
+            try:
+                show.name = item.show.name
+            except Exception:
+                if item.action_id == ShowQueueActions.ADD:
+                    show.directory = item.showDir
+            if item.priority == 10:
+                show.priority = "LOW"
+            % elif item.priority == 20:
+                show.priority = "NORMAL"
+            % elif item.priority == 30:
+                show.priority = "HIGH"
+            % else:
+                show.priority = item.priority
+            show_queue.append(show)
+
+        return {
+            "downloadDir": sickbeard.TV_DOWNLOAD_DIR,
+            "services": services,
+            "tvdirFree": helpers.getDiskSpaceUsage(sickbeard.TV_DOWNLOAD_DIR),
+            "rootDirs": root_directories,
+            "showQueue": show_queue
+        }
 
     def shutdown(self, pid=None):
         if not Shutdown.stop(pid):

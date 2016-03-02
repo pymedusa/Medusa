@@ -151,6 +151,11 @@ sickrage.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$
         url: '/logs?level&layout',
         templateUrl: '/templates/logs.html'
     });
+
+    $stateProvider.state('status', {
+        url: '/status',
+        templateUrl: '/templates/status.html'
+    });
 }]);
 
 sickrage.factory('_', ['$window', function($window) {
@@ -398,4 +403,18 @@ sickrage.controller('logsController', function($scope, $http, $stateParams) {
             console.error(response);
         });
     }
+});
+
+sickrage.controller('statusController', function($scope, $http, $stateParams) {
+    $http({
+        method: 'GET',
+        url: '/home/status'
+    }).then(function successCallback(response) {
+        $scope.services = response.data.services;
+        $scope.tvdirFree = response.data.tvdirFree;
+        $scope.downloadDir = response.data.downloadDir;
+        $scope.rootDirs = response.data.rootDirs;
+    }, function errorCallback(response) {
+        console.error(response);
+    });
 });
