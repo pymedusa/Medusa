@@ -46,7 +46,7 @@ from sickbeard.scene_numbering import get_scene_numbering, set_scene_numbering, 
     get_xem_numbering_for_show, get_scene_absolute_numbering_for_show, get_xem_absolute_numbering_for_show, \
     get_scene_absolute_numbering
 from sickbeard.manual_search import (collectEpisodesFromSearchThread, getEpisode, get_provider_cache_results,
-                                     SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING)
+                                     SEARCH_STATUS_FINISHED)
 
 from sickbeard.webapi import function_mapper
 
@@ -111,8 +111,6 @@ from tornado.process import cpu_count
 from tornado.concurrent import run_on_executor
 
 from mako.runtime import UNDEFINED
-
-from sickbeard import common
 
 mako_lookup = None
 mako_cache = None
@@ -1394,8 +1392,7 @@ class Home(WebRoot):
 
         try:
             main_db_con = db.DBConnection('cache.db')
-            sql_return = main_db_con.action("SELECT * FROM '%s' WHERE rowid = ?" %
-                                        (sickbeard.providers.getProviderClass(provider).get_id()), [rowid], fetchone=True)
+            sql_return = main_db_con.action("SELECT * FROM '%s' WHERE rowid = ?" % (sickbeard.providers.getProviderClass(provider).get_id()), [rowid], fetchone=True)
         except Exception as e:
             return self._genericMessage("Error", "Couldn't read cached results. Error: {}".format(e))
 
@@ -1408,7 +1405,7 @@ class Home(WebRoot):
         if not showObj:
             return self._genericMessage("Error", "Show is not in your library")
 
-        if not (sql_return['url'] or sql_return['name'] or provider or episode):
+        if not (sql_return['url'] or sql_return['quality'] or sql_return['name'] or provider or episode):
             return self._genericMessage("Error", "Cached result doesn't have all needed info to snatch episode")
 
         # retrieve the episode object and fail if we can't get one
@@ -1419,7 +1416,7 @@ class Home(WebRoot):
         # make a queue item for it and put it on the queue
         ep_queue_item = search_queue.ManualSelectQueueItem(ep_obj.show, ep_obj, season, episode,
                                                            sql_return['url'], sql_return['quality'],
-                                                           sql_return['release_group'], provider, sql_return['name'])
+                                                           provider, sql_return['name'])
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
