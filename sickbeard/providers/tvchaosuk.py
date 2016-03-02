@@ -169,7 +169,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             torrent_size = torrent.find_all('td')[labels.index('Size')].get_text(strip=True)
                             size = convert_size(torrent_size, units=units) or -1
 
-                            item = title, download_url, size, seeders, leechers
+                            item = title + '.hdtv.x264', download_url, size, seeders, leechers
                             if mode != 'RSS':
                                 logger.log(u"Found result: {} with {} seeders and {} leechers".format
                                            (title, seeders, leechers), logger.DEBUG)
