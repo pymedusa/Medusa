@@ -94,7 +94,8 @@
                 <div id="summary">
                     <table class="summaryTable pull-left">
                     <!-- <% anyQualities, bestQualities = Quality.splitQuality(int(show.quality)) %>
-                        <tr><td class="showLegend">Quality: </td><td>
+                        <tr>
+                            <td class="showLegend">Quality: </td><td>
                     % if show.quality in qualityPresets:
                         ${renderQualityPill(show.quality)}
                     % else:
@@ -103,9 +104,8 @@
                     % endif
                     % if bestQualities:
                         <i>Preferred:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(bestQualities)])}
-                    % endif
+                        </tr>
                     % endif -->
-
                         <tr ng-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{show.airs}} ${("<font color='#FF0000'><b>(invalid Timeformat)</b></font> ", "")[network_timezones.test_timeformat(show.airs)]} on {{show.network}}</td></tr>
                         <tr ng-if="show.network && !show.airs"><td class="showLegend">Originally Airs: </td><td>{{show.network}}</td></tr>
                         <tr ng-if="!show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{show.airs}} ${("<font color='#FF0000'><b>(invalid Timeformat)</b></font>", "")[network_timezones.test_timeformat(show.airs)]}</td></tr>
@@ -114,26 +114,20 @@
                         <tr ng-if="show.location[1]"><td class="showLegend">Location: </td><td>{{show.location[0]}}</td></tr>
                         <tr ng-if="!show.location[1]"><td class="showLegend"><span style="color: red;">Location: </span></td><td><span style="color: red;">{{show.location[0]}}</span> (Missing)</td></tr>
                         <tr><td class="showLegend">Scene Name:</td><td>{{show.exceptions ? show.exceptions.join(' | ') : show.name}}</td></tr>
-
                     <!-- % if show.rls_require_words: -->
                         <tr><td class="showLegend">Required Words: </td><td>${show.rls_require_words}</td></tr>
                     <!-- % endif -->
                     <!-- % if show.rls_ignore_words: -->
                         <tr><td class="showLegend">Ignored Words: </td><td>${show.rls_ignore_words}</td></tr>
                     <!-- % endif -->
-                    <!-- % if bwl and bwl.whitelist: -->
-                        <tr>
-                            <td class="showLegend">Wanted Group${("", "s")[len(bwl.whitelist) > 1]}:</td>
-                            <td>${', '.join(bwl.whitelist)}</td>
+                        <tr ng-if="blackAndWhiteList.whitelist">
+                            <td class="showLegend">Wanted Group{{blackAndWhiteList.whitelist.length > 1 ? 's' : ''}}:</td>
+                            <td>{{blackAndWhiteList.whitelist.join(', ')}}</td>
                         </tr>
-                    <!-- % endif -->
-                    <!-- % if bwl and bwl.blacklist: -->
-                        <tr>
-                            <td class="showLegend">Unwanted Group${("", "s")[len(bwl.blacklist) > 1]}:</td>
-                            <td>${', '.join(bwl.blacklist)}</td>
+                        <tr ng-if="blackAndWhiteList.blacklist">
+                            <td class="showLegend">Unwanted Group{{blackAndWhiteList.blacklist.length > 1 ? 's' : ''}}:</td>
+                            <td>{{blackAndWhiteList.blacklist.join(', ')}}</td>
                         </tr>
-                    <!-- % endif -->
-
                         <tr><td class="showLegend">Size:</td><td>${pretty_file_size(sickbeard.helpers.get_size(showLoc[0]))}</td></tr>
                     </table>
 
@@ -158,15 +152,52 @@
         <div class="pull-left" >
             Change selected episodes to:<br>
             <select id="statusSelect" class="form-control form-control-inline input-sm">
-            <!-- <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
-            % if not sickbeard.USE_FAILED_DOWNLOADS:
-            <% availableStatus.remove(FAILED) %>
-            % endif
-            % for curStatus in availableStatus + Quality.DOWNLOADED + Quality.ARCHIVED:
-                % if curStatus not in [DOWNLOADED, ARCHIVED]:
-                <option value="${curStatus}">${statusStrings[curStatus]}</option>
+                <option value="3">Wanted</option>
+                <option value="5">Skipped</option>
+                <option value="7">Ignored</option>
+                <option ng-if="useFailedDownloads" value="11">Failed</option>
+                <!-- <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
+                % if not sickbeard.USE_FAILED_DOWNLOADS:
+                <% availableStatus.remove(FAILED) %>
                 % endif
-            % endfor -->
+                % for curStatus in availableStatus + Quality.DOWNLOADED + Quality.ARCHIVED:
+                    % if curStatus not in [DOWNLOADED, ARCHIVED]:
+                    <option value="${curStatus}">${statusStrings[curStatus]}</option>
+                    % endif
+                % endfor -->
+                <!-- @TODO: This needs to be replaced with a ng-repeat -->
+                <option value="3276804">Downloaded (Unknown)</option>
+                <option value="204">Downloaded (SD DVD)</option>
+                <option value="404">Downloaded (720p HDTV)</option>
+                <option value="409604">Downloaded (8K UHD TV)</option>
+                <option value="104">Downloaded (SDTV)</option>
+                <option value="804">Downloaded (RawHD)</option>
+                <option value="12804">Downloaded (720p BluRay)</option>
+                <option value="102404">Downloaded (4K UHD WEB-DL)</option>
+                <option value="6404">Downloaded (1080p WEB-DL)</option>
+                <option value="1638404">Downloaded (8K UHD BluRay)</option>
+                <option value="1604">Downloaded (1080p HDTV)</option>
+                <option value="3204">Downloaded (720p WEB-DL)</option>
+                <option value="25604">Downloaded (1080p BluRay)</option>
+                <option value="51204">Downloaded (4K UHD TV)</option>
+                <option value="819204">Downloaded (8K UHD WEB-DL)</option>
+                <option value="204804">Downloaded (4K UHD BluRay)</option>
+                <option value="3276806">Archived (Unknown)</option>
+                <option value="206">Archived (SD DVD)</option>
+                <option value="406">Archived (720p HDTV)</option>
+                <option value="409606">Archived (8K UHD TV)</option>
+                <option value="106">Archived (SDTV)</option>
+                <option value="806">Archived (RawHD)</option>
+                <option value="12806">Archived (720p BluRay)</option>
+                <option value="102406">Archived (4K UHD WEB-DL)</option>
+                <option value="6406">Archived (1080p WEB-DL)</option>
+                <option value="1638406">Archived (8K UHD BluRay)</option>
+                <option value="1606">Archived (1080p HDTV)</option>
+                <option value="3206">Archived (720p WEB-DL)</option>
+                <option value="25606">Archived (1080p BluRay)</option>
+                <option value="51206">Archived (4K UHD TV)</option>
+                <option value="819206">Archived (8K UHD WEB-DL)</option>
+                <option value="204806">Archived (4K UHD BluRay)</option>
             </select>
             <input type="hidden" id="showID" value="{{show.indexerId}}" />
             <input type="hidden" id="indexer" value="{{show.indexer}}" />
@@ -190,151 +221,146 @@
                 <button class="btn btn-xs clearAll">Clear All</button>
             </div>
         </div>
-    <br>
-    <br>
-    <br>
 
-    <table ng-repeat="(i, season) in seasons.slice().reverse()" class="displayShowTable display_show" cellspacing="0" border="0" cellpadding="0">
-        <thead>
-            <tr class="seasoncols" style="display:none;">
-                <th data-sorter="false" data-priority="critical" class="col-checkbox"><input type="checkbox" class="seasonCheck"/></th>
-                <th data-sorter="false" class="col-metadata">NFO</th>
-                <th data-sorter="false" class="col-metadata">TBN</th>
-                <th data-sorter="false" class="col-ep">Episode</th>
-                <th data-sorter="false" class="{{'col-ep' + (show.is_anime ? 'columnSelector-false' : '')}}">Absolute</th>
-                <th data-sorter="false" class="{{'col-ep' + ((!show.airByDate && !show.sport && !show.anime && show.scene) ? 'columnSelector-false' : '')}}">Scene</th>
-                <th data-sorter="false" class="{{'col-ep' + (!show.airByDate && !show.sports && show.anime && show.scene) ? 'columnSelector-false' : ''}}">Scene Absolute</th>
-                <th data-sorter="false" class="col-name">Name</th>
-                <th data-sorter="false" class="col-name columnSelector-false">File Name</th>
-                <th data-sorter="false" class="col-ep columnSelector-false">Size</th>
-                <th data-sorter="false" class="col-airdate">Airdate</th>
-                <th data-sorter="false" class="{{'col-ep' + (downloadUrl ? 'columnSelector-false' : '')}}">Download</th>
-                <th data-sorter="false" class="{{'col-ep' + (useSubtitles ? 'columnSelector-false' : '')}}">Subtitles</th>
-                <th data-sorter="false" class="col-status">Status</th>
-                <th data-sorter="false" class="col-search">Search</th>
-            </tr>
-        </thead>
-        <tbody class="tablesorter-no-sort">
-            <tr style="height: 60px;">
-                <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
-                    <h3 style="display: inline;"><a name="{{'season-' + seasons.indexOf(season)}}"></a>{{seasons.indexOf(season) === 0 ? 'Specials' : 'Season ' + seasons.indexOf(season)}}</h3>
-                    <button ng-if="!displayAllSeasons" id="{{'showseason-' + seasons.indexOf(season)}}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="{{'#collapseSeason-' + seasons.indexOf(season)}}">Show Episodes</button>
-                </th>
-            </tr>
-        </tbody>
-        <tbody class="tablesorter-no-sort">
-            <tr id="{{'season-' + seasons.indexOf(season) + '-cols'}}" class="seasoncols">
-                <th class="col-checkbox"><input type="checkbox" class="seasonCheck" id="{{seasons.indexOf(season)}}" /></th>
-                <th class="col-metadata">NFO</th>
-                <th class="col-metadata">TBN</th>
-                <th class="col-ep">Episode</th>
-                <th class="col-ep">Absolute</th>
-                <th class="col-ep">Scene</th>
-                <th class="col-ep">Scene Absolute</th>
-                <th class="col-name">Name</th>
-                <th class="col-name">File Name</th>
-                <th class="col-ep">Size</th>
-                <th class="col-airdate">Airdate</th>
-                <th class="col-ep">Download</th>
-                <th class="col-ep">Subtitles</th>
-                <th class="col-status">Status</th>
-                <th class="col-search">Search</th>
-            </tr>
-        </tbody>
-        <tbody id="{{'collapseSeason-' + seasons.indexOf(season)}}">
-            <tr ng-repeat="(i, episode) in season.slice().reverse().slice(0, -1)" class="{{qualityStrings(episode.status) + ' season-' + seasons.indexOf(season) + ' seasonstyle'}}" id="{{seasons.indexOf(season) + 'x' + episode.episode}}">
-                <td class="col-checkbox">
-                    <input ng-if="episode.status != 'unaired'" type="checkbox" class="epCheck" id="{{seasons.indexOf(season) + 'x' + season.episode.episode}}" name="{{seasons.indexOf(season) + 'x' + season.episode.episode}}" />
-                </td>
-                <td align="center"><img src="{{'/images/' + (episode.hasnfo ? 'nfo.gif' : 'nfo-no.gif')}}" alt="{{episode.hasnfo ? 'Y' : 'N'}}" width="23" height="11" /></td>
-                <td align="center"><img src="{{'/images/' + (episode.hastbn ? 'tbn.gif' : 'tbn-no.gif')}}" alt="{{episode.hastbn ? 'Y' : 'N'}}" width="23" height="11" /></td>
-                <td align="center">
-                    <span ng-if="episode.location" title="{{episode.episode}}" class="addQTip">{{episode.episode}}</span>
-                    <span ng-if="!episode.location">{{episode.episode}}</span>
-                </td>
-                <td align="center">{{episode.absolute_number}}</td>
-                <td align="center">
-                    <!-- <input type="text" placeholder="${str(dfltSeas) + 'x' + str(dfltEpis)}" size="6" maxlength="8"
-                        class="sceneSeasonXEpisode form-control input-scene" data-for-season="${epResult["season"]}" data-for-episode="${epResult["episode"]}"
-                        id="sceneSeasonXEpisode_${show.indexerid}_${str(epResult["season"])}_${str(epResult["episode"])}"
-                        title="Change the value here if scene numbering differs from the indexer episode numbering"
-                        % if dfltEpNumbering:
-                            value=""
-                        % else:
-                            value="${str(scSeas)}x${str(scEpis)}"
+        <table ng-repeat="(i, season) in seasons.slice().reverse()" class="displayShowTable display_show" cellspacing="0" border="0" cellpadding="0">
+            <thead>
+                <tr class="seasoncols" style="display:none;">
+                    <th data-sorter="false" data-priority="critical" class="col-checkbox"><input type="checkbox" class="seasonCheck"/></th>
+                    <th data-sorter="false" class="col-metadata">NFO</th>
+                    <th data-sorter="false" class="col-metadata">TBN</th>
+                    <th data-sorter="false" class="col-ep">Episode</th>
+                    <th data-sorter="false" class="{{'col-ep' + (show.is_anime ? 'columnSelector-false' : '')}}">Absolute</th>
+                    <th data-sorter="false" class="{{'col-ep' + ((!show.airByDate && !show.sport && !show.anime && show.scene) ? 'columnSelector-false' : '')}}">Scene</th>
+                    <th data-sorter="false" class="{{'col-ep' + (!show.airByDate && !show.sports && show.anime && show.scene) ? 'columnSelector-false' : ''}}">Scene Absolute</th>
+                    <th data-sorter="false" class="col-name">Name</th>
+                    <th data-sorter="false" class="col-name columnSelector-false">File Name</th>
+                    <th data-sorter="false" class="col-ep columnSelector-false">Size</th>
+                    <th data-sorter="false" class="col-airdate">Airdate</th>
+                    <th data-sorter="false" class="{{'col-ep' + (downloadUrl ? 'columnSelector-false' : '')}}">Download</th>
+                    <th data-sorter="false" class="{{'col-ep' + (useSubtitles ? 'columnSelector-false' : '')}}">Subtitles</th>
+                    <th data-sorter="false" class="col-status">Status</th>
+                    <th data-sorter="false" class="col-search">Search</th>
+                </tr>
+            </thead>
+            <tbody class="tablesorter-no-sort">
+                <tr style="height: 60px;">
+                    <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
+                        <h3 style="display: inline;"><a name="{{'season-' + seasons.indexOf(season)}}"></a>{{seasons.indexOf(season) === 0 ? 'Specials' : 'Season ' + seasons.indexOf(season)}}</h3>
+                        <button ng-if="!displayAllSeasons" id="{{'showseason-' + seasons.indexOf(season)}}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="{{'#collapseSeason-' + seasons.indexOf(season)}}">Show Episodes</button>
+                    </th>
+                </tr>
+            </tbody>
+            <tbody class="tablesorter-no-sort">
+                <tr id="{{'season-' + seasons.indexOf(season) + '-cols'}}" class="seasoncols">
+                    <th class="col-checkbox"><input type="checkbox" class="seasonCheck" id="{{seasons.indexOf(season)}}" /></th>
+                    <th class="col-metadata">NFO</th>
+                    <th class="col-metadata">TBN</th>
+                    <th class="col-ep">Episode</th>
+                    <th class="col-ep">Absolute</th>
+                    <th class="col-ep">Scene</th>
+                    <th class="col-ep">Scene Absolute</th>
+                    <th class="col-name">Name</th>
+                    <th class="col-name">File Name</th>
+                    <th class="col-ep">Size</th>
+                    <th class="col-airdate">Airdate</th>
+                    <th class="col-ep">Download</th>
+                    <th class="col-ep">Subtitles</th>
+                    <th class="col-status">Status</th>
+                    <th class="col-search">Search</th>
+                </tr>
+            </tbody>
+            <tbody id="{{'collapseSeason-' + seasons.indexOf(season)}}">
+                <tr ng-repeat="(i, episode) in season.slice().reverse().slice(0, -1)" class="{{qualityStrings(episode.status) + ' season-' + seasons.indexOf(season) + ' seasonstyle'}}" id="{{seasons.indexOf(season) + 'x' + episode.episode}}">
+                    <td class="col-checkbox">
+                        <input ng-if="episode.status != 'unaired'" type="checkbox" class="epCheck" id="{{seasons.indexOf(season) + 'x' + season.episode.episode}}" name="{{seasons.indexOf(season) + 'x' + season.episode.episode}}" />
+                    </td>
+                    <td align="center"><img src="{{'/images/' + (episode.hasnfo ? 'nfo.gif' : 'nfo-no.gif')}}" alt="{{episode.hasnfo ? 'Y' : 'N'}}" width="23" height="11" /></td>
+                    <td align="center"><img src="{{'/images/' + (episode.hastbn ? 'tbn.gif' : 'tbn-no.gif')}}" alt="{{episode.hastbn ? 'Y' : 'N'}}" width="23" height="11" /></td>
+                    <td align="center">
+                        <span ng-if="episode.location" title="{{episode.episode}}" class="addQTip">{{episode.episode}}</span>
+                        <span ng-if="!episode.location">{{episode.episode}}</span>
+                    </td>
+                    <td align="center">{{episode.absolute_number}}</td>
+                    <td align="center">
+                        <!-- <input type="text" placeholder="${str(dfltSeas) + 'x' + str(dfltEpis)}" size="6" maxlength="8"
+                            class="sceneSeasonXEpisode form-control input-scene" data-for-season="${epResult["season"]}" data-for-episode="${epResult["episode"]}"
+                            id="sceneSeasonXEpisode_${show.indexerid}_${str(epResult["season"])}_${str(epResult["episode"])}"
+                            title="Change the value here if scene numbering differs from the indexer episode numbering"
+                            % if dfltEpNumbering:
+                                value=""
+                            % else:
+                                value="${str(scSeas)}x${str(scEpis)}"
+                            % endif
+                                style="padding: 0; text-align: center; max-width: 60px;" autocapitalize="off" /> -->
+                    </td>
+                    <td align="center">
+                        <!-- <input type="text" placeholder="${str(dfltAbsolute)}" size="6" maxlength="8"
+                            class="sceneAbsolute form-control input-scene" data-for-absolute="${epResult["absolute_number"]}"
+                            id="sceneAbsolute_${show.indexerid}${"_"+str(epResult["absolute_number"])}"
+                            title="Change the value here if scene absolute numbering differs from the indexer absolute numbering"
+                            % if dfltAbsNumbering:
+                                value=""
+                            % else:
+                                value="${str(scAbsolute)}"
+                            % endif
+                                style="padding: 0; text-align: center; max-width: 60px;" autocapitalize="off" /> -->
+                    </td>
+                    <td class="col-name">
+                        <img ng-if="episode.description" src="/images/info32.png" width="16" height="16" class="plotInfo" alt="" id="{{'plot_info_' + show.indexerId + '_' + seasons.indexOf(season) + '_' + episode.episode}}" />
+                        <img ng-if="!episode.description" src="/images/info32.png" width="16" height="16" class="plotInfoNone" alt="" />
+                        {{episode.name}}
+                    </td>
+                    <td class="col-name">{{episode.location}}</td>
+                    <td class="col-ep">
+                        <!-- <span ng-if="episode.fileSize">${pretty_file_size(epResult["file_size"])}</span> -->
+                    </td>
+                    <td class="col-airdate">
+                        <span ng-if="episode.airdate">
+                            <!-- ## Lets do this exactly like ComingEpisodes and History
+                            ## Avoid issues with dateutil's _isdst on Windows but still provide air dates
+                            <% airDate = datetime.datetime.fromordinal(epResult['airdate']) %>
+                            % if airDate.year >= 1970 or show.network:
+                                <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(epResult['airdate'], show.airs, show.network)) %>
+                            % endif
+                            <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(airDate)}</time> -->
+                        </span>
+                        <span ng-if="!episode.airdate">Never</span>
+                    </td>
+                    <td>
+                        <!-- {{
+                            filename = episode.location
+                            rootDirs.split('|').forEach(function(rootDir){
+                                if(rootDir[0] === '/'){
+                                    filename = filename.replace(rootDir, '');
+                                }
+                            });
+                        }} -->
+                        <center ng-if="downloadUrl && episode.location"><a href="{{downloadUrl + filename}}">Download</a></center>
+                    </td>
+                    <td class="col-subtitles" align="center">
+                    <!-- % for flag in (epResult["subtitles"] or '').split(','):
+                        % if flag.strip():
+                            <img src="/images/subtitles/flags/${flag}.png" width="16" height="11" alt="${subtitles.name_from_code(flag)}" onError="this.onerror=null;this.src='/images/flags/unknown.png';" />
                         % endif
-                            style="padding: 0; text-align: center; max-width: 60px;" autocapitalize="off" /> -->
-                </td>
-                <td align="center">
-                    <!-- <input type="text" placeholder="${str(dfltAbsolute)}" size="6" maxlength="8"
-                        class="sceneAbsolute form-control input-scene" data-for-absolute="${epResult["absolute_number"]}"
-                        id="sceneAbsolute_${show.indexerid}${"_"+str(epResult["absolute_number"])}"
-                        title="Change the value here if scene absolute numbering differs from the indexer absolute numbering"
-                        % if dfltAbsNumbering:
-                            value=""
-                        % else:
-                            value="${str(scAbsolute)}"
-                        % endif
-                            style="padding: 0; text-align: center; max-width: 60px;" autocapitalize="off" /> -->
-                </td>
-                <td class="col-name">
-                    <img ng-if="episode.description" src="/images/info32.png" width="16" height="16" class="plotInfo" alt="" id="{{'plot_info_' + show.indexerId + '_' + seasons.indexOf(season) + '_' + episode.episode}}" />
-                    <img ng-if="!episode.description" src="/images/info32.png" width="16" height="16" class="plotInfoNone" alt="" />
-                    {{episode.name}}
-                </td>
-                <td class="col-name">{{episode.location}}</td>
-                <td class="col-ep">
-                    <!-- % if epResult["file_size"]:
-                        ${pretty_file_size(epResult["file_size"])}
-                    % endif -->
-                </td>
-                <td class="col-airdate">
-                    <span ng-if="episode.airdate">
-                        <!-- ## Lets do this exactly like ComingEpisodes and History
-                        ## Avoid issues with dateutil's _isdst on Windows but still provide air dates
-                        <% airDate = datetime.datetime.fromordinal(epResult['airdate']) %>
-                        % if airDate.year >= 1970 or show.network:
-                            <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(epResult['airdate'], show.airs, show.network)) %>
-                        % endif
-                        <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(airDate)}</time> -->
-                    </span>
-                    <span ng-if="!episode.airdate">Never</span>
-                </td>
-                <td>
-                    <!-- {{
-                        filename = episode.location
-                        rootDirs.split('|').forEach(function(rootDir){
-                            if(rootDir[0] === '/'){
-                                filename = filename.replace(rootDir, '');
-                            }
-                        });
-                    }} -->
-                    <center ng-if="downloadUrl && episode.location"><a href="{{downloadUrl + filename}}">Download</a></center>
-                </td>
-                <td class="col-subtitles" align="center">
-                <!-- % for flag in (epResult["subtitles"] or '').split(','):
-                    % if flag.strip():
-                        <img src="/images/subtitles/flags/${flag}.png" width="16" height="11" alt="${subtitles.name_from_code(flag)}" onError="this.onerror=null;this.src='/images/flags/unknown.png';" />
-                    % endif
-                % endfor -->
-                </td>
-                    <!-- <% curStatus, curQuality = Quality.splitCompositeStatus(int(epResult["status"])) %>
-                    % if curQuality != Quality.NONE: -->
-                        <td class="col-status">${statusStrings[curStatus]} ${renderQualityPill(curQuality)}</td>
-                    <!-- % else:
-                        <td class="col-status">${statusStrings[curStatus]}</td>
-                    % endif -->
-                <td class="col-search">
-                    <span ng-if="episode.season !== 0">
-                        <a ng-if="useFailedDownloads && qualities.all.indexOf(episode.status) >= 0" class="epRetry" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="retryEpisode?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="/images/search16.png" height="16" alt="retry" title="Retry Download" /></a>
-                        <a ng-if="qualities.all.indexOf(episode.status) === -1" class="epSearch" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="searchEpisode?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="/images/search16.png" width="16" height="16" alt="search" title="Manual Search" /></a>
-                    </span>
-                    <!-- % if int(epResult["status"]) not in Quality.SNATCHED + Quality.SNATCHED_PROPER and sickbeard.USE_SUBTITLES and show.subtitles and epResult["location"] and subtitles.needs_subtitles(epResult['subtitles']): -->
-                    <a ng-if="useSubtitles && show.subtitles && episode.location" class="epSubtitlesSearch" href="searchEpisodeSubtitles?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="/images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                    % endfor -->
+                    </td>
+                        <!-- <% curStatus, curQuality = Quality.splitCompositeStatus(int(epResult["status"])) %>
+                        % if curQuality != Quality.NONE: -->
+                            <td class="col-status">${statusStrings[curStatus]} ${renderQualityPill(curQuality)}</td>
+                        <!-- % else:
+                            <td class="col-status">${statusStrings[curStatus]}</td>
+                        % endif -->
+                    <td class="col-search">
+                        <span ng-if="episode.season !== 0">
+                            <a ng-if="useFailedDownloads && qualities.all.indexOf(episode.status) >= 0" class="epRetry" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="retryEpisode?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="/images/search16.png" height="16" alt="retry" title="Retry Download" /></a>
+                            <a ng-if="qualities.all.indexOf(episode.status) === -1" class="epSearch" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="searchEpisode?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="/images/search16.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                        </span>
+                        <!-- % if int(epResult["status"]) not in Quality.SNATCHED + Quality.SNATCHED_PROPER and sickbeard.USE_SUBTITLES and show.subtitles and epResult["location"] and subtitles.needs_subtitles(epResult['subtitles']): -->
+                        <a ng-if="useSubtitles && show.subtitles && episode.location" class="epSubtitlesSearch" href="searchEpisodeSubtitles?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="/images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
     <!--Begin - Bootstrap Modal-->
 

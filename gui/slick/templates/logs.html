@@ -1,0 +1,4 @@
+<div ng-controller="logsController" ng-cloak>
+    <pre ng-if="errors.length" ng-repeat="error in errors">{{error.time}} {{error.message}}</pre>
+    <pre ng-if="!errors.length">There are no errors to display.</pre>
+</div>

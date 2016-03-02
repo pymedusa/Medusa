@@ -1368,6 +1368,7 @@ class Home(WebRoot):
             },
             "showMessage": show_message,
             "showMenu": json.loads(showMenu),
+            "blackAndWhiteList": bwl,
             "qualities": {
                 "snatched": Quality.SNATCHED,
                 "snatchedProper": Quality.SNATCHED_PROPER,
@@ -5185,15 +5186,21 @@ class ErrorLogs(WebRoot):
         return menu
 
     def index(self, level=logger.ERROR):
+        self.set_header("Content-Type", "application/json")
         try:
-            level = int(level)
+            logLevel = int(level)
         except Exception:
-            level = logger.ERROR
+            logLevel = logger.ERROR
 
-        t = PageTemplate(rh=self, filename="errorlogs.mako")
-        return t.render(header="Logs &amp; Errors", title="Logs &amp; Errors",
-                        submenu=self.ErrorLogsMenu(level),
-                        logLevel=level)
+        if logLevel == sickbeard.logger.WARNING:
+            errors = classes.WarningViewer.errors
+        else:
+            errors = classes.ErrorViewer.errors
+
+        return json.loads(json.JSONEncoder().encode({
+            "level": level,
+            "errors": errors
+        }))
 
     @staticmethod
     def haveErrors():
@@ -5214,9 +5221,7 @@ class ErrorLogs(WebRoot):
         return self.redirect("/errorlogs/viewlog/")
 
     def viewlog(self, minLevel=logger.INFO, logFilter="<NONE>", logSearch=None, maxLines=1000):
-
         def Get_Data(Levelmin, data_in, lines_in, regex, Filter, Search, mlines):
-
             lastLine = False
             numLines = lines_in
             numToShow = min(maxLines, numLines + len(data_in))

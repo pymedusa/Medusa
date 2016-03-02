@@ -146,6 +146,11 @@ sickrage.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$
         url: '/config/anime',
         templateUrl: '/config/anime'
     });
+
+    $stateProvider.state('logs', {
+        url: '/logs?level',
+        templateUrl: '/templates/logs.html'
+    });
 }]);
 
 sickrage.factory('_', ['$window', function($window) {
@@ -365,4 +370,15 @@ sickrage.controller('configBackupRestoreController', function() {
 sickrage.controller('configAnimeController', function() {
     // @NOTE: Doesn't exist at the moment
     // SICKRAGE.config.general();
+});
+
+sickrage.controller('logsController', function($scope, $http, $stateParams) {
+    $http({
+        method: 'GET',
+        url: '/errorlogs?level=' + $stateParams.level
+    }).then(function successCallback(response) {
+        $scope.errors = response.data.errors;
+    }, function errorCallback(response) {
+        console.error(response);
+    });
 });
