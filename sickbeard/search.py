@@ -469,7 +469,6 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
     """
     foundResults = {}
     finalResults = []
-    finalResult = []
 
     didSearch = False
 
@@ -564,12 +563,12 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
             continue
 
         # Update the cache if a manual search is being runned
-        # We would update this to insert backlog results as well
         if manualSelect:
             results = curProvider.cache.updateCache(searchResults[curEp])
             if results:
                 # If we have at least a result from one provider, it's good enough to be marked as result
-                finalResult.append(results)
+                finalResults.append(results)
+            # Continue because we don't want to pick best results as we are running a manual search by user
             continue
 
         # pick the best season NZB
@@ -769,10 +768,8 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
     # Remove provider from thread name before return results
     threading.currentThread().name = origThreadName
 
-    if manualSelect is True:
-        if True in finalResult:
-            return True
-        else:
-            return False
+    if manualSelect:
+        # If results in manual search return True, else False
+        return any(finalResults)
     else:
         return finalResults
