@@ -1375,7 +1375,7 @@ class Home(WebRoot):
         if not showObj:
             return self._genericMessage("Error", "Show is not in your library")
 
-        if not (sql_return['url'] or sql_return['name'] or provider or episode):
+        if not (sql_return['url'] or sql_return['quality'] or sql_return['name'] or provider or episode):
             return self._genericMessage("Error", "Cached result doesn't have all needed info to snatch episode")
 
         # retrieve the episode object and fail if we can't get one
@@ -1386,7 +1386,7 @@ class Home(WebRoot):
         # make a queue item for it and put it on the queue
         ep_queue_item = search_queue.ManualSelectQueueItem(ep_obj.show, ep_obj, season, episode,
                                                            sql_return['url'], sql_return['quality'],
-                                                           sql_return['release_group'], provider, sql_return['name'])
+                                                           provider, sql_return['name'])
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 

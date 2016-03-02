@@ -220,7 +220,7 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
         self.finish()
 
 class ManualSelectQueueItem(generic_queue.QueueItem):
-    def __init__(self, show, segment, season, episode, url, quality, release_group, provider, search_name):
+    def __init__(self, show, segment, season, episode, url, quality, provider, search_name):
         generic_queue.QueueItem.__init__(self, u'Manual Search', MANUAL_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
         self.search_name = search_name
@@ -232,7 +232,6 @@ class ManualSelectQueueItem(generic_queue.QueueItem):
         self.season = season
         self.episode = episode
         self.quality = int(quality)
-        self.release_group = release_group
         self.url = url
         self.segment = segment
 
@@ -240,7 +239,7 @@ class ManualSelectQueueItem(generic_queue.QueueItem):
         generic_queue.QueueItem.run(self)
 
         try:
-            logger.log(u"Beginning manual search for: [" + self.segment.prettyName() + "]")
+            logger.log(u"Beginning custom manual search for: [" + self.segment.prettyName() + "]")
             self.started = True
 
             # Build a valid result
@@ -249,28 +248,25 @@ class ManualSelectQueueItem(generic_queue.QueueItem):
 
             # make the result object, maybe some attributes can be removed
             result = self.provider.get_result([epObj])
-            result.indexerid = self.show.indexerid
-            result.indexer = self.show.indexer
             result.show = self.show
             result.url = self.url
             result.name = self.search_name
             result.quality = self.quality
-            result.release_group = self.release_group
-            result.version = None
             result.content = None
 
-            logger.log(u"Downloading " + result.name + " from " + result.provider.name)
-            self.success = search.snatchEpisode(result)
+            if result:
+                logger.log(u"Downloading " + result.name + " from " + result.provider.name)
+                self.success = search.snatchEpisode(result)
+            else:
+                logger.log(u"Unable to find a download for: [" + self.segment.prettyName() + "]")
 
             # give the CPU a break
             time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
 
-            logger.log(u"Unable to find a download for: [" + self.segment.prettyName() + "]")
-
         except Exception:
             logger.log(traceback.format_exc(), logger.DEBUG)
-            ui.notifications.message('No downloads were found',
-                                         "Couldn't find a download for <i>%s</i>" % self.segment.prettyName())
+            ui.notifications.message('Error while snatching selected result',
+                                         "Couldn't snatch the result for <i>%s</i>" % self.segment.prettyName())
 
         # ## Keep a list with the 100 last executed searches
         fifo(MANUAL_SEARCH_HISTORY, self, MANUAL_SEARCH_HISTORY_SIZE)
