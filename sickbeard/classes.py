@@ -252,7 +252,7 @@ class ShowListUI(object):
 
 
 class Proper(object):
-    def __init__(self, name, url, seeders, leechers, size, date, show):
+    def __init__(self, name, url, date, show, seeders, leechers, size):
         self.name = name
         self.url = url
         self.date = date
