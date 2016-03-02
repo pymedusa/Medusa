@@ -198,13 +198,11 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
                 # give the CPU a break
                 time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
             elif self.manualSelect is True and searchResult is True:
-                    self.success = True
-                    self.results = searchResult
-                    ui.notifications.message("We have found downloads for %s" % self.segment.prettyName(),
-                                             "You will be redirected promptly")
+                self.success = True
+                self.results = searchResult
+                ui.notifications.message("We have found downloads for %s" % self.segment.prettyName(), "You will be redirected promptly")
             else:
-                ui.notifications.message('No downloads were found',
-                                         "Couldn't find a download for <i>%s</i>" % self.segment.prettyName())
+                ui.notifications.message('No downloads were found', "Couldn't find a download for <i>%s</i>" % self.segment.prettyName())
 
                 logger.log(u"Unable to find a download for: [" + self.segment.prettyName() + "]")
 
@@ -265,8 +263,7 @@ class ManualSelectQueueItem(generic_queue.QueueItem):
 
         except Exception:
             logger.log(traceback.format_exc(), logger.DEBUG)
-            ui.notifications.message('Error while snatching selected result',
-                                         "Couldn't snatch the result for <i>%s</i>" % self.segment.prettyName())
+            ui.notifications.message('Error while snatching selected result', "Couldn't snatch the result for <i>%s</i>" % self.segment.prettyName())
 
         # ## Keep a list with the 100 last executed searches
         fifo(MANUAL_SEARCH_HISTORY, self, MANUAL_SEARCH_HISTORY_SIZE)
