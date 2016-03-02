@@ -26,6 +26,7 @@ import sickbeard
 from sickbeard import search_queue
 from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
 from sickbeard import logger, db
+from sickrage.helper.common import try_int
 
 from sickrage.show.Show import Show
 
