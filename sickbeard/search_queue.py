@@ -220,18 +220,22 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
 class ManualSelectQueueItem(generic_queue.QueueItem):
     def __init__(self, show, segment, season, episode, url, quality, provider, search_name):
         generic_queue.QueueItem.__init__(self, u'Manual Search', MANUAL_SEARCH)
+
         self.priority = generic_queue.QueuePriorities.HIGH
-        self.search_name = search_name
+
         self.success = None
-        self.show = show
         self.started = None
         self.results = None
-        self.provider = providers.getProviderClass(GenericProvider.make_id(provider))
+
+        self.show = show
+        self.segment = segment
         self.season = season
         self.episode = episode
-        self.quality = int(quality)
         self.url = url
-        self.segment = segment
+        self.quality = int(quality)
+        self.provider = providers.getProviderClass(GenericProvider.make_id(provider))
+        self.search_name = search_name
+
 
     def run(self):
         generic_queue.QueueItem.run(self)
