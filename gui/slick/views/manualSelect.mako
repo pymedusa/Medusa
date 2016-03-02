@@ -176,7 +176,7 @@
         <table id="showTable" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
             <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
             <tr style="height: 60px;" role="row">
-                <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader displayShowTable">
+                <th style="vertical-align: bottom; width: auto;" colspan="11" class="row-seasonheader displayShowTable">
                     <h3 style="display: inline;"><a name="season-${season}" style="position: absolute; font-size: 1px; visibility: hidden;">.</a>Season ${season} Episode ${episode}</h3>
                 </th>
             </tr>
@@ -192,6 +192,7 @@
                     <th>Peers</th>
                     <th>Size</th>
                     <th>Type</th>
+                    <th>Date</th>
                     <th class="col-status">Status</th>
                     <th class="col-search">Download</th>
                 </tr>
@@ -215,6 +216,7 @@
                     <td align="center">${hItem["leechers"] if hItem["leechers"] > -1 else 'N/A'}</td>
                     <td align="center">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
                     <td align="center">${provider_img.provider_type.title()}</td>
+                    <td align="center">${datetime.datetime.fromtimestamp(hItem["time"]).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</td>
                     <td align="center" class="col-status">Ignored</td>
                     <td align="center" class="col-search" width="5%"><a class="epManualSnatch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="${srRoot}/home/manualSnatchSelect?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&show=${show.indexerid}&amp;season=${season}&amp;episode=${episode}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                 </tr>
