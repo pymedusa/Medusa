@@ -1431,8 +1431,34 @@ def _setUpSession(session, headers):
     return session
 
 
+class RequestAuth(requests.auth.AuthBase):
+    """Attaches Provider Authentication to the given Requests object"""
+    def __init__(self, provider, **auth_settings):
+        # setup any auth-related data here
+        self.provider = provider
+        self.login_required = auth_settings.get('login_required')
+        self.min_amount_cookies = auth_settings.get('min_amount_cookies')
+        self.username = auth_settings.get('username')
+        self.password = auth_settings.get('password')
+        self.check_cookie_expired = auth_settings.get('check_cookie_expired')
+
+    def __call__(self, r):
+        # modify and return the request
+        if self.min_amount_cookies:
+            if len(self.session.cookies) < self.min_amount_cookies:
+                self.provider.login()
+
+        if self.login_required:
+            self.provider.login()
+
+        if self.check_cookie_expired:
+            if all([not cookie.is_expired() for cookie in r.cookies]):
+                self.provider.login()
+
+        return r
+
 def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too-many-arguments, too-many-return-statements, too-many-branches
-           timeout=30, session=None, json=False, need_bytes=False, **kwargs):
+           timeout=30, session=None, json=False, need_bytes=False, auth=False, **kwargs):
     """
     Returns a byte-string retrieved from the url provider.
     """
@@ -1473,7 +1499,7 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
             session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
             resp = session.post(url, data=post_data, timeout=timeout, allow_redirects=True, verify=session.verify, hooks=hooks)
         else:
-            resp = session.get(url, timeout=timeout, allow_redirects=True, verify=session.verify, hooks=hooks)
+            resp = session.get(url, timeout=timeout, allow_redirects=True, verify=session.verify, auth=auth, hooks=hooks)
 
         if not resp.ok:
             logger.log(u"Requested getURL %s returned status code is %s: %s"

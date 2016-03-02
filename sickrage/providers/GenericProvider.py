@@ -352,6 +352,11 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         return result
 
+    def get_auth_hook(self, **kwargs):
+        from sickbeard.helpers import RequestAuth
+        args = {'login_required': True}
+        return RequestAuth(self, **args)
+
     @staticmethod
     def get_url_hook(response, **kwargs):
         logger.log(u'{} URL: {} [Status: {}]'.format
@@ -363,7 +368,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
     def get_url(self, url, post_data=None, params=None, timeout=30, json=False, need_bytes=False, **kwargs):  # pylint: disable=too-many-arguments,
         if kwargs.pop('echo', True):
             kwargs['hooks'] = {'response': self.get_url_hook}
-        return getURL(url, post_data, params, self.headers, timeout, self.session, json, need_bytes, **kwargs)
+
+        return getURL(url, post_data, params, self.headers, timeout, self.session, json, need_bytes, self.get_auth_hook(), **kwargs)
 
     def image_name(self):
         return self.get_id() + '.png'
