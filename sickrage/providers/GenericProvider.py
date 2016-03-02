@@ -120,7 +120,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         searched_scene_season = None
 
         for episode in episodes:
-            if manualSelect is False:
+            if not manualSelect:
                 cache_result = self.cache.searchCache(episode, manualSearch=manual_search,
                                                   downCurQuality=download_current_quality)
                 if cache_result:
@@ -200,7 +200,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             version = parse_result.version
             add_cache_entry = False
 
-            if manualSelect is False:
+            if not manualSelect:
                 if not (show_object.air_by_date or show_object.sports):
                     if search_mode == 'sponly':
                         if parse_result.episode_numbers:
@@ -284,7 +284,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
             episode_wanted = True
 
-            if manualSelect is False:
+            if not manualSelect:
                 for episode_number in actual_episodes:
                     if not show_object.wantEpisode(actual_season, episode_number, quality, manual_search,
                                                    download_current_quality):
