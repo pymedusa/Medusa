@@ -23,7 +23,8 @@ from __future__ import unicode_literals
 import datetime
 import time
 
-from sickbeard import logger, tvcache, CPU_PRESET
+import sickbeard
+from sickbeard import logger, tvcache
 from sickbeard.common import cpu_presets
 from sickbeard.indexers.indexer_config import INDEXER_TVDB
 
@@ -65,7 +66,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         }
 
         # Maximum requests allowed are 1req/2sec
-        time.sleep(max(2, cpu_presets[CPU_PRESET]))
+        time.sleep(max(2, cpu_presets[sickbeard.CPU_PRESET]))
 
         response = self.get_url(self.urls["api"], params=login_params, timeout=30, returns="json")
         if not response:
