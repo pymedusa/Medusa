@@ -1750,6 +1750,9 @@ class Home(WebRoot):
             except CantUpdateShowException as e:
                 errors.append("Unable to force an update on scene numbering of the show.")
 
+            # Must erase cached results when toggling scene numbering
+            self.erase_cache(showObj)
+
         if directCall:
             return errors
 
@@ -1758,6 +1761,24 @@ class Home(WebRoot):
                                    '<ul>' + '\n'.join(['<li>%s</li>' % error for error in errors]) + "</ul>")
 
         return self.redirect("/home/displayShow?show=" + show)
+        
+    def erase_cache(self, showObj):
+    
+        try:
+            main_db_con = db.DBConnection('cache.db')
+            for curProvider in sickbeard.providers.sortedProviderList():
+                # Let's check if this provider table already exists
+                table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [curProvider.get_id()])
+                if not table_exists:
+                    continue
+                try:
+                    main_db_con.action("DELETE FROM '%s' WHERE indexerid = ?" % curProvider.get_id(), [showObj.indexerid])
+                except Exception:
+                    logger.log(u"Unable to delete cached results for provider {} for show: {}".format(curProvider, showObj.name), logger.DEBUG)
+
+        except Exception:
+            logger.log(u"Unable to delete cached results for show: {}".format(showObj.name), logger.DEBUG)
+        
 
     def togglePause(self, show=None):
         error, show = Show.pause(show)
