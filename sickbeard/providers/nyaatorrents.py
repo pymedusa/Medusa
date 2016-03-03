@@ -83,7 +83,7 @@ class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                         if not all([title, download_url]):
                             continue
 
-                        seeders, leechers, torrent_size, verified = self.regex.find(curItem['summary'])
+                        seeders, leechers, torrent_size, verified = self.regex.search(curItem['summary']).groups()
 
                         if seeders < self.minseed or leechers < self.minleech:
                             if mode != 'RSS':
