@@ -128,7 +128,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                     continue
 
                 # Maximum requests allowed are 1req/2sec
-                time.sleep(max(2, cpu_presets[CPU_PRESET]))
+                time.sleep(max(2, cpu_presets[sickbeard.CPU_PRESET]))
 
                 data = self.get_url(self.urls["api"], params=search_params, returns="json")
                 if not isinstance(data, dict):
