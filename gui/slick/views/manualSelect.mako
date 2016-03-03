@@ -193,7 +193,7 @@
                     <th>Peers</th>
                     <th>Size</th>
                     <th>Type</th>
-                    <th class="col-status">Status</th>
+                    <th>Date</th>
                     <th class="col-search">Download</th>
                 </tr>
             </tbody>
@@ -212,11 +212,11 @@
                         % endif
                     </td>
                     <td align="center">${renderQualityPill(int(hItem["quality"]))}</td>
-                    <td align="center">${hItem["seeders"] if hItem["seeders"] > -1 else 'N/A'}</td>
-                    <td align="center">${hItem["leechers"] if hItem["leechers"] > -1 else 'N/A'}</td>
+                    <td align="center">${hItem["seeders"] if hItem["seeders"] > -1 else '-'}</td>
+                    <td align="center">${hItem["leechers"] if hItem["leechers"] > -1 else '-'}</td>
                     <td align="center">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
                     <td align="center">${provider_img.provider_type.title()}</td>
-                    <td align="center" class="col-status">Ignored</td>
+                    <td align="center">${datetime.datetime.fromtimestamp(hItem["time"]).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</td>
                     <td align="center" class="col-search" width="5%"><a class="epManualSnatch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="${srRoot}/home/manualSnatchSelect?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&show=${show.indexerid}&amp;season=${season}&amp;episode=${episode}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                 </tr>
             % endfor
