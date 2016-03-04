@@ -17,7 +17,7 @@
 <div id="config-content">
 <table class="infoTable" cellspacing="1" border="0" cellpadding="0" width="100%">
     % if sr_version:
-    <tr><td class="infoTableHeader" style="vertical-align: top;"><i class="icon16-config-sickrage"></i> SickRage Info:</td>
+    <tr><td class="infoTableHeader" style="vertical-align: top;"><i class="icon16-config-sickrage"></i> Medusa Info:</td>
         <td class="infoTableCell">
         Branch: <a href="${anon_url('https://github.com/PyMedusa/SickRage/tree/%s' % sickbeard.BRANCH)}">${sickbeard.BRANCH}</a><br>
         Commit: <a href="${anon_url('https://github.com/PyMedusa/SickRage/commit/%s' % sickbeard.CUR_COMMIT_HASH)}">${sickbeard.CUR_COMMIT_HASH}</a><br>
@@ -48,7 +48,7 @@
     <tr><td class="infoTableHeader"><i class="icon16-config-web"></i> Website:</td><td class="infoTableCell"><a href="${anon_url('http://github.com/PyMedusa/sickrage.github.io/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">http://github.com/PyMedusa/sickrage.github.io/</a></td></tr>
     <tr><td class="infoTableHeader"><i class="icon16-config-wiki"></i> Wiki:</td><td class="infoTableCell"><a href="${anon_url('https://github.com/PyMedusa/SickRage-issues/wiki')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">https://github.com/PyMedusa/SickRage-issues/wiki</a></td></tr>
     <tr><td class="infoTableHeader"><i class="icon16-config-github"></i> Source:</td><td class="infoTableCell"><a href="${anon_url('https://github.com/PyMedusa/SickRage/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">https://github.com/PyMedusa/SickRage/</a></td></tr>
-    <tr><td class="infoTableHeader"><i class="icon16-config-mirc"></i> IRC Chat:</td><td class="infoTableCell"><a href="irc://irc.freenode.net/#sickrage-issues" rel="noreferrer"><i>#sickrage-issues</i> on <i>irc.freenode.net</i></a></td></tr>
+    <tr><td class="infoTableHeader"><i class="icon16-config-mirc"></i> IRC Chat:</td><td class="infoTableCell"><a href="irc://irc.freenode.net/#sickrage-issues" rel="noreferrer"><i>#pymedusa</i> on <i>irc.freenode.net</i></a></td></tr>
 </table>
 </div>
 </%block>

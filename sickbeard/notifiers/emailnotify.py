@@ -4,22 +4,22 @@
 # Derek Battams <derek@battams.ca>
 # Pedro Jose Pereira Vieito (@pvieito) <pvieito@gmail.com>
 #
-# URL: https://github.com/echel0n/SickRage
+# URL: https://github.com/pymedusa/SickRage
 #
-# This file is part of SickRage.
+# This file is part of medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with medusa. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
 
@@ -44,8 +44,8 @@ class Notifier(object):
         self.last_err = None
 
     def test_notify(self, host, port, smtp_from, use_tls, user, pwd, to):  # pylint: disable=too-many-arguments
-        msg = MIMEText('This is a test message from SickRage.  If you\'re reading this, the test succeeded.')
-        msg['Subject'] = 'SickRage: Test Message'
+        msg = MIMEText('This is a test message from Medusa.  If you\'re reading this, the test succeeded.')
+        msg['Subject'] = 'Medusa: Test Message'
         msg['From'] = smtp_from
         msg['To'] = to
         msg['Date'] = formatdate(localtime=True)
@@ -70,11 +70,11 @@ class Notifier(object):
                     msg = MIMEMultipart('alternative')
                     msg.attach(MIMEText(
                         "<body style='font-family:Helvetica, Arial, sans-serif;'>"
-                        "<h3>SickRage Notification - Snatched</h3>\n"
+                        "<h3>Medusa Notification - Snatched</h3>\n"
                         "<p>Show: <b>{}</b></p>\n<p>Episode: <b>{}</b></p>\n\n"
                         "<footer style='margin-top: 2.5em; padding: .7em 0; "
                         "color: #777; border-top: #BBB solid 1px;'>"
-                        "Powered by SickRage.</footer></body>".format
+                        "Powered by Medusa.</footer></body>".format
                         (show, re.search(".+ - (.+?-.+) -.+", ep_name).group(1)),
                         'html'))
 
@@ -113,11 +113,11 @@ class Notifier(object):
                     msg = MIMEMultipart('alternative')
                     msg.attach(MIMEText(
                         "<body style='font-family:Helvetica, Arial, sans-serif;'>"
-                        "<h3>SickRage Notification - Downloaded</h3>\n"
+                        "<h3>Medusa Notification - Downloaded</h3>\n"
                         "<p>Show: <b>{}</b></p>\n<p>Episode: <b>{}</b></p>\n\n"
                         "<footer style='margin-top: 2.5em; padding: .7em 0; "
                         "color: #777; border-top: #BBB solid 1px;'>"
-                        "Powered by SickRage.</footer></body>".format
+                        "Powered by Medusa.</footer></body>".format
                         (show, re.search(".+ - (.+?-.+) -.+", ep_name).group(1)),
                         'html'))
 
@@ -156,12 +156,12 @@ class Notifier(object):
                     msg = MIMEMultipart('alternative')
                     msg.attach(MIMEText(
                         "<body style='font-family:Helvetica, Arial, sans-serif;'>"
-                        "<h3>SickRage Notification - Subtitle Downloaded</h3>\n"
+                        "<h3>Medusa Notification - Subtitle Downloaded</h3>\n"
                         "<p>Show: <b>{}</b></p>\n<p>Episode: <b>{}</b></p>\n"
                         "<p>Language: <b>{}</b></p>\n\n"
                         "<footer style='margin-top: 2.5em; padding: .7em 0; "
                         "color: #777; border-top: #BBB solid 1px;'>"
-                        "Powered by SickRage.</footer></body>".format
+                        "Powered by Medusa.</footer></body>".format
                         (show, re.search(".+ - (.+?-.+) -.+", ep_name).group(1), lang),
                         'html'))
                 except Exception:

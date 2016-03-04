@@ -2,20 +2,20 @@
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 # pylint: disable=too-many-lines
 
 import datetime
@@ -387,7 +387,7 @@ PROWL_NOTIFY_ONDOWNLOAD = False
 PROWL_NOTIFY_ONSUBTITLEDOWNLOAD = False
 PROWL_API = None
 PROWL_PRIORITY = 0
-PROWL_MESSAGE_TITLE = 'SickRage'
+PROWL_MESSAGE_TITLE = 'Medusa'
 
 USE_TWITTER = False
 TWITTER_NOTIFY_ONSNATCH = False
@@ -703,14 +703,14 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         try:
             if GIT_USERNAME and GIT_PASSWORD:
-                gh = Github(login_or_token=GIT_USERNAME, password=GIT_PASSWORD, user_agent="SickRage").get_organization(GIT_ORG).get_repo(GIT_REPO)
+                gh = Github(login_or_token=GIT_USERNAME, password=GIT_PASSWORD, user_agent="Medusa").get_organization(GIT_ORG).get_repo(GIT_REPO)
         except Exception as error:
             logger.log(u'Unable to setup GitHub properly with your github login. Please check your credentials. Error: {}'.format(error), logger.WARNING)
             gh = None
 
         if not gh:
             try:
-                gh = Github(user_agent="SickRage").get_organization(GIT_ORG).get_repo(GIT_REPO)
+                gh = Github(user_agent="Medusa").get_organization(GIT_ORG).get_repo(GIT_REPO)
             except Exception as error:
                 logger.log(u'Unable to setup GitHub properly. GitHub will not be available. Error: {}'.format(error), logger.WARNING)
                 gh = None
@@ -1059,7 +1059,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         PROWL_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(CFG, 'Prowl', 'prowl_notify_onsubtitledownload', 0))
         PROWL_API = check_setting_str(CFG, 'Prowl', 'prowl_api', '', censor_log=True)
         PROWL_PRIORITY = check_setting_str(CFG, 'Prowl', 'prowl_priority', "0")
-        PROWL_MESSAGE_TITLE = check_setting_str(CFG, 'Prowl', 'prowl_message_title', "SickRage")
+        PROWL_MESSAGE_TITLE = check_setting_str(CFG, 'Prowl', 'prowl_message_title', "Medusa")
 
         USE_TWITTER = bool(check_setting_int(CFG, 'Twitter', 'use_twitter', 0))
         TWITTER_NOTIFY_ONSNATCH = bool(check_setting_int(CFG, 'Twitter', 'twitter_notify_onsnatch', 0))

@@ -3,20 +3,20 @@
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 
 """
@@ -35,9 +35,9 @@ Options:
   -p,  --port=[PORT]     Override default/configured port to listen on
        --datadir=[PATH]  Override folder (full path) as location for
                          storing database, config file, cache, and log files
-                         Default SickRage directory
+                         Default Medusa directory
        --config=[FILE]   Override config filename for loading configuration
-                         Default config.ini in SickRage directory or
+                         Default config.ini in Medusa directory or
                          location specified with --datadir
        --noresize        Prevent resizing of the banner/posters even if PIL
                          is installed
@@ -111,7 +111,7 @@ signal.signal(signal.SIGTERM, sickbeard.sig_handler)
 class SickRage(object):
     # pylint: disable=too-many-instance-attributes
     """
-    Main SickRage module
+    Main Medusa module
     """
 
     def __init__(self):
@@ -154,13 +154,13 @@ class SickRage(object):
         """
         help_msg = __doc__
         help_msg = help_msg.replace('SickBeard.py', sickbeard.MY_FULLNAME)
-        help_msg = help_msg.replace('SickRage directory', sickbeard.PROG_DIR)
+        help_msg = help_msg.replace('Medusa directory', sickbeard.PROG_DIR)
 
         return help_msg
 
     def start(self):  # pylint: disable=too-many-branches,too-many-statements
         """
-        Start SickRage
+        Start Medusa
         """
         # do some preliminary stuff
         sickbeard.MY_FULLNAME = ek(os.path.normpath, ek(os.path.abspath, __file__))
@@ -188,7 +188,7 @@ class SickRage(object):
             # On non-unicode builds this will raise an AttributeError, if encoding type is not valid it throws a LookupError
             sys.setdefaultencoding(sickbeard.SYS_ENCODING)  # pylint: disable=no-member
         except (AttributeError, LookupError):
-            sys.exit('Sorry, you MUST add the SickRage folder to the PYTHONPATH environment variable\n'
+            sys.exit('Sorry, you MUST add the Medusa folder to the PYTHONPATH environment variable\n'
                      'or find another way to force Python to use %s for string encoding.' % sickbeard.SYS_ENCODING)
 
         # Need console logging for SickBeard.py and SickBeard-console.exe
@@ -242,7 +242,7 @@ class SickRage(object):
                 self.create_pid = True
                 self.pid_file = str(value)
 
-                # If the pid file already exists, SickRage may still be running, so exit
+                # If the pid file already exists, Medusa may still be running, so exit
                 if ek(os.path.exists, self.pid_file):
                     sys.exit('PID file: %s already exists. Exiting.' % self.pid_file)
 
@@ -322,7 +322,7 @@ class SickRage(object):
         # Build from the DB to start with
         self.load_shows_from_db()
 
-        logger.log('Starting SickRage [{branch}] using \'{config}\''.format
+        logger.log('Starting Medusa [{branch}] using \'{config}\''.format
                    (branch=sickbeard.BRANCH, config=sickbeard.CONFIG_FILE))
 
         self.clear_cache()
@@ -511,7 +511,7 @@ class SickRage(object):
 
     def shutdown(self, event):
         """
-        Shut down SickRage
+        Shut down Medusa
 
         :param event: Type of shutdown event, used to see if restart required
         """
@@ -543,14 +543,14 @@ class SickRage(object):
                 if install_type in ('git', 'source'):
                     popen_list = [sys.executable, sickbeard.MY_FULLNAME]
                 elif install_type == 'win':
-                    logger.log('You are using a binary Windows build of SickRage. '  # pylint: disable=no-member
+                    logger.log('You are using a binary Windows build of Medusa. '  # pylint: disable=no-member
                                'Please switch to using git.', logger.ERROR)
 
                 if popen_list and not sickbeard.NO_RESTART:
                     popen_list += sickbeard.MY_ARGS
                     if '--nolaunch' not in popen_list:
                         popen_list += ['--nolaunch']
-                    logger.log('Restarting SickRage with {options}'.format(options=popen_list))  # pylint: disable=no-member
+                    logger.log('Restarting Medusa with {options}'.format(options=popen_list))  # pylint: disable=no-member
                     # shutdown the logger to make sure it's released the logfile BEFORE it restarts SR.
                     logger.shutdown()  # pylint: disable=no-member
                     subprocess.Popen(popen_list, cwd=os.getcwd())
@@ -561,5 +561,5 @@ class SickRage(object):
 
 
 if __name__ == '__main__':
-    # start SickRage
+    # start Medusa
     SickRage().start()

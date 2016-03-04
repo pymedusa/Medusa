@@ -3,20 +3,20 @@
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import socket
 
@@ -27,11 +27,11 @@ from libgrowl import gntp
 
 
 class Notifier(object):
-    sr_logo_url = 'https://raw.githubusercontent.com/PyMedusa/SickRage/master/gui/slick/images/sickrage-shark-mascot.png'
+    sr_logo_url = 'https://raw.githubusercontent.com/PyMedusa/SickRage/master/gui/slick/images/medusa-snake-mascot.png'
 
     def test_notify(self, host, password):
         self._sendRegistration(host, password, 'Test')
-        return self._sendGrowl("Test Growl", "Testing Growl settings from SickRage", "Test", host, password,
+        return self._sendGrowl("Test Growl", "Testing Growl settings from Medusa", "Test", host, password,
                                force=True)
 
     def notify_snatch(self, ep_name):
@@ -100,7 +100,7 @@ class Notifier(object):
 
         return response
 
-    def _sendGrowl(self, title="SickRage Notification", message=None, name=None, host=None, password=None,
+    def _sendGrowl(self, title="Medusa Notification", message=None, name=None, host=None, password=None,
                    force=False):
         if not sickbeard.USE_GROWL and not force:
             return False
@@ -123,7 +123,7 @@ class Notifier(object):
         opts = {
             'name': name,
             'title': title,
-            'app': 'SickRage',
+            'app': 'Medusa',
             'sticky': None,
             'priority': None,
             'debug': False
@@ -152,7 +152,7 @@ class Notifier(object):
                 logger.log(u"GROWL: Unable to send growl to " + opts['host'] + ":" + str(opts['port']) + " - " + ex(e), logger.WARNING)
                 return False
 
-    def _sendRegistration(self, host=None, password=None, name='SickRage Notification'):
+    def _sendRegistration(self, host=None, password=None, name='Medusa Notification'):
         opts = {}
 
         if host is None:
@@ -173,7 +173,7 @@ class Notifier(object):
         else:
             opts['password'] = password
 
-        opts['app'] = 'SickRage'
+        opts['app'] = 'Medusa'
         opts['debug'] = False
 
         # Send Registration

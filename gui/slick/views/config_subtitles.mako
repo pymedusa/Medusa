@@ -43,7 +43,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
 
                     <div class="component-group-desc">
                         <h3>Subtitles Search</h3>
-                        <p>Settings that dictate how SickRage handles subtitles search results.</p>
+                        <p>Settings that dictate how Medusa handles subtitles search results.</p>
                     </div>
 
                     <fieldset class="component-group-list">
@@ -69,7 +69,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     </label>
                                     <label>
                                             <span class="component-title">&nbsp;</span>
-                                            <span class="component-desc">The directory where SickRage should store your <i>Subtitles</i> files.</span>
+                                            <span class="component-desc">The directory where Medusa should store your <i>Subtitles</i> files.</span>
                                       </label>
                                     <label>
                                             <span class="component-title">&nbsp;</span>

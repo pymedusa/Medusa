@@ -3,20 +3,20 @@
 # Based on pushalot.py by Nic Wolfe <nic@wolfeden.ca>
 # URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import json
 import traceback
@@ -42,7 +42,7 @@ class Notifier(object):
 
     def test_notify(self, pushbullet_api):
         logger.log(u"Sending a test Pushbullet notification.", logger.DEBUG)
-        return self._sendPushbullet(pushbullet_api, event=self.TEST_EVENT, message="Testing Pushbullet settings from SickRage")
+        return self._sendPushbullet(pushbullet_api, event=self.TEST_EVENT, message="Testing Pushbullet settings from Medusa")
 
     def get_devices(self, pushbullet_api):
         logger.log(u"Testing Pushbullet authentication and retrieving the device list.", logger.DEBUG)
