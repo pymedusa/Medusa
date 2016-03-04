@@ -1399,7 +1399,7 @@ class TVEpisode(object):  # pylint: disable=too-many-instance-attributes, too-ma
     location = property(lambda self: self._location, _set_location)
 
     def refreshSubtitles(self):
-        """Look for subtitles files and refresh the subtitles property"""
+        """Look for subtitles files and refresh the subtitles property."""
         episode_info = {'show_name': self.show.name, 'location': self.location,
                         'season': self.season, 'episode': self.episode}
         self.subtitles, save_subtitles = subtitles.refresh_subtitles(episode_info, self.subtitles)
@@ -1408,19 +1408,10 @@ class TVEpisode(object):  # pylint: disable=too-many-instance-attributes, too-ma
 
     def download_subtitles(self, force=False):
         if not ek(os.path.isfile, self.location):
-            logger.log(u"{id}: Episode file doesn't exist, can't download subtitles for {ep}".format
-                       (id=self.show.indexerid, ep=episode_num(self.season, self.episode)),
-                       logger.DEBUG)
+            logger.log(u"Episode file doesn't exist, can't download subtitles for {} {}".format
+                       (self.show.name, episode_num(self.season, self.episode) or
+                        episode_num(self.season, self.episode, numbering='absolute')), logger.DEBUG)
             return
-
-        if not subtitles.needs_subtitles(self.subtitles):
-            logger.log(u'Episode already has all needed subtitles, skipping episode {ep} of show {show}'.format
-                       (ep=episode_num(self.season, self.episode), show=self.show.name), logger.DEBUG)
-            return
-
-        logger.log(u"Checking subtitle candidates for {show} {ep} ({location})".format
-                   (show=self.show.name, ep=episode_num(self.season, self.episode),
-                    location=os.path.basename(self.location)), logger.DEBUG)
 
         subtitles_info = {'location': self.location, 'subtitles': self.subtitles, 'season': self.season,
                           'episode': self.episode, 'name': self.name, 'show_name': self.show.name,
@@ -1433,16 +1424,12 @@ class TVEpisode(object):  # pylint: disable=too-many-instance-attributes, too-ma
         self.saveToDB()
 
         if new_subtitles:
-            subtitle_list = ", ".join([subtitles.name_from_code(code) for code in new_subtitles])
-            logger.log(u"{id}: Downloaded {subtitles} subtitles for {show} {ep}".format
-                       (id=self.show.indexerid, subtitles=subtitle_list, show=self.show.name,
-                        ep=episode_num(self.season, self.episode)), logger.DEBUG)
+            subtitle_list = ', '.join([subtitles.name_from_code(code) for code in new_subtitles])
+            logger.log(u'Downloaded {} subtitles for {} {}'.format
+                       (subtitle_list, self.show.name, episode_num(self.season, self.episode) or
+                        episode_num(self.season, self.episode, numbering='absolute')))
 
             notifiers.notify_subtitle_download(self.prettyName(), subtitle_list)
-        else:
-            logger.log(u"{id}: No subtitles downloaded for {show} {ep}".format
-                       (id=self.show.indexerid, show=self.show.name,
-                        ep=episode_num(self.season, self.episode)), logger.DEBUG)
 
         return new_subtitles
 
