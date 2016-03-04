@@ -209,7 +209,7 @@ def download_subtitles(subtitles_info):  # pylint: disable=too-many-locals, too-
         return existing_subtitles, None
 
     if not found_subtitles:
-        logger.log(u'No subtitles downloaded for {} {}'.format
+        logger.log(u'No subtitles matched for {} {}'.format
                    (subtitles_info['show_name'], episode_num(subtitles_info['season'], subtitles_info['episode']) or
                     episode_num(subtitles_info['season'], subtitles_info['episode'], numbering='absolute')))
         return existing_subtitles, None
