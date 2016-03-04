@@ -564,7 +564,7 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
 
         # Update the cache if a manual search is being runned
         if manualSelect:
-            results = curProvider.cache.updateCache(searchResults[curEp])
+            results = curProvider.cache.update_cache_manual_search(searchResults[curEp])
             if results:
                 # If we have at least a result from one provider, it's good enough to be marked as result
                 finalResults.append(results)
