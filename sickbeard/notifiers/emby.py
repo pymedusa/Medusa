@@ -3,20 +3,20 @@
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import urllib
 import urllib2
@@ -49,7 +49,7 @@ class Notifier(object):
             emby_apikey = sickbeard.EMBY_APIKEY
 
         url = 'http://%s/emby/Notifications/Admin' % host
-        values = {'Name': 'SickRage', 'Description': message, 'ImageUrl': 'https://raw.githubusercontent.com/PyMedusa/SickRage/master/gui/slick/images/sickrage-shark-mascot.png'}
+        values = {'Name': 'Medusa', 'Description': message, 'ImageUrl': 'https://raw.githubusercontent.com/PyMedusa/SickRage/master/gui/slick/images/medusa-snake-mascot.png'}
         data = json.dumps(values)
         try:
             req = urllib2.Request(url, data)
@@ -73,7 +73,7 @@ class Notifier(object):
 ##############################################################################
 
     def test_notify(self, host, emby_apikey):
-        return self._notify_emby('This is a test notification from SickRage', host, emby_apikey)
+        return self._notify_emby('This is a test notification from Medusa', host, emby_apikey)
 
     def update_library(self, show=None):
         """Handles updating the Emby Media Server host via HTTP API

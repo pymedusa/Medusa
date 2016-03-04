@@ -57,7 +57,7 @@
 
                             <br><br>
                             <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
-                            This <b>DOES NOT</b> allow SickRage to download non-english TV episodes!<br><br>
+                            This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!<br><br>
                             <div id="searchResults" style="height: 100%;"><br></div>
                         % endif
                     </div>

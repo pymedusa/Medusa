@@ -547,7 +547,7 @@
                             </label>
                             <label>
                                 <span class="component-title">&nbsp;</span>
-                                <span class="component-desc"><b>Note:</b> requires SickRage to be running on your Synology NAS.</span>
+                                <span class="component-desc"><b>Note:</b> requires Medusa to be running on your Synology NAS.</span>
                             </label>
                         </div>
 
@@ -577,7 +577,7 @@
                             </label>
                             <label>
                                 <span class="component-title">&nbsp;</span>
-                                <span class="component-desc"><b>Note:</b> requires SickRage to be running on your Synology DSM.</span>
+                                <span class="component-desc"><b>Note:</b> requires Medusa to be running on your Synology DSM.</span>
                             </label>
                            </div>
                         <div id="content_use_synologynotifier">
@@ -738,7 +738,7 @@
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc">may leave blank if SickRage is on the same host.</span>
+                                    <span class="component-desc">may leave blank if Medusa is on the same host.</span>
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
@@ -854,7 +854,7 @@
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc">priority of Prowl messages from SickRage.</span>
+                                    <span class="component-desc">priority of Prowl messages from Medusa.</span>
                                 </label>
                             </div>
                             <div class="testNotification" id="testProwl-result">Click below to test.</div>
@@ -1168,7 +1168,7 @@
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc">priority of NMA messages from SickRage.</span>
+                                    <span class="component-desc">priority of NMA messages from Medusa.</span>
                                 </label>
                             </div>
                             <div class="testNotification" id="testNMA-result">Click below to test.</div>
@@ -1476,7 +1476,7 @@
                                 <span class="component-title">Enable</span>
                                 <span class="component-desc">
                                     <input type="checkbox" class="enabler" name="use_twitter" id="use_twitter" ${('', 'checked="checked"')[bool(sickbeard.USE_TWITTER)]}/>
-                                    <p>Should SickRage post tweets on Twitter?</p>
+                                    <p>Should Medusa post tweets on Twitter?</p>
                                 </span>
                             </label>
                             <label>
@@ -1601,7 +1601,7 @@
                                     <input type="text" name="trakt_pin" id="trakt_pin" value="" class="form-control input-sm input250" autocapitalize="off" />
                                 </label>
                                 <p>
-                                    <span class="component-desc">PIN code to authorize SickRage to access Trakt on your behalf.</span>
+                                    <span class="component-desc">PIN code to authorize Medusa to access Trakt on your behalf.</span>
                                 </p>
                             </div>
                             <input type="button" class="btn hide" value="Authorize SickRage" id="authTrakt" />
@@ -1633,7 +1633,7 @@
                                     <span class="component-title">Sync libraries</span>
                                     <span class="component-desc">
                                         <input type="checkbox" class="enabler" name="trakt_sync" id="trakt_sync" ${('', 'checked="checked"')[bool(sickbeard.TRAKT_SYNC)]}/>
-                                        <p>sync your SickRage show library with your trakt show library.</p>
+                                        <p>sync your Medusa show library with your trakt show library.</p>
                                     </span>
                                 </label>
                             </div>
@@ -1643,7 +1643,7 @@
                                         <span class="component-title">Remove Episodes From Collection</span>
                                         <span class="component-desc">
                                             <input type="checkbox" name="trakt_sync_remove" id="trakt_sync_remove" ${('', 'checked="checked"')[bool(sickbeard.TRAKT_SYNC_REMOVE)]}/>
-                                            <p>Remove an Episode from your Trakt Collection if it is not in your SickRage Library.</p>
+                                            <p>Remove an Episode from your Trakt Collection if it is not in your Medusa Library.</p>
                                         </span>
                                     </label>
                                  </div>
@@ -1653,7 +1653,7 @@
                                     <span class="component-title">Sync watchlist</span>
                                     <span class="component-desc">
                                         <input type="checkbox" class="enabler" name="trakt_sync_watchlist" id="trakt_sync_watchlist" ${('', 'checked="checked"')[bool(sickbeard.TRAKT_SYNC_WATCHLIST)]}/>
-                                        <p>sync your SickRage show watchlist with your trakt show watchlist (either Show and Episode).</p>
+                                        <p>sync your Medusa show watchlist with your trakt show watchlist (either Show and Episode).</p>
                                         <p>Episode will be added on watch list when wanted or snatched and will be removed when downloaded </p>
                                     </span>
                                 </label>
@@ -1696,7 +1696,7 @@
                                         <span class="component-title">Remove watched show:</span>
                                         <span class="component-desc">
                                             <input type="checkbox" name="trakt_remove_show_from_sickrage" id="trakt_remove_show_from_sickrage" ${('', 'checked="checked"')[bool(sickbeard.TRAKT_REMOVE_SHOW_FROM_SICKRAGE)]}/>
-                                            <p>remove the show from sickrage if it's ended and completely watched</p>
+                                            <p>remove the show from Medusa if it's ended and completely watched</p>
                                         </span>
                                     </label>
                                 </div>
