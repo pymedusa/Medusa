@@ -3,20 +3,20 @@
 # Author: Jonathon Saine <thezoggy@gmail.com>
 # URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 # TODO: break this up into separate files
 # pylint: disable=line-too-long,too-many-lines,abstract-method
@@ -142,7 +142,7 @@ class ApiHandler(RequestHandler):
                 "kwargs": kwargs
             }
             out_dict = _responds(RESULT_FATAL, error_data,
-                                 "SickRage encountered an internal error! Please report to the Devs")
+                                 "Medusa encountered an internal error! Please report to the Devs")
 
         if 'outputType' in out_dict:
             output_callback = output_callback_dict[out_dict['outputType']]
@@ -649,7 +649,7 @@ class CMD_ComingEpisodes(ApiCall):
             "sort": {"desc": "Change the sort order"},
             "type": {"desc": "One or more categories of coming episodes, separated by |"},
             "paused": {
-                "desc": "0 to exclude paused shows, 1 to include them, or omitted to use SickRage default value"
+                "desc": "0 to exclude paused shows, 1 to include them, or omitted to use Medusa default value"
             },
         }
     }
@@ -1321,7 +1321,7 @@ class CMD_PostProcess(ApiCall):
 
 
 class CMD_SickBeard(ApiCall):
-    _help = {"desc": "Get miscellaneous information about SickRage"}
+    _help = {"desc": "Get miscellaneous information about Medusa"}
 
     def __init__(self, args, kwargs):
         # required
@@ -1330,7 +1330,7 @@ class CMD_SickBeard(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ dGet miscellaneous information about SickRage """
+        """ dGet miscellaneous information about Medusa """
         data = {"sr_version": sickbeard.BRANCH, "api_version": self.version,
                 "api_commands": sorted(function_mapper.keys())}
         return _responds(RESULT_SUCCESS, data)
@@ -1338,7 +1338,7 @@ class CMD_SickBeard(ApiCall):
 
 class CMD_SickBeardAddRootDir(ApiCall):
     _help = {
-        "desc": "Add a new root (parent) directory to SickRage",
+        "desc": "Add a new root (parent) directory to Medusa",
         "requiredParameters": {
             "location": {"desc": "The full path to the new root (parent) directory"},
         },
@@ -1356,7 +1356,7 @@ class CMD_SickBeardAddRootDir(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Add a new root (parent) directory to SickRage """
+        """ Add a new root (parent) directory to Medusa """
 
         self.location = urllib.unquote_plus(self.location)
         location_matched = 0
@@ -1398,7 +1398,7 @@ class CMD_SickBeardAddRootDir(ApiCall):
 
 
 class CMD_SickBeardCheckVersion(ApiCall):
-    _help = {"desc": "Check if a new version of SickRage is available"}
+    _help = {"desc": "Check if a new version of Medusa is available"}
 
     def __init__(self, args, kwargs):
         # required
@@ -1454,7 +1454,7 @@ class CMD_SickBeardCheckScheduler(ApiCall):
 
 class CMD_SickBeardDeleteRootDir(ApiCall):
     _help = {
-        "desc": "Delete a root (parent) directory from SickRage",
+        "desc": "Delete a root (parent) directory from Medusa",
         "requiredParameters": {
             "location": {"desc": "The full path to the root (parent) directory to remove"},
         }
@@ -1468,7 +1468,7 @@ class CMD_SickBeardDeleteRootDir(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Delete a root (parent) directory from SickRage """
+        """ Delete a root (parent) directory from Medusa """
         if sickbeard.ROOT_DIRS == "":
             return _responds(RESULT_FAILURE, _get_root_dirs(), msg="No root directories detected")
 
@@ -1502,7 +1502,7 @@ class CMD_SickBeardDeleteRootDir(ApiCall):
 
 
 class CMD_SickBeardGetDefaults(ApiCall):
-    _help = {"desc": "Get SickRage's user default configuration value"}
+    _help = {"desc": "Get Medusa's user default configuration value"}
 
     def __init__(self, args, kwargs):
         # required
@@ -1511,7 +1511,7 @@ class CMD_SickBeardGetDefaults(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Get SickRage's user default configuration value """
+        """ Get Medusa's user default configuration value """
 
         any_qualities, best_qualities = _map_quality(sickbeard.QUALITY_DEFAULT)
 
@@ -1580,7 +1580,7 @@ class CMD_SickBeardPauseBacklog(ApiCall):
 
 
 class CMD_SickBeardPing(ApiCall):
-    _help = {"desc": "Ping SickRage to check if it is running"}
+    _help = {"desc": "Ping Medusa to check if it is running"}
 
     def __init__(self, args, kwargs):
         # required
@@ -1589,7 +1589,7 @@ class CMD_SickBeardPing(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Ping SickRage to check if it is running """
+        """ Ping Medusa to check if it is running """
         if sickbeard.started:
             return _responds(RESULT_SUCCESS, {"pid": sickbeard.PID}, "Pong")
         else:
@@ -1597,7 +1597,7 @@ class CMD_SickBeardPing(ApiCall):
 
 
 class CMD_SickBeardRestart(ApiCall):
-    _help = {"desc": "Restart SickRage"}
+    _help = {"desc": "Restart Medusa"}
 
     def __init__(self, args, kwargs):
         # required
@@ -1606,11 +1606,11 @@ class CMD_SickBeardRestart(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Restart SickRage """
+        """ Restart Medusa """
         if not Restart.restart(sickbeard.PID):
-            return _responds(RESULT_FAILURE, msg='SickRage can not be restarted')
+            return _responds(RESULT_FAILURE, msg='Medusa can not be restarted')
 
-        return _responds(RESULT_SUCCESS, msg="SickRage is restarting...")
+        return _responds(RESULT_SUCCESS, msg="Medusa is restarting...")
 
 
 class CMD_SickBeardSearchIndexers(ApiCall):
@@ -1744,7 +1744,7 @@ class CMD_SickBeardSearchTVRAGE(CMD_SickBeardSearchIndexers):
 
 class CMD_SickBeardSetDefaults(ApiCall):
     _help = {
-        "desc": "Set SickRage's user default configuration value",
+        "desc": "Set Medusa's user default configuration value",
         "optionalParameters": {
             "initial": {"desc": "The initial quality of a show"},
             "archive": {"desc": "The archive quality of a show"},
@@ -1771,7 +1771,7 @@ class CMD_SickBeardSetDefaults(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Set SickRage's user default configuration value """
+        """ Set Medusa's user default configuration value """
 
         quality_map = {'sdtv': Quality.SDTV,
                        'sddvd': Quality.SDDVD,
@@ -1821,7 +1821,7 @@ class CMD_SickBeardSetDefaults(ApiCall):
 
 
 class CMD_SickBeardShutdown(ApiCall):
-    _help = {"desc": "Shutdown SickRage"}
+    _help = {"desc": "Shutdown Medusa"}
 
     def __init__(self, args, kwargs):
         # required
@@ -1830,15 +1830,15 @@ class CMD_SickBeardShutdown(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Shutdown SickRage """
+        """ Shutdown Medusa """
         if not Shutdown.stop(sickbeard.PID):
-            return _responds(RESULT_FAILURE, msg='SickRage can not be shut down')
+            return _responds(RESULT_FAILURE, msg='Medusa can not be shut down')
 
-        return _responds(RESULT_SUCCESS, msg="SickRage is shutting down...")
+        return _responds(RESULT_SUCCESS, msg="Medusa is shutting down...")
 
 
 class CMD_SickBeardUpdate(ApiCall):
-    _help = {"desc": "Update SickRage to the latest version available"}
+    _help = {"desc": "Update Medusa to the latest version available"}
 
     def __init__(self, args, kwargs):
         # required
@@ -1853,11 +1853,11 @@ class CMD_SickBeardUpdate(ApiCall):
             if check_version.run_backup_if_safe():
                 check_version.update()
 
-                return _responds(RESULT_SUCCESS, msg="SickRage is updating ...")
+                return _responds(RESULT_SUCCESS, msg="Medusa is updating ...")
 
-            return _responds(RESULT_FAILURE, msg="SickRage could not backup config ...")
+            return _responds(RESULT_FAILURE, msg="Medusa could not backup config ...")
 
-        return _responds(RESULT_FAILURE, msg="SickRage is already up to date")
+        return _responds(RESULT_FAILURE, msg="Medusa is already up to date")
 
 
 class CMD_Show(ApiCall):
@@ -1956,7 +1956,7 @@ class CMD_Show(ApiCall):
 
 class CMD_ShowAddExisting(ApiCall):
     _help = {
-        "desc": "Add an existing show in SickRage",
+        "desc": "Add an existing show in Medusa",
         "requiredParameters": {
             "indexerid": {"desc": "Unique ID of a show"},
             "location": {"desc": "Full path to the existing shows's folder"},
@@ -1989,7 +1989,7 @@ class CMD_ShowAddExisting(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Add an existing show in SickRage """
+        """ Add an existing show in Medusa """
         show_obj = Show.find(sickbeard.showList, int(self.indexerid))
         if show_obj:
             return _responds(RESULT_FAILURE, msg="An existing indexerid already exists in the database")
@@ -2050,7 +2050,7 @@ class CMD_ShowAddExisting(ApiCall):
 
 class CMD_ShowAddNew(ApiCall):
     _help = {
-        "desc": "Add a new show to SickRage",
+        "desc": "Add a new show to Medusa",
         "requiredParameters": {
             "indexerid": {"desc": "Unique ID of a show"},
         },
@@ -2100,7 +2100,7 @@ class CMD_ShowAddNew(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Add a new show to SickRage """
+        """ Add a new show to Medusa """
         show_obj = Show.find(sickbeard.showList, int(self.indexerid))
         if show_obj:
             return _responds(RESULT_FAILURE, msg="An existing indexerid already exists in database")
@@ -2219,7 +2219,7 @@ class CMD_ShowAddNew(ApiCall):
 
 class CMD_ShowCache(ApiCall):
     _help = {
-        "desc": "Check SickRage's cache to see if the images (poster, banner, fanart) for a show are valid",
+        "desc": "Check Medusa's cache to see if the images (poster, banner, fanart) for a show are valid",
         "requiredParameters": {
             "indexerid": {"desc": "Unique ID of a show"},
         },
@@ -2236,7 +2236,7 @@ class CMD_ShowCache(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Check SickRage's cache to see if the images (poster, banner, fanart) for a show are valid """
+        """ Check Medusa's cache to see if the images (poster, banner, fanart) for a show are valid """
         show_obj = Show.find(sickbeard.showList, int(self.indexerid))
         if not show_obj:
             return _responds(RESULT_FAILURE, msg="Show not found")
@@ -2259,7 +2259,7 @@ class CMD_ShowCache(ApiCall):
 
 class CMD_ShowDelete(ApiCall):
     _help = {
-        "desc": "Delete a show in SickRage",
+        "desc": "Delete a show in Medusa",
         "requiredParameters": {
             "indexerid": {"desc": "Unique ID of a show"},
         },
@@ -2280,7 +2280,7 @@ class CMD_ShowDelete(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Delete a show in SickRage """
+        """ Delete a show in Medusa """
         error, show = Show.delete(self.indexerid, self.removefiles)
 
         if error:
@@ -2456,7 +2456,7 @@ class CMD_ShowPause(ApiCall):
 
 class CMD_ShowRefresh(ApiCall):
     _help = {
-        "desc": "Refresh a show in SickRage",
+        "desc": "Refresh a show in Medusa",
         "requiredParameters": {
             "indexerid": {"desc": "Unique ID of a show"},
         },
@@ -2473,7 +2473,7 @@ class CMD_ShowRefresh(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Refresh a show in SickRage """
+        """ Refresh a show in Medusa """
         error, show = Show.refresh(self.indexerid)
 
         if error:
@@ -2772,7 +2772,7 @@ class CMD_ShowStats(ApiCall):
 
 class CMD_ShowUpdate(ApiCall):
     _help = {
-        "desc": "Update a show in SickRage",
+        "desc": "Update a show in Medusa",
         "requiredParameters": {
             "indexerid": {"desc": "Unique ID of a show"},
         },
@@ -2789,7 +2789,7 @@ class CMD_ShowUpdate(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Update a show in SickRage """
+        """ Update a show in Medusa """
         show_obj = Show.find(sickbeard.showList, int(self.indexerid))
         if not show_obj:
             return _responds(RESULT_FAILURE, msg="Show not found")
@@ -2804,7 +2804,7 @@ class CMD_ShowUpdate(ApiCall):
 
 class CMD_Shows(ApiCall):
     _help = {
-        "desc": "Get all shows in SickRage",
+        "desc": "Get all shows in Medusa",
         "optionalParameters": {
             "sort": {"desc": "The sorting strategy to apply to the list of shows"},
             "paused": {"desc": "True: show paused, False: show un-paused, otherwise show all"},
@@ -2820,7 +2820,7 @@ class CMD_Shows(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """ Get all shows in SickRage """
+        """ Get all shows in Medusa """
         shows = {}
         for curShow in sickbeard.showList:
             # If self.paused is None: show all, 0: show un-paused, 1: show paused

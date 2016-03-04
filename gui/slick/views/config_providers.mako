@@ -413,7 +413,7 @@ $('#config-components').tabs();
                             <label>
                                 <span class="component-title">&nbsp;</span>
                                 <span class="component-desc">
-                                    <p>stop transfer when ratio is reached<br>(-1 SickRage default to seed forever, or leave blank for downloader default)</p>
+                                    <p>stop transfer when ratio is reached<br>(-1 Medusa default to seed forever, or leave blank for downloader default)</p>
                                 </span>
                             </label>
                         </div>

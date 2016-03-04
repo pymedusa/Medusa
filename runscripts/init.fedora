@@ -13,7 +13,7 @@
 # Source function library.
 . /etc/init.d/functions
 
-# Source SickRage configuration
+# Source Medusa configuration
 if [ -f /etc/sysconfig/sickrage ]; then
         . /etc/sysconfig/sickrage
 fi

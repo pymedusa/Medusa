@@ -16,7 +16,7 @@
     <meta name="theme-color" content="#333333">
     % endif
 
-    <title>SickRage - BRANCH:[${sickbeard.BRANCH}] - ${title}</title>
+    <title>Medusa - BRANCH:[${sickbeard.BRANCH}] - ${title}</title>
 
     <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -77,7 +77,7 @@
                 <span class="icon-bar"></span>
             </button>
             <a class="navbar-brand" href="${srRoot}/apibuilder/" title="SickRage">
-                <img alt="SickRage" src="${srRoot}/images/sickrage.png" style="height: 50px;" class="img-responsive pull-left" />
+                <img alt="SickRage" src="${srRoot}/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" />
                 <p class="navbar-text hidden-xs">${title}</p>
             </a>
         </div>
@@ -93,7 +93,7 @@
             </div>
 
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="${srRoot}/home/">Back to SickRage</a></li>
+                <li><a href="${srRoot}/home/">Back to Medusa</a></li>
                 <li class="hidden-xs">
                     <a href="https://github.com/PyMedusa/SickRage/wiki/Donations" rel="noreferrer" onclick="window.open('${sickbeard.ANON_REDIRECT}' + this.href); return false;">
                         <img src="${srRoot}/images/donate.jpg" alt="[donate]" class="navbaricon" />
