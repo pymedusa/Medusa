@@ -123,8 +123,10 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return True
 
     def login(self):
-        if len(dict_from_cookiejar(self.session.cookies)) == 3:
-            return True
+        if len(self.session.cookies) > 1:
+            cookies_dict = dict_from_cookiejar(self.session.cookies)
+            if cookies_dict['pass_hash'] != '0' and cookies_dict['member_id'] != '0':
+                return True
 
         login_params = {'UserName': self.username,
                         'PassWord': self.password,
