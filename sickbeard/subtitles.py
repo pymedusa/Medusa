@@ -502,8 +502,8 @@ class SubtitlesFinder(object):
                 "e.subtitles_lastsearch AS lastsearch, e.location, (? - e.airdate) as age "
                 "FROM tv_episodes AS e INNER JOIN tv_shows AS s "
                 "ON (e.showid = s.indexer_id) "
-                "WHERE s.subtitles = 1 AND age {} 30 AND e.subtitles NOT LIKE ? "
-                "AND e.status LIKE '%4' ORDER BY lastsearch ASC LIMIT {}".format
+                "WHERE s.subtitles = 1 AND (e.status LIKE '%4' OR e.status LIKE '%6') AND e.season > 0 "
+                "AND e.location != '' AND age {} 30 AND e.subtitles NOT LIKE ? ORDER BY lastsearch ASC LIMIT {}".format
                 (args[0], args[1]), [datetime.datetime.now().toordinal(), wanted_languages(True)]
             )
 
