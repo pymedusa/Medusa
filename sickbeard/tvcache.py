@@ -130,44 +130,53 @@ class TVCache(object):
     def _checkItemAuth(self, title, url):  # pylint:disable=unused-argument, no-self-use
         return True
 
-    def updateCache(self, manualData = None):
+    def updateCache(self):
+        # check if we should update
+        if not self.shouldUpdate():
+            return
 
-        cl = []
+        try:
+            data = self._getRSSData()
+            if self._checkAuth(data):
+                # clear cache
+                self._clearCache()
 
-        if manualData:
-            for item in manualData:
+                # set updated
+                self.setLastUpdate()
+
+                cl = []
+                for item in data['entries'] or []:
+                    ci = self._parseItem(item)
+                    if ci is not None:
+                        cl.append(ci)
+
+                if len(cl) > 0:
+                    cache_db_con = self._getDB()
+                    cache_db_con.mass_action(cl)
+
+        except AuthException as e:
+            logger.log(u"Authentication error: " + ex(e), logger.ERROR)
+        except Exception as e:
+            logger.log(u"Error while searching " + self.provider.name + ", skipping: " + repr(e), logger.DEBUG)
+
+    def update_cache_manual_search(self, manual_data = None):
+
+        try:
+            cl = []
+            for item in manual_data:
                 logger.log(u"Adding to cache item found in manual search: {}".format(item.name), logger.DEBUG)
                 ci = self._addCacheEntry(item.name, item.url, item.seeders, item.leechers, item.size)
                 if ci is not None:
                     cl.append(ci)
-        # check if we should update (providers min time check)
-        elif self.shouldUpdate():
-            try:
-                data = self._getRSSData()
-                if self._checkAuth(data):
-                    # clear cache
-                    self._clearCache()
+        except Exception as e:
+            logger.log(u"Error while adding to cache item found in manual seach for provider " + self.provider.name + ", skipping: " + repr(e), logger.WARNING)
 
-                    # set updated
-                    self.setLastUpdate()
-
-                    for item in data['entries'] or []:
-                        ci = self._parseItem(item)
-                        if ci is not None:
-                            cl.append(ci)
-            except AuthException as e:
-                logger.log(u"Authentication error: " + ex(e), logger.ERROR)
-            except Exception as e:
-                logger.log(u"Error while searching " + self.provider.name + ", skipping: " + repr(e), logger.DEBUG)
-
+        results = []
         if len(cl) > 0:
             cache_db_con = self._getDB()
             results = cache_db_con.mass_action(cl)
 
-            if results:
-                return True
-
-        return False
+        return any(results)
 
     def getRSSFeed(self, url, params=None):
         return getFeed(url, params=params, request_hook=self.provider.get_url)
