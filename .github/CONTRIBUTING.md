@@ -1,8 +1,8 @@
-### Questions about SickRage?
+### Questions about Medusa?
 
-To get your questions answered, please ask on the [#sickrage-issues](http://webchat.freenode.net/?channels=sickrage-issues) IRC channel on irc.freenode.net
+To get your questions answered, please ask on the [#pymedusa](http://webchat.freenode.net/?channels=pymedusa) IRC channel on irc.freenode.net
 
-# Contributing to SickRage
+# Contributing to Medusa
 
 1. [Getting Involved](#getting-involved)
 2. [How To Report Bugs](#how-to-report-bugs)
@@ -11,39 +11,39 @@ To get your questions answered, please ask on the [#sickrage-issues](http://webc
 
 ## Getting Involved
 
-There are a number of ways to get involved with the development of SickRage. Even if you've never contributed code to an Open Source project before, we're always looking for help identifying bugs, cleaning up code, writing documentation and testing.
+There are a number of ways to get involved with the development of Medusa. Even if you've never contributed code to an Open Source project before, we're always looking for help identifying bugs, cleaning up code, writing documentation and testing.
 
-The goal of this guide is to provide the best way to contribute to the official SickRage repository. Please read through the full guide detailing [How to Report Bugs](#how-to-report-bugs).
+The goal of this guide is to provide the best way to contribute to the official Medusa repository. Please read through the full guide detailing [How to Report Bugs](#how-to-report-bugs).
 
 ## Discussion
 
 If you think you've found a bug please [file it in the bug tracker](#how-to-report-bugs).
 
-Most of the SickRage development team can be found in the [#sickrage-issues](http://webchat.freenode.net/?channels=sickrage-issues) IRC channel on irc.freenode.net.
+Most of the Medusa development team can be found in the [#pymedusa](http://webchat.freenode.net/?channels=sickrage-issues) IRC channel on irc.freenode.net.
 
 
 ## How to Report Bugs
 
-### Make sure it is a SickRage bug
+### Make sure it is a Medusa bug
 
 Many bugs reported are actually issues with the user mis-understanding of how something works (there are a bit of moving parts to an ideal setup) and most of the time can be fixed by just changing some settings to fit the users needs.
 
-If you are new to SickRage, it is usually a much better idea to ask for help first in the [SickRage IRC channel](http://webchat.freenode.net/?channels=sickrage-issues). You will get much quicker support, and you will help avoid tying up the SickRage team with invalid bug reports.
+If you are new to Medusa, it is usually a much better idea to ask for help first in the [Medusa IRC channel](http://webchat.freenode.net/?channels=sickrage-issues). You will get much quicker support, and you will help avoid tying up the Medusa team with invalid bug reports.
 
-### Try the latest version of SickRage
+### Try the latest version of Medusa
 
-Bugs in old versions of SickRage may have already been fixed. In order to avoid reporting known issues, make sure you are always testing against the latest build/source. Also, we put new code in the `develop` branch first before pushing down to the `master` branch (which is what the binary builds are built off of).
+Bugs in old versions of Medusa may have already been fixed. In order to avoid reporting known issues, make sure you are always testing against the latest build/source. Also, we put new code in the `develop` branch first before pushing down to the `master` branch (which is what the binary builds are built off of).
 
 ### Reporting the issue
 
-If the above steps fail and you are sure its a bug, issues are tracked in the [SickRage issue tracker](https://github.com/PyMedusa/SickRage-issues).
+If the above steps fail and you are sure its a bug, issues are tracked in the [Medusa issue tracker](https://github.com/PyMedusa/sickrage).
 
 ## Tips For Submitting Code
 
 
 ### Code
 
-**ALWAYS follow SickRage [Coding Standards](https://github.com/PyMedusa/SickRage.github.io/wiki/SickRage-Coding-Standards)**
+**ALWAYS follow Medusa [Coding Standards](https://github.com/PyMedusa/SickRage.github.io/wiki/SickRage-Coding-Standards)**
 
 Review regularly as they are subject to change and submissions will not be accepted until they meet our guidelines.
 
@@ -60,7 +60,7 @@ Please follow these guidelines before reporting a bug:
 
 2. **Use the search on sickrage-issues** &mdash; check if the issue has already been reported. If it has been, please comment on the existing issue.
 
-3. **Provide a means to reproduce the problem** &mdash; Please provide as much details as possible, e.g. SickRage log files (obfuscate apikey/passwords), browser and operating system versions, how you started SickRage, and of course the steps to reproduce the problem.
+3. **Provide a means to reproduce the problem** &mdash; Please provide as much details as possible, e.g. Medusa log files (obfuscate apikey/passwords), browser and operating system versions, how you started Medusa, and of course the steps to reproduce the problem.
 
 
 ### Feature requests
@@ -142,4 +142,4 @@ Please follow this process; it's the best way to get your work included in the p
 
 ## Code guidelines
 
-Read and follow the [SickRage Coding Standards](https://github.com/PyMedusa/SickRage.github.io/wiki/SickRage-Coding-Standards).  Review these regularly as they are subject to change and code will not be accepted if it does not adhere to the standards.
+Read and follow the [Medusa Coding Standards](https://github.com/PyMedusa/SickRage.github.io/wiki/SickRage-Coding-Standards).  Review these regularly as they are subject to change and code will not be accepted if it does not adhere to the standards.
