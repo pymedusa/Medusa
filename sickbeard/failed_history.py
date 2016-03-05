@@ -111,6 +111,7 @@ def hasFailed(release, size, provider="%"):
     release = prepareFailedName(release)
 
     failed_db_con = db.DBConnection('failed.db')
+    logger.log(u"TEMP LOG: SELECT in failed.db: Release: %s. Size: %s. Provider: %s" % (release, size, provider))    
     sql_results = failed_db_con.select(
         "SELECT release FROM failed WHERE release=? AND size=? AND provider LIKE ? LIMIT 1",
         [release, size, provider])
