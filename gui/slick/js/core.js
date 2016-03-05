@@ -2494,25 +2494,24 @@ var SICKRAGE = {
                     success: function (data) {
                         if (data.result === 'refresh') {
                             self.refreshResults();
-                            repeat = false;
-                            $('#searchNotification').text('Search has finished!');
+                            $('#searchNotification').text('Refreshed results...');
                         }
 
                         if (data.result === 'searching') {
                             // ep is searched, you will get a results any minute now
-                            pollInterval = 3000;
+                            pollInterval = 5000;
                             $('#searchNotification').text('The episode is being searched, please wait...');
                         }
 
                         if (data.result === 'queued') {
                             // ep is queued, this might take some time to get results
-                            pollInterval = 5000;
+                            pollInterval = 7000;
                             $('#searchNotification').text('The episode has been queued, because another search is taking place. please wait..');
                         }
 
                         if (data.result === 'finished') {
                             // ep search is finished
-                            $('#searchNotification').text('Search finished, no (new) results found.');
+                            $('#searchNotification').text('Search finished');
                             repeat = false;
                         }
                         if (data.result === 'error') {
