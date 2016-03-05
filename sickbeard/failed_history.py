@@ -80,6 +80,7 @@ def logFailed(release):
 
     if not hasFailed(release, size, provider):
         failed_db_con = db.DBConnection('failed.db')
+        logger.log(u"TEMP LOG: Inserting in failed.db: Release: %s. Size: %s. Provider: %s" % (release, size, provider))
         failed_db_con.action("INSERT INTO failed (release, size, provider) VALUES (?, ?, ?)", [release, size, provider])
 
     deleteLoggedSnatch(release, size, provider)
