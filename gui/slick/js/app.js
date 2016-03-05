@@ -210,13 +210,146 @@ sickrage.directive('progressbar', function() {
     };
 });
 
+sickrage.directive('hometablesorter', function(){
+    return {
+        link: function($scope, element, attrs) {
+            $(element).tablesorter({
+                sortList: [[7,1],[2,0]],
+                textExtraction: {
+                    0: function(node) { return $(node).find('time').attr('datetime'); },
+                    1: function(node) { return $(node).find('time').attr('datetime'); },
+                    3: function(node) { return $(node).find("span").prop("title").toLowerCase(); },
+                    4: function(node) { return $(node).find("span").text().toLowerCase(); },
+                    5: function(node) { return $(node).find("span:first").text(); },
+                    6: function(node) { return $(node).data('show-size'); },
+                    7: function(node) { return $(node).find("img").attr("alt"); }
+                },
+                widgets: ['saveSort', 'zebra', 'stickyHeaders', 'filter', 'columnSelector'],
+                headers: {
+                    0: { sorter: 'realISODate' },
+                    1: { sorter: 'realISODate' },
+                    2: { sorter: 'loadingNames' },
+                    4: { sorter: 'quality' },
+                    5: { sorter: 'eps' },
+                    6: { sorter: 'digit' },
+                    7: { filter: 'parsed' }
+                },
+                widgetOptions: {
+                    filter_columnFilters: true, // jshint ignore:line
+                    filter_hideFilters: true, // jshint ignore:line
+                    filter_saveFilters: true, // jshint ignore:line
+                    filter_functions: { // jshint ignore:line
+                        5: function(e, n, f) {
+                            var test = false;
+                            var pct = Math.floor((n % 1) * 1000);
+                            if (f === '') {
+                                test = true;
+                            } else {
+                                var result = f.match(/(<|<=|>=|>)\s+(\d+)/i);
+                                if (result) {
+                                    if (result[1] === "<") {
+                                        if (pct < parseInt(result[2])) {
+                                            test = true;
+                                        }
+                                    } else if (result[1] === "<=") {
+                                        if (pct <= parseInt(result[2])) {
+                                            test = true;
+                                        }
+                                    } else if (result[1] === ">=") {
+                                        if (pct >= parseInt(result[2])) {
+                                            test = true;
+                                        }
+                                    } else if (result[1] === ">") {
+                                        if (pct > parseInt(result[2])) {
+                                            test = true;
+                                        }
+                                    }
+                                }
+
+                                result = f.match(/(\d+)\s(-|to)\s+(\d+)/i);
+                                if (result) {
+                                    if ((result[2] === "-") || (result[2] === "to")) {
+                                        if ((pct >= parseInt(result[1])) && (pct <= parseInt(result[3]))) {
+                                            test = true;
+                                        }
+                                    }
+                                }
+
+                                result = f.match(/(=)?\s?(\d+)\s?(=)?/i);
+                                if (result) {
+                                    if ((result[1] === "=") || (result[3] === "=")) {
+                                        if (parseInt(result[2]) === pct) {
+                                            test = true;
+                                        }
+                                    }
+                                }
+
+                                if (!isNaN(parseFloat(f)) && isFinite(f)) {
+                                    if (parseInt(f) === pct) {
+                                        test = true;
+                                    }
+                                }
+                            }
+                            return test;
+                        }
+                    },
+                    'columnSelector_mediaquery': false
+                },
+                sortStable: true,
+                sortAppend: [[2,0]]
+            });
+        }
+    }
+});
+
+sickrage.directive('displayshowtablesorter', function(){
+    return {
+        link: function($scope, element, attrs) {
+            $(element).tablesorter({
+                widgets: ['saveSort', 'stickyHeaders', 'columnSelector'],
+                widgetOptions : {
+                    columnSelector_saveColumns: true, // jshint ignore:line
+                    columnSelector_layout : '<br><label><input type="checkbox">{name}</label>', // jshint ignore:line
+                    columnSelector_mediaquery: false, // jshint ignore:line
+                    columnSelector_cssChecked : 'checked' // jshint ignore:line
+                }
+            });
+        }
+    }
+});
+
+sickrage.directive('tablesorterpopover', function(){
+    return {
+        link: function($scope, element, attrs) {
+            $(element).popover({
+                placement: 'bottom',
+                html: true, // required if content has HTML
+                content: '<div id="popover-target"></div>'
+            }).on('shown.bs.popover', function () { // bootstrap popover event triggered when the popover opens
+                // call this function to copy the column selection code into the popover for each table since we use seperate ones per season
+                $('.tablesorter').each(function(){
+                    $.tablesorter.columnSelector.attachTo($(this), '#popover-target');
+               });
+            });
+        }
+    };
+});
+
+sickrage.directive('timeago', function(){
+    return {
+        link: function($scope, element, attrs) {
+            angular.element(element).timeago();
+        }
+    };
+});
+
 // @TODO: All of the controllers need to be moved into a controller directory and/or file
 
 sickrage.controller('homeController', function($scope, $http) {
     $.timeago.settings.allowFuture = true;
     $.timeago.settings.strings = {
         prefixAgo: null,
-        prefixFromNow: 'In ',
+        prefixFromNow: 'In',
         suffixAgo: "ago",
         suffixFromNow: "",
         seconds: "less than a minute",
@@ -400,19 +533,13 @@ sickrage.controller('displayShowController', function($scope, $stateParams, $htt
         method: 'GET',
         url: '/home/displayShow?show=' + $stateParams.showId
     }).then(function successCallback(response) {
-        var seasons = [];
-        response.data.show.episodes.forEach(function(episode){
-            if(!seasons[episode.season]){
-                seasons[episode.season] = [];
-            }
-            seasons[episode.season][episode.episode] = episode;
-        });
-        $scope.seasons = seasons;
         $scope.show = response.data.show;
+        $scope.seasons = response.data.show.seasons;
         $scope.showLocation = response.data.showLocation;
         $scope.showMessage = response.data.showMessage;
         $scope.showMenu = response.data.showMenu;
         $scope.qualities = response.data.qualities;
+        $scope.episodeStatuses = response.data.episodeStatuses;
         $scope.qualities.all = [].concat.apply(
             response.data.qualities.snatched,
             response.data.qualities.snatchedProper,
@@ -472,12 +599,12 @@ sickrage.controller('displayShowController', function($scope, $stateParams, $htt
                 "snatchedBest": 0,
                 "all": 0
             };
-            seasons.forEach(function(season){
-                season.forEach(function(episode){
+            for(var season in response.data.show.seasons){
+                for(var episode in season){
                     episodeCounts['all']++;
                     episodeCounts[qualityStrings[episode.status]]++;
-                });
-            });
+                }
+            }
             return episodeCounts[quality];
         }
     }, function errorCallback(response) {

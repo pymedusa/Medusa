@@ -20,7 +20,6 @@
 
 import io
 import os
-import cgi
 import re
 import time
 import urllib
@@ -60,7 +59,8 @@ from unrar2 import RarFile
 import adba
 from libtrakt import TraktAPI
 from libtrakt.exceptions import traktException
-from sickrage.helper.common import sanitize_filename, try_int, episode_num, dateTimeFormat, pretty_file_size
+from sickrage.helper.common import sanitize_filename, try_int, episode_num, dateTimeFormat
+from sickrage.helper.common import pretty_file_size, render_quality_pill
 from sickrage.helper.encoding import ek, ss
 from sickrage.helper.exceptions import CantRefreshShowException, CantUpdateShowException, ex
 from sickrage.helper.exceptions import MultipleShowObjectsException, NoNFOException, ShowDirectoryNotFoundException
@@ -732,7 +732,7 @@ class Home(WebRoot):
                     "raw": stats[0][show.indexerid]['show_size'],
                     "pretty": pretty_file_size(stats[0][show.indexerid]['show_size'])
                 },
-                "qualityPill": self.render_quality_pill(show.quality, showTitle=True)
+                "qualityPill": render_quality_pill(show.quality, showTitle=True)
             }
 
             if sickbeard.ANIME_SPLIT_HOME:
@@ -764,90 +764,6 @@ class Home(WebRoot):
                 "maxDownloadCount": stats[1],
                 "layout": sickbeard.HOME_LAYOUT
             }
-
-    @staticmethod
-    def render_quality_pill(quality, showTitle=False):
-        # Build a string of quality names to use as title attribute
-        if showTitle:
-            allowed_qualities, preferred_qualities = Quality.splitQuality(quality)
-            title = 'Allowed Quality:\n'
-            if allowed_qualities:
-                for curQual in allowed_qualities:
-                    title += "  " + Quality.qualityStrings[curQual] + "\n"
-            else:
-                title += "  None\n"
-            title += "\nPreferred Quality:\n"
-            if preferred_qualities:
-                for curQual in preferred_qualities:
-                    title += "  " + Quality.qualityStrings[curQual] + "\n"
-            else:
-                title += "  None\n"
-            title = cgi.escape(title.rstrip(), True)
-        else:
-            title = ""
-
-        sum_allowed_qualities = quality & 0xFFFF
-        sum_preferred_qualities = quality >> 16
-        set_hdtv = {Quality.HDTV, Quality.RAWHDTV, Quality.FULLHDTV}
-        set_webdl = {Quality.HDWEBDL, Quality.FULLHDWEBDL, Quality.UHD_4K_WEBDL, Quality.UHD_8K_WEBDL}
-        set_bluray = {Quality.HDBLURAY, Quality.FULLHDBLURAY, Quality.UHD_4K_BLURAY, Quality.UHD_8K_BLURAY}
-        set_1080p = {Quality.FULLHDTV, Quality.FULLHDWEBDL, Quality.FULLHDBLURAY}
-        set_720p = {Quality.HDTV, Quality.RAWHDTV, Quality.HDWEBDL, Quality.HDBLURAY}
-        set_uhd_4k = {Quality.UHD_4K_TV, Quality.UHD_4K_BLURAY, Quality.UHD_4K_WEBDL}
-        set_uhd_8k = {Quality.UHD_8K_TV, Quality.UHD_8K_BLURAY, Quality.UHD_8K_WEBDL}
-
-        # If allowed and preferred qualities are the same, show pill as allowed quality
-        if sum_allowed_qualities == sum_preferred_qualities:
-            quality = sum_allowed_qualities
-
-        if quality in qualityPresets:
-            cssClass = qualityPresetStrings[quality]
-            qualityString = qualityPresetStrings[quality]
-        elif quality in Quality.combinedQualityStrings:
-            cssClass = Quality.cssClassStrings[quality]
-            qualityString = Quality.combinedQualityStrings[quality]
-        elif quality in Quality.qualityStrings:
-            cssClass = Quality.cssClassStrings[quality]
-            qualityString = Quality.qualityStrings[quality]
-        # Check if all sources are HDTV
-        elif set(allowed_qualities).issubset(set_hdtv)and set(preferred_qualities).issubset(set_hdtv):
-            cssClass = Quality.cssClassStrings[Quality.ANYHDTV]
-            qualityString = 'HDTV'
-        # Check if all sources are WEB-DL
-        elif set(allowed_qualities).issubset(set_webdl)and set(preferred_qualities).issubset(set_webdl):
-            cssClass = Quality.cssClassStrings[Quality.ANYWEBDL]
-            qualityString = 'WEB-DL'
-        # Check if all sources are BLURAY
-        elif set(allowed_qualities).issubset(set_bluray)and set(preferred_qualities).issubset(set_bluray):
-            cssClass = Quality.cssClassStrings[Quality.ANYBLURAY]
-            qualityString = 'BLURAY'
-        # Check if all resolutions are 1080p
-        elif set(allowed_qualities).issubset(set_1080p)and set(preferred_qualities).issubset(set_1080p):
-            cssClass = Quality.cssClassStrings[Quality.FULLHDBLURAY]
-            qualityString = '1080p'
-        # Check if all resolutions are 720p
-        elif set(allowed_qualities).issubset(set_720p)and set(preferred_qualities).issubset(set_720p):
-            cssClass = Quality.cssClassStrings[Quality.HDBLURAY]
-            qualityString = '720p'
-        # Check if all resolutions are 4K UHD
-        elif set(allowed_qualities).issubset(set_uhd_4k)and set(preferred_qualities).issubset(set_uhd_4k):
-            cssClass = Quality.cssClassStrings[Quality.HDBLURAY]
-            qualityString = '4K-UHD'
-        # Check if all resolutions are 8K UHD
-        elif set(allowed_qualities).issubset(set_uhd_8k)and set(preferred_qualities).issubset(set_uhd_8k):
-            cssClass = Quality.cssClassStrings[Quality.HDBLURAY]
-            qualityString = '8K-UHD'
-        else:
-            cssClass = "Custom"
-            qualityString = "Custom"
-
-        cssClass = "quality " + cssClass
-
-        return {
-            "title": title,
-            "class": cssClass,
-            "qualityString": qualityString
-        }
 
     @staticmethod
     def show_statistics():
@@ -1490,7 +1406,7 @@ class Home(WebRoot):
             return self._genericMessage("Error", "Show not in show list")
 
         main_db_con = db.DBConnection()
-        episodes = main_db_con.select(
+        episode_results = main_db_con.select(
             "SELECT * FROM tv_episodes WHERE showid = ? and season >= ? ORDER BY season DESC, episode DESC",
             [showObj.indexerid, 0 if sickbeard.DISPLAY_SHOW_SPECIALS else 1]
         )
@@ -1573,6 +1489,30 @@ class Home(WebRoot):
             'name': showObj.name,
         })
 
+        seasons = {}
+        for episode in episode_results:
+            episode_dict = dict(episode)
+
+            if episode_dict["season"] not in seasons:
+                seasons[episode_dict["season"]] = []
+
+            episode_status, episode_quality = Quality.splitCompositeStatus(int(episode_dict["status"]))
+
+            episode_dict["qualityPill"] = render_quality_pill(episode_quality, showTitle=True)
+            episode_dict["statusString"] = statusStrings[episode_status]
+            seasons[episode_dict["season"]].append(episode_dict)
+
+        episode_statuses = []
+        available_status = [WANTED, SKIPPED, IGNORED, FAILED]
+        if not sickbeard.USE_FAILED_DOWNLOADS:
+            available_status.remove(FAILED)
+        for status in available_status + Quality.DOWNLOADED + Quality.ARCHIVED:
+            if status not in [Quality.DOWNLOADED, Quality.ARCHIVED]:
+                episode_statuses.append({
+                    "value": status,
+                    "statusString": statusStrings[status]
+                })
+
         return {
             "displaySpecials": sickbeard.DISPLAY_SHOW_SPECIALS,
             "displayAllSeasons": sickbeard.DISPLAY_ALL_SEASONS,
@@ -1598,7 +1538,7 @@ class Home(WebRoot):
                 "anime": showObj.anime,
                 "location": showLocation,
                 "exceptions": sickbeard.scene_exceptions.get_scene_exceptions(showObj.indexerid),
-                "episodes": json.loads(json.dumps([dict(ix) for ix in episodes]))
+                "seasons": seasons
             },
             "showMessage": show_message,
             "showMenu": showMenu,
@@ -1608,7 +1548,8 @@ class Home(WebRoot):
                 "snatchedProper": Quality.SNATCHED_PROPER,
                 "snatchedBest": Quality.SNATCHED_BEST,
                 "downloaded": Quality.DOWNLOADED
-            }
+            },
+            "episodeStatuses": episode_statuses
         }
 
     @staticmethod

@@ -23,14 +23,14 @@
             <span ng-if="seasons.length > 14">
                 <select id="seasonJump" class="form-control input-sm" style="position: relative; top: -4px;">
                     <option value="jump">Jump to Season</option>
-                    <option ng-repeat="(i, season) in seasons" value="{{'#season-' + seasons.indexOf(season)}}" data-season="{{'#season-' + seasons.indexOf(season)}}">{{seasons.indexOf(season) === 0 ? 'Specials' : 'Season ' + seasons.indexOf(season)}}</option>
+                    <option ng-repeat="(i, season) in seasons" value="{{'#season-' + seasonNumber}}" data-season="{{'#season-' + seasonNumber}}">{{seasonNumber === 0 ? 'Specials' : 'Season ' + seasons(season)}}</option>
                 </select>
             </span>
             <span ng-if="seasons.length < 14">
                 Season:
                 <span ng-repeat="(i, season) in seasons">
-                    <a href="{{'#season-' + seasons.indexOf(season)}}">{{seasons.indexOf(season) === 0 ? 'Specials' : seasons.indexOf(season)}}</a>
-                    <span ng-if="seasons.indexOf(season) <= seasons.length-2" class="separator">|</span>
+                    <a href="{{'#season-' + seasonNumber}}">{{seasonNumber === 0 ? 'Specials' : seasonNumber}}</a>
+                    <span ng-if="seasonNumber <= seasons.length-2" class="separator">|</span>
                 </span>
             </span>
         </div>
@@ -152,52 +152,7 @@
         <div class="pull-left" >
             Change selected episodes to:<br>
             <select id="statusSelect" class="form-control form-control-inline input-sm">
-                <option value="3">Wanted</option>
-                <option value="5">Skipped</option>
-                <option value="7">Ignored</option>
-                <option ng-if="useFailedDownloads" value="11">Failed</option>
-                <!-- <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
-                % if not sickbeard.USE_FAILED_DOWNLOADS:
-                <% availableStatus.remove(FAILED) %>
-                % endif
-                % for curStatus in availableStatus + Quality.DOWNLOADED + Quality.ARCHIVED:
-                    % if curStatus not in [DOWNLOADED, ARCHIVED]:
-                    <option value="${curStatus}">${statusStrings[curStatus]}</option>
-                    % endif
-                % endfor -->
-                <!-- @TODO: This needs to be replaced with a ng-repeat -->
-                <option value="3276804">Downloaded (Unknown)</option>
-                <option value="204">Downloaded (SD DVD)</option>
-                <option value="404">Downloaded (720p HDTV)</option>
-                <option value="409604">Downloaded (8K UHD TV)</option>
-                <option value="104">Downloaded (SDTV)</option>
-                <option value="804">Downloaded (RawHD)</option>
-                <option value="12804">Downloaded (720p BluRay)</option>
-                <option value="102404">Downloaded (4K UHD WEB-DL)</option>
-                <option value="6404">Downloaded (1080p WEB-DL)</option>
-                <option value="1638404">Downloaded (8K UHD BluRay)</option>
-                <option value="1604">Downloaded (1080p HDTV)</option>
-                <option value="3204">Downloaded (720p WEB-DL)</option>
-                <option value="25604">Downloaded (1080p BluRay)</option>
-                <option value="51204">Downloaded (4K UHD TV)</option>
-                <option value="819204">Downloaded (8K UHD WEB-DL)</option>
-                <option value="204804">Downloaded (4K UHD BluRay)</option>
-                <option value="3276806">Archived (Unknown)</option>
-                <option value="206">Archived (SD DVD)</option>
-                <option value="406">Archived (720p HDTV)</option>
-                <option value="409606">Archived (8K UHD TV)</option>
-                <option value="106">Archived (SDTV)</option>
-                <option value="806">Archived (RawHD)</option>
-                <option value="12806">Archived (720p BluRay)</option>
-                <option value="102406">Archived (4K UHD WEB-DL)</option>
-                <option value="6406">Archived (1080p WEB-DL)</option>
-                <option value="1638406">Archived (8K UHD BluRay)</option>
-                <option value="1606">Archived (1080p HDTV)</option>
-                <option value="3206">Archived (720p WEB-DL)</option>
-                <option value="25606">Archived (1080p BluRay)</option>
-                <option value="51206">Archived (4K UHD TV)</option>
-                <option value="819206">Archived (8K UHD WEB-DL)</option>
-                <option value="204806">Archived (4K UHD BluRay)</option>
+                <option ng-repeat="status in episodeStatuses" value="{{status.value}}">{{status.statusString}}</option>
             </select>
             <input type="hidden" id="showID" value="{{show.indexerId}}" />
             <input type="hidden" id="indexer" value="{{show.indexer}}" />
@@ -215,14 +170,14 @@
                 <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>{{episodeCounts('snatched') + episodeCounts('snatchedProper') + episodeCounts('snatchedBest')}}</b></span></label>
             </div>
 
-            <button id="popover" type="button" class="btn btn-xs">Select Columns <b class="caret"></b></button>
+            <button tablesorterpopover id="popover" type="button" class="btn btn-xs">Select Columns <b class="caret"></b></button>
             <div class="pull-right" >
                 <button class="btn btn-xs seriesCheck">Select Filtered Episodes</button>
                 <button class="btn btn-xs clearAll">Clear All</button>
             </div>
         </div>
 
-        <table ng-repeat="(i, season) in seasons.slice().reverse()" class="displayShowTable display_show" cellspacing="0" border="0" cellpadding="0">
+        <table displayshowtablesorter ng-repeat="(seasonNumber, season) in seasons" class="displayShowTable display_show" cellspacing="0" border="0" cellpadding="0">
             <thead>
                 <tr class="seasoncols" style="display:none;">
                     <th data-sorter="false" data-priority="critical" class="col-checkbox"><input type="checkbox" class="seasonCheck"/></th>
@@ -245,14 +200,14 @@
             <tbody class="tablesorter-no-sort">
                 <tr style="height: 60px;">
                     <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
-                        <h3 style="display: inline;"><a name="{{'season-' + seasons.indexOf(season)}}"></a>{{seasons.indexOf(season) === 0 ? 'Specials' : 'Season ' + seasons.indexOf(season)}}</h3>
-                        <button ng-if="!displayAllSeasons" id="{{'showseason-' + seasons.indexOf(season)}}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="{{'#collapseSeason-' + seasons.indexOf(season)}}">Show Episodes</button>
+                        <h3 style="display: inline;"><a name="{{'season-' + seasonNumber}}"></a>{{seasonNumber === 0 ? 'Specials' : 'Season ' + seasonNumber}}</h3>
+                        <button ng-if="!displayAllSeasons" id="{{'showseason-' + seasonNumber}}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="{{'#collapseSeason-' + seasonNumber}}">Show Episodes</button>
                     </th>
                 </tr>
             </tbody>
             <tbody class="tablesorter-no-sort">
-                <tr id="{{'season-' + seasons.indexOf(season) + '-cols'}}" class="seasoncols">
-                    <th class="col-checkbox"><input type="checkbox" class="seasonCheck" id="{{seasons.indexOf(season)}}" /></th>
+                <tr id="{{'season-' + seasonNumber + '-cols'}}" class="seasoncols">
+                    <th class="col-checkbox"><input type="checkbox" class="seasonCheck" id="{{seasonNumber}}" /></th>
                     <th class="col-metadata">NFO</th>
                     <th class="col-metadata">TBN</th>
                     <th class="col-ep">Episode</th>
@@ -269,10 +224,10 @@
                     <th class="col-search">Search</th>
                 </tr>
             </tbody>
-            <tbody id="{{'collapseSeason-' + seasons.indexOf(season)}}">
-                <tr ng-repeat="(i, episode) in season.slice().reverse().slice(0, -1)" class="{{qualityStrings(episode.status) + ' season-' + seasons.indexOf(season) + ' seasonstyle'}}" id="{{seasons.indexOf(season) + 'x' + episode.episode}}">
+            <tbody id="{{'collapseSeason-' + seasonNumber}}">
+                <tr ng-repeat="(i, episode) in season" class="{{qualityStrings(episode.status) + ' season-' + seasonNumber + ' seasonstyle'}}" id="{{seasonNumber + 'x' + episode.episode}}">
                     <td class="col-checkbox">
-                        <input ng-if="episode.status != 'unaired'" type="checkbox" class="epCheck" id="{{seasons.indexOf(season) + 'x' + season.episode.episode}}" name="{{seasons.indexOf(season) + 'x' + season.episode.episode}}" />
+                        <input ng-if="episode.status != 'unaired'" type="checkbox" class="epCheck" id="{{seasonNumber + 'x' + season.episode.episode}}" name="{{seasonNumber + 'x' + season.episode.episode}}" />
                     </td>
                     <td align="center"><img src="{{'/images/' + (episode.hasnfo ? 'nfo.gif' : 'nfo-no.gif')}}" alt="{{episode.hasnfo ? 'Y' : 'N'}}" width="23" height="11" /></td>
                     <td align="center"><img src="{{'/images/' + (episode.hastbn ? 'tbn.gif' : 'tbn-no.gif')}}" alt="{{episode.hastbn ? 'Y' : 'N'}}" width="23" height="11" /></td>
@@ -306,7 +261,7 @@
                                 style="padding: 0; text-align: center; max-width: 60px;" autocapitalize="off" /> -->
                     </td>
                     <td class="col-name">
-                        <img ng-if="episode.description" src="/images/info32.png" width="16" height="16" class="plotInfo" alt="" id="{{'plot_info_' + show.indexerId + '_' + seasons.indexOf(season) + '_' + episode.episode}}" />
+                        <img ng-if="episode.description" src="/images/info32.png" width="16" height="16" class="plotInfo" alt="" id="{{'plot_info_' + show.indexerId + '_' + seasonNumber + '_' + episode.episode}}" />
                         <img ng-if="!episode.description" src="/images/info32.png" width="16" height="16" class="plotInfoNone" alt="" />
                         {{episode.name}}
                     </td>
@@ -344,12 +299,8 @@
                         % endif
                     % endfor -->
                     </td>
-                        <!-- <% curStatus, curQuality = Quality.splitCompositeStatus(int(epResult["status"])) %>
-                        % if curQuality != Quality.NONE: -->
-                            <td class="col-status">${statusStrings[curStatus]} ${renderQualityPill(curQuality)}</td>
-                        <!-- % else:
-                            <td class="col-status">${statusStrings[curStatus]}</td>
-                        % endif -->
+                    <td ng-if="episode.qualityPill.qualityString && episode.status !== 1" class="col-status">{{episode.statusString}} <span title="{{episode.qualityPill.title}}" class="{{episode.qualityPill.class}}">{{episode.qualityPill.qualityString}}</span></td>
+                    <td ng-if="!episode.qualityPill.qualityString || episode.status == 1" class="col-status">{{episode.statusString}}</td>
                     <td class="col-search">
                         <span ng-if="episode.season !== 0">
                             <a ng-if="useFailedDownloads && qualities.all.indexOf(episode.status) >= 0" class="epRetry" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="retryEpisode?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="/images/search16.png" height="16" alt="retry" title="Retry Download" /></a>
