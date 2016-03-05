@@ -39,6 +39,10 @@ sickrage.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$
             'simple@home': {
                 templateUrl: '/templates/partials/home/simple.html',
                 controller: 'simpleController'
+            },
+            'small@home': {
+                templateUrl: '/templates/partials/home/small.html',
+                controller: 'smallController'
             }
         }
     });
@@ -188,6 +192,24 @@ sickrage.factory('_', ['$window', function($window) {
     return $window._;
 }]);
 
+sickrage.directive('progressbar', function() {
+    return {
+        link: function($scope, element, attrs) {
+            var percentage = $scope.progressbarPercentage;
+            var classToAdd = percentage === 100 ? 100 : percentage > 80 ? 80 : percentage > 60 ? 60 : percentage > 40 ? 40 : 20;
+            $(element).addClass('progressbar hidden-print');
+            $(element).attr('style', 'position:relative;')
+            $(element).progressbar({
+                value: percentage
+            });
+            if($scope.downloadStat) {
+                $(element).append('<div class="progressbarText" title="' + $scope.downloadStatTip + '">' + $scope.downloadStat + '</div>');
+            }
+            $(element).find('.ui-progressbar-value').addClass('progress-' + classToAdd);
+        }
+    };
+});
+
 // @TODO: All of the controllers need to be moved into a controller directory and/or file
 
 sickrage.controller('homeController', function($scope, $http) {
@@ -274,6 +296,39 @@ sickrage.controller('simpleController', function($scope, $http) {
 });
 
 sickrage.controller('simpleShowController', function($scope, $sce) {
+    var show = $scope.show;
+
+    var downloadStat = show.stats.downloaded;
+    var downloadStatTip = "Downloaded: " + show.stats.downloaded;
+    if (show.stats.snatched){
+        downloadStat += "+" + show.stats.snatched;
+        downloadStatTip += "&#13;" + "Snatched: " + show.stats.snatched;
+    }
+
+    downloadStat += " / " + show.stats.total;
+    downloadStatTip += "&#13;" + "Total: " + show.stats.total;
+
+    $scope.downloadStat = downloadStat;
+    // @TODO: This should be HTML so line breaks work
+    $scope.downloadStatTip = show.stats.total ? downloadStatTip : 'Unaired';
+    $scope.progressbarPercentage = (show.stats.downloaded * 100) / (show.stats.total || 1);
+});
+
+sickrage.controller('smallController', function($scope, $http) {
+    $http({
+        method: 'GET',
+        url: '/home'
+    }).then(function successCallback(response) {
+        $scope.showLists = response.data.showLists;
+        $scope.maxDownloadCount = response.data.maxDownloadCount;
+        SICKRAGE.common.init();
+        SICKRAGE.home.index();
+    }, function errorCallback(response) {
+        console.error(response);
+    });
+});
+
+sickrage.controller('smallShowController', function($scope, $sce) {
     var show = $scope.show;
 
     var downloadStat = show.stats.downloaded;

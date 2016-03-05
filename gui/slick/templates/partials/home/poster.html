@@ -2,7 +2,7 @@
     <div ng-controller="posterShowController" ng-repeat="(i, show) in shows" class="posterview">
         <div class="show-container" id="{{'show' + show.indexerId}}" data-name="{{show.name}}" data-date="{{show.date}}" data-network="{{show.network}}" data-progress="{{progressbarPercentage}}">
             <div class="show-image">
-                <a ui-sref="{{'displayShow?showId=' + show.indexerId}}"><img alt="" class="show-image" src="{{'/showPoster/?show=' + show.indexerId + '&amp;which=poster_thumb'}}" /></a>
+                <a href="{{'#/displayShow?showId=' + show.indexerId}}"><img alt="" class="show-image" src="{{'/showPoster/?show=' + show.indexerId + '&amp;which=poster_thumb'}}" /></a>
             </div>
             <div class="progressbar hidden-print" style="position:relative;" data-show-id="{{show.indexerId}}" data-progress-percentage="{{progressbarPercentage}}"></div>
             <div class="show-title">{{show.name}}</div>

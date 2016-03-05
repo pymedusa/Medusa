@@ -26,7 +26,7 @@
         </tr>
     </tfoot>
     <tbody>
-        <tr ng-repeat="(i, show) in showList.shows">
+        <tr ng-controller="simpleShowController" ng-repeat="(i, show) in showList.shows">
             <td ng-if="show.airsNext" align="center" class="nowrap">
                 <time datetime="{{show.airsNext}}" class="date">{{show.airsNext}}</time>
             </td>
@@ -38,7 +38,7 @@
             <td ng-if="!show.airsPrev" align="center" class="nowrap"></td>
 
             <td class="tvShow">
-                <a ui-sref="{{'displayShow?showId=' + show.indexerId}}" style="vertical-align: middle;">{{show.name}}</a>
+                <a href="{{'#/displayShow?showId=' + show.indexerId}}" style="vertical-align: middle;">{{show.name}}</a>
             </td>
 
             <td align="center">
@@ -50,7 +50,7 @@
             <td align="center">
                 <!-- @TODO: Replace this with some kind of angular funciton to generate a print view -->
                 <span style="display: none;">{{downloadStat}}</span>
-                <div class="progressbar hidden-print" style="position:relative;" data-show-id="{{show.indexerId}}" data-progress-percentage="{{progressbarPercentage}}" data-progress-text="{{downloadStat}}" data-progress-tip="{{downloadStatTip}}"></div>
+                <div progressbar></div>
                 <span class="visible-print-inline">{{downloadStat}}</span>
             </td>
 

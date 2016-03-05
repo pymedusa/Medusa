@@ -1,8 +1,8 @@
-<table id="showListTable${curListType}" class="tablesorter" cellspacing="1" border="0" cellpadding="0">
+<table ng-repeat="showList in showLists" class="tablesorter" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr>
-            <th >Next Ep</th>
-            <th >Prev Ep</th>
+            <th class="nowrap">Next Ep</th>
+            <th class="nowrap">Prev Ep</th>
             <th>Show</th>
             <th>Network</th>
             <th>Quality</th>
@@ -12,9 +12,58 @@
             <th>Status</th>
         </tr>
     </thead>
+    <tbody>
+        <tr ng-controller="smallShowController" ng-repeat="(i, show) in showList.shows" ng-class-odd="'odd'" ng-class-even="'even'">
+            <td ng-if="show.airsNext" align="center" class="nowrap">
+                <time datetime="{{show.airsNext}}" class="date">{{show.airsNext}}</time>
+            </td>
+            <td ng-if="!show.airsNext" align="center" class="nowrap"></td>
+
+            <td ng-if="show.airsPrev" align="center" class="nowrap">
+                <time datetime="{{show.airsPrev}}" class="date">{{show.airsPrev}}</time>
+            </td>
+            <td ng-if="!show.airsPrev" align="center" class="nowrap"></td>
+
+            <td class="tvShow">
+                <div class="imgsmallposter small">
+                    <a href="{{'#/displayShow?showId=' + show.indexerId}}" title="{{show.name}}">
+                        <img src="{{'/showPoster/?show=' + show.indexerId + '&amp;which=poster_thumb'}}" class="small" alt="{{show.indexerId}}">
+                    </a>
+                    <a href="{{'#/displayShow?showId=' + show.indexerId}}" style="vertical-align: middle;">{{show.name}}</a>
+                </div>
+            </td>
+
+            <td ng-if="show.network" align="center">
+                <span title="{{show.network}}" class="hidden-print"><img id="network" width="54" height="27" src="{{'/showPoster/?show=' + show.indexerId + '&amp;which=network'}}" alt="{{show.network}}" title="{{show.network}}" /></span>
+                <span class="visible-print-inline">${curShow.network}</span>
+            </td>
+            <td ng-if="!show.network" align="center">
+                <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="/images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
+                <span class="visible-print-inline">No Network</span>
+            </td>
+
+            <td align="center"><span title="{{show.qualityPill.title}}" class="{{show.qualityPill.class}}">{{show.qualityPill.qualityString}}</span></td>
+
+            <td align="center">
+                <!-- @TODO: Replace this with some kind of angular funciton to generate a print view -->
+                <span style="display: none;">{{downloadStat}}</span>
+                <div progressbar></div>
+                <span class="visible-print-inline">{{downloadStat}}</span>
+            </td>
+
+            <td align="center" data-show-size="{{show.size.raw}}">{{show.size.pretty}}</td>
+
+            <td align="center">
+                <img ng-if="show.paused || show.status.status.indexOf('ended') >= 0" src="/images/no16.png" alt="Yes" width="16" height="16" />
+                <img ng-if="show.status.indexOf('Continuing') >= 0" src="/images/yes16.png" alt="No" width="16" height="16" />
+            </td>
+
+            <td align="center">{{show.status}}</td>
+        </tr>
+    </tbody>
     <tfoot class="hidden-print">
         <tr>
-            <th rowspan="1" colspan="1" align="center"><a href="${srRoot}/addShows/">Add ${('Show', 'Anime')[curListType == 'Anime']}</a></th>
+            <th rowspan="1" colspan="1" align="center"><a ui-sref="addShows">Add {{showList.name}}</a></th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>
@@ -25,102 +74,4 @@
             <th>&nbsp;</th>
         </tr>
     </tfoot>
-    <tbody>
-
-<% myShowList.sort(lambda x, y: cmp(x.name, y.name)) %>
-% for curShow in myShowList:
-    <tr>
-    % if cur_airs_next:
-        <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, curShow.airs, curShow.network)) %>
-        % try:
-            <td align="center" >
-                <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdate(airDate)}</time>
-            </td>
-        % except ValueError:
-            <td align="center" ></td>
-        % endtry
-    % else:
-        <td align="center" ></td>
-    % endif
-
-    % if cur_airs_prev:
-        <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_prev, curShow.airs, curShow.network)) %>
-        % try:
-            <td align="center" >
-                <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdate(airDate)}</time>
-            </td>
-        % except ValueError:
-            <td align="center" ></td>
-        % endtry
-    % else:
-        <td align="center" ></td>
-    % endif
-
-    % if sickbeard.HOME_LAYOUT == 'small':
-        <td class="tvShow">
-            <div class="imgsmallposter ${sickbeard.HOME_LAYOUT}">
-                <a href="#/displayShow?showId=${curShow.indexerid}" title="${curShow.name}">
-                    <img src="${srRoot}/showPoster/?showId=${curShow.indexerid}&amp;which=poster_thumb" class="${sickbeard.HOME_LAYOUT}" alt="${curShow.indexerid}"/>
-                </a>
-                <a href="#/displayShow?showId=${curShow.indexerid}" style="vertical-align: middle;">${curShow.name}</a>
-            </div>
-        </td>
-    % elif sickbeard.HOME_LAYOUT == 'banner':
-        <td>
-            <span style="display: none;">${curShow.name}</span>
-            <div class="imgbanner ${sickbeard.HOME_LAYOUT}">
-                <a href="#/displayShow?showId=${curShow.indexerid}">
-                <img src="${srRoot}/showPoster/?show=${curShow.indexerid}&amp;which=banner" class="${sickbeard.HOME_LAYOUT}" alt="${curShow.indexerid}" title="${curShow.name}"/>
-            </div>
-        </td>
-    % elif sickbeard.HOME_LAYOUT == 'simple':
-        <td class="tvShow"><a href="#/displayShow?showId=${curShow.indexerid}">${curShow.name}</a></td>
-    % endif
-
-    % if sickbeard.HOME_LAYOUT != 'simple':
-        <td align="center">
-        % if curShow.network:
-            <span title="${curShow.network}" class="hidden-print"><img id="network" width="54" height="27" src="${srRoot}/showPoster/?show=${curShow.indexerid}&amp;which=network" alt="${curShow.network}" title="${curShow.network}" /></span>
-            <span class="visible-print-inline">${curShow.network}</span>
-        % else:
-            <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="${srRoot}/images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
-            <span class="visible-print-inline">No Network</span>
-        % endif
-        </td>
-    % else:
-        <td>
-            <span title="${curShow.network}">${curShow.network}</span>
-        </td>
-    % endif
-
-        <td align="center">${renderQualityPill(curShow.quality, showTitle=True)}</td>
-
-        <td align="center">
-            ## This first span is used for sorting and is never displayed to user
-            <span style="display: none;">${download_stat}</span>
-            <div class="progressbar hidden-print" style="position:relative;" data-show-id="${curShow.indexerid}" data-progress-percentage="${progressbar_percent}" data-progress-text="${download_stat}" data-progress-tip="${download_stat_tip}"></div>
-            <span class="visible-print-inline">${download_stat}</span>
-        </td>
-
-        <td align="center" data-show-size="${show_size}">${pretty_file_size(show_size)}</td>
-
-        <td align="center">
-            <% paused = int(curShow.paused) == 0 and curShow.status == 'Continuing' %>
-            <img src="${srRoot}/images/${('no16.png', 'yes16.png')[bool(paused)]}" alt="${('No', 'Yes')[bool(paused)]}" width="16" height="16" />
-        </td>
-
-        <td align="center">
-        <%
-            display_status = curShow.status
-            if None is not display_status:
-                if re.search(r'(?i)(?:new|returning)\s*series', curShow.status):
-                    display_status = 'Continuing'
-                elif re.search('(?i)(?:nded)', curShow.status):
-                    display_status = 'Ended'
-        %>
-        ${display_status}
-        </td>
-    </tr>
-% endfor
-</tbody>
 </table>
