@@ -766,7 +766,7 @@ class Home(WebRoot):
             }
 
     @staticmethod
-    def render_quality_pill(quality, showTitle=False, overrideClass=None):
+    def render_quality_pill(quality, showTitle=False):
         # Build a string of quality names to use as title attribute
         if showTitle:
             allowed_qualities, preferred_qualities = Quality.splitQuality(quality)
@@ -841,10 +841,7 @@ class Home(WebRoot):
             cssClass = "Custom"
             qualityString = "Custom"
 
-        if overrideClass is None:
-            cssClass = "quality " + cssClass
-        else:
-            cssClass = overrideClass
+        cssClass = "quality " + cssClass
 
         return {
             "title": title,

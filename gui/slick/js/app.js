@@ -35,6 +35,10 @@ sickrage.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$
             'poster@home': {
                 templateUrl: '/templates/partials/home/poster.html',
                 controller: 'posterController'
+            },
+            'simple@home': {
+                templateUrl: '/templates/partials/home/simple.html',
+                controller: 'simpleController'
             }
         }
     });
@@ -255,12 +259,52 @@ sickrage.controller('bannerShowController', function($scope, $sce) {
     $scope.progressbarPercentage = (show.stats.downloaded * 100) / (show.stats.total || 1);
 });
 
+sickrage.controller('simpleController', function($scope, $http) {
+    $http({
+        method: 'GET',
+        url: '/home'
+    }).then(function successCallback(response) {
+        $scope.showLists = response.data.showLists;
+        $scope.maxDownloadCount = response.data.maxDownloadCount;
+        SICKRAGE.common.init();
+        SICKRAGE.home.index();
+    }, function errorCallback(response) {
+        console.error(response);
+    });
+});
+
+sickrage.controller('simpleShowController', function($scope, $sce) {
+    var show = $scope.show;
+
+    var downloadStat = show.stats.downloaded;
+    var downloadStatTip = "Downloaded: " + show.stats.downloaded;
+    if (show.stats.snatched){
+        downloadStat += "+" + show.stats.snatched;
+        downloadStatTip += "&#13;" + "Snatched: " + show.stats.snatched;
+    }
+
+    downloadStat += " / " + show.stats.total;
+    downloadStatTip += "&#13;" + "Total: " + show.stats.total;
+
+    $scope.downloadStat = downloadStat;
+    // @TODO: This should be HTML so line breaks work
+    $scope.downloadStatTip = show.stats.total ? downloadStatTip : 'Unaired';
+    $scope.progressbarPercentage = (show.stats.downloaded * 100) / (show.stats.total || 1);
+});
+
 sickrage.controller('posterController', function($scope, $http) {
     $http({
         method: 'GET',
         url: '/home'
     }).then(function successCallback(response) {
-        $scope.shows = response.data.showLists.shows;
+        // @NOTE: Do we need to do anything if we have shows and anime seperate?
+        //        Currently we just flatten the array of shows
+        $scope.shows = [];
+        response.data.showLists.forEach(function(showList) {
+            showList.shows.forEach(function(show) {
+                $scope.shows.push(show);
+            });
+        });
         $scope.maxDownloadCount = response.data.maxDownloadCount;
         SICKRAGE.common.init();
         SICKRAGE.home.index();
