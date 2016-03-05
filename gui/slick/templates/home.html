@@ -1,7 +1,7 @@
 <table style="width: 100%;" class="home-header">
     <tr>
         <td align="right">
-                <div ng-if="sickbeard.HOME_LAYOUT != 'poster'">
+                <div ng-if="layout !== 'poster'">
                     <span class="show-option">
                         <button id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
                     </span>
@@ -11,7 +11,7 @@
                     </span>
                 </div>
 
-                <div ng-if="sickbeard.HOME_LAYOUT == 'poster'">
+                <div ng-if="layout === 'poster'">
                     <span class="show-option"> Poster Size:
                         <div style="width: 100px; display: inline-block; margin-left: 7px;" id="posterSizeSlider"></div>
                     </span>
