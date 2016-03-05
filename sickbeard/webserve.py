@@ -46,7 +46,7 @@ from sickbeard.scene_numbering import get_scene_numbering, set_scene_numbering, 
     get_xem_numbering_for_show, get_scene_absolute_numbering_for_show, get_xem_absolute_numbering_for_show, \
     get_scene_absolute_numbering
 from sickbeard.manual_search import (collectEpisodesFromSearchThread, getEpisode, get_provider_cache_results,
-                                     SEARCH_STATUS_FINISHED)
+                                     SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING)
 
 from sickbeard.webapi import function_mapper
 
@@ -1419,11 +1419,6 @@ class Home(WebRoot):
                                                                    str(search.get('season')) == season and
                                                                    str(search.get('episode')) == episode)]
 
-        # If the item is queued multiple times (don't know if this is posible), but then check if as soon as a search has finished
-        # Move on and show results
-        if len(searched_item) and SEARCH_STATUS_FINISHED not in [item.get('searchstatus') for item in searched_item]:
-            return {'result': searched_item[0]['searchstatus']}
-
         # The episode is not in an active or queued search, let's see if
 
         for provider, last_update in last_prov_updates.iteritems():
@@ -1435,7 +1430,18 @@ class Home(WebRoot):
             if needs_update:
                 return {'result': REFRESH_RESULTS}
 
-        return {'result': SEARCH_STATUS_FINISHED}
+        # If the item is queued multiple times (don't know if this is posible), but then check if as soon as a search has finished
+        # Move on and show results
+        # Return a list of queues the episode has been found in
+        search_status = [item.get('searchstatus') for item in searched_item]
+        if (not len(searched_item) or
+            (SEARCH_STATUS_QUEUED not in search_status and
+             SEARCH_STATUS_SEARCHING not in search_status and
+             SEARCH_STATUS_FINISHED in search_status)):
+                # If the ep not anymore in the QUEUED or SEARCHING Thread, and it has the status finished, return it as finished
+                return {'result': SEARCH_STATUS_FINISHED}
+
+        return {'result': searched_item[0]['searchstatus']}
 
     def manualSelect(self, show=None, season=None, episode=None, perform_search=0, down_cur_quality=0, show_all_results=0):
         """ The view with results for the manual selected show/episode """
@@ -1453,7 +1459,8 @@ class Home(WebRoot):
 
         # Retrieve cache results from providers
         search_show = {'show': show, 'season': season, 'episode': episode}
-        provider_results = get_provider_cache_results(INDEXER_TVDB, perform_search=0, show_all_results=0, **search_show)
+        provider_results = get_provider_cache_results(INDEXER_TVDB, perform_search=perform_search,
+                                                      show_all_results=show_all_results, **search_show)
 
         t = PageTemplate(rh=self, filename="manualSelect.mako")
         submenu = [{'title': 'Edit', 'path': 'home/editShow?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-pencil'}]
