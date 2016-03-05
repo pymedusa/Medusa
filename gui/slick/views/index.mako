@@ -273,8 +273,7 @@
         </div>
         % endif
 
-        <div id="content" ui-view>
-        </div>
+        <div id="content" ui-view></div>
     % if srLogin:
         <footer>
             <div class="footer clearfix">
@@ -323,7 +322,8 @@
         <script type="text/javascript" src="${srRoot}/js/browser.js?${sbPID}"></script>
         <script type="text/javascript" src="${srRoot}/js/ajaxNotifications.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="${srRoot}/js/dependencies/angular.min.js"></script>
+        <!-- <script type="text/javascript" src="${srRoot}/js/dependencies/angular.min.js"></script> -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.js"></script>
         <script type="text/javascript" src="${srRoot}/js/dependencies/angular-sanitize.min.js"></script>
         <script type="text/javascript" src="${srRoot}/js/dependencies/angular-ui-router.min.js"></script>
         <script type="text/javascript" src="${srRoot}/js/dependencies/angular-animate.min.js"></script>

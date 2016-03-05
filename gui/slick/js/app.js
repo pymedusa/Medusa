@@ -23,18 +23,20 @@ sickrage.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$
 
     $stateProvider.state('home', {
         url: '/',
-        templateUrl: '/templates/home.html',
-        controller: 'homeController'
-    });
-
-    $stateProvider.state('home.poster', {
-        templateUrl: '/templates/partials/home/poster.html',
-        controller: 'posterController'
-    });
-
-    $stateProvider.state('home.banner', {
-        templateUrl: '/templates/partials/home/banner.html',
-        controller: 'bannerController'
+        views: {
+            '': {
+                templateUrl: '/templates/home.html',
+                controller: 'homeController'
+            },
+            'banner@home': {
+                templateUrl: '/templates/partials/home/banner.html',
+                controller: 'bannerController'
+            },
+            'poster@home': {
+                templateUrl: '/templates/partials/home/poster.html',
+                controller: 'posterController'
+            }
+        }
     });
 
     $stateProvider.state('schedule', {
@@ -156,6 +158,26 @@ sickrage.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$
         url: '/status',
         templateUrl: '/templates/status.html'
     });
+
+    $stateProvider.state('addShows', {
+        url: '/addShows',
+        templateUrl: '/templates/addShows.html'
+    });
+
+    $stateProvider.state('newShow', {
+        url: '/addShows/newShow',
+        views: {
+            '': {
+                templateUrl: '/templates/newShow.html'
+            },
+            'addShowOptions@newShow': {
+                templateUrl: '/templates/partials/addShows/options.html'
+            },
+            'qualityChooser@newShow': {
+                templateUrl: '/templates/partials/addShows/qualityChooser.html'
+            }
+        }
+    });
 }]);
 
 sickrage.factory('_', ['$window', function($window) {
@@ -164,8 +186,20 @@ sickrage.factory('_', ['$window', function($window) {
 
 // @TODO: All of the controllers need to be moved into a controller directory and/or file
 
-sickrage.controller('homeController', function($state) {
-    $state.transitionTo('home.banner');
+sickrage.controller('homeController', function($scope, $http) {
+    var getLayout = function(layout){
+        $http({
+            method: 'GET',
+            url: (layout ? '/setHomeLayout?layout=' + layout : '/home')
+        }).then(function successCallback(response){
+            $scope.layout = response.data.layout;
+        });
+    }
+    $scope.layout = getLayout();
+    $scope.layouts = ['poster', 'banner', 'simple', 'small'];
+    $scope.$watch('layout', function () {
+        getLayout($scope.layout);
+    });
 });
 
 sickrage.controller('bannerController', function($scope, $http) {
@@ -417,4 +451,26 @@ sickrage.controller('statusController', function($scope, $http, $stateParams) {
     }, function errorCallback(response) {
         console.error(response);
     });
+});
+
+sickrage.controller('newShowController', function($scope, $http, $state){
+    console.log('newShowController');
+    // $http({
+    //     method: 'GET',
+    //     url: '/addShows/newShow'
+    // }).then(function successCallback(response) {
+    //     $scope.indexerTimeout = response.data.indexerTimeout;
+    //     $scope.enable_anime_options = response.data.enable_anime_options;
+    //     $scope.use_provided_info = response.data.use_provided_info;
+    //     $scope.default_show_name = response.data.default_show_name;
+    //     $scope.other_shows = response.data.other_shows;
+    //     $scope.indexers = response.data.indexers;
+    //     $scope.provided_show_dir = response.data.provided_show_dir;
+    //     $scope.provided_indexer_id = response.data.provided_indexer_id;
+    //     $scope.provided_indexer_name = response.data.provided_indexer_name;
+    //     $scope.provided_indexer = response.data.provided_indexer;
+    //     SICKRAGE.addShows.newShow();
+    // }, function errorCallback(response) {
+    //     console.error(response);
+    // });
 });

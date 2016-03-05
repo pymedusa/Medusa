@@ -430,12 +430,14 @@ class WebRoot(WebHandler):
             layout = 'poster'
 
         sickbeard.HOME_LAYOUT = layout
-        # Don't redirect to default page so user can see new layout
-        return self.redirect("/home/")
+
+        return {
+            'status': 200,
+            'layout': sickbeard.HOME_LAYOUT
+        }
 
     @staticmethod
     def setPosterSortBy(sort):
-
         if sort not in ('name', 'date', 'network', 'progress'):
             sort = 'name'
 
@@ -444,12 +446,10 @@ class WebRoot(WebHandler):
 
     @staticmethod
     def setPosterSortDir(direction):
-
         sickbeard.POSTER_SORTDIR = int(direction)
         sickbeard.save_config()
 
     def setHistoryLayout(self, layout):
-
         if layout not in ('compact', 'detailed'):
             layout = 'detailed'
 
@@ -458,7 +458,6 @@ class WebRoot(WebHandler):
         return self.redirect("/history/")
 
     def toggleDisplayShowSpecials(self, show):
-
         sickbeard.DISPLAY_SHOW_SPECIALS = not sickbeard.DISPLAY_SHOW_SPECIALS
 
         return self.redirect("/home/displayShow?show=" + show)
@@ -475,7 +474,6 @@ class WebRoot(WebHandler):
         return self.redirect("/schedule/")
 
     def toggleScheduleDisplayPaused(self):
-
         sickbeard.COMING_EPS_DISPLAY_PAUSED = not sickbeard.COMING_EPS_DISPLAY_PAUSED
 
         return self.redirect("/schedule/")
@@ -485,8 +483,7 @@ class WebRoot(WebHandler):
             sort = 'date'
 
         if sickbeard.COMING_EPS_LAYOUT == 'calendar':
-            sort \
-                = 'date'
+            sort = 'date'
 
         sickbeard.COMING_EPS_SORT = sort
 
@@ -753,7 +750,8 @@ class Home(WebRoot):
                 "showLists": {
                     "shows": shows
                 },
-                "maxDownloadCount": stats[1]
+                "maxDownloadCount": stats[1],
+                "layout": sickbeard.HOME_LAYOUT
             }
 
     @staticmethod
@@ -2626,8 +2624,6 @@ class HomeAddShows(Home):
         Display the new show page which collects a tvdb id, folder, and extra options and
         posts them to addNewShow
         """
-        t = PageTemplate(rh=self, filename="addShows_newShow.mako")
-
         indexer, show_dir, indexer_id, show_name = self.split_extra_show(show_to_add)
 
         if indexer_id and indexer and show_name:
@@ -2659,14 +2655,18 @@ class HomeAddShows(Home):
 
         provided_indexer = int(indexer or sickbeard.INDEXER_DEFAULT)
 
-        return t.render(
-            enable_anime_options=True, use_provided_info=use_provided_info,
-            default_show_name=default_show_name, other_shows=other_shows,
-            provided_show_dir=show_dir, provided_indexer_id=provided_indexer_id,
-            provided_indexer_name=provided_indexer_name, provided_indexer=provided_indexer,
-            indexers=sickbeard.indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
-            title='New Show', header='New Show'
-        )
+        return {
+            "indexerTimeout": sickbeard.INDEXER_TIMEOUT,
+            "enable_anime_options": True,
+            "use_provided_info": use_provided_info,
+            "default_show_name": default_show_name,
+            "other_shows": other_shows,
+            "indexers": sickbeard.indexerApi().indexers,
+            "provided_show_dir": show_dir,
+            "provided_indexer_id": provided_indexer_id,
+            "provided_indexer_name": provided_indexer_name,
+            "provided_indexer": provided_indexer
+        }
 
     def trendingShows(self, traktList=None):
         """
