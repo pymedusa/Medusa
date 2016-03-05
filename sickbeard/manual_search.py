@@ -178,7 +178,8 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
 
         # Let's check if this provider table already exists
         table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [curProvider.get_id()])
-        if not table_exists:
+        columns = [i[1] for i in main_db_con.select("PRAGMA table_info('%s')" % curProvider.get_id())] if table_exists else []
+        if not table_exists or 'seeders' not in columns or 'leechers' not in columns or 'size' not in columns:
             continue
 
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
