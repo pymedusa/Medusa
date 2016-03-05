@@ -2,7 +2,7 @@
 <%block name="content">
 <div class="login">
     <form action="" method="post">
-        <h1>SickRage</h1>
+        <h1>Medusa</h1>
         <div class="ctrlHolder"><input class="inlay" name="username" type="text" placeholder="Username" autocomplete="off" autocomplete="no" /></div>
         <div class="ctrlHolder"><input class="inlay" name="password" type="password" placeholder="Password" autocomplete="off" /></div>
         <div class="ctrlHolder">

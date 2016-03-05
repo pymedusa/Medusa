@@ -8,7 +8,7 @@ from pynma import pynma
 
 class Notifier(object):
     def test_notify(self, nma_api, nma_priority):
-        return self._sendNMA(nma_api, nma_priority, event="Test", message="Testing NMA settings from SickRage",
+        return self._sendNMA(nma_api, nma_priority, event="Test", message="Testing NMA settings from Medusa",
                              force=True)
 
     def notify_snatch(self, ep_name):
@@ -40,7 +40,7 @@ class Notifier(object):
 
     def _sendNMA(self, nma_api=None, nma_priority=None, event=None, message=None, force=False):
 
-        title = 'SickRage'
+        title = 'Medusa'
 
         if not sickbeard.USE_NMA and not force:
             return False

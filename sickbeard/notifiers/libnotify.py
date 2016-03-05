@@ -3,20 +3,20 @@
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import cgi
@@ -39,7 +39,7 @@ def diagnose():
                 u"<a href=\"apt:gir1.0-notify-0.4\">gir1.0-notify-0.4</a> package.")
     if 'DISPLAY' not in os.environ and 'DBUS_SESSION_BUS_ADDRESS' not in os.environ:
         return (u"<p>Error: Environment variables DISPLAY and DBUS_SESSION_BUS_ADDRESS "
-                u"aren't set.  libnotify will only work when you run SickRage "
+                u"aren't set.  libnotify will only work when you run Medusa "
                 u"from a desktop login.")
     try:
         import dbus
@@ -50,7 +50,7 @@ def diagnose():
             bus = dbus.SessionBus()
         except dbus.DBusException as e:
             return (u"<p>Error: unable to connect to D-Bus session bus: <code>%s</code>."
-                    u"<p>Are you running SickRage in a desktop session?") % (cgi.escape(e),)
+                    u"<p>Are you running Medusa in a desktop session?") % (cgi.escape(e),)
         try:
             bus.get_object('org.freedesktop.Notifications',
                            '/org/freedesktop/Notifications')
@@ -78,7 +78,7 @@ class Notifier(object):
         except ImportError:
             logger.log(u"Unable to import GObject from gi.repository. We can't catch a GError in display.", logger.ERROR)
             return False
-        if not Notify.init('SickRage'):
+        if not Notify.init('Medusa'):
             logger.log(u"Initialization of Notify failed. libnotify notifications won't work.", logger.ERROR)
             return False
         self.Notify = Notify
@@ -110,7 +110,7 @@ class Notifier(object):
             self._notify(title, update_text.format(ipaddress))
 
     def test_notify(self):
-        return self._notify('Test notification', "This is a test notification from SickRage", force=True)
+        return self._notify('Test notification', "This is a test notification from Medusa", force=True)
 
     def _notify(self, title, message, force=False):
         if not sickbeard.USE_LIBNOTIFY and not force:

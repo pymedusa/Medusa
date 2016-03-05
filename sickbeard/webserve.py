@@ -2,20 +2,20 @@
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 # pylint: disable=abstract-method,too-many-lines
 
 import io
@@ -320,9 +320,9 @@ class LoginHandler(BaseHandler):
         if api_key:
             remember_me = int(self.get_argument('remember_me', default=0) or 0)
             self.set_secure_cookie('sickrage_user', api_key, expires_days=30 if remember_me > 0 else None)
-            logger.log(u'User logged into the SickRage web interface', logger.INFO)
+            logger.log(u'User logged into the Medusa web interface', logger.INFO)
         else:
-            logger.log(u'User attempted a failed login to the SickRage web interface from IP: ' + self.request.remote_ip, logger.WARNING)
+            logger.log(u'User attempted a failed login to the Medusa web interface from IP: ' + self.request.remote_ip, logger.WARNING)
 
         self.redirect('/' + sickbeard.DEFAULT_PAGE + '/')
 
@@ -557,8 +557,8 @@ class CalendarHandler(BaseHandler):
         # Create a iCal string
         ical = 'BEGIN:VCALENDAR\r\n'
         ical += 'VERSION:2.0\r\n'
-        ical += 'X-WR-CALNAME:SickRage\r\n'
-        ical += 'X-WR-CALDESC:SickRage\r\n'
+        ical += 'X-WR-CALNAME:Medusa\r\n'
+        ical += 'X-WR-CALDESC:Medusa\r\n'
         ical += 'PRODID://Sick-Beard Upcoming Episodes//\r\n'
 
         future_weeks = try_int(self.get_argument('future', 52), 52)
@@ -595,12 +595,12 @@ class CalendarHandler(BaseHandler):
                     "%Y%m%d") + 'T' + air_date_time_end.strftime(
                         "%H%M%S") + 'Z\r\n'
                 if sickbeard.CALENDAR_ICONS:
-                    ical += 'X-GOOGLE-CALENDAR-CONTENT-ICON:https://lh3.googleusercontent.com/-Vp_3ZosvTgg/VjiFu5BzQqI/AAAAAAAA_TY/3ZL_1bC0Pgw/s16-Ic42/SickRage.png\r\n'
+                    ical += 'X-GOOGLE-CALENDAR-CONTENT-ICON:https://lh3.googleusercontent.com/-Vp_3ZosvTgg/VjiFu5BzQqI/AAAAAAAA_TY/3ZL_1bC0Pgw/s16-Ic42/medusa.png\r\n'
                     ical += 'X-GOOGLE-CALENDAR-CONTENT-DISPLAY:CHIP\r\n'
                 ical += u'SUMMARY: {0} - {1}x{2} - {3}\r\n'.format(
                     show['show_name'], episode['season'], episode['episode'], episode['name']
                 )
-                ical += 'UID:SickRage-' + str(datetime.date.today().isoformat()) + '-' + \
+                ical += 'UID:Medusa-' + str(datetime.date.today().isoformat()) + '-' + \
                     show['show_name'].replace(" ", "-") + '-E' + str(episode['episode']) + \
                     'S' + str(episode['season']) + '\r\n'
                 if episode['description']:
@@ -1149,7 +1149,7 @@ class Home(WebRoot):
             return self.redirect('/' + sickbeard.DEFAULT_PAGE + '/')
 
         title = "Shutting down"
-        message = "SickRage is shutting down..."
+        message = "Medusa is shutting down..."
 
         return self._genericMessage(title, message)
 
@@ -1159,7 +1159,7 @@ class Home(WebRoot):
 
         t = PageTemplate(rh=self, filename="restart.mako")
 
-        return t.render(title="Home", header="Restarting SickRage", topmenu="system",
+        return t.render(title="Home", header="Restarting Medusa", topmenu="system",
                         controller="home", action="restart")
 
     def updateCheck(self, pid=None):
@@ -1188,7 +1188,7 @@ class Home(WebRoot):
                 sickbeard.events.put(sickbeard.events.SystemEvent.RESTART)
 
                 t = PageTemplate(rh=self, filename="restart.mako")
-                return t.render(title="Home", header="Restarting SickRage", topmenu="home",
+                return t.render(title="Home", header="Restarting Medusa", topmenu="home",
                                 controller="home", action="restart")
             else:
                 return self._genericMessage("Update Failed",
@@ -1555,7 +1555,7 @@ class Home(WebRoot):
                             # rescan the episodes in the new folder
                     except NoNFOException:
                         errors.append(
-                            "The folder at <tt>%s</tt> doesn't contain a tvshow.nfo - copy your files to that folder before you change the directory in SickRage." % location)
+                            "The folder at <tt>%s</tt> doesn't contain a tvshow.nfo - copy your files to that folder before you change the directory in Medusa." % location)
 
             # save it to the DB
             showObj.saveToDB()
@@ -3806,8 +3806,8 @@ class Config(WebRoot):
                 sr_version = updater.get_cur_version()
 
         return t.render(
-            submenu=self.ConfigMenu(), title='SickRage Configuration',
-            header='SickRage Configuration', topmenu="config",
+            submenu=self.ConfigMenu(), title='Medusa Configuration',
+            header='Medusa Configuration', topmenu="config",
             sr_user=sr_user, sr_locale=sr_locale, ssl_version=ssl_version,
             sr_version=sr_version
         )
@@ -3997,7 +3997,7 @@ class ConfigBackupRestore(Config):
             source = [ek(os.path.join, sickbeard.DATA_DIR, 'sickbeard.db'), sickbeard.CONFIG_FILE,
                       ek(os.path.join, sickbeard.DATA_DIR, 'failed.db'),
                       ek(os.path.join, sickbeard.DATA_DIR, 'cache.db')]
-            target = ek(os.path.join, backupDir, 'sickrage-' + time.strftime('%Y%m%d%H%M%S') + '.zip')
+            target = ek(os.path.join, backupDir, 'medusa-' + time.strftime('%Y%m%d%H%M%S') + '.zip')
 
             for (path, dirs, files) in ek(os.walk, sickbeard.CACHE_DIR, topdown=True):
                 for dirname in dirs:
@@ -4028,7 +4028,7 @@ class ConfigBackupRestore(Config):
 
             if helpers.restoreConfigZip(source, target_dir):
                 finalResult += "Successfully extracted restore files to " + target_dir
-                finalResult += "<br>Restart sickrage to complete the restore."
+                finalResult += "<br>Restart Medusa to complete the restore."
             else:
                 finalResult += "Restore FAILED"
         else:

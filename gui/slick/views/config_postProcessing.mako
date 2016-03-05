@@ -30,7 +30,7 @@
                 <div id="post-processing" class="component-group">
                     <div class="component-group-desc">
                         <h3>Post-Processing</h3>
-                        <p>Settings that dictate how SickRage should process completed downloads.</p>
+                        <p>Settings that dictate how Medusa should process completed downloads.</p>
                     </div>
                     <fieldset class="component-group-list">
                         <div class="field-pair">
@@ -103,7 +103,7 @@
                             </label>
                             <label class="nocheck">
                                 <span class="component-title">&nbsp;</span>
-                                <span class="component-desc">comma seperated list of extensions or filename globs SickRage ignores when Post Processing</span>
+                                <span class="component-desc">comma seperated list of extensions or filename globs Medusa ignores when Post Processing</span>
                             </label>
                         </div>
                         <div class="field-pair">
@@ -151,7 +151,7 @@
                             </label>
                             <label class="nocheck">
                                 <span class="component-title">&nbsp;</span>
-                                <span class="component-desc">Comma seperated list of associated file extensions SickRage should keep while post processing. Leaving it empty means all associated files will be deleted</span>
+                                <span class="component-desc">Comma seperated list of associated file extensions Medusa should keep while post processing. Leaving it empty means all associated files will be deleted</span>
                             </label>
                         </div>
                         <div class="field-pair">
@@ -234,7 +234,7 @@
 
                     <div class="component-group-desc">
                         <h3>Episode Naming</h3>
-                        <p>How SickRage will name and sort your episodes.</p>
+                        <p>How Medusa will name and sort your episodes.</p>
                     </div>
 
                     <fieldset class="component-group-list">

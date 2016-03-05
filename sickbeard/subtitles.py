@@ -32,7 +32,6 @@ from sickbeard import logger
 from sickbeard import history
 from sickbeard import db
 from sickbeard import processTV
-from sickbeard.common import Quality
 from sickbeard.helpers import remove_non_release_groups, isMediaFile, isRarFile
 from sickrage.helper.common import episode_num, dateTimeFormat, subtitle_extensions
 from sickrage.helper.exceptions import ex
@@ -141,6 +140,11 @@ def download_subtitles(subtitles_info):  # pylint: disable=too-many-locals, too-
                     episode_num(subtitles_info['season'], subtitles_info['episode'], numbering='absolute')), logger.DEBUG)
         return existing_subtitles, None
 
+    logger.log(u'Checking subtitle candidates for {} {} ({})'.format
+               (subtitles_info['show_name'], episode_num(subtitles_info['season'], subtitles_info['episode']) or
+                episode_num(subtitles_info['season'], subtitles_info['episode'], numbering='absolute'),
+                os.path.basename(subtitles_info['location'])), logger.DEBUG)
+
     subtitles_path = get_subtitles_path(subtitles_info['location'])
     video_path = subtitles_info['location']
 
@@ -180,7 +184,7 @@ def download_subtitles(subtitles_info):  # pylint: disable=too-many-locals, too-
         if not subtitles_list:
             logger.log(u'No subtitles found for {} {}'.format
                        (subtitles_info['show_name'], episode_num(subtitles_info['season'], subtitles_info['episode']) or
-                        episode_num(subtitles_info['season'], subtitles_info['episode'], numbering='absolute')), logger.DEBUG)
+                        episode_num(subtitles_info['season'], subtitles_info['episode'], numbering='absolute')))
             return existing_subtitles, None
 
         for subtitle in subtitles_list:
@@ -202,6 +206,12 @@ def download_subtitles(subtitles_info):  # pylint: disable=too-many-locals, too-
     except Exception:
         logger.log(u'Error occurred when downloading subtitles for: {}'.format(video_path))
         logger.log(traceback.format_exc(), logger.ERROR)
+        return existing_subtitles, None
+
+    if not found_subtitles:
+        logger.log(u'No subtitles matched for {} {}'.format
+                   (subtitles_info['show_name'], episode_num(subtitles_info['season'], subtitles_info['episode']) or
+                    episode_num(subtitles_info['season'], subtitles_info['episode'], numbering='absolute')))
         return existing_subtitles, None
 
     for subtitle in found_subtitles:
@@ -480,8 +490,6 @@ class SubtitlesFinder(object):
 
         logger.log(u'Checking for missed subtitles', logger.INFO)
 
-        statuses = list({status for status in Quality.DOWNLOADED + Quality.ARCHIVED})
-
         database = db.DBConnection()
         # Shows with air date <= 30 days, have a limit of 100 results
         # Shows with air date > 30 days, have a limit of 200 results
@@ -494,10 +502,9 @@ class SubtitlesFinder(object):
                 "e.subtitles_lastsearch AS lastsearch, e.location, (? - e.airdate) as age "
                 "FROM tv_episodes AS e INNER JOIN tv_shows AS s "
                 "ON (e.showid = s.indexer_id) "
-                "WHERE s.subtitles = 1 AND age {} 30 AND e.subtitles NOT LIKE ? "
-                "AND e.location != '' AND e.status IN ({}) ORDER BY lastsearch ASC LIMIT {}".format
-                (args[0], ','.join(['?'] * len(statuses)), args[1]),
-                [datetime.datetime.now().toordinal(), wanted_languages(True)] + statuses
+                "WHERE s.subtitles = 1 AND (e.status LIKE '%4' OR e.status LIKE '%6') AND e.season > 0 "
+                "AND e.location != '' AND age {} 30 AND e.subtitles NOT LIKE ? ORDER BY lastsearch ASC LIMIT {}".format
+                (args[0], args[1]), [datetime.datetime.now().toordinal(), wanted_languages(True)]
             )
 
         if not sql_results:
@@ -545,10 +552,6 @@ class SubtitlesFinder(object):
                                     dhm(lastsearched + delay_time - now)), logger.DEBUG)
                         continue
 
-                logger.log(u'Searching for missing subtitles of {} {}'.format
-                           (ep_to_sub['show_name'], episode_num(ep_to_sub['season'], ep_to_sub['episode']) or
-                            episode_num(ep_to_sub['season'], ep_to_sub['episode'], numbering='absolute')), logger.INFO)
-
                 show_object = Show.find(sickbeard.showList, int(ep_to_sub['showid']))
                 if not show_object:
                     logger.log(u'Show with ID {} not found in the database'.format(ep_to_sub['showid']), logger.DEBUG)
@@ -562,17 +565,12 @@ class SubtitlesFinder(object):
                     continue
 
                 try:
-                    new_subtitles = episode_object.download_subtitles()
+                    episode_object.download_subtitles()
                 except Exception as error:
                     logger.log(u'Unable to find subtitles for {} {}. Error: {}'.format
                                (ep_to_sub['show_name'], episode_num(ep_to_sub['season'], ep_to_sub['episode']) or
                                 episode_num(ep_to_sub['season'], ep_to_sub['episode'], numbering='absolute'), ex(error)), logger.ERROR)
                     continue
-
-                if new_subtitles:
-                    logger.log(u'Downloaded {} subtitles for {} {}'.format
-                               (', '.join(new_subtitles), ep_to_sub['show_name'], episode_num(ep_to_sub['season'], ep_to_sub['episode']) or
-                                episode_num(ep_to_sub['season'], ep_to_sub['episode'], numbering='absolute')))
 
             except Exception as error:
                 logger.log(u'Error while searching subtitles for {} {}. Error: {}'.format
