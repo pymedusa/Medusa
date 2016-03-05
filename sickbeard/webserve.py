@@ -20,6 +20,7 @@
 
 import io
 import os
+import cgi
 import re
 import time
 import urllib
@@ -42,7 +43,7 @@ from sickbeard import sbdatetime
 from sickbeard import GIT_USERNAME
 from sickbeard.logger import LOGGING_LEVELS
 from sickbeard.providers import newznab, rsstorrent
-from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
+from sickbeard.common import Quality, Overview, statusStrings, cpu_presets, qualityPresets, qualityPresetStrings
 from sickbeard.common import SNATCHED, UNAIRED, IGNORED, WANTED, FAILED, SKIPPED
 from sickbeard.blackandwhitelist import BlackAndWhiteList, short_group_names
 from sickbeard.browser import foldersAtPath
@@ -59,7 +60,7 @@ from unrar2 import RarFile
 import adba
 from libtrakt import TraktAPI
 from libtrakt.exceptions import traktException
-from sickrage.helper.common import sanitize_filename, try_int, episode_num, dateTimeFormat
+from sickrage.helper.common import sanitize_filename, try_int, episode_num, dateTimeFormat, pretty_file_size
 from sickrage.helper.encoding import ek, ss
 from sickrage.helper.exceptions import CantRefreshShowException, CantUpdateShowException, ex
 from sickrage.helper.exceptions import MultipleShowObjectsException, NoNFOException, ShowDirectoryNotFoundException
@@ -726,7 +727,12 @@ class Home(WebRoot):
                     "snatched": stats[0][show.indexerid]['ep_snatched'],
                     "downloaded": stats[0][show.indexerid]['ep_downloaded'],
                     "total": stats[0][show.indexerid]['ep_total']
-                }
+                },
+                "size": {
+                    "raw": stats[0][show.indexerid]['show_size'],
+                    "pretty": pretty_file_size(stats[0][show.indexerid]['show_size'])
+                },
+                "qualityPill": self.render_quality_pill(show.quality, showTitle=True)
             }
 
             if sickbeard.ANIME_SPLIT_HOME:
@@ -739,20 +745,112 @@ class Home(WebRoot):
 
         if sickbeard.ANIME_SPLIT_HOME:
             return {
-                "showLists": {
-                    "shows": shows,
-                    "anime": anime
-                },
-                "maxDownloadCount": stats[1]
-            }
-        else:
-            return {
-                "showLists": {
+                "showLists": [{
+                    "name": "shows",
                     "shows": shows
-                },
+                }, {
+                    "name": "anime",
+                    "shows": anime
+                }],
                 "maxDownloadCount": stats[1],
                 "layout": sickbeard.HOME_LAYOUT
             }
+        else:
+            return {
+                "showLists": [{
+                    "name": "shows",
+                    "shows": shows
+                }],
+                "maxDownloadCount": stats[1],
+                "layout": sickbeard.HOME_LAYOUT
+            }
+
+    @staticmethod
+    def render_quality_pill(quality, showTitle=False, overrideClass=None):
+        # Build a string of quality names to use as title attribute
+        if showTitle:
+            allowed_qualities, preferred_qualities = Quality.splitQuality(quality)
+            title = 'Allowed Quality:\n'
+            if allowed_qualities:
+                for curQual in allowed_qualities:
+                    title += "  " + Quality.qualityStrings[curQual] + "\n"
+            else:
+                title += "  None\n"
+            title += "\nPreferred Quality:\n"
+            if preferred_qualities:
+                for curQual in preferred_qualities:
+                    title += "  " + Quality.qualityStrings[curQual] + "\n"
+            else:
+                title += "  None\n"
+            title = cgi.escape(title.rstrip(), True)
+        else:
+            title = ""
+
+        sum_allowed_qualities = quality & 0xFFFF
+        sum_preferred_qualities = quality >> 16
+        set_hdtv = {Quality.HDTV, Quality.RAWHDTV, Quality.FULLHDTV}
+        set_webdl = {Quality.HDWEBDL, Quality.FULLHDWEBDL, Quality.UHD_4K_WEBDL, Quality.UHD_8K_WEBDL}
+        set_bluray = {Quality.HDBLURAY, Quality.FULLHDBLURAY, Quality.UHD_4K_BLURAY, Quality.UHD_8K_BLURAY}
+        set_1080p = {Quality.FULLHDTV, Quality.FULLHDWEBDL, Quality.FULLHDBLURAY}
+        set_720p = {Quality.HDTV, Quality.RAWHDTV, Quality.HDWEBDL, Quality.HDBLURAY}
+        set_uhd_4k = {Quality.UHD_4K_TV, Quality.UHD_4K_BLURAY, Quality.UHD_4K_WEBDL}
+        set_uhd_8k = {Quality.UHD_8K_TV, Quality.UHD_8K_BLURAY, Quality.UHD_8K_WEBDL}
+
+        # If allowed and preferred qualities are the same, show pill as allowed quality
+        if sum_allowed_qualities == sum_preferred_qualities:
+            quality = sum_allowed_qualities
+
+        if quality in qualityPresets:
+            cssClass = qualityPresetStrings[quality]
+            qualityString = qualityPresetStrings[quality]
+        elif quality in Quality.combinedQualityStrings:
+            cssClass = Quality.cssClassStrings[quality]
+            qualityString = Quality.combinedQualityStrings[quality]
+        elif quality in Quality.qualityStrings:
+            cssClass = Quality.cssClassStrings[quality]
+            qualityString = Quality.qualityStrings[quality]
+        # Check if all sources are HDTV
+        elif set(allowed_qualities).issubset(set_hdtv)and set(preferred_qualities).issubset(set_hdtv):
+            cssClass = Quality.cssClassStrings[Quality.ANYHDTV]
+            qualityString = 'HDTV'
+        # Check if all sources are WEB-DL
+        elif set(allowed_qualities).issubset(set_webdl)and set(preferred_qualities).issubset(set_webdl):
+            cssClass = Quality.cssClassStrings[Quality.ANYWEBDL]
+            qualityString = 'WEB-DL'
+        # Check if all sources are BLURAY
+        elif set(allowed_qualities).issubset(set_bluray)and set(preferred_qualities).issubset(set_bluray):
+            cssClass = Quality.cssClassStrings[Quality.ANYBLURAY]
+            qualityString = 'BLURAY'
+        # Check if all resolutions are 1080p
+        elif set(allowed_qualities).issubset(set_1080p)and set(preferred_qualities).issubset(set_1080p):
+            cssClass = Quality.cssClassStrings[Quality.FULLHDBLURAY]
+            qualityString = '1080p'
+        # Check if all resolutions are 720p
+        elif set(allowed_qualities).issubset(set_720p)and set(preferred_qualities).issubset(set_720p):
+            cssClass = Quality.cssClassStrings[Quality.HDBLURAY]
+            qualityString = '720p'
+        # Check if all resolutions are 4K UHD
+        elif set(allowed_qualities).issubset(set_uhd_4k)and set(preferred_qualities).issubset(set_uhd_4k):
+            cssClass = Quality.cssClassStrings[Quality.HDBLURAY]
+            qualityString = '4K-UHD'
+        # Check if all resolutions are 8K UHD
+        elif set(allowed_qualities).issubset(set_uhd_8k)and set(preferred_qualities).issubset(set_uhd_8k):
+            cssClass = Quality.cssClassStrings[Quality.HDBLURAY]
+            qualityString = '8K-UHD'
+        else:
+            cssClass = "Custom"
+            qualityString = "Custom"
+
+        if overrideClass is None:
+            cssClass = "quality " + cssClass
+        else:
+            cssClass = overrideClass
+
+        return {
+            "title": title,
+            "class": cssClass,
+            "qualityString": qualityString
+        }
 
     @staticmethod
     def show_statistics():

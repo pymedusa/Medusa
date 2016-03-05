@@ -187,6 +187,26 @@ sickrage.factory('_', ['$window', function($window) {
 // @TODO: All of the controllers need to be moved into a controller directory and/or file
 
 sickrage.controller('homeController', function($scope, $http) {
+    $.timeago.settings.allowFuture = true;
+    $.timeago.settings.strings = {
+        prefixAgo: null,
+        prefixFromNow: 'In ',
+        suffixAgo: "ago",
+        suffixFromNow: "",
+        seconds: "less than a minute",
+        minute: "about a minute",
+        minutes: "%d minutes",
+        hour: "an hour",
+        hours: "%d hours",
+        day: "a day",
+        days: "%d days",
+        month: "a month",
+        months: "%d months",
+        year: "a year",
+        years: "%d years",
+        wordSeparator: " ",
+        numbers: []
+    };
     var getLayout = function(layout){
         $http({
             method: 'GET',
@@ -207,7 +227,7 @@ sickrage.controller('bannerController', function($scope, $http) {
         method: 'GET',
         url: '/home'
     }).then(function successCallback(response) {
-        $scope.shows = response.data.showLists.shows;
+        $scope.showLists = response.data.showLists;
         $scope.maxDownloadCount = response.data.maxDownloadCount;
         SICKRAGE.common.init();
         SICKRAGE.home.index();
