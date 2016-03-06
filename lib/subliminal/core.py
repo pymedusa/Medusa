@@ -357,7 +357,7 @@ def search_external_subtitles(path, directory=None):
     return subtitles
 
 
-def scan_video(path, subtitles=True, subtitles_dir=None, **kwargs):
+def scan_video(path, subtitles=True, subtitles_dir=None):
     """Scan a video and its subtitle languages from a video `path`.
 
     See :func:`refine` to find additional information for the video.
