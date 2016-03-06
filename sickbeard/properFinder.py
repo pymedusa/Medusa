@@ -117,16 +117,16 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             # if they haven't been added by a different provider than add the proper to the list
-            for x in curPropers:
-                if not re.search(r'(^|[\. _-])(proper|repack)([\. _-]|$)', x.name, re.I):
+            for proper in curPropers:
+                if not re.search(r'(^|[\. _-])(proper|repack|real)([\. _-]|$)', proper.name, re.I):
                     logger.log(u'find_propers returned a non-proper, we have caught and skipped it.', logger.DEBUG)
                     continue
 
-                name = self._genericName(x.name)
+                name = self._genericName(proper.name)
                 if name not in propers:
-                    logger.log(u"Found new proper: " + x.name, logger.DEBUG)
-                    x.provider = curProvider
-                    propers[name] = x
+                    logger.log(u'Found new proper result: {}'.format(proper.name), logger.DEBUG)
+                    proper.provider = curProvider
+                    propers[name] = proper
 
             threading.currentThread().name = origThreadName
 
@@ -135,25 +135,23 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         finalPropers = []
 
         for curProper in sortedPropers:
-
             try:
                 parse_result = NameParser(False).parse(curProper.name)
             except (InvalidNameException, InvalidShowException) as error:
-                logger.log(u"{}".format(error), logger.DEBUG)
+                logger.log(u'{}'.format(error), logger.DEBUG)
                 continue
 
             if not parse_result.series_name:
+                logger.log(u"Ignoring {} because it doesn't look like a valid show.".format(curProper.name), logger.DEBUG)
                 continue
 
             if not parse_result.episode_numbers:
-                logger.log(
-                    u"Ignoring " + curProper.name + " because it's for a full season rather than specific episode",
-                    logger.DEBUG)
+                logger.log(u"Ignoring {} because it's for a full season rather than for a specific episode.".format
+                           (curProper.name), logger.DEBUG)
                 continue
 
-            logger.log(
-                u"Successful match! Result " + parse_result.original_name + " matched to show " + parse_result.show.name,
-                logger.DEBUG)
+            logger.log(u'Successful match! Result {} matched to show {}'.format
+                       (parse_result.original_name, parse_result.show.name), logger.DEBUG)
 
             # set the indexerid in the db to the show's indexerid
             curProper.indexerid = parse_result.show.indexerid
@@ -173,51 +171,56 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # filter release
             bestResult = pickBestResult(curProper, parse_result.show)
             if not bestResult:
-                logger.log(u"Proper " + curProper.name + " were rejected by our release filters.", logger.DEBUG)
+                logger.log(u'Proper result {} was rejected by our release filters.'.format(curProper.name))
                 continue
 
             # only get anime proper if it has release group and version
             if bestResult.show.is_anime:
                 if not bestResult.release_group and bestResult.version == -1:
-                    logger.log(u"Proper " + bestResult.name + " doesn't have a release group and version, ignoring it",
-                               logger.DEBUG)
+                    logger.log(u"Proper result {} doesn't have a release group and version, ignoring it.".format(bestResult.name))
                     continue
 
             # check if we actually want this proper (if it's the right quality)
             main_db_con = db.DBConnection()
-            sql_results = main_db_con.select("SELECT status FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?",
+            sql_results = main_db_con.select('SELECT status FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?',
                                              [bestResult.indexerid, bestResult.season, bestResult.episode])
             if not sql_results:
+                logger.log(u"Proper result {} hasn't the correct quality, ignoring it.".format(bestResult.name))
                 continue
 
             # only keep the proper if we have already retrieved the same quality ep (don't get better/worse ones)
-            oldStatus, oldQuality = Quality.splitCompositeStatus(int(sql_results[0]["status"]))
+            oldStatus, oldQuality = Quality.splitCompositeStatus(int(sql_results[0]['status']))
             if oldStatus not in (DOWNLOADED, SNATCHED) or oldQuality != bestResult.quality:
+                logger.log(u"Proper result {} is already snatched or downloaded, ignoring it.".format(bestResult.name))
                 continue
 
             # check if we actually want this proper (if it's the right release group and a higher version)
             if bestResult.show.is_anime:
                 main_db_con = db.DBConnection()
                 sql_results = main_db_con.select(
-                    "SELECT release_group, version FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?",
+                    'SELECT release_group, version FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?',
                     [bestResult.indexerid, bestResult.season, bestResult.episode])
 
-                oldVersion = int(sql_results[0]["version"])
-                oldRelease_group = (sql_results[0]["release_group"])
+                old_version = int(sql_results[0]['version'])
+                old_release_group = (sql_results[0]['release_group'])
 
-                if -1 < oldVersion < bestResult.version:
-                    logger.log(u"Found new anime v" + str(bestResult.version) + " to replace existing v" + str(oldVersion))
+                if -1 < old_version < bestResult.version:
+                    logger.log(u'Found new anime version {} to replace existing version {}'.format
+                               (str(bestResult.version), str(old_version)))
                 else:
+                    logger.log(u'Proper result {} has a lower or the same quality, ignoring it.'.format
+                               (bestResult.name))
                     continue
 
-                if oldRelease_group != bestResult.release_group:
-                    logger.log(u"Skipping proper from release group: " + bestResult.release_group + ", does not match existing release group: " + oldRelease_group)
+                if old_release_group != bestResult.release_group:
+                    logger.log(u"Proper result's release group {} doesn't match existing release group {}, ignoring it.".format
+                               (bestResult.release_group, old_release_group))
                     continue
 
             # if the show is in our list and there hasn't been a proper already added for that particular episode then add it to our list of propers
             if bestResult.indexerid != -1 and (bestResult.indexerid, bestResult.season, bestResult.episode) not in map(
                     operator.attrgetter('indexerid', 'season', 'episode'), finalPropers):
-                logger.log(u"Found a proper that we need: " + str(bestResult.name))
+                logger.log(u'Found a proper result that we need: {}'.format(str(bestResult.name)))
                 finalPropers.append(bestResult)
 
         return finalPropers
