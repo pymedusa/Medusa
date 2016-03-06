@@ -275,11 +275,10 @@ def get_video(video_path, subtitles_path=None):
 
     try:
         if not sickbeard.EMBEDDED_SUBTITLES_ALL and video_path.endswith('.mkv'):
-            video = subliminal.scan_video(video_path, subtitles=True, embedded_subtitles=True,
-                                          subtitles_dir=subtitles_path)
+            video = subliminal.scan_video(video_path, subtitles=True, subtitles_dir=subtitles_path)
+            subliminal.refine(video, embedded_subtitles=True)
         else:
-            video = subliminal.scan_video(video_path, subtitles=True, embedded_subtitles=False,
-                                          subtitles_dir=subtitles_path)
+            video = subliminal.scan_video(video_path, subtitles=True, subtitles_dir=subtitles_path)
     except Exception as error:
         logger.log(u'Exception: {}'.format(error), logger.DEBUG)
         return None
@@ -404,8 +403,7 @@ class SubtitlesFinder(object):
                             run_subs_scripts(None, None, None, filename, is_pre=True)
 
                         try:
-                            video = subliminal.scan_video(os.path.join(root, filename),
-                                                          subtitles=False, embedded_subtitles=False)
+                            video = subliminal.scan_video(os.path.join(root, filename), subtitles=False)
                             subtitles_list = pool.list_subtitles(video, languages)
 
                             for provider in providers:
