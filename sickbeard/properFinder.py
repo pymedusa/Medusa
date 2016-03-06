@@ -169,6 +169,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             curProper.version = parse_result.version
             curProper.quality = Quality.nameQuality(curProper.name, parse_result.is_anime)
             curProper.content = None
+            curProper.seeders = parse_result.seeders
+            curProper.leechers = parse_result.leechers
+            curProper.size = parse_result.size
 
             # filter release
             bestResult = pickBestResult(curProper, parse_result.show)
@@ -274,6 +277,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 result.release_group = curProper.release_group
                 result.version = curProper.version
                 result.content = curProper.content
+                result.seeders = curProper.seeders
+                result.leechers = curProper.leechers
+                result.size = curProper.size
 
                 # snatch it
                 snatchEpisode(result, SNATCHED_PROPER)
