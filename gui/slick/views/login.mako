@@ -1,4 +1,4 @@
-<%inherit file="/layouts/main.mako"/>
+
 <%block name="content">
 <div class="login">
     <form action="" method="post">

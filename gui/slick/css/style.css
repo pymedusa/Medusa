@@ -1,3 +1,10 @@
+/* ======================================================================
+helper classes
+=========================================================================*/
+.nowrap {
+    white-space: nowrap;
+}
+
 /* =======================================================================
 inc_top.mako
 ========================================================================== */
@@ -5,10 +12,6 @@ inc_top.mako
 .navbaricon {
     margin-top: -15px;
     margin-bottom: -15px;
-}
-
-#contentWrapper {
-/*	background: url("../images/bg.png") repeat 0 0 transparent; */
 }
 
 .icon-white {
@@ -397,7 +400,6 @@ inc_rootDirs.mako
 /* =======================================================================
 home.mako
 ========================================================================== */
-
 .imgbanner .banner {
     border: 1px solid #ccc;
     overflow: hidden;
@@ -529,6 +531,12 @@ span.show-option {
 .show-details {
     height: 32px;
     overflow: hidden;
+}
+
+.show-details td {
+    text-align:center;
+    vertical-align:middle;
+    width: 33%
 }
 
 .show-image {
@@ -1442,13 +1450,22 @@ h2.day, h2.network {
 config*.mako
 ========================================================================== */
 
-#config-content {
-    display: block;
+.config-panel {
     width: 960px;
-    padding: 0 0 40px;
     margin: 0 auto;
-    clear: both;
-    text-align: left;
+}
+
+.config-panel table {
+    width: 100%;
+}
+
+.config-panel tr td:first-child {
+    vertical-align: top;
+    min-width: 140px;
+}
+
+.config-panel tr td {
+    padding: 5px;
 }
 
 .component-group {
@@ -1583,17 +1600,8 @@ select .selected {
     width: 220px !important;
 }
 
-.infoTableHeader,
-.infoTableCell {
-    padding: 5px;
-}
-
 .infoTableSeperator {
     border-top: 1px dotted #666666;
-}
-
-.infoTableHeader {
-    vertical-align: top;
 }
 
 [class^="icon16-config-"], [class*=" icon16-config-"] {

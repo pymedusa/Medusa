@@ -142,30 +142,6 @@ var SICKRAGE = {
                 });
             }
 
-            if(metaToBool('sickbeard.FUZZY_DATING')) {
-                $.timeago.settings.allowFuture = true;
-                $.timeago.settings.strings = {
-                    prefixAgo: null,
-                    prefixFromNow: 'In ',
-                    suffixAgo: "ago",
-                    suffixFromNow: "",
-                    seconds: "less than a minute",
-                    minute: "about a minute",
-                    minutes: "%d minutes",
-                    hour: "an hour",
-                    hours: "%d hours",
-                    day: "a day",
-                    days: "%d days",
-                    month: "a month",
-                    months: "%d months",
-                    year: "a year",
-                    years: "%d years",
-                    wordSeparator: " ",
-                    numbers: []
-                };
-                $("[datetime]").timeago();
-            }
-
             $(document.body).on('click', 'a[data-no-redirect]', function(e){
                 e.preventDefault();
                 $.get($(this).attr('href'));
@@ -1911,106 +1887,9 @@ var SICKRAGE = {
                 }
             });
 
-            // This needs to be refined to work a little faster.
-            $('.progressbar').each(function(){
-                var percentage = $(this).data('progress-percentage');
-                var classToAdd = percentage === 100 ? 100 : percentage > 80 ? 80 : percentage > 60 ? 60 : percentage > 40 ? 40 : 20;
-                $(this).progressbar({ value:  percentage });
-                if($(this).data('progress-text')) {
-                    $(this).append('<div class="progressbarText" title="' + $(this).data('progress-tip') + '">' + $(this).data('progress-text') + '</div>');
-                }
-                $(this).find('.ui-progressbar-value').addClass('progress-' + classToAdd);
-            });
-
             $("img#network").on('error', function(){
                 $(this).parent().text($(this).attr('alt'));
                 $(this).remove();
-            });
-
-            $("#showListTableShows:has(tbody tr), #showListTableAnime:has(tbody tr)").tablesorter({
-                sortList: [[7,1],[2,0]],
-                textExtraction: {
-                    0: function(node) { return $(node).find('time').attr('datetime'); },
-                    1: function(node) { return $(node).find('time').attr('datetime'); },
-                    3: function(node) { return $(node).find("span").prop("title").toLowerCase(); },
-                    4: function(node) { return $(node).find("span").text().toLowerCase(); },
-                    5: function(node) { return $(node).find("span:first").text(); },
-                    6: function(node) { return $(node).data('show-size'); },
-                    7: function(node) { return $(node).find("img").attr("alt"); }
-                },
-                widgets: ['saveSort', 'zebra', 'stickyHeaders', 'filter', 'columnSelector'],
-                headers: {
-                    0: { sorter: 'realISODate' },
-                    1: { sorter: 'realISODate' },
-                    2: { sorter: 'loadingNames' },
-                    4: { sorter: 'quality' },
-                    5: { sorter: 'eps' },
-                    6: { sorter: 'digit' },
-                    7: { filter: 'parsed' }
-                },
-                widgetOptions: {
-                    filter_columnFilters: true, // jshint ignore:line
-                    filter_hideFilters: true, // jshint ignore:line
-                    filter_saveFilters: true, // jshint ignore:line
-                    filter_functions: { // jshint ignore:line
-                        5: function(e, n, f) {
-                            var test = false;
-                            var pct = Math.floor((n % 1) * 1000);
-                            if (f === '') {
-                                test = true;
-                            } else {
-                                var result = f.match(/(<|<=|>=|>)\s+(\d+)/i);
-                                if (result) {
-                                    if (result[1] === "<") {
-                                        if (pct < parseInt(result[2])) {
-                                            test = true;
-                                        }
-                                    } else if (result[1] === "<=") {
-                                        if (pct <= parseInt(result[2])) {
-                                            test = true;
-                                        }
-                                    } else if (result[1] === ">=") {
-                                        if (pct >= parseInt(result[2])) {
-                                            test = true;
-                                        }
-                                    } else if (result[1] === ">") {
-                                        if (pct > parseInt(result[2])) {
-                                            test = true;
-                                        }
-                                    }
-                                }
-
-                                result = f.match(/(\d+)\s(-|to)\s+(\d+)/i);
-                                if (result) {
-                                    if ((result[2] === "-") || (result[2] === "to")) {
-                                        if ((pct >= parseInt(result[1])) && (pct <= parseInt(result[3]))) {
-                                            test = true;
-                                        }
-                                    }
-                                }
-
-                                result = f.match(/(=)?\s?(\d+)\s?(=)?/i);
-                                if (result) {
-                                    if ((result[1] === "=") || (result[3] === "=")) {
-                                        if (parseInt(result[2]) === pct) {
-                                            test = true;
-                                        }
-                                    }
-                                }
-
-                                if (!isNaN(parseFloat(f)) && isFinite(f)) {
-                                    if (parseInt(f) === pct) {
-                                        test = true;
-                                    }
-                                }
-                            }
-                            return test;
-                        }
-                    },
-                    'columnSelector_mediaquery': false
-                },
-                sortStable: true,
-                sortAppend: [[2,0]]
             });
 
             $('.show-grid').imagesLoaded(function () {
@@ -2106,19 +1985,6 @@ var SICKRAGE = {
             $('#postersortdirection').on('change', function(){
                 $('.show-grid').isotope({sortAscending: ($(this).val() === 'true')});
                 $.get($(this).find('option[value=' + $(this).val() +']').attr('data-sort'));
-            });
-
-            $('#popover').popover({
-                placement: 'bottom',
-                html: true, // required if content has HTML
-                content: '<div id="popover-target"></div>'
-            }).on('shown.bs.popover', function () { // bootstrap popover event triggered when the popover opens
-                // call this function to copy the column selection code into the popover
-                $.tablesorter.columnSelector.attachTo( $('#showListTableShows'), '#popover-target');
-                if(metaToBool('sickbeard.ANIME_SPLIT_HOME')){
-                    $.tablesorter.columnSelector.attachTo( $('#showListTableAnime'), '#popover-target');
-                }
-
             });
         },
         displayShow: function() {
@@ -2402,16 +2268,6 @@ var SICKRAGE = {
             };
 
             $('.imdbstars').generateStars();
-
-            $("#showTable, #animeTable").tablesorter({
-                widgets: ['saveSort', 'stickyHeaders', 'columnSelector'],
-                widgetOptions : {
-                    columnSelector_saveColumns: true, // jshint ignore:line
-                    columnSelector_layout : '<br><label><input type="checkbox">{name}</label>', // jshint ignore:line
-                    columnSelector_mediaquery: false, // jshint ignore:line
-                    columnSelector_cssChecked : 'checked' // jshint ignore:line
-                }
-            });
 
             $('#popover').popover({
                 placement: 'bottom',

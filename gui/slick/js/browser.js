@@ -160,7 +160,7 @@
                 });
                 return $('<li></li>')
                     .data('ui-autocomplete-item', item)
-                    .append('<a class="nowrap">' + resultItem + '</a>')
+                    .append('<a >' + resultItem + '</a>')
                     .appendTo(ul);
             };
         }

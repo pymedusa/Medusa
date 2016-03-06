@@ -1,4 +1,3 @@
-<%inherit file="/layouts/main.mako"/>
 <%!
     import sickbeard
     import adba
@@ -12,7 +11,6 @@
 <%block name="metas">
 <meta data-var="show.is_anime" data-content="${show.is_anime}">
 </%block>
-
 <%block name="scripts">
     <script type="text/javascript" src="${srRoot}/js/qualityChooser.js?${sbPID}"></script>
     <script type="text/javascript" src="${srRoot}/js/editShow.js"></script>
@@ -20,7 +18,6 @@
     <script type="text/javascript" src="${srRoot}/js/blackwhite.js?${sbPID}"></script>
 % endif
 </%block>
-
 <%block name="content">
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
@@ -29,7 +26,6 @@
 % endif
 
 <div id="config">
-
     <div id="config-content">
         <form action="editShow" method="post">
 

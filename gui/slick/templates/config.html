@@ -1,0 +1,40 @@
+<div ng-controller="configController" class="panel panel-default config-panel">
+    <div class="panel-body">
+        <table>
+            <!--
+                @TODO: sickrageVerison needs to be added to the configGeneralController
+                       everything in ${} needs to be converted to {{}} and have it added to the REST API
+            -->
+            <tr ng-if="sickrageVersion">
+                <td><i class="icon16-config-sickrage"></i> SickRage Info:</td>
+                <td>
+                    Branch: <a href="${anon_url('https://github.com/PyMedusa/SickRage/tree/%s' % sickbeard.BRANCH)}">${sickbeard.BRANCH}</a><br>
+                    Commit: <a href="${anon_url('https://github.com/PyMedusa/SickRage/commit/%s' % sickbeard.CUR_COMMIT_HASH)}">${sickbeard.CUR_COMMIT_HASH}</a><br>
+                    Version: <a href="${anon_url('https://github.com/PyMedusa/SickRage/releases/tag/%s' % sr_version)}">${sr_version}</a>
+                </td>
+            </tr>
+            <tr><td><i class="icon16-config-python"></i> Python Version:</td><td>${sys.version[:120]}</td></tr>
+            <tr><td><i class="icon16-config-ssl"></i> SSL Version:</td><td>${ssl_version}</td></tr>
+            <tr><td><i class="icon16-config-os"></i> OS:</td><td>${platform.platform()}</td></tr>
+            <tr><td><i class="icon16-config-locale"></i> Locale:</td><td>${'.'.join([str(loc) for loc in sr_locale])}</td></tr>
+            <tr class="infoTableSeperator"><td></td><td></td></tr>
+            <tr><td><i class="icon16-config-user"></i> User:</td><td>${sr_user}</td></tr>
+            <tr><td><i class="icon16-config-dir"></i> Program Folder:</td><td>${sickbeard.PROG_DIR}</td></tr>
+            <tr><td><i class="icon16-config-config"></i> Config File:</td><td>${sickbeard.CONFIG_FILE}</td></tr>
+            <tr><td><i class="icon16-config-db"></i> Database File:</td><td>${db.dbFilename()}</td></tr>
+            <tr><td><i class="icon16-config-cache"></i> Cache Folder:</td><td>${sickbeard.CACHE_DIR}</td></tr>
+            <tr><td><i class="icon16-config-log"></i> Log Folder:</td><td>${sickbeard.LOG_DIR}</td></tr>
+            <tr ng-if="sickrageArgs">
+                <td><i class="icon16-config-arguments"></i> Arguments:</td><td>${sickbeard.MY_ARGS}</td>
+            </tr>
+            <tr ng-if="sickrageWebRoot">
+                <td><i class="icon16-config-folder"></i> Web Root:</td><td>${sickbeard.WEB_ROOT}</td>
+            </tr>
+            <tr class="infoTableSeperator"><td></td><td></td></tr>
+            <tr><td><i class="icon16-config-web"></i> Website:</td><td><a href="${anon_url('http://github.com/PyMedusa/sickrage.github.io/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">http://github.com/PyMedusa/sickrage.github.io/</a></td></tr>
+            <tr><td><i class="icon16-config-wiki"></i> Wiki:</td><td><a href="${anon_url('https://github.com/PyMedusa/SickRage-issues/wiki')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">https://github.com/PyMedusa/SickRage-issues/wiki</a></td></tr>
+            <tr><td><i class="icon16-config-github"></i> Source:</td><td><a href="${anon_url('https://github.com/PyMedusa/SickRage/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">https://github.com/PyMedusa/SickRage/</a></td></tr>
+            <tr><td><i class="icon16-config-mirc"></i> IRC Chat:</td><td><a href="irc://irc.freenode.net/#sickrage-issues" rel="noreferrer"><i>#sickrage-issues</i> on <i>irc.freenode.net</i></a></td></tr>
+        </table>
+    </div>
+</div>

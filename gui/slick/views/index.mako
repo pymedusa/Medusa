@@ -1,11 +1,13 @@
 <%!
-    import datetime
-    import re
     import sickbeard
+    import calendar
+    import re
+    import datetime
+    from time import time
+    from sickbeard import sbdatetime
     from sickbeard import network_timezones
     from sickrage.helper.common import pretty_file_size
     from sickrage.show.Show import Show
-    from time import time
 
     # resource module is unix only
     has_resource_module = True
@@ -18,7 +20,7 @@
     srRoot = sickbeard.WEB_ROOT
 %>
 <!DOCTYPE html>
-<html>
+<html lang="en" ng-app="sickrage">
     <head>
         <meta charset="utf-8">
         <meta name="robots" content="noindex, nofollow">
@@ -99,24 +101,24 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="${srRoot}/home/" title="SickRage"><img alt="SickRage" src="${srRoot}/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
+                    <a class="navbar-brand" ui-sref="home" title="Medusa"><img alt="Medusa" src="${srRoot}/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
                 </div>
 
             % if srLogin:
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav navbar-right">
                         <li id="NAVhome" class="navbar-split dropdown${('', ' active')[topmenu == 'home']}">
-                            <a href="${srRoot}/home/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
+                            <a ui-sref="home" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
                             <b class="caret"></b>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a href="${srRoot}/home/"><i class="menu-icon-home"></i>&nbsp;Show List</a></li>
-                                <li><a href="${srRoot}/addShows/"><i class="menu-icon-addshow"></i>&nbsp;Add Shows</a></li>
-                                <li><a href="${srRoot}/home/postprocess/"><i class="menu-icon-postprocess"></i>&nbsp;Manual Post-Processing</a></li>
+                                <li><a ui-sref="home"><i class="menu-icon-home"></i>&nbsp;Show List</a></li>
+                                <li><a ui-sref="addShows"><i class="menu-icon-addshow"></i>&nbsp;Add Shows</a></li>
+                                <li><a ui-sref="postprocess"><i class="menu-icon-postprocess"></i>&nbsp;Manual Post-Processing</a></li>
                                 % if sickbeard.SHOWS_RECENT:
                                     <li role="separator" class="divider"></li>
                                     % for recentShow in sickbeard.SHOWS_RECENT:
-                                        <li><a href="${srRoot}/home/displayShow?show=${recentShow['indexerid']}"><i class="menu-icon-addshow"></i>&nbsp;${recentShow['name']|trim,h}</a></li>
+                                        <li><a href="#/displayShow?showId=${recentShow['indexerid']}"><i class="menu-icon-addshow"></i>&nbsp;${recentShow['name']|trim,h}</a></li>
                                     % endfor
                                 % endif
                             </ul>
@@ -124,58 +126,58 @@
                         </li>
 
                         <li id="NAVschedule"${('', ' class="active"')[topmenu == 'schedule']}>
-                            <a href="${srRoot}/schedule/">Schedule</a>
+                            <a ui-sref="schedule">Schedule</a>
                         </li>
 
                         <li id="NAVhistory"${('', ' class="active"')[topmenu == 'history']}>
-                            <a href="${srRoot}/history/">History</a>
+                            <a ui-sref="history">History</a>
                         </li>
 
                         <li id="NAVmanage" class="navbar-split dropdown${('', ' active')[topmenu == 'manage']}">
-                            <a href="${srRoot}/manage/episodeStatuses/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Manage</span>
+                            <a ui-sref="manage/episodeStatuses" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Manage</span>
                             <b class="caret"></b>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a href="${srRoot}/manage/"><i class="menu-icon-manage"></i>&nbsp;Mass Update</a></li>
-                                <li><a href="${srRoot}/manage/backlogOverview/"><i class="menu-icon-backlog-view"></i>&nbsp;Backlog Overview</a></li>
-                                <li><a href="${srRoot}/manage/manageSearches/"><i class="menu-icon-manage-searches"></i>&nbsp;Manage Searches</a></li>
-                                <li><a href="${srRoot}/manage/episodeStatuses/"><i class="menu-icon-manage2"></i>&nbsp;Episode Status Management</a></li>
+                                <li><a ui-sref="manage"><i class="menu-icon-manage"></i>&nbsp;Mass Update</a></li>
+                                <li><a ui-sref="manage/backlogOverview"><i class="menu-icon-backlog-view"></i>&nbsp;Backlog Overview</a></li>
+                                <li><a ui-sref="manage/manageSearches"><i class="menu-icon-manage-searches"></i>&nbsp;Manage Searches</a></li>
+                                <li><a ui-sref="manage/episodeStatuses"><i class="menu-icon-manage2"></i>&nbsp;Episode Status Management</a></li>
                             % if sickbeard.USE_PLEX_SERVER and sickbeard.PLEX_SERVER_HOST != "":
-                                <li><a href="${srRoot}/home/updatePLEX/"><i class="menu-icon-plex"></i>&nbsp;Update PLEX</a></li>
+                                <li><a ui-sref="updatePLEX"><i class="menu-icon-plex"></i>&nbsp;Update PLEX</a></li>
                             % endif
                             % if sickbeard.USE_KODI and sickbeard.KODI_HOST != "":
-                                <li><a href="${srRoot}/home/updateKODI/"><i class="menu-icon-kodi"></i>&nbsp;Update KODI</a></li>
+                                <li><a ui-sref="updateKODI"><i class="menu-icon-kodi"></i>&nbsp;Update KODI</a></li>
                             % endif
                             % if sickbeard.USE_EMBY and sickbeard.EMBY_HOST != "" and sickbeard.EMBY_APIKEY != "":
-                                <li><a href="${srRoot}/home/updateEMBY/"><i class="menu-icon-emby"></i>&nbsp;Update Emby</a></li>
+                                <li><a ui-sref="updateEMBY"><i class="menu-icon-emby"></i>&nbsp;Update Emby</a></li>
                             % endif
                             % if sickbeard.USE_TORRENTS and sickbeard.TORRENT_METHOD != 'blackhole' and (sickbeard.ENABLE_HTTPS and sickbeard.TORRENT_HOST[:5] == 'https' or not sickbeard.ENABLE_HTTPS and sickbeard.TORRENT_HOST[:5] == 'http:'):
-                                <li><a href="${srRoot}/manage/manageTorrents/"><i class="menu-icon-bittorrent"></i>&nbsp;Manage Torrents</a></li>
+                                <li><a ui-sref="manage/manageTorrents"><i class="menu-icon-bittorrent"></i>&nbsp;Manage Torrents</a></li>
                             % endif
                             % if sickbeard.USE_FAILED_DOWNLOADS:
-                                <li><a href="${srRoot}/manage/failedDownloads/"><i class="menu-icon-failed-download"></i>&nbsp;Failed Downloads</a></li>
+                                <li><a ui-sref="manage/failedDownloads"><i class="menu-icon-failed-download"></i>&nbsp;Failed Downloads</a></li>
                             % endif
                             % if sickbeard.USE_SUBTITLES:
-                                <li><a href="${srRoot}/manage/subtitleMissed/"><i class="menu-icon-backlog"></i>&nbsp;Missed Subtitle Management</a></li>
+                                <li><a ui-sref="manage/subtitleMissed"><i class="menu-icon-backlog"></i>&nbsp;Missed Subtitle Management</a></li>
                             % endif
                             </ul>
                             <div style="clear:both;"></div>
                         </li>
 
                         <li id="NAVconfig" class="navbar-split dropdown${('', ' active')[topmenu == 'config']}">
-                            <a href="${srRoot}/config/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Config</span><img src="${srRoot}/images/menu/system18.png" class="navbaricon hidden-xs" />
+                            <a ui-sref="config" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Config</span><img src="${srRoot}/images/menu/system18.png" class="navbaricon hidden-xs" />
                             <b class="caret"></b>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a href="${srRoot}/config/"><i class="menu-icon-help"></i>&nbsp;Help &amp; Info</a></li>
-                                <li><a href="${srRoot}/config/general/"><i class="menu-icon-config"></i>&nbsp;General</a></li>
-                                <li><a href="${srRoot}/config/backuprestore/"><i class="menu-icon-backup"></i>&nbsp;Backup &amp; Restore</a></li>
-                                <li><a href="${srRoot}/config/search/"><i class="menu-icon-manage-searches"></i>&nbsp;Search Settings</a></li>
-                                <li><a href="${srRoot}/config/providers/"><i class="menu-icon-provider"></i>&nbsp;Search Providers</a></li>
-                                <li><a href="${srRoot}/config/subtitles/"><i class="menu-icon-backlog"></i>&nbsp;Subtitles Settings</a></li>
-                                <li><a href="${srRoot}/config/postProcessing/"><i class="menu-icon-postprocess"></i>&nbsp;Post Processing</a></li>
-                                <li><a href="${srRoot}/config/notifications/"><i class="menu-icon-notification"></i>&nbsp;Notifications</a></li>
-                                <li><a href="${srRoot}/config/anime/"><i class="menu-icon-anime"></i>&nbsp;Anime</a></li>
+                                <li><a ui-sref="config"><i class="menu-icon-help"></i>&nbsp;Help &amp; Info</a></li>
+                                <li><a ui-sref="config/general"><i class="menu-icon-config"></i>&nbsp;General</a></li>
+                                <li><a ui-sref="config/backuprestore"><i class="menu-icon-backup"></i>&nbsp;Backup &amp; Restore</a></li>
+                                <li><a ui-sref="config/search"><i class="menu-icon-manage-searches"></i>&nbsp;Search Settings</a></li>
+                                <li><a ui-sref="config/providers"><i class="menu-icon-provider"></i>&nbsp;Search Providers</a></li>
+                                <li><a ui-sref="config/subtitles"><i class="menu-icon-backlog"></i>&nbsp;Subtitles Settings</a></li>
+                                <li><a ui-sref="config/postProcessing"><i class="menu-icon-postprocess"></i>&nbsp;Post Processing</a></li>
+                                <li><a ui-sref="config/notifications"><i class="menu-icon-notification"></i>&nbsp;Notifications</a></li>
+                                <li><a ui-sref="config/anime"><i class="menu-icon-anime"></i>&nbsp;Anime</a></li>
                             </ul>
                             <div style="clear:both;"></div>
                         </li>
@@ -271,11 +273,7 @@
         </div>
         % endif
 
-        <div id="contentWrapper">
-            <div id="content">
-                <%block name="content" />
-            </div> <!-- /content -->
-        </div> <!-- /contentWrapper -->
+        <div id="content" ui-view></div>
     % if srLogin:
         <footer>
             <div class="footer clearfix">
@@ -312,7 +310,7 @@
         <script type="text/javascript" src="${srRoot}/js/lib/jquery.form.min.js?${sbPID}"></script>
         <script type="text/javascript" src="${srRoot}/js/lib/jquery.json-2.2.min.js?${sbPID}"></script>
         <script type="text/javascript" src="${srRoot}/js/lib/jquery.selectboxes.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/lib/formwizard.js?${sbPID}"></script><!-- Can't be added to bower -->
+        <script type="text/javascript" src="${srRoot}/js/lib/formwizard.js?${sbPID}"></script>
         <script type="text/javascript" src="${srRoot}/js/parsers.js?${sbPID}"></script>
         <script type="text/javascript" src="${srRoot}/js/rootDirs.js?${sbPID}"></script>
         % if sickbeard.DEVELOPER:
@@ -323,6 +321,17 @@
         <script type="text/javascript" src="${srRoot}/js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
         <script type="text/javascript" src="${srRoot}/js/browser.js?${sbPID}"></script>
         <script type="text/javascript" src="${srRoot}/js/ajaxNotifications.js?${sbPID}"></script>
+
+        <!-- <script type="text/javascript" src="${srRoot}/js/dependencies/angular.min.js"></script> -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-sanitize.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-ui-router.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-animate.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-aria.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-material.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-messages.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-resource.min.js"></script>
+        <script type="text/javascript" src="${srRoot}/js/app.js"></script>
     % endif
         <%block name="scripts" />
     </body>

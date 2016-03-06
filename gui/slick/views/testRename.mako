@@ -1,4 +1,4 @@
-<%inherit file="/layouts/main.mako"/>
+
 <%!
     import sickbeard
     import calendar
@@ -43,14 +43,14 @@
         </tr>
         <tr class="seasoncols" id="selectall">
             <th class="col-checkbox"><input type="checkbox" class="seriesCheck" id="SelectAll" /></th>
-            <th align="left" valign="top" class="nowrap">Select All</th>
+            <th align="left" valign="top" >Select All</th>
             <th width="100%" class="col-name" style="visibility:hidden;"></th>
         </tr>
     </thead>
 </table>
 
 <br>
-<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
+<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="#/displayShow?showId=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
 
 <table id="testRenameTable" class="sickbeardTable" cellspacing="1" border="0" cellpadding="0">
 
@@ -70,7 +70,7 @@
         </tr>
         <tr class="seasoncols" id="season-${cur_ep_obj.season}-cols">
             <th class="col-checkbox"><input type="checkbox" class="seasonCheck" id="${cur_ep_obj.season}" /></th>
-            <th class="nowrap">Episode</th>
+            <th >Episode</th>
             <th class="col-name">Old Location</th>
             <th class="col-name">New Location</th>
         </tr>
@@ -91,7 +91,7 @@ if len(epList) > 1:
                 <input type="checkbox" class="epCheck" id="${str(cur_ep_obj.season) + 'x' + str(cur_ep_obj.episode)}" name="${str(cur_ep_obj.season) + "x" + str(cur_ep_obj.episode)}" />
             % endif
             </td>
-            <td align="center" valign="top" class="nowrap">${"-".join(map(str, epList))}</td>
+            <td align="center" valign="top" >${"-".join(map(str, epList))}</td>
             <td width="50%" class="col-name">${curLoc}</td>
             <td width="50%" class="col-name">${newLoc}</td>
         </tr>
@@ -99,5 +99,5 @@ if len(epList) > 1:
 
 % endfor
 </table><br>
-<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
+<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="#/displayShow?showId=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
 </%block>

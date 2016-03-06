@@ -1,4 +1,3 @@
-<%inherit file="/layouts/main.mako"/>
 <%block name="content">
 <%
 from sickbeard import GIT_USERNAME

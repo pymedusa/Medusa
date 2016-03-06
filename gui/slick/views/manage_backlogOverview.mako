@@ -1,4 +1,4 @@
-<%inherit file="/layouts/main.mako"/>
+
 <%!
     import sickbeard
     import datetime
@@ -62,7 +62,7 @@ Jump to Show:
     % endif
     <tr class="seasonheader" id="show-${curShow.indexerid}">
         <td colspan="3" class="align-left" style="position: relative;">
-            <h2 style="display: inline-block;"><a href="${srRoot}/home/displayShow?show=${curShow.indexerid}">${curShow.name}</a></h2>
+            <h2 style="display: inline-block;"><a href="#/displayShow?showId=${curShow.indexerid}">${curShow.name}</a></h2>
             <div style="position: absolute; bottom: 10px; right: 0;">
                 % if showCounts[curShow.indexerid][Overview.WANTED] > 0:
                 <span class="listing-key wanted">Wanted: <b>${showCounts[curShow.indexerid][Overview.WANTED]}</b></span>
@@ -81,7 +81,7 @@ Jump to Show:
         </td>
     </tr>
 
-    <tr class="seasoncols"><th>Episode</th><th>Name</th><th class="nowrap">Airdate</th></tr>
+    <tr class="seasoncols"><th>Episode</th><th>Name</th><th >Airdate</th></tr>
 
     % for curResult in showSQLResults[curShow.indexerid]:
         <%
@@ -94,7 +94,7 @@ Jump to Show:
         %>
         <tr class="seasonstyle ${Overview.overviewStrings[showCats[curShow.indexerid][whichStr]]}">
             <td class="tableleft" align="center">${whichStr}</td>
-            <td class="tableright" align="center" class="nowrap">
+            <td class="tableright" align="center" >
                 ${curResult["name"]}
             </td>
             <td>

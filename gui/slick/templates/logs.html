@@ -1,0 +1,23 @@
+<div ng-controller="logsController" ng-cloak>
+    <div ng-if="layout === 'simple'">
+        <pre ng-if="errors.length" ng-repeat="error in errors">{{error.time}} {{error.message}}</pre>
+        <pre ng-if="!errors.length">There are no errors to display.</pre>
+    </div>
+    <div ng-if="layout === 'search'">
+        <h1 class="header">Log File</h1>
+        <div class="h2footer pull-right">
+            Minimum logging level to display:
+            <select name="minLevel" id="minLevel" class="form-control form-control-inline input-sm">
+                <option ng-repeat="level in levels" value="{{loggingLevels[level]}}" selected="{{minLevel === loggingLevels[level] ? 'selected' : ''}}">{{level}}</option>
+            </select>
+
+            Filter log by:
+            <select name="logFilter" id="logFilter" class="form-control form-control-inline input-sm">
+                <option ng-repeat="logNameFilter in logNameFilters" value="{{logNameFilter}}" selected="{{logFilter === logNameFilter}}">{{logNameFilter}}</option>
+            </select>
+            Search log by: <input type="text" name="logSearch" placeholder="clear to reset" id="logSearch" value="{{logSearch}}" class="form-control form-control-inline input-sm" autocapitalize="off" />
+        </div>
+        <br>
+        <pre>{{logLines}}</pre>
+    </div>
+</div>

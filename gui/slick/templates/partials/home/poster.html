@@ -1,0 +1,27 @@
+<div class="show-grid clearfix">
+    <div ng-controller="posterShowController" ng-repeat="(i, show) in shows" class="posterview">
+        <div class="show-container" id="{{'show' + show.indexerId}}" data-name="{{show.name}}" data-date="{{show.date}}" data-network="{{show.network}}" data-progress="{{progressbarPercentage}}">
+            <div class="show-image">
+                <a href="{{'#/displayShow?showId=' + show.indexerId}}"><img alt="" class="show-image" src="{{'/showPoster/?show=' + show.indexerId + '&amp;which=poster_thumb'}}" /></a>
+            </div>
+            <div class="progressbar hidden-print" style="position:relative;" data-show-id="{{show.indexerId}}" data-progress-percentage="{{progressbarPercentage}}"></div>
+            <div class="show-title">{{show.name}}</div>
+            <div class="show-date">{{show.status}}</div>
+            <div class="show-details">
+                <!-- @NOTE: This isn't a "table" so it shouldn't be using one -->
+                <table class="show-details" width="100%" cellspacing="1" border="0" cellpadding="0">
+                    <tr>
+                        <td>
+                            <span class="show-dlstats" title="{{downloadStatTip}}">{{downloadStat}}</span>
+                        </td>
+                        <td>
+                            <span ng-if="show.network" title="{{show.network}}"><img class="show-network-image" src="/showPoster/?show={{show.indexerId}}&amp;which=network" alt="{{curShow.network}}" title="{{curShow.network}}" /></span>
+                            <span ng-if="!show.network" title="No Network"><img class="show-network-image" src="/images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
+                        </td>
+                        <td><span title="{{show.qualityPill.title}}" class="show-quality">{{show.qualityPill.qualityString}}</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

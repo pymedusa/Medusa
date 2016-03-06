@@ -1,4 +1,4 @@
-<%inherit file="/layouts/main.mako"/>
+
 <%!
     import sickbeard
     import os.path
@@ -28,7 +28,7 @@
 <table id="failedTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
   <thead>
     <tr>
-      <th class="nowrap" width="75%" style="text-align: left;">Release</th>
+      <th  width="75%" style="text-align: left;">Release</th>
       <th width="10%">Size</th>
       <th width="14%">Provider</th>
       <th width="1%">Remove<br>
@@ -44,7 +44,7 @@
   <tbody>
 % for hItem in failedResults:
   <tr>
-    <td class="nowrap">${hItem["release"]}</td>
+    <td >${hItem["release"]}</td>
     <td align="center">
     % if hItem["size"] != -1:
         ${hItem["size"]}

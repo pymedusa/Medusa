@@ -1,4 +1,4 @@
-<%inherit file="/layouts/main.mako"/>
+
 <%!
     import sickbeard
     from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
@@ -39,7 +39,7 @@
     <thead>
         <tr>
             <th class="col-checkbox">Edit<br><input type="checkbox" class="bulkCheck" id="editCheck" /></th>
-            <th class="nowrap" style="text-align: left;">Show Name</th>
+            <th  style="text-align: left;">Show Name</th>
             <th class="col-quality">Quality</th>
             <th class="col-legend">Sports</th>
             <th class="col-legend">Scene</th>
@@ -96,7 +96,7 @@
     %>
     <tr>
         <td align="center"><input type="checkbox" class="editCheck" id="edit-${curShow.indexerid}" /></td>
-        <td class="tvShow"><a href="${srRoot}/home/displayShow?show=${curShow.indexerid}">${curShow.name}</a></td>
+        <td class="tvShow"><a href="#/displayShow?showId=${curShow.indexerid}">${curShow.name}</a></td>
         <td align="center">${renderQualityPill(curShow.quality, showTitle=True)}</td>
         <td align="center"><img src="${srRoot}/images/${('no16.png" alt="N"', 'yes16.png" alt="Y"')[int(curShow.is_sports) == 1]} width="16" height="16" /></td>
         <td align="center"><img src="${srRoot}/images/${('no16.png" alt="N"', 'yes16.png" alt="Y"')[int(curShow.is_scene) == 1]} width="16" height="16" /></td>
