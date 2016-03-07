@@ -726,7 +726,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         GIT_REMOTE_URL = check_setting_str(CFG, 'General', 'git_remote_url',
                                            'https://github.com/%s/%s.git' % (GIT_ORG, GIT_REPO))
 
-        if 'sickragetv' in GIT_REMOTE_URL.lower():
+        if 'com/sickrage' in GIT_REMOTE_URL.lower():
             GIT_REMOTE_URL = 'https://github.com/PyMedusa/SickRage.git'
 
         # current commit hash

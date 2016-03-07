@@ -207,10 +207,8 @@ class AllShowsListUI(object):
                     for name in series_names:
                         if search_term.lower() in name.lower():
                             if 'firstaired' not in curShow:
-                                curShow['firstaired'] = str(datetime.date.fromordinal(1))
-                                curShow['firstaired'] = re.sub("([-]0{2})+", "", curShow['firstaired'])
-                                fix_date = parser.parse(curShow['firstaired'], fuzzy=True).date()
-                                curShow['firstaired'] = fix_date.strftime(dateFormat)
+                                default_date = parser.parse('1900-01-01').date()
+                                curShow['firstaired'] = default_date.strftime(dateFormat)
 
                             if curShow not in search_results:
                                 search_results += [curShow]
