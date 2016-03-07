@@ -171,7 +171,6 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     sql_return = {}
     provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
     found_items = []
-    last_prov_updates = {}
 
     providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_daily]
     for curProvider in providers:
