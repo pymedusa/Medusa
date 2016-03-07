@@ -38,16 +38,22 @@ class CacheDBConnection(db.DBConnection):
         # Create the table if it's not already there
         try:
             if not self.hasTable(providerName):
+                logger.log(u"Creating cache table for provider {}".format(providerName), logger.DEBUG)
                 self.action(
-                    "CREATE TABLE [" + providerName + "] (name TEXT, season NUMERIC, episodes TEXT, indexerid NUMERIC, url TEXT UNIQUE, time NUMERIC, quality TEXT, release_group TEXT)")
+                    "CREATE TABLE [" + providerName + "] (name TEXT, season NUMERIC, episodes TEXT, indexerid NUMERIC, url TEXT, time NUMERIC, quality TEXT, release_group TEXT)")
             else:
                 sql_results = self.select("SELECT url, COUNT(url) AS count FROM [" + providerName + "] GROUP BY url HAVING count > 1")
 
                 for cur_dupe in sql_results:
                     self.action("DELETE FROM [" + providerName + "] WHERE url = ?", [cur_dupe["url"]])
 
+            # remove wrong old index
+            logger.log(u"Deleting wrong idx_url index for {}".format(providerName), logger.DEBUG)
+            self.action("DROP UNIQUE INDEX IF EXISTS idx_url ON [" + providerName + "] (url)")
+
             # add unique index to prevent further dupes from happening if one does not exist
-            self.action("CREATE UNIQUE INDEX IF NOT EXISTS idx_url ON [" + providerName + "] (url)")
+            logger.log(u"Creating UNIQUE URL index for {}".format(providerName), logger.DEBUG)
+            self.action("CREATE UNIQUE INDEX IF NOT EXISTS idx_url_" + providerName + " ON [" + providerName + "] (url)")
 
             # add release_group column to table if missing
             if not self.hasColumn(providerName, 'release_group'):
