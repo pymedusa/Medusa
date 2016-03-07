@@ -1435,15 +1435,19 @@ class Home(WebRoot):
         """
 
         REFRESH_RESULTS = 'refresh'
-        ERROR = 'error'
 
-        # Only need the first provided dict
-        # @TODO: do something with error handling in js.
-        if not kwargs:
-            return {'result': ERROR}
+        # To prevent it from keeping searching when no providers have been enabled
+        if not [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_daily]:
+            return {'result': SEARCH_STATUS_FINISHED}
 
-        last_prov_updates = kwargs.iteritems().next()[0]
-        last_prov_updates = json.loads(last_prov_updates.replace("'", '"'))
+        # Let's try to get the timestamps for the last search per provider
+        if kwargs:
+            # Only need the first provided dict
+            last_prov_updates = kwargs.iteritems().next()[0]
+            last_prov_updates = json.loads(last_prov_updates.replace("'", '"'))
+        else:
+            last_prov_updates = {}
+
         main_db_con = db.DBConnection('cache.db')
 
         episodesInSearch = collectEpisodesFromSearchThread(show)
@@ -1453,7 +1457,9 @@ class Home(WebRoot):
                                                                    str(search.get('season')) == season and
                                                                    str(search.get('episode')) == episode)]
 
-        # The episode is not in an active or queued search, let's see if
+        # No last_prov_updates available, let's assume we need to refresh until we get some
+#         if not last_prov_updates:
+#             return {'result': REFRESH_RESULTS}
 
         for provider, last_update in last_prov_updates.iteritems():
             # Check if the cache table has a result for this show + season + ep wich has a later timestamp, then last_update
@@ -1469,11 +1475,17 @@ class Home(WebRoot):
         # Return a list of queues the episode has been found in
         search_status = [item.get('searchstatus') for item in searched_item]
         if (not len(searched_item) or
-            (SEARCH_STATUS_QUEUED not in search_status and
+            (last_prov_updates and
+             SEARCH_STATUS_QUEUED not in search_status and
              SEARCH_STATUS_SEARCHING not in search_status and
              SEARCH_STATUS_FINISHED in search_status)):
                 # If the ep not anymore in the QUEUED or SEARCHING Thread, and it has the status finished, return it as finished
                 return {'result': SEARCH_STATUS_FINISHED}
+
+        # Force a refresh when the last_prov_updates is empty due to the tables not existing yet.
+        # This can be removed if we make sure the provider cache tables always exist prior to the start of the first search
+        if not last_prov_updates and SEARCH_STATUS_FINISHED in search_status:
+            return {'result': REFRESH_RESULTS}
 
         return {'result': searched_item[0]['searchstatus']}
 
