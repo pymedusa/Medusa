@@ -456,6 +456,8 @@ class SubtitlesFinder(object):
             if run_post_process:
                 logger.log(u'Starting post-process with default settings now that we found subtitles')
                 processTV.processDir(sickbeard.TV_DOWNLOAD_DIR)
+        else:
+            logger.log(u'You must set a valid post-process folder in "Post Processing" settings', logger.WARNING)
 
     def run(self, force=False):  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         if not sickbeard.USE_SUBTITLES:
