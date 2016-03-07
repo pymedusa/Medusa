@@ -2349,9 +2349,17 @@ var SICKRAGE = {
 
             $('.sceneSeasonXEpisode').on('change', function() {
                 // Strip non-numeric characters
-                $(this).val($(this).val().replace(/[^0-9xX]*/g, ''));
+                var value = $(this).val();
+                $(this).val(value.replace(/[^0-9xX]*/g, ''));
                 var forSeason = $(this).attr('data-for-season');
                 var forEpisode = $(this).attr('data-for-episode');
+                
+                // If empty reset the field
+                if (value === '') {
+                    setEpisodeSceneNumbering(forSeason, forEpisode, null, null);
+                    return;
+                }
+
                 var m = $(this).val().match(/^(\d+)x(\d+)$/i);
                 var onlyEpisode = $(this).val().match(/^(\d+)$/i);
                 var sceneSeason = null, sceneEpisode = null;
@@ -2368,10 +2376,11 @@ var SICKRAGE = {
                 } else {
                     isValid = setInputValidInvalid(false, $(this));
                 }
-                // Only perform the request when there is a valid input
+                
                 if (isValid){
                     setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode);
                 }
+                
             });
 
             $('.sceneAbsolute').on('change', function() {
