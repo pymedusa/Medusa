@@ -1461,6 +1461,9 @@ class Home(WebRoot):
 #             return {'result': REFRESH_RESULTS}
 
         for provider, last_update in last_prov_updates.iteritems():
+            table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [provider])
+            if not table_exists:
+                continue
             # Check if the cache table has a result for this show + season + ep wich has a later timestamp, then last_update
             needs_update = main_db_con.select("SELECT * FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ? \
                                               AND time > ?"
