@@ -304,10 +304,10 @@ class TVCache(object):
                 return None
 
         # if we made it this far then lets add the parsed result to cache for usager later on
-        season = parse_result.season_number if parse_result.season_number else 1
+        season = parse_result.season_number if parse_result.season_number is not None else 1
         episodes = parse_result.episode_numbers
 
-        if season and episodes:
+        if season is not None and episodes is not None:
             # store episodes as a seperated string
             episodeText = "|" + "|".join({str(episode) for episode in episodes if episode}) + "|"
 
