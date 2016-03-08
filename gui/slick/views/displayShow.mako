@@ -425,7 +425,7 @@
                 <input type="text" placeholder="${str(dfltSeas) + 'x' + str(dfltEpis)}" size="6" maxlength="8"
                     class="sceneSeasonXEpisode form-control input-scene" data-for-season="${epResult["season"]}" data-for-episode="${epResult["episode"]}"
                     id="sceneSeasonXEpisode_${show.indexerid}_${str(epResult["season"])}_${str(epResult["episode"])}"
-                    title="Change the value here if scene numbering differs from the indexer episode numbering"
+                    title="Change the value here if scene numbering differs from the indexer episode numbering. General used for non-anime shows!"
                     % if dfltEpNumbering:
                         value=""
                     % else:
@@ -437,7 +437,8 @@
                 <input type="text" placeholder="${str(dfltAbsolute)}" size="6" maxlength="8"
                     class="sceneAbsolute form-control input-scene" data-for-absolute="${epResult["absolute_number"]}"
                     id="sceneAbsolute_${show.indexerid}${"_"+str(epResult["absolute_number"])}"
-                    title="Change the value here if scene absolute numbering differs from the indexer absolute numbering"
+                    title="Change the value here if scene absolute numbering differs from the indexer absolute numbering. 
+                    General used for Anime shows!"
                     % if dfltAbsNumbering:
                         value=""
                     % else:
