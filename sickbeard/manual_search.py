@@ -167,7 +167,6 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     down_cur_quality = 0
     showObj = Show.find(sickbeard.showList, int(show))
 
-    main_db_con = db.DBConnection('cache.db')
     sql_return = {}
     provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
     found_items = []
@@ -175,28 +174,9 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_daily]
     for curProvider in providers:
 
-        # Let's check if this provider table already exists
-        table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [curProvider.get_id()])
-        columns = [i[1] for i in main_db_con.select("PRAGMA table_info('%s')" % curProvider.get_id())] if table_exists else []
-
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
-        if table_exists and 'seeders' in columns and 'leechers' in columns and 'size' in columns:
-            if not int(show_all_results):
-                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, \
-                                                episodes, indexerid, url, time, (select max(time) from '%s') as lastupdate, \
-                                                quality, release_group, version, seeders, leechers, size, time \
-                                                FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ?"
-                                                % (curProvider.get_id(), curProvider.get_id()),
-                                                [curProvider.name, curProvider.get_id(),
-                                                 "%|" + episode + "|%", season, show])
-    
-            else:
-                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, \
-                                                episodes, indexerid, url, time, (select max(time) from '%s') as lastupdate, \
-                                                quality, release_group, version, seeders, leechers, size, time \
-                                                FROM '%s' WHERE indexerid = ?" % (curProvider.name, curProvider.get_id()),
-                                                [curProvider.get_id(), show])
+        sql_return = curProvider.cache.get_cached_items_for_show(show_all_results, **search_show)
 
         if sql_return:
             for item in sql_return:

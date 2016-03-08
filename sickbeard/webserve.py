@@ -1448,8 +1448,6 @@ class Home(WebRoot):
         else:
             last_prov_updates = {}
 
-        main_db_con = db.DBConnection('cache.db')
-
         episodesInSearch = collectEpisodesFromSearchThread(show)
 
         # Check if the requested ep is in a search thread
@@ -1461,11 +1459,20 @@ class Home(WebRoot):
 #         if not last_prov_updates:
 #             return {'result': REFRESH_RESULTS}
 
+        needs_update = True
         for provider, last_update in last_prov_updates.iteritems():
             # Check if the cache table has a result for this show + season + ep wich has a later timestamp, then last_update
-            needs_update = main_db_con.select("SELECT * FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ? \
-                                              AND time > ?"
-                                              % (provider), ["%|" + episode + "|%", season, show, int(last_update)])
+            try:
+                # Get provider object
+                cur_provider = sickbeard.providers.getProviderClass(provider)
+
+                # Perform check on new cache search results
+                show_obj = {'show': show, 'season': season, 'episode': episode}
+                needs_update = cur_provider.cache.get_new_cache_results(last_update, **show_obj)
+
+            except db.OperationalError, e:
+                logger.log(u'Unable to retrieve last cache update for provider: {0}, with exception: {1}'.
+                           format(provider, str(e)), logger.DEBUG)
 
             if needs_update:
                 return {'result': REFRESH_RESULTS}

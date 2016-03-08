@@ -184,6 +184,37 @@ class TVCache(object):
 
         return any(results)
 
+    def get_cached_items_for_show(self, show_all_results=False, **search_show):
+        """ Retrieve cached search results for a specific show, and optionally season and episode """
+
+        cache_db_con = self._getDB()
+        if not int(show_all_results):
+            cache_items = cache_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, \
+                                              episodes, indexerid, url, time, (select max(time) from '%s') as lastupdate, \
+                                              quality, release_group, version, seeders, leechers, size, time \
+                                              FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ?"
+                                              % (self.providerID, self.providerID),
+                                              [self.provider.name, self.providerID,
+                                               "%|" + search_show.get('episode') + "|%", search_show.get('season'),
+                                               search_show.get('show')])
+
+        else:
+            cache_items = cache_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, \
+                                             episodes, indexerid, url, time, (select max(time) from '%s') as lastupdate, \
+                                             quality, release_group, version, seeders, leechers, size, time \
+                                             FROM '%s' WHERE indexerid = ?"
+                                              % (self.providerID, self.providerID),
+                                              [self.provider.name, self.providerID, search_show.get('show')])
+
+        return cache_items
+
+    def get_new_cache_results(self, last_update, **show):
+        cache_db_con = self._getDB()
+        return cache_db_con.select("SELECT * FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ? \
+                                   AND time > ?"
+                                   % (self.providerID), ["%|" + show.get('episode') + "|%", show.get('season'),
+                                                         show.get('show'), int(last_update)])
+
     def getRSSFeed(self, url, params=None):
         return getFeed(url, params=params, request_hook=self.provider.get_url)
 
