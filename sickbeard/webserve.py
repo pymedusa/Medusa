@@ -2112,7 +2112,17 @@ class Home(WebRoot):
 
         showObj = Show.find(sickbeard.showList, int(show))
 
-        if showObj.is_anime:
+        # Check if this is an anime, because we can't set the Scene numbering for anime shows
+        if showObj.is_anime and not forAbsolute:
+            result = {
+                'success': False,
+                'errorMessage': 'You can\'t use the Scene numbering for anime shows. ' +
+                'Use the Scene Absolute field, to configure a diverging episode number.',
+                'sceneSeason': None,
+                'sceneAbsolute': None
+            }
+            return json.dumps(result)
+        elif showObj.is_anime:
             result = {
                 'success': True,
                 'forAbsolute': forAbsolute,
