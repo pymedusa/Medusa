@@ -19,15 +19,14 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-import re
 
 from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 
 from sickrage.helper.common import convert_size, try_int
+from sickrage.providers.auth import CookieAuth
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
@@ -38,10 +37,6 @@ class AlphaRatioProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Provider Init
         TorrentProvider.__init__(self, "AlphaRatio")
 
-        # Credentials
-        self.username = None
-        self.password = None
-
         # Torrent Stats
         self.ratio = None
         self.minseed = None
@@ -50,43 +45,49 @@ class AlphaRatioProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # URLs
         self.url = "http://alpharatio.cc"
         self.urls = {
-            "login": urljoin(self.url, "login.php"),
-            "search": urljoin(self.url, "torrents.php"),
+            'base_url': self.url,
+            'login': urljoin(self.url, 'login.php'),
+            'search': urljoin(self.url, 'torrents.php'),
         }
 
         # Proper Strings
-        self.proper_strings = ["PROPER", "REPACK"]
+        self.proper_strings = [
+            'PROPER',
+            'REPACK',
+        ]
 
         # Cache
         self.cache = tvcache.TVCache(self)
 
-    def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
-        login_params = {
-            "username": self.username,
-            "password": self.password,
-            "login": "submit",
-            "remember_me": "on",
+        # Authentication
+        self.login_params = {
+            'username': None,
+            'password': None,
+            'login': 'submit',
+            'remember_me': 'on',
         }
+        self.session.auth = CookieAuth(self.session, self.urls['login'], self.login_params)
 
-        response = self.get_url(self.urls["login"], post_data=login_params, timeout=30, returns="text")
-        if not response:
-            logger.log("Unable to connect to provider", logger.WARNING)
-            return False
+    @property
+    def username(self):
+        return self.login_params['username']
 
-        if re.search("Invalid Username/password", response) \
-                or re.search("<title>Login :: AlphaRatio.cc</title>", response):
-            logger.log("Invalid username or password. Check your settings", logger.WARNING)
-            return False
+    @username.setter
+    def username(self, value):
+        self.login_params['username'] = value
+        self.session.auth.payload.update(self.login_params)
 
-        return True
+    @property
+    def password(self):
+        return self.login_params['password']
+
+    @password.setter
+    def password(self, value):
+        self.login_params['password'] = value
+        self.session.auth.payload.update(self.login_params)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         results = []
-        if not self.login():
-            return results
 
         # Search Params
         search_params = {
@@ -99,10 +100,10 @@ class AlphaRatioProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         }
 
         # Units
-        units = ["B", "KB", "MB", "GB", "TB", "PB"]
+        units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
 
         def process_column_header(td):
-            result = ""
+            result = ''
             if td.a and td.a.img:
                 result = td.a.img.get("title", td.a.get_text(strip=True))
             if not result:

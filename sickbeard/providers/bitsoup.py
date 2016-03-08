@@ -18,14 +18,16 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import re
+from __future__ import unicode_literals
+
 import traceback
-from requests.utils import dict_from_cookiejar
+from requests.compat import urljoin
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 
 from sickrage.helper.common import convert_size
+from sickrage.providers.auth import CookieAuth
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
@@ -33,61 +35,60 @@ class BitSoupProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, "BitSoup")
 
-        self.urls = {
-            'base_url': 'https://www.bitsoup.me',
-            'login': 'https://www.bitsoup.me/takelogin.php',
-            'detail': 'https://www.bitsoup.me/details.php?id=%s',
-            'search': 'https://www.bitsoup.me/browse.php',
-            'download': 'https://bitsoup.me/%s',
-        }
-
-        self.url = self.urls['base_url']
-
-        self.username = None
-        self.password = None
+        # Torrent Stats
         self.ratio = None
         self.minseed = None
         self.minleech = None
 
+        # URLs
+        self.url = 'https://www.bitsoup.me'
+        self.urls = {
+            'base_url': self.url,
+            'login': urljoin(self.url, 'takelogin.php'),
+            'search': urljoin(self.url, 'browse.php'),
+            'detail': urljoin(self.url, 'details.php?id=%s'),
+            'download': 'https://bitsoup.me/%s',
+        }
+
+        # Proper Strings
+
+        # Cache
         self.cache = tvcache.TVCache(self)
+
+        self.login_params = {
+            'username': None,
+            'password': None,
+            'ssl': 'yes'
+        }
+        self.session.auth = CookieAuth(self.session, self.urls['login'], self.login_params)
 
         self.search_params = {
             "c42": 1, "c45": 1, "c49": 1, "c7": 1
         }
 
-    def _check_auth(self):
-        if not self.username or not self.password:
-            logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
+    @property
+    def username(self):
+        return self.login_params['username']
 
-        return True
+    @username.setter
+    def username(self, value):
+        self.login_params['username'] = value
+        self.session.auth.payload.update(self.login_params)
 
-    def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
+    @property
+    def password(self):
+        return self.login_params['password']
 
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-            'ssl': 'yes'
-        }
-
-        response = self.get_url(self.urls['login'], post_data=login_params, timeout=30)
-        if not response:
-            logger.log(u"Unable to connect to provider", logger.WARNING)
-            return False
-
-        if re.search('Username or password incorrect', response):
-            logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
-            return False
-
-        return True
+    @password.setter
+    def password(self, value):
+        self.login_params['password'] = value
+        self.session.auth.payload.update(self.login_params)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
         results = []
-        if not self.login():
-            return results
 
         for mode in search_strings:
             items = []

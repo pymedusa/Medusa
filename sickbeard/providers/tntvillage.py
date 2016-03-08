@@ -20,7 +20,6 @@
 
 import re
 import traceback
-from requests.utils import dict_from_cookiejar
 
 from sickbeard import db, logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -28,7 +27,7 @@ from sickbeard.common import Quality
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
 
 from sickrage.helper.common import convert_size
-from sickrage.helper.exceptions import AuthException
+from sickrage.providers.auth import CookieAuth
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 category_excluded = {'Sport': 22,
@@ -66,8 +65,6 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         self._uid = None
         self._hash = None
-        self.username = None
-        self.password = None
         self.ratio = None
         self.cat = None
         self.engrelease = None
@@ -115,34 +112,32 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         self.cache = tvcache.TVCache(self, min_time=30)  # only poll TNTVillage every 30 minutes max
 
-    def _check_auth(self):
+        self.login_params = {
+            'UserName': None,
+            'PassWord': None,
+            'CookieDate': 1,
+            'submit': 'Connettiti al Forum'
+        }
+        self.required_cookies = {'pass_hash', 'member_id'}
+        self.session.auth = CookieAuth(self.session, self.urls['login'], self.login_params, required=self.required_cookies, minimum=3)
 
-        if not self.username or not self.password:
-            raise AuthException("Your authentication credentials for " + self.name + " are missing, check your config.")
+    @property
+    def username(self):
+        return self.login_params['UserName']
 
-        return True
+    @username.setter
+    def username(self, value):
+        self.login_params['UserName'] = value
+        self.session.auth.payload.update(self.login_params)
 
-    def login(self):
-        if len(self.session.cookies) > 1:
-            cookies_dict = dict_from_cookiejar(self.session.cookies)
-            if cookies_dict['pass_hash'] != '0' and cookies_dict['member_id'] != '0':
-                return True
+    @property
+    def password(self):
+        return self.login_params['PassWord']
 
-        login_params = {'UserName': self.username,
-                        'PassWord': self.password,
-                        'CookieDate': 1,
-                        'submit': 'Connettiti al Forum'}
-
-        response = self.get_url(self.urls['login'], post_data=login_params, timeout=30)
-        if not response:
-            logger.log(u"Unable to connect to provider", logger.WARNING)
-            return False
-
-        if re.search('Sono stati riscontrati i seguenti errori', response) or re.search('<title>Connettiti</title>', response):
-            logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
-            return False
-
-        return True
+    @password.setter
+    def password(self, value):
+        self.login_params['PassWord'] = value
+        self.session.auth.payload.update(self.login_params)
 
     @staticmethod
     def _reverseQuality(quality):
@@ -278,8 +273,6 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
     def search(self, search_params, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         results = []
-        if not self.login():
-            return results
 
         self.categories = "cat=" + str(self.cat)
 

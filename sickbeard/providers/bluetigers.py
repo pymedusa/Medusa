@@ -18,13 +18,17 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import re
-from requests.utils import dict_from_cookiejar
+
+from requests.compat import urljoin
 import traceback
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 
+from sickrage.providers.auth import CookieAuth
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
@@ -32,58 +36,60 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, "BLUETIGERS")
 
-        self.username = None
-        self.password = None
+        # Torrent Stats
         self.ratio = None
         self.token = None
 
-        self.cache = tvcache.TVCache(self, min_time=10)  # Only poll BLUETIGERS every 10 minutes max
-
+        # URLs
+        self.url = 'https://www.bluetigers.ca/'
         self.urls = {
-            'base_url': 'https://www.bluetigers.ca/',
-            'search': 'https://www.bluetigers.ca/torrents-search.php',
-            'login': 'https://www.bluetigers.ca/account-login.php',
-            'download': 'https://www.bluetigers.ca/torrents-details.php?id=%s&hit=1',
+            'base_url': self.url,
+            'login': urljoin(self.url, 'account-login.php'),
+            'search': urljoin(self.url, 'torrents-search.php'),
+            'download': urljoin(self.url, 'torrents-details.php?id=%s&hit=1'),
         }
 
+        # Proper Strings
+
+        # Cache
+        self.cache = tvcache.TVCache(self, min_time=10)  # Only poll BLUETIGERS every 10 minutes max
+
+        # Authentication
+        self.login_params = {
+            'username': None,
+            'password': None,
+            'take_login': '1'
+        }
+        self.session.auth = CookieAuth(self.session, self.urls['login'], self.login_params)
+
+        # Miscellaneous
         self.search_params = {
             "c16": 1, "c10": 1, "c130": 1, "c131": 1, "c17": 1, "c18": 1, "c19": 1
         }
 
-        self.url = self.urls['base_url']
+    @property
+    def username(self):
+        return self.login_params['username']
 
-    def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
+    @username.setter
+    def username(self, value):
+        self.login_params['username'] = value
+        self.session.auth.payload.update(self.login_params)
 
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-            'take_login': '1'
-        }
+    @property
+    def password(self):
+        return self.login_params['password']
 
-        response = self.get_url(self.urls['login'], post_data=login_params, timeout=30)
-
-        if not response:
-            check_login = self.get_url(self.urls['base_url'], timeout=30)
-            if re.search('account-logout.php', check_login):
-                return True
-            else:
-                logger.log(u"Unable to connect to provider", logger.WARNING)
-                return False
-
-        if re.search('account-login.php', response):
-            logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
-            return False
-
-        return True
+    @password.setter
+    def password(self, value):
+        self.login_params['password'] = value
+        self.session.auth.payload.update(self.login_params)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
         results = []
-        if not self.login():
-            return results
 
         for mode in search_strings:
             items = []
