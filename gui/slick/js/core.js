@@ -2532,7 +2532,7 @@ var SICKRAGE = {
                     setTimeout(function() { checkCacheUpdates(true); }, 200);
                 }
                 
-                var url = '/home/manualSelectCheckCache?show='+show+'&season='+season+'&episode='+episode;
+                var url = srRoot + '/home/manualSelectCheckCache?show='+show+'&season='+season+'&episode='+episode;
                 
                 self.refreshResults = function() {
                     $('#wrapper').loadContainer(
