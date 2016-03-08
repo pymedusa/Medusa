@@ -18,13 +18,15 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-from requests.compat import urlencode
-from requests.utils import dict_from_cookiejar
+from __future__ import unicode_literals
+
+from requests.compat import urlencode, urljoin
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 
 from sickrage.helper.common import convert_size, try_int
+from sickrage.providers.auth import CookieAuth
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
@@ -35,10 +37,6 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Provider Init
         TorrentProvider.__init__(self, "Danishbits")
 
-        # Credentials
-        self.username = None
-        self.password = None
-
         # Torrent Stats
         self.ratio = None
         self.minseed = 0
@@ -48,8 +46,9 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # URLs
         self.url = 'https://danishbits.org/'
         self.urls = {
-            'login': self.url + 'login.php',
-            'search': self.url + 'torrents.php',
+            'base_url': self.url,
+            'login': urljoin(self.url, 'login.php'),
+            'search': urljoin(self.url, 'torrents.php'),
         }
 
         # Proper Strings
@@ -57,35 +56,36 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # Only poll Danishbits every 10 minutes max
 
-    def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
-        login_params = {
-            'username': self.username.encode('utf-8'),
-            'password': self.password.encode('utf-8'),
+        # Authentication
+        self.login_params = {
+            'username': None,
+            'password': None,
+            'login': 'Login',
             'keeplogged': 1,
             'langlang': '',
-            'login': 'Login',
         }
+        self.session.auth = CookieAuth(self.session, self.urls['login'], self.login_params)
 
-        response = self.get_url(self.urls['login'], post_data=login_params, timeout=30)
-        if not response:
-            logger.log(u"Unable to connect to provider", logger.WARNING)
-            self.session.cookies.clear()
-            return False
+    @property
+    def username(self):
+        return self.login_params['username']
 
-        if '<title>Login :: Danishbits.org</title>' in response:
-            logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
-            self.session.cookies.clear()
-            return False
+    @username.setter
+    def username(self, value):
+        self.login_params['username'] = value
+        self.session.auth.payload.update(self.login_params)
 
-        return True
+    @property
+    def password(self):
+        return self.login_params['password']
+
+    @password.setter
+    def password(self, value):
+        self.login_params['password'] = value
+        self.session.auth.payload.update(self.login_params)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         results = []
-        if not self.login():
-            return results
 
         # Search Params
         search_params = {

@@ -21,13 +21,14 @@
 from __future__ import unicode_literals
 
 import re
+
 from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 
 from sickrage.helper.common import convert_size, try_int
+from sickrage.providers.auth import CookieAuth
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
@@ -37,10 +38,6 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
         # Provider Init
         TorrentProvider.__init__(self, 'ABNormal')
-
-        # Credentials
-        self.username = None
-        self.password = None
 
         # Torrent Stats
         self.ratio = None
@@ -55,35 +52,39 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER']
+        self.proper_strings = [
+            'PROPER',
+        ]
 
         # Cache
         self.cache = tvcache.TVCache(self, min_time=30)
 
-    def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
+        self.login_params = {
+            'username': None,
+            'password': None,
         }
+        self.session.auth = CookieAuth(self.session, self.urls['login'], self.login_params)
 
-        response = self.get_url(self.urls['login'], post_data=login_params, timeout=30, returns='text')
-        if not response:
-            logger.log('Unable to connect to provider', logger.WARNING)
-            return False
+    @property
+    def username(self):
+        return self.login_params['username']
 
-        if not re.search('torrents.php', response):
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
-            return False
+    @username.setter
+    def username(self, value):
+        self.login_params['username'] = value
+        self.session.auth.payload.update(self.login_params)
 
-        return True
+    @property
+    def password(self):
+        return self.login_params['password']
+
+    @password.setter
+    def password(self, value):
+        self.login_params['password'] = value
+        self.session.auth.payload.update(self.login_params)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         results = []
-        if not self.login():
-            return results
 
         # Search Params
         search_params = {
