@@ -21,6 +21,8 @@
 import re
 import traceback
 
+from requests.utils import dict_from_cookiejar
+
 from sickbeard import db, logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 from sickbeard.common import Quality
