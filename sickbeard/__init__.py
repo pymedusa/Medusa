@@ -564,7 +564,7 @@ TRACKERS_LIST += "udp://9.rarbg.to:2710/announce"
 
 REQUIRE_WORDS = ""
 IGNORED_SUBS_LIST = "dk,fin,heb,kor,nor,nordic,pl,swe"
-SYNC_FILES = "!sync,lftp-pget-status,part,bts,!qb"
+SYNC_FILES = "!sync,lftp-pget-status,part,bts,!qb,!qB"
 
 CALENDAR_UNPROTECTED = False
 CALENDAR_ICONS = False
@@ -1425,37 +1425,49 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # initialize schedulers
         # updaters
-        versionCheckScheduler = scheduler.Scheduler(versionChecker.CheckVersion(),
-                                                    cycleTime=datetime.timedelta(hours=UPDATE_FREQUENCY),
-                                                    threadName="CHECKVERSION",
-                                                    silent=False)
+        versionCheckScheduler = scheduler.Scheduler(
+            versionChecker.CheckVersion(),
+            cycleTime=datetime.timedelta(hours=UPDATE_FREQUENCY),
+            threadName="CHECKVERSION",
+            silent=False
+        )
 
-        showQueueScheduler = scheduler.Scheduler(show_queue.ShowQueue(),
-                                                 cycleTime=datetime.timedelta(seconds=3),
-                                                 threadName="SHOWQUEUE")
+        showQueueScheduler = scheduler.Scheduler(
+            show_queue.ShowQueue(),
+            cycleTime=datetime.timedelta(seconds=5),
+            threadName="SHOWQUEUE"
+        )
 
-        showUpdateScheduler = scheduler.Scheduler(showUpdater.ShowUpdater(),
-                                                  cycleTime=datetime.timedelta(hours=1),
-                                                  threadName="SHOWUPDATER",
-                                                  start_time=datetime.time(hour=SHOWUPDATE_HOUR, minute=random.randint(0, 59)))
+        showUpdateScheduler = scheduler.Scheduler(
+            showUpdater.ShowUpdater(),
+            run_delay=datetime.timedelta(minutes=1),
+            cycleTime=datetime.timedelta(hours=1),
+            start_time=datetime.time(hour=SHOWUPDATE_HOUR),
+            threadName="SHOWUPDATER"
+        )
 
         # searchers
-        searchQueueScheduler = scheduler.Scheduler(search_queue.SearchQueue(),
-                                                   cycleTime=datetime.timedelta(seconds=3),
-                                                   threadName="SEARCHQUEUE")
+        searchQueueScheduler = scheduler.Scheduler(
+            search_queue.SearchQueue(),
+            run_delay=datetime.timedelta(minutes=1),
+            cycleTime=datetime.timedelta(seconds=5),
+            threadName="SEARCHQUEUE"
+        )
 
-        # TODO: update_interval should take last daily/backlog times into account!
-        update_interval = datetime.timedelta(minutes=DAILYSEARCH_FREQUENCY)
-        dailySearchScheduler = scheduler.Scheduler(dailysearcher.DailySearcher(),
-                                                   cycleTime=update_interval,
-                                                   threadName="DAILYSEARCHER",
-                                                   run_delay=update_interval)
+        dailySearchScheduler = scheduler.Scheduler(
+            dailysearcher.DailySearcher(),
+            run_delay=datetime.timedelta(minutes=10),
+            cycleTime=datetime.timedelta(minutes=DAILYSEARCH_FREQUENCY),
+            threadName="DAILYSEARCHER"
+        )
 
         update_interval = datetime.timedelta(minutes=BACKLOG_FREQUENCY)
-        backlogSearchScheduler = searchBacklog.BacklogSearchScheduler(searchBacklog.BacklogSearcher(),
-                                                                      cycleTime=update_interval,
-                                                                      threadName="BACKLOG",
-                                                                      run_delay=update_interval)
+        backlogSearchScheduler = searchBacklog.BacklogSearchScheduler(
+            searchBacklog.BacklogSearcher(),
+            cycleTime=update_interval,
+            threadName="BACKLOG",
+            run_delay=update_interval
+        )
 
         search_intervals = {'15m': 15, '45m': 45, '90m': 90, '4h': 4 * 60, 'daily': 24 * 60}
         if CHECK_PROPERS_INTERVAL in search_intervals:
@@ -1465,31 +1477,36 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             update_interval = datetime.timedelta(hours=1)
             run_at = datetime.time(hour=1)  # 1 AM
 
-        properFinderScheduler = scheduler.Scheduler(properFinder.ProperFinder(),
-                                                    cycleTime=update_interval,
-                                                    threadName="FINDPROPERS",
-                                                    start_time=run_at,
-                                                    run_delay=update_interval)
+        properFinderScheduler = scheduler.Scheduler(
+            properFinder.ProperFinder(),
+            cycleTime=update_interval,
+            threadName="FINDPROPERS",
+            start_time=run_at,
+            run_delay=update_interval
+        )
 
         # processors
-        update_interval = datetime.timedelta(minutes=AUTOPOSTPROCESSER_FREQUENCY)
-        autoPostProcesserScheduler = scheduler.Scheduler(auto_postprocessor.PostProcessor(),
-                                                         cycleTime=update_interval,
-                                                         threadName="POSTPROCESSER",
-                                                         silent=not PROCESS_AUTOMATICALLY,
-                                                         run_delay=update_interval)
+        autoPostProcesserScheduler = scheduler.Scheduler(
+            auto_postprocessor.PostProcessor(),
+            run_delay=datetime.timedelta(minutes=5),
+            cycleTime=datetime.timedelta(minutes=AUTOPOSTPROCESSER_FREQUENCY),
+            threadName="POSTPROCESSER",
+            silent=not PROCESS_AUTOMATICALLY,
+        )
 
-        traktCheckerScheduler = scheduler.Scheduler(traktChecker.TraktChecker(),
-                                                    cycleTime=datetime.timedelta(hours=1),
-                                                    threadName="TRAKTCHECKER",
-                                                    silent=not USE_TRAKT)
+        traktCheckerScheduler = scheduler.Scheduler(
+            traktChecker.TraktChecker(),
+            run_delay=datetime.timedelta(minutes=5),
+            cycleTime=datetime.timedelta(hours=1),
+            threadName="TRAKTCHECKER",
+            silent=not USE_TRAKT)
 
-        update_interval = datetime.timedelta(hours=SUBTITLES_FINDER_FREQUENCY)
-        subtitlesFinderScheduler = scheduler.Scheduler(subtitles.SubtitlesFinder(),
-                                                       cycleTime=update_interval,
-                                                       threadName="FINDSUBTITLES",
-                                                       run_delay=update_interval,
-                                                       silent=not USE_SUBTITLES)
+        subtitlesFinderScheduler = scheduler.Scheduler(
+            subtitles.SubtitlesFinder(),
+            run_delay=datetime.timedelta(minutes=10),
+            cycleTime=datetime.timedelta(hours=SUBTITLES_FINDER_FREQUENCY),
+            threadName="FINDSUBTITLES",
+            silent=not USE_SUBTITLES)
 
         __INITIALIZED__ = True
         return True
