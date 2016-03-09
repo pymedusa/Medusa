@@ -45,8 +45,8 @@ class Notifier(object):
         self.last_err = None
 
     def test_notify(self, host, port, smtp_from, use_tls, user, pwd, to):  # pylint: disable=too-many-arguments
-        msg = MIMEText('This is a test message from SickRage.  If you\'re reading this, the test succeeded.')
-        msg[b'Subject'] = 'SickRage: Test Message'
+        msg = MIMEText('This is a test message from Medusa.  If you\'re reading this, the test succeeded.')
+        msg[b'Subject'] = 'Medusa: Test Message'
         msg[b'From'] = smtp_from
         msg[b'To'] = to
         msg[b'Date'] = formatdate(localtime=True)
@@ -71,11 +71,11 @@ class Notifier(object):
                     msg = MIMEMultipart('alternative')
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
-                        '<h3>SickRage Notification - Snatched</h3><br>'
+                        '<h3>Medusa Notification - Snatched</h3><br>'
                         '<p>Show: <b>{}</b></p><br><p>Episode: <b>{}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
-                        'Powered by SickRage.</footer></body>'.format
+                        'Powered by Medusa.</footer></body>'.format
                         (show, re.search('.+ - (.+?-.+) -.+', ep_name).group(1)),
                         'html'))
 
@@ -114,11 +114,11 @@ class Notifier(object):
                     msg = MIMEMultipart('alternative')
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
-                        '<h3>SickRage Notification - Downloaded</h3><br>'
+                        '<h3>Medusa Notification - Downloaded</h3><br>'
                         '<p>Show: <b>{}</b></p><br><p>Episode: <b>{}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
-                        'Powered by SickRage.</footer></body>'.format
+                        'Powered by Medusa.</footer></body>'.format
                         (show, re.search('.+ - (.+?-.+) -.+', ep_name).group(1)),
                         'html'))
 
@@ -157,12 +157,12 @@ class Notifier(object):
                     msg = MIMEMultipart('alternative')
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
-                        '<h3>SickRage Notification - Subtitle Downloaded</h3><br>'
+                        '<h3>Medusa Notification - Subtitle Downloaded</h3><br>'
                         '<p>Show: <b>{}</b></p><br><p>Episode: <b>{}</b></p><br>'
                         '<p>Language: <b>{}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
-                        'Powered by SickRage.</footer></body>'.format
+                        'Powered by Medusa.</footer></body>'.format
                         (show, re.search('.+ - (.+?-.+) -.+', ep_name).group(1), lang),
                         'html'))
                 except Exception:
@@ -182,8 +182,8 @@ class Notifier(object):
 
     def notify_git_update(self, new_version='??'):
         '''
-        Send a notification that SickRage was updated
-        new_version: The commit SickRage was updated to
+        Send a notification that Medusa was updated
+        new_version: The commit Medusa was updated to
         '''
         if sickbeard.USE_EMAIL:
             to = self._generate_recipients(None)
@@ -194,18 +194,18 @@ class Notifier(object):
                     msg = MIMEMultipart('alternative')
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
-                        '<h3>SickRage Notification - Updated</h3><br>'
+                        '<h3>Medusa Notification - Updated</h3><br>'
                         '<p>Commit: <b>{}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
-                        'Powered by SickRage.</footer></body>'.format
+                        'Powered by Medusa.</footer></body>'.format
                         (new_version), 'html'))
 
                 except Exception:
                     try:
                         msg = MIMEText(new_version)
                     except Exception:
-                        msg = MIMEText('SickRage updated')
+                        msg = MIMEText('Medusa updated')
 
                 msg[b'Subject'] = 'Updated: {}'.format(new_version)
                 msg[b'From'] = sickbeard.EMAIL_FROM
@@ -219,8 +219,8 @@ class Notifier(object):
 
     def notify_login(self, ipaddress=''):
         '''
-        Send a notification that SickRage was logged into remotely
-        ipaddress: The ip SickRage was logged into from
+        Send a notification that Medusa was logged into remotely
+        ipaddress: The ip Medusa was logged into from
         '''
         if sickbeard.USE_EMAIL:
             to = self._generate_recipients(None)
@@ -231,18 +231,18 @@ class Notifier(object):
                     msg = MIMEMultipart('alternative')
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
-                        '<h3>SickRage Notification - Remote Login</h3><br>'
+                        '<h3>Medusa Notification - Remote Login</h3><br>'
                         '<p>New login from IP: <a href="http://geomaplookup.net/?ip={0}">{0}</a>.<br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
-                        'Powered by SickRage.</footer></body>'.format
+                        'Powered by Medusa.</footer></body>'.format
                         (ipaddress), 'html'))
 
                 except Exception:
                     try:
                         msg = MIMEText(ipaddress)
                     except Exception:
-                        msg = MIMEText('SickRage Remote Login')
+                        msg = MIMEText('Medusa Remote Login')
 
                 msg[b'Subject'] = 'New Login from IP: {}'.format(ipaddress)
                 msg[b'From'] = sickbeard.EMAIL_FROM
