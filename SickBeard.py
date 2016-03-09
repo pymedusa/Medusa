@@ -319,16 +319,19 @@ class SickRage(object):
         # Get PID
         sickbeard.PID = os.getpid()
 
+        # Build from the DB to start with
+        self.load_shows_from_db()
+
         logger.log('Starting Medusa [{branch}] using \'{config}\''.format
                    (branch=sickbeard.BRANCH, config=sickbeard.CONFIG_FILE))
+
+        self.clear_cache()
 
         if self.forced_port:
             logger.log('Forcing web server to port {port}'.format(port=self.forced_port))
             self.start_port = self.forced_port
         else:
             self.start_port = sickbeard.WEB_PORT
-
-        self.clear_cache()
 
         if sickbeard.WEB_LOG:
             self.log_dir = sickbeard.LOG_DIR
@@ -361,11 +364,14 @@ class SickRage(object):
         self.web_server = SRWebServer(self.web_options)
         self.web_server.start()
 
-        # Pre-populate network timezones, it isn't thread safe
-        network_timezones.update_network_dict()
-
         # Fire up all our threads
         sickbeard.start()
+
+        # Build internal name cache
+        name_cache.buildNameCache()
+
+        # Pre-populate network timezones, it isn't thread safe
+        network_timezones.update_network_dict()
 
         # sure, why not?
         if sickbeard.USE_FAILED_DOWNLOADS:
@@ -377,12 +383,6 @@ class SickRage(object):
         # Launch browser
         if sickbeard.LAUNCH_BROWSER and not (self.no_launch or self.run_as_daemon):
             sickbeard.launchBrowser('https' if sickbeard.ENABLE_HTTPS else 'http', self.start_port, sickbeard.WEB_ROOT)
-
-        # Build from the DB to start with
-        self.load_shows_from_db()
-
-        # Build internal name cache
-        name_cache.buildNameCache()
 
         # main loop
         while True:
