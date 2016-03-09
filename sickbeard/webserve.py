@@ -18,47 +18,58 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 # pylint: disable=abstract-method,too-many-lines
 
+import ast
+import datetime
 import io
 import os
 import re
+import traceback
 import time
 import urllib
-import datetime
-import traceback
-import ast
 
-import sickbeard
-from sickbeard import config, sab
-from sickbeard import clients
-from sickbeard import notifiers, processTV
-from sickbeard import ui
-from sickbeard import logger, helpers, classes, db
-from sickbeard import search_queue
-from sickbeard import naming
-from sickbeard import subtitles
-from sickbeard import network_timezones
-from sickbeard.providers import newznab, rsstorrent
-from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
-from sickbeard.common import SNATCHED, UNAIRED, IGNORED, WANTED, FAILED, SKIPPED
-from sickbeard.blackandwhitelist import BlackAndWhiteList, short_group_names
-from sickbeard.browser import foldersAtPath
-from sickbeard.scene_numbering import get_scene_numbering, set_scene_numbering, get_scene_numbering_for_show, \
-    get_xem_numbering_for_show, get_scene_absolute_numbering_for_show, get_xem_absolute_numbering_for_show, \
-    get_scene_absolute_numbering
-from sickbeard.webapi import function_mapper
+from concurrent.futures import ThreadPoolExecutor
+from mako.exceptions import RichTraceback
+from mako.lookup import TemplateLookup
+from mako.runtime import UNDEFINED
+from mako.template import Template as MakoTemplate
+from tornado.concurrent import run_on_executor
+from tornado.gen import coroutine
+from tornado.ioloop import IOLoop
+from tornado.process import cpu_count
+from tornado.routes import route
+from tornado.web import RequestHandler, HTTPError, authenticated
 
-from sickbeard.imdbPopular import imdb_popular
-from sickbeard.helpers import get_showname_from_indexer
 
-from dateutil import tz
-from unrar2 import RarFile
 import adba
+from dateutil import tz
 from libtrakt import TraktAPI
 from libtrakt.exceptions import traktException
+import markdown2
+import requests
+from unrar2 import RarFile
+
+import sickbeard
+from sickbeard import (config, sab, clients, notifiers, processTV, ui, logger, helpers, classes, db, search_queue,
+                       naming, subtitles, network_timezones)
+from sickbeard.blackandwhitelist import BlackAndWhiteList, short_group_names
+from sickbeard.browser import foldersAtPath
+from sickbeard.common import (Quality, Overview, statusStrings, cpu_presets,
+                              SNATCHED, UNAIRED, IGNORED, WANTED, FAILED, SKIPPED)
+from sickbeard.helpers import get_showname_from_indexer
+from sickbeard.imdbPopular import imdb_popular
+from sickbeard.indexers.indexer_exceptions import indexer_exception
+from sickbeard.providers import newznab, rsstorrent
+from sickbeard.scene_numbering import (get_scene_numbering,  get_scene_numbering_for_show,
+                                       get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
+                                       get_xem_numbering_for_show, get_xem_absolute_numbering_for_show,
+                                       set_scene_numbering, )
+from sickbeard.versionChecker import CheckVersion
+from sickbeard.webapi import function_mapper
+
 from sickrage.helper.common import sanitize_filename, try_int, episode_num
 from sickrage.helper.encoding import ek, ss
-from sickrage.helper.exceptions import CantRefreshShowException, CantUpdateShowException, ex
-from sickrage.helper.exceptions import MultipleShowObjectsException, NoNFOException, ShowDirectoryNotFoundException
+from sickrage.helper.exceptions import (CantRefreshShowException, CantUpdateShowException, ex, NoNFOException,
+                                        MultipleShowObjectsException, ShowDirectoryNotFoundException, )
 from sickrage.media.ShowBanner import ShowBanner
 from sickrage.media.ShowFanArt import ShowFanArt
 from sickrage.media.ShowNetworkLogo import ShowNetworkLogo
@@ -70,31 +81,10 @@ from sickrage.show.Show import Show
 from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
 
-from sickbeard.versionChecker import CheckVersion
-
-import requests
-import markdown2
-
 try:
     import json
 except ImportError:
     import simplejson as json
-
-from mako.template import Template as MakoTemplate
-from mako.lookup import TemplateLookup
-from mako.exceptions import RichTraceback
-
-from tornado.routes import route
-from tornado.web import RequestHandler, HTTPError, authenticated
-from tornado.gen import coroutine
-from tornado.ioloop import IOLoop
-
-from concurrent.futures import ThreadPoolExecutor
-from tornado.process import cpu_count
-
-from tornado.concurrent import run_on_executor
-
-from mako.runtime import UNDEFINED
 
 mako_lookup = None
 mako_cache = None
@@ -2122,7 +2112,17 @@ class Home(WebRoot):
 
         showObj = Show.find(sickbeard.showList, int(show))
 
-        if showObj.is_anime:
+        # Check if this is an anime, because we can't set the Scene numbering for anime shows
+        if showObj.is_anime and not forAbsolute:
+            result = {
+                'success': False,
+                'errorMessage': 'You can\'t use the Scene numbering for anime shows. ' +
+                'Use the Scene Absolute field, to configure a diverging episode number.',
+                'sceneSeason': None,
+                'sceneAbsolute': None
+            }
+            return json.dumps(result)
+        elif showObj.is_anime:
             result = {
                 'success': True,
                 'forAbsolute': forAbsolute,
@@ -2367,9 +2367,8 @@ class HomeAddShows(Home):
             for searchTerm in searchTerms:
                 try:
                     indexerResults = t[searchTerm]
-                except StandardError:
-                    logger.log(traceback.format_exc(), logger.ERROR)
-                    continue
+                except indexer_exception as error:
+                    logger.log(u'Error searching for show: {}'.format(ex(error)))
 
                 # add search results
                 results.setdefault(indexer, []).extend(indexerResults)

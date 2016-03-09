@@ -161,7 +161,8 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
                     for name in series_names:
                         if search_term.lower() in name.lower():
                             if 'firstaired' not in curShow:
-                                curShow['firstaired'] = 'Unknown'
+                                default_date = parser.parse('1900-01-01').date()
+                                curShow['firstaired'] = default_date.strftime(dateFormat)
 
                             if curShow not in search_results:
                                 search_results += [curShow]
