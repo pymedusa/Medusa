@@ -45,7 +45,6 @@ from dateutil import tz
 from libtrakt import TraktAPI
 from libtrakt.exceptions import traktException
 import markdown2
-import requests
 from unrar2 import RarFile
 
 import sickbeard
@@ -2258,7 +2257,7 @@ class HomeChangeLog(Home):
 
     def index(self):
         try:
-            changes = helpers.getURL('https://api.pymedusa.com/changelog.md', session=requests.Session(), returns='text')
+            changes = helpers.getURL('https://api.pymedusa.com/changelog.md', session=helpers.make_session(), returns='text')
         except Exception:
             logger.log(u'Could not load changes from repo, giving a link!', logger.DEBUG)
             changes = 'Could not load changes from the repo. [Click here for CHANGES.md](https://api.pymedusa.com/CHANGES.md)'
