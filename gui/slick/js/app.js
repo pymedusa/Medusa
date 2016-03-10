@@ -9,184 +9,191 @@ var sickrage = angular.module('sickrage', [
     // 'underscore'
 ]);
 
-sickrage.config(['$stateProvider', '$urlRouterProvider', '$locationProvider', '$compileProvider', function($stateProvider, $urlRouterProvider, $locationProvider, $compileProvider){ // jshint ignore:line
-    // Enable HTML5's history API to allow / instead of #/
-    // Currently we use #/ since mako is still inside of Sickrage
-    // $locationProvider.html5Mode(true);
+sickrage.config([
+    '$stateProvider',
+    '$urlRouterProvider',
+    '$locationProvider',
+    '$compileProvider',
+    '$httpProvider',
+    function($stateProvider, $urlRouterProvider, $locationProvider, $compileProvider, $httpProvider){
+        // Enable HTML5's history API to allow / instead of #/
+        // Currently we use #/ since mako is still inside of Sickrage
+        // $locationProvider.html5Mode(true);
 
-    // Currently we can't use this as we're still developing but we'll want this to be false as it helps with performace
-    // but does so at the expense of removing debug info which is useful for developers
-    // $compileProvider.debugInfoEnabled(false);
+        // Currently we can't use this as we're still developing but we'll want this to be false as it helps with performace
+        // but does so at the expense of removing debug info which is useful for developers
+        // $compileProvider.debugInfoEnabled(false);
 
-    // For any unmatched url, send to home
-    $urlRouterProvider.otherwise('/');
+        // For any unmatched url, send to home
+        $urlRouterProvider.otherwise('/');
 
-    $stateProvider.state('home', {
-        url: '/',
-        views: {
-            '': {
-                templateUrl: '/templates/home.html',
-                controller: 'homeController'
-            },
-            'banner@home': {
-                templateUrl: '/templates/partials/home/banner.html',
-                controller: 'bannerController'
-            },
-            'poster@home': {
-                templateUrl: '/templates/partials/home/poster.html',
-                controller: 'posterController'
-            },
-            'simple@home': {
-                templateUrl: '/templates/partials/home/simple.html',
-                controller: 'simpleController'
-            },
-            'small@home': {
-                templateUrl: '/templates/partials/home/small.html',
-                controller: 'smallController'
+        $stateProvider.state('home', {
+            url: '/',
+            views: {
+                '': {
+                    templateUrl: '/templates/home.html',
+                    controller: 'homeController'
+                },
+                'banner@home': {
+                    templateUrl: '/templates/partials/home/banner.html',
+                    controller: 'bannerController'
+                },
+                'poster@home': {
+                    templateUrl: '/templates/partials/home/poster.html',
+                    controller: 'posterController'
+                },
+                'simple@home': {
+                    templateUrl: '/templates/partials/home/simple.html',
+                    controller: 'simpleController'
+                },
+                'small@home': {
+                    templateUrl: '/templates/partials/home/small.html',
+                    controller: 'smallController'
+                }
             }
-        }
-    });
+        });
 
-    $stateProvider.state('schedule', {
-        url: '/schedule',
-        templateUrl: '/schedule'
-    });
+        $stateProvider.state('schedule', {
+            url: '/schedule',
+            templateUrl: '/schedule'
+        });
 
-    $stateProvider.state('history', {
-        url: '/history',
-        templateUrl: '/history'
-    });
+        $stateProvider.state('history', {
+            url: '/history',
+            templateUrl: '/history'
+        });
 
-    $stateProvider.state('displayShow', {
-        url: '/displayShow?showId',
-        templateUrl: '/templates/displayShow.html'
-    });
+        $stateProvider.state('displayShow', {
+            url: '/displayShow?showId',
+            templateUrl: '/templates/displayShow.html'
+        });
 
-    $stateProvider.state('manage', {
-        url: '/manage',
-        templateUrl: '/manage'
-    });
+        $stateProvider.state('manage', {
+            url: '/manage',
+            templateUrl: '/manage'
+        });
 
-    $stateProvider.state('manage/backlogOverview', {
-        url: '/manage/backlogOverview',
-        templateUrl: '/manage/backlogOverview'
-    });
+        $stateProvider.state('manage/backlogOverview', {
+            url: '/manage/backlogOverview',
+            templateUrl: '/manage/backlogOverview'
+        });
 
-    $stateProvider.state('manage/manageSearches', {
-        url: '/manage/manageSearches',
-        templateUrl: '/manage/manageSearches'
-    });
+        $stateProvider.state('manage/manageSearches', {
+            url: '/manage/manageSearches',
+            templateUrl: '/manage/manageSearches'
+        });
 
-    $stateProvider.state('manage/episodeStatuses', {
-        url: '/manage/episodeStatuses',
-        templateUrl: '/manage/episodeStatuses'
-    });
+        $stateProvider.state('manage/episodeStatuses', {
+            url: '/manage/episodeStatuses',
+            templateUrl: '/manage/episodeStatuses'
+        });
 
-    $stateProvider.state('updatePLEX', {
-        url: '/updatePLEX',
-        templateUrl: '/home/updatePLEX'
-    });
+        $stateProvider.state('updatePLEX', {
+            url: '/updatePLEX',
+            templateUrl: '/home/updatePLEX'
+        });
 
-    $stateProvider.state('updateKODI', {
-        url: '/updateKODI',
-        templateUrl: '/home/updateKODI'
-    });
+        $stateProvider.state('updateKODI', {
+            url: '/updateKODI',
+            templateUrl: '/home/updateKODI'
+        });
 
-    $stateProvider.state('updateEMBY', {
-        url: '/updateEMBY',
-        templateUrl: '/home/updateEMBY'
-    });
+        $stateProvider.state('updateEMBY', {
+            url: '/updateEMBY',
+            templateUrl: '/home/updateEMBY'
+        });
 
-    $stateProvider.state('manage/manageTorrents', {
-        url: '/manage/manageTorrents',
-        templateUrl: '/manage/manageTorrents'
-    });
+        $stateProvider.state('manage/manageTorrents', {
+            url: '/manage/manageTorrents',
+            templateUrl: '/manage/manageTorrents'
+        });
 
-    $stateProvider.state('manage/failedDownloads', {
-        url: '/manage/failedDownloads',
-        templateUrl: '/manage/failedDownloads'
-    });
+        $stateProvider.state('manage/failedDownloads', {
+            url: '/manage/failedDownloads',
+            templateUrl: '/manage/failedDownloads'
+        });
 
-    $stateProvider.state('manage/subtitleMissed', {
-        url: '/manage/subtitleMissed',
-        templateUrl: '/manage/subtitleMissed'
-    });
+        $stateProvider.state('manage/subtitleMissed', {
+            url: '/manage/subtitleMissed',
+            templateUrl: '/manage/subtitleMissed'
+        });
 
-    $stateProvider.state('config', {
-        url: '/config',
-        templateUrl: '/templates/config.html'
-    });
+        $stateProvider.state('config', {
+            url: '/config',
+            templateUrl: '/templates/config.html'
+        });
 
-    $stateProvider.state('config/general', {
-        url: '/config/general',
-        templateUrl: '/config/general'
-    });
+        $stateProvider.state('config/general', {
+            url: '/config/general',
+            templateUrl: '/config/general'
+        });
 
-    $stateProvider.state('config/backuprestore', {
-        url: '/config/backuprestore',
-        templateUrl: '/config/backuprestore'
-    });
+        $stateProvider.state('config/backuprestore', {
+            url: '/config/backuprestore',
+            templateUrl: '/config/backuprestore'
+        });
 
-    $stateProvider.state('config/search', {
-        url: '/config/search',
-        templateUrl: '/config/search'
-    });
+        $stateProvider.state('config/search', {
+            url: '/config/search',
+            templateUrl: '/config/search'
+        });
 
-    $stateProvider.state('config/providers', {
-        url: '/config/providers',
-        templateUrl: '/config/providers'
-    });
+        $stateProvider.state('config/providers', {
+            url: '/config/providers',
+            templateUrl: '/config/providers'
+        });
 
-    $stateProvider.state('config/subtitles', {
-        url: '/config/subtitles',
-        templateUrl: '/config/subtitles'
-    });
+        $stateProvider.state('config/subtitles', {
+            url: '/config/subtitles',
+            templateUrl: '/config/subtitles'
+        });
 
-    $stateProvider.state('config/postProcessing', {
-        url: '/config/postProcessing',
-        templateUrl: '/config/postProcessing'
-    });
+        $stateProvider.state('config/postProcessing', {
+            url: '/config/postProcessing',
+            templateUrl: '/config/postProcessing'
+        });
 
-    $stateProvider.state('config/notifications', {
-        url: '/config/notifications',
-        templateUrl: '/config/notifications'
-    });
+        $stateProvider.state('config/notifications', {
+            url: '/config/notifications',
+            templateUrl: '/config/notifications'
+        });
 
-    $stateProvider.state('config/anime', {
-        url: '/config/anime',
-        templateUrl: '/config/anime'
-    });
+        $stateProvider.state('config/anime', {
+            url: '/config/anime',
+            templateUrl: '/config/anime'
+        });
 
-    $stateProvider.state('logs', {
-        url: '/logs?level&layout',
-        templateUrl: '/templates/logs.html'
-    });
+        $stateProvider.state('logs', {
+            url: '/logs?level&layout',
+            templateUrl: '/templates/logs.html'
+        });
 
-    $stateProvider.state('status', {
-        url: '/status',
-        templateUrl: '/templates/status.html'
-    });
+        $stateProvider.state('status', {
+            url: '/status',
+            templateUrl: '/templates/status.html'
+        });
 
-    $stateProvider.state('addShows', {
-        url: '/addShows',
-        templateUrl: '/templates/addShows.html'
-    });
+        $stateProvider.state('addShows', {
+            url: '/addShows',
+            templateUrl: '/templates/addShows.html'
+        });
 
-    $stateProvider.state('newShow', {
-        url: '/addShows/newShow',
-        views: {
-            '': {
-                templateUrl: '/templates/newShow.html'
-            },
-            'addShowOptions@newShow': {
-                templateUrl: '/templates/partials/addShows/options.html'
-            },
-            'qualityChooser@newShow': {
-                templateUrl: '/templates/partials/addShows/qualityChooser.html'
+        $stateProvider.state('newShow', {
+            url: '/addShows/newShow',
+            views: {
+                '': {
+                    templateUrl: '/templates/newShow.html'
+                },
+                'addShowOptions@newShow': {
+                    templateUrl: '/templates/partials/addShows/options.html'
+                },
+                'qualityChooser@newShow': {
+                    templateUrl: '/templates/partials/addShows/qualityChooser.html'
+                }
             }
-        }
-    });
-}]);
+        });
+    }
+]);
 
 sickrage.factory('_', ['$window', function($window) {
     return $window._;
@@ -343,9 +350,65 @@ sickrage.directive('timeago', function(){
     };
 });
 
-// @TODO: All of the controllers need to be moved into a controller directory and/or file
+sickrage.directive('header', function () {
+    return {
+        restrict: 'A',
+        replace: true,
+        templateUrl: '/templates/partials/header.html'
+    }
+});
 
-sickrage.controller('homeController', function($scope, $http) {
+sickrage.directive('footer', function () {
+    return {
+        restrict: 'A',
+        replace: true,
+        templateUrl: '/templates/partials/footer.html'
+    }
+});
+
+sickrage.directive('submenu', function () {
+    return {
+        restrict: 'A',
+        replace: true,
+        controller: ['$scope', '$http', '$state', function ($scope, $http, $state) {
+            // $scope.$state = $state;
+            // $http({
+            //     method: 'GET',
+            //     url: '/',
+            //     headers: {
+            //         'Accept': 'application/json'
+            //     }
+            // }).then(function successCallback(response){
+            //     $scope.loggedIn = response.data.loggedIn;
+            // });
+
+        //     <!-- @TODO: This should be moved into the directive for submenu -->
+        // <!-- <% first = True %>
+        // % for menuItem in submenu:
+        //     % if 'requires' not in menuItem or menuItem['requires']:
+        //         <% icon_class = '' if 'icon' not in menuItem else ' ' + menuItem['icon'] %>
+        //           % if type(menuItem['path']) == dict:
+        //               ${("</span><span>", "")[bool(first)]}<b>${menuItem['title']}</b>
+        //               <%
+        //                   first = False
+        //                   inner_first = True
+        //               %>
+        //               % for cur_link in menuItem['path']:
+        //                   ${("&middot; ", "")[bool(inner_first)]}<a class="inner" href="${srRoot}/${menuItem['path'][cur_link]}">${cur_link}</a>
+        //                   <% inner_first = False %>
+        //               % endfor
+        //           % else:
+        //               <a href="${srRoot}/${menuItem['path']}" class="btn${('', ' confirm ' + menuItem.get('class', ''))['confirm' in menuItem]}">${('', '<span class="pull-left ' + icon_class + '"></span> ')[bool(icon_class)]}${menuItem['title']}</a>
+        //               <% first = False %>
+        //           % endif
+        //     % endif
+        // % endfor -->
+        }]
+    }
+});
+
+// @TODO: All of the controllers need to be moved into a controller directory and/or file
+sickrage.controller('homeController', function($scope, $http, $rootScope) {
     $.timeago.settings.allowFuture = true;
     $.timeago.settings.strings = {
         prefixAgo: null,
@@ -518,6 +581,30 @@ sickrage.controller('posterShowController', function($scope, $sce) {
     // @TODO: This should be HTML so line breaks work
     $scope.downloadStatTip = show.stats.total ? downloadStatTip : 'Unaired';
     $scope.progressbarPercentage = (show.stats.downloaded * 100) / (show.stats.total || 1);
+});
+
+sickrage.controller('rootController', function($scope, $http) {
+    $http({
+        method: 'GET',
+        url: '/',
+        headers: {
+            'Accept': 'application/json'
+        }
+    }).then(function successCallback(response){
+        var settings = response.data.settings;
+        $scope.pleaseUpdate = settings.newesetVersionString === true;
+        $scope.pleaseSwitchBranches = (settings.branch !== 'master' && !settings.developer && response.data.loggedIn) === true;
+        $scope.currentBranch = settings.branch;
+        $scope.updateVersion = settings.newesetVersionString;
+        $scope.loggedIn = response.data.loggedIn;
+        $scope.globalStats = response.data.stats;
+        $scope.globalStats.episodes.percentage = (response.data.stats.episodes.downloaded/response.data.stats.episodes.total*100).toFixed(2);
+        $scope.memoryUsed = response.data.memoryUsed;
+        $scope.loadTime = response.data.loadTime;
+        $scope.timeNow = response.data.timeNow;
+        $scope.backlogSearch = response.data.backlogSearch;
+        $scope.dailySearch = response.data.dailySearch;
+    });
 });
 
 sickrage.controller('scheduleController', function() {

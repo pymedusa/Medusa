@@ -8,13 +8,6 @@
     from sickbeard import network_timezones
     from sickrage.helper.common import pretty_file_size
     from sickrage.show.Show import Show
-
-    # resource module is unix only
-    has_resource_module = True
-    try:
-        import resource
-    except ImportError:
-        has_resource_module = False
 %>
 <%
     srRoot = sickbeard.WEB_ROOT
@@ -36,13 +29,15 @@
 
         <title>Medusa - ${title}</title>
 
+        <base href="${("/", srRoot)[srRoot is not ""]}" target="_blank">
+
         <!--[if lt IE 9]>
             <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
             <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
         <![endif]-->
         <meta name="msapplication-TileColor" content="#FFFFFF">
-        <meta name="msapplication-TileImage" content="${srRoot}/images/ico/favicon-144.png">
-        <meta name="msapplication-config" content="${srRoot}/css/browserconfig.xml">
+        <meta name="msapplication-TileImage" content="images/ico/favicon-144.png">
+        <meta name="msapplication-config" content="css/browserconfig.xml">
 
         <meta data-var="srRoot" data-content="${srRoot}">
         <meta data-var="themeSpinner" data-content="${('', '-dark')[sickbeard.THEME_NAME == 'dark']}">
@@ -61,278 +56,76 @@
         <meta data-var="sickbeard.SORT_ARTICLE" data-content="${sickbeard.SORT_ARTICLE}">
         <meta data-var="sickbeard.TIME_PRESET" data-content="${sickbeard.TIME_PRESET}">
         <meta data-var="sickbeard.TRIM_ZERO" data-content="${sickbeard.TRIM_ZERO}">
-        <%block name="metas" />
 
-        <link rel="shortcut icon" href="${srRoot}/images/ico/favicon.ico">
-        <link rel="icon" sizes="16x16 32x32 64x64" href="${srRoot}/images/ico/favicon.ico">
-        <link rel="icon" type="image/png" sizes="196x196" href="${srRoot}/images/ico/favicon-196.png">
-        <link rel="icon" type="image/png" sizes="160x160" href="${srRoot}/images/ico/favicon-160.png">
-        <link rel="icon" type="image/png" sizes="96x96" href="${srRoot}/images/ico/favicon-96.png">
-        <link rel="icon" type="image/png" sizes="64x64" href="${srRoot}/images/ico/favicon-64.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="${srRoot}/images/ico/favicon-32.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="${srRoot}/images/ico/favicon-16.png">
-        <link rel="apple-touch-icon" sizes="152x152" href="${srRoot}/images/ico/favicon-152.png">
-        <link rel="apple-touch-icon" sizes="144x144" href="${srRoot}/images/ico/favicon-144.png">
-        <link rel="apple-touch-icon" sizes="120x120" href="${srRoot}/images/ico/favicon-120.png">
-        <link rel="apple-touch-icon" sizes="114x114" href="${srRoot}/images/ico/favicon-114.png">
-        <link rel="apple-touch-icon" sizes="76x76" href="${srRoot}/images/ico/favicon-76.png">
-        <link rel="apple-touch-icon" sizes="72x72" href="${srRoot}/images/ico/favicon-72.png">
-        <link rel="apple-touch-icon" href="${srRoot}/images/ico/favicon-57.png">
+        <link rel="shortcut icon" href="images/ico/favicon.ico">
+        <link rel="icon" sizes="16x16 32x32 64x64" href="images/ico/favicon.ico">
+        <link rel="icon" type="image/png" sizes="196x196" href="images/ico/favicon-196.png">
+        <link rel="icon" type="image/png" sizes="160x160" href="images/ico/favicon-160.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="images/ico/favicon-96.png">
+        <link rel="icon" type="image/png" sizes="64x64" href="images/ico/favicon-64.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="images/ico/favicon-32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="images/ico/favicon-16.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="images/ico/favicon-152.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="images/ico/favicon-144.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="images/ico/favicon-120.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="images/ico/favicon-114.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="images/ico/favicon-76.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="images/ico/favicon-72.png">
+        <link rel="apple-touch-icon" href="images/ico/favicon-57.png">
 
-        <link rel="stylesheet" type="text/css" href="${srRoot}/css/vender.min.css?${sbPID}"/>
-        <link rel="stylesheet" type="text/css" href="${srRoot}/css/browser.css?${sbPID}" />
-        <link rel="stylesheet" type="text/css" href="${srRoot}/css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
-        <link rel="stylesheet" type="text/css" href="${srRoot}/css/lib/jquery.qtip-2.2.1.min.css?${sbPID}"/>
-        <link rel="stylesheet" type="text/css" href="${srRoot}/css/style.css?${sbPID}"/>
-        <link rel="stylesheet" type="text/css" href="${srRoot}/css/${sickbeard.THEME_NAME}.css?${sbPID}" />
-        <link rel="stylesheet" type="text/css" href="${srRoot}/css/print.css?${sbPID}" />
-        % if srLogin:
-        <link rel="stylesheet" type="text/css" href="${srRoot}/css/country-flags.css?${sbPID}"/>
-        % endif
-        <%block name="css" />
+        <link rel="stylesheet" type="text/css" href="css/vender.min.css?${sbPID}"/>
+        <link rel="stylesheet" type="text/css" href="css/browser.css?${sbPID}" />
+        <link rel="stylesheet" type="text/css" href="css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
+        <link rel="stylesheet" type="text/css" href="css/lib/jquery.qtip-2.2.1.min.css?${sbPID}"/>
+        <link rel="stylesheet" type="text/css" href="css/style.css?${sbPID}"/>
+        <link rel="stylesheet" type="text/css" href="css/${sickbeard.THEME_NAME}.css?${sbPID}" />
+        <link rel="stylesheet" type="text/css" href="css/print.css?${sbPID}" />
+        <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
+        <link rel="stylesheet" type="text/css" href="css/app.css?${sbPID}"/>
+        <style>
+            [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+                display: none !important;
+            }
+        </style>
     </head>
-    <body data-controller="${controller}" data-action="${action}">
-        <nav class="navbar navbar-default navbar-fixed-top hidden-print" role="navigation">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" ui-sref="home" title="Medusa"><img alt="Medusa" src="${srRoot}/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
-                </div>
+    <body ng-controller="rootController" ng-cloak>
+        <header header ng-cloak></header>
 
-            % if srLogin:
-                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                    <ul class="nav navbar-nav navbar-right">
-                        <li id="NAVhome" class="navbar-split dropdown${('', ' active')[topmenu == 'home']}">
-                            <a ui-sref="home" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
-                            <b class="caret"></b>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a ui-sref="home"><i class="menu-icon-home"></i>&nbsp;Show List</a></li>
-                                <li><a ui-sref="addShows"><i class="menu-icon-addshow"></i>&nbsp;Add Shows</a></li>
-                                <li><a ui-sref="postprocess"><i class="menu-icon-postprocess"></i>&nbsp;Manual Post-Processing</a></li>
-                                % if sickbeard.SHOWS_RECENT:
-                                    <li role="separator" class="divider"></li>
-                                    % for recentShow in sickbeard.SHOWS_RECENT:
-                                        <li><a href="#/displayShow?showId=${recentShow['indexerid']}"><i class="menu-icon-addshow"></i>&nbsp;${recentShow['name']|trim,h}</a></li>
-                                    % endfor
-                                % endif
-                            </ul>
-                            <div style="clear:both;"></div>
-                        </li>
+        <div id="SubMenu" class="hidden-print" ng-cloak></div>
 
-                        <li id="NAVschedule"${('', ' class="active"')[topmenu == 'schedule']}>
-                            <a ui-sref="schedule">Schedule</a>
-                        </li>
-
-                        <li id="NAVhistory"${('', ' class="active"')[topmenu == 'history']}>
-                            <a ui-sref="history">History</a>
-                        </li>
-
-                        <li id="NAVmanage" class="navbar-split dropdown${('', ' active')[topmenu == 'manage']}">
-                            <a ui-sref="manage/episodeStatuses" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Manage</span>
-                            <b class="caret"></b>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a ui-sref="manage"><i class="menu-icon-manage"></i>&nbsp;Mass Update</a></li>
-                                <li><a ui-sref="manage/backlogOverview"><i class="menu-icon-backlog-view"></i>&nbsp;Backlog Overview</a></li>
-                                <li><a ui-sref="manage/manageSearches"><i class="menu-icon-manage-searches"></i>&nbsp;Manage Searches</a></li>
-                                <li><a ui-sref="manage/episodeStatuses"><i class="menu-icon-manage2"></i>&nbsp;Episode Status Management</a></li>
-                            % if sickbeard.USE_PLEX_SERVER and sickbeard.PLEX_SERVER_HOST != "":
-                                <li><a ui-sref="updatePLEX"><i class="menu-icon-plex"></i>&nbsp;Update PLEX</a></li>
-                            % endif
-                            % if sickbeard.USE_KODI and sickbeard.KODI_HOST != "":
-                                <li><a ui-sref="updateKODI"><i class="menu-icon-kodi"></i>&nbsp;Update KODI</a></li>
-                            % endif
-                            % if sickbeard.USE_EMBY and sickbeard.EMBY_HOST != "" and sickbeard.EMBY_APIKEY != "":
-                                <li><a ui-sref="updateEMBY"><i class="menu-icon-emby"></i>&nbsp;Update Emby</a></li>
-                            % endif
-                            % if sickbeard.USE_TORRENTS and sickbeard.TORRENT_METHOD != 'blackhole' and (sickbeard.ENABLE_HTTPS and sickbeard.TORRENT_HOST[:5] == 'https' or not sickbeard.ENABLE_HTTPS and sickbeard.TORRENT_HOST[:5] == 'http:'):
-                                <li><a ui-sref="manage/manageTorrents"><i class="menu-icon-bittorrent"></i>&nbsp;Manage Torrents</a></li>
-                            % endif
-                            % if sickbeard.USE_FAILED_DOWNLOADS:
-                                <li><a ui-sref="manage/failedDownloads"><i class="menu-icon-failed-download"></i>&nbsp;Failed Downloads</a></li>
-                            % endif
-                            % if sickbeard.USE_SUBTITLES:
-                                <li><a ui-sref="manage/subtitleMissed"><i class="menu-icon-backlog"></i>&nbsp;Missed Subtitle Management</a></li>
-                            % endif
-                            </ul>
-                            <div style="clear:both;"></div>
-                        </li>
-
-                        <li id="NAVconfig" class="navbar-split dropdown${('', ' active')[topmenu == 'config']}">
-                            <a ui-sref="config" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Config</span><img src="${srRoot}/images/menu/system18.png" class="navbaricon hidden-xs" />
-                            <b class="caret"></b>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a ui-sref="config"><i class="menu-icon-help"></i>&nbsp;Help &amp; Info</a></li>
-                                <li><a ui-sref="config/general"><i class="menu-icon-config"></i>&nbsp;General</a></li>
-                                <li><a ui-sref="config/backuprestore"><i class="menu-icon-backup"></i>&nbsp;Backup &amp; Restore</a></li>
-                                <li><a ui-sref="config/search"><i class="menu-icon-manage-searches"></i>&nbsp;Search Settings</a></li>
-                                <li><a ui-sref="config/providers"><i class="menu-icon-provider"></i>&nbsp;Search Providers</a></li>
-                                <li><a ui-sref="config/subtitles"><i class="menu-icon-backlog"></i>&nbsp;Subtitles Settings</a></li>
-                                <li><a ui-sref="config/postProcessing"><i class="menu-icon-postprocess"></i>&nbsp;Post Processing</a></li>
-                                <li><a ui-sref="config/notifications"><i class="menu-icon-notification"></i>&nbsp;Notifications</a></li>
-                                <li><a ui-sref="config/anime"><i class="menu-icon-anime"></i>&nbsp;Anime</a></li>
-                            </ul>
-                            <div style="clear:both;"></div>
-                        </li>
-
-                        <%
-                            if sickbeard.NEWS_UNREAD:
-                                newsBadge = ' <span class="badge">'+str(sickbeard.NEWS_UNREAD)+'</span>'
-                            else:
-                                newsBadge = ''
-
-                            numCombined = numErrors + numWarnings + sickbeard.NEWS_UNREAD
-                            if numCombined:
-                                if numErrors:
-                                    toolsBadgeClass = ' btn-danger'
-                                elif numWarnings:
-                                    toolsBadgeClass = ' btn-warning'
-                                else:
-                                    toolsBadgeClass = ''
-
-                                toolsBadge = ' <span class="badge'+toolsBadgeClass+'">'+str(numCombined)+'</span>'
-                            else:
-                                toolsBadge = ''
-                        %>
-                        <li id="NAVsystem" class="navbar-split dropdown${('', ' active')[topmenu == 'system']}">
-                            <a href="${srRoot}/home/status/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="${srRoot}/images/menu/system18-2.png" class="navbaricon hidden-xs" />${toolsBadge}
-                            <b class="caret"></b>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a href="${srRoot}/news/"><i class="menu-icon-news"></i>&nbsp;News${newsBadge}</a></li>
-                                <li><a href="${srRoot}/IRC/"><i class="menu-icon-irc"></i>&nbsp;IRC</a></li>
-                                <li><a href="${srRoot}/changes/"><i class="menu-icon-changelog"></i>&nbsp;Changelog</a></li>
-                                <li><a href="https://github.com/PyMedusa/SickRage/wiki/Donations" rel="noreferrer" onclick="window.open('${sickbeard.ANON_REDIRECT}' + this.href); return false;"><i class="menu-icon-support"></i>&nbsp;Support Medusa</a></li>
-                                <li role="separator" class="divider"></li>
-                                %if numErrors:
-                                    <li><a href="${srRoot}/errorlogs/"><i class="menu-icon-error"></i>&nbsp;View Errors <span class="badge btn-danger">${numErrors}</span></a></li>
-                                %endif
-                                %if numWarnings:
-                                    <li><a href="${srRoot}/errorlogs/?level=${sickbeard.logger.WARNING}"><i class="menu-icon-viewlog-errors"></i>&nbsp;View Warnings <span class="badge btn-warning">${numWarnings}</span></a></li>
-                                %endif
-                                <li><a href="${srRoot}/errorlogs/viewlog/"><i class="menu-icon-viewlog"></i>&nbsp;View Log</a></li>
-                                <li role="separator" class="divider"></li>
-                                <li><a href="${srRoot}/home/updateCheck?pid=${sbPID}"><i class="menu-icon-update"></i>&nbsp;Check For Updates</a></li>
-                                <li><a href="${srRoot}/home/restart/?pid=${sbPID}" class="confirm restart"><i class="menu-icon-restart"></i>&nbsp;Restart</a></li>
-                                <li><a href="${srRoot}/home/shutdown/?pid=${sbPID}" class="confirm shutdown"><i class="menu-icon-shutdown"></i>&nbsp;Shutdown</a></li>
-                                % if srLogin is not True:
-                                    <li><a href="${srRoot}/logout" class="confirm logout"><i class="menu-icon-shutdown"></i>&nbsp;Logout</a></li>
-                                % endif
-                                <li role="separator" class="divider"></li>
-                                <li><a href="${srRoot}/home/status/"><i class="menu-icon-info"></i>&nbsp;Server Status</a></li>
-                            </ul>
-                            <div style="clear:both;"></div>
-                        </li>
-                    </ul>
-            % endif
-                </div><!-- /.navbar-collapse -->
-            </div><!-- /.container-fluid -->
-        </nav>
-        % if submenu:
-        <div id="SubMenu" class="hidden-print">
-            <span>
-            <% first = True %>
-            % for menuItem in submenu:
-                % if 'requires' not in menuItem or menuItem['requires']:
-                    <% icon_class = '' if 'icon' not in menuItem else ' ' + menuItem['icon'] %>
-                      % if type(menuItem['path']) == dict:
-                          ${("</span><span>", "")[bool(first)]}<b>${menuItem['title']}</b>
-                          <%
-                              first = False
-                              inner_first = True
-                          %>
-                          % for cur_link in menuItem['path']:
-                              ${("&middot; ", "")[bool(inner_first)]}<a class="inner" href="${srRoot}/${menuItem['path'][cur_link]}">${cur_link}</a>
-                              <% inner_first = False %>
-                          % endfor
-                      % else:
-                          <a href="${srRoot}/${menuItem['path']}" class="btn${('', ' confirm ' + menuItem.get('class', ''))['confirm' in menuItem]}">${('', '<span class="pull-left ' + icon_class + '"></span> ')[bool(icon_class)]}${menuItem['title']}</a>
-                          <% first = False %>
-                      % endif
-                % endif
-            % endfor
-            </span>
+        <div ng-if="pleaseSwitchBranches" class="alert alert-danger upgrade-notification hidden-print" role="alert" ng-cloak>
+            <span>You're using the {{currentBranch}} branch. Please use 'master' unless specifically asked.</span>
         </div>
-        % endif
-        % if sickbeard.BRANCH and sickbeard.BRANCH != 'master' and not sickbeard.DEVELOPER and srLogin:
-        <div class="alert alert-danger upgrade-notification hidden-print" role="alert">
-            <span>You're using the ${sickbeard.BRANCH} branch. Please use 'master' unless specifically asked</span>
+
+        <div ng-if="pleaseUpdate" class="alert alert-success upgrade-notification hidden-print" role="alert" ng-cloak>
+            <span>{{updateVersion}}</span>
         </div>
-        % endif
 
-        % if sickbeard.NEWEST_VERSION_STRING and srLogin:
-        <div class="alert alert-success upgrade-notification hidden-print" role="alert">
-            <span>${sickbeard.NEWEST_VERSION_STRING}</span>
-        </div>
-        % endif
+        <div id="content" ui-view ng-cloak></div>
 
-        <div id="content" ui-view></div>
-    % if srLogin:
-        <footer>
-            <div class="footer clearfix">
-            <%
-                stats = Show.overall_stats()
-                ep_downloaded = stats['episodes']['downloaded']
-                ep_snatched = stats['episodes']['snatched']
-                ep_total = stats['episodes']['total']
-                ep_percentage = '' if ep_total == 0 else '(<span class="footerhighlight">%s%%</span>)' % re.sub(r'(\d+)(\.\d)\d+', r'\1\2', str((float(ep_downloaded)/float(ep_total))*100))
-            %>
-                <span class="footerhighlight">${stats['shows']['total']}</span> Shows (<span class="footerhighlight">${stats['shows']['active']}</span> Active)
-                | <span class="footerhighlight">${ep_downloaded}</span>
+        <footer footer ng-cloak></footer>
+        <script type="text/javascript" src="js/vender.min.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/jquery.cookiejar.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/jquery.form.min.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/jquery.json-2.2.min.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/jquery.selectboxes.min.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/rootDirs.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/core.${('', 'min')[sickbeard.DEVELOPER]}js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/ajaxNotifications.js?${sbPID}"></script>
 
-                % if ep_snatched:
-                <span class="footerhighlight"><a href="${srRoot}/manage/episodeStatuses?whichStatus=2" title="View overview of snatched episodes">+${ep_snatched}</a></span> Snatched
-                % endif
-
-                &nbsp;/&nbsp;<span class="footerhighlight">${ep_total}</span> Episodes Downloaded ${ep_percentage}
-                | Daily Search: <span class="footerhighlight">${str(sickbeard.dailySearchScheduler.timeLeft()).split('.')[0]}</span>
-                | Backlog Search: <span class="footerhighlight">${str(sickbeard.backlogSearchScheduler.timeLeft()).split('.')[0]}</span>
-
-                <div>
-                    % if has_resource_module:
-                    Memory used: <span class="footerhighlight">${pretty_file_size(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)}</span> |
-                    % endif
-                    Load time: <span class="footerhighlight">${"%.4f" % (time() - sbStartTime)}s</span> / Mako: <span class="footerhighlight">${"%.4f" % (time() - makoStartTime)}s</span> |
-                    Branch: <span class="footerhighlight">${sickbeard.BRANCH}</span> |
-                    Now: <span class="footerhighlight">${datetime.datetime.now(network_timezones.sb_timezone).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</span>
-                </div>
-            </div>
-        </footer>
-        <script type="text/javascript" src="${srRoot}/js/vender.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/lib/jquery.cookiejar.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/lib/jquery.form.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/lib/jquery.json-2.2.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/lib/jquery.selectboxes.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/lib/formwizard.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/parsers.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/rootDirs.js?${sbPID}"></script>
-        % if sickbeard.DEVELOPER:
-        <script type="text/javascript" src="${srRoot}/js/core.js?${sbPID}"></script>
-        % else:
-        <script type="text/javascript" src="${srRoot}/js/core.min.js?${sbPID}"></script>
-        % endif
-        <script type="text/javascript" src="${srRoot}/js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/browser.js?${sbPID}"></script>
-        <script type="text/javascript" src="${srRoot}/js/ajaxNotifications.js?${sbPID}"></script>
-
-        <!-- <script type="text/javascript" src="${srRoot}/js/dependencies/angular.min.js"></script> -->
+        <!-- <script type="text/javascript" src="js/dependencies/angular.min.js"></script> -->
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.js"></script>
-        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-sanitize.min.js"></script>
-        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-ui-router.min.js"></script>
-        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-animate.min.js"></script>
-        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-aria.min.js"></script>
-        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-material.min.js"></script>
-        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-messages.min.js"></script>
-        <script type="text/javascript" src="${srRoot}/js/dependencies/angular-resource.min.js"></script>
-        <script type="text/javascript" src="${srRoot}/js/app.js"></script>
-    % endif
-        <%block name="scripts" />
+        <script type="text/javascript" src="js/dependencies/angular-sanitize.min.js"></script>
+        <script type="text/javascript" src="js/dependencies/angular-ui-router.min.js"></script>
+        <script type="text/javascript" src="js/dependencies/angular-animate.min.js"></script>
+        <script type="text/javascript" src="js/dependencies/angular-aria.min.js"></script>
+        <script type="text/javascript" src="js/dependencies/angular-material.min.js"></script>
+        <script type="text/javascript" src="js/dependencies/angular-messages.min.js"></script>
+        <script type="text/javascript" src="js/dependencies/angular-resource.min.js"></script>
+        <script type="text/javascript" src="js/app.js"></script>
     </body>
 </html>

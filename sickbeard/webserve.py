@@ -40,6 +40,7 @@ from sickbeard import subtitles
 from sickbeard import network_timezones
 from sickbeard import sbdatetime
 from sickbeard import GIT_USERNAME
+from sickbeard import sbdatetime
 from sickbeard.logger import LOGGING_LEVELS
 from sickbeard.providers import newznab, rsstorrent
 from sickbeard.common import Quality, Overview, statusStrings, cpu_presets, qualityPresets, qualityPresetStrings
@@ -367,53 +368,63 @@ class WebRoot(WebHandler):
         super(WebRoot, self).__init__(*args, **kwargs)
 
     def index(self):
+        memory_used = ''
+        try:
+            import resource
+            memory_used = pretty_file_size(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+        except ImportError:
+            # resource module is unix only
+            pass
 
-        if (self.request.headers.get('Content-Type') and
-                self.request.headers.get('Content-Type') in ['application/json', 'application/javascript', 'text/json']):
-                    return {'settings': {
-                                'handleReverseProxy': sickbeard.HANDLE_REVERSE_PROXY,
-                                'webRoot': sickbeard.WEB_ROOT,
-                                'usePlexServer': sickbeard.USE_PLEX_SERVER,
-                                'plexServerHost': sickbeard.PLEX_SERVER_HOST,
-                                'themeName': sickbeard.THEME_NAME,
-                                'animeSplitHome': sickbeard.ANIME_SPLIT_HOME,
-                                'comingEpsLayout': sickbeard.COMING_EPS_LAYOUT,
-                                'comingEpsSort': sickbeard.COMING_EPS_SORT,
-                                'datePreset': sickbeard.DATE_PRESET,
-                                'fuzzyDating': sickbeard.FUZZY_DATING,
-                                'historyLayout': sickbeard.HISTORY_LAYOUT,
-                                'homeLayout': sickbeard.HOME_LAYOUT,
-                                'defaultPage': sickbeard.DEFAULT_PAGE,
-                                'posterSortBy': sickbeard.POSTER_SORTBY,
-                                'posterSortDir': sickbeard.POSTER_SORTDIR,
-                                'rootDirs': sickbeard.ROOT_DIRS,
-                                'sortArticle': sickbeard.SORT_ARTICLE,
-                                'timePreset': sickbeard.TIME_PRESET,
-                                'trimZero': sickbeard.TRIM_ZERO,
-                                'showsRecent': sickbeard.SHOWS_RECENT,
-                                'useKodi': sickbeard.USE_KODI,
-                                'kodiHost': sickbeard.KODI_HOST,
-                                'useEmby': sickbeard.USE_EMBY,
-                                'embyHost': sickbeard.EMBY_HOST,
-                                'embyApiKey': sickbeard.EMBY_APIKEY,
-                                'useTorrents': sickbeard.USE_TORRENTS,
-                                'torrentMethod': sickbeard.TORRENT_METHOD,
-                                'enableHttps': sickbeard.ENABLE_HTTPS,
-                                'torrentHost': sickbeard.TORRENT_HOST,
-                                'useFailedDownloads': sickbeard.USE_FAILED_DOWNLOADS,
-                                'useSubtitles':  sickbeard.USE_SUBTITLES,
-                                'newsUnread': sickbeard.NEWS_UNREAD,
-                                'developer': sickbeard.DEVELOPER,
-                                'newesetVersionString': sickbeard.NEWEST_VERSION_STRING,
-                                },
-                            'session': {
-                                'medLogin': self.get_current_user(),
-                                'medstartTime': self.startTime
-                                },
-                            'show': {
-                                'showOveralStats': Show.overall_stats(),
-                                }
-                            }
+        content_type = self.request.headers.get('Accept')
+
+        if content_type and content_type in ['application/json', 'application/javascript', 'text/json']:
+            return {
+                "settings": {
+                    "animeSplitHome": sickbeard.ANIME_SPLIT_HOME,
+                    "branch": sickbeard.BRANCH,
+                    "comingEpsLayout": sickbeard.COMING_EPS_LAYOUT,
+                    "comingEpsSort": sickbeard.COMING_EPS_SORT,
+                    "datePreset": sickbeard.DATE_PRESET,
+                    "defaultPage": sickbeard.DEFAULT_PAGE,
+                    "developer": sickbeard.DEVELOPER,
+                    "embyApiKey": sickbeard.EMBY_APIKEY,
+                    "embyHost": sickbeard.EMBY_HOST,
+                    "enableHttps": sickbeard.ENABLE_HTTPS,
+                    "fuzzyDating": sickbeard.FUZZY_DATING,
+                    "handleReverseProxy": sickbeard.HANDLE_REVERSE_PROXY,
+                    "historyLayout": sickbeard.HISTORY_LAYOUT,
+                    "homeLayout": sickbeard.HOME_LAYOUT,
+                    "kodiHost": sickbeard.KODI_HOST,
+                    "newesetVersionString": sickbeard.NEWEST_VERSION_STRING,
+                    "newsUnread": sickbeard.NEWS_UNREAD,
+                    "plexServerHost": sickbeard.PLEX_SERVER_HOST,
+                    "posterSortBy": sickbeard.POSTER_SORTBY,
+                    "posterSortDir": sickbeard.POSTER_SORTDIR,
+                    "rootDirs": sickbeard.ROOT_DIRS,
+                    "showsRecent": sickbeard.SHOWS_RECENT,
+                    "sortArticle": sickbeard.SORT_ARTICLE,
+                    "themeName": sickbeard.THEME_NAME,
+                    "timePreset": sickbeard.TIME_PRESET,
+                    "torrentHost": sickbeard.TORRENT_HOST,
+                    "torrentMethod": sickbeard.TORRENT_METHOD,
+                    "trimZero": sickbeard.TRIM_ZERO,
+                    "useEmby": sickbeard.USE_EMBY,
+                    "useFailedDownloads": sickbeard.USE_FAILED_DOWNLOADS,
+                    "useKodi": sickbeard.USE_KODI,
+                    "usePlexServer": sickbeard.USE_PLEX_SERVER,
+                    "useSubtitles":  sickbeard.USE_SUBTITLES,
+                    "useTorrents": sickbeard.USE_TORRENTS,
+                    "webRoot": sickbeard.WEB_ROOT
+                },
+                "loggedIn": (False, True)[self.get_current_user() is not None],
+                "stats": Show.overall_stats(),
+                "dailySearch": str(sickbeard.dailySearchScheduler.timeLeft()).split('.')[0],
+                "backlogSearch": str(sickbeard.backlogSearchScheduler.timeLeft()).split('.')[0],
+                "memoryUsed": memory_used,
+                "loadTime": "%.4f" % (time.time() - self.startTime) + "s",
+                "timeNow": datetime.datetime.now(network_timezones.sb_timezone).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)
+            }
 
         return PageTemplate(rh=self, filename="index.mako").render()
 
