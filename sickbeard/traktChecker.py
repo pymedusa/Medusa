@@ -378,29 +378,32 @@ class TraktChecker(object):
 
         if not self.ShowWatchlist:
             logger.log(u"No shows found in your watchlist, aborting watchlist update", logger.DEBUG)
-            return
-
-        indexer = int(sickbeard.TRAKT_DEFAULT_INDEXER)
-        trakt_id = sickbeard.indexerApi(indexer).config['trakt_id']
-
-        for show_el in self.ShowWatchlist[trakt_id]:
-            indexer_id = int(str(show_el))
-            show = self.ShowWatchlist[trakt_id][show_el]
-
-            # logger.log(u"Checking Show: %s %s %s" % (trakt_id, indexer_id, show['title']),logger.DEBUG)
-            if int(sickbeard.TRAKT_METHOD_ADD) != 2:
-                self.addDefaultShow(indexer, indexer_id, show['title'], SKIPPED)
-            else:
-                self.addDefaultShow(indexer, indexer_id, show['title'], WANTED)
-
-            if int(sickbeard.TRAKT_METHOD_ADD) == 1:
-                newShow = Show.find(sickbeard.showList, indexer_id)
-
-                if newShow is not None:
-                    setEpisodeToWanted(newShow, 1, 1)
+        else:
+            indexer = int(sickbeard.TRAKT_DEFAULT_INDEXER)
+            trakt_id = sickbeard.indexerApi(indexer).config['trakt_id']
+    
+            for watchlisted_show in self.ShowWatchlist[trakt_id]:
+                indexer_id = int(watchlisted_show)
+                show_obj = self.ShowWatchlist[trakt_id][watchlisted_show]
+                if show_obj['slug'].endswith(show_obj['year']):
+                    show_name = show_obj['title'] + ' (' + show_obj['year'] + ')'
                 else:
-                    self.todoWanted.append((indexer_id, 1, 1))
-        logger.log(u"SHOW_WATCHLIST::CHECK::FINISH - Trakt Show Watchlist", logger.DEBUG)
+                    show_name = show_obj['title']
+    
+                if int(sickbeard.TRAKT_METHOD_ADD) != 2:
+                    self.addDefaultShow(indexer, indexer_id, show_name, SKIPPED)
+                else:
+                    self.addDefaultShow(indexer, indexer_id, show_name, WANTED)
+    
+                if int(sickbeard.TRAKT_METHOD_ADD) == 1:
+                    new_show = Show.find(sickbeard.showList, indexer_id)
+    
+                    if new_show:
+                        setEpisodeToWanted(new_show, 1, 1)
+                    else:
+                        self.todoWanted.append(indexer_id, 1, 1)
+
+            logger.log(u"SHOW_WATCHLIST::CHECK::FINISH - Trakt Show Watchlist", logger.DEBUG)
 
     def updateEpisodes(self):
         """
@@ -446,12 +449,11 @@ class TraktChecker(object):
         logger.log(u"SHOW_WATCHLIST::CHECK::FINISH - Trakt Episode Watchlist", logger.DEBUG)
 
     @staticmethod
-    def addDefaultShow(indexer, indexer_id, name, status):
+    def addDefaultShow(indexer, indexer_id, show_name, status):
         """
         Adds a new show with the default settings
         """
         if not Show.find(sickbeard.showList, int(indexer_id)):
-            logger.log(u"Adding show " + str(indexer_id))
             root_dirs = sickbeard.ROOT_DIRS.split('|')
 
             try:
@@ -460,16 +462,18 @@ class TraktChecker(object):
                 location = None
 
             if location:
-                showPath = ek(os.path.join, location, sanitize_filename(name))
-                dir_exists = helpers.makeDir(showPath)
+                show_path = ek(os.path.join, location, show_name)
+                logger.log(u"Adding show {} with ID: {} in location: {}".format(show_name, indexer_id, show_path))
+                dir_exists = helpers.makeDir(show_path)
 
                 if not dir_exists:
-                    logger.log(u"Unable to create the folder %s , can't add the show" % showPath, logger.WARNING)
+                    logger.log(u"Unable to create the folder {}. Unable to add the show {}".format(show_path, show_name), logger.WARNING)
                     return
                 else:
-                    helpers.chmodAsParent(showPath)
+                    logger.log(u"Create the folder %s" % show_path, logger.DEBUG)
+                    helpers.chmodAsParent(show_path)
 
-                sickbeard.showQueueScheduler.action.addShow(int(indexer), int(indexer_id), showPath,
+                sickbeard.showQueueScheduler.action.addShow(int(indexer), int(indexer_id), show_path,
                                                             default_status=status,
                                                             quality=int(sickbeard.QUALITY_DEFAULT),
                                                             flatten_folders=int(sickbeard.FLATTEN_FOLDERS_DEFAULT),
@@ -534,15 +538,16 @@ class TraktChecker(object):
                     tvrage = True
 
                 title = watchlist_el['show']['title']
-                year = str(watchlist_el['show']['year'])
+                year = str(watchlist_el['show']['year']) 
+                slug = str(watchlist_el['show']['ids']['slug'])
 
                 if tvdb:
                     showid = str(watchlist_el['show']['ids'][tvdb_id])
-                    self.ShowWatchlist[tvdb_id + '_id'][showid] = {'id': showid, 'title': title, 'year': year}
+                    self.ShowWatchlist[tvdb_id + '_id'][showid] = {'id': showid, 'title': title, 'year': year, 'slug': slug}
 
                 if tvrage:
                     showid = str(watchlist_el['show']['ids'][tvrage_id])
-                    self.ShowWatchlist[tvrage_id + '_id'][showid] = {'id': showid, 'title': title, 'year': year}
+                    self.ShowWatchlist[tvrage_id + '_id'][showid] = {'id': showid, 'title': title, 'year': year, 'slug': slug}
         except traktException as e:
             logger.log(u"Could not connect to trakt service, cannot download Show Watchlist: %s" % repr(e), logger.WARNING)
             return False
