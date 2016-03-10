@@ -24,8 +24,8 @@ import urllib
 
 import sickbeard
 from sickbeard.common import USER_AGENT, Quality
-
 from sickrage.helper.common import dateTimeFormat
+from dateutil import parser
 
 
 class SickBeardURLopener(urllib.FancyURLopener, object):
@@ -162,7 +162,7 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
                         if search_term.lower() in name.lower():
                             if 'firstaired' not in curShow:
                                 default_date = parser.parse('1900-01-01').date()
-                                curShow['firstaired'] = default_date.strftime(dateFormat)
+                                curShow['firstaired'] = default_date.strftime(dateTimeFormat)
 
                             if curShow not in search_results:
                                 search_results += [curShow]
