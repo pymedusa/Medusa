@@ -367,6 +367,54 @@ class WebRoot(WebHandler):
         super(WebRoot, self).__init__(*args, **kwargs)
 
     def index(self):
+
+        if (self.request.headers.get('Content-Type') and
+                self.request.headers.get('Content-Type') in ['application/json', 'application/javascript', 'text/json']):
+                    return {'settings': {
+                                'handleReverseProxy': sickbeard.HANDLE_REVERSE_PROXY,
+                                'webRoot': sickbeard.WEB_ROOT,
+                                'usePlexServer': sickbeard.USE_PLEX_SERVER,
+                                'plexServerHost': sickbeard.PLEX_SERVER_HOST,
+                                'themeName': sickbeard.THEME_NAME,
+                                'animeSplitHome': sickbeard.ANIME_SPLIT_HOME,
+                                'comingEpsLayout': sickbeard.COMING_EPS_LAYOUT,
+                                'comingEpsSort': sickbeard.COMING_EPS_SORT,
+                                'datePreset': sickbeard.DATE_PRESET,
+                                'fuzzyDating': sickbeard.FUZZY_DATING,
+                                'historyLayout': sickbeard.HISTORY_LAYOUT,
+                                'homeLayout': sickbeard.HOME_LAYOUT,
+                                'defaultPage': sickbeard.DEFAULT_PAGE,
+                                'posterSortBy': sickbeard.POSTER_SORTBY,
+                                'posterSortDir': sickbeard.POSTER_SORTDIR,
+                                'rootDirs': sickbeard.ROOT_DIRS,
+                                'sortArticle': sickbeard.SORT_ARTICLE,
+                                'timePreset': sickbeard.TIME_PRESET,
+                                'trimZero': sickbeard.TRIM_ZERO,
+                                'showsRecent': sickbeard.SHOWS_RECENT,
+                                'useKodi': sickbeard.USE_KODI,
+                                'kodiHost': sickbeard.KODI_HOST,
+                                'useEmby': sickbeard.USE_EMBY,
+                                'embyHost': sickbeard.EMBY_HOST,
+                                'embyApiKey': sickbeard.EMBY_APIKEY,
+                                'useTorrents': sickbeard.USE_TORRENTS,
+                                'torrentMethod': sickbeard.TORRENT_METHOD,
+                                'enableHttps': sickbeard.ENABLE_HTTPS,
+                                'torrentHost': sickbeard.TORRENT_HOST,
+                                'useFailedDownloads': sickbeard.USE_FAILED_DOWNLOADS,
+                                'useSubtitles':  sickbeard.USE_SUBTITLES,
+                                'newsUnread': sickbeard.NEWS_UNREAD,
+                                'developer': sickbeard.DEVELOPER,
+                                'newesetVersionString': sickbeard.NEWEST_VERSION_STRING,
+                                },
+                            'session': {
+                                'medLogin': self.get_current_user(),
+                                'medstartTime': self.startTime
+                                },
+                            'show': {
+                                'showOveralStats': Show.overall_stats(),
+                                }
+                            }
+
         return PageTemplate(rh=self, filename="index.mako").render()
 
     def robots_txt(self):
