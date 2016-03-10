@@ -49,12 +49,10 @@
 
             <div id="showCol">
                 <div id="showinfo">
-    <!-- % if 'rating' in show.imdb_info:
-        <% rating_tip = str(show.imdb_info['rating']) + " / 10" + " Stars" + "<br>" + str(show.imdb_info['votes']) + " Votes" %>
-        <span class="imdbstars" qtip-content="${rating_tip}">${show.imdb_info['rating']}</span>
-    % endif -->
-<!--
-    <% _show = show %>
+                    {{ratingTip = show.imdb_info['rating'] + " / 10" + " Stars" + "<br>" + show.imdb_info['votes'] + " Votes"}}
+                    <span ng-if="show.imdb_info" class="imdbstars" qtip-content="{{ratingTip}}">{{show.imdb_info['rating']}}</span>
+                    <span ng-if="!show.imdbid">({{show.startyear}}) - {{show.runtime}} minutes - </span>
+    <!-- <% _show = show %>
     % if not show.imdbid:
         <span>(${show.startyear}) - ${show.runtime} minutes - </span>
     % else:
