@@ -2366,11 +2366,10 @@ class HomeAddShows(Home):
             for searchTerm in searchTerms:
                 try:
                     indexerResults = t[searchTerm]
+                    # add search results
+                    results.setdefault(indexer, []).extend(indexerResults)
                 except indexer_exception as error:
                     logger.log(u'Error searching for show: {}'.format(ex(error)))
-
-                # add search results
-                results.setdefault(indexer, []).extend(indexerResults)
 
         for i, shows in results.iteritems():
             final_results.extend({(sickbeard.indexerApi(i).name, i, sickbeard.indexerApi(i).config["show_url"], int(show['id']),
