@@ -74,7 +74,7 @@ class TraktChecker(object):
     def run(self, force=False):
         self.amActive = True
 
-        # add shows from trakt.tv watchlist
+        # add shows from Trakt watchlist
         if sickbeard.TRAKT_SYNC_WATCHLIST:
             self.todoWanted = []  # its about to all get re-added
             if len(sickbeard.ROOT_DIRS.split('|')) < 2:
@@ -87,7 +87,7 @@ class TraktChecker(object):
                 logger.log(traceback.format_exc(), logger.DEBUG)
 
             try:
-                # sync trakt.tv library with medusa library
+                # sync Trakt library with medusa library
                 self.syncLibrary()
             except Exception:
                 logger.log(traceback.format_exc(), logger.DEBUG)
@@ -129,7 +129,7 @@ class TraktChecker(object):
             else:
                 data['shows'][0]['ids']['tvrage'] = show_obj.indexerid
 
-            logger.log(u"Removing '{}' from trakt.tv library".format(show_obj.name), logger.DEBUG)
+            logger.log(u"Removing '{}' from Trakt library".format(show_obj.name), logger.DEBUG)
 
             try:
                 self.trakt_api.traktRequest("sync/collection/remove", data, method='POST')
@@ -163,7 +163,7 @@ class TraktChecker(object):
                 data['shows'][0]['ids']['tvrage'] = show_obj.indexerid
 
         if data:
-            logger.log(u"Adding '{}' to trakt.tv library".format(show_obj.name), logger.DEBUG)
+            logger.log(u"Adding '{}' to Trakt library".format(show_obj.name), logger.DEBUG)
 
             try:
                 self.trakt_api.traktRequest("sync/collection", data, method='POST')
@@ -173,7 +173,7 @@ class TraktChecker(object):
 
     def syncLibrary(self):
         if sickbeard.TRAKT_SYNC and sickbeard.USE_TRAKT:
-            logger.log(u"Sync Medusa with Trakt Collection", logger.DEBUG)
+            logger.log(u"Syncing Medusa with Trakt collection", logger.DEBUG)
 
             if self._getShowCollection():
                 self.addEpisodeToTraktCollection()
@@ -182,7 +182,6 @@ class TraktChecker(object):
 
     def removeEpisodeFromTraktCollection(self):
         if sickbeard.TRAKT_SYNC_REMOVE and sickbeard.TRAKT_SYNC and sickbeard.USE_TRAKT:
-            logger.log(u"COLLECTION::REMOVE::START - Look for Episodes to Remove From Trakt Collection", logger.DEBUG)
 
             main_db_con = db.DBConnection()
             sql_selection = 'select tv_shows.indexer, tv_shows.startyear, showid, show_name, season, episode, tv_episodes.status, tv_episodes.location from tv_episodes,tv_shows where tv_shows.indexer_id = tv_episodes.showid'
@@ -210,11 +209,9 @@ class TraktChecker(object):
                     except traktException as e:
                         logger.log(u"Could not connect to Trakt. Error: {}".format(ex(e)), logger.WARNING)
 
-            logger.log(u"COLLECTION::REMOVE::FINISH - Look for Episodes to Remove From Trakt Collection", logger.DEBUG)
 
     def addEpisodeToTraktCollection(self):
         if sickbeard.TRAKT_SYNC and sickbeard.USE_TRAKT:
-            logger.log(u"COLLECTION::ADD::START - Look for Episodes to Add to Trakt Collection", logger.DEBUG)
 
             main_db_con = db.DBConnection()
             sql_selection = 'select tv_shows.indexer, tv_shows.startyear, showid, show_name, season, episode from tv_episodes,tv_shows where tv_shows.indexer_id = tv_episodes.showid and tv_episodes.status in (' + ','.join([str(x) for x in Quality.DOWNLOADED + Quality.ARCHIVED]) + ')'
@@ -241,26 +238,28 @@ class TraktChecker(object):
                     except traktException as e:
                         logger.log(u"Could not connect to Trakt. Error: {}".format(ex(e)), logger.WARNING)
 
-            logger.log(u"COLLECTION::ADD::FINISH - Look for Episodes to Add to Trakt Collection", logger.DEBUG)
 
     def syncWatchlist(self):
         if sickbeard.TRAKT_SYNC_WATCHLIST and sickbeard.USE_TRAKT:
-            logger.log(u"Sync Medusa with Trakt Watchlist", logger.DEBUG)
+            logger.log(u"Starting to sync Medusa with Trakt Watchlist", logger.DEBUG)
 
             self.removeShowFromSickRage()
 
             if self._getShowWatchlist():
+                logger.log(u"Syncing shows with Trakt watchlist", logger.DEBUG)
                 self.addShowToTraktWatchList()
                 self.updateShows()
 
             if self._getEpisodeWatchlist():
+                logger.log(u"Syncing episodes with Trakt watchlist", logger.DEBUG)
                 self.removeEpisodeFromTraktWatchList()
                 self.addEpisodeToTraktWatchList()
                 self.updateEpisodes()
 
+            logger.log(u"Medusa is synced with Trakt watchlist", logger.DEBUG)                
+
     def removeEpisodeFromTraktWatchList(self):
         if sickbeard.TRAKT_SYNC_WATCHLIST and sickbeard.USE_TRAKT:
-            logger.log(u"WATCHLIST::REMOVE::START - Look for Episodes to Remove from Trakt Watchlist", logger.DEBUG)
 
             main_db_con = db.DBConnection()
             sql_selection = 'select tv_shows.indexer, tv_shows.startyear, showid, show_name, season, episode, tv_episodes.status from tv_episodes,tv_shows where tv_shows.indexer_id = tv_episodes.showid'
@@ -288,11 +287,9 @@ class TraktChecker(object):
                     except traktException as e:
                         logger.log(u"Could not connect to Trakt. Error: {}".format(ex(e)), logger.WARNING)
 
-                logger.log(u"WATCHLIST::REMOVE::FINISH - Look for Episodes to Remove from Trakt Watchlist", logger.DEBUG)
 
     def addEpisodeToTraktWatchList(self):
         if sickbeard.TRAKT_SYNC_WATCHLIST and sickbeard.USE_TRAKT:
-            logger.log(u"WATCHLIST::ADD::START - Look for Episodes to Add to Trakt Watchlist", logger.DEBUG)
 
             main_db_con = db.DBConnection()
             sql_selection = 'select tv_shows.indexer, tv_shows.startyear, showid, show_name, season, episode from tv_episodes,tv_shows where tv_shows.indexer_id = tv_episodes.showid and tv_episodes.status in (' + ','.join([str(x) for x in Quality.SNATCHED + Quality.SNATCHED_PROPER + [WANTED]]) + ')'
@@ -320,11 +317,11 @@ class TraktChecker(object):
                     except traktException as e:
                         logger.log(u"Could not connect to Trakt. Error: {}".format(ex(e)), logger.WARNING)
 
-            logger.log(u"WATCHLIST::ADD::FINISH - Look for Episodes to Add to Trakt Watchlist", logger.DEBUG)
+
 
     def addShowToTraktWatchList(self):
         if sickbeard.TRAKT_SYNC_WATCHLIST and sickbeard.USE_TRAKT:
-            logger.log(u"SHOW_WATCHLIST::ADD::START - Look for Shows to Add to Trakt Watchlist", logger.DEBUG)
+            logger.log(u"Syncing shows to Trakt watchlist", logger.DEBUG)
 
             if sickbeard.showList:
                 trakt_data = []
@@ -349,11 +346,10 @@ class TraktChecker(object):
                     except traktException as e:
                         logger.log(u"Could not connect to Trakt. Error: {}".format(ex(e)), logger.WARNING)
 
-            logger.log(u"SHOW_WATCHLIST::ADD::FINISH - Look for Shows to Add to Trakt Watchlist", logger.DEBUG)
 
     def removeShowFromSickRage(self):
         if sickbeard.TRAKT_SYNC_WATCHLIST and sickbeard.USE_TRAKT and sickbeard.TRAKT_REMOVE_SHOW_FROM_SICKRAGE:
-            logger.log(u"SHOW_MEDUSA::REMOVE::START - Look for Shows to remove from Medusa", logger.DEBUG)
+            logger.log(u"Retrieving ended/completed shows to remove from Medusa", logger.DEBUG)
 
             if sickbeard.showList:
                 for show in sickbeard.showList:
@@ -371,10 +367,8 @@ class TraktChecker(object):
                             sickbeard.showQueueScheduler.action.removeShow(show, full=True)
                             logger.log(u"Show '{}' has been removed from Medusa".format(show.name), logger.DEBUG)
 
-            logger.log(u"SHOW_MEDUSA::REMOVE::FINISH - Trakt Show Watchlist", logger.DEBUG)
 
     def updateShows(self):
-        logger.log(u"SHOW_WATCHLIST::CHECK::START - Trakt Show Watchlist", logger.DEBUG)
 
         if not self.ShowWatchlist:
             logger.log(u"No shows found in your watchlist, aborting watchlist update", logger.DEBUG)
@@ -403,13 +397,12 @@ class TraktChecker(object):
                     else:
                         self.todoWanted.append(indexer_id, 1, 1)
 
-            logger.log(u"SHOW_WATCHLIST::CHECK::FINISH - Trakt Show Watchlist", logger.DEBUG)
 
     def updateEpisodes(self):
         """
         Sets episodes to wanted that are in trakt watchlist
         """
-        logger.log(u"SHOW_WATCHLIST::CHECK::START - Trakt Episode Watchlist", logger.DEBUG)
+        logger.log(u"Retrieving episodes to sync with Trakt episode's watchlist", logger.DEBUG)
 
         if not self.EpisodeWatchlist:
             logger.log(u"No episode found in your watchlist, aborting episode update", logger.DEBUG)
@@ -446,7 +439,7 @@ class TraktChecker(object):
                                 setEpisodeToWanted(newShow, season, int(episode_el))
             except TypeError:
                 logger.log(u"Could not parse the output from trakt for '{}' ".format(show["title"]), logger.DEBUG)
-        logger.log(u"SHOW_WATCHLIST::CHECK::FINISH - Trakt Episode Watchlist", logger.DEBUG)
+
 
     @staticmethod
     def addDefaultShow(indexer, indexer_id, show_name, status):
