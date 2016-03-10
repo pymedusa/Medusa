@@ -138,6 +138,8 @@ GIT_PATH = None
 DEVELOPER = False
 
 NEWS_URL = 'https://api.pymedusa.com/news.md'
+LOGO_URL = 'https://api.pymedusa.com/favicon-64.png'
+
 NEWS_LAST_READ = None
 NEWS_LATEST = None
 NEWS_UNREAD = 0
