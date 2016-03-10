@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 import socket
 
 import sickbeard
@@ -27,8 +29,6 @@ from libgrowl import gntp
 
 
 class Notifier(object):
-    sr_logo_url = 'https://raw.githubusercontent.com/PyMedusa/SickRage/master/gui/slick/images/medusa-snake-mascot.png'
-
     def test_notify(self, host, password):
         self._sendRegistration(host, password, 'Test')
         return self._sendGrowl("Test Growl", "Testing Growl settings from Medusa", "Test", host, password,
@@ -47,16 +47,14 @@ class Notifier(object):
             self._sendGrowl(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD], ep_name + ": " + lang)
 
     def notify_git_update(self, new_version="??"):
-        if sickbeard.USE_GROWL:
-            update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
-            title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
-            self._sendGrowl(title, update_text + new_version)
+        update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
+        title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
+        self._sendGrowl(title, update_text + new_version)
 
     def notify_login(self, ipaddress=""):
-        if sickbeard.USE_GROWL:
-            update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
-            title = common.notifyStrings[common.NOTIFY_LOGIN]
-            self._sendGrowl(title, update_text.format(ipaddress))
+        update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
+        title = common.notifyStrings[common.NOTIFY_LOGIN]
+        self._sendGrowl(title, update_text.format(ipaddress))
 
     def _send_growl(self, options, message=None):
 
@@ -77,7 +75,7 @@ class Notifier(object):
         if options['priority']:
             notice.add_header('Notification-Priority', options['priority'])
         if options['icon']:
-            notice.add_header('Notification-Icon', self.sr_logo_url)
+            notice.add_header('Notification-Icon', sickbeard.LOGO_URL)
 
         if message:
             notice.add_header('Notification-Text', message)
@@ -85,9 +83,10 @@ class Notifier(object):
         response = self._send(options['host'], options['port'], notice.encode(), options['debug'])
         return True if isinstance(response, gntp.GNTPOK) else False
 
-    def _send(self, host, port, data, debug=False):
+    @staticmethod
+    def _send(host, port, data, debug=False):
         if debug:
-            print '<Sending>\n', data, '\n</Sending>'
+            print('<Sending>\n', data, '\n</Sending>')
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((host, port))
@@ -96,7 +95,7 @@ class Notifier(object):
         s.close()
 
         if debug:
-            print '<Received>\n', response, '\n</Received>'
+            print('<Received>\n', response, '\n</Received>')
 
         return response
 
@@ -179,7 +178,7 @@ class Notifier(object):
         # Send Registration
         register = gntp.GNTPRegister()
         register.add_header('Application-Name', opts['app'])
-        register.add_header('Application-Icon', self.sr_logo_url)
+        register.add_header('Application-Icon', sickbeard.LOGO_URL)
 
         register.add_notification('Test', True)
         register.add_notification(common.notifyStrings[common.NOTIFY_SNATCH], True)

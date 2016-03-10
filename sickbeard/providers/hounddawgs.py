@@ -37,7 +37,6 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         self.username = None
         self.password = None
-        self.ratio = None
         self.minseed = None
         self.minleech = None
         self.freeleech = None
@@ -80,8 +79,8 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             'login': 'Login'
         }
 
-        self.get_url(self.urls['base_url'], timeout=30)
-        response = self.get_url(self.urls['login'], post_data=login_params, timeout=30)
+        self.get_url(self.urls['base_url'], returns='text')
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
         if not response:
             logger.log(u"Unable to connect to provider", logger.WARNING)
             return False
@@ -110,7 +109,7 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                 self.search_params['searchstr'] = search_string
 
-                data = self.get_url(self.urls['search'], params=self.search_params)
+                data = self.get_url(self.urls['search'], params=self.search_params, returns='text')
                 if not data:
                     logger.log(u'URL did not return data', logger.DEBUG)
                     continue
@@ -170,7 +169,7 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                                (title, seeders, leechers), logger.DEBUG)
                                 continue
 
-                            item = title, download_url, size, seeders, leechers
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
                             if mode != 'RSS':
                                 logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 
@@ -180,13 +179,11 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     logger.log(u"Failed parsing provider. Traceback: %s" % traceback.format_exc(), logger.ERROR)
 
             # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda tup: tup[3], reverse=True)
+            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
 
             results += items
 
         return results
 
-    def seed_ratio(self):
-        return self.ratio
 
 provider = HoundDawgsProvider()

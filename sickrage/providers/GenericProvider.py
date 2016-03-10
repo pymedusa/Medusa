@@ -25,12 +25,12 @@ from datetime import datetime
 from itertools import chain
 from os.path import join
 from random import shuffle
-from requests import Session
+
 from sickbeard import logger
 from sickbeard.classes import Proper, SearchResult
 from sickbeard.common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
 from sickbeard.db import DBConnection
-from sickbeard.helpers import download_file, getURL, remove_file_failed
+from sickbeard.helpers import download_file, getURL, remove_file_failed, make_session
 from sickbeard.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from sickbeard.show_name_helpers import allPossibleShowNames
 from sickbeard.tvcache import TVCache
@@ -64,7 +64,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         self.public = False
         self.search_fallback = False
         self.search_mode = None
-        self.session = Session()
+        self.session = make_session()
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
@@ -93,7 +93,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             if url.endswith(GenericProvider.TORRENT) and filename.endswith(GenericProvider.NZB):
                 filename = replace_extension(filename, GenericProvider.TORRENT)
 
-            if download_file(url, filename, session=self.session, headers=self.headers):
+            if download_file(url, filename, session=self.session, headers=self.headers, hooks={'response': self.get_url_hook}):
                 if self._verify_download(filename):
                     logger.log(u'Saved result to %s' % filename, logger.INFO)
                     return True
@@ -350,10 +350,9 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         if response.request.method == 'POST':
             logger.log(u'With post data: {}'.format(response.request.body), logger.DEBUG)
 
-    def get_url(self, url, post_data=None, params=None, timeout=30, json=False, need_bytes=False, **kwargs):  # pylint: disable=too-many-arguments,
-        if kwargs.pop('echo', True):
-            kwargs['hooks'] = {'response': self.get_url_hook}
-        return getURL(url, post_data, params, self.headers, timeout, self.session, json, need_bytes, **kwargs)
+    def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):  # pylint: disable=too-many-arguments,
+        kwargs['hooks'] = {'response': self.get_url_hook}
+        return getURL(url, post_data, params, self.headers, timeout, self.session, **kwargs)
 
     def image_name(self):
         return self.get_id() + '.png'

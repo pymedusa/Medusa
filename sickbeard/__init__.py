@@ -138,6 +138,8 @@ GIT_PATH = None
 DEVELOPER = False
 
 NEWS_URL = 'https://api.pymedusa.com/news.md'
+LOGO_URL = 'https://api.pymedusa.com/favicon-64.png'
+
 NEWS_LAST_READ = None
 NEWS_LATEST = None
 NEWS_UNREAD = 0
@@ -564,7 +566,7 @@ TRACKERS_LIST += "udp://9.rarbg.to:2710/announce"
 
 REQUIRE_WORDS = ""
 IGNORED_SUBS_LIST = "dk,fin,heb,kor,nor,nordic,pl,swe"
-SYNC_FILES = "!sync,lftp-pget-status,part,bts,!qb"
+SYNC_FILES = "!sync,lftp-pget-status,part,bts,!qb,!qB"
 
 CALENDAR_UNPROTECTED = False
 CALENDAR_ICONS = False
@@ -1478,10 +1480,11 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                          threadName="POSTPROCESSER",
                                                          silent=not PROCESS_AUTOMATICALLY,
                                                          run_delay=update_interval)
-
+        update_interval = datetime.timedelta(minutes=5)
         traktCheckerScheduler = scheduler.Scheduler(traktChecker.TraktChecker(),
                                                     cycleTime=datetime.timedelta(hours=1),
                                                     threadName="TRAKTCHECKER",
+                                                    run_delay=update_interval,
                                                     silent=not USE_TRAKT)
 
         update_interval = datetime.timedelta(hours=SUBTITLES_FINDER_FREQUENCY)

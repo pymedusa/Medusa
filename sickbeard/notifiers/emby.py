@@ -49,7 +49,7 @@ class Notifier(object):
             emby_apikey = sickbeard.EMBY_APIKEY
 
         url = 'http://%s/emby/Notifications/Admin' % host
-        values = {'Name': 'Medusa', 'Description': message, 'ImageUrl': 'https://raw.githubusercontent.com/PyMedusa/SickRage/master/gui/slick/images/medusa-snake-mascot.png'}
+        values = {'Name': 'Medusa', 'Description': message, 'ImageUrl': sickbeard.LOGO_URL}
         data = json.dumps(values)
         try:
             req = urllib2.Request(url, data)
