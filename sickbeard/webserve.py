@@ -1586,7 +1586,11 @@ class Home(WebRoot):
                 "anime": showObj.anime,
                 "location": showLocation,
                 "exceptions": sickbeard.scene_exceptions.get_scene_exceptions(showObj.indexerid),
-                "seasons": seasons
+                "seasons": seasons,
+                "infoFlag": subtitles.code_from_code(show.lang) if showObj.lang else '',
+                "lang": showObj.lang,
+                "subtitles": showObj.subtitles,
+                "seasonFolders": showObj.flatten_folders and sickbeard.NAMING_FORCE_FOLDERS
             },
             "showMessage": show_message,
             "showMenu": showMenu,
