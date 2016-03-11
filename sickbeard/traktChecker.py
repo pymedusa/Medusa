@@ -20,8 +20,8 @@
 import os
 import traceback
 import datetime
-from libtrakt.exceptions import traktException
-from libtrakt import TraktAPI
+from libtrakt.exceptions import traktException # pylint: disable=import-error
+from libtrakt import TraktAPI # pylint: disable=import-error
 
 import sickbeard
 from sickbeard import logger
@@ -30,7 +30,7 @@ from sickbeard import search_queue
 from sickbeard import db
 from sickbeard.common import SKIPPED, UNKNOWN, WANTED, Quality
 
-from sickrage.helper.common import sanitize_filename, episode_num
+from sickrage.helper.common import episode_num
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
@@ -71,7 +71,7 @@ class TraktChecker(object):
         self.Collectionlist = {}
         self.amActive = False
 
-    def run(self, force=False):
+    def run(self):
         self.amActive = True
 
         # add shows from Trakt watchlist
@@ -94,7 +94,7 @@ class TraktChecker(object):
 
         self.amActive = False
 
-    def findShow(self, indexer, indexerid):
+    def findShow(self, indexerid):
         traktShow = None
 
         try:
@@ -110,7 +110,7 @@ class TraktChecker(object):
         return traktShow
 
     def removeShowFromTraktLibrary(self, show_obj):
-        if self.findShow(show_obj.indexer, show_obj.indexerid):
+        if self.findShow(show_obj.indexerid):
             trakt_id = sickbeard.indexerApi(show_obj.indexer).config['trakt_id']
 
             # URL parameters
@@ -144,7 +144,7 @@ class TraktChecker(object):
         """
         data = {}
 
-        if not self.findShow(show_obj.indexer, show_obj.indexerid):
+        if not self.findShow(show_obj.indexerid):
             trakt_id = sickbeard.indexerApi(show_obj.indexer).config['trakt_id']
             # URL parameters
             data = {
@@ -256,7 +256,7 @@ class TraktChecker(object):
                 self.addEpisodeToTraktWatchList()
                 self.updateEpisodes()
 
-            logger.log(u"Medusa is synced with Trakt watchlist", logger.DEBUG)                
+            logger.log(u"Medusa is synced with Trakt watchlist", logger.DEBUG)
 
     def removeEpisodeFromTraktWatchList(self):
         if sickbeard.TRAKT_SYNC_WATCHLIST and sickbeard.USE_TRAKT:
@@ -375,7 +375,7 @@ class TraktChecker(object):
         else:
             indexer = int(sickbeard.TRAKT_DEFAULT_INDEXER)
             trakt_id = sickbeard.indexerApi(indexer).config['trakt_id']
-    
+
             for watchlisted_show in self.ShowWatchlist[trakt_id]:
                 indexer_id = int(watchlisted_show)
                 show_obj = self.ShowWatchlist[trakt_id][watchlisted_show]
@@ -383,15 +383,15 @@ class TraktChecker(object):
                     show_name = show_obj['title'] + ' (' + show_obj['year'] + ')'
                 else:
                     show_name = show_obj['title']
-    
+
                 if int(sickbeard.TRAKT_METHOD_ADD) != 2:
                     self.addDefaultShow(indexer, indexer_id, show_name, SKIPPED)
                 else:
                     self.addDefaultShow(indexer, indexer_id, show_name, WANTED)
-    
+
                 if int(sickbeard.TRAKT_METHOD_ADD) == 1:
                     new_show = Show.find(sickbeard.showList, indexer_id)
-    
+
                     if new_show:
                         setEpisodeToWanted(new_show, 1, 1)
                     else:
@@ -484,7 +484,7 @@ class TraktChecker(object):
             self.todoWanted.remove(episode)
             setEpisodeToWanted(show, episode[1], episode[2])
 
-    def _checkInList(self, trakt_id, showid, season, episode, List=None):
+    def _checkInList(self, trakt_id, showid, season, episode, List=None): # pylint: disable=too-many-arguments
         """
          Check in the Watchlist or CollectionList for Show
          Is the Show, Season and Episode in the trakt_id list (tvdb / tvrage)
@@ -530,7 +530,7 @@ class TraktChecker(object):
                     tvrage = True
 
                 title = watchlist_el['show']['title']
-                year = str(watchlist_el['show']['year']) 
+                year = str(watchlist_el['show']['year'])
                 slug = str(watchlist_el['show']['ids']['slug'])
 
                 if tvdb:
@@ -598,7 +598,7 @@ class TraktChecker(object):
             return False
         return True
 
-    def _getShowCollection(self):
+    def _getShowCollection(self): # pylint: disable=too-many-branches
         """
         Get Collection and parse once into addressable structure
         """
@@ -657,7 +657,7 @@ class TraktChecker(object):
         return True
 
     @staticmethod
-    def trakt_bulk_data_generate(data):
+    def trakt_bulk_data_generate(data): # pylint: disable=too-many-locals
         """
         Build the JSON structure to send back to Trakt
         """
