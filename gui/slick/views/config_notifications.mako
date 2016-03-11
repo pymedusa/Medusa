@@ -1850,7 +1850,7 @@
                                 <label>
                                     <span class="component-title">&nbsp;</span>
                                     <span class="component-desc">Use a custom subject for some privacy protection?<br>
-                                                                 (Leave blank for the default SickRage subject)</span>
+                                                                 (Leave blank for the default Medusa subject)</span>
                                 </label>
                             </div>
                             <div class="field-pair">

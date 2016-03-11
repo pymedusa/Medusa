@@ -1,8 +1,8 @@
 # coding=utf-8
 
-# URL: https://sickrage.github.io
+# URL: https://pymedusa.com
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
 # SickRage is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
