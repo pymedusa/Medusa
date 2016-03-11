@@ -37,6 +37,7 @@ from sickrage.helper.common import episode_num, dateTimeFormat, subtitle_extensi
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
 
+provider_manager.register('itasa = subliminal.providers.itasa:ItaSAProvider')
 provider_manager.register('legendastv = subliminal.providers.legendastv:LegendasTvProvider')
 provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider')
 
