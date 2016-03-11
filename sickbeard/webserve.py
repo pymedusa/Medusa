@@ -4921,7 +4921,7 @@ class ConfigNotifications(Config):
                           pushbullet_device_list=None,
                           use_email=None, email_notify_onsnatch=None, email_notify_ondownload=None,
                           email_notify_onsubtitledownload=None, email_host=None, email_port=25, email_from=None,
-                          email_tls=None, email_user=None, email_password=None, email_list=None, email_show_list=None,
+                          email_tls=None, email_user=None, email_password=None, email_list=None, email_subject=None, email_show_list=None,
                           email_show=None):
 
         results = []
@@ -5060,6 +5060,7 @@ class ConfigNotifications(Config):
         sickbeard.EMAIL_USER = email_user
         sickbeard.EMAIL_PASSWORD = email_password
         sickbeard.EMAIL_LIST = email_list
+        sickbeard.EMAIL_SUBJECT = email_subject
 
         sickbeard.USE_PYTIVO = config.checkbox_to_value(use_pytivo)
         sickbeard.PYTIVO_NOTIFY_ONSNATCH = config.checkbox_to_value(pytivo_notify_onsnatch)
@@ -5118,7 +5119,7 @@ class ConfigSubtitles(Config):
     def saveSubtitles(self, use_subtitles=None, subtitles_plugins=None, subtitles_languages=None, subtitles_dir=None, subtitles_perfect_match=None,
                       service_order=None, subtitles_history=None, subtitles_finder_frequency=None,
                       subtitles_multi=None, embedded_subtitles_all=None, subtitles_extra_scripts=None, subtitles_pre_scripts=None, subtitles_hearing_impaired=None,
-                      addic7ed_user=None, addic7ed_pass=None, legendastv_user=None, legendastv_pass=None, opensubtitles_user=None, opensubtitles_pass=None,
+                      addic7ed_user=None, addic7ed_pass=None, itasa_user=None, itasa_pass=None, legendastv_user=None, legendastv_pass=None, opensubtitles_user=None, opensubtitles_pass=None,
                       subtitles_download_in_pp=None, subtitles_keep_only_wanted=None):
 
         results = []
@@ -5152,6 +5153,8 @@ class ConfigSubtitles(Config):
 
         sickbeard.ADDIC7ED_USER = addic7ed_user or ''
         sickbeard.ADDIC7ED_PASS = addic7ed_pass or ''
+        sickbeard.ITASA_USER = itasa_user or ''
+        sickbeard.ITASA_PASS = itasa_pass or ''
         sickbeard.LEGENDASTV_USER = legendastv_user or ''
         sickbeard.LEGENDASTV_PASS = legendastv_pass or ''
         sickbeard.OPENSUBTITLES_USER = opensubtitles_user or ''
