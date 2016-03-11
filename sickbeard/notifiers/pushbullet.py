@@ -20,6 +20,7 @@
 
 from __future__ import unicode_literals
 from requests.compat import urljoin
+import re
 
 import sickbeard
 from sickbeard import logger, helpers, common
@@ -42,8 +43,8 @@ class Notifier(object):
 
     def get_devices(self, pushbullet_api):
         logger.log('Testing Pushbullet authentication and retrieving the device list.', logger.DEBUG)
-        headers = {'Content-Type': 'application/json', 'Access-Token': pushbullet_api}
-        return helpers.getURL(urljoin(self.url, 'devices'), session=self.session, headers=headers, returns='json') or {}
+        headers = {'Access-Token': pushbullet_api}
+        return helpers.getURL(urljoin(self.url, 'devices'), session=self.session, headers=headers, returns='text') or {}
 
     def notify_snatch(self, ep_name):
         if sickbeard.PUSHBULLET_NOTIFY_ONSNATCH:
@@ -70,10 +71,15 @@ class Notifier(object):
             )
 
     def notify_git_update(self, new_version='??'):
+        link = re.match(r'.*href="(.*?)" .*', sickbeard.NEWEST_VERSION_STRING)
+        if link:
+            link = link.group(1)
+
         self._sendPushbullet(
             pushbullet_api=None,
             event=common.notifyStrings[common.NOTIFY_GIT_UPDATE],
-            message=common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT] + new_version
+            message=common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT] + new_version,
+            link=link
         )
 
     def notify_login(self, ipaddress=''):
@@ -84,7 +90,7 @@ class Notifier(object):
         )
 
     def _sendPushbullet(  # pylint: disable=too-many-arguments
-            self, pushbullet_api=None, pushbullet_device=None, event=None, message=None, force=False):
+            self, pushbullet_api=None, pushbullet_device=None, event=None, message=None, link=None, force=False):
 
         if not (sickbeard.USE_PUSHBULLET or force):
             return False
@@ -101,12 +107,14 @@ class Notifier(object):
             'title': event,
             'body': message,
             'device_iden': pushbullet_device,
-            'type': 'note'
+            'type': 'link' if link else 'note'
         }
+        if link:
+            post_data['url'] = link
 
-        headers = {'Content-Type': 'application/json', 'Access-Token': pushbullet_api}
+        headers = {'Access-Token': pushbullet_api}
 
-        response = helpers.getURL(urljoin(self.url, 'pushes'), session=self.session, post_data=post_data, headers=headers, response='json') or {}
+        response = helpers.getURL(urljoin(self.url, 'pushes'), session=self.session, post_data=post_data, headers=headers, returns='json') or {}
         if not response:
             return False
 
