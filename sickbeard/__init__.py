@@ -543,11 +543,14 @@ SUBTITLES_KEEP_ONLY_WANTED = False
 ADDIC7ED_USER = None
 ADDIC7ED_PASS = None
 
-OPENSUBTITLES_USER = None
-OPENSUBTITLES_PASS = None
+ITASA_USER = None
+ITASA_PASS = None
 
 LEGENDASTV_USER = None
 LEGENDASTV_PASS = None
+
+OPENSUBTITLES_USER = None
+OPENSUBTITLES_PASS = None
 
 USE_FAILED_DOWNLOADS = False
 DELETE_FAILED = False
@@ -2163,7 +2166,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['Subtitles']['addic7ed_password'] = helpers.encrypt(ADDIC7ED_PASS, ENCRYPTION_VERSION)
 
     new_config['Subtitles']['itasa_username'] = ITASA_USER
-    new_config['Subtitles']['itase_password'] = helpers.encrypt(ITASA_PASS, ENCRYPTION_VERSION)
+    new_config['Subtitles']['itasa_password'] = helpers.encrypt(ITASA_PASS, ENCRYPTION_VERSION)
 
     new_config['Subtitles']['legendastv_username'] = LEGENDASTV_USER
     new_config['Subtitles']['legendastv_password'] = helpers.encrypt(LEGENDASTV_PASS, ENCRYPTION_VERSION)

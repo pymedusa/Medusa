@@ -12,6 +12,7 @@ from requests import Session
 from zipfile import ZipFile, is_zipfile
 
 from . import ParserBeautifulSoup, Provider
+from .. import __short_version__
 from ..cache import region, EPISODE_EXPIRATION_TIME, SHOW_EXPIRATION_TIME
 from ..exceptions import AuthenticationError, ConfigurationError
 from ..subtitle import Subtitle, fix_line_ending, guess_matches, sanitize, SUBTITLE_EXTENSIONS
@@ -76,6 +77,7 @@ class LegendasTvProvider(Provider):
 
     def initialize(self):
         self.session = Session()
+        self.session.headers['User-Agent'] = 'Subliminal/%s' % __short_version__
 
         # login
         if self.username is not None and self.password is not None:
