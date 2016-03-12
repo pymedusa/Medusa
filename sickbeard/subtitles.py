@@ -23,11 +23,12 @@ import os
 import re
 import datetime
 import traceback
-import subliminal
 import subprocess
 import sickbeard
 from babelfish import Language, language_converters
-from subliminal import ProviderPool, provider_manager
+from subliminal import compute_score, ProviderPool, provider_manager, refine, region, save_subtitles, scan_video
+from subliminal.core import search_external_subtitles
+from subliminal.subtitle import get_subtitle_path
 from sickbeard import logger
 from sickbeard import history
 from sickbeard import db
@@ -41,7 +42,7 @@ provider_manager.register('itasa = subliminal.providers.itasa:ItaSAProvider')
 provider_manager.register('legendastv = subliminal.providers.legendastv:LegendasTvProvider')
 provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider')
 
-subliminal.region.configure('dogpile.cache.memory')
+region.configure('dogpile.cache.memory')
 
 PROVIDER_URLS = {
     'addic7ed': 'http://www.addic7ed.com',
@@ -192,7 +193,7 @@ def download_subtitles(subtitles_info):  # pylint: disable=too-many-locals, too-
             return existing_subtitles, None
 
         for subtitle in subtitles_list:
-            score = subliminal.score.compute_score(subtitle, video, hearing_impaired=sickbeard.SUBTITLES_HEARING_IMPAIRED)
+            score = compute_score(subtitle, video, hearing_impaired=sickbeard.SUBTITLES_HEARING_IMPAIRED)
             logger.log(u'[{}] Subtitle score for {} is: {} (min={})'.format
                        (subtitle.provider_name, subtitle.id, score, user_score), logger.DEBUG)
 
@@ -200,8 +201,7 @@ def download_subtitles(subtitles_info):  # pylint: disable=too-many-locals, too-
                                                        hearing_impaired=sickbeard.SUBTITLES_HEARING_IMPAIRED,
                                                        min_score=user_score, only_one=not sickbeard.SUBTITLES_MULTI)
 
-        subliminal.save_subtitles(video, found_subtitles, directory=subtitles_path,
-                                  single=not sickbeard.SUBTITLES_MULTI)
+        save_subtitles(video, found_subtitles, directory=subtitles_path, single=not sickbeard.SUBTITLES_MULTI)
     except IOError as error:
         if 'No space left on device' in ex(error):
             logger.log(u'Not enough space on the drive to save subtitles', logger.WARNING)
@@ -219,9 +219,7 @@ def download_subtitles(subtitles_info):  # pylint: disable=too-many-locals, too-
         return existing_subtitles, None
 
     for subtitle in found_subtitles:
-        subtitle_path = subliminal.subtitle.get_subtitle_path(video.name,
-                                                              None if not sickbeard.SUBTITLES_MULTI else
-                                                              subtitle.language)
+        subtitle_path = get_subtitle_path(video.name, None if not sickbeard.SUBTITLES_MULTI else subtitle.language)
         if subtitles_path:
             subtitle_path = os.path.join(subtitles_path, os.path.split(subtitle_path)[1])
 
@@ -278,11 +276,10 @@ def get_video(video_path, subtitles_path=None):
         subtitles_path = subtitles_path.encode(sickbeard.SYS_ENCODING)
 
     try:
+        video = scan_video(video_path)
+        video.subtitle_languages |= set(search_external_subtitles(video_path, directory=subtitles_path).values())
         if not sickbeard.EMBEDDED_SUBTITLES_ALL and video_path.endswith('.mkv'):
-            video = subliminal.scan_video(video_path, subtitles=True, subtitles_dir=subtitles_path)
-            subliminal.refine(video, embedded_subtitles=True)
-        else:
-            video = subliminal.scan_video(video_path, subtitles=True, subtitles_dir=subtitles_path)
+            refine(video, embedded_subtitles=True)
     except Exception as error:
         logger.log(u'Exception: {}'.format(error), logger.DEBUG)
         return None
@@ -409,7 +406,7 @@ class SubtitlesFinder(object):
                             run_subs_scripts(None, None, None, filename, is_pre=True)
 
                         try:
-                            video = subliminal.scan_video(os.path.join(root, filename), subtitles=False)
+                            video = scan_video(os.path.join(root, filename), subtitles=False)
                             subtitles_list = pool.list_subtitles(video, languages)
 
                             for provider in providers:
@@ -430,7 +427,7 @@ class SubtitlesFinder(object):
                                                                            only_one=not sickbeard.SUBTITLES_MULTI)
 
                             for subtitle in subtitles_list:
-                                score = subliminal.score.compute_score(subtitle, video, hearing_impaired=sickbeard.SUBTITLES_HEARING_IMPAIRED)
+                                score = compute_score(subtitle, video, hearing_impaired=sickbeard.SUBTITLES_HEARING_IMPAIRED)
                                 logger.log(u'[{}] Subtitle score for {} is: {} (min={})'.format
                                            (subtitle.provider_name, subtitle.id, score, user_score), logger.DEBUG)
 
@@ -439,13 +436,10 @@ class SubtitlesFinder(object):
                                 logger.log(u'Found subtitle for {} in {} provider with language {}'.format
                                            (os.path.join(root, filename), subtitle.provider_name,
                                             subtitle.language.opensubtitles), logger.INFO)
-                                subliminal.save_subtitles(video, found_subtitles, directory=root,
-                                                          single=not sickbeard.SUBTITLES_MULTI)
+                                save_subtitles(video, found_subtitles, directory=root, single=not sickbeard.SUBTITLES_MULTI)
 
                                 subtitles_multi = not sickbeard.SUBTITLES_MULTI
-                                subtitle_path = subliminal.subtitle.get_subtitle_path(video.name,
-                                                                                      None if subtitles_multi else
-                                                                                      subtitle.language)
+                                subtitle_path = get_subtitle_path(video.name, None if subtitles_multi else subtitle.language)
                                 if root:
                                     subtitle_path = os.path.join(root, os.path.split(subtitle_path)[1])
                                 sickbeard.helpers.chmodAsParent(subtitle_path)
