@@ -14,7 +14,7 @@ sat = re.compile(r'(dsr|satrip)', re.IGNORECASE)
 itunes = re.compile(r'(itunes)', re.IGNORECASE)
 
 # Codecs
-avc = re.compile(r'([xh].?26[45])', re.IGNORECASE)
+avc = re.compile(r'([xh].?26[45]|(?:he|a)vc)', re.IGNORECASE)
 xvid = re.compile(r'(xvid|divx)', re.IGNORECASE)
 mpeg = re.compile(r'(mpeg-?2)', re.IGNORECASE)
 

@@ -192,7 +192,7 @@ class EpisodeTags(object):
 
         :returns: an empty string if not found
         """
-        return u'' if not self.avc.lower().startswith('x') else self.avc
+        return u'' if self.avc_non_free else self.avc
 
     @property
     def avc_non_free(self):
