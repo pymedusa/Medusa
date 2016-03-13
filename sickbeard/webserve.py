@@ -1561,6 +1561,10 @@ class Home(WebRoot):
 
             episode_dict["qualityPill"] = render_quality_pill(episode_quality, showTitle=True)
             episode_dict["statusString"] = statusStrings[episode_status]
+            episode_dict["fileSize"] = {
+                "raw": episode_dict["file_size"],
+                "pretty": pretty_file_size(episode_dict["file_size"])
+            }
             seasons[episode_dict["season"]].append(episode_dict)
 
         episode_statuses = []

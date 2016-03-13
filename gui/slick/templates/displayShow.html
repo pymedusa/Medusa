@@ -260,7 +260,7 @@
                     </td>
                     <td class="col-name">{{episode.location}}</td>
                     <td class="col-ep">
-                        <!-- <span ng-if="episode.fileSize">${pretty_file_size(epResult["file_size"])}</span> -->
+                        <span ng-if="episode.fileSize.raw">{{episode.fileSize.pretty}}</span>
                     </td>
                     <td class="col-airdate">
                         <span ng-if="episode.airdate">
