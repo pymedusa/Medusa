@@ -122,7 +122,7 @@ class EpisodeTags(object):
         else:
             attr = 'web'
             match = self._get_match_obj(attr)
-            return '' if not match else match.group('type')
+            return '' if not match else match.group('type') or match.group(0)
 
     @property
     def sat(self):
