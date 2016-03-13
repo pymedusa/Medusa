@@ -225,6 +225,7 @@ sickrage.directive('hometablesorter', function(){
                 textExtraction: {
                     0: function(node) { return $(node).find('time').attr('datetime'); },
                     1: function(node) { return $(node).find('time').attr('datetime'); },
+                    2: function(node) { return $(node).find("span").text().toLowerCase(); },
                     3: function(node) { return $(node).find("span").prop("title").toLowerCase(); },
                     4: function(node) { return $(node).find("span").text().toLowerCase(); },
                     5: function(node) { return $(node).find("span:first").text(); },
@@ -242,10 +243,11 @@ sickrage.directive('hometablesorter', function(){
                     7: { filter: 'parsed' }
                 },
                 widgetOptions: {
-                    filter_columnFilters: true, // jshint ignore:line
-                    filter_hideFilters: true, // jshint ignore:line
-                    filter_saveFilters: true, // jshint ignore:line
-                    filter_functions: { // jshint ignore:line
+                    'stickyHeaders_offset': 50,
+                    'filter_columnFilters': true,
+                    'filter_hideFilters': true,
+                    'filter_saveFilters': true,
+                    'filter_functions': {
                         5: function(e, n, f) {
                             var test = false;
                             var pct = Math.floor((n % 1) * 1000);
@@ -315,6 +317,7 @@ sickrage.directive('displayshowtablesorter', function(){
             $(element).tablesorter({
                 widgets: ['saveSort', 'stickyHeaders', 'columnSelector'],
                 widgetOptions : {
+                    stickyHeaders_offset: 50,
                     columnSelector_saveColumns: true, // jshint ignore:line
                     columnSelector_layout : '<br><label><input type="checkbox">{name}</label>', // jshint ignore:line
                     columnSelector_mediaquery: false, // jshint ignore:line
@@ -621,6 +624,13 @@ sickrage.controller('displayShowController', function($scope, $stateParams, $htt
         url: '/home/displayShow?show=' + $stateParams.showId
     }).then(function successCallback(response) {
         $scope.show = response.data.show;
+        var seasonsArray = [];
+        for(var i in response.data.show.seasons){
+            var a = response.data.show.seasons[i];
+            a.seasonNumber = i;
+            seasonsArray.push(a)
+        }
+        $scope.seasonsArray = seasonsArray.reverse();
         $scope.seasons = response.data.show.seasons;
         $scope.showLocation = response.data.showLocation;
         $scope.showMessage = response.data.showMessage;

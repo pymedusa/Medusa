@@ -1,13 +1,5 @@
 <%!
     import sickbeard
-    import calendar
-    import re
-    import datetime
-    from time import time
-    from sickbeard import sbdatetime
-    from sickbeard import network_timezones
-    from sickrage.helper.common import pretty_file_size
-    from sickrage.show.Show import Show
 %>
 <%
     srRoot = sickbeard.WEB_ROOT

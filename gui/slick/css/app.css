@@ -3,7 +3,3 @@ pre {
     word-wrap: normal;
     white-space: pre;
 }
-
-.tablesorter-sticky-wrapper.tablesorter-sticky-visible {
-    top: 50px !important;
-}

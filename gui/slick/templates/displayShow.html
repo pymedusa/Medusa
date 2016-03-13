@@ -23,14 +23,14 @@
             <span ng-if="seasons.length > 14">
                 <select id="seasonJump" class="form-control input-sm" style="position: relative; top: -4px;">
                     <option value="jump">Jump to Season</option>
-                    <option ng-repeat="(i, season) in seasons" value="{{'#season-' + seasonNumber}}" data-season="{{'#season-' + seasonNumber}}">{{seasonNumber === 0 ? 'Specials' : 'Season ' + seasons(season)}}</option>
+                    <option ng-repeat="(i, season) in seasons" value="{{'#season-' + season.seasonNumber}}" data-season="{{'#season-' + season.seasonNumber}}">{{season.seasonNumber === 0 ? 'Specials' : 'Season ' + seasons(season)}}</option>
                 </select>
             </span>
             <span ng-if="seasons.length < 14">
                 Season:
                 <span ng-repeat="(i, season) in seasons">
-                    <a href="{{'#season-' + seasonNumber}}">{{seasonNumber === 0 ? 'Specials' : seasonNumber}}</a>
-                    <span ng-if="seasonNumber <= seasons.length-2" class="separator">|</span>
+                    <a href="{{'#season-' + season.seasonNumber}}">{{season.seasonNumber === 0 ? 'Specials' : season.seasonNumber}}</a>
+                    <span ng-if="season.seasonNumber <= seasons.length-2" class="separator">|</span>
                 </span>
             </span>
         </div>
@@ -43,7 +43,7 @@
         <div id="container">
             <div id="posterCol">
                 <a href="{{'/showPoster/?show=' + show.indexerId + '&amp;which=poster'}}" rel="dialog" title="View Poster for {{show.name}}">
-                    <img src="{{'/showPoster/?show=' + show.indexerId + '&amp;which=poster_thumb'}}" class="tvshowImg" alt=""/>
+                    <img ng-src="{{'/showPoster/?show=' + show.indexerId + '&amp;which=poster_thumb'}}" class="tvshowImg" alt=""/>
                 </a>
             </div>
 
@@ -132,14 +132,14 @@
                     <table style="width:180px; float: right; vertical-align: middle; height: 100%;">
                         <!-- <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %> -->
                         <tr><td class="showLegend">Info Language:</td><td><img src="/images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='/images/flags/unknown.png';"/></td></tr>
-                        <tr ng-if="useSubtitles"><td class="showLegend">Subtitles: </td><td><img src="{{'/images/' + (show.subtitles ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
+                        <tr ng-if="useSubtitles"><td class="showLegend">Subtitles: </td><td><img ng-src="{{'/images/' + (show.subtitles ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
                         <tr><td class="showLegend">Season Folders: </td><td><img src="/images/${("no16.png", "yes16.png")[bool(not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS)]}" alt=="${("N", "Y")[bool(not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Paused: </td><td><img src="{{'/images/' + (show.paused ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.paused)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Air-by-Date: </td><td><img src="{{'/images/' + (show.air_by_date ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.air_by_date)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Sports: </td><td><img src="{{'/images/' + (show.is_sports ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.is_sports)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Anime: </td><td><img src="{{'/images/' + (show.is_anime ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.is_anime)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">DVD Order: </td><td><img src="{{'/images/' + (show.dvdorder ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.dvdorder)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Scene Numbering: </td><td><img src="{{'/images/' + (show.scene ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.scene)]}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Paused: </td><td><img ng-src="{{'/images/' + (show.paused ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.paused)]}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Air-by-Date: </td><td><img ng-src="{{'/images/' + (show.air_by_date ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.air_by_date)]}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Sports: </td><td><img ng-src="{{'/images/' + (show.is_sports ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.is_sports)]}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Anime: </td><td><img ng-src="{{'/images/' + (show.is_anime ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.is_anime)]}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">DVD Order: </td><td><img ng-src="{{'/images/' + (show.dvdorder ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.dvdorder)]}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Scene Numbering: </td><td><img ng-src="{{'/images/' + (show.scene ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.scene)]}" width="16" height="16" /></td></tr>
                     </table>
                 </div>
             </div>
@@ -175,7 +175,7 @@
             </div>
         </div>
 
-        <table displayshowtablesorter ng-repeat="(seasonNumber, season) in seasons" class="displayShowTable display_show" cellspacing="0" border="0" cellpadding="0">
+        <table displayshowtablesorter ng-repeat="season in seasonsArray" class="displayShowTable display_show" cellspacing="0" border="0" cellpadding="0">
             <thead>
                 <tr class="seasoncols" style="display:none;">
                     <th data-sorter="false" data-priority="critical" class="col-checkbox"><input type="checkbox" class="seasonCheck"/></th>
@@ -198,14 +198,14 @@
             <tbody class="tablesorter-no-sort">
                 <tr style="height: 60px;">
                     <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
-                        <h3 style="display: inline;"><a name="{{'season-' + seasonNumber}}"></a>{{seasonNumber === 0 ? 'Specials' : 'Season ' + seasonNumber}}</h3>
-                        <button ng-if="!displayAllSeasons" id="{{'showseason-' + seasonNumber}}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="{{'#collapseSeason-' + seasonNumber}}">Show Episodes</button>
+                        <h3 style="display: inline;"><a name="{{'season-' + season.seasonNumber}}"></a>{{season.seasonNumber === 0 ? 'Specials' : 'Season ' + season.seasonNumber}}</h3>
+                        <button ng-if="!displayAllSeasons" id="{{'showseason-' + season.seasonNumber}}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="{{'#collapseSeason-' + season.seasonNumber}}">Show Episodes</button>
                     </th>
                 </tr>
             </tbody>
             <tbody class="tablesorter-no-sort">
-                <tr id="{{'season-' + seasonNumber + '-cols'}}" class="seasoncols">
-                    <th class="col-checkbox"><input type="checkbox" class="seasonCheck" id="{{seasonNumber}}" /></th>
+                <tr id="{{'season-' + season.seasonNumber + '-cols'}}" class="seasoncols">
+                    <th class="col-checkbox"><input type="checkbox" class="seasonCheck" id="{{season.seasonNumber}}" /></th>
                     <th class="col-metadata">NFO</th>
                     <th class="col-metadata">TBN</th>
                     <th class="col-ep">Episode</th>
@@ -222,13 +222,13 @@
                     <th class="col-search">Search</th>
                 </tr>
             </tbody>
-            <tbody id="{{'collapseSeason-' + seasonNumber}}">
-                <tr ng-repeat="(i, episode) in season" class="{{qualityStrings(episode.status) + ' season-' + seasonNumber + ' seasonstyle'}}" id="{{seasonNumber + 'x' + episode.episode}}">
+            <tbody id="{{'collapseSeason-' + season.seasonNumber}}">
+                <tr ng-repeat="(i, episode) in season" class="{{qualityStrings(episode.status) + ' season-' + season.seasonNumber + ' seasonstyle'}}" id="{{season.seasonNumber + 'x' + episode.episode}}">
                     <td class="col-checkbox">
-                        <input ng-if="episode.status != 'unaired'" type="checkbox" class="epCheck" id="{{seasonNumber + 'x' + season.episode.episode}}" name="{{seasonNumber + 'x' + season.episode.episode}}" />
+                        <input ng-if="episode.status != 'unaired'" type="checkbox" class="epCheck" id="{{season.seasonNumber + 'x' + season.episode.episode}}" name="{{season.seasonNumber + 'x' + season.episode.episode}}" />
                     </td>
-                    <td align="center"><img src="{{'/images/' + (episode.hasnfo ? 'nfo.gif' : 'nfo-no.gif')}}" alt="{{episode.hasnfo ? 'Y' : 'N'}}" width="23" height="11" /></td>
-                    <td align="center"><img src="{{'/images/' + (episode.hastbn ? 'tbn.gif' : 'tbn-no.gif')}}" alt="{{episode.hastbn ? 'Y' : 'N'}}" width="23" height="11" /></td>
+                    <td align="center"><img ng-src="{{'images/' + (episode.hasnfo ? 'nfo.gif' : 'nfo-no.gif')}}" alt="{{episode.hasnfo ? 'Y' : 'N'}}" width="23" height="11" /></td>
+                    <td align="center"><img ng-src="{{'images/' + (episode.hastbn ? 'tbn.gif' : 'tbn-no.gif')}}" alt="{{episode.hastbn ? 'Y' : 'N'}}" width="23" height="11" /></td>
                     <td align="center">
                         <span ng-if="episode.location" title="{{episode.episode}}" class="addQTip">{{episode.episode}}</span>
                         <span ng-if="!episode.location">{{episode.episode}}</span>
@@ -259,7 +259,7 @@
                                 style="padding: 0; text-align: center; max-width: 60px;" autocapitalize="off" /> -->
                     </td>
                     <td class="col-name">
-                        <img ng-if="episode.description" src="/images/info32.png" width="16" height="16" class="plotInfo" alt="" id="{{'plot_info_' + show.indexerId + '_' + seasonNumber + '_' + episode.episode}}" />
+                        <img ng-if="episode.description" src="/images/info32.png" width="16" height="16" class="plotInfo" alt="" id="{{'plot_info_' + show.indexerId + '_' + season.seasonNumber + '_' + episode.episode}}" />
                         <img ng-if="!episode.description" src="/images/info32.png" width="16" height="16" class="plotInfoNone" alt="" />
                         {{episode.name}}
                     </td>
