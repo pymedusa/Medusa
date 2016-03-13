@@ -406,7 +406,7 @@ class SubtitlesFinder(object):
                             run_subs_scripts(None, None, None, filename, is_pre=True)
 
                         try:
-                            video = scan_video(os.path.join(root, filename), subtitles=False)
+                            video = scan_video(os.path.join(root, filename))
                             subtitles_list = pool.list_subtitles(video, languages)
 
                             for provider in providers:
