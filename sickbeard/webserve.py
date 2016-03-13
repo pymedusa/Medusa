@@ -1473,9 +1473,9 @@ class Home(WebRoot):
         )
 
         try:
-            showLocation = (showObj.location, True)
+            show_location = (showObj.location, True)
         except ShowDirectoryNotFoundException:
-            showLocation = (showObj._location, False)  # pylint: disable=protected-access
+            show_location = (showObj._location, False)  # pylint: disable=protected-access
 
         show_message = ''
 
@@ -1585,7 +1585,6 @@ class Home(WebRoot):
                 "indexerId": showObj.indexerid,
                 "indexer": showObj.indexer,
                 "name": showObj.name,
-                "location": showObj.location,
                 "network": showObj.network,
                 "airs": showObj.airs,
                 "status": showObj.status,
@@ -1597,13 +1596,21 @@ class Home(WebRoot):
                 "scene": showObj.scene,
                 "sports": showObj.sports,
                 "anime": showObj.anime,
-                "location": showLocation,
+                "location": show_location,
+                "requiredWords": showObj.rls_require_words.strip(),
+                "ignoredWords": showObj.rls_ignore_words.strip(),
+                "dvdOrder": showObj.dvdorder,
                 "exceptions": sickbeard.scene_exceptions.get_scene_exceptions(showObj.indexerid),
                 "seasons": seasons,
                 "infoFlag": subtitles.code_from_code(show.lang) if showObj.lang else '',
-                "lang": showObj.lang,
+                "language": showObj.lang,
                 "subtitles": showObj.subtitles,
-                "seasonFolders": showObj.flatten_folders and sickbeard.NAMING_FORCE_FOLDERS
+                "seasonFolders": bool(not showObj.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS),
+                "defaultEpStatus": showObj.default_ep_status,
+                "size": {
+                    "raw": sickbeard.helpers.get_size(show_location[0]),
+                    "pretty": pretty_file_size(sickbeard.helpers.get_size(show_location[0]))
+                }
             },
             "showMessage": show_message,
             "showMenu": showMenu,
@@ -1616,14 +1623,6 @@ class Home(WebRoot):
             },
             "episodeStatuses": episode_statuses
         }
-
-    @staticmethod
-    def plotDetails(show, season, episode):
-        main_db_con = db.DBConnection()
-        result = main_db_con.selectOne(
-            "SELECT description FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?",
-            (int(show), int(season), int(episode)))
-        return result['description'] if result else 'Episode not found.'
 
     @staticmethod
     def sceneExceptions(show):

@@ -49,7 +49,7 @@
 
             <div id="showCol">
                 <div id="showinfo">
-                    {{ratingTip = show.imdb_info['rating'] + " / 10" + " Stars" + "<br>" + show.imdb_info['votes'] + " Votes"}}
+                    <!-- @NOTE: This is broken? -->
                     <span ng-if="show.imdb_info" class="imdbstars" qtip-content="{{ratingTip}}">{{show.imdb_info['rating']}}</span>
                     <span ng-if="!show.imdbid">({{show.startyear}}) - {{show.runtime}} minutes - </span>
     <!-- <% _show = show %>
@@ -112,12 +112,8 @@
                         <tr ng-if="show.location[1]"><td class="showLegend">Location: </td><td>{{show.location[0]}}</td></tr>
                         <tr ng-if="!show.location[1]"><td class="showLegend"><span style="color: red;">Location: </span></td><td><span style="color: red;">{{show.location[0]}}</span> (Missing)</td></tr>
                         <tr><td class="showLegend">Scene Name:</td><td>{{show.exceptions ? show.exceptions.join(' | ') : show.name}}</td></tr>
-                    <!-- % if show.rls_require_words: -->
-                        <tr><td class="showLegend">Required Words: </td><td>${show.rls_require_words}</td></tr>
-                    <!-- % endif -->
-                    <!-- % if show.rls_ignore_words: -->
-                        <tr><td class="showLegend">Ignored Words: </td><td>${show.rls_ignore_words}</td></tr>
-                    <!-- % endif -->
+                        <tr ng-if="show.requiredWords"><td class="showLegend">Required Words: </td><td>{{show.requiredWords}}</td></tr>
+                        <tr ng-if="show.ignoredWords"><td class="showLegend">Ignored Words: </td><td>{{show.ignoredWords}}</td></tr>
                         <tr ng-if="blackAndWhiteList.whitelist">
                             <td class="showLegend">Wanted Group{{blackAndWhiteList.whitelist.length > 1 ? 's' : ''}}:</td>
                             <td>{{blackAndWhiteList.whitelist.join(', ')}}</td>
@@ -126,20 +122,19 @@
                             <td class="showLegend">Unwanted Group{{blackAndWhiteList.blacklist.length > 1 ? 's' : ''}}:</td>
                             <td>{{blackAndWhiteList.blacklist.join(', ')}}</td>
                         </tr>
-                        <tr><td class="showLegend">Size:</td><td>${pretty_file_size(sickbeard.helpers.get_size(showLoc[0]))}</td></tr>
+                        <tr><td class="showLegend">Size:</td><td>{{show.size.pretty}}</td></tr>
                     </table>
 
                     <table style="width:180px; float: right; vertical-align: middle; height: 100%;">
-                        <!-- <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %> -->
-                        <tr><td class="showLegend">Info Language:</td><td><img src="/images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='/images/flags/unknown.png';"/></td></tr>
-                        <tr ng-if="useSubtitles"><td class="showLegend">Subtitles: </td><td><img ng-src="{{'/images/' + (show.subtitles ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Season Folders: </td><td><img src="/images/${("no16.png", "yes16.png")[bool(not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS)]}" alt=="${("N", "Y")[bool(not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Paused: </td><td><img ng-src="{{'/images/' + (show.paused ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.paused)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Air-by-Date: </td><td><img ng-src="{{'/images/' + (show.air_by_date ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.air_by_date)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Sports: </td><td><img ng-src="{{'/images/' + (show.is_sports ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.is_sports)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Anime: </td><td><img ng-src="{{'/images/' + (show.is_anime ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.is_anime)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">DVD Order: </td><td><img ng-src="{{'/images/' + (show.dvdorder ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.dvdorder)]}" width="16" height="16" /></td></tr>
-                        <tr><td class="showLegend">Scene Numbering: </td><td><img ng-src="{{'/images/' + (show.scene ? 'yes16.png' : 'no16.png')}}" alt="${("N", "Y")[bool(show.scene)]}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Info Language:</td><td><img src="{{'images/subtitles/flags/' + show.infoFlag + '.png'}}" width="16" height="11" alt="{{show.language}}" title="{{show.language}}" onError="this.onerror=null;this.src='/images/flags/unknown.png';"/></td></tr>
+                        <tr ng-if="useSubtitles"><td class="showLegend">Subtitles: </td><td><img ng-src="{{'/images/' + (show.subtitles ? 'yes16.png' : 'no16.png')}}" alt="{{show.subtitles ? 'Y' : 'N'}}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Season Folders: </td><td><img ng-src="{{'images/' + (show.seasonFolders ? 'yes16.png' : 'no16.png')}}" alt="{{show.seasonFolders ? 'Y' : 'N'}}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Paused: </td><td><img ng-src="{{'/images/' + (show.paused ? 'yes16.png' : 'no16.png')}}" alt="{{show.paused ? 'Y' : 'N'}}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Air-by-Date: </td><td><img ng-src="{{'/images/' + (show.air_by_date ? 'yes16.png' : 'no16.png')}}" alt="{{show.air_by_date ? 'Y' : 'N'}}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Sports: </td><td><img ng-src="{{'/images/' + (show.sports ? 'yes16.png' : 'no16.png')}}" alt="{{show.sports ? 'Y' : 'N'}}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Anime: </td><td><img ng-src="{{'/images/' + (show.anime ? 'yes16.png' : 'no16.png')}}" alt="{{show.anime ? 'Y' : 'N'}}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">DVD Order: </td><td><img ng-src="{{'/images/' + (show.dvdorder ? 'yes16.png' : 'no16.png')}}" alt="{{show.dvdorder ? 'Y' : 'N'}}" width="16" height="16" /></td></tr>
+                        <tr><td class="showLegend">Scene Numbering: </td><td><img ng-src="{{'/images/' + (show.scene ? 'yes16.png' : 'no16.png')}}" alt="{{show.scene ? 'Y' : 'N'}}" width="16" height="16" /></td></tr>
                     </table>
                 </div>
             </div>
@@ -259,8 +254,8 @@
                                 style="padding: 0; text-align: center; max-width: 60px;" autocapitalize="off" /> -->
                     </td>
                     <td class="col-name">
-                        <img ng-if="episode.description" src="/images/info32.png" width="16" height="16" class="plotInfo" alt="" id="{{'plot_info_' + show.indexerId + '_' + season.seasonNumber + '_' + episode.episode}}" />
-                        <img ng-if="!episode.description" src="/images/info32.png" width="16" height="16" class="plotInfoNone" alt="" />
+                        <img ng-if="episode.description" src="/images/info32.png" width="16" height="16" class="plotInfo" alt="Plot Info" qtip="{{episode.description}}" />
+                        <img ng-if="!episode.description" src="/images/info32.png" width="16" height="16" class="plotInfoNone" />
                         {{episode.name}}
                     </td>
                     <td class="col-name">{{episode.location}}</td>

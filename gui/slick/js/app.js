@@ -199,6 +199,54 @@ sickrage.factory('_', ['$window', function($window) {
     return $window._;
 }]);
 
+sickrage.directive('qtip', function() {
+    return {
+        restrict: 'A',
+        scope : {
+            qtipVisible : '='
+        },
+        link: function(scope, element, attrs) {
+            var content = attrs.qtipContent || attrs.qtip;
+
+                if (attrs.qtipTitle) {
+                    content = {
+                        'title': attrs.qtipTitle,
+                        'text': attrs.qtip
+                    };
+                }
+
+                $(element).qtip({
+                    content: content,
+                    show: {
+                        solo: true
+                    },
+                    position: {
+                        target: element,
+                        viewport: $(window),
+                        my: 'left center',
+                        adjust: {
+                            y: -10,
+                            x: 2
+                        }
+                    },
+                    style: {
+                        tip: {
+                            corner: true,
+                            method: 'polygon'
+                        },
+                        classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
+                    }
+                });
+
+            if(attrs.qtipVisible) {
+                scope.$watch('qtipVisible', function (newValue, oldValue) {
+                    $(element).qtip('toggle', newValue);
+                });
+            }
+        }
+    }
+})
+
 sickrage.directive('progressbar', function() {
     return {
         link: function($scope, element, attrs) {
@@ -655,6 +703,8 @@ sickrage.controller('displayShowController', function($scope, $stateParams, $htt
         $scope.useFailedDownloads = response.data.useFailedDownloads;
         $scope.downloadUrl = response.data.downloadUrl;
         $scope.rootDirs = response.data.rootDirs;
+        $scope.seasonFolders = response.data.seasonFolders;
+        $scope.ratingTip = $scope.show.imdb_info ? $scope.show.imdb_info['rating'] + " / 10" + " Stars" + "<br>" + show.imdb_info['votes'] + " Votes" : "";
         $scope.qualityStrings = function(quality){
             var qualityStrings = {
                 1: 'unaired',
