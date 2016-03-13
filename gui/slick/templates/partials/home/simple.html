@@ -28,12 +28,12 @@
     <tbody>
         <tr ng-controller="simpleShowController" ng-repeat="(i, show) in showList.shows">
             <td ng-if="show.airsNext" align="center" class="nowrap">
-                <time datetime="{{show.airsNext}}" class="date">{{show.airsNext}}</time>
+                <time datetime="{{show.airsNext | timeago:fuzzyDating}}" class="date">{{show.airsNext | timeago:fuzzyDating}}</time>
             </td>
             <td ng-if="!show.airsNext" align="center" class="nowrap"></td>
 
             <td ng-if="show.airsPrev" align="center" class="nowrap">
-                <time datetime="{{show.airsPrev}}" class="date">{{show.airsPrev}}</time>
+                <time datetime="{{show.airsPrev | timeago:fuzzyDating}}" class="date">{{show.airsPrev | timeago:fuzzyDating}}</time>
             </td>
             <td ng-if="!show.airsPrev" align="center" class="nowrap"></td>
 

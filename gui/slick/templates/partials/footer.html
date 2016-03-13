@@ -3,7 +3,7 @@
     <span ng-if="globalStats.episodes.snatched" class="footerhighlight">
         <a href="${srRoot}/manage/episodeStatuses?whichStatus=2" title="View overview of snatched episodes">+{{globalStats.episodes.snatched}}</a>
     </span>
-    Snatched / <span class="footerhighlight">{{globalStats.episodes.total}}</span> Episodes Downloaded {{globalStats.episodes.percentage}} | Daily Search: <span class="footerhighlight">{{dailySearch}}</span> | Backlog Search: <span class="footerhighlight">{{backlogSearch}}</span>
+    Snatched / <span class="footerhighlight">{{globalStats.episodes.total}}</span> Episodes Downloaded (<span class="footerhighlight">{{globalStats.episodes.percentage}}%</span>) | Daily Search: <span class="footerhighlight">{{dailySearch}}</span> | Backlog Search: <span class="footerhighlight">{{backlogSearch}}</span>
     <div>
         Memory used: <span class="footerhighlight">{{memoryUsed}}</span> |
         Load time: <span class="footerhighlight">{{loadTime}}</span> |

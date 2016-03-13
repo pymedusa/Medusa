@@ -812,7 +812,8 @@ class Home(WebRoot):
                     "shows": anime
                 }],
                 "maxDownloadCount": stats[1],
-                "layout": sickbeard.HOME_LAYOUT
+                "layout": sickbeard.HOME_LAYOUT,
+                "fuzzyDating": sickbeard.FUZZY_DATING
             }
         else:
             return {
@@ -821,7 +822,8 @@ class Home(WebRoot):
                     "shows": shows
                 }],
                 "maxDownloadCount": stats[1],
-                "layout": sickbeard.HOME_LAYOUT
+                "layout": sickbeard.HOME_LAYOUT,
+                "fuzzyDating": sickbeard.FUZZY_DATING
             }
 
     @staticmethod

@@ -15,12 +15,12 @@
     <tbody>
         <tr ng-controller="bannerShowController" ng-repeat="(i, show) in showList.shows" ng-class-odd="'odd'" ng-class-even="'even'">
             <td ng-if="show.airsNext" align="center" class="nowrap">
-                <time timeago datetime="{{show.airsNext}}" class="date">{{show.airsNext}}</time>
+                <time datetime="{{show.airsNext | timeago}}" class="date">{{show.airsNext | timeago:fuzzyDating}}</time>
             </td>
             <td ng-if="!show.airsNext" align="center" class="nowrap"></td>
 
             <td ng-if="show.airsPrev" align="center" class="nowrap">
-                <time timeago datetime="{{show.airsPrev}}" class="date">{{show.airsPrev}}</time>
+                <time datetime="{{show.airsPrev | timeago}}" class="date">{{show.airsPrev | timeago:fuzzyDating}}</time>
             </td>
             <td ng-if="!show.airsPrev" align="center" class="nowrap"></td>
 

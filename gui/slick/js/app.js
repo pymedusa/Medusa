@@ -345,12 +345,14 @@ sickrage.directive('tablesorterpopover', function(){
     };
 });
 
-sickrage.directive('timeago', function(){
-    return {
-        link: function($scope, element, attrs) {
-            angular.element(element).timeago();
+sickrage.filter('timeago', function() {
+    return function(input, relative) {
+        if(relative) {
+            return $.timeago(input);
+        } else {
+            return input;
         }
-    };
+    }
 });
 
 sickrage.directive('header', function () {
@@ -454,6 +456,8 @@ sickrage.controller('bannerController', function($scope, $http) {
     }).then(function successCallback(response) {
         $scope.showLists = response.data.showLists;
         $scope.maxDownloadCount = response.data.maxDownloadCount;
+        $scope.fuzzyDating = response.data.fuzzyDating;
+        // @TODO: Move the common, etc. to angular
         SICKRAGE.common.init();
         SICKRAGE.home.index();
     }, function errorCallback(response) {
