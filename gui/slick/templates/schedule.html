@@ -1,0 +1,35 @@
+<div class="h2footer pull-right">
+    <button ng-if="layout === 'list'" id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
+    <span ng-if="layout !== 'list'">Sort By:
+        <select name="sort" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
+            <option value="${srRoot}/setScheduleSort/?sort=date" ${('', 'selected="selected"')[sickbeard.COMING_EPS_SORT == 'date']} >Date</option>
+            <option value="${srRoot}/setScheduleSort/?sort=network" ${('', 'selected="selected"')[sickbeard.COMING_EPS_SORT == 'network']} >Network</option>
+            <option value="${srRoot}/setScheduleSort/?sort=show" ${('', 'selected="selected"')[sickbeard.COMING_EPS_SORT == 'show']} >Show</option>
+        </select>
+    </span>
+    &nbsp;
+    <span>View Paused:
+        <select name="viewpaused" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
+            <option value="${srRoot}/toggleScheduleDisplayPaused" ${('', 'selected="selected"')[not bool(sickbeard.COMING_EPS_DISPLAY_PAUSED)]}>Hidden</option>
+            <option value="${srRoot}/toggleScheduleDisplayPaused" ${('', 'selected="selected"')[bool(sickbeard.COMING_EPS_DISPLAY_PAUSED)]}>Shown</option>
+        </select>
+    </span>
+    &nbsp;
+    <span>Layout:
+        <select ng-model="layout" ng-options="layout as layout for layout in layouts" name="layout" class="form-control form-control-inline input-sm"></select>
+    </span>
+</div>
+
+<div ng-if="layout === 'calendar'" class="key pull-right">
+    <a class="btn btn-inline forceBacklog" href="webcal://${sbHost}:${sbHttpPort}/calendar">
+    <i class="icon-calendar icon-white"></i>Subscribe</a>
+</div>
+<div ng-if="layout !== 'calendar'" class="key pull-right">
+    <b>Key:</b>
+    <span class="listing-key listing-overdue">Missed</span>
+    <span class="listing-key listing-current">Today</span>
+    <span class="listing-key listing-default">Soon</span>
+    <span class="listing-key listing-toofar">Later</span>
+</div>
+<br>
+<div ng-if="layout === 'banner'" ui-view="banner" />

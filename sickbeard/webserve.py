@@ -423,7 +423,7 @@ class WebRoot(WebHandler):
                 "backlogSearch": str(sickbeard.backlogSearchScheduler.timeLeft()).split('.')[0],
                 "memoryUsed": memory_used,
                 "loadTime": "%.4f" % (time.time() - self.startTime) + "s",
-                "timeNow": datetime.datetime.now(network_timezones.sb_timezone).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)
+                "timeNow": datetime.datetime.now().strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)
             }
 
         return PageTemplate(rh=self, filename="index.mako").render()
@@ -551,9 +551,48 @@ class WebRoot(WebHandler):
 
     def schedule(self, layout=None):
         next_week = datetime.date.today() + datetime.timedelta(days=7)
-        next_week1 = datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.sb_timezone))
+        next_week1 = str(datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.sb_timezone)))
         results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, sickbeard.COMING_EPS_SORT, False)
         today = datetime.datetime.now().replace(tzinfo=network_timezones.sb_timezone)
+
+        episodes = {}
+        if sickbeard.COMING_EPS_SORT == 'date':
+            episodes["missed"] = []
+            episodes["thisWeek"] = {}
+            episodes["later"] = []
+            episodes["today"] = []
+        for episode in results:
+            episode_dict = {
+                "localtime": str(episode["localtime"]),
+                "status": episode["status"],
+                "showId": episode["showid"],
+                "description": episode["description"],
+                "airdate": episode["airdate"],
+                "season": episode["season"],
+                "imdbId": episode["imdb_id"],
+                "paused": episode["paused"],
+                "quality": episode["quality"],
+                "name": episode["name"],
+                "indexerId": episode["indexer_id"],
+                "episodeNumber": episode["episode"],
+                "network": episode["network"],
+                "showName": episode["show_name"],
+                "indexer": episode["indexer"],
+                "airs": episode["airs"],
+                "runtime": episode["runtime"],
+                "qualityPill": render_quality_pill(episode['quality'], showTitle=True)
+            }
+
+            if not int(episode["paused"]) and not sickbeard.COMING_EPS_DISPLAY_PAUSED:
+                if sickbeard.COMING_EPS_SORT == 'date':
+                    day_of_week = datetime.date.fromordinal(episode["localtime"].date().toordinal()).strftime('%A').decode(sickbeard.SYS_ENCODING)
+
+                    if episode['localtime'].date() == today.date():
+                        episodes["today"].append(episode_dict)
+                    if episode['localtime'].date() < today.date():
+                        episodes["missed"].append(episode_dict)
+                    if episode['localtime'].date() != today.date() and episode['localtime'].date() > today.date():
+                        episodes["thisWeek"].setdefault(day_of_week, []).append(episode_dict)
 
         submenu = [
             {
@@ -584,15 +623,19 @@ class WebRoot(WebHandler):
         ]
 
         # Allow local overriding of layout parameter
+        # @NOTE: What's this doing?
         if layout and layout in ('poster', 'banner', 'list', 'calendar'):
             layout = layout
         else:
             layout = sickbeard.COMING_EPS_LAYOUT
 
-        t = PageTemplate(rh=self, filename='schedule.mako')
-        return t.render(submenu=submenu, next_week=next_week1, today=today, results=results, layout=layout,
-                        title='Schedule', header='Schedule')
-
+        return {
+            "subMenu": submenu,
+            "today": str(today),
+            "next_week": next_week1,
+            "episodes": episodes,
+            "layout": layout
+        }
 
 class CalendarHandler(BaseHandler):
     def get(self):

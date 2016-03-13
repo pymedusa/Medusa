@@ -55,7 +55,28 @@ sickrage.config([
 
         $stateProvider.state('schedule', {
             url: '/schedule',
-            templateUrl: '/schedule'
+            views: {
+                '': {
+                    templateUrl: '/templates/schedule.html',
+                    controller: 'scheduleController'
+                },
+                'poster@schedule': {
+                    templateUrl: '/templates/partials/schedule/poster.html',
+                    controller: 'schedulePosterController'
+                },
+                'calendar@schedule': {
+                    templateUrl: '/templates/partials/schedule/calendar.html',
+                    controller: 'scheduleCalendarController'
+                },
+                'banner@schedule': {
+                    templateUrl: '/templates/partials/schedule/banner.html',
+                    controller: 'scheduleBannerController'
+                },
+                'list@schedule': {
+                    templateUrl: '/templates/partials/schedule/list.html',
+                    controller: 'scheduleListController'
+                }
+            }
         });
 
         $stateProvider.state('history', {
@@ -195,9 +216,21 @@ sickrage.config([
     }
 ]);
 
-sickrage.factory('_', ['$window', function($window) {
-    return $window._;
-}]);
+sickrage.filter('timeago', function() {
+    return function(input, relative) {
+        if(relative) {
+            return $.timeago(input);
+        } else {
+            return input;
+        }
+    }
+});
+
+sickrage.filter('capitalise', function() {
+    return function(input) {
+      return (!!input) ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
+    }
+});
 
 sickrage.directive('qtip', function() {
     return {
@@ -365,11 +398,11 @@ sickrage.directive('displayshowtablesorter', function(){
             $(element).tablesorter({
                 widgets: ['saveSort', 'stickyHeaders', 'columnSelector'],
                 widgetOptions : {
-                    stickyHeaders_offset: 50,
-                    columnSelector_saveColumns: true, // jshint ignore:line
-                    columnSelector_layout : '<br><label><input type="checkbox">{name}</label>', // jshint ignore:line
-                    columnSelector_mediaquery: false, // jshint ignore:line
-                    columnSelector_cssChecked : 'checked' // jshint ignore:line
+                    'stickyHeaders_offset': 50,
+                    'columnSelector_saveColumns': true,
+                    'columnSelector_layout': '<br><label><input type="checkbox">{name}</label>',
+                    'columnSelector_mediaquery': false,
+                    'columnSelector_cssChecked': 'checked'
                 }
             });
         }
@@ -391,16 +424,6 @@ sickrage.directive('tablesorterpopover', function(){
             });
         }
     };
-});
-
-sickrage.filter('timeago', function() {
-    return function(input, relative) {
-        if(relative) {
-            return $.timeago(input);
-        } else {
-            return input;
-        }
-    }
 });
 
 sickrage.directive('header', function () {
@@ -662,8 +685,41 @@ sickrage.controller('rootController', function($scope, $http) {
     });
 });
 
-sickrage.controller('scheduleController', function() {
-    SICKRAGE.schedule.index();
+sickrage.controller('scheduleController', function($scope, $http) {
+    var getLayout = function(layout){
+        $http({
+            method: 'GET',
+            url: (layout ? '/setScheduleLayout?layout=' + layout : '/schedule')
+        }).then(function successCallback(response){
+            $scope.layout = response.data.layout;
+        });
+    }
+    $scope.layout = getLayout();
+    $scope.layouts = ['poster', 'calendar', 'banner', 'list'];
+    $scope.$watch('layout', function () {
+        getLayout($scope.layout);
+    });
+    // SICKRAGE.schedule.index();
+});
+
+sickrage.controller('schedulePosterController', function() {
+});
+
+sickrage.controller('scheduleCalendarController', function() {
+});
+
+sickrage.controller('scheduleBannerController', function($http, $scope) {
+    $http({
+        method: 'GET',
+        url: '/schedule'
+    }).then(function successCallback(response) {
+        $scope.episodes = response.data.episodes;
+    }, function errorCallback(response) {
+        console.error(response);
+    });
+});
+
+sickrage.controller('scheduleListController', function() {
 });
 
 sickrage.controller('historyController', function() {

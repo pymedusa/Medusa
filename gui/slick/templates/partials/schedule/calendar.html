@@ -1,0 +1,56 @@
+<% dates = [today.date() + datetime.timedelta(days = i) for i in range(7)] %>
+<% tbl_day = 0 %>
+<br>
+<br>
+<div class="calendarWrapper">
+<input type="hidden" id="srRoot" value="${srRoot}" />
+    % for day in dates:
+    <% tbl_day += 1 %>
+        <table class="sickbeardTable tablesorter calendarTable ${'cal-%s' % (('even', 'odd')[bool(tbl_day % 2)])}" cellspacing="0" border="0" cellpadding="0">
+        <thead><tr><th>${day.strftime('%A').decode(sickbeard.SYS_ENCODING).capitalize()}</th></tr></thead>
+        <tbody>
+        <% day_has_show = False %>
+        % for cur_result in results:
+            % if int(cur_result['paused']) and not sickbeard.COMING_EPS_DISPLAY_PAUSED:
+                <% continue %>
+            % endif
+
+            <% cur_indexer = int(cur_result['indexer']) %>
+            <% run_time = cur_result['runtime'] %>
+            <% airday = cur_result['localtime'].date() %>
+
+            % if airday == day:
+                % try:
+                    <% day_has_show = True %>
+                    <% airtime = sbdatetime.sbdatetime.fromtimestamp(time.mktime(cur_result['localtime'].timetuple())).sbftime().decode(sickbeard.SYS_ENCODING) %>
+                    % if sickbeard.TRIM_ZERO:
+                        <% airtime = re.sub(r'0(\d:\d\d)', r'\1', airtime, 0, re.IGNORECASE | re.MULTILINE) %>
+                    % endif
+                % except OverflowError:
+                    <% airtime = "Invalid" %>
+                % endtry
+
+                <tr>
+                    <td class="calendarShow">
+                        <div class="poster">
+                            <a title="${cur_result['show_name']}" href="#/displayShow?showId=${cur_result['showid']}"><img alt="" src="${srRoot}/showPoster/?show=${cur_result['showid']}&amp;which=poster_thumb" /></a>
+                        </div>
+                        <div class="text">
+                            <span class="airtime">
+                                ${airtime} on ${cur_result["network"]}
+                            </span>
+                            <span class="episode-title" title="${cur_result['name']}">
+                                ${'S%02iE%02i' % (int(cur_result['season']), int(cur_result['episode']))} - ${cur_result['name']}
+                            </span>
+                        </div>
+                    </td> <!-- end ${cur_result['show_name']} -->
+                </tr>
+            % endif
+
+        % endfor
+        % if not day_has_show:
+            <tr><td class="calendarShow"><span class="show-status">No shows for this day</span></td></tr>
+        % endif
+        </tbody>
+        </table>
+    % endfor
