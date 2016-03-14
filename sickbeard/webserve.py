@@ -564,82 +564,43 @@ class WebRoot(WebHandler):
                 "icon": config["icon"]
             }
 
-        groups = []
-        if sickbeard.COMING_EPS_SORT == 'date':
-            groups.append({
-                "name": "Missed",
-                "episodes": []
-            })
-            groups.append({
-                "name": "Sunday",
-                "episodes": []
-            })
-            groups.append({
-                "name": "Monday",
-                "episodes": []
-            })
-            groups.append({
-                "name": "Tuesday",
-                "episodes": []
-            })
-            groups.append({
-                "name": "Wednesday",
-                "episodes": []
-            })
-            groups.append({
-                "name": "Thursday",
-                "episodes": []
-            })
-            groups.append({
-                "name": "Friday",
-                "episodes": []
-            })
-            groups.append({
-                "name": "Saturday",
-                "episodes": []
-            })
-            groups.append({
-                "name": "Later",
-                "episodes": []
-            })
+        start = datetime.date.today()
+        num_days = 7
+        finish = start + datetime.timedelta(days=num_days)
+        groups = [{"name": "Missed", "episodes": []}]
+        for day in range(0, finish.day - start.day):
+            groups.append({"name": (start + datetime.timedelta(days=day)).strftime('%A'), "episodes": []})
+        groups.append({"name": "Later", "episodes": []})
+
         for episode in results:
-            episode_dict = {
-                "localtime": str(episode["localtime"]),
-                "status": episode["status"],
-                "showId": episode["showid"],
-                "description": episode["description"],
-                "airdate": episode["airdate"],
-                "seasonNumber": episode["season"],
-                "imdbId": episode["imdb_id"],
-                "paused": episode["paused"],
-                "quality": episode["quality"],
-                "episodeName": episode["name"],
-                "indexerId": episode["indexer_id"],
-                "episodeNumber": episode["episode"],
-                "network": episode["network"],
-                "showName": episode["show_name"],
-                "indexer": episode["indexer"],
-                "airs": {
-                    "real": episode["airs"],
-                    "local": sbdatetime.sbdatetime.sbfdatetime(episode["localtime"])
-                },
-                "runtime": episode["runtime"],
-                "qualityPill": render_quality_pill(episode['quality'], showTitle=True)
-            }
+            if not (episode["paused"] or sickbeard.COMING_EPS_DISPLAY_PAUSED) and sickbeard.COMING_EPS_SORT == 'date':
+                day = episode['localtime'] - start
+                day = 0 if day < 0 else num_days if day > num_days else day
+                groups[day]['episode'].append(episode)
 
-            if not int(episode["paused"]) and not sickbeard.COMING_EPS_DISPLAY_PAUSED:
-                if sickbeard.COMING_EPS_SORT == 'date':
-                    day_of_week = datetime.date.fromordinal(episode["localtime"].date().toordinal()).strftime('%A').decode(sickbeard.SYS_ENCODING)
-                    # int_of_week uses +1 since 0 is Missed and not Sunday
-                    int_of_week = ((datetime.date.fromordinal(episode["localtime"].date().toordinal()).weekday() + 1) % 7) + 1
-
-
-                    if episode['localtime'].date() < today.date():
-                        groups[0]["episodes"].append(episode_dict)
-                    if episode['localtime'].date() > today.date() and episode['localtime'].date() < next_week_date.date():
-                        groups[int_of_week]["episodes"].append(episode_dict)
-                    if episode['localtime'].date() > next_week_date.date():
-                        groups[8]["episodes"].append(episode_dict)
+        # episode_dict = {
+        #     "localtime": str(episode["localtime"]),
+        #     "status": episode["status"],
+        #     "showId": episode["showid"],
+        #     "description": episode["description"],
+        #     "airdate": episode["airdate"],
+        #     "seasonNumber": episode["season"],
+        #     "imdbId": episode["imdb_id"],
+        #     "paused": episode["paused"],
+        #     "quality": episode["quality"],
+        #     "episodeName": episode["name"],
+        #     "indexerId": episode["indexer_id"],
+        #     "episodeNumber": episode["episode"],
+        #     "network": episode["network"],
+        #     "showName": episode["show_name"],
+        #     "indexer": episode["indexer"],
+        #     "airs": {
+        #         "real": episode["airs"],
+        #         "local": sbdatetime.sbdatetime.sbfdatetime(episode["localtime"])
+        #     },
+        #     "runtime": episode["runtime"],
+        #     "qualityPill": render_quality_pill(episode['quality'], showTitle=True)
+        # }
 
         submenu = [
             {
