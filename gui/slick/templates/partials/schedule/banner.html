@@ -1,11 +1,11 @@
 <h2 class="day">Missed</h2>
-<div ng-repeat="episode in episodes.missed" class="ep_listing listing-overdue" id="listing-${cur_result['showid']}">
+<div ng-repeat="episode in episodes.missed" class="ep_listing listing-overdue" id="{{'listing-' + episode.showId}}">
     <div class="tvshowDiv">
         <table width="100%" border="0" cellpadding="0" cellspacing="0">
             <tr>
                 <th class="nobg" valign="top">
-                    <a href="{{'#/displayShow?showId=' + episode.showid}}">
-                        <img alt="" class="bannerThumb" ng-src="{{'showPoster/?show=' + episode.showid + '&amp;which=banner'}}" />
+                    <a href="{{'#/displayShow?showId=' + episode.showId}}">
+                        <img alt="" class="bannerThumb" ng-src="{{'showPoster/?show=' + episode.showId + '&amp;which=banner'}}" />
                     </a>
                 </th>
             </tr>
@@ -13,28 +13,34 @@
                 <td class="next_episode">
                     <div class="clearfix">
                         <span class="tvshowTitle">
-                            <a href="#/displayShow?showId=${cur_result['showid']}">{{episode.show_name}} <span ng-if="episode.paused" class="pause">[paused]</span>
+                            <a href="{{'#/displayShow?showId=' + episode.showId}}">{{episode.showName}} <span ng-if="episode.paused" class="pause">[paused]</span>
                             </a>
                         </span>
 
                         <span class="tvshowTitleIcons">
-                        % if cur_result['imdb_id']:
-                            <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}"><img alt="[imdb]" height="16" width="16" src="${srRoot}/images/imdb.png" />
-                        % endif
-                            <a href="${anon_url(sickbeard.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${sickbeard.indexerApi(cur_indexer).config['show_url']}"><img alt="${sickbeard.indexerApi(cur_indexer).name}" height="16" width="16" src="${srRoot}/images/${sickbeard.indexerApi(cur_indexer).config['icon']}" /></a>
-                            <span><a href="${srRoot}/home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}" title="Manual Search" id="forceUpdate-${cur_result['showid']}" class="epSearch forceUpdate"><img alt="[search]" height="16" width="16" src="${srRoot}/images/search16.png" id="forceUpdateImage-${cur_result['showid']}" /></a></span>
+                            <a ng-if="episode.imdbId" anon-href="{{'http://www.imdb.com/title/' + episode.imdbId}}" title="IMDB">
+                                <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
+                            </a>
+                            <a anon-href="{{indexers[episode.indexer].showUrl + episode.showId}}">
+                                <img alt="{{indexers[episode.indexer].name}}" height="16" width="16" src="{{'images/' + indexers[episode.indexer].icon}}" />
+                            </a>
+                            <span>
+                                <a href="{{'home/searchEpisode?show=' + episode.showId + '&amp;season=' + episode.seasonNumber + '&amp;episode=' + episode.episodeNumber}}" title="Manual Search" id="{{'forceUpdate-' + episode.showId}}" class="epSearch forceUpdate">
+                                    <img alt="[search]" height="16" width="16" src="images/search16.png" id="{{'forceUpdateImage-' + episode.showId}}" />
+                                </a>
+                            </span>
                         </span>
                     </div>
 
-                    <span class="title">Next Episode:</span> <span>${'S%02iE%02i' % (int(cur_result['season']), int(cur_result['episode']))} - ${cur_result['name']}</span>
+                    <span class="title">Next Episode:</span> <span>{{seasonString(episode.seasonNumber, episode.episodeNumber) + ' - ' + episode.episodeName}}</span>
 
                     <div class="clearfix">
-                        <span class="title">Airs: </span><span class="airdate">${sbdatetime.sbdatetime.sbfdatetime(cur_result['localtime'])}</span>${('', '<span> on %s</span>' % cur_result['network'])[bool(cur_result['network'])]}
+                        <span class="title">Airs: </span><span class="airdate">{{episode.airs.local}}</span>{{episode.network ? ' on ' + episode.network : ''}}
                     </div>
 
                     <div class="clearfix">
                         <span class="title">Quality:</span>
-                        ${renderQualityPill(cur_result['quality'], showTitle=True)}
+                        <span title="{{episode.qualityPill.title}}" class="{{episode.qualityPill.class}}">{{episode.qualityPill.qualityString}}</span>
                     </div>
 
                     <div ng-if="episode.description" class="ep_summaryTrigger">

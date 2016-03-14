@@ -555,6 +555,15 @@ class WebRoot(WebHandler):
         results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, sickbeard.COMING_EPS_SORT, False)
         today = datetime.datetime.now().replace(tzinfo=network_timezones.sb_timezone)
 
+        indexers = {}
+        for indexer in sickbeard.indexerApi().indexers:
+            config = sickbeard.indexerApi(indexer).config
+            indexers[config["id"]] = {
+                "showUrl": config["show_url"],
+                "name": config["name"],
+                "icon": config["icon"]
+            }
+
         episodes = {}
         if sickbeard.COMING_EPS_SORT == 'date':
             episodes["missed"] = []
@@ -568,17 +577,20 @@ class WebRoot(WebHandler):
                 "showId": episode["showid"],
                 "description": episode["description"],
                 "airdate": episode["airdate"],
-                "season": episode["season"],
+                "seasonNumber": episode["season"],
                 "imdbId": episode["imdb_id"],
                 "paused": episode["paused"],
                 "quality": episode["quality"],
-                "name": episode["name"],
+                "episodeName": episode["name"],
                 "indexerId": episode["indexer_id"],
                 "episodeNumber": episode["episode"],
                 "network": episode["network"],
                 "showName": episode["show_name"],
                 "indexer": episode["indexer"],
-                "airs": episode["airs"],
+                "airs": {
+                    "real": episode["airs"],
+                    "local": sbdatetime.sbdatetime.sbfdatetime(episode["localtime"])
+                },
                 "runtime": episode["runtime"],
                 "qualityPill": render_quality_pill(episode['quality'], showTitle=True)
             }
@@ -634,7 +646,8 @@ class WebRoot(WebHandler):
             "today": str(today),
             "next_week": next_week1,
             "episodes": episodes,
-            "layout": layout
+            "layout": layout,
+            "indexers": indexers
         }
 
 class CalendarHandler(BaseHandler):

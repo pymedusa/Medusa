@@ -216,6 +216,14 @@ sickrage.config([
     }
 ]);
 
+sickrage.run(function($rootScope) {
+    $rootScope.seasonString = function(season, episode){
+        season = (season < 10 ? '0' : '') + season;
+        episode = (episode < 10 ? '0' : '') + episode;
+        return 'S' + season + 'E' + episode;
+    }
+});
+
 sickrage.filter('timeago', function() {
     return function(input, relative) {
         if(relative) {
@@ -228,7 +236,7 @@ sickrage.filter('timeago', function() {
 
 sickrage.filter('capitalise', function() {
     return function(input) {
-      return (!!input) ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
+        return (!!input) ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
     }
 });
 
@@ -278,7 +286,18 @@ sickrage.directive('qtip', function() {
             }
         }
     }
-})
+});
+
+sickrage.directive('a', function() {
+    return {
+        restrict: 'E',
+        link: function($scope, element, attrs) {
+            if(attrs.anonHref) {
+                attrs.$set('href', 'http://dereferer.org/?' + attrs.anonHref);
+            }
+        }
+    }
+});
 
 sickrage.directive('progressbar', function() {
     return {
@@ -714,6 +733,7 @@ sickrage.controller('scheduleBannerController', function($http, $scope) {
         url: '/schedule'
     }).then(function successCallback(response) {
         $scope.episodes = response.data.episodes;
+        $scope.indexers = response.data.indexers;
     }, function errorCallback(response) {
         console.error(response);
     });
