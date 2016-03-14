@@ -732,7 +732,7 @@ sickrage.controller('scheduleBannerController', function($http, $scope) {
         method: 'GET',
         url: '/schedule'
     }).then(function successCallback(response) {
-        $scope.episodes = response.data.episodes;
+        $scope.groups = response.data.groups;
         $scope.indexers = response.data.indexers;
     }, function errorCallback(response) {
         console.error(response);

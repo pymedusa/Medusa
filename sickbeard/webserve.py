@@ -551,7 +551,7 @@ class WebRoot(WebHandler):
 
     def schedule(self, layout=None):
         next_week = datetime.date.today() + datetime.timedelta(days=7)
-        next_week1 = str(datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.sb_timezone)))
+        next_week_date = datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.sb_timezone))
         results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, sickbeard.COMING_EPS_SORT, False)
         today = datetime.datetime.now().replace(tzinfo=network_timezones.sb_timezone)
 
@@ -564,12 +564,44 @@ class WebRoot(WebHandler):
                 "icon": config["icon"]
             }
 
-        episodes = {}
+        groups = []
         if sickbeard.COMING_EPS_SORT == 'date':
-            episodes["missed"] = []
-            episodes["thisWeek"] = {}
-            episodes["later"] = []
-            episodes["today"] = []
+            groups.append({
+                "name": "Missed",
+                "episodes": []
+            })
+            groups.append({
+                "name": "Sunday",
+                "episodes": []
+            })
+            groups.append({
+                "name": "Monday",
+                "episodes": []
+            })
+            groups.append({
+                "name": "Tuesday",
+                "episodes": []
+            })
+            groups.append({
+                "name": "Wednesday",
+                "episodes": []
+            })
+            groups.append({
+                "name": "Thursday",
+                "episodes": []
+            })
+            groups.append({
+                "name": "Friday",
+                "episodes": []
+            })
+            groups.append({
+                "name": "Saturday",
+                "episodes": []
+            })
+            groups.append({
+                "name": "Later",
+                "episodes": []
+            })
         for episode in results:
             episode_dict = {
                 "localtime": str(episode["localtime"]),
@@ -598,13 +630,16 @@ class WebRoot(WebHandler):
             if not int(episode["paused"]) and not sickbeard.COMING_EPS_DISPLAY_PAUSED:
                 if sickbeard.COMING_EPS_SORT == 'date':
                     day_of_week = datetime.date.fromordinal(episode["localtime"].date().toordinal()).strftime('%A').decode(sickbeard.SYS_ENCODING)
+                    # int_of_week uses +1 since 0 is Missed and not Sunday
+                    int_of_week = ((datetime.date.fromordinal(episode["localtime"].date().toordinal()).weekday() + 1) % 7) + 1
 
-                    if episode['localtime'].date() == today.date():
-                        episodes["today"].append(episode_dict)
+
                     if episode['localtime'].date() < today.date():
-                        episodes["missed"].append(episode_dict)
-                    if episode['localtime'].date() != today.date() and episode['localtime'].date() > today.date():
-                        episodes["thisWeek"].setdefault(day_of_week, []).append(episode_dict)
+                        groups[0]["episodes"].append(episode_dict)
+                    if episode['localtime'].date() > today.date() and episode['localtime'].date() < next_week_date.date():
+                        groups[int_of_week]["episodes"].append(episode_dict)
+                    if episode['localtime'].date() > next_week_date.date():
+                        groups[2]["episodes"].append(episode_dict)
 
         submenu = [
             {
@@ -644,8 +679,8 @@ class WebRoot(WebHandler):
         return {
             "subMenu": submenu,
             "today": str(today),
-            "next_week": next_week1,
-            "episodes": episodes,
+            "next_week": str(next_week_date),
+            "groups": groups,
             "layout": layout,
             "indexers": indexers
         }
