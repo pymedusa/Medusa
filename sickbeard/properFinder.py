@@ -109,8 +109,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 logger.log(u"Content-Encoding was gzip, but content was not compressed while searching propers in " + curProvider.name + ", skipping: " + ex(e), logger.DEBUG)
                 continue
             except Exception as e:
-                if hasattr(e, 'errno') and e.errno == errno.ECONNRESET:
-                    logger.log(u"Connection reseted by peer accessing {}".format(curProvider.name), logger.DEBUG)
+                if 'ECONNRESET' in e or (hasattr(e, 'errno') and e.errno == errno.ECONNRESET):
+                    logger.log(u"Connection reseted by peer while searching propers in {}".format(curProvider.name), logger.WARNING)
                 else:
                     logger.log(u"Unknown exception while searching propers in " + curProvider.name + ", skipping: " + ex(e), logger.ERROR)
                     logger.log(traceback.format_exc(), logger.DEBUG)
