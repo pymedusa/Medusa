@@ -1459,8 +1459,8 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
         logger.log(traceback.format_exc(), logger.DEBUG)
         return None
     except Exception as e:
-        if hasattr(e, 'errno') and e.errno == errno.ECONNRESET or 'ECONNRESET' in e.message:
-            logger.log(u"Connection reseted by peer accessing getURL %s Error: %r" % (url, ex(e)), logger.DEBUG)
+        if 'ECONNRESET' in e or (hasattr(e, 'errno') and e.errno == errno.ECONNRESET):
+            logger.log(u"Connection reseted by peer accessing getURL %s Error: %r" % (url, ex(e)), logger.WARNING)
         else:
             logger.log(u"Unknown exception in getURL %s Error: %r" % (url, ex(e)), logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
