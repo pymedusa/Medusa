@@ -639,7 +639,7 @@ class WebRoot(WebHandler):
                     if episode['localtime'].date() > today.date() and episode['localtime'].date() < next_week_date.date():
                         groups[int_of_week]["episodes"].append(episode_dict)
                     if episode['localtime'].date() > next_week_date.date():
-                        groups[2]["episodes"].append(episode_dict)
+                        groups[8]["episodes"].append(episode_dict)
 
         submenu = [
             {
