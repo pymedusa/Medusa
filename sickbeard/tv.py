@@ -1168,7 +1168,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
 
         helpers.update_anime_support()
 
-        if self.imdbid:
+        if self.imdbid and self.imdb_info['year']:
             controlValueDict = {"indexer_id": self.indexerid}
             newValueDict = self.imdb_info
 
