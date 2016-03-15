@@ -2453,37 +2453,38 @@ var SICKRAGE = {
             function setSeasonSceneException(data) {
                 var xemImg;
 
-                for (var season in data.seasonExceptions) {
-                    if (data.seasonExceptions.hasOwnProperty(season)) {
-                        // Check if it is a season name exception, we don't handle the show name exceptions here
-                        if (season >= 1 && Object.keys(data.xemNumbering).length > 0) {
-                            // Let's handle this as a xem season numbered exception
-                            for (var indexerSeason in data.xemNumbering) {
-                                if (data.xemNumbering.hasOwnProperty(indexerSeason) &&
-                                        data.seasonExceptions[data.xemNumbering[indexerSeason]]) {
-                                    xemImg = $('<img>', {
-                                        'id': 'xem-exception-season-' + indexerSeason,
-                                        'alt': '[xem]',
-                                        'height': '16',
-                                        'width': '16',
-                                        'src': srRoot + '/images/xem.png',
-                                        'title': data.seasonExceptions[data.xemNumbering[indexerSeason]].join(', '),
-                                    }).appendTo('[data-season=' + indexerSeason + ']');
-                                }
+                $.each(data.seasonExceptions, function(season, nameExceptions) {
+                var foundInXem = false;
+                // Check if it is a season name exception, we don't handle the show name exceptions here
+                    if (season >= 0) {
+                        // Loop through the xem mapping, and check if there is a xem_season, that needs to show the season name exception
+                        $.each(data.xemNumbering, function(indexerSeason, xemSeason) {
+                            if (xemSeason === parseInt(season)) {
+                                foundInXem = true;
+                                xemImg = $('<img>', {
+                                    'id': 'xem-exception-season-' + xemSeason,
+                                    'alt': '[xem]',
+                                    'height': '16',
+                                    'width': '16',
+                                    'src': srRoot + '/images/xem.png',
+                                    'title': nameExceptions.join(', '),
+                                }).appendTo('[data-season=' + indexerSeason + ']');
                             }
-                        } else {
-                            // This is not a xem season exception, let's set the exceptions as a medusa exception
+                        });
+
+                        if (!foundInXem) {
+                        // This is not a xem season exception, let's set the exceptions as a medusa exception
                             xemImg = $('<img>', {
                                 'id': 'xem-exception-season-' + season,
                                 'alt': '[medusa]',
                                 'height': '16',
                                 'width': '16',
                                 'src': srRoot + '/images/ico/favicon-16.png',
-                                'title': data.seasonExceptions[season].join(', '),
+                                'title': nameExceptions.join(', '),
                             }).appendTo('[data-season=' + season + ']');
                         }
                     }
-                }
+                });
             }
 
             // TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
