@@ -2495,7 +2495,7 @@ var SICKRAGE = {
                 setSeasonSceneException(data);
             });
         },
-        manualSelect: function() {
+        snatch_selection: function() {
             $.fn.loadContainer = function(path, loadingTxt, errorTxt) {
                 $(this).html('<img id="searchingAnim" src="' + srRoot + '/images/loading32' + themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
                 $(this).load(srRoot + path + ' #container', function(response, status) {
@@ -2506,7 +2506,7 @@ var SICKRAGE = {
             };
 
             // Click event for the download button for snatching a result
-            $('body').on('click', '.epManualSnatch', function(event){
+            $('body').on('click', '.epSnatchSelection', function(event){
                 event.preventDefault();
                 var link = this;
                 $.getJSON(this.href, 
@@ -2532,11 +2532,11 @@ var SICKRAGE = {
                     setTimeout(function() { checkCacheUpdates(true); }, 200);
                 }
                 
-                var url = srRoot + '/home/manualSelectCheckCache?show='+show+'&season='+season+'&episode='+episode;
+                var url = srRoot + '/home/manual_snatch_check_cache?show='+show+'&season='+season+'&episode='+episode;
                 
                 self.refreshResults = function() {
                     $('#wrapper').loadContainer(
-                            '/home/manualSelect?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=0',
+                            '/home/manual_snatch?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=0',
                             'Loading new search results...',
                             'Time out, refresh page to try again'
                     );
@@ -2572,7 +2572,7 @@ var SICKRAGE = {
                         }
                         if (data.result === 'error') {
                             // ep search is finished
-                            console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
+                            console.log('Probably tried to call manual_snatch_check_cache, while page was being refreshed.');
                             repeat = true;
                         }
                     },
@@ -2601,7 +2601,7 @@ var SICKRAGE = {
                 
                 if ($.isNumeric(show) && $.isNumeric(season) && $.isNumeric(episode)) {
                     $('#wrapper').loadContainer(
-                            '/home/manualSelect?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=' + performSearch,
+                            '/home/manual_snatch?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=' + performSearch,
                             'Loading new search results...',
                             'Time out, refresh page to try again'
                     );
