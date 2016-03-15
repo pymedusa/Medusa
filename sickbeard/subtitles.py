@@ -401,58 +401,63 @@ class SubtitlesFinder(object):
                             except Exception as error:
                                 logger.log(u"Couldn't delete subtitle: {}. Error: {}".format(filename, ex(error)), logger.DEBUG)
 
-                    if isMediaFile(filename) and processTV.subtitles_enabled(filename):
-                        if sickbeard.SUBTITLES_PRE_SCRIPTS and not sickbeard.EMBEDDED_SUBTITLES_ALL:
-                            run_subs_scripts(None, None, None, filename, is_pre=True)
-
-                        try:
-                            video = scan_video(os.path.join(root, filename))
-                            subtitles_list = pool.list_subtitles(video, languages)
-
-                            for provider in providers:
-                                if provider in pool.discarded_providers:
-                                    logger.log(u'Could not search in {} provider. Discarding for now'.format(provider), logger.DEBUG)
-
-                            if not subtitles_list:
-                                logger.log(u'No subtitles found for {}'.format
-                                           (os.path.join(root, filename)), logger.DEBUG)
-                                continue
-
-                            logger.log(u'Found subtitle(s) canditate(s) for {}'.format(filename), logger.INFO)
-                            hearing_impaired = sickbeard.SUBTITLES_HEARING_IMPAIRED
-                            user_score = 213 if sickbeard.SUBTITLES_PERFECT_MATCH else 198
-                            found_subtitles = pool.download_best_subtitles(subtitles_list, video, languages=languages,
-                                                                           hearing_impaired=hearing_impaired,
-                                                                           min_score=user_score,
-                                                                           only_one=not sickbeard.SUBTITLES_MULTI)
-
-                            for subtitle in subtitles_list:
-                                score = compute_score(subtitle, video, hearing_impaired=sickbeard.SUBTITLES_HEARING_IMPAIRED)
-                                logger.log(u'[{}] Subtitle score for {} is: {} (min={})'.format
-                                           (subtitle.provider_name, subtitle.id, score, user_score), logger.DEBUG)
-
-                            downloaded_languages = set()
-                            for subtitle in found_subtitles:
-                                logger.log(u'Found subtitle for {} in {} provider with language {}'.format
-                                           (os.path.join(root, filename), subtitle.provider_name,
-                                            subtitle.language.opensubtitles), logger.INFO)
-                                save_subtitles(video, found_subtitles, directory=root, single=not sickbeard.SUBTITLES_MULTI)
-
-                                subtitles_multi = not sickbeard.SUBTITLES_MULTI
-                                subtitle_path = get_subtitle_path(video.name, None if subtitles_multi else subtitle.language)
-                                if root:
-                                    subtitle_path = os.path.join(root, os.path.split(subtitle_path)[1])
-                                sickbeard.helpers.chmodAsParent(subtitle_path)
-                                sickbeard.helpers.fixSetGroupID(subtitle_path)
-
-                                downloaded_languages.add(subtitle.language.opensubtitles)
-
-                            # Don't run post processor unless at least one file has all of the needed subtitles
-                            if not needs_subtitles(downloaded_languages):
-                                run_post_process = True
-                        except Exception as error:
-                            logger.log(u'Error occurred when downloading subtitles for: {}. Error: {}'.format
-                                       (os.path.join(root, filename), ex(error)))
+                    if isMediaFile(filename):
+                        subtitles_enabled = processTV.subtitles_enabled(filename)
+                        if subtitles_enabled:
+                            if sickbeard.SUBTITLES_PRE_SCRIPTS and not sickbeard.EMBEDDED_SUBTITLES_ALL:
+                                run_subs_scripts(None, None, None, filename, is_pre=True)
+    
+                            try:
+                                video = scan_video(os.path.join(root, filename))
+                                subtitles_list = pool.list_subtitles(video, languages)
+    
+                                for provider in providers:
+                                    if provider in pool.discarded_providers:
+                                        logger.log(u'Could not search in {} provider. Discarding for now'.format(provider), logger.DEBUG)
+    
+                                if not subtitles_list:
+                                    logger.log(u'No subtitles found for {}'.format
+                                               (os.path.join(root, filename)), logger.DEBUG)
+                                    continue
+    
+                                logger.log(u'Found subtitle(s) canditate(s) for {}'.format(filename), logger.INFO)
+                                hearing_impaired = sickbeard.SUBTITLES_HEARING_IMPAIRED
+                                user_score = 213 if sickbeard.SUBTITLES_PERFECT_MATCH else 198
+                                found_subtitles = pool.download_best_subtitles(subtitles_list, video, languages=languages,
+                                                                               hearing_impaired=hearing_impaired,
+                                                                               min_score=user_score,
+                                                                               only_one=not sickbeard.SUBTITLES_MULTI)
+    
+                                for subtitle in subtitles_list:
+                                    score = compute_score(subtitle, video, hearing_impaired=sickbeard.SUBTITLES_HEARING_IMPAIRED)
+                                    logger.log(u'[{}] Subtitle score for {} is: {} (min={})'.format
+                                               (subtitle.provider_name, subtitle.id, score, user_score), logger.DEBUG)
+    
+                                downloaded_languages = set()
+                                for subtitle in found_subtitles:
+                                    logger.log(u'Found subtitle for {} in {} provider with language {}'.format
+                                               (os.path.join(root, filename), subtitle.provider_name,
+                                                subtitle.language.opensubtitles), logger.INFO)
+                                    save_subtitles(video, found_subtitles, directory=root, single=not sickbeard.SUBTITLES_MULTI)
+    
+                                    subtitles_multi = not sickbeard.SUBTITLES_MULTI
+                                    subtitle_path = get_subtitle_path(video.name, None if subtitles_multi else subtitle.language)
+                                    if root:
+                                        subtitle_path = os.path.join(root, os.path.split(subtitle_path)[1])
+                                    sickbeard.helpers.chmodAsParent(subtitle_path)
+                                    sickbeard.helpers.fixSetGroupID(subtitle_path)
+    
+                                    downloaded_languages.add(subtitle.language.opensubtitles)
+    
+                                # Don't run post processor unless at least one file has all of the needed subtitles
+                                if not needs_subtitles(downloaded_languages):
+                                    run_post_process = True
+                            except Exception as error:
+                                logger.log(u'Error occurred when downloading subtitles for: {}. Error: {}'.format
+                                           (os.path.join(root, filename), ex(error)))
+                        elif subtitles_enabled is False:
+                            logger.log(u"Subtitle disabled for show: {}".format(filename), logger.DEBUG)
+                            
             if run_post_process:
                 logger.log(u'Starting post-process with default settings now that we found subtitles')
                 processTV.processDir(sickbeard.TV_DOWNLOAD_DIR)
