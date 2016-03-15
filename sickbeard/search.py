@@ -457,15 +457,15 @@ def searchForNeededEpisodes():
     return foundResults.values()
 
 
-def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, manualSelect=False):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+def searchProviders(show, episodes, manual_snatch=False, downCurQuality=False, snatch_selection=False):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     """
     Walk providers for information on shows
 
     :param show: Show we are looking for
     :param episodes: Episodes we hope to find
-    :param manualSearch: Boolean, is this a manual search?
+    :param manual_snatch: Boolean, is this a manual search?
     :param downCurQuality: Boolean, should we re-download currently available quality file
-    :param manualSelect: Boolean, should we choose what to download?
+    :param snatch_selection: Boolean, should we choose what to download?
     :return: results for search
     """
     foundResults = {}
@@ -479,7 +479,7 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
     origThreadName = threading.currentThread().name
 
     providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_backlog]
-    if not manualSearch:
+    if not manual_snatch:
         for curProvider in providers:
             threading.currentThread().name = origThreadName + " :: [" + curProvider.name + "]"
             curProvider.cache.updateCache()
@@ -499,7 +499,7 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
         search_mode = curProvider.search_mode
 
         # Always search for episode when manually searching when in sponly
-        if search_mode == 'sponly' and (manualSearch or manualSelect):
+        if search_mode == 'sponly' and (manual_snatch or snatch_selection):
             search_mode = 'eponly'
 
         while True:
@@ -511,7 +511,7 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
                 logger.log(u"Performing season pack search for " + show.name)
 
             try:
-                searchResults = curProvider.find_search_results(show, episodes, search_mode, manualSearch, downCurQuality, manualSelect)
+                searchResults = curProvider.find_search_results(show, episodes, search_mode, manual_snatch, downCurQuality, snatch_selection)
             except AuthException as e:
                 logger.log(u"Authentication error: " + ex(e), logger.ERROR)
                 break
@@ -564,7 +564,7 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
             continue
 
         # Update the cache if a manual search is being runned
-        if manualSelect:
+        if snatch_selection:
             results = curProvider.cache.update_cache_manual_search(searchResults[curEp])
             if results:
                 # If we have at least a result from one provider, it's good enough to be marked as result
@@ -769,7 +769,7 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
     # Remove provider from thread name before return results
     threading.currentThread().name = origThreadName
 
-    if manualSelect:
+    if snatch_selection:
         # If results in manual search return True, else False
         return any(finalResults)
     else:

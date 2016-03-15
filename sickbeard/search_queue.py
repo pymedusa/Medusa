@@ -55,20 +55,20 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def is_ep_in_queue(self, segment):
         for cur_item in self.queue:
-            if isinstance(cur_item, (ManualSearchQueueItem, ManualSelectQueueItem, FailedQueueItem)) and cur_item.segment == segment:
+            if isinstance(cur_item, (ManualSearchQueueItem, SnatchSelectionQueueItem, FailedQueueItem)) and cur_item.segment == segment:
                 return True
         return False
 
     def is_show_in_queue(self, show):
         for cur_item in self.queue:
-            if isinstance(cur_item, (ManualSearchQueueItem, ManualSelectQueueItem, FailedQueueItem)) and cur_item.show.indexerid == show:
+            if isinstance(cur_item, (ManualSearchQueueItem, SnatchSelectionQueueItem, FailedQueueItem)) and cur_item.show.indexerid == show:
                 return True
         return False
 
     def get_all_ep_from_queue(self, show):
         ep_obj_list = []
         for cur_item in self.queue:
-            if isinstance(cur_item, (ManualSearchQueueItem, ManualSelectQueueItem, FailedQueueItem)) and str(cur_item.show.indexerid) == show:
+            if isinstance(cur_item, (ManualSearchQueueItem, SnatchSelectionQueueItem, FailedQueueItem)) and str(cur_item.show.indexerid) == show:
                 ep_obj_list.append(cur_item)
         return ep_obj_list
 
@@ -84,7 +84,7 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def is_manualsearch_in_progress(self):
         # Only referenced in webserve.py, only current running manualsearch or failedsearch is needed!!
-        if isinstance(self.currentItem, (ManualSearchQueueItem, ManualSelectQueueItem, FailedQueueItem)):
+        if isinstance(self.currentItem, (ManualSearchQueueItem, SnatchSelectionQueueItem, FailedQueueItem)):
             return True
         return False
 
@@ -111,7 +111,7 @@ class SearchQueue(generic_queue.GenericQueue):
                 length['manual'] += 1
             elif isinstance(cur_item, FailedQueueItem):
                 length['failed'] += 1
-            elif isinstance(cur_item, ManualSelectQueueItem):
+            elif isinstance(cur_item, SnatchSelectionQueueItem):
                 length['manualselect'] += 1
         return length
 
@@ -122,7 +122,7 @@ class SearchQueue(generic_queue.GenericQueue):
         elif isinstance(item, BacklogQueueItem) and not self.is_in_queue(item.show, item.segment):
             # backlog searches
             generic_queue.GenericQueue.add_item(self, item)
-        elif isinstance(item, (ManualSearchQueueItem, ManualSelectQueueItem, FailedQueueItem)) and not self.is_ep_in_queue(item.segment):
+        elif isinstance(item, (ManualSearchQueueItem, SnatchSelectionQueueItem, FailedQueueItem)) and not self.is_ep_in_queue(item.segment):
             # manual and failed searches
             generic_queue.GenericQueue.add_item(self, item)
         else:
@@ -172,7 +172,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
 
 class ManualSearchQueueItem(generic_queue.QueueItem):
-    def __init__(self, show, segment, downCurQuality=False, manualSelect=False):
+    def __init__(self, show, segment, downCurQuality=False, snatch_selection=False):
         generic_queue.QueueItem.__init__(self, u'Manual Search', MANUAL_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
         self.name = 'MANUAL-' + str(show.indexerid)
@@ -184,7 +184,7 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
         self.show = show
         self.segment = segment
         self.downCurQuality = downCurQuality
-        self.manualSelect = manualSelect
+        self.snatch_selection = snatch_selection
 
 
     def run(self):
@@ -194,9 +194,9 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
         try:
             logger.log(u"Beginning manual search for: [" + self.segment.prettyName() + "]")
 
-            searchResult = search.searchProviders(self.show, [self.segment], True, self.downCurQuality, self.manualSelect)
+            searchResult = search.searchProviders(self.show, [self.segment], True, self.downCurQuality, self.snatch_selection)
 
-            if not self.manualSelect and searchResult:
+            if not self.snatch_selection and searchResult:
                 # just use the first result for now
                 if searchResult[0].seeders is not -1 and searchResult[0].leechers is not -1:
                     logger.log(u"Downloading " + searchResult[0].name + " with " + str(searchResult[0].seeders) + " seeders and " + str(searchResult[0].leechers) + " leechers from " + searchResult[0].provider.name)
@@ -206,7 +206,7 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
 
                 # give the CPU a break
                 time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
-            elif self.manualSelect and searchResult:
+            elif self.snatch_selection and searchResult:
                 self.results = searchResult
                 self.success = True
                 ui.notifications.message("We have found downloads for %s" % self.segment.prettyName(),
@@ -227,7 +227,7 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
 
         self.finish()
 
-class ManualSelectQueueItem(generic_queue.QueueItem):
+class SnatchSelectionQueueItem(generic_queue.QueueItem):
     def __init__(self, show, segment, season, episode, url, quality, provider, search_name):
         generic_queue.QueueItem.__init__(self, u'Manual Search', MANUAL_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH

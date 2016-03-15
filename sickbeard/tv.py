@@ -1201,7 +1201,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
     def qualitiesToString(qualities=None):
         return ', '.join([Quality.qualityStrings[quality] for quality in qualities or [] if quality and quality in Quality.qualityStrings]) or 'None'
 
-    def wantEpisode(self, season, episode, quality, manualSearch=False, downCurQuality=False):  # pylint: disable=too-many-return-statements, too-many-arguments
+    def wantEpisode(self, season, episode, quality, manual_snatch=False, downCurQuality=False):  # pylint: disable=too-many-return-statements, too-many-arguments
 
         # if the quality isn't one we want under any circumstances then just say no
         allowed_qualities, preferred_qualities = Quality.splitQuality(self.quality)
@@ -1229,7 +1229,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
         epStatus_text = statusStrings[epStatus]
 
         # if we know we don't want it then just say no
-        if epStatus in Quality.ARCHIVED + [UNAIRED, SKIPPED, IGNORED] and not manualSearch:
+        if epStatus in Quality.ARCHIVED + [UNAIRED, SKIPPED, IGNORED] and not manual_snatch:
             logger.log(u"Existing episode status is '{status}', ignoring found result for {name} {ep} with quality {quality}".format
                        (status=epStatus_text, name=self.name, ep=episode_num(season, episode),
                         quality=Quality.qualityStrings[quality]), logger.DEBUG)
@@ -1243,7 +1243,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
                        (status=epStatus_text, name=self.name, ep=episode_num(season, episode),
                         quality=Quality.qualityStrings[quality]), logger.DEBUG)
             return True
-        elif manualSearch:
+        elif manual_snatch:
             if (downCurQuality and quality >= curQuality) or (not downCurQuality and quality > curQuality):
                 logger.log(u"Usually ignoring found result, but forced search allows the quality,"
                            u" getting found result for {name} {ep} with quality {quality}".format
@@ -1259,7 +1259,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
                         new_quality=Quality.qualityStrings[quality], name=self.name,
                         ep=episode_num(season, episode)), logger.DEBUG)
             return True
-        elif curQuality == Quality.UNKNOWN and manualSearch:
+        elif curQuality == Quality.UNKNOWN and manual_snatch:
             logger.log(u"Episode already exists but quality is Unknown, getting found result for {name} {ep} with quality {quality}".format
                        (name=self.name, ep=episode_num(season, episode), quality=Quality.qualityStrings[quality]), logger.DEBUG)
             return True
