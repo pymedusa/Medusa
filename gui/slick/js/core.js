@@ -2495,7 +2495,7 @@ var SICKRAGE = {
                 setSeasonSceneException(data);
             });
         },
-        manualSelect: function() {
+        snatchSelection: function() {
             $.fn.loadContainer = function(path, loadingTxt, errorTxt) {
                 $(this).html('<img id="searchingAnim" src="' + srRoot + '/images/loading32' + themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
                 $(this).load(srRoot + path + ' #container', function(response, status) {
@@ -2532,11 +2532,11 @@ var SICKRAGE = {
                     setTimeout(function() { checkCacheUpdates(true); }, 200);
                 }
                 
-                var url = srRoot + '/home/manualSelectCheckCache?show='+show+'&season='+season+'&episode='+episode;
+                var url = srRoot + '/home/manualSnatchCheckCache?show='+show+'&season='+season+'&episode='+episode;
                 
                 self.refreshResults = function() {
                     $('#wrapper').loadContainer(
-                            '/home/manualSelect?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=0',
+                            '/home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=0',
                             'Loading new search results...',
                             'Time out, refresh page to try again'
                     );
@@ -2601,7 +2601,7 @@ var SICKRAGE = {
                 
                 if ($.isNumeric(show) && $.isNumeric(season) && $.isNumeric(episode)) {
                     $('#wrapper').loadContainer(
-                            '/home/manualSelect?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=' + performSearch,
+                            '/home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=' + performSearch,
                             'Loading new search results...',
                             'Time out, refresh page to try again'
                     );
