@@ -217,7 +217,7 @@ $(document).ready(function () {
             }
         });
 
-         $('.epManualSearch').click(function(event){
+         $('.epManualSnatch').click(function(event){
             event.preventDefault();
             var performSearch = '0';
             var showAllResults = '0';
