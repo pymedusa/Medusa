@@ -167,7 +167,10 @@
 
             <td align="center">
                 <a href="${srRoot}/home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}" title="Manual Search" id="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" class="forceUpdate epSearch">
-                    <img alt="[search]" height="16" width="16" src="${srRoot}/images/search16.png" id="forceUpdateImage-${cur_result['showid']}" />
+                    <img alt="[search]" height="16" width="16" data-ep-search src="${srRoot}/images/search16.png" id="forceUpdateImage-${cur_result['showid']}" />
+                </a>
+                <a href="${srRoot}/home/snatchSelection?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}" title="Manual Snatch" id="manualSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" class="epManualSnatch">
+                    <img alt="[manualSnatch]" height="16" width="16" data-ep-manual-search src="${srRoot}/images/next.png" id="manualSearchImage-${cur_result['showid']}" />
                 </a>
             </td>
         </tr>
