@@ -1,5 +1,3 @@
-<% show_div = 'listing-default' %>
-<input type="hidden" id="srRoot" value="${srRoot}" />
 <table id="showListTable" class="sickbeardTable tablesorter seasonstyle" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr>
@@ -16,31 +14,7 @@
         </tr>
     </thead>
     <tbody style="text-shadow:none;">
-
-% for cur_result in results:
-<%
-    cur_indexer = int(cur_result['indexer'])
-    run_time = cur_result['runtime']
-
-    if int(cur_result['paused']) and not sickbeard.COMING_EPS_DISPLAY_PAUSED:
-        continue
-
-    cur_ep_airdate = cur_result['localtime'].date()
-
-    if run_time:
-        cur_ep_enddate = cur_result['localtime'] + datetime.timedelta(minutes = run_time)
-        if cur_ep_enddate < today:
-            show_div = 'listing-overdue'
-        elif cur_ep_airdate >= next_week.date():
-            show_div = 'listing-toofar'
-        elif cur_ep_airdate >= today.date() and cur_ep_airdate < next_week.date():
-            if cur_ep_airdate == today.date():
-                show_div = 'listing-current'
-            else:
-                show_div = 'listing-default'
-%>
-
-        <tr class="${show_div}">
+        <tr ng-repeat="episode in episodes" class="{{episode.listingClass}}">
             <td align="center" nowrap="nowrap">
                 <% airDate = sbdatetime.sbdatetime.convert_to_setting(cur_result['localtime']) %>
                 <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(airDate)}</time>
@@ -51,10 +25,8 @@
                 <time datetime="${ends.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(ends)}</time>
             </td>
 
-            <td class="tvShow" nowrap="nowrap"><a href="#/displayShow?showId=${cur_result['showid']}">${cur_result['show_name']}</a>
-% if int(cur_result['paused']):
-                <span class="pause">[paused]</span>
-% endif
+            <td class="tvShow" nowrap="nowrap"><a href="{{'#/displayShow?showId=' + episode.showId}}">{{episode.showName}}</a>
+                <span ng-if="episode.paused" class="pause">[paused]</span>
             </td>
 
             <td nowrap="nowrap" align="center">
@@ -62,12 +34,9 @@
             </td>
 
             <td>
-% if cur_result['description']:
-                <img alt="" src="${srRoot}/images/info32.png" height="16" width="16" class="plotInfo" id="plot_info_${'%s_%s_%s' % (cur_result['showid'], cur_result['season'], cur_result['episode'])}" />
-% else:
-                <img alt="" src="${srRoot}/images/info32.png" width="16" height="16" class="plotInfoNone"  />
-% endif
-                ${cur_result['name']}
+                <img ng-if="episode.description" src="images/info32.png" height="16" width="16" class="plotInfo" id="plot_info_${'%s_%s_%s' % (cur_result['showid'], cur_result['season'], cur_result['episode'])}" />
+                <img ng-if="!episode.description" src="images/info32.png" width="16" height="16" class="plotInfoNone"  />
+                {{episode.name}}
             </td>
 
             <td align="center">
@@ -84,20 +53,19 @@
 
             <td align="center" style="vertical-align: middle;">
 % if cur_result['imdb_id']:
-                <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" title="http://www.imdb.com/title/${cur_result['imdb_id']}"><img alt="[imdb]" height="16" width="16" src="${srRoot}/images/imdb.png" />
+                <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" title="http://www.imdb.com/title/${cur_result['imdb_id']}"><img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
 % endif
                 <a href="${anon_url(sickbeard.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" title="${sickbeard.indexerApi(cur_indexer).config['show_url']}${cur_result['showid']}">
-                    <img alt="${sickbeard.indexerApi(cur_indexer).name}" height="16" width="16" src="${srRoot}/images/${sickbeard.indexerApi(cur_indexer).config['icon']}" />
+                    <img alt="${sickbeard.indexerApi(cur_indexer).name}" height="16" width="16" src="images/${sickbeard.indexerApi(cur_indexer).config['icon']}" />
                 </a>
             </td>
 
             <td align="center">
-                <a href="${srRoot}/home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}" title="Manual Search" id="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" class="forceUpdate epSearch">
-                    <img alt="[search]" height="16" width="16" src="${srRoot}/images/search16.png" id="forceUpdateImage-${cur_result['showid']}" />
+                <a href="home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}" title="Manual Search" id="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" class="forceUpdate epSearch">
+                    <img alt="[search]" height="16" width="16" src="images/search16.png" id="forceUpdateImage-${cur_result['showid']}" />
                 </a>
             </td>
         </tr>
-% endfor
     </tbody>
     <tfoot>
         <tr>

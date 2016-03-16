@@ -14,11 +14,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 
         <!-- These values come from css/dark.css and css/light.css -->
-        % if sickbeard.THEME_NAME == "dark":
-        <meta name="theme-color" content="#15528F">
-        % elif sickbeard.THEME_NAME == "light":
-        <meta name="theme-color" content="#333333">
-        % endif
+        <meta name="theme-color" content="${('#333333', '#15528F')[sickbeard.THEME_NAME == 'dark']}">
 
         <title>Medusa - ${title}</title>
 
@@ -94,6 +90,8 @@
             <span>{{updateVersion}}</span>
         </div>
 
+        <br>
+
         <div id="content" ui-view ng-cloak></div>
 
         <footer footer ng-cloak></footer>
@@ -116,7 +114,6 @@
         <script type="text/javascript" src="js/dependencies/angular-ui-router.min.js"></script>
         <script type="text/javascript" src="js/dependencies/angular-animate.min.js"></script>
         <script type="text/javascript" src="js/dependencies/angular-aria.min.js"></script>
-        <script type="text/javascript" src="js/dependencies/angular-material.min.js"></script>
         <script type="text/javascript" src="js/dependencies/angular-messages.min.js"></script>
         <script type="text/javascript" src="js/dependencies/angular-resource.min.js"></script>
         <script type="text/javascript" src="js/app.js"></script>

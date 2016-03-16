@@ -553,7 +553,6 @@ class WebRoot(WebHandler):
         next_week = datetime.date.today() + datetime.timedelta(days=7)
         next_week_date = datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.sb_timezone))
         results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, sickbeard.COMING_EPS_SORT, False)
-        today = datetime.datetime.now().replace(tzinfo=network_timezones.sb_timezone)
 
         indexers = {}
         for indexer in sickbeard.indexerApi().indexers:
@@ -574,33 +573,44 @@ class WebRoot(WebHandler):
 
         for episode in results:
             if not (episode["paused"] or sickbeard.COMING_EPS_DISPLAY_PAUSED) and sickbeard.COMING_EPS_SORT == 'date':
-                day = episode['localtime'] - start
-                day = 0 if day < 0 else num_days if day > num_days else day
-                groups[day]['episode'].append(episode)
+                day = (episode["localtime"].date() - start).days
 
-        # episode_dict = {
-        #     "localtime": str(episode["localtime"]),
-        #     "status": episode["status"],
-        #     "showId": episode["showid"],
-        #     "description": episode["description"],
-        #     "airdate": episode["airdate"],
-        #     "seasonNumber": episode["season"],
-        #     "imdbId": episode["imdb_id"],
-        #     "paused": episode["paused"],
-        #     "quality": episode["quality"],
-        #     "episodeName": episode["name"],
-        #     "indexerId": episode["indexer_id"],
-        #     "episodeNumber": episode["episode"],
-        #     "network": episode["network"],
-        #     "showName": episode["show_name"],
-        #     "indexer": episode["indexer"],
-        #     "airs": {
-        #         "real": episode["airs"],
-        #         "local": sbdatetime.sbdatetime.sbfdatetime(episode["localtime"])
-        #     },
-        #     "runtime": episode["runtime"],
-        #     "qualityPill": render_quality_pill(episode['quality'], showTitle=True)
-        # }
+                episode_dict = {
+                    "localtime": str(episode["localtime"]),
+                    "status": episode["status"],
+                    "showId": episode["showid"],
+                    "description": episode["description"],
+                    "airdate": episode["airdate"],
+                    "seasonNumber": episode["season"],
+                    "imdbId": episode["imdb_id"],
+                    "paused": episode["paused"],
+                    "quality": episode["quality"],
+                    "episodeName": episode["name"],
+                    "indexerId": episode["indexer_id"],
+                    "episodeNumber": episode["episode"],
+                    "network": episode["network"],
+                    "showName": episode["show_name"],
+                    "indexer": episode["indexer"],
+                    "airs": {
+                        "real": episode["airs"],
+                        "local": sbdatetime.sbdatetime.sbfdatetime(episode["localtime"])
+                    },
+                    "runtime": episode["runtime"],
+                    "qualityPill": render_quality_pill(episode["quality"], showTitle=True)
+                }
+
+                if day < 0:
+                    episode_dict["listingClass"] = "ep_listing listing-overdue listingradius"
+                    groups[0]["episodes"].append(episode_dict)
+                if day <= num_days and day > 0:
+                    if day == start:
+                        episode_dict["listingClass"] = "ep_listing listing-current listingradius"
+                    else:
+                        episode_dict["listingClass"] = "ep_listing listing-default listingradius"
+                    groups[day+1]["episodes"].append(episode_dict)
+                if day > num_days:
+                    episode_dict["listingClass"] = "ep_listing listing-toofar listingradius"
+                    groups[8]["episodes"].append(episode_dict)
 
         submenu = [
             {
@@ -639,10 +649,10 @@ class WebRoot(WebHandler):
 
         return {
             "subMenu": submenu,
-            "today": str(today),
-            "next_week": str(next_week_date),
+            "today": start.strftime('%A'),
             "groups": groups,
             "layout": layout,
+            "sort": sickbeard.COMING_EPS_SORT,
             "indexers": indexers
         }
 

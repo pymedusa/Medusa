@@ -1,11 +1,7 @@
 <div class="h2footer pull-right">
     <button ng-if="layout === 'list'" id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
     <span ng-if="layout !== 'list'">Sort By:
-        <select name="sort" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="${srRoot}/setScheduleSort/?sort=date" ${('', 'selected="selected"')[sickbeard.COMING_EPS_SORT == 'date']} >Date</option>
-            <option value="${srRoot}/setScheduleSort/?sort=network" ${('', 'selected="selected"')[sickbeard.COMING_EPS_SORT == 'network']} >Network</option>
-            <option value="${srRoot}/setScheduleSort/?sort=show" ${('', 'selected="selected"')[sickbeard.COMING_EPS_SORT == 'show']} >Show</option>
-        </select>
+        <select ng-model="sort" ng-options="sort as sort for sort in sorts" name="sort" class="form-control form-control-inline input-sm"></select>
     </span>
     &nbsp;
     <span>View Paused:

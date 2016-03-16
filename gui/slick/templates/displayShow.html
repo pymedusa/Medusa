@@ -2,9 +2,7 @@
     <div class="pull-left form-inline">
         Change Show:
         <div class="navShow"><img id="prevShow" src="/images/prev.png" alt="&lt;&lt;" title="Prev Show" /></div>
-            <select id="pickShow" class="form-control form-control-inline input-sm">
-                <option ng-repeat="(i, menuShow) in showMenu.shows" value="{{menuShow.indexerId}}">{{menuShow.name}}</option>
-            </select>
+            <select ng-model="menuShow" ng-options="menuShow.name for menuShow in showMenu.shows track by menuShow.indexerId" id="pickShow" class="form-control form-control-inline input-sm"></select>
         <div class="navShow"><img id="nextShow" src="/images/next.png" alt="&gt;&gt;" title="Next Show" /></div>
     </div>
 
@@ -52,27 +50,6 @@
                     <!-- @NOTE: This is broken? -->
                     <span ng-if="show.imdb_info" class="imdbstars" qtip-content="{{ratingTip}}">{{show.imdb_info['rating']}}</span>
                     <span ng-if="!show.imdbid">({{show.startyear}}) - {{show.runtime}} minutes - </span>
-    <!-- <% _show = show %>
-    % if not show.imdbid:
-        <span>(${show.startyear}) - ${show.runtime} minutes - </span>
-    % else:
-        % if 'country_codes' in show.imdb_info:
-            % for country in show.imdb_info['country_codes'].split('|'):
-                    <img src="/images/blank.png" class="country-flag flag-${country}" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
-            % endfor
-        % endif
-        <span>
-        % if 'year' in show.imdb_info and show.imdb_info['year']:
-                    (${show.imdb_info['year']}) -
-        % endif
-                    ${show.imdb_info['runtimes']} minutes</span>
-
-                    <a href="${anon_url('http://www.imdb.com/title/', _show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdbid}"><img alt="[imdb]" height="16" width="16" src="/images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/></a>
-    % endif
-                    <a href="${anon_url(sickbeard.indexerApi(_show.indexer).config['show_url'], _show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${sickbeard.indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}"><img alt="${sickbeard.indexerApi(show.indexer).name}" height="16" width="16" src="/images/${sickbeard.indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/></a>
-    % if xem_numbering or xem_absolute_numbering:
-                    <a href="${anon_url('http://thexem.de/search?q=', _show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}"><img alt="[xem]" height="16" width="16" src="/images/xem.png" style="margin-top: -1px; vertical-align:middle;"/></a>
-    % endif -->
                 </div>
 
                 <div id="tags">
@@ -91,22 +68,9 @@
 
                 <div id="summary">
                     <table class="summaryTable pull-left">
-                    <!-- <% anyQualities, bestQualities = Quality.splitQuality(int(show.quality)) %>
-                        <tr>
-                            <td class="showLegend">Quality: </td><td>
-                    % if show.quality in qualityPresets:
-                        ${renderQualityPill(show.quality)}
-                    % else:
-                    % if anyQualities:
-                        <i>Allowed:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(anyQualities)])}${("", "<br>")[bool(bestQualities)]}
-                    % endif
-                    % if bestQualities:
-                        <i>Preferred:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(bestQualities)])}
-                        </tr>
-                    % endif -->
-                        <tr ng-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{show.airs}} ${("<font color='#FF0000'><b>(invalid Timeformat)</b></font> ", "")[network_timezones.test_timeformat(show.airs)]} on {{show.network}}</td></tr>
+                        <tr ng-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{show.airs}} on {{show.network}}</td></tr>
                         <tr ng-if="show.network && !show.airs"><td class="showLegend">Originally Airs: </td><td>{{show.network}}</td></tr>
-                        <tr ng-if="!show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{show.airs}} ${("<font color='#FF0000'><b>(invalid Timeformat)</b></font>", "")[network_timezones.test_timeformat(show.airs)]}</td></tr>
+                        <tr ng-if="!show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{show.airs}}</td></tr>
                         <tr><td class="showLegend">Show Status: </td><td>{{show.status}}</td></tr>
                         <tr><td class="showLegend">Default EP Status: </td><td>${statusStrings[show.default_ep_status]}</td></tr>
                         <tr ng-if="show.location[1]"><td class="showLegend">Location: </td><td>{{show.location[0]}}</td></tr>

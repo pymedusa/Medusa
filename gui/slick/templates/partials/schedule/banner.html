@@ -1,6 +1,6 @@
 <div ng-repeat="group in groups">
-    <h2 ng-if="group.episodes" class="day">{{group.name}}</h2>
-    <div ng-if="group.episodes" ng-repeat="episode in group.episodes" class="ep_listing listing-overdue" id="{{'listing-' + episode.showId}}">
+    <h2 ng-if="group.episodes" class="day">{{group.name}} <span ng-if="today === group.name" style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
+    <div ng-if="group.episodes" ng-repeat="episode in group.episodes" class="{{episode.listingClass}}" id="{{'listing-' + episode.showId}}">
         <div class="tvshowDiv">
             <table width="100%" border="0" cellpadding="0" cellspacing="0">
                 <tr>
@@ -23,7 +23,7 @@
                                     <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
                                 </a>
                                 <a anon-href="{{indexers[episode.indexer].showUrl + episode.showId}}">
-                                    <img alt="{{indexers[episode.indexer].name}}" height="16" width="16" src="{{'images/' + indexers[episode.indexer].icon}}" />
+                                    <img alt="{{indexers[episode.indexer].name}}" height="16" width="16" ng-src="{{'images/' + indexers[episode.indexer].icon}}" />
                                 </a>
                                 <span>
                                     <a href="{{'home/searchEpisode?show=' + episode.showId + '&amp;season=' + episode.seasonNumber + '&amp;episode=' + episode.episodeNumber}}" title="Manual Search" id="{{'forceUpdate-' + episode.showId}}" class="epSearch forceUpdate">

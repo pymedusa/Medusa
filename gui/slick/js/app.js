@@ -718,6 +718,19 @@ sickrage.controller('scheduleController', function($scope, $http) {
     $scope.$watch('layout', function () {
         getLayout($scope.layout);
     });
+    var getSort = function(sort){
+        $http({
+            method: 'GET',
+            url: (sort ? '/setScheduleSort?sort=' + sort : '/schedule')
+        }).then(function successCallback(response){
+            $scope.sort = response.data.sort;
+        });
+    }
+    $scope.sort = getSort();
+    $scope.sorts = ['date', 'network', 'show'];
+    $scope.$watch('sort', function () {
+        getSort($scope.sort);
+    });
     // SICKRAGE.schedule.index();
 });
 
@@ -733,6 +746,7 @@ sickrage.controller('scheduleBannerController', function($http, $scope) {
         url: '/schedule'
     }).then(function successCallback(response) {
         $scope.groups = response.data.groups;
+        $scope.today = response.data.today;
         $scope.indexers = response.data.indexers;
     }, function errorCallback(response) {
         console.error(response);
@@ -747,95 +761,106 @@ sickrage.controller('historyController', function() {
 });
 
 sickrage.controller('displayShowController', function($scope, $stateParams, $http) {
-    $http({
-        method: 'GET',
-        url: '/home/displayShow?show=' + $stateParams.showId
-    }).then(function successCallback(response) {
-        $scope.show = response.data.show;
-        var seasonsArray = [];
-        for(var i in response.data.show.seasons){
-            var a = response.data.show.seasons[i];
-            a.seasonNumber = i;
-            seasonsArray.push(a)
-        }
-        $scope.seasonsArray = seasonsArray.reverse();
-        $scope.seasons = response.data.show.seasons;
-        $scope.showLocation = response.data.showLocation;
-        $scope.showMessage = response.data.showMessage;
-        $scope.showMenu = response.data.showMenu;
-        $scope.qualities = response.data.qualities;
-        $scope.episodeStatuses = response.data.episodeStatuses;
-        $scope.qualities.all = [].concat.apply(
-            response.data.qualities.snatched,
-            response.data.qualities.snatchedProper,
-            response.data.qualities.snatchedBest,
-            response.data.qualities.downloaded
-        ).filter(function(item, pos, self) {
-            return self.indexOf(item) == pos;
-        });
-        $scope.displaySpecials = response.data.displaySpecials;
-        $scope.displayAllSeasons = response.data.displayAllSeasons;
-        $scope.useSubtitles = response.data.useSubtitles;
-        $scope.useFailedDownloads = response.data.useFailedDownloads;
-        $scope.downloadUrl = response.data.downloadUrl;
-        $scope.rootDirs = response.data.rootDirs;
-        $scope.seasonFolders = response.data.seasonFolders;
-        $scope.ratingTip = $scope.show.imdb_info ? $scope.show.imdb_info['rating'] + " / 10" + " Stars" + "<br>" + show.imdb_info['votes'] + " Votes" : "";
-        $scope.qualityStrings = function(quality){
-            var qualityStrings = {
-                1: 'unaired',
-                2: 'snatched',
-                3: 'wanted',
-                4: 'downloaded',
-                5: 'skipped',
-                6: 'archived',
-                7: 'ignored',
-                9: 'snatched', // SNATCHED_PROPER
-                10: '', // SUBTITLED
-                11: 'failed',
-                12: 'snatched' // SNATCHED_BEST
-            };
-            if(qualityStrings[quality]){
-                return qualityStrings[quality];
-            } else {
-                return 'qual';
+    $scope.getShow = function(showId){
+        $http({
+            method: 'GET',
+            url: '/home/displayShow?show=' + showId
+        }).then(function successCallback(response) {
+            $scope.show = response.data.show;
+            var seasonsArray = [];
+            for(var i in response.data.show.seasons){
+                var a = response.data.show.seasons[i];
+                a.seasonNumber = i;
+                seasonsArray.push(a)
             }
-        };
-        $scope.episodeCounts = function(quality){
-            var qualityStrings = {
-                1: 'unaired',
-                2: 'snatched',
-                3: 'wanted',
-                4: 'downloaded',
-                5: 'skipped',
-                6: 'archived',
-                7: 'ignored',
-                9: 'snatchedProper', // SNATCHED_PROPER
-                10: '', // SUBTITLED
-                11: 'failed',
-                12: 'snatchedBest' // SNATCHED_BEST
-            };
-            var episodeCounts = {
-                "skipped": 0,
-                "wanted": 0,
-                "downloaded": 0,
-                "good": 0,
-                "unaired": 0,
-                "snatched": 0,
-                "snatchedProper": 0,
-                "snatchedBest": 0,
-                "all": 0
-            };
-            for(var season in response.data.show.seasons){
-                for(var episode in season){
-                    episodeCounts['all']++;
-                    episodeCounts[qualityStrings[episode.status]]++;
+            $scope.seasonsArray = seasonsArray.reverse();
+            $scope.seasons = response.data.show.seasons;
+            $scope.showLocation = response.data.showLocation;
+            $scope.showMessage = response.data.showMessage;
+            $scope.showMenu = response.data.showMenu;
+            $scope.qualities = response.data.qualities;
+            $scope.episodeStatuses = response.data.episodeStatuses;
+            $scope.qualities.all = [].concat.apply(
+                response.data.qualities.snatched,
+                response.data.qualities.snatchedProper,
+                response.data.qualities.snatchedBest,
+                response.data.qualities.downloaded
+            ).filter(function(item, pos, self) {
+                return self.indexOf(item) == pos;
+            });
+            $scope.displaySpecials = response.data.displaySpecials;
+            $scope.displayAllSeasons = response.data.displayAllSeasons;
+            $scope.useSubtitles = response.data.useSubtitles;
+            $scope.useFailedDownloads = response.data.useFailedDownloads;
+            $scope.downloadUrl = response.data.downloadUrl;
+            $scope.rootDirs = response.data.rootDirs;
+            $scope.seasonFolders = response.data.seasonFolders;
+            $scope.ratingTip = $scope.show.imdb_info ? $scope.show.imdb_info['rating'] + " / 10" + " Stars" + "<br>" + show.imdb_info['votes'] + " Votes" : "";
+            $scope.qualityStrings = function(quality){
+                var qualityStrings = {
+                    1: 'unaired',
+                    2: 'snatched',
+                    3: 'wanted',
+                    4: 'downloaded',
+                    5: 'skipped',
+                    6: 'archived',
+                    7: 'ignored',
+                    9: 'snatched', // SNATCHED_PROPER
+                    10: '', // SUBTITLED
+                    11: 'failed',
+                    12: 'snatched' // SNATCHED_BEST
+                };
+                if(qualityStrings[quality]){
+                    return qualityStrings[quality];
+                } else {
+                    return 'qual';
                 }
+            };
+            $scope.episodeCounts = function(quality){
+                var qualityStrings = {
+                    1: 'unaired',
+                    2: 'snatched',
+                    3: 'wanted',
+                    4: 'downloaded',
+                    5: 'skipped',
+                    6: 'archived',
+                    7: 'ignored',
+                    9: 'snatchedProper', // SNATCHED_PROPER
+                    10: '', // SUBTITLED
+                    11: 'failed',
+                    12: 'snatchedBest' // SNATCHED_BEST
+                };
+                var episodeCounts = {
+                    "skipped": 0,
+                    "wanted": 0,
+                    "downloaded": 0,
+                    "good": 0,
+                    "unaired": 0,
+                    "snatched": 0,
+                    "snatchedProper": 0,
+                    "snatchedBest": 0,
+                    "all": 0
+                };
+                for(var season in response.data.show.seasons){
+                    for(var episode in season){
+                        episodeCounts['all']++;
+                        episodeCounts[qualityStrings[episode.status]]++;
+                    }
+                }
+                return episodeCounts[quality];
             }
-            return episodeCounts[quality];
+            $scope.menuShow = $scope.show;
+        }, function errorCallback(response) {
+            console.error(response);
+        });
+    }
+    $scope.menuShow = {};
+    $scope.getShow($stateParams.showId);
+    // @NOTE: This is a little hacky so many we should change this later on
+    $scope.$watch('menuShow', function(newValue, oldValue) {
+        if(Object.keys(oldValue).length && Object.keys(newValue).length && oldValue.indexerId !== newValue.indexerId){
+            $scope.getShow(newValue.indexerId);
         }
-    }, function errorCallback(response) {
-        console.error(response);
     });
     // SICKRAGE.home.displayShow();
 });
