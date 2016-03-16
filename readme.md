@@ -33,7 +33,7 @@ Automatic Video Library Manager for TV Shows. It watches for new episodes of you
 
 #### [![Feature Requests](https://cloud.githubusercontent.com/assets/390379/10127973/045b3a96-6560-11e5-9b20-31a2032956b2.png)](http://feathub.com/PyMedusa/SickRage)
 
-##### [SickRage Issue Tracker](https://github.com/PyMedusa/SickRage-issues)
+##### [SickRage Issue Tracker](https://github.com/PyMedusa/SickRage/issues)
 
 ##### [FAQ](https://github.com/PyMedusa/SickRage/wiki/Frequently-Asked-Questions)
 
@@ -45,7 +45,7 @@ We HIGHLY recommend starting out with no database files at all to make this a fr
 
 #### Supported providers
 
-A full list can be found here: [Link](https://github.com/PyMedusa/SickRage-issues/wiki/SickRage-Search-Providers)
+A full list can be found here: [Link](https://github.com/PyMedusa/SickRage/wiki/SickRage-Search-Providers)
 
 #### Special Thanks to:
 ![image](https://rarbg.com/favicon.ico)[RARBG](https://rarbg.to)
