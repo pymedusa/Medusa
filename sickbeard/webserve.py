@@ -45,7 +45,7 @@ from sickbeard.browser import foldersAtPath
 from sickbeard.scene_numbering import get_scene_numbering, set_scene_numbering, get_scene_numbering_for_show, \
     get_xem_numbering_for_show, get_scene_absolute_numbering_for_show, get_xem_absolute_numbering_for_show, \
     get_scene_absolute_numbering
-from sickbeard.manual_search import (collectEpisodesFromSearchThread, getEpisode, get_provider_cache_results,
+from sickbeard.manual_snatch import (collectEpisodesFromSearchThread, getEpisode, get_provider_cache_results,
                                      SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING)
 
 from sickbeard.webapi import function_mapper
@@ -1383,7 +1383,7 @@ class Home(WebRoot):
             action="displayShow"
         )
 
-    def manualSnatchSelect(self, show=None, season=None, episode=None, provider=None, rowid=None):
+    def pickManualSnatch(self, show=None, season=None, episode=None, provider=None, rowid=None):
 
         # Try to retrieve the cached result from the providers cache table.
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
@@ -1414,7 +1414,7 @@ class Home(WebRoot):
             return json.dumps({'result': 'failure'})
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ManualSelectQueueItem(ep_obj.show, ep_obj, season, episode,
+        ep_queue_item = search_queue.ManualSnatchQueueItem(ep_obj.show, ep_obj, season, episode,
                                                            sql_return['url'], sql_return['quality'],
                                                            provider, sql_return['name'])
 
@@ -1428,7 +1428,7 @@ class Home(WebRoot):
         else:
             return json.dumps({'result': 'failure'})
 
-    def manualSelectCheckCache(self, show, season, episode, **kwargs):
+    def manualSnatchCheckCache(self, show, season, episode, **kwargs):
         """ Periodic check if the searchthread is still running for the selected show/season/ep
         and if there are new results in the cache.db
         """
@@ -1491,7 +1491,7 @@ class Home(WebRoot):
 
         return {'result': searched_item[0]['searchstatus']}
 
-    def manualSelect(self, show=None, season=None, episode=None, perform_search=0, down_cur_quality=0, show_all_results=0):
+    def snatchSelection(self, show=None, season=None, episode=None, perform_search=0, down_cur_quality=0, show_all_results=0):
         """ The view with results for the manual selected show/episode """
 
         INDEXER_TVDB = 1
@@ -1510,7 +1510,7 @@ class Home(WebRoot):
         provider_results = get_provider_cache_results(INDEXER_TVDB, perform_search=perform_search,
                                                       show_all_results=show_all_results, **search_show)
 
-        t = PageTemplate(rh=self, filename="manualSelect.mako")
+        t = PageTemplate(rh=self, filename="snatchSelection.mako")
         submenu = [{'title': 'Edit', 'path': 'home/editShow?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-pencil'}]
 
         try:
@@ -1589,7 +1589,7 @@ class Home(WebRoot):
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexerid, indexer),
             title=showObj.name,
             controller="home",
-            action="manualSelect"
+            action="snatchSelection"
         )
 
     @staticmethod
@@ -2203,7 +2203,7 @@ class Home(WebRoot):
 
         return self.redirect("/home/displayShow?show=" + show)
 
-    def searchEpisode(self, show=None, season=None, episode=None, manual_select=None):
+    def searchEpisode(self, show=None, season=None, episode=None, manual_snatch=None):
         """
         """
         down_cur_quality = 0
@@ -2214,7 +2214,7 @@ class Home(WebRoot):
             return json.dumps({'result': 'failure'})
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), bool(manual_select))
+        ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), bool(manual_snatch))
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
