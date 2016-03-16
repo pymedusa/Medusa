@@ -19,7 +19,7 @@ The goal of this guide is to provide the best way to contribute to the official 
 
 If you think you've found a bug please [file it in the bug tracker](#how-to-report-bugs).
 
-Most of the Medusa development team can be found in the [#pymedusa](http://webchat.freenode.net/?channels=sickrage-issues) IRC channel on irc.freenode.net.
+Most of the Medusa development team can be found in the [#pymedusa](http://webchat.freenode.net/?channels=pymedusa) IRC channel on irc.freenode.net.
 
 
 ## How to Report Bugs
@@ -28,7 +28,7 @@ Most of the Medusa development team can be found in the [#pymedusa](http://webch
 
 Many bugs reported are actually issues with the user mis-understanding of how something works (there are a bit of moving parts to an ideal setup) and most of the time can be fixed by just changing some settings to fit the users needs.
 
-If you are new to Medusa, it is usually a much better idea to ask for help first in the [Medusa IRC channel](http://webchat.freenode.net/?channels=sickrage-issues). You will get much quicker support, and you will help avoid tying up the Medusa team with invalid bug reports.
+If you are new to Medusa, it is usually a much better idea to ask for help first in the [Medusa IRC channel](http://webchat.freenode.net/?channels=pymedusa). You will get much quicker support, and you will help avoid tying up the Medusa team with invalid bug reports.
 
 ### Try the latest version of Medusa
 
@@ -58,7 +58,7 @@ Please follow these guidelines before reporting a bug:
 
 1. **Update to the latest version** &mdash; Check if you can reproduce the issue with the latest version from the `develop` branch.
 
-2. **Use the search on sickrage-issues** &mdash; check if the issue has already been reported. If it has been, please comment on the existing issue.
+2. **Use the search on SickRage issues** &mdash; check if the issue has already been reported. If it has been, please comment on the existing issue.
 
 3. **Provide a means to reproduce the problem** &mdash; Please provide as much details as possible, e.g. Medusa log files (obfuscate apikey/passwords), browser and operating system versions, how you started Medusa, and of course the steps to reproduce the problem.
 
