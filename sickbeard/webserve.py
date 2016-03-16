@@ -27,6 +27,7 @@ import datetime
 import traceback
 import ast
 import calendar
+from collections import namedtuple
 
 import sickbeard
 from sickbeard import config, sab
@@ -822,13 +823,26 @@ class Home(WebRoot):
     def index(self):
         self.set_header('Content-Type', 'application/json')
         self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-        stats = self.show_statistics()
+        stats, max_download = self.show_statistics()
 
         shows = []
         anime = []
         for show in sickbeard.showList:
-            airs_next = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(stats[0][show.indexerid]['ep_airs_next'], show.airs, show.network)).isoformat('T')
-            airs_prev = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(stats[0][show.indexerid]['ep_airs_prev'], show.airs, show.network)).isoformat('T')
+            if not hasattr(show, 'indexerid'):
+                logger.log('Show does not appear to be valid. No indexer id found!', logger.ERROR)
+                logger.log('Show Information: %s' % show, logger.DEBUG)
+                continue
+
+            if show.indexerid not in stats:
+                logger.log('Show [{id}] statistics not found!'.format(id=show.indexerid), logger.ERROR)
+                logger.log('Show information %s' % show, logger.DEBUG)
+                continue
+
+            def airs(date, air_time=None, network=None):
+                air_time = air_time or datetime.time()
+                result = network_timezones.parse_date_time(str(date), str(air_time), str(network))
+                return sbdatetime.sbdatetime.convert_to_setting(result.isoformat('T'))
+
             show_dict = {
                 "indexerId": show.indexerid,
                 "indexer": show.indexer,
@@ -845,16 +859,16 @@ class Home(WebRoot):
                 "scene": show.scene,
                 "sports": show.sports,
                 "anime": show.anime,
-                "airsNext": ('', airs_next)[network_timezones.test_timeformat(airs_next)],
-                "airsPrev": ('', airs_next)[network_timezones.test_timeformat(airs_prev)],
+                "airsNext": airs(stats[show.indexerid]['ep_airs_next']),
+                "airsPrev": airs(stats[show.indexerid]['ep_airs_prev']),
                 "stats": {
-                    "snatched": stats[0][show.indexerid]['ep_snatched'],
-                    "downloaded": stats[0][show.indexerid]['ep_downloaded'],
-                    "total": stats[0][show.indexerid]['ep_total']
+                    "snatched": stats[show.indexerid]['ep_snatched'],
+                    "downloaded": stats[show.indexerid]['ep_downloaded'],
+                    "total": stats[show.indexerid]['ep_total'],
                 },
                 "size": {
-                    "raw": stats[0][show.indexerid]['show_size'],
-                    "pretty": pretty_file_size(stats[0][show.indexerid]['show_size'])
+                    "raw": stats[show.indexerid]['show_size'],
+                    "pretty": pretty_file_size(stats[show.indexerid]['show_size'])
                 },
                 "qualityPill": render_quality_pill(show.quality, showTitle=True)
             }
@@ -886,13 +900,14 @@ class Home(WebRoot):
                     "name": "shows",
                     "shows": shows
                 }],
-                "maxDownloadCount": stats[1],
+                "maxDownloadCount": max_download,
                 "layout": sickbeard.HOME_LAYOUT,
                 "fuzzyDating": sickbeard.FUZZY_DATING
             }
 
     @staticmethod
     def show_statistics():
+        ShowStatistics = namedtuple('ShowStatistics', 'statistics max_download_count')
         main_db_con = db.DBConnection()
         today = str(datetime.date.today().toordinal())
 
@@ -923,7 +938,7 @@ class Home(WebRoot):
 
         max_download_count *= 100
 
-        return show_stat, max_download_count
+        return ShowStatistics(show_stat, max_download_count)
 
     def is_alive(self, *args, **kwargs):
         if 'callback' in kwargs and '_' in kwargs:
