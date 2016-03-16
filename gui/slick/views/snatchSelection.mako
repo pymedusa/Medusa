@@ -120,7 +120,7 @@
                 % else:
                     <tr><td class="showLegend"><span style="color: red;">Location: </span></td><td><span style="color: red;">${showLoc[0]}</span> (Missing)</td></tr>
                 % endif
-                    <tr><td class="showLegend">Scene Name:</td><td></td></tr>
+                    <tr><td class="showLegend">Scene Name:</td><td>${(show.name, " | ".join(show.exceptions))[show.exceptions != 0]}</td></tr>
 
                 % if show.rls_require_words:
                     <tr><td class="showLegend">Required Words: </td><td>${show.rls_require_words}</td></tr>
@@ -217,7 +217,7 @@
                     <td align="center">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
                     <td align="center">${provider_img.provider_type.title()}</td>
                     <td align="center">${datetime.datetime.fromtimestamp(hItem["time"]).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</td>
-                    <td align="center" class="col-search" width="5%"><a class="epManualSnatch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="${srRoot}/home/manualSnatchSelect?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&show=${show.indexerid}&amp;season=${season}&amp;episode=${episode}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
+                    <td align="center" class="col-search" width="5%"><a class="epManualSnatch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="${srRoot}/home/pickManualSnatch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&show=${show.indexerid}&amp;season=${season}&amp;episode=${episode}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                 </tr>
             % endfor
             </tbody>
