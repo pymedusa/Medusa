@@ -821,11 +821,14 @@ class Home(WebRoot):
 
     def index(self):
         self.set_header('Content-Type', 'application/json')
+        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
         stats = self.show_statistics()
 
         shows = []
         anime = []
         for show in sickbeard.showList:
+            airs_next = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(stats[0][show.indexerid]['ep_airs_next'], show.airs, show.network)).isoformat('T')
+            airs_prev = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(stats[0][show.indexerid]['ep_airs_prev'], show.airs, show.network)).isoformat('T')
             show_dict = {
                 "indexerId": show.indexerid,
                 "indexer": show.indexer,
@@ -842,8 +845,8 @@ class Home(WebRoot):
                 "scene": show.scene,
                 "sports": show.sports,
                 "anime": show.anime,
-                "airsNext": sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(stats[0][show.indexerid]['ep_airs_next'], show.airs, show.network)).isoformat('T'),
-                "airsPrev": sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(stats[0][show.indexerid]['ep_airs_prev'], show.airs, show.network)).isoformat('T'),
+                "airsNext": ('', airs_next)[network_timezones.test_timeformat(airs_next)],
+                "airsPrev": ('', airs_next)[network_timezones.test_timeformat(airs_prev)],
                 "stats": {
                     "snatched": stats[0][show.indexerid]['ep_snatched'],
                     "downloaded": stats[0][show.indexerid]['ep_downloaded'],
@@ -1282,6 +1285,7 @@ class Home(WebRoot):
 
     def status(self):
         self.set_header('Content-Type', 'application/json')
+        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
         root_directories = []
         if sickbeard.ROOT_DIRS:
             backend_pieces = sickbeard.ROOT_DIRS.split('|')
@@ -1518,6 +1522,7 @@ class Home(WebRoot):
 
     def displayShow(self, show=None):
         self.set_header('Content-Type', 'application/json')
+        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
         # @TODO: add more comprehensive show validation
         try:
             show = int(show)  # fails if show id ends in a period PyMedusa/SickRage-issues#65
@@ -1652,7 +1657,7 @@ class Home(WebRoot):
                 "indexer": showObj.indexer,
                 "name": showObj.name,
                 "network": showObj.network,
-                "airs": showObj.airs,
+                "airs": ('', showObj.airs)[network_timezones.test_timeformat(showObj.airs)],
                 "status": showObj.status,
                 "startyear": showObj.startyear,
                 "genre": showObj.genre,
