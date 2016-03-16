@@ -175,7 +175,9 @@ $(document).ready(function () {
                 if (data.result.toLowerCase() === 'failure') {
                     imageName = options.noImage;
                     imageResult = 'failed';
-                } else { // if the snatch was successful then apply the corresponding class and fill in the row appropriately
+                } else { 
+                    // if the snatch was successful then apply the 
+                    // corresponding class and fill in the row appropriately
                     imageName = options.loadingImage;
                     imageResult = 'success';
                     // color the row
@@ -217,12 +219,13 @@ $(document).ready(function () {
             }
         });
 
-         $('.epManualSearch').click(function(event){
+         $('.epManualSnatch').click(function(event){
             event.preventDefault();
             var performSearch = '0';
             var showAllResults = '0';
  
-            window.location = this.href + '&perform_search=' + performSearch + '&show_all_results=' + showAllResults;
+            window.location = this.href + '&perform_search=' + performSearch + 
+                                          '&show_all_results=' + showAllResults;
         });
 
         $('#manualSearchModalFailed .btn').click(function(){
