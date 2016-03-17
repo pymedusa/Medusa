@@ -588,7 +588,9 @@ class SubtitlesFinder(object):
 
 
 def run_subs_scripts(subtitles_info, subtitle_language, subtitle_path, video_filename, is_pre=None):
-    for script_name in sickbeard.SUBTITLES_EXTRA_SCRIPTS:
+
+    subtitle_scripts = sickbeard.SUBTITLES_PRE_SCRIPTS if is_pre else sickbeard.SUBTITLES_EXTRA_SCRIPTS
+    for script_name in subtitle_scripts:
         script_cmd = [piece for piece in re.split("( |\\\".*?\\\"|'.*?')", script_name) if piece.strip()]
         script_cmd[0] = os.path.abspath(script_cmd[0])
         logger.log(u'Absolute path to script: {}'.format(script_cmd[0]), logger.DEBUG)
