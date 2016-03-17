@@ -19,7 +19,6 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 # pylint:disable=too-many-lines
 
-import warnings
 import os
 import io
 import ctypes
@@ -58,6 +57,8 @@ from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
 from cachecontrol import CacheControl
+# from httpcache import CachingHTTPAdapter
+
 from itertools import izip, cycle
 
 import shutil
@@ -113,14 +114,19 @@ def remove_non_release_groups(name):
         r'\[eztv\]$': 'searchre',
         r'\[ettv\]$': 'searchre',
         r'\[cttv\]$': 'searchre',
+        r'\.\[vtv\]$': 'searchre',
         r'\[vtv\]$': 'searchre',
         r'\[EtHD\]$': 'searchre',
         r'\[GloDLS\]$': 'searchre',
         r'\[silv4\]$': 'searchre',
         r'\[Seedbox\]$': 'searchre',
         r'\[PublicHD\]$': 'searchre',
+        r'-\=\{SPARROW\}\=-$': 'searchre',
+        r'\=\{SPARR$': 'searchre',
+        r'\.\[720P\]\[HEVC\]$': 'searchre',
         r'\[AndroidTwoU\]$': 'searchre',
-        r'\[brassetv]\]$': 'searchre',
+        r'\[brassetv\]]$': 'searchre',
+        r'\[Talamasca32\]]$': 'searchre',
         r'\(musicbolt\.com\)$': 'searchre',
         r'\.\[BT\]$': 'searchre',
         r' \[1044\]$': 'searchre',
@@ -128,11 +134,14 @@ def remove_non_release_groups(name):
         r'\.GiuseppeTnT$': 'searchre',
         r'\.Renc$': 'searchre',
         r'\.gz$': 'searchre',
+        r'\.English$': 'searchre',
+        r'\.German$': 'searchre',
         r'(?<![57])\.1$': 'searchre',
         r'-NZBGEEK$': 'searchre',
         r'-Siklopentan$': 'searchre',
         r'-Chamele0n$': 'searchre',
         r'-Obfuscated$': 'searchre',
+        r'-BUYMORE$': 'searchre',
         r'-\[SpastikusTV\]$': 'searchre',
         r'-RP$': 'searchre',
         r'-20-40$': 'searchre',
@@ -1374,92 +1383,60 @@ def _getTempDir():
     return ek(os.path.join, tempfile.gettempdir(), "sickrage-%s" % uid)
 
 
-def _setUpSession(session, headers):
-    """
-    Returns a session initialized with default cache and parameter settings
+def make_session():
+    session = requests.Session()
 
-    :param session: session object to (re)use
-    :param headers: Headers to pass to session
-    :return: session object
-    """
-
-    # request session
-    session = CacheControl(sess=session, cache_etags=True)
-
-    # request session clear residual referer
-    # pylint: disable=superfluous-parens
-    # These extra parens are necessary!
-    if 'Referer' in session.headers and 'Referer' not in (headers or {}):
-        session.headers.pop('Referer')
-
-    # request session headers
     session.headers.update({'User-Agent': USER_AGENT, 'Accept-Encoding': 'gzip,deflate'})
-    if headers:
-        session.headers.update(headers)
 
-    # request session ssl verify
-    session.verify = certifi.old_where() if sickbeard.SSL_VERIFY else False
+    return CacheControl(sess=session, cache_etags=True)
+
+
+def request_defaults(kwargs):
+    hooks = kwargs.pop(u'hooks', None)
+    cookies = kwargs.pop(u'cookies', None)
+    verify = certifi.old_where() if all([sickbeard.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
 
     # request session proxies
-    if 'Referer' not in session.headers and sickbeard.PROXY_SETTING:
+    if sickbeard.PROXY_SETTING:
         logger.log(u"Using global proxy: " + sickbeard.PROXY_SETTING, logger.DEBUG)
         scheme, address = urllib2.splittype(sickbeard.PROXY_SETTING)
         address = sickbeard.PROXY_SETTING if scheme else 'http://' + sickbeard.PROXY_SETTING
-        session.proxies = {
+        proxies = {
             "http": address,
             "https": address,
         }
-        session.headers.update({'Referer': address})
+    else:
+        proxies = None
 
-    if 'Content-Type' in session.headers:
-        session.headers.pop('Content-Type')
-
-    return session
+    return hooks, cookies, verify, proxies
 
 
-def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too-many-arguments, too-many-return-statements, too-many-branches
-           timeout=30, session=None, json=False, need_bytes=False, **kwargs):
+def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too-many-arguments, too-many-return-statements, too-many-branches, too-many-locals
+           timeout=30, session=None, **kwargs):
     """
-    Returns a byte-string retrieved from the url provider.
+    Returns data retrieved from the url provider.
     """
-
-    # TODO: make raw response the default once the the current args are fully deprecated
-    default = None
-    if json:
-        message = u'getURL argument json will be deprecated in the near future use returns=\'json\' instead.'
-        default = u'json'
-    elif need_bytes:
-        message = u'getURL argument need_bytes will be deprecated in the near future use returns=\'content\' instead.'
-        default = u'content'
-    elif u'returns' not in kwargs:
-        default = u'text'
-        message = u'getURL default return type may change in the near future use returns=\'text\' instead.'
-    if default is not None:
-        warnings.warn(message, PendingDeprecationWarning, stacklevel=2)
-
-    response_type = kwargs.pop(u'returns', default)
-    hooks = kwargs.pop(u'hooks', None)
-    session = _setUpSession(session, headers)
-
-    if params and isinstance(params, (list, dict)):
-        for param in params:
-            if isinstance(params[param], unicode):
-                params[param] = params[param].encode('utf-8')
-
-    session.params = params
-
     try:
-        # decide if we get or post data to server
-        if post_data:
-            if isinstance(post_data, (list, dict)):
-                for param in post_data:
-                    if isinstance(post_data[param], unicode):
-                        post_data[param] = post_data[param].encode('utf-8')
+        response_type = kwargs.pop(u'returns', 'text')
+        stream = kwargs.pop(u'stream', False)
 
-            session.headers.update({'Content-Type': 'application/x-www-form-urlencoded'})
-            resp = session.post(url, data=post_data, timeout=timeout, allow_redirects=True, verify=session.verify, hooks=hooks)
-        else:
-            resp = session.get(url, timeout=timeout, allow_redirects=True, verify=session.verify, hooks=hooks)
+        hooks, cookies, verify, proxies = request_defaults(kwargs)
+
+        if params and isinstance(params, (list, dict)):
+            for param in params:
+                if isinstance(params[param], unicode):
+                    params[param] = params[param].encode('utf-8')
+
+        if post_data and isinstance(post_data, (list, dict)):
+            for param in post_data:
+                if isinstance(post_data[param], unicode):
+                    post_data[param] = post_data[param].encode('utf-8')
+
+        resp = session.request(
+            'POST' if post_data else 'GET', url, data=post_data, params=params,
+            timeout=timeout, allow_redirects=True, hooks=hooks, stream=stream,
+            headers=headers, cookies=cookies, proxies=proxies, verify=verify
+        )
 
         if not resp.ok:
             logger.log(u"Requested getURL %s returned status code is %s: %s"
@@ -1483,8 +1460,8 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
         logger.log(traceback.format_exc(), logger.DEBUG)
         return None
     except Exception as e:
-        if hasattr(e, 'errno') and e.errno == errno.ECONNRESET:
-            logger.log(u"Connection reseted by peer accessing getURL %s Error: %r" % (url, ex(e)), logger.DEBUG)
+        if 'ECONNRESET' in e or (hasattr(e, 'errno') and e.errno == errno.ECONNRESET):
+            logger.log(u"Connection reseted by peer accessing getURL %s Error: %r" % (url, ex(e)), logger.WARNING)
         else:
             logger.log(u"Unknown exception in getURL %s Error: %r" % (url, ex(e)), logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
@@ -1493,7 +1470,7 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
     return resp if response_type == u'response' or response_type is None else resp.json() if response_type == u'json' else getattr(resp, response_type, resp)
 
 
-def download_file(url, filename, session=None, headers=None):  # pylint:disable=too-many-return-statements
+def download_file(url, filename, session=None, headers=None, **kwargs):  # pylint:disable=too-many-return-statements
     """
     Downloads a file specified
 
@@ -1504,11 +1481,13 @@ def download_file(url, filename, session=None, headers=None):  # pylint:disable=
     :return: True on success, False on failure
     """
 
-    session = _setUpSession(session, headers)
-    session.stream = True
-
     try:
-        with closing(session.get(url, allow_redirects=True, verify=session.verify)) as resp:
+        hooks, cookies, verify, proxies = request_defaults(kwargs)
+
+        with closing(session.get(url, allow_redirects=True, stream=True,
+                                 verify=verify, headers=headers, cookies=cookies,
+                                 hooks=hooks, proxies=proxies)) as resp:
+
             if not resp.ok:
                 logger.log(u"Requested download url %s returned status code is %s: %s"
                            % (url, resp.status_code, http_code_description(resp.status_code)), logger.DEBUG)
@@ -1528,7 +1507,7 @@ def download_file(url, filename, session=None, headers=None):  # pylint:disable=
     except (SocketTimeout, TypeError) as e:
         remove_file_failed(filename)
         logger.log(u"Connection timed out (sockets) while loading download URL %s Error: %r" % (url, ex(e)), logger.WARNING)
-        return None
+        return False
     except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects) as e:
         remove_file_failed(filename)
         logger.log(u"HTTP error %r while loading download URL %s " % (ex(e), url), logger.WARNING)
@@ -1753,7 +1732,7 @@ def getDiskSpaceUsage(diskPath=None):
 
 def getTVDBFromID(indexer_id, indexer):  # pylint:disable=too-many-return-statements
 
-    session = requests.Session()
+    session = make_session()
     tvdb_id = ''
     if indexer == 'IMDB':
         url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s" % indexer_id

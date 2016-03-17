@@ -2,63 +2,73 @@
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 # pylint: disable=abstract-method,too-many-lines
 
+import ast
+import datetime
 import io
 import os
 import re
+import traceback
 import time
 import urllib
-import datetime
-import traceback
-import ast
 
-import sickbeard
-from sickbeard import config, sab
-from sickbeard import clients
-from sickbeard import notifiers, processTV
-from sickbeard import ui
-from sickbeard import logger, helpers, classes, db
-from sickbeard import search_queue
-from sickbeard import naming
-from sickbeard import subtitles
-from sickbeard import network_timezones
-from sickbeard.providers import newznab, rsstorrent
-from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
-from sickbeard.common import SNATCHED, UNAIRED, IGNORED, WANTED, FAILED, SKIPPED
-from sickbeard.blackandwhitelist import BlackAndWhiteList, short_group_names
-from sickbeard.browser import foldersAtPath
-from sickbeard.scene_numbering import get_scene_numbering, set_scene_numbering, get_scene_numbering_for_show, \
-    get_xem_numbering_for_show, get_scene_absolute_numbering_for_show, get_xem_absolute_numbering_for_show, \
-    get_scene_absolute_numbering
-from sickbeard.webapi import function_mapper
+from concurrent.futures import ThreadPoolExecutor
+from mako.exceptions import RichTraceback
+from mako.lookup import TemplateLookup
+from mako.runtime import UNDEFINED
+from mako.template import Template as MakoTemplate
+from tornado.concurrent import run_on_executor
+from tornado.gen import coroutine
+from tornado.ioloop import IOLoop
+from tornado.process import cpu_count
+from tornado.routes import route
+from tornado.web import RequestHandler, HTTPError, authenticated
 
-from sickbeard.imdbPopular import imdb_popular
-from sickbeard.helpers import get_showname_from_indexer
 
-from dateutil import tz
-from unrar2 import RarFile
 import adba
+from dateutil import tz
 from libtrakt import TraktAPI
 from libtrakt.exceptions import traktException
+import markdown2
+from unrar2 import RarFile
+
+import sickbeard
+from sickbeard import (config, sab, clients, notifiers, processTV, ui, logger, helpers, classes, db, search_queue,
+                       naming, subtitles, network_timezones)
+from sickbeard.blackandwhitelist import BlackAndWhiteList, short_group_names
+from sickbeard.browser import foldersAtPath
+from sickbeard.common import (Quality, Overview, statusStrings, cpu_presets,
+                              SNATCHED, UNAIRED, IGNORED, WANTED, FAILED, SKIPPED)
+from sickbeard.helpers import get_showname_from_indexer
+from sickbeard.imdbPopular import imdb_popular
+from sickbeard.indexers.indexer_exceptions import indexer_exception
+from sickbeard.providers import newznab, rsstorrent
+from sickbeard.scene_numbering import (get_scene_numbering,  get_scene_numbering_for_show,
+                                       get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
+                                       get_xem_numbering_for_show, get_xem_absolute_numbering_for_show,
+                                       set_scene_numbering, )
+from sickbeard.versionChecker import CheckVersion
+from sickbeard.webapi import function_mapper
+
 from sickrage.helper.common import sanitize_filename, try_int, episode_num
 from sickrage.helper.encoding import ek, ss
-from sickrage.helper.exceptions import CantRefreshShowException, CantUpdateShowException, ex
-from sickrage.helper.exceptions import MultipleShowObjectsException, NoNFOException, ShowDirectoryNotFoundException
+from sickrage.helper.exceptions import (CantRefreshShowException, CantUpdateShowException, ex, NoNFOException,
+                                        MultipleShowObjectsException, ShowDirectoryNotFoundException, )
 from sickrage.media.ShowBanner import ShowBanner
 from sickrage.media.ShowFanArt import ShowFanArt
 from sickrage.media.ShowNetworkLogo import ShowNetworkLogo
@@ -70,27 +80,10 @@ from sickrage.show.Show import Show
 from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
 
-from sickbeard.versionChecker import CheckVersion
-
-import requests
-import markdown2
-
 try:
     import json
 except ImportError:
     import simplejson as json
-
-from mako.template import Template as MakoTemplate
-from mako.lookup import TemplateLookup
-from mako.exceptions import RichTraceback
-
-from tornado.routes import route
-from tornado.web import RequestHandler, HTTPError, authenticated
-from tornado.gen import coroutine
-from tornado.ioloop import IOLoop
-from tornado.concurrent import run_on_executor
-from concurrent.futures import ThreadPoolExecutor
-from mako.runtime import UNDEFINED
 
 mako_lookup = None
 mako_cache = None
@@ -255,7 +248,7 @@ class WebHandler(BaseHandler):
         super(WebHandler, self).__init__(*args, **kwargs)
         self.io_loop = IOLoop.current()
 
-    executor = ThreadPoolExecutor(50)
+    executor = ThreadPoolExecutor(cpu_count())
 
     @authenticated
     @coroutine
@@ -316,9 +309,9 @@ class LoginHandler(BaseHandler):
         if api_key:
             remember_me = int(self.get_argument('remember_me', default=0) or 0)
             self.set_secure_cookie('sickrage_user', api_key, expires_days=30 if remember_me > 0 else None)
-            logger.log(u'User logged into the SickRage web interface', logger.INFO)
+            logger.log(u'User logged into the Medusa web interface', logger.INFO)
         else:
-            logger.log(u'User attempted a failed login to the SickRage web interface from IP: ' + self.request.remote_ip, logger.WARNING)
+            logger.log(u'User attempted a failed login to the Medusa web interface from IP: ' + self.request.remote_ip, logger.WARNING)
 
         self.redirect('/' + sickbeard.DEFAULT_PAGE + '/')
 
@@ -553,8 +546,8 @@ class CalendarHandler(BaseHandler):
         # Create a iCal string
         ical = 'BEGIN:VCALENDAR\r\n'
         ical += 'VERSION:2.0\r\n'
-        ical += 'X-WR-CALNAME:SickRage\r\n'
-        ical += 'X-WR-CALDESC:SickRage\r\n'
+        ical += 'X-WR-CALNAME:Medusa\r\n'
+        ical += 'X-WR-CALDESC:Medusa\r\n'
         ical += 'PRODID://Sick-Beard Upcoming Episodes//\r\n'
 
         future_weeks = try_int(self.get_argument('future', 52), 52)
@@ -591,12 +584,12 @@ class CalendarHandler(BaseHandler):
                     "%Y%m%d") + 'T' + air_date_time_end.strftime(
                         "%H%M%S") + 'Z\r\n'
                 if sickbeard.CALENDAR_ICONS:
-                    ical += 'X-GOOGLE-CALENDAR-CONTENT-ICON:https://lh3.googleusercontent.com/-Vp_3ZosvTgg/VjiFu5BzQqI/AAAAAAAA_TY/3ZL_1bC0Pgw/s16-Ic42/SickRage.png\r\n'
+                    ical += 'X-GOOGLE-CALENDAR-CONTENT-ICON:https://lh3.googleusercontent.com/-Vp_3ZosvTgg/VjiFu5BzQqI/AAAAAAAA_TY/3ZL_1bC0Pgw/s16-Ic42/medusa.png\r\n'
                     ical += 'X-GOOGLE-CALENDAR-CONTENT-DISPLAY:CHIP\r\n'
                 ical += u'SUMMARY: {0} - {1}x{2} - {3}\r\n'.format(
                     show['show_name'], episode['season'], episode['episode'], episode['name']
                 )
-                ical += 'UID:SickRage-' + str(datetime.date.today().isoformat()) + '-' + \
+                ical += 'UID:Medusa-' + str(datetime.date.today().isoformat()) + '-' + \
                     show['show_name'].replace(" ", "-") + '-E' + str(episode['episode']) + \
                     'S' + str(episode['season']) + '\r\n'
                 if episode['description']:
@@ -1145,7 +1138,7 @@ class Home(WebRoot):
             return self.redirect('/' + sickbeard.DEFAULT_PAGE + '/')
 
         title = "Shutting down"
-        message = "SickRage is shutting down..."
+        message = "Medusa is shutting down..."
 
         return self._genericMessage(title, message)
 
@@ -1155,7 +1148,7 @@ class Home(WebRoot):
 
         t = PageTemplate(rh=self, filename="restart.mako")
 
-        return t.render(title="Home", header="Restarting SickRage", topmenu="system",
+        return t.render(title="Home", header="Restarting Medusa", topmenu="system",
                         controller="home", action="restart")
 
     def updateCheck(self, pid=None):
@@ -1184,7 +1177,7 @@ class Home(WebRoot):
                 sickbeard.events.put(sickbeard.events.SystemEvent.RESTART)
 
                 t = PageTemplate(rh=self, filename="restart.mako")
-                return t.render(title="Home", header="Restarting SickRage", topmenu="home",
+                return t.render(title="Home", header="Restarting Medusa", topmenu="home",
                                 controller="home", action="restart")
             else:
                 return self._genericMessage("Update Failed",
@@ -1220,10 +1213,30 @@ class Home(WebRoot):
             logger.log(u"Checkout branch couldn't compare DB version.", logger.ERROR)
             return json.dumps({"status": "error", 'message': 'General exception'})
 
+    def getSeasonSceneExceptions(self, indexer, indexer_id):  # @TODO: OMG, You can use this as an example to create the Api for the season exception indicators
+        """Get show name scene exceptions per season
+
+        :param indexer: The shows indexer
+        :param indexer_id: The shows indexer_id
+        :return: A json with the scene exceptions per season.
+        """
+
+        exceptions_list = {}
+        xem_numbering_season = {}
+
+        exceptions_list['seasonExceptions'] = sickbeard.scene_exceptions.get_all_scene_exceptions(indexer_id)
+
+        xem_numbering_season = {tvdb_season_ep[0]: anidb_season_ep[0]
+                                for (tvdb_season_ep, anidb_season_ep)
+                                in get_xem_numbering_for_show(indexer_id, indexer).iteritems()}
+
+        exceptions_list['xemNumbering'] = xem_numbering_season
+        return json.dumps(exceptions_list)
+
     def displayShow(self, show=None):
         # todo: add more comprehensive show validation
         try:
-            show = int(show)  # fails if show id ends in a period PyMedusa/SickRage-issues#65
+            show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
             showObj = Show.find(sickbeard.showList, show)
         except (ValueError, TypeError):
             return self._genericMessage("Error", "Invalid show ID: %s" % str(show))
@@ -1551,7 +1564,7 @@ class Home(WebRoot):
                             # rescan the episodes in the new folder
                     except NoNFOException:
                         errors.append(
-                            "The folder at <tt>%s</tt> doesn't contain a tvshow.nfo - copy your files to that folder before you change the directory in SickRage." % location)
+                            "The folder at <tt>%s</tt> doesn't contain a tvshow.nfo - copy your files to that folder before you change the directory in Medusa." % location)
 
             # save it to the DB
             showObj.saveToDB()
@@ -2098,7 +2111,17 @@ class Home(WebRoot):
 
         showObj = Show.find(sickbeard.showList, int(show))
 
-        if showObj.is_anime:
+        # Check if this is an anime, because we can't set the Scene numbering for anime shows
+        if showObj.is_anime and not forAbsolute:
+            result = {
+                'success': False,
+                'errorMessage': 'You can\'t use the Scene numbering for anime shows. ' +
+                'Use the Scene Absolute field, to configure a diverging episode number.',
+                'sceneSeason': None,
+                'sceneAbsolute': None
+            }
+            return json.dumps(result)
+        elif showObj.is_anime:
             result = {
                 'success': True,
                 'forAbsolute': forAbsolute,
@@ -2234,10 +2257,10 @@ class HomeChangeLog(Home):
 
     def index(self):
         try:
-            changes = helpers.getURL('https://api.pymedusa.com/changelog.md', session=requests.Session(), returns='text')
+            changes = helpers.getURL('https://cdn.pymedusa.com/sickrage-news/CHANGES.md', session=helpers.make_session(), returns='text')
         except Exception:
             logger.log(u'Could not load changes from repo, giving a link!', logger.DEBUG)
-            changes = 'Could not load changes from the repo. [Click here for CHANGES.md](https://raw.githubusercontent.com/pymedusa/sickrage.github.io/master/sickrage-news/CHANGES.md)'
+            changes = 'Could not load changes from the repo. [Click here for CHANGES.md](https://cdn.pymedusa.com/sickrage-news/CHANGES.md)'
 
         t = PageTemplate(rh=self, filename="markdown.mako")
         data = markdown2.markdown(changes if changes else "The was a problem connecting to github, please refresh and try again", extras=['header-ids'])
@@ -2343,11 +2366,10 @@ class HomeAddShows(Home):
             for searchTerm in searchTerms:
                 try:
                     indexerResults = t[searchTerm]
-                except Exception:
-                    continue
-
-                # add search results
-                results.setdefault(indexer, []).extend(indexerResults)
+                    # add search results
+                    results.setdefault(indexer, []).extend(indexerResults)
+                except indexer_exception as error:
+                    logger.log(u'Error searching for show: {}'.format(ex(error)))
 
         for i, shows in results.iteritems():
             final_results.extend({(sickbeard.indexerApi(i).name, i, sickbeard.indexerApi(i).config["show_url"], int(show['id']),
@@ -3802,8 +3824,8 @@ class Config(WebRoot):
                 sr_version = updater.get_cur_version()
 
         return t.render(
-            submenu=self.ConfigMenu(), title='SickRage Configuration',
-            header='SickRage Configuration', topmenu="config",
+            submenu=self.ConfigMenu(), title='Medusa Configuration',
+            header='Medusa Configuration', topmenu="config",
             sr_user=sr_user, sr_locale=sr_locale, ssl_version=ssl_version,
             sr_version=sr_version
         )
@@ -3993,7 +4015,7 @@ class ConfigBackupRestore(Config):
             source = [ek(os.path.join, sickbeard.DATA_DIR, 'sickbeard.db'), sickbeard.CONFIG_FILE,
                       ek(os.path.join, sickbeard.DATA_DIR, 'failed.db'),
                       ek(os.path.join, sickbeard.DATA_DIR, 'cache.db')]
-            target = ek(os.path.join, backupDir, 'sickrage-' + time.strftime('%Y%m%d%H%M%S') + '.zip')
+            target = ek(os.path.join, backupDir, 'medusa-' + time.strftime('%Y%m%d%H%M%S') + '.zip')
 
             for (path, dirs, files) in ek(os.walk, sickbeard.CACHE_DIR, topdown=True):
                 for dirname in dirs:
@@ -4024,7 +4046,7 @@ class ConfigBackupRestore(Config):
 
             if helpers.restoreConfigZip(source, target_dir):
                 finalResult += "Successfully extracted restore files to " + target_dir
-                finalResult += "<br>Restart sickrage to complete the restore."
+                finalResult += "<br>Restart Medusa to complete the restore."
             else:
                 finalResult += "Restore FAILED"
         else:
@@ -4057,7 +4079,7 @@ class ConfigSearch(Config):
                    torrent_dir=None, torrent_username=None, torrent_password=None, torrent_host=None,
                    torrent_label=None, torrent_label_anime=None, torrent_path=None, torrent_verify_cert=None,
                    torrent_seed_time=None, torrent_paused=None, torrent_high_bandwidth=None,
-                   torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, trackers_list=None, require_words=None, ignored_subs_list=None):
+                   torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, preferred_words=None, undesired_words=None, trackers_list=None, require_words=None, ignored_subs_list=None):
 
         results = []
 
@@ -4080,6 +4102,8 @@ class ConfigSearch(Config):
         sickbeard.USENET_RETENTION = try_int(usenet_retention, 500)
 
         sickbeard.IGNORE_WORDS = ignore_words if ignore_words else ""
+        sickbeard.PREFERRED_WORDS = preferred_words if preferred_words else ""
+        sickbeard.UNDESIRED_WORDS = undesired_words if undesired_words else ""
         sickbeard.TRACKERS_LIST = trackers_list if trackers_list else ""
         sickbeard.REQUIRE_WORDS = require_words if require_words else ""
         sickbeard.IGNORED_SUBS_LIST = ignored_subs_list if ignored_subs_list else ""
@@ -4897,7 +4921,7 @@ class ConfigNotifications(Config):
                           pushbullet_device_list=None,
                           use_email=None, email_notify_onsnatch=None, email_notify_ondownload=None,
                           email_notify_onsubtitledownload=None, email_host=None, email_port=25, email_from=None,
-                          email_tls=None, email_user=None, email_password=None, email_list=None, email_show_list=None,
+                          email_tls=None, email_user=None, email_password=None, email_list=None, email_subject=None, email_show_list=None,
                           email_show=None):
 
         results = []
@@ -5036,6 +5060,7 @@ class ConfigNotifications(Config):
         sickbeard.EMAIL_USER = email_user
         sickbeard.EMAIL_PASSWORD = email_password
         sickbeard.EMAIL_LIST = email_list
+        sickbeard.EMAIL_SUBJECT = email_subject
 
         sickbeard.USE_PYTIVO = config.checkbox_to_value(use_pytivo)
         sickbeard.PYTIVO_NOTIFY_ONSNATCH = config.checkbox_to_value(pytivo_notify_onsnatch)
@@ -5093,8 +5118,8 @@ class ConfigSubtitles(Config):
 
     def saveSubtitles(self, use_subtitles=None, subtitles_plugins=None, subtitles_languages=None, subtitles_dir=None, subtitles_perfect_match=None,
                       service_order=None, subtitles_history=None, subtitles_finder_frequency=None,
-                      subtitles_multi=None, embedded_subtitles_all=None, subtitles_extra_scripts=None, subtitles_hearing_impaired=None,
-                      addic7ed_user=None, addic7ed_pass=None, legendastv_user=None, legendastv_pass=None, opensubtitles_user=None, opensubtitles_pass=None,
+                      subtitles_multi=None, embedded_subtitles_all=None, subtitles_extra_scripts=None, subtitles_pre_scripts=None, subtitles_hearing_impaired=None,
+                      addic7ed_user=None, addic7ed_pass=None, itasa_user=None, itasa_pass=None, legendastv_user=None, legendastv_pass=None, opensubtitles_user=None, opensubtitles_pass=None,
                       subtitles_download_in_pp=None, subtitles_keep_only_wanted=None):
 
         results = []
@@ -5112,6 +5137,7 @@ class ConfigSubtitles(Config):
         sickbeard.SUBTITLES_DOWNLOAD_IN_PP = config.checkbox_to_value(subtitles_download_in_pp)
         sickbeard.SUBTITLES_KEEP_ONLY_WANTED = config.checkbox_to_value(subtitles_keep_only_wanted)
         sickbeard.SUBTITLES_EXTRA_SCRIPTS = [x.strip() for x in subtitles_extra_scripts.split('|') if x.strip()]
+        sickbeard.SUBTITLES_PRE_SCRIPTS = [x.strip() for x in subtitles_pre_scripts.split('|') if x.strip()]
 
         # Subtitles services
         services_str_list = service_order.split()
@@ -5127,6 +5153,8 @@ class ConfigSubtitles(Config):
 
         sickbeard.ADDIC7ED_USER = addic7ed_user or ''
         sickbeard.ADDIC7ED_PASS = addic7ed_pass or ''
+        sickbeard.ITASA_USER = itasa_user or ''
+        sickbeard.ITASA_PASS = itasa_pass or ''
         sickbeard.LEGENDASTV_USER = legendastv_user or ''
         sickbeard.LEGENDASTV_PASS = legendastv_pass or ''
         sickbeard.OPENSUBTITLES_USER = opensubtitles_user or ''

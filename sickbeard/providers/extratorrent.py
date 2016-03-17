@@ -44,7 +44,6 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.url = self.urls['index']
 
         self.public = True
-        self.ratio = None
         self.minseed = None
         self.minleech = None
         self.custom_url = None
@@ -66,9 +65,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                 self.search_params.update({'type': ('search', 'rss')[mode == 'RSS'], 'search': search_string})
                 search_url = self.urls['rss'] if not self.custom_url else self.urls['rss'].replace(self.urls['index'], self.custom_url)
 
-                logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
-
-                data = self.get_url(search_url, params=self.search_params, echo=False, returns='text')
+                data = self.get_url(search_url, params=self.search_params, returns='text')
                 if not data:
                     logger.log(u"No data returned from provider", logger.DEBUG)
                     continue
@@ -107,19 +104,17 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                            (title, seeders, leechers), logger.DEBUG)
                             continue
 
-                        item = title, download_url, size, seeders, leechers
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
                         if mode != 'RSS':
                             logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 
                         items.append(item)
 
             # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda tup: tup[3], reverse=True)
+            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
 
         return results
 
-    def seed_ratio(self):
-        return self.ratio
 
 provider = ExtraTorrentProvider()

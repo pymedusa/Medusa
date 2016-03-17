@@ -27,7 +27,6 @@ import stat
 import traceback
 import time
 import datetime
-import requests
 import shutil
 import shutil_custom
 
@@ -58,7 +57,7 @@ class CheckVersion(object):
             elif self.install_type == 'source':
                 self.updater = SourceUpdateManager()
 
-        self.session = requests.Session()
+        self.session = helpers.make_session()
 
     def run(self, force=False):
 
@@ -642,7 +641,7 @@ class GitUpdateManager(UpdateManager):
                 # Notify update successful
                 if sickbeard.NOTIFY_ON_UPDATE:
                     try:
-                        notifiers.notify_git_update(sickbeard.CUR_COMMIT_HASH if sickbeard.CUR_COMMIT_HASH else "")
+                        notifiers.notify_git_update(sickbeard.CUR_COMMIT_HASH or "")
                     except Exception:
                         logger.log(u"Unable to send update notification. Continuing the update process", logger.DEBUG)
                 return True
@@ -685,7 +684,10 @@ class GitUpdateManager(UpdateManager):
     def update_remote_origin(self):
         self._run_git(self._git_path, 'config remote.%s.url %s' % (sickbeard.GIT_REMOTE, sickbeard.GIT_REMOTE_URL))
         if sickbeard.GIT_USERNAME:
-            self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (sickbeard.GIT_REMOTE, sickbeard.GIT_REMOTE_URL.replace(sickbeard.GIT_ORG, sickbeard.GIT_USERNAME, 1)))
+            if sickbeard.DEVELOPER:
+                self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (sickbeard.GIT_REMOTE, sickbeard.GIT_REMOTE_URL))
+            else:
+                self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (sickbeard.GIT_REMOTE, sickbeard.GIT_REMOTE_URL.replace(sickbeard.GIT_ORG, sickbeard.GIT_USERNAME, 1)))
 
 
 class SourceUpdateManager(UpdateManager):
@@ -701,7 +703,7 @@ class SourceUpdateManager(UpdateManager):
         self._newest_commit_hash = None
         self._num_commits_behind = 0
 
-        self.session = requests.Session()
+        self.session = helpers.make_session()
 
     @staticmethod
     def _find_installed_branch():
@@ -893,7 +895,7 @@ class SourceUpdateManager(UpdateManager):
 
         # Notify update successful
         try:
-            notifiers.notify_git_update(sickbeard.NEWEST_VERSION_STRING)
+            notifiers.notify_git_update(sickbeard.CUR_COMMIT_HASH or "")
         except Exception:
             logger.log(u"Unable to send update notification. Continuing the update process", logger.DEBUG)
         return True

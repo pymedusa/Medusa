@@ -37,7 +37,6 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
         self.username = None
         self.password = None
-        self.ratio = None
         self.minseed = None
         self.minleech = None
 
@@ -60,7 +59,7 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         login_params = {'username': self.username,
                         'password': self.password}
 
-        response = self.get_url(self.urls['login'], post_data=login_params, timeout=30)
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
         if not response:
             logger.log(u"Unable to connect to provider", logger.WARNING)
             return False
@@ -86,9 +85,8 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                logger.DEBUG)
 
                 search_url = self.urls['search'] % (quote(search_string), self.categories)
-                logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
 
-                data = self.get_url(search_url, echo=False, returns='text')
+                data = self.get_url(search_url, returns='text')
                 if not data:
                     continue
 
@@ -137,20 +135,18 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                            (title, seeders, leechers), logger.DEBUG)
                             continue
 
-                        item = title, download_url, size, seeders, leechers
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
                         if mode != 'RSS':
                             logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 
                         items.append(item)
 
             # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda tup: tup[3], reverse=True)
+            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
 
             results += items
 
         return results
 
-    def seed_ratio(self):
-        return self.ratio
 
 provider = SceneTimeProvider()

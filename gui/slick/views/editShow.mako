@@ -102,7 +102,7 @@
                             <label for="paused">
                                 <span class="component-title">Paused</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="paused" name="paused" ${('', 'checked="checked"')[show.paused == 1]} /> pause this show (SickRage will not download episodes)
+                                    <input type="checkbox" id="paused" name="paused" ${('', 'checked="checked"')[show.paused == 1]} /> pause this show (Medusa will not download episodes)
                                 </span>
                             </label>
                         </div>
@@ -224,7 +224,7 @@
                                         </select>
                                         <div><input id="removeSceneName" value="Remove" class="btn float-left" type="button" style="margin-top: 10px;"/></div>
                                     </div>
-                                    <div class="clear-left"><p>This will affect episode search on NZB and torrent providers. This list overrides the original name; it doesn't append to it.</p></div>
+                                    <div class="clear-left"><p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p></div>
                                 </span>
                             </label>
                         </div>

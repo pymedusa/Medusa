@@ -149,7 +149,7 @@ def OneRunPP():
         @wraps(func)
         def func_wrapper(*args, **kargs):
             if isRunning[0]:
-                return logHelper(u'Post processor is already running', logger.ERROR)
+                return logHelper(u'Post processor is already running', logger.WARNING)
 
             isRunning[0] = True
             ret = func(*args, **kargs)
@@ -656,7 +656,7 @@ def subtitles_enabled(video):
         parse_result = NameParser().parse(video, cache_result=True)
     except (InvalidNameException, InvalidShowException):
         logger.log(u'Not enough information to parse filename into a valid show. Consider add scene exceptions or improve naming for: {}'.format(video), logger.WARNING)
-        return False
+        return
 
     if parse_result.show.indexerid:
         main_db_con = db.DBConnection()
@@ -664,4 +664,4 @@ def subtitles_enabled(video):
         return bool(sql_results[0]["subtitles"]) if sql_results else False
     else:
         logger.log(u'Empty indexer ID for: {}'.format(video), logger.WARNING)
-        return False
+        return

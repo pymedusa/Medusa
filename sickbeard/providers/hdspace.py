@@ -26,7 +26,7 @@ from bs4 import BeautifulSoup
 
 from sickbeard import logger, tvcache
 
-from sickrage.helper.common import convert_size
+from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
@@ -38,7 +38,6 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         self.username = None
         self.password = None
-        self.ratio = None
         self.minseed = None
         self.minleech = None
 
@@ -75,7 +74,7 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         login_params = {'uid': self.username,
                         'pwd': self.password}
 
-        response = self.get_url(self.urls['login'], post_data=login_params, timeout=30)
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
         if not response:
             logger.log(u"Unable to connect to provider", logger.WARNING)
             return False
@@ -100,12 +99,11 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                 else:
                     search_url = self.urls['search'] % ''
 
-                logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
                 if mode != 'RSS':
                     logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
                                logger.DEBUG)
 
-                data = self.get_url(search_url, echo=False, returns='text')
+                data = self.get_url(search_url, returns='text')
                 if not data or 'please try later' in data:
                     logger.log(u"No data returned from provider", logger.DEBUG)
                     continue
@@ -154,7 +152,7 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                            (title, seeders, leechers), logger.DEBUG)
                             continue
 
-                        item = title, download_url, size, seeders, leechers
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
                         if mode != 'RSS':
                             logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 
@@ -164,12 +162,10 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                         continue
 
             # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda tup: tup[3], reverse=True)
+            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
 
         return results
 
-    def seed_ratio(self):
-        return self.ratio
 
 provider = HDSpaceProvider()

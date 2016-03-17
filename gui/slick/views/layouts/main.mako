@@ -2,7 +2,6 @@
     import datetime
     import re
     import sickbeard
-    from sickbeard import network_timezones
     from sickrage.helper.common import pretty_file_size
     from sickrage.show.Show import Show
     from time import time
@@ -32,7 +31,7 @@
         <meta name="theme-color" content="#333333">
         % endif
 
-        <title>SickRage - ${title}</title>
+        <title>Medusa - ${title}</title>
 
         <!--[if lt IE 9]>
             <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -99,7 +98,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="${srRoot}/home/" title="SickRage"><img alt="SickRage" src="${srRoot}/images/sickrage.png" style="height: 50px;" class="img-responsive pull-left" /></a>
+                    <a class="navbar-brand" href="${srRoot}/home/" title="SickRage"><img alt="SickRage" src="${srRoot}/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
                 </div>
 
             % if srLogin:
@@ -207,7 +206,7 @@
                                 <li><a href="${srRoot}/news/"><i class="menu-icon-news"></i>&nbsp;News${newsBadge}</a></li>
                                 <li><a href="${srRoot}/IRC/"><i class="menu-icon-irc"></i>&nbsp;IRC</a></li>
                                 <li><a href="${srRoot}/changes/"><i class="menu-icon-changelog"></i>&nbsp;Changelog</a></li>
-                                <li><a href="https://github.com/PyMedusa/SickRage/wiki/Donations" rel="noreferrer" onclick="window.open('${sickbeard.ANON_REDIRECT}' + this.href); return false;"><i class="menu-icon-support"></i>&nbsp;Support SickRage</a></li>
+                                <li><a href="https://github.com/PyMedusa/SickRage/wiki/Donations" rel="noreferrer" onclick="window.open('${sickbeard.ANON_REDIRECT}' + this.href); return false;"><i class="menu-icon-support"></i>&nbsp;Support Medusa</a></li>
                                 <li role="separator" class="divider"></li>
                                 %if numErrors:
                                     <li><a href="${srRoot}/errorlogs/"><i class="menu-icon-error"></i>&nbsp;View Errors <span class="badge btn-danger">${numErrors}</span></a></li>
@@ -303,7 +302,7 @@
                     % endif
                     Load time: <span class="footerhighlight">${"%.4f" % (time() - sbStartTime)}s</span> / Mako: <span class="footerhighlight">${"%.4f" % (time() - makoStartTime)}s</span> |
                     Branch: <span class="footerhighlight">${sickbeard.BRANCH}</span> |
-                    Now: <span class="footerhighlight">${datetime.datetime.now(network_timezones.sb_timezone).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</span>
+                    Now: <span class="footerhighlight">${datetime.datetime.now().strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</span>
                 </div>
             </div>
         </footer>

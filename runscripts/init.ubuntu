@@ -12,7 +12,7 @@
 # Description:       starts instance of SickRage using start-stop-daemon
 ### END INIT INFO
 
-# Source SickRage configuration
+# Source Medusa configuration
 if [ -f /etc/default/sickrage ]; then
     . /etc/default/sickrage
 else

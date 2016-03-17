@@ -1849,7 +1849,7 @@ var SICKRAGE = {
                 $('.show-grid').isotope({
                     filter: function () {
                       var name = $(this).attr('data-name').toLowerCase();
-                      return name.indexOf($('#filterShowName').val()) > -1;
+                      return name.indexOf($('#filterShowName').val().toLowerCase()) > -1;
                     }
                 });
             }, 500));
@@ -2349,9 +2349,17 @@ var SICKRAGE = {
 
             $('.sceneSeasonXEpisode').on('change', function() {
                 // Strip non-numeric characters
-                $(this).val($(this).val().replace(/[^0-9xX]*/g, ''));
+                var value = $(this).val();
+                $(this).val(value.replace(/[^0-9xX]*/g, ''));
                 var forSeason = $(this).attr('data-for-season');
                 var forEpisode = $(this).attr('data-for-episode');
+                
+                // If empty reset the field
+                if (value === '') {
+                    setEpisodeSceneNumbering(forSeason, forEpisode, null, null);
+                    return;
+                }
+
                 var m = $(this).val().match(/^(\d+)x(\d+)$/i);
                 var onlyEpisode = $(this).val().match(/^(\d+)$/i);
                 var sceneSeason = null, sceneEpisode = null;
@@ -2368,10 +2376,11 @@ var SICKRAGE = {
                 } else {
                     isValid = setInputValidInvalid(false, $(this));
                 }
-                // Only perform the request when there is a valid input
+                
                 if (isValid){
                     setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode);
                 }
+                
             });
 
             $('.sceneAbsolute').on('change', function() {
@@ -2438,6 +2447,53 @@ var SICKRAGE = {
                 });
             });
 
+            // Set the season exception based on using the get_xem_numbering_for_show() for animes if available in data.xemNumbering,
+            // or else try to map using just the data.season_exceptions.
+            // TODO: OMG: make sure these are ported to angular
+            function setSeasonSceneException(data) {
+                var xemImg;
+
+                for (var season in data.seasonExceptions) {
+                    if (data.seasonExceptions.hasOwnProperty(season)) {
+                        // Check if it is a season name exception, we don't handle the show name exceptions here
+                        if (season >= 1 && Object.keys(data.xemNumbering).length > 0) {
+                            // Let's handle this as a xem season numbered exception
+                            for (var indexerSeason in data.xemNumbering) {
+                                if (data.xemNumbering.hasOwnProperty(indexerSeason) &&
+                                        data.seasonExceptions[data.xemNumbering[indexerSeason]]) {
+                                    xemImg = $('<img>', {
+                                        'id': 'xem-exception-season-' + indexerSeason,
+                                        'alt': '[xem]',
+                                        'height': '16',
+                                        'width': '16',
+                                        'src': srRoot + '/images/xem.png',
+                                        'title': data.seasonExceptions[data.xemNumbering[indexerSeason]].join(', '),
+                                    }).appendTo('[data-season=' + indexerSeason + ']');
+                                }
+                            }
+                        } else {
+                            // This is not a xem season exception, let's set the exceptions as a medusa exception
+                            xemImg = $('<img>', {
+                                'id': 'xem-exception-season-' + season,
+                                'alt': '[medusa]',
+                                'height': '16',
+                                'width': '16',
+                                'src': srRoot + '/images/ico/favicon-16.png',
+                                'title': data.seasonExceptions[season].join(', '),
+                            }).appendTo('[data-season=' + season + ']');
+                        }
+                    }
+                }
+            }
+
+            // TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
+            // Get the season exceptions and the xem season mappings.
+            $.getJSON(srRoot + '/home/getSeasonSceneExceptions', {
+                'indexer': $('input#indexer').val(),
+                'indexer_id': $('input#showID').val()
+            }, function(data) {
+                setSeasonSceneException(data);
+            });
         },
         postProcess: function() {
             $('#episodeDir').fileBrowser({ title: 'Select Unprocessed Episode Folder', key: 'postprocessPath' });

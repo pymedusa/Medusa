@@ -3,20 +3,22 @@
 # Author: Dustyn Gibson <miigotu@gmail.com>
 
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
+import sickbeard
 
 from sickbeard.notifiers import kodi, plex, emby, nmj, nmjv2, synoindex, \
     synologynotifier, pytivo, growl, prowl, libnotify, pushover, boxcar2, \
@@ -89,9 +91,11 @@ def notify_snatch(ep_name):
 
 def notify_git_update(new_version=""):
     for n in notifiers:
-        n.notify_git_update(new_version)
+        if sickbeard.NOTIFY_ON_UPDATE:
+            n.notify_git_update(new_version)
 
 
 def notify_login(ipaddress):
     for n in notifiers:
-        n.notify_login(ipaddress)
+        if sickbeard.NOTIFY_ON_LOGIN:
+            n.notify_login(ipaddress)

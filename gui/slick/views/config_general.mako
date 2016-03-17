@@ -63,7 +63,7 @@
                                 <span class="component-title">Launch browser</span>
                                 <span class="component-desc">
                                     <input type="checkbox" name="launch_browser" id="launch_browser" ${('', 'checked="checked"')[bool(sickbeard.LAUNCH_BROWSER)]}/>
-                                    <p>open the SickRage home page on startup</p>
+                                    <p>open the Medusa home page on startup</p>
                                 </span>
                             </label>
                         </div>
@@ -78,7 +78,7 @@
                                         <option value="news" ${('', 'selected="selected"')[sickbeard.DEFAULT_PAGE == 'news']}>News</option>
                                         <option value="IRC" ${('', 'selected="selected"')[sickbeard.DEFAULT_PAGE == 'IRC']}>IRC</option>
                                     </select>
-                                    <span>when launching SickRage interface</span>
+                                    <span>when launching Medusa interface</span>
                                 </span>
                             </label>
                         </div>
@@ -88,7 +88,7 @@
                                 <span class="component-desc">
                                     <input type="number" min="0" max="23" step="1" name="showupdate_hour" id="showupdate_hour" value="${sickbeard.SHOWUPDATE_HOUR}" class="form-control input-sm input75" autocapitalize="off" />
                                     <p>with information such as next air dates, show ended, etc. Use 15 for 3pm, 4 for 4am etc.</p>
-                                    <p>Note: minutes are randomized each time SickRage is started</p>
+                                    <p>Note: minutes are randomized each time Medusa is started</p>
                                 </span>
                             </label>
                         </div>
@@ -220,7 +220,7 @@
                                 <span class="component-title">Notify on software update</span>
                                 <span class="component-desc">
                                     <input type="checkbox" name="notify_on_update" id="notify_on_update" ${('', 'checked="checked"')[bool(sickbeard.NOTIFY_ON_UPDATE)]}/>
-                                    <p>send a message to all enabled notifiers when SickRage has been updated</p>
+                                    <p>send a message to all enabled notifiers when Medusa has been updated</p>
                                 </span>
                             </label>
                         </div>
@@ -373,7 +373,7 @@
 
                     <div class="component-group-desc">
                         <h3>Web Interface</h3>
-                        <p>It is recommended that you enable a username and password to secure SickRage from being tampered with remotely.</p>
+                        <p>It is recommended that you enable a username and password to secure Medusa from being tampered with remotely.</p>
                         <p><b>These options require a manual restart to take effect.</b></p>
                     </div>
 
@@ -386,7 +386,7 @@
                                     <input type="text" name="api_key" id="api_key" value="${sickbeard.API_KEY}" class="form-control input-sm input300" readonly="readonly" autocapitalize="off" />
                                     <input class="btn btn-inline" type="button" id="generate_new_apikey" value="Generate">
                                     <div class="clear-left">
-                                        <p>used to give 3rd party programs limited access to SickRage</p>
+                                        <p>used to give 3rd party programs limited access to Medusa</p>
                                         <p>you can try all the features of the API <a href="${srRoot}/apibuilder/">here</a></p>
                                     </div>
                                 </span>
@@ -427,7 +427,7 @@
                                 <span class="component-title">HTTP port</span>
                                 <span class="component-desc">
                                     <input type="number" min="1" step="1" name="web_port" id="web_port" value="${sickbeard.WEB_PORT}" class="form-control input-sm input100" autocapitalize="off" />
-                                    <p>web port to browse and access SickRage (default:8081)</p>
+                                    <p>web port to browse and access Medusa (default:8081)</p>
                                 </span>
                             </label>
                         </div>
@@ -627,7 +627,7 @@
                                 <p>Skip detection of removed files. If disabled the episode will be set to the default deleted status</p>
                                  </span>
                                 <div class="clear-left">
-                                <span class="component-desc"><b>NOTE:</b> This may mean SickRage misses renames as well</span>
+                                <span class="component-desc"><b>NOTE:</b> This may mean Medusa misses renames as well</span>
                                 </div>
                         </div>
 

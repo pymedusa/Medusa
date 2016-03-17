@@ -3,20 +3,20 @@
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import httplib
 import urllib
@@ -26,8 +26,7 @@ import base64
 import time
 
 import sickbeard
-from sickbeard import logger
-from sickbeard import common
+from sickbeard import logger, common
 from sickrage.helper.exceptions import ex
 from sickrage.helper.encoding import ss
 
@@ -43,8 +42,6 @@ except ImportError:
 
 
 class Notifier(object):
-    sr_logo_url = 'https://raw.githubusercontent.com/PyMedusa/SickRage/master/gui/slick/images/sickrage-shark-mascot.png'
-
     def _get_kodi_version(self, host, username, password, dest_app="KODI"):
         """Returns KODI JSON-RPC API version (odd # = dev, even # = stable)
 
@@ -94,7 +91,7 @@ class Notifier(object):
             else:
                 return False
 
-    def _notify_kodi(self, message, title="SickRage", host=None, username=None, password=None, force=False, dest_app="KODI"):  # pylint: disable=too-many-arguments
+    def _notify_kodi(self, message, title="Medusa", host=None, username=None, password=None, force=False, dest_app="KODI"):  # pylint: disable=too-many-arguments
         """Internal wrapper for the notify_snatch and notify_download functions
 
         Detects JSON-RPC version then branches the logic for either the JSON-RPC or legacy HTTP API methods.
@@ -143,7 +140,7 @@ class Notifier(object):
                 else:
                     logger.log(u"Detected %s version >= 12, using %s JSON API" % (dest_app, dest_app), logger.DEBUG)
                     command = '{"jsonrpc":"2.0","method":"GUI.ShowNotification","params":{"title":"%s","message":"%s", "image": "%s"},"id":1}' % (
-                        title.encode("utf-8"), message.encode("utf-8"), self.sr_logo_url)
+                        title.encode("utf-8"), message.encode("utf-8"), sickbeard.LOGO_URL)
                     notifyResult = self._send_to_kodi_json(command, curHost, username, password, dest_app)
                     if notifyResult and notifyResult.get('result'):  # pylint: disable=no-member
                         result += curHost + ':' + notifyResult["result"].decode(sickbeard.SYS_ENCODING)
@@ -439,7 +436,7 @@ class Notifier(object):
             logger.log(u"Updating library in KODI via JSON method for show " + showName, logger.DEBUG)
 
             # let's try letting kodi filter the shows
-            showsCommand = '{"jsonrpc":"2.0","method":"VideoLibrary.GetTVShows","params":{"filter":{"field":"title","operator":"is","value":"%s"},"properties":["title"]},"id":"SickRage"}'
+            showsCommand = '{"jsonrpc":"2.0","method":"VideoLibrary.GetTVShows","params":{"filter":{"field":"title","operator":"is","value":"%s"},"properties":["title"]},"id":"Medusa"}'
 
             # get tvshowid by showName
             showsResponse = self._send_to_kodi_json(showsCommand % showName, host)
@@ -541,7 +538,7 @@ class Notifier(object):
             self._notify_kodi(update_text.format(ipaddress), title)
 
     def test_notify(self, host, username, password):
-        return self._notify_kodi("Testing KODI notifications from SickRage", "Test Notification", host, username, password, force=True)
+        return self._notify_kodi("Testing KODI notifications from Medusa", "Test Notification", host, username, password, force=True)
 
     def update_library(self, showName=None):
         """Public wrapper for the update library functions to branch the logic for JSON-RPC or legacy HTTP API

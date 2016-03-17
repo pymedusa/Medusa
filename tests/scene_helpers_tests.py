@@ -92,14 +92,12 @@ class SceneExceptionTestCase(test.SickbeardTestDBCase):
         """
         self.assertEqual(scene_exceptions.get_scene_exceptions(0), [])
 
-    @unittest.skip('Waiting new github page to get exceptions')
     def test_scene_ex_babylon_5(self):
         """
         Test scene exceptions for Babylon 5
         """
         self.assertEqual(sorted(scene_exceptions.get_scene_exceptions(70726)), ['Babylon 5', 'Babylon5'])
 
-    @unittest.skip('Waiting new github page to get exceptions')
     def test_scene_ex_by_name(self):
         """
         Test scene exceptions by name
@@ -109,14 +107,12 @@ class SceneExceptionTestCase(test.SickbeardTestDBCase):
         self.assertEqual(scene_exceptions.get_scene_exception_by_name('babylon 5'), (70726, -1))
         self.assertEqual(scene_exceptions.get_scene_exception_by_name('Carlos 2010'), (164451, -1))
 
-    @unittest.skip('Waiting new github page to get exceptions')
     def test_scene_ex_by_name_empty(self):
         """
         Test scene exceptions by name are empty
         """
         self.assertEqual(scene_exceptions.get_scene_exception_by_name('nothing useful'), (None, None))
 
-    @unittest.skip('Waiting new github page to get exceptions')
     def test_scene_ex_reset_name_cache(self):
         """
         Test scene exceptions reset name cache
