@@ -36,7 +36,7 @@ after_failure:
   - cat ./Logs/sickrage.log
 
 notifications:
-  irc: "irc.freenode.net#pymedusa-devs"
+  irc: "irc.freenode.net#pymedusa"
   email:
     on_success: change
     on_failure: change

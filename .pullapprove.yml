@@ -1,14 +1,41 @@
 approve_by_comment: true
-approve_regex: ^Approved
-reject_regex: ^Rejected
+approve_regex: (^Approved|^RTM)
+reject_regex: (^Rejected|^Fix it)
 reset_on_push: false
 reviewers:
-  members:
-  - duramato
-  - fernandog
-  - labrys
-  - medariox
-  - OmgImAlexis
-  - pithoi
-  name: default
-  required: 1
+  -
+    name: backend-devs
+    required: 1
+    members:
+      - duramato
+      - fernandog
+      - labrys
+      - medariox
+      - p0psicles
+      - adaur
+    conditions:
+      branches:
+        - master
+        - beta
+        - develop
+      files:
+        - "*.py"
+  -
+    name: gui-devs
+    required: 1
+    members:
+      - Labrys
+      - OmgImAlexis
+      - p0psicles
+    conditions:
+      branches:
+        - master
+        - beta
+        - develop
+      files:
+        - "gui/"
+  -
+    name: support
+    required: 0
+    members:
+      - neoatomic
