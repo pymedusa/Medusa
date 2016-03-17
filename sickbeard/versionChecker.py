@@ -524,6 +524,10 @@ class GitUpdateManager(UpdateManager):
         self._num_commits_behind = 0
         self._num_commits_ahead = 0
 
+        # Remove local branches that doesn't exist anymore in remote
+        logger.log("Checkinng local branches to be removed")
+        self.prune()
+
         # update remote origin url
         self.update_remote_origin()
 
@@ -621,9 +625,6 @@ class GitUpdateManager(UpdateManager):
 
         # update remote origin url
         self.update_remote_origin()
-        
-        # Remove local branches that doesn't exist anymore in remote
-        self.prune()
 
         # remove untracked files and performs a hard reset on git branch to avoid update issues
         if sickbeard.GIT_RESET:
@@ -667,10 +668,18 @@ class GitUpdateManager(UpdateManager):
     def prune(self):
         """
         Calls git remote prune to delete all local branches that doesn't exist in remote anymore
+        all local branches that were removed from remote have status 'gone'
         """
         _, _, exit_status = self._run_git(self._git_path, 'remote prune {}'.format(sickbeard.GIT_REMOTE))
         if exit_status == 0:
-            return True
+            branches, _, exit_status = self._run_git(self._git_path, 'branch -vv')
+            if exit_status == 0:
+                for branch in branches.splitlines():
+                    if branch and ': gone]' in branch:
+                        logger.log("Branch: {}".format(branch))
+                        remaining_branch = re.match('(?P<branch>.*)(?P<hash>[a-z0-9]{7}) (?P<remote>\[.*\])(?P<commit>.*)', branch).group('branch').strip()
+                        logger.log("Removing local branch after remote branch being deleted: {}".format(remaining_branch))
+                        self._run_git(self._git_path, 'branch -D {}'.format(remaining_branch))
 
     def reset(self):
         """
@@ -685,7 +694,6 @@ class GitUpdateManager(UpdateManager):
         # update remote origin url
         self.update_remote_origin()
         sickbeard.BRANCH = self._find_installed_branch()
-
         branches, _, exit_status = self._run_git(self._git_path, 'ls-remote --heads %s' % sickbeard.GIT_REMOTE)  # @UnusedVariable
         if exit_status == 0 and branches:
             if branches:
