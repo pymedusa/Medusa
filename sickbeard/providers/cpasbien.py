@@ -56,7 +56,7 @@ class CpasbienProvider(TorrentProvider):
                 else:
                     search_url = self.url + '/view_cat.php?categorie=series&trie=date-d'
 
-                logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
+                logger.log(u"Search URL: {0!s}".format(search_url), logger.DEBUG)
                 data = self.get_url(search_url, echo=False, returns='text')
                 if not data:
                     continue
@@ -68,7 +68,7 @@ class CpasbienProvider(TorrentProvider):
                             title = result.find(class_="titre").get_text(strip=True).replace("HDTV", "HDTV x264-CPasBien")
                             title = re.sub(r' Saison', ' Season', title, flags=re.IGNORECASE)
                             tmp = result.find("a")['href'].split('/')[-1].replace('.html', '.torrent').strip()
-                            download_url = (self.url + '/telechargement/%s' % tmp)
+                            download_url = (self.url + '/telechargement/{0!s}'.format(tmp))
                             if not all([title, download_url]):
                                 continue
 
@@ -87,7 +87,7 @@ class CpasbienProvider(TorrentProvider):
 
                             item = title, download_url, size, seeders, leechers
                             if mode != 'RSS':
-                                logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
+                                logger.log(u"Found result: {0!s} with {1!s} seeders and {2!s} leechers".format(title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
                         except StandardError:

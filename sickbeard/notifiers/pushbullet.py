@@ -77,13 +77,13 @@ class Notifier(object):
         pushbullet_api = pushbullet_api or sickbeard.PUSHBULLET_API
         pushbullet_device = pushbullet_device or sickbeard.PUSHBULLET_DEVICE
 
-        logger.log(u"Pushbullet event: %r" % event, logger.DEBUG)
-        logger.log(u"Pushbullet message: %r" % message, logger.DEBUG)
-        logger.log(u"Pushbullet api: %r" % pushbullet_api, logger.DEBUG)
-        logger.log(u"Pushbullet devices: %r" % pushbullet_device, logger.DEBUG)
-        logger.log(u"Pushbullet notification type: %r" % ('note' if event else 'None'), logger.DEBUG)
+        logger.log(u"Pushbullet event: {0!r}".format(event), logger.DEBUG)
+        logger.log(u"Pushbullet message: {0!r}".format(message), logger.DEBUG)
+        logger.log(u"Pushbullet api: {0!r}".format(pushbullet_api), logger.DEBUG)
+        logger.log(u"Pushbullet devices: {0!r}".format(pushbullet_device), logger.DEBUG)
+        logger.log(u"Pushbullet notification type: {0!r}".format(('note' if event else 'None')), logger.DEBUG)
 
-        url = 'https://api.pushbullet.com/v2/%s' % ('devices', 'pushes')[event is not None]
+        url = 'https://api.pushbullet.com/v2/{0!s}'.format(('devices', 'pushes')[event is not None])
 
         data = None if not event else json.dumps({
             'title': event.encode('utf-8'),
@@ -93,12 +93,12 @@ class Notifier(object):
         })
 
         method = 'GET' if data is None else 'POST'
-        headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer %s' % pushbullet_api}
+        headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer {0!s}'.format(pushbullet_api)}
 
         try:
             response = self.session.request(method, url, data=data, headers=headers)
         except Exception:
-            logger.log(u'Pushbullet authorization failed with exception: %r' % traceback.format_exc(), logger.DEBUG)
+            logger.log(u'Pushbullet authorization failed with exception: {0!r}'.format(traceback.format_exc()), logger.DEBUG)
             return False
 
         if response.status_code == 410:
@@ -106,10 +106,10 @@ class Notifier(object):
             return False
 
         if response.status_code != 200:
-            logger.log(u'Pushbullet call failed with error code %r' % response.status_code, logger.DEBUG)
+            logger.log(u'Pushbullet call failed with error code {0!r}'.format(response.status_code), logger.DEBUG)
             return False
 
-        logger.log(u"Pushbullet response: %r" % response.text, logger.DEBUG)
+        logger.log(u"Pushbullet response: {0!r}".format(response.text), logger.DEBUG)
 
         if not response.text:
             logger.log(u"Pushbullet notification failed.", logger.ERROR)

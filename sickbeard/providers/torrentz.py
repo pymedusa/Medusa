@@ -79,7 +79,7 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
                     search_url += '?q=' + urllib.parse.quote_plus(search_string)
 
-                logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
+                logger.log(u"Search URL: {0!s}".format(search_url), logger.DEBUG)
 
                 data = self.get_url(search_url, echo=False, returns='text')
                 if not data:
@@ -115,7 +115,7 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
                             items.append((title, download_url, size, seeders, leechers))
                 except StandardError:
-                    logger.log(u"Failed parsing provider. Traceback: %r" % traceback.format_exc(), logger.ERROR)
+                    logger.log(u"Failed parsing provider. Traceback: {0!r}".format(traceback.format_exc()), logger.ERROR)
 
             # For each search mode sort all the items by seeders if available
             items.sort(key=lambda tup: tup[3], reverse=True)

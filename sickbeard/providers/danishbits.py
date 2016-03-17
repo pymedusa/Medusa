@@ -117,8 +117,8 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                 search_params['search'] = search_string
 
-                search_url = "%s?%s" % (self.urls['search'], urlencode(search_params))
-                logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
+                search_url = "{0!s}?{1!s}".format(self.urls['search'], urlencode(search_params))
+                logger.log(u"Search URL: {0!s}".format(search_url), logger.DEBUG)
 
                 data = self.get_url(search_url, echo=False, returns='text')
                 if not data:

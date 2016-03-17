@@ -113,7 +113,7 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     del search_params['searchtext']
 
                 search_url = self.urls['search'] + "?" + urlencode(search_params)
-                logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
+                logger.log(u"Search URL: {0!s}".format(search_url), logger.DEBUG)
 
                 data = self.get_url(self.urls['search'], params=search_params, echo=False, returns='text')
                 if not data:
@@ -124,14 +124,14 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     with BS4Parser(data, 'html5lib') as html:
                         torrent_table = html.find('table', {'id': 'torrent_table'})
                         if not torrent_table:
-                            logger.log(u"Data returned from %s does not contain any torrents" % self.name, logger.DEBUG)
+                            logger.log(u"Data returned from {0!s} does not contain any torrents".format(self.name), logger.DEBUG)
                             continue
 
                         torrent_rows = torrent_table.findAll('tr', {'class': 'torrent'})
 
                         # Continue only if one Release is found
                         if not torrent_rows:
-                            logger.log(u"Data returned from %s does not contain any torrents" % self.name, logger.DEBUG)
+                            logger.log(u"Data returned from {0!s} does not contain any torrents".format(self.name), logger.DEBUG)
                             continue
 
                         for torrent_row in torrent_rows:
@@ -177,7 +177,7 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
 
                             items.append(item)
                 except Exception:
-                    logger.log(u"Failed parsing provider. Traceback: %s" % traceback.format_exc(), logger.ERROR)
+                    logger.log(u"Failed parsing provider. Traceback: {0!s}".format(traceback.format_exc()), logger.ERROR)
 
             # For each search mode sort all the items by seeders
             items.sort(key=lambda tup: tup[3], reverse=True)

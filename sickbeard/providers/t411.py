@@ -99,7 +99,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
 
                 search_urlS = ([self.urls['search'] % (search_string, u) for u in self.subcategories], [self.urls['rss']])[mode == 'RSS']
                 for search_url in search_urlS:
-                    logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
+                    logger.log(u"Search URL: {0!s}".format(search_url), logger.DEBUG)
                     data = self.get_url(search_url, json=True, echo=False)
                     if not data:
                         continue
@@ -144,17 +144,17 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                                 size = convert_size(torrent_size) or -1
                                 item = title, download_url, size, seeders, leechers
                                 if mode != 'RSS':
-                                    logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
+                                    logger.log(u"Found result: {0!s} with {1!s} seeders and {2!s} leechers".format(title, seeders, leechers), logger.DEBUG)
 
                                 items.append(item)
 
                             except Exception:
-                                logger.log(u"Invalid torrent data, skipping result: %s" % torrent, logger.DEBUG)
-                                logger.log(u"Failed parsing provider. Traceback: %s" % traceback.format_exc(), logger.DEBUG)
+                                logger.log(u"Invalid torrent data, skipping result: {0!s}".format(torrent), logger.DEBUG)
+                                logger.log(u"Failed parsing provider. Traceback: {0!s}".format(traceback.format_exc()), logger.DEBUG)
                                 continue
 
                     except Exception:
-                        logger.log(u"Failed parsing provider. Traceback: %s" % traceback.format_exc(), logger.ERROR)
+                        logger.log(u"Failed parsing provider. Traceback: {0!s}".format(traceback.format_exc()), logger.ERROR)
 
             # For each search mode sort all the items by seeders if available if available
             items.sort(key=lambda tup: tup[3], reverse=True)

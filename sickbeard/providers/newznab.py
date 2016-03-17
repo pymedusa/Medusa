@@ -139,13 +139,13 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         url = posixpath.join(self.url, 'api?') + urlencode(params)
         data = self.get_url(url)
         if not data:
-            error_string = u"Error getting xml for [%s]" % url
+            error_string = u"Error getting xml for [{0!s}]".format(url)
             logger.log(error_string, logger.WARNING)
             return False, return_categories, error_string
 
         with BS4Parser(data, 'html5lib') as html:
             if not (self._checkAuthFromData(html) and html.caps and html.caps.categories):
-                error_string = u"Error parsing xml for [%s]" % self.name
+                error_string = u"Error parsing xml for [{0!s}]".format(self.name)
                 logger.log(error_string, logger.DEBUG)
                 return False, return_categories, error_string
 
@@ -158,7 +158,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
             return True, return_categories, ""
 
-        error_string = u"Error getting xml for [%s]" % url
+        error_string = u"Error getting xml for [{0!s}]".format(url)
         logger.log(error_string, logger.WARNING)
         return False, return_categories, error_string
 
@@ -223,7 +223,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 category_ids = values[3]
                 enabled = values[4]
         except ValueError:
-            logger.log(u'Skipping Newznab provider string: \'%s\', incorrect format' % config, logger.ERROR)
+            logger.log(u'Skipping Newznab provider string: \'{0!s}\', incorrect format'.format(config), logger.ERROR)
             return None
 
         new_provider = NewznabProvider(
@@ -298,7 +298,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                             search_params.pop('tvdbid', '')
                             search_params['q'] = search_string
                             search_url = posixpath.join(self.url, 'api?') + urlencode(search_params)
-                            logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
+                            logger.log(u"Search URL: {0!s}".format(search_url), logger.DEBUG)
 
                             time.sleep(cpu_presets[sickbeard.CPU_PRESET])
                             data = self.get_url(search_url, echo=False, returns='text')

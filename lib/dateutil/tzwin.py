@@ -89,7 +89,7 @@ class tzwin(tzwinbase):
         # multiple contexts only possible in 2.7 and 3.1, we still support 2.6
         with winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE) as handle:
             with winreg.OpenKey(handle,
-                                "%s\%s" % (TZKEYNAME, name)) as tzkey:
+                                "{0!s}\{1!s}".format(TZKEYNAME, name)) as tzkey:
                 keydict = valuestodict(tzkey)
 
         self._stdname = keydict["Std"]
@@ -117,7 +117,7 @@ class tzwin(tzwinbase):
          self._dstminute) = tup[12:17]
 
     def __repr__(self):
-        return "tzwin(%s)" % repr(self._name)
+        return "tzwin({0!s})".format(repr(self._name))
 
     def __reduce__(self):
         return (self.__class__, (self._name,))
@@ -137,7 +137,7 @@ class tzwinlocal(tzwinbase):
 
             try:
                 with winreg.OpenKey(
-                        handle, "%s\%s" % (TZKEYNAME, self._stdname)) as tzkey:
+                        handle, "{0!s}\{1!s}".format(TZKEYNAME, self._stdname)) as tzkey:
                     _keydict = valuestodict(tzkey)
                     self._display = _keydict["Display"]
             except OSError:

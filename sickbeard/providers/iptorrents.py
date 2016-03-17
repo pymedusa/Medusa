@@ -104,7 +104,7 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 # URL with 50 tv-show results, or max 150 if adjusted in IPTorrents profile
                 search_url = self.urls['search'] % (self.categories, freeleech, search_string)
                 search_url += ';o=seeders' if mode != 'RSS' else ''
-                logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
+                logger.log(u"Search URL: {0!s}".format(search_url), logger.DEBUG)
 
                 data = self.get_url(search_url, echo=False, returns='text')
                 if not data:
@@ -152,12 +152,12 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                             item = title, download_url, size, seeders, leechers
                             if mode != 'RSS':
-                                logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
+                                logger.log(u"Found result: {0!s} with {1!s} seeders and {2!s} leechers".format(title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
 
                 except Exception as e:
-                    logger.log(u"Failed parsing provider. Error: %r" % ex(e), logger.ERROR)
+                    logger.log(u"Failed parsing provider. Error: {0!r}".format(ex(e)), logger.ERROR)
 
             # For each search mode sort all the items by seeders if available
             items.sort(key=lambda tup: tup[3], reverse=True)

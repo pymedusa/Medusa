@@ -66,11 +66,11 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
                                logger.DEBUG)
 
-                search_url = self.urls['api'] + "?s=%s&out=json&filter=2101&num=150" % quote_plus(search_string)
+                search_url = self.urls['api'] + "?s={0!s}&out=json&filter=2101&num=150".format(quote_plus(search_string))
                 if self.custom_url:
                     search_url = posixpath.join(self.custom_url, search_url.split(self.url)[1].lstrip('/'))  # Must use posixpath
 
-                logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
+                logger.log(u"Search URL: {0!s}".format(search_url), logger.DEBUG)
                 torrents = self.get_url(search_url, json=True, echo=False)
                 if not (torrents and "total_found" in torrents and int(torrents["total_found"]) > 0):
                     logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
@@ -85,7 +85,7 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     leechers = try_int(torrents[i]["leechs"], 0)
                     if seeders < self.minseed or leechers < self.minleech:
                         if mode != 'RSS':
-                            logger.log(u"Torrent doesn't meet minimum seeds & leechers not selecting : %s" % title, logger.DEBUG)
+                            logger.log(u"Torrent doesn't meet minimum seeds & leechers not selecting : {0!s}".format(title), logger.DEBUG)
                         continue
 
                     t_hash = torrents[i]["torrent_hash"]

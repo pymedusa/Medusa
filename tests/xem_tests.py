@@ -70,7 +70,7 @@ class XEMBasicTests(test.SickbeardTestDBCase):
                 cur_show = TVShow(int(sql_show["indexer"]), int(sql_show["indexer_id"]))
                 sickbeard.showList.append(cur_show)
             except Exception as error:  # pylint: disable=broad-except
-                print "There was an error creating the show %s" % error
+                print "There was an error creating the show {0!s}".format(error)
 
     @staticmethod
     def test_formatting():

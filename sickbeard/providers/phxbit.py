@@ -117,7 +117,7 @@ class PhxBitProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
                 search_params['q'] = search_string
 
                 search_url = self.urls['search'] + urlencode(search_params)
-                logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
+                logger.log(u"Search URL: {0!s}".format(search_url), logger.DEBUG)
 
                 data = self.get_url(search_url, echo=False, returns='text')
                 if not data:
@@ -161,7 +161,7 @@ class PhxBitProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
 
                             item = title, download_url, size, seeders, leechers
                             if mode != 'RSS':
-                                logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
+                                logger.log(u"Found result: {0!s} with {1!s} seeders and {2!s} leechers".format(title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
                         except StandardError:
