@@ -2517,6 +2517,15 @@ var SICKRAGE = {
                 });   
             });
 
+            // TODO: OMG need to migrate the imdb stars generating to a directive for the snatchSelection page
+            $.fn.generateStars = function() {
+                return this.each(function(i,e){
+                    $(e).html($('<span/>').width($(e).text()*12));
+                });
+            };
+
+            $('.imdbstars').generateStars();
+
             function checkCacheUpdates(repeat) {
                 var self = this;
                 var pollInterval = 5000;
