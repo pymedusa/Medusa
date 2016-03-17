@@ -424,7 +424,8 @@ class WebRoot(WebHandler):
                 "backlogSearch": str(sickbeard.backlogSearchScheduler.timeLeft()).split('.')[0],
                 "memoryUsed": memory_used,
                 "loadTime": "%.4f" % (time.time() - self.startTime) + "s",
-                "timeNow": datetime.datetime.now().strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)
+                "timeNow": datetime.datetime.now().strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET),
+                "recentShows": ([], sickbeard.SHOWS_RECENT)[sickbeard.SHOWS_RECENT is not None]
             }
 
         return PageTemplate(rh=self, filename="index.mako").render()
@@ -881,29 +882,27 @@ class Home(WebRoot):
             else:
                 shows.append(show_dict)
 
+        show_lists = []
         if sickbeard.ANIME_SPLIT_HOME:
-            return {
-                "showLists": [{
-                    "name": "shows",
-                    "shows": shows
-                }, {
-                    "name": "anime",
-                    "shows": anime
-                }],
-                "maxDownloadCount": stats[1],
-                "layout": sickbeard.HOME_LAYOUT,
-                "fuzzyDating": sickbeard.FUZZY_DATING
-            }
+            show_lists = [{
+                "name": "shows",
+                "shows": shows
+            }, {
+                "name": "anime",
+                "shows": anime
+            }]
         else:
-            return {
-                "showLists": [{
-                    "name": "shows",
-                    "shows": shows
-                }],
-                "maxDownloadCount": max_download,
-                "layout": sickbeard.HOME_LAYOUT,
-                "fuzzyDating": sickbeard.FUZZY_DATING
-            }
+            show_lists = [{
+                "name": "shows",
+                "shows": shows
+            }]
+
+        return {
+            "showLists": show_lists,
+            "maxDownloadCount": max_download,
+            "layout": sickbeard.HOME_LAYOUT,
+            "fuzzyDating": sickbeard.FUZZY_DATING
+        }
 
     @staticmethod
     def show_statistics():

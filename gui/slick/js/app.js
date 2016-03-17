@@ -216,7 +216,20 @@ sickrage.config([
     }
 ]);
 
-sickrage.run(function($rootScope) {
+sickrage.run(function($rootScope, $http) {
+    $rootScope.recentShows = [];
+    $rootScope.getRecentShows = function(){
+        $http({
+            method: 'GET',
+            url: '/',
+            headers: {
+                'Accept': 'application/json'
+            }
+        }).then(function successCallback(response){
+            $rootScope.recentShows = response.data.recentShows;
+        });
+    };
+    $rootScope.getRecentShows();
     $rootScope.seasonString = function(season, episode){
         season = (season < 10 ? '0' : '') + season;
         episode = (episode < 10 ? '0' : '') + episode;
@@ -760,7 +773,8 @@ sickrage.controller('historyController', function() {
     SICKRAGE.history.index();
 });
 
-sickrage.controller('displayShowController', function($scope, $stateParams, $http) {
+sickrage.controller('displayShowController', function($scope, $stateParams, $http, $rootScope) {
+    $rootScope.getRecentShows();
     $scope.getShow = function(showId){
         $http({
             method: 'GET',
