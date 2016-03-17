@@ -90,9 +90,9 @@ class Notifier(object):
                 msg['Date'] = formatdate(localtime=True)
                 if self._sendmail(sickbeard.EMAIL_HOST, sickbeard.EMAIL_PORT, sickbeard.EMAIL_FROM, sickbeard.EMAIL_TLS,
                                   sickbeard.EMAIL_USER, sickbeard.EMAIL_PASSWORD, to, msg):
-                    logger.log(u"Snatch notification sent to [%s] for '%s'" % (to, ep_name), logger.DEBUG)
+                    logger.log(u"Snatch notification sent to [{0!s}] for '{1!s}'".format(to, ep_name), logger.DEBUG)
                 else:
-                    logger.log(u"Snatch notification error: %s" % self.last_err, logger.WARNING)
+                    logger.log(u"Snatch notification error: {0!s}".format(self.last_err), logger.WARNING)
 
     def notify_download(self, ep_name, title="Completed:"):  # pylint: disable=unused-argument
         """
@@ -133,9 +133,9 @@ class Notifier(object):
                 msg['Date'] = formatdate(localtime=True)
                 if self._sendmail(sickbeard.EMAIL_HOST, sickbeard.EMAIL_PORT, sickbeard.EMAIL_FROM, sickbeard.EMAIL_TLS,
                                   sickbeard.EMAIL_USER, sickbeard.EMAIL_PASSWORD, to, msg):
-                    logger.log(u"Download notification sent to [%s] for '%s'" % (to, ep_name), logger.DEBUG)
+                    logger.log(u"Download notification sent to [{0!s}] for '{1!s}'".format(to, ep_name), logger.DEBUG)
                 else:
-                    logger.log(u"Download notification error: %s" % self.last_err, logger.WARNING)
+                    logger.log(u"Download notification error: {0!s}".format(self.last_err), logger.WARNING)
 
     def notify_subtitle_download(self, ep_name, lang, title="Downloaded subtitle:"):  # pylint: disable=unused-argument
         """
@@ -175,9 +175,9 @@ class Notifier(object):
                 msg['To'] = ','.join(to)
                 if self._sendmail(sickbeard.EMAIL_HOST, sickbeard.EMAIL_PORT, sickbeard.EMAIL_FROM, sickbeard.EMAIL_TLS,
                                   sickbeard.EMAIL_USER, sickbeard.EMAIL_PASSWORD, to, msg):
-                    logger.log(u"Download notification sent to [%s] for '%s'" % (to, ep_name), logger.DEBUG)
+                    logger.log(u"Download notification sent to [{0!s}] for '{1!s}'".format(to, ep_name), logger.DEBUG)
                 else:
-                    logger.log(u"Download notification error: %s" % self.last_err, logger.WARNING)
+                    logger.log(u"Download notification error: {0!s}".format(self.last_err), logger.WARNING)
 
     def notify_git_update(self, new_version="??"):
         pass
@@ -212,18 +212,18 @@ class Notifier(object):
                                     addrs.append(addr)
 
         addrs = set(addrs)
-        logger.log(u'Notification recipients: %s' % addrs, logger.DEBUG)
+        logger.log(u'Notification recipients: {0!s}'.format(addrs), logger.DEBUG)
         return addrs
 
     def _sendmail(self, host, port, smtp_from, use_tls, user, pwd, to, msg, smtpDebug=False):  # pylint: disable=too-many-arguments
-        logger.log(u'HOST: %s; PORT: %s; FROM: %s, TLS: %s, USER: %s, PWD: %s, TO: %s' % (
+        logger.log(u'HOST: {0!s}; PORT: {1!s}; FROM: {2!s}, TLS: {3!s}, USER: {4!s}, PWD: {5!s}, TO: {6!s}'.format(
             host, port, smtp_from, use_tls, user, pwd, to), logger.DEBUG)
         try:
             srv = smtplib.SMTP(host, int(port))
         except Exception as e:
             logger.log(u"Exception generated while sending e-mail: " + str(e), logger.WARNING)
             # logger.log(traceback.format_exc(), logger.DEBUG)
-            self.last_err = '%s' % e
+            self.last_err = '{0!s}'.format(e)
             return False
 
         if smtpDebug:
@@ -244,7 +244,7 @@ class Notifier(object):
             srv.quit()
             return True
         except Exception as e:
-            self.last_err = '%s' % e
+            self.last_err = '{0!s}'.format(e)
             return False
 
     @staticmethod
@@ -254,5 +254,5 @@ class Notifier(object):
         sep = " - "
         titles = ep_name.split(sep)
         titles.sort(key=len, reverse=True)
-        logger.log(u"TITLES: %s" % titles, logger.DEBUG)
+        logger.log(u"TITLES: {0!s}".format(titles), logger.DEBUG)
         return titles

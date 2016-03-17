@@ -66,7 +66,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                 self.search_params.update({'type': ('search', 'rss')[mode == 'RSS'], 'search': search_string})
                 search_url = self.urls['rss'] if not self.custom_url else self.urls['rss'].replace(self.urls['index'], self.custom_url)
 
-                logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
+                logger.log(u"Search URL: {0!s}".format(search_url), logger.DEBUG)
 
                 data = self.get_url(search_url, params=self.search_params, echo=False, returns='text')
                 if not data:
@@ -109,7 +109,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
                         item = title, download_url, size, seeders, leechers
                         if mode != 'RSS':
-                            logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
+                            logger.log(u"Found result: {0!s} with {1!s} seeders and {2!s} leechers".format(title, seeders, leechers), logger.DEBUG)
 
                         items.append(item)
 

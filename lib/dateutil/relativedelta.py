@@ -33,7 +33,7 @@ class weekday(object):
         if not self.n:
             return s
         else:
-            return "%s(%+d)" % (s, self.n)
+            return "{0!s}({1:+d})".format(s, self.n)
 
 MO, TU, WE, TH, FR, SA, SU = weekdays = tuple([weekday(x) for x in range(7)])
 
@@ -205,7 +205,7 @@ Here is the behavior of operations with relativedelta:
                             self.day = yday-ydayidx[idx-1]
                         break
                 else:
-                    raise ValueError("invalid year day (%d)" % yday)
+                    raise ValueError("invalid year day ({0:d})".format(yday))
 
         self._fix()
 
@@ -447,12 +447,12 @@ Here is the behavior of operations with relativedelta:
                      "hours", "minutes", "seconds", "microseconds"]:
             value = getattr(self, attr)
             if value:
-                l.append("%s=%+d" % (attr, value))
+                l.append("{0!s}={1:+d}".format(attr, value))
         for attr in ["year", "month", "day", "weekday",
                      "hour", "minute", "second", "microsecond"]:
             value = getattr(self, attr)
             if value is not None:
-                l.append("%s=%s" % (attr, repr(value)))
-        return "%s(%s)" % (self.__class__.__name__, ", ".join(l))
+                l.append("{0!s}={1!s}".format(attr, repr(value)))
+        return "{0!s}({1!s})".format(self.__class__.__name__, ", ".join(l))
 
 # vim:ts=4:sw=4:et

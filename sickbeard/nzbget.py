@@ -57,7 +57,7 @@ def sendNZB(nzb, proper=False):
 
     nzbGetRPC = xmlrpclib.ServerProxy(url)
     try:
-        if nzbGetRPC.writelog("INFO", "SickRage connected to drop of %s any moment now." % (nzb.name + ".nzb")):
+        if nzbGetRPC.writelog("INFO", "SickRage connected to drop of {0!s} any moment now.".format((nzb.name + ".nzb"))):
             logger.log(u"Successful connected to NZBget", logger.DEBUG)
         else:
             logger.log(u"Successful connected to NZBget, but unable to send a message", logger.WARNING)
@@ -147,8 +147,8 @@ def sendNZB(nzb, proper=False):
             logger.log(u"NZB sent to NZBget successfully", logger.DEBUG)
             return True
         else:
-            logger.log(u"NZBget could not add %s to the queue" % (nzb.name + ".nzb"), logger.WARNING)
+            logger.log(u"NZBget could not add {0!s} to the queue".format((nzb.name + ".nzb")), logger.WARNING)
             return False
     except Exception:
-        logger.log(u"Connect Error to NZBget: could not add %s to the queue" % (nzb.name + ".nzb"), logger.WARNING)
+        logger.log(u"Connect Error to NZBget: could not add {0!s} to the queue".format((nzb.name + ".nzb")), logger.WARNING)
         return False

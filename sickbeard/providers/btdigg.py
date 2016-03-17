@@ -91,7 +91,7 @@ class BTDiggProvider(TorrentProvider):
 
                         item = title, download_url, size, seeders, leechers
                         if mode != "RSS":
-                            logger.log("Found result: %s " % title, logger.DEBUG)
+                            logger.log("Found result: {0!s} ".format(title), logger.DEBUG)
 
                         items.append(item)
 

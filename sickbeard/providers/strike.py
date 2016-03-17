@@ -48,7 +48,7 @@ class StrikeProvider(TorrentProvider):
                     logger.log(u"Search string: " + search_string.strip(), logger.DEBUG)
 
                 search_url = self.url + "api/v2/torrents/search/?category=TV&phrase=" + search_string
-                logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
+                logger.log(u"Search URL: {0!s}".format(search_url), logger.DEBUG)
                 jdata = self.get_url(search_url, json=True, echo=False)
                 if not jdata:
                     logger.log(u"No data returned from provider", logger.DEBUG)
@@ -75,7 +75,7 @@ class StrikeProvider(TorrentProvider):
                         continue
 
                     if mode != 'RSS':
-                        logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
+                        logger.log(u"Found result: {0!s} with {1!s} seeders and {2!s} leechers".format(title, seeders, leechers), logger.DEBUG)
 
                     item = title, download_url, size, seeders, leechers
                     items.append(item)

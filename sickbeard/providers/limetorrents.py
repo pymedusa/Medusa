@@ -67,7 +67,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                 try:
                     search_url = (self.urls['rss'], self.urls['search'] + search_string)[mode != 'RSS']
 
-                    logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
+                    logger.log(u"Search URL: {0!s}".format(search_url), logger.DEBUG)
 
                     data = self.get_url(search_url, echo=False, returns='text')
                     if not data:
@@ -132,12 +132,12 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
                         item = title, download_url, size, seeders, leechers
                         if mode != 'RSS':
-                            logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
+                            logger.log(u"Found result: {0!s} with {1!s} seeders and {2!s} leechers".format(title, seeders, leechers), logger.DEBUG)
 
                         items.append(item)
 
                 except (AttributeError, TypeError, KeyError, ValueError):
-                    logger.log(u"Failed parsing provider. Traceback: %r" % traceback.format_exc(), logger.ERROR)
+                    logger.log(u"Failed parsing provider. Traceback: {0!r}".format(traceback.format_exc()), logger.ERROR)
 
             # For each search mode sort all the items by seeders if available
             items.sort(key=lambda tup: tup[3], reverse=True)

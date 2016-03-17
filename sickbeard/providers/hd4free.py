@@ -48,7 +48,7 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         if self.username and self.api_key:
             return True
 
-        logger.log('Your authentication credentials for %s are missing, check your config.' % self.name, logger.WARNING)
+        logger.log('Your authentication credentials for {0!s} are missing, check your config.'.format(self.name), logger.WARNING)
         return False
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
@@ -78,7 +78,7 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     search_params.pop('search', '')
 
                 search_url = self.urls['search'] + "?" + urlencode(search_params)
-                logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
+                logger.log(u"Search URL: {0!s}".format(search_url), logger.DEBUG)
 
                 jdata = self.get_url(search_url, json=True, echo=False)
                 if not jdata:
@@ -112,7 +112,7 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                         item = title, download_url, size, seeders, leechers
 
                         if mode != 'RSS':
-                            logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
+                            logger.log(u"Found result: {0!s} with {1!s} seeders and {2!s} leechers".format(title, seeders, leechers), logger.DEBUG)
 
                         items.append(item)
                     except StandardError:
