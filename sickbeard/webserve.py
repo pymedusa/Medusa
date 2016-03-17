@@ -2257,10 +2257,10 @@ class HomeChangeLog(Home):
 
     def index(self):
         try:
-            changes = helpers.getURL('https://api.pymedusa.com/changelog.md', session=helpers.make_session(), returns='text')
+            changes = helpers.getURL('https://cdn.pymedusa.com/sickrage-news/CHANGES.md', session=helpers.make_session(), returns='text')
         except Exception:
             logger.log(u'Could not load changes from repo, giving a link!', logger.DEBUG)
-            changes = 'Could not load changes from the repo. [Click here for CHANGES.md](https://api.pymedusa.com/CHANGES.md)'
+            changes = 'Could not load changes from the repo. [Click here for CHANGES.md](https://cdn.pymedusa.com/sickrage-news/CHANGES.md)'
 
         t = PageTemplate(rh=self, filename="markdown.mako")
         data = markdown2.markdown(changes if changes else "The was a problem connecting to github, please refresh and try again", extras=['header-ids'])
