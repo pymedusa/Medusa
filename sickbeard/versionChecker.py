@@ -621,6 +621,9 @@ class GitUpdateManager(UpdateManager):
 
         # update remote origin url
         self.update_remote_origin()
+        
+        # Remove local branches that doesn't exist anymore in remote
+        self.prune()
 
         # remove untracked files and performs a hard reset on git branch to avoid update issues
         if sickbeard.GIT_RESET:
@@ -658,6 +661,14 @@ class GitUpdateManager(UpdateManager):
         on the call's success.
         """
         _, _, exit_status = self._run_git(self._git_path, 'clean -df ""')  # @UnusedVariable
+        if exit_status == 0:
+            return True
+
+    def prune(self):
+        """
+        Calls git remote prune to delete all local branches that doesn't exist in remote anymore
+        """
+        _, _, exit_status = self._run_git(self._git_path, 'remote prune {}'.format(sickbeard.GIT_REMOTE))
         if exit_status == 0:
             return True
 
