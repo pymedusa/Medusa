@@ -137,8 +137,8 @@ GIT_PASSWORD = None
 GIT_PATH = None
 DEVELOPER = False
 
-NEWS_URL = 'https://api.pymedusa.com/news.md'
-LOGO_URL = 'https://api.pymedusa.com/favicon-64.png'
+NEWS_URL = 'https://cdn.pymedusa.com/sickrage-news/news.md'
+LOGO_URL = 'https://cdn.pymedusa.com/images/ico/favicon-64.png'
 
 NEWS_LAST_READ = None
 NEWS_LATEST = None
