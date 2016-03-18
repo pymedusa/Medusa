@@ -182,21 +182,20 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
         if table_exists and 'seeders' in columns and 'leechers' in columns and 'size' in columns:
+            
+            common_sql = "SELECT rowid, ? as 'provider_type', ? as 'provider_image', \
+                          ? as 'provider', ? as 'provider_id', name, season, \
+                          episodes, indexerid, url, time, (select max(time) from '{provider_id}') as lastupdate, \
+                          quality, release_group, version, seeders, leechers, size, time \
+                          FROM '{provider_id}' WHERE indexerid = ?".format(provider_id=curProvider.get_id())
+            additional_sql = " AND episodes LIKE ? AND season = ?"
+
             if not int(show_all_results):
-                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, \
-                                                episodes, indexerid, url, time, (select max(time) from '%s') as lastupdate, \
-                                                quality, release_group, version, seeders, leechers, size, time \
-                                                FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ?"
-                                                % (curProvider.get_id(), curProvider.get_id()),
-                                                [curProvider.name, curProvider.get_id(),
-                                                 "%|" + episode + "|%", season, show])
-    
+                sql_return = main_db_con.select(common_sql + additional_sql, \
+                (curProvider.provider_type.title(),curProvider.image_name(), curProvider.name, curProvider.get_id(), show, "|%" + episode + "|%", season))
             else:
-                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, \
-                                                episodes, indexerid, url, time, (select max(time) from '%s') as lastupdate, \
-                                                quality, release_group, version, seeders, leechers, size, time \
-                                                FROM '%s' WHERE indexerid = ?" % (curProvider.name, curProvider.get_id()),
-                                                [curProvider.get_id(), show])
+                sql_return = main_db_con.select(common_sql, \
+                (curProvider.provider_type.title(),curProvider.image_name(), curProvider.name, curProvider.get_id(), show))
 
         if sql_return:
             for item in sql_return:

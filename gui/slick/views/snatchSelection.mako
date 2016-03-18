@@ -5,7 +5,7 @@
     import ntpath
     import os.path
     import sickbeard
-    from sickbeard import providers, subtitles, sbdatetime, network_timezones, helpers
+    from sickbeard import subtitles, sbdatetime, network_timezones, helpers
     import sickbeard.helpers
 
     from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
@@ -14,7 +14,6 @@
     from sickrage.helper.common import pretty_file_size
 
     from sickrage.helper.encoding import ek
-    from sickrage.providers.GenericProvider import GenericProvider
 %>
 <%block name="scripts">
 <script type="text/javascript" src="${srRoot}/js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
@@ -200,13 +199,12 @@
 
             <tbody aria-live="polite" aria-relevant="all">
             % for hItem in provider_results['found_items']:
-                <% provider_img = providers.getProviderClass(GenericProvider.make_id(hItem["provider"])) %>
                 <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
                     <td class="tvShow" class="col-name" width="35%">${hItem["name"]}</td>
                     <td align="center">${helpers.remove_non_release_groups(hItem["release_group"])}</td>
                     <td align="center">
-                        % if provider_img is not None:
-                            <img src="${srRoot}/images/providers/${provider_img.image_name()}" width="16" height="16" style="vertical-align:middle;" alt="${hItem["provider"]}" style="cursor: help;" title="${hItem["provider"]}"/> ${hItem["provider"]}
+                        % if hItem["provider_image"]:
+                            <img src="${srRoot}/images/providers/${hItem["provider_image"]}" width="16" height="16" style="vertical-align:middle;" alt="${hItem["provider"]}" style="cursor: help;" title="${hItem["provider"]}"/> ${hItem["provider"]}
                         % else:
                             <img src="${srRoot}/images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="missing provider"/> ${hItem["provider"]}
                         % endif
@@ -215,7 +213,7 @@
                     <td align="center">${hItem["seeders"] if hItem["seeders"] > -1 else '-'}</td>
                     <td align="center">${hItem["leechers"] if hItem["leechers"] > -1 else '-'}</td>
                     <td align="center">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
-                    <td align="center">${provider_img.provider_type.title()}</td>
+                    <td align="center">${hItem["provider_type"]}</td>
                     <td align="center">${datetime.datetime.fromtimestamp(hItem["time"]).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</td>
                     <td align="center" class="col-search" width="5%"><a class="epManualSnatch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="${srRoot}/home/pickManualSnatch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&show=${show.indexerid}&amp;season=${season}&amp;episode=${episode}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                 </tr>
