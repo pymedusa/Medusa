@@ -1,0 +1,9 @@
+# Exclude Folders
+.build/*
+.github/*
+contrib/*
+gui/*
+
+# Exclude libraries
+# TODO: any customized libraries should not be excluded
+lib/*

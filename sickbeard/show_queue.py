@@ -171,7 +171,7 @@ class ShowQueue(generic_queue.GenericQueue):
 
         # remove other queued actions for this show.
         for item in self.queue:
-            if all([item, item.show, item != self.currentItem, show.indexerid == item.show.indexerid]):
+            if item and item.show and item != self.currentItem and show.indexerid == item.show.indexerid:
                 self.queue.remove(item)
 
         queue_item_obj = QueueItemRemove(show=show, full=full)
@@ -482,11 +482,11 @@ class QueueItemAdd(ShowQueueItem):
 
         if sickbeard.USE_TRAKT:
             # if there are specific episodes that need to be added by trakt
-            sickbeard.traktCheckerScheduler.action.manageNewShow(self.show)
+            sickbeard.traktCheckerScheduler.action.manage_new_show(self.show)
 
             # add show to trakt.tv library
             if sickbeard.TRAKT_SYNC:
-                sickbeard.traktCheckerScheduler.action.addShowToTraktLibrary(self.show)
+                sickbeard.traktCheckerScheduler.action.add_show_watchlist(self.show)
 
             if sickbeard.TRAKT_SYNC_WATCHLIST:
                 logger.log(u"update watchlist")
@@ -705,8 +705,8 @@ class QueueItemRemove(ShowQueueItem):
 
         if sickbeard.USE_TRAKT:
             try:
-                sickbeard.traktCheckerScheduler.action.removeShowFromTraktLibrary(self.show)
+                sickbeard.traktCheckerScheduler.action.remove_show_trakt_library(self.show)
             except Exception as e:
-                logger.log(u"Unable to delete show from Trakt: %s. Error: %s" % (self.show.name, ex(e)), logger.WARNING)
+                logger.log(u"Unable to delete show '{}' from Trakt. Please remove manually otherwise it will be added again. Error: {}".format(self.show.name, ex(e)), logger.WARNING)
 
         self.finish()

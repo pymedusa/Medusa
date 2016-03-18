@@ -20,6 +20,7 @@
 
 import re
 import traceback
+
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import db, logger, tvcache
@@ -27,7 +28,7 @@ from sickbeard.bs4_parser import BS4Parser
 from sickbeard.common import Quality
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
 
-from sickrage.helper.common import convert_size
+from sickrage.helper.common import convert_size, try_int
 from sickrage.helper.exceptions import AuthException
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
@@ -68,7 +69,6 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self._hash = None
         self.username = None
         self.password = None
-        self.ratio = None
         self.cat = None
         self.engrelease = None
         self.page = 10
@@ -105,8 +105,6 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         self.url = self.urls['base_url']
 
-        self.cookies = None
-
         self.sub_string = ['sub', 'softsub']
 
         self.proper_strings = ['PROPER', 'REPACK']
@@ -123,15 +121,17 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return True
 
     def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
+        if len(self.session.cookies) > 1:
+            cookies_dict = dict_from_cookiejar(self.session.cookies)
+            if cookies_dict['pass_hash'] != '0' and cookies_dict['member_id'] != '0':
+                return True
 
         login_params = {'UserName': self.username,
                         'PassWord': self.password,
-                        'CookieDate': 0,
+                        'CookieDate': 1,
                         'submit': 'Connettiti al Forum'}
 
-        response = self.get_url(self.urls['login'], post_data=login_params, timeout=30)
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
         if not response:
             logger.log(u"Unable to connect to provider", logger.WARNING)
             return False
@@ -308,11 +308,10 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         search_url = self.urls['search_page'].format(z, self.categories)
 
                     if mode != 'RSS':
-                        logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
-                               logger.DEBUG)
+                        logger.log(u"Search string: {}".format
+                                   (search_string.decode("utf-8")), logger.DEBUG)
 
-                    logger.log(u"Search URL: %s" % search_url, logger.DEBUG)
-                    data = self.get_url(search_url, echo=False, returns='text')
+                    data = self.get_url(search_url, returns='text')
                     if not data:
                         logger.log(u"No data returned from provider", logger.DEBUG)
                         continue
@@ -387,7 +386,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                                    (title, seeders, leechers), logger.DEBUG)
                                     continue
 
-                                item = title, download_url, size, seeders, leechers
+                                item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
                                 if mode != 'RSS':
                                     logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 
@@ -397,13 +396,11 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         logger.log(u"Failed parsing provider. Traceback: %s" % traceback.format_exc(), logger.ERROR)
 
                 # For each search mode sort all the items by seeders if available if available
-                items.sort(key=lambda tup: tup[3], reverse=True)
+                items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
 
                 results += items
 
         return results
 
-    def seed_ratio(self):
-        return self.ratio
 
 provider = TNTVillageProvider()

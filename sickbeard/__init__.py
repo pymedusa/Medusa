@@ -2,23 +2,22 @@
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 # pylint: disable=too-many-lines
 
-import webbrowser
 import datetime
 import socket
 import os
@@ -138,7 +137,9 @@ GIT_PASSWORD = None
 GIT_PATH = None
 DEVELOPER = False
 
-NEWS_URL = 'https://api.pymedusa.com/news.md'
+NEWS_URL = 'https://cdn.pymedusa.com/sickrage-news/news.md'
+LOGO_URL = 'https://cdn.pymedusa.com/images/ico/favicon-64.png'
+
 NEWS_LAST_READ = None
 NEWS_LATEST = None
 NEWS_UNREAD = 0
@@ -388,7 +389,7 @@ PROWL_NOTIFY_ONDOWNLOAD = False
 PROWL_NOTIFY_ONSUBTITLEDOWNLOAD = False
 PROWL_API = None
 PROWL_PRIORITY = 0
-PROWL_MESSAGE_TITLE = 'SickRage'
+PROWL_MESSAGE_TITLE = 'Medusa'
 
 USE_TWITTER = False
 TWITTER_NOTIFY_ONSNATCH = False
@@ -502,6 +503,7 @@ EMAIL_USER = None
 EMAIL_PASSWORD = None
 EMAIL_FROM = None
 EMAIL_LIST = None
+EMAIL_SUBJECT = None
 
 GUI_NAME = None
 HOME_LAYOUT = None
@@ -534,17 +536,21 @@ SUBTITLES_HEARING_IMPAIRED = False
 SUBTITLES_FINDER_FREQUENCY = 1
 SUBTITLES_MULTI = False
 SUBTITLES_EXTRA_SCRIPTS = []
+SUBTITLES_PRE_SCRIPTS = []
 SUBTITLES_DOWNLOAD_IN_PP = False
 SUBTITLES_KEEP_ONLY_WANTED = False
 
 ADDIC7ED_USER = None
 ADDIC7ED_PASS = None
 
-OPENSUBTITLES_USER = None
-OPENSUBTITLES_PASS = None
+ITASA_USER = None
+ITASA_PASS = None
 
 LEGENDASTV_USER = None
 LEGENDASTV_PASS = None
+
+OPENSUBTITLES_USER = None
+OPENSUBTITLES_PASS = None
 
 USE_FAILED_DOWNLOADS = False
 DELETE_FAILED = False
@@ -553,6 +559,10 @@ EXTRA_SCRIPTS = []
 
 IGNORE_WORDS = "german,french,core2hd,dutch,swedish,reenc,MrLss"
 
+PREFERRED_WORDS = ""
+
+UNDESIRED_WORDS = ""
+
 TRACKERS_LIST = "udp://coppersurfer.tk:6969/announce,udp://open.demonii.com:1337,"
 TRACKERS_LIST += "udp://exodus.desync.com:6969,udp://9.rarbg.me:2710/announce,"
 TRACKERS_LIST += "udp://glotorrents.pw:6969/announce,udp://tracker.openbittorrent.com:80/announce,"
@@ -560,7 +570,7 @@ TRACKERS_LIST += "udp://9.rarbg.to:2710/announce"
 
 REQUIRE_WORDS = ""
 IGNORED_SUBS_LIST = "dk,fin,heb,kor,nor,nordic,pl,swe"
-SYNC_FILES = "!sync,lftp-pget-status,part,bts,!qb"
+SYNC_FILES = "!sync,lftp-pget-status,part,bts,!qb,!qB"
 
 CALENDAR_UNPROTECTED = False
 CALENDAR_ICONS = False
@@ -624,14 +634,14 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             USE_PUSHOVER, PUSHOVER_USERKEY, PUSHOVER_APIKEY, PUSHOVER_DEVICE, PUSHOVER_NOTIFY_ONDOWNLOAD, PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD, PUSHOVER_NOTIFY_ONSNATCH, PUSHOVER_SOUND, \
             USE_LIBNOTIFY, LIBNOTIFY_NOTIFY_ONSNATCH, LIBNOTIFY_NOTIFY_ONDOWNLOAD, LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD, USE_NMJ, NMJ_HOST, NMJ_DATABASE, NMJ_MOUNT, USE_NMJv2, NMJv2_HOST, NMJv2_DATABASE, NMJv2_DBLOC, USE_SYNOINDEX, \
             USE_SYNOLOGYNOTIFIER, SYNOLOGYNOTIFIER_NOTIFY_ONSNATCH, SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD, SYNOLOGYNOTIFIER_NOTIFY_ONSUBTITLEDOWNLOAD, \
-            USE_EMAIL, EMAIL_HOST, EMAIL_PORT, EMAIL_TLS, EMAIL_USER, EMAIL_PASSWORD, EMAIL_FROM, EMAIL_NOTIFY_ONSNATCH, EMAIL_NOTIFY_ONDOWNLOAD, EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD, EMAIL_LIST, \
+            USE_EMAIL, EMAIL_HOST, EMAIL_PORT, EMAIL_TLS, EMAIL_USER, EMAIL_PASSWORD, EMAIL_FROM, EMAIL_NOTIFY_ONSNATCH, EMAIL_NOTIFY_ONDOWNLOAD, EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD, EMAIL_LIST, EMAIL_SUBJECT, \
             USE_LISTVIEW, METADATA_KODI, METADATA_KODI_12PLUS, METADATA_MEDIABROWSER, METADATA_PS3, metadata_provider_dict, \
             NEWZBIN, NEWZBIN_USERNAME, NEWZBIN_PASSWORD, GIT_PATH, MOVE_ASSOCIATED_FILES, SYNC_FILES, POSTPONE_IF_SYNC_FILES, POSTPONE_IF_NO_SUBS, dailySearchScheduler, NFO_RENAME, \
             GUI_NAME, HOME_LAYOUT, HISTORY_LAYOUT, DISPLAY_SHOW_SPECIALS, COMING_EPS_LAYOUT, COMING_EPS_SORT, COMING_EPS_DISPLAY_PAUSED, COMING_EPS_MISSED_RANGE, FUZZY_DATING, TRIM_ZERO, DATE_PRESET, TIME_PRESET, TIME_PRESET_W_SECONDS, THEME_NAME, \
             POSTER_SORTBY, POSTER_SORTDIR, HISTORY_LIMIT, CREATE_MISSING_SHOW_DIRS, ADD_SHOWS_WO_DIR, \
-            METADATA_WDTV, METADATA_TIVO, METADATA_MEDE8ER, IGNORE_WORDS, TRACKERS_LIST, IGNORED_SUBS_LIST, REQUIRE_WORDS, CALENDAR_UNPROTECTED, CALENDAR_ICONS, NO_RESTART, \
-            USE_SUBTITLES, SUBTITLES_LANGUAGES, SUBTITLES_DIR, SUBTITLES_SERVICES_LIST, SUBTITLES_SERVICES_ENABLED, SUBTITLES_HISTORY, SUBTITLES_FINDER_FREQUENCY, SUBTITLES_MULTI, SUBTITLES_DOWNLOAD_IN_PP, SUBTITLES_KEEP_ONLY_WANTED, EMBEDDED_SUBTITLES_ALL, SUBTITLES_EXTRA_SCRIPTS, SUBTITLES_PERFECT_MATCH, subtitlesFinderScheduler, \
-            SUBTITLES_HEARING_IMPAIRED, ADDIC7ED_USER, ADDIC7ED_PASS, LEGENDASTV_USER, LEGENDASTV_PASS, OPENSUBTITLES_USER, OPENSUBTITLES_PASS, \
+            METADATA_WDTV, METADATA_TIVO, METADATA_MEDE8ER, IGNORE_WORDS, PREFERRED_WORDS, UNDESIRED_WORDS, TRACKERS_LIST, IGNORED_SUBS_LIST, REQUIRE_WORDS, CALENDAR_UNPROTECTED, CALENDAR_ICONS, NO_RESTART, \
+            USE_SUBTITLES, SUBTITLES_LANGUAGES, SUBTITLES_DIR, SUBTITLES_SERVICES_LIST, SUBTITLES_SERVICES_ENABLED, SUBTITLES_HISTORY, SUBTITLES_FINDER_FREQUENCY, SUBTITLES_MULTI, SUBTITLES_DOWNLOAD_IN_PP, SUBTITLES_KEEP_ONLY_WANTED, EMBEDDED_SUBTITLES_ALL, SUBTITLES_EXTRA_SCRIPTS, SUBTITLES_PRE_SCRIPTS, SUBTITLES_PERFECT_MATCH, subtitlesFinderScheduler, \
+            SUBTITLES_HEARING_IMPAIRED, ADDIC7ED_USER, ADDIC7ED_PASS, ITASA_USER, ITASA_PASS, LEGENDASTV_USER, LEGENDASTV_PASS, OPENSUBTITLES_USER, OPENSUBTITLES_PASS, \
             USE_FAILED_DOWNLOADS, DELETE_FAILED, ANON_REDIRECT, LOCALHOST_IP, DEBUG, DBDEBUG, DEFAULT_PAGE, PROXY_SETTING, PROXY_INDEXERS, \
             AUTOPOSTPROCESSER_FREQUENCY, SHOWUPDATE_HOUR, \
             ANIME_DEFAULT, NAMING_ANIME, ANIMESUPPORT, USE_ANIDB, ANIDB_USERNAME, ANIDB_PASSWORD, ANIDB_USE_MYLIST, \
@@ -699,14 +709,14 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         try:
             if GIT_USERNAME and GIT_PASSWORD:
-                gh = Github(login_or_token=GIT_USERNAME, password=GIT_PASSWORD, user_agent="SickRage").get_organization(GIT_ORG).get_repo(GIT_REPO)
+                gh = Github(login_or_token=GIT_USERNAME, password=GIT_PASSWORD, user_agent="Medusa").get_organization(GIT_ORG).get_repo(GIT_REPO)
         except Exception as error:
             logger.log(u'Unable to setup GitHub properly with your github login. Please check your credentials. Error: {}'.format(error), logger.WARNING)
             gh = None
 
         if not gh:
             try:
-                gh = Github(user_agent="SickRage").get_organization(GIT_ORG).get_repo(GIT_REPO)
+                gh = Github(user_agent="Medusa").get_organization(GIT_ORG).get_repo(GIT_REPO)
             except Exception as error:
                 logger.log(u'Unable to setup GitHub properly. GitHub will not be available. Error: {}'.format(error), logger.WARNING)
                 gh = None
@@ -722,7 +732,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         GIT_REMOTE_URL = check_setting_str(CFG, 'General', 'git_remote_url',
                                            'https://github.com/%s/%s.git' % (GIT_ORG, GIT_REPO))
 
-        if 'sickragetv' in GIT_REMOTE_URL.lower():
+        if 'com/sickrage' in GIT_REMOTE_URL.lower():
             GIT_REMOTE_URL = 'https://github.com/PyMedusa/SickRage.git'
 
         # current commit hash
@@ -1055,7 +1065,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         PROWL_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(CFG, 'Prowl', 'prowl_notify_onsubtitledownload', 0))
         PROWL_API = check_setting_str(CFG, 'Prowl', 'prowl_api', '', censor_log=True)
         PROWL_PRIORITY = check_setting_str(CFG, 'Prowl', 'prowl_priority', "0")
-        PROWL_MESSAGE_TITLE = check_setting_str(CFG, 'Prowl', 'prowl_message_title', "SickRage")
+        PROWL_MESSAGE_TITLE = check_setting_str(CFG, 'Prowl', 'prowl_message_title', "Medusa")
 
         USE_TWITTER = bool(check_setting_int(CFG, 'Twitter', 'use_twitter', 0))
         TWITTER_NOTIFY_ONSNATCH = bool(check_setting_int(CFG, 'Twitter', 'twitter_notify_onsnatch', 0))
@@ -1167,6 +1177,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         EMAIL_PASSWORD = check_setting_str(CFG, 'Email', 'email_password', '', censor_log=True)
         EMAIL_FROM = check_setting_str(CFG, 'Email', 'email_from', '')
         EMAIL_LIST = check_setting_str(CFG, 'Email', 'email_list', '')
+        EMAIL_SUBJECT = check_setting_str(CFG, 'Email', 'email_subject', '')
 
         USE_SUBTITLES = bool(check_setting_int(CFG, 'Subtitles', 'use_subtitles', 0))
         SUBTITLES_LANGUAGES = check_setting_str(CFG, 'Subtitles', 'subtitles_languages', '').split(',')
@@ -1187,9 +1198,13 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         SUBTITLES_DOWNLOAD_IN_PP = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_download_in_pp', 0))
         SUBTITLES_KEEP_ONLY_WANTED = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_keep_only_wanted', 0))
         SUBTITLES_EXTRA_SCRIPTS = [x.strip() for x in check_setting_str(CFG, 'Subtitles', 'subtitles_extra_scripts', '').split('|') if x.strip()]
+        SUBTITLES_PRE_SCRIPTS = [x.strip() for x in check_setting_str(CFG, 'Subtitles', 'subtitles_pre_scripts', '').split('|') if x.strip()]
 
         ADDIC7ED_USER = check_setting_str(CFG, 'Subtitles', 'addic7ed_username', '', censor_log=True)
         ADDIC7ED_PASS = check_setting_str(CFG, 'Subtitles', 'addic7ed_password', '', censor_log=True)
+
+        ITASA_USER = check_setting_str(CFG, 'Subtitles', 'itasa_username', '', censor_log=True)
+        ITASA_PASS = check_setting_str(CFG, 'Subtitles', 'itasa_password', '', censor_log=True)
 
         LEGENDASTV_USER = check_setting_str(CFG, 'Subtitles', 'legendastv_username', '', censor_log=True)
         LEGENDASTV_PASS = check_setting_str(CFG, 'Subtitles', 'legendastv_password', '', censor_log=True)
@@ -1203,6 +1218,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         GIT_PATH = check_setting_str(CFG, 'General', 'git_path', '')
 
         IGNORE_WORDS = check_setting_str(CFG, 'General', 'ignore_words', IGNORE_WORDS)
+        PREFERRED_WORDS = check_setting_str(CFG, 'General', 'preferred_words', PREFERRED_WORDS)
+        UNDESIRED_WORDS = check_setting_str(CFG, 'General', 'undesired_words', UNDESIRED_WORDS)
         TRACKERS_LIST = check_setting_str(CFG, 'General', 'trackers_list', TRACKERS_LIST)
         REQUIRE_WORDS = check_setting_str(CFG, 'General', 'require_words', REQUIRE_WORDS)
         IGNORED_SUBS_LIST = check_setting_str(CFG, 'General', 'ignored_subs_list', IGNORED_SUBS_LIST)
@@ -1465,15 +1482,17 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                     run_delay=update_interval)
 
         # processors
+        update_interval = datetime.timedelta(minutes=AUTOPOSTPROCESSER_FREQUENCY)
         autoPostProcesserScheduler = scheduler.Scheduler(auto_postprocessor.PostProcessor(),
-                                                         cycleTime=datetime.timedelta(
-                                                             minutes=AUTOPOSTPROCESSER_FREQUENCY),
+                                                         cycleTime=update_interval,
                                                          threadName="POSTPROCESSER",
-                                                         silent=not PROCESS_AUTOMATICALLY)
-
+                                                         silent=not PROCESS_AUTOMATICALLY,
+                                                         run_delay=update_interval)
+        update_interval = datetime.timedelta(minutes=5)
         traktCheckerScheduler = scheduler.Scheduler(traktChecker.TraktChecker(),
                                                     cycleTime=datetime.timedelta(hours=1),
                                                     threadName="TRAKTCHECKER",
+                                                    run_delay=update_interval,
                                                     silent=not USE_TRAKT)
 
         update_interval = datetime.timedelta(hours=SUBTITLES_FINDER_FREQUENCY)
@@ -1748,6 +1767,8 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['extra_scripts'] = '|'.join(EXTRA_SCRIPTS)
     new_config['General']['git_path'] = GIT_PATH
     new_config['General']['ignore_words'] = IGNORE_WORDS
+    new_config['General']['preferred_words'] = PREFERRED_WORDS
+    new_config['General']['undesired_words'] = UNDESIRED_WORDS
     new_config['General']['trackers_list'] = TRACKERS_LIST
     new_config['General']['require_words'] = REQUIRE_WORDS
     new_config['General']['ignored_subs_list'] = IGNORED_SUBS_LIST
@@ -2097,6 +2118,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['Email']['email_password'] = helpers.encrypt(EMAIL_PASSWORD, ENCRYPTION_VERSION)
     new_config['Email']['email_from'] = EMAIL_FROM
     new_config['Email']['email_list'] = EMAIL_LIST
+    new_config['Email']['email_subject'] = EMAIL_SUBJECT
 
     new_config['Newznab'] = {}
     new_config['Newznab']['newznab_data'] = NEWZNAB_DATA
@@ -2137,10 +2159,14 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['Subtitles']['subtitles_finder_frequency'] = int(SUBTITLES_FINDER_FREQUENCY)
     new_config['Subtitles']['subtitles_multi'] = int(SUBTITLES_MULTI)
     new_config['Subtitles']['subtitles_extra_scripts'] = '|'.join(SUBTITLES_EXTRA_SCRIPTS)
+    new_config['Subtitles']['subtitles_pre_scripts'] = '|'.join(SUBTITLES_PRE_SCRIPTS)
     new_config['Subtitles']['subtitles_download_in_pp'] = int(SUBTITLES_DOWNLOAD_IN_PP)
     new_config['Subtitles']['subtitles_keep_only_wanted'] = int(SUBTITLES_KEEP_ONLY_WANTED)
     new_config['Subtitles']['addic7ed_username'] = ADDIC7ED_USER
     new_config['Subtitles']['addic7ed_password'] = helpers.encrypt(ADDIC7ED_PASS, ENCRYPTION_VERSION)
+
+    new_config['Subtitles']['itasa_username'] = ITASA_USER
+    new_config['Subtitles']['itasa_password'] = helpers.encrypt(ITASA_PASS, ENCRYPTION_VERSION)
 
     new_config['Subtitles']['legendastv_username'] = LEGENDASTV_USER
     new_config['Subtitles']['legendastv_password'] = helpers.encrypt(LEGENDASTV_PASS, ENCRYPTION_VERSION)
@@ -2165,6 +2191,13 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
 
 
 def launchBrowser(protocol='http', startPort=None, web_root='/'):
+
+    try:
+        import webbrowser
+    except ImportError:
+        logger.log(u"Unable to load the webbrowser module, cannot launch the browser.", logger.WARNING)
+        return
+
     if not startPort:
         startPort = WEB_PORT
 

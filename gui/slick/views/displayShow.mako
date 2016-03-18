@@ -337,6 +337,8 @@
         <tr style="height: 60px;">
             <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
                 <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[int(epResult["season"]) > 0]}</h3>
+                <!-- @TODO: port the season scene exceptions to angular -->
+                <div class="season-scene-exception" data-season=${("Specials", str(epResult["season"]))[int(epResult["season"]) > 0]}></div>
                 % if sickbeard.DISPLAY_ALL_SEASONS is False:
                     <button id="showseason-${epResult['season']}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
                 % endif
@@ -367,6 +369,8 @@
         <tr style="height: 60px;">
             <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
                 <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[bool(int(epResult["season"]))]}</h3>
+                <!-- @TODO: port the season scene exceptions to angular -->
+                <div class="season-scene-exception" data-season=${("Specials", str(epResult["season"]))[int(epResult["season"]) > 0]}></div>
                 % if sickbeard.DISPLAY_ALL_SEASONS is False:
                     <button id="showseason-${epResult['season']}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
                 % endif
@@ -421,7 +425,7 @@
                 <input type="text" placeholder="${str(dfltSeas) + 'x' + str(dfltEpis)}" size="6" maxlength="8"
                     class="sceneSeasonXEpisode form-control input-scene" data-for-season="${epResult["season"]}" data-for-episode="${epResult["episode"]}"
                     id="sceneSeasonXEpisode_${show.indexerid}_${str(epResult["season"])}_${str(epResult["episode"])}"
-                    title="Change the value here if scene numbering differs from the indexer episode numbering"
+                    title="Change this value if scene numbering differs from the indexer episode numbering. Generally used for non-anime shows."
                     % if dfltEpNumbering:
                         value=""
                     % else:
@@ -433,7 +437,7 @@
                 <input type="text" placeholder="${str(dfltAbsolute)}" size="6" maxlength="8"
                     class="sceneAbsolute form-control input-scene" data-for-absolute="${epResult["absolute_number"]}"
                     id="sceneAbsolute_${show.indexerid}${"_"+str(epResult["absolute_number"])}"
-                    title="Change the value here if scene absolute numbering differs from the indexer absolute numbering"
+                    title="Change this value if scene absolute numbering differs from the indexer absolute numbering. Generally used for anime shows."
                     % if dfltAbsNumbering:
                         value=""
                     % else:

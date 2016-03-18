@@ -3,20 +3,20 @@
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 
 """
@@ -35,9 +35,9 @@ Options:
   -p,  --port=[PORT]     Override default/configured port to listen on
        --datadir=[PATH]  Override folder (full path) as location for
                          storing database, config file, cache, and log files
-                         Default SickRage directory
+                         Default Medusa directory
        --config=[FILE]   Override config filename for loading configuration
-                         Default config.ini in SickRage directory or
+                         Default config.ini in Medusa directory or
                          location specified with --datadir
        --noresize        Prevent resizing of the banner/posters even if PIL
                          is installed
@@ -67,7 +67,6 @@ if sys.version_info < (2, 7):
     print('Sorry, requires Python 2.7.x')
     sys.exit(1)
 
-# pylint: disable=wrong-import-position
 # https://mail.python.org/pipermail/python-dev/2014-September/136300.html
 if sys.version_info >= (2, 7, 9):
     import ssl
@@ -75,6 +74,16 @@ if sys.version_info >= (2, 7, 9):
 
 import shutil_custom  # pylint: disable=import-error
 shutil.copyfile = shutil_custom.copyfile_custom
+
+# Fix mimetypes on misconfigured systems
+import mimetypes
+mimetypes.add_type("text/css", ".css")
+mimetypes.add_type("application/sfont", ".otf")
+mimetypes.add_type("application/sfont", ".ttf")
+mimetypes.add_type("application/javascript", ".js")
+mimetypes.add_type("application/font-woff", ".woff")
+# Not sure about this one, but we also have halflings in .woff so I think it wont matter
+# mimetypes.add_type("application/font-woff2", ".woff2")
 
 # Do this before importing sickbeard, to prevent locked files and incorrect import
 OLD_TORNADO = os.path.abspath(os.path.join(os.path.dirname(__file__), 'tornado'))
@@ -101,7 +110,7 @@ signal.signal(signal.SIGTERM, sickbeard.sig_handler)
 class SickRage(object):
     # pylint: disable=too-many-instance-attributes
     """
-    Main SickRage module
+    Main Medusa module
     """
 
     def __init__(self):
@@ -135,7 +144,7 @@ class SickRage(object):
             if os.path.isdir(cache_folder):
                 shutil.rmtree(cache_folder)
         except Exception:  # pylint: disable=broad-except
-            logger.log('Unable to remove the cache/mako directory!', logger.WARNING)  # pylint: disable=no-member
+            logger.log('Unable to remove the cache/mako directory!', logger.WARNING)
 
     @staticmethod
     def help_message():
@@ -144,13 +153,13 @@ class SickRage(object):
         """
         help_msg = __doc__
         help_msg = help_msg.replace('SickBeard.py', sickbeard.MY_FULLNAME)
-        help_msg = help_msg.replace('SickRage directory', sickbeard.PROG_DIR)
+        help_msg = help_msg.replace('Medusa directory', sickbeard.PROG_DIR)
 
         return help_msg
 
     def start(self):  # pylint: disable=too-many-branches,too-many-statements
         """
-        Start SickRage
+        Start Medusa
         """
         # do some preliminary stuff
         sickbeard.MY_FULLNAME = ek(os.path.normpath, ek(os.path.abspath, __file__))
@@ -178,7 +187,7 @@ class SickRage(object):
             # On non-unicode builds this will raise an AttributeError, if encoding type is not valid it throws a LookupError
             sys.setdefaultencoding(sickbeard.SYS_ENCODING)  # pylint: disable=no-member
         except (AttributeError, LookupError):
-            sys.exit('Sorry, you MUST add the SickRage folder to the PYTHONPATH environment variable\n'
+            sys.exit('Sorry, you MUST add the Medusa folder to the PYTHONPATH environment variable\n'
                      'or find another way to force Python to use %s for string encoding.' % sickbeard.SYS_ENCODING)
 
         # Need console logging for SickBeard.py and SickBeard-console.exe
@@ -232,7 +241,7 @@ class SickRage(object):
                 self.create_pid = True
                 self.pid_file = str(value)
 
-                # If the pid file already exists, SickRage may still be running, so exit
+                # If the pid file already exists, Medusa may still be running, so exit
                 if ek(os.path.exists, self.pid_file):
                     sys.exit('PID file: %s already exists. Exiting.' % self.pid_file)
 
@@ -312,7 +321,7 @@ class SickRage(object):
         # Build from the DB to start with
         self.load_shows_from_db()
 
-        logger.log('Starting SickRage [{branch}] using \'{config}\''.format
+        logger.log('Starting Medusa [{branch}] using \'{config}\''.format
                    (branch=sickbeard.BRANCH, config=sickbeard.CONFIG_FILE))
 
         self.clear_cache()
@@ -382,7 +391,7 @@ class SickRage(object):
         """
         Fork off as a daemon
         """
-        # pylint: disable=no-member,protected-access
+        # pylint: disable=protected-access
         # An object is accessed for a non-existent member.
         # Access to a protected member of a client class
         # Make a non-session-leader child process
@@ -397,7 +406,7 @@ class SickRage(object):
 
         os.setsid()  # @UndefinedVariable - only available in UNIX
 
-        # https://github.com/PyMedusa/SickRage-issues/issues/2969
+        # https://github.com/SickRage/sickrage-issues/issues/2969
         # http://www.microhowto.info/howto/cause_a_process_to_become_a_daemon_in_c.html#idp23920
         # https://www.safaribooksonline.com/library/view/python-cookbook/0596001673/ch06s08.html
         # Previous code simply set the umask to whatever it was because it was ANDing instead of OR-ing
@@ -460,7 +469,7 @@ class SickRage(object):
         """
         Populates the showList with shows from the database
         """
-        logger.log('Loading initial show list', logger.DEBUG)  # pylint: disable=no-member
+        logger.log('Loading initial show list', logger.DEBUG)
 
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select('SELECT indexer, indexer_id, location FROM tv_shows;')
@@ -472,9 +481,9 @@ class SickRage(object):
                 cur_show.nextEpisode()
                 sickbeard.showList.append(cur_show)
             except Exception as error:  # pylint: disable=broad-except
-                logger.log('There was an error creating the show in {location}: Error {error_num}: {error_message}'.format  # pylint: disable=no-member
-                           (location=sql_show[b'location'], error_num=error.errorno, error_message=error.strerror), logger.ERROR)
-                logger.log(traceback.format_exc(), logger.DEBUG)  # pylint: disable=no-member
+                logger.log('There was an error creating the show in {}: Error {}'.format
+                           (sql_show[b'location'], error), logger.ERROR)
+                logger.log(traceback.format_exc(), logger.DEBUG)
 
     @staticmethod
     def restore_db(src_dir, dst_dir):
@@ -501,7 +510,7 @@ class SickRage(object):
 
     def shutdown(self, event):
         """
-        Shut down SickRage
+        Shut down Medusa
 
         :param event: Type of shutdown event, used to see if restart required
         """
@@ -511,7 +520,7 @@ class SickRage(object):
 
             # shutdown web server
             if self.web_server:
-                logger.log('Shutting down Tornado')  # pylint: disable=no-member
+                logger.log('Shutting down Tornado')
                 self.web_server.shutDown()
 
                 try:
@@ -533,23 +542,24 @@ class SickRage(object):
                 if install_type in ('git', 'source'):
                     popen_list = [sys.executable, sickbeard.MY_FULLNAME]
                 elif install_type == 'win':
-                    logger.log('You are using a binary Windows build of SickRage. '  # pylint: disable=no-member
+                    logger.log('You are using a binary Windows build of Medusa. '
                                'Please switch to using git.', logger.ERROR)
 
                 if popen_list and not sickbeard.NO_RESTART:
                     popen_list += sickbeard.MY_ARGS
                     if '--nolaunch' not in popen_list:
                         popen_list += ['--nolaunch']
-                    logger.log('Restarting SickRage with {options}'.format(options=popen_list))  # pylint: disable=no-member
+                    logger.log('Restarting Medusa with {options}'.format(options=popen_list))
                     # shutdown the logger to make sure it's released the logfile BEFORE it restarts SR.
-                    logger.shutdown()  # pylint: disable=no-member
+                    logger.shutdown()
                     subprocess.Popen(popen_list, cwd=os.getcwd())
 
         # Make sure the logger has stopped, just in case
-        logger.shutdown()  # pylint: disable=no-member
+        logger.shutdown()
         os._exit(0)  # pylint: disable=protected-access
 
 
 if __name__ == '__main__':
-    # start SickRage
-    SickRage().start()
+    # start Medusa
+    medusa = SickRage()
+    medusa.start()

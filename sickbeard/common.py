@@ -31,12 +31,12 @@ import uuid
 
 from hachoir_parser import createParser  # pylint: disable=import-error
 from hachoir_metadata import extractMetadata  # pylint: disable=import-error
-from hachoir_core.log import log  # pylint: disable=import-error
+from hachoir_core.log import log as hachoir_log # pylint: disable=import-error
 
 from fake_useragent import settings as UA_SETTINGS, UserAgent
 from sickbeard.numdict import NumDict
 from sickrage.helper.encoding import ek
-from sickrage.helper.common import try_int
+from sickrage.helper.common import try_int  # pylint: disable=unused-import
 from sickrage.tagger.episode import EpisodeTags
 from sickrage.recompiled import tags
 
@@ -46,7 +46,8 @@ from sickrage.recompiled import tags
 # This is disabled, was only added for testing, and has no config.ini or web ui setting. To enable, set SPOOF_USER_AGENT = True
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
-USER_AGENT = ('SickRage/(' + platform.system() + '; ' + platform.release() + '; ' + INSTANCE_ID + ')')
+USER_AGENT = u'Medusa-Rage/{version}({system}; {release}; {instance})'.format(
+    version=u'0.01', system=platform.system(), release=platform.release(), instance=INSTANCE_ID)
 UA_SETTINGS.DB = ek(path.abspath, ek(path.join, ek(path.dirname, __file__), '../lib/fake_useragent/ua.json'))
 UA_POOL = UserAgent()
 if SPOOF_USER_AGENT:
@@ -286,7 +287,7 @@ class Quality(object):
         return Quality.UNKNOWN
 
     @staticmethod
-    def scene_quality(name, anime=False):  # pylint: disable=too-many-branches
+    def scene_quality(name, anime=False):  # pylint: disable=too-many-branches, too-many-statements
         """
         Return The quality from the scene episode File
 
@@ -349,10 +350,7 @@ class Quality(object):
                     result = Quality.FULLHDWEBDL if full_res else Quality.HDWEBDL
                 # HDTV
                 elif ep.avc and ep.tv == u'hd':
-                    if not all([ep.vres == 1080, ep.raw, ep.avc_non_free]):
-                        result = Quality.FULLHDTV if full_res else Quality.HDTV
-                    else:
-                        result = Quality.RAWHDTV
+                    result = Quality.FULLHDTV if full_res else Quality.HDTV
                 elif all([ep.vres == 720, ep.tv == u'hd', ep.mpeg]):
                     result = Quality.RAWHDTV
             elif (ep.res == u'1080i') and ep.tv == u'hd':
@@ -398,7 +396,7 @@ class Quality(object):
         :return: Quality prefix
         """
 
-        log.use_print = False
+        hachoir_log.use_print = False
 
         try:
             parser = createParser(filename)
@@ -561,12 +559,19 @@ class Quality(object):
     SNATCHED_BEST = None
     ARCHIVED = None
 
-Quality.DOWNLOADED = [Quality.compositeStatus(DOWNLOADED, x) for x in Quality.qualityStrings]
-Quality.SNATCHED = [Quality.compositeStatus(SNATCHED, x) for x in Quality.qualityStrings]
-Quality.SNATCHED_PROPER = [Quality.compositeStatus(SNATCHED_PROPER, x) for x in Quality.qualityStrings]
-Quality.FAILED = [Quality.compositeStatus(FAILED, x) for x in Quality.qualityStrings]
-Quality.SNATCHED_BEST = [Quality.compositeStatus(SNATCHED_BEST, x) for x in Quality.qualityStrings]
-Quality.ARCHIVED = [Quality.compositeStatus(ARCHIVED, x) for x in Quality.qualityStrings]
+Quality.DOWNLOADED = [Quality.compositeStatus(DOWNLOADED, x) for x in Quality.qualityStrings if x is not None]
+Quality.SNATCHED = [Quality.compositeStatus(SNATCHED, x) for x in Quality.qualityStrings if x is not None]
+Quality.SNATCHED_BEST = [Quality.compositeStatus(SNATCHED_BEST, x) for x in Quality.qualityStrings if x is not None]
+Quality.SNATCHED_PROPER = [Quality.compositeStatus(SNATCHED_PROPER, x) for x in Quality.qualityStrings if x is not None]
+Quality.FAILED = [Quality.compositeStatus(FAILED, x) for x in Quality.qualityStrings if x is not None]
+Quality.ARCHIVED = [Quality.compositeStatus(ARCHIVED, x) for x in Quality.qualityStrings if x is not None]
+
+Quality.DOWNLOADED.sort()
+Quality.SNATCHED.sort()
+Quality.SNATCHED_BEST.sort()
+Quality.SNATCHED_PROPER.sort()
+Quality.FAILED.sort()
+Quality.ARCHIVED.sort()
 
 HD720p = Quality.combineQualities([Quality.HDTV, Quality.HDWEBDL, Quality.HDBLURAY], [])
 HD1080p = Quality.combineQualities([Quality.FULLHDTV, Quality.FULLHDWEBDL, Quality.FULLHDBLURAY], [])
@@ -582,10 +587,10 @@ ANY = Quality.combineQualities([SD, HD, UHD], [])
 BEST = Quality.combineQualities([Quality.SDTV, Quality.HDTV, Quality.HDWEBDL], [Quality.HDTV])
 
 qualityPresets = (
+    ANY,
     SD,
     HD, HD720p, HD1080p,
     UHD, UHD_4K, UHD_8K,
-    ANY,
 )
 
 qualityPresetStrings = NumDict({

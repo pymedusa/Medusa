@@ -109,8 +109,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 logger.log(u"Content-Encoding was gzip, but content was not compressed while searching propers in " + curProvider.name + ", skipping: " + ex(e), logger.DEBUG)
                 continue
             except Exception as e:
-                if hasattr(e, 'errno') and e.errno == errno.ECONNRESET:
-                    logger.log(u"Connection reseted by peer accessing {}".format(curProvider.name), logger.DEBUG)
+                if 'ECONNRESET' in e or (hasattr(e, 'errno') and e.errno == errno.ECONNRESET):
+                    logger.log(u"Connection reseted by peer while searching propers in {}".format(curProvider.name), logger.WARNING)
                 else:
                     logger.log(u"Unknown exception while searching propers in " + curProvider.name + ", skipping: " + ex(e), logger.ERROR)
                     logger.log(traceback.format_exc(), logger.DEBUG)
@@ -242,42 +242,31 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 [curProper.indexerid, curProper.season, curProper.episode, curProper.quality,
                  historyLimit.strftime(History.date_format)])
 
-            # if we didn't download this episode in the first place we don't know what quality to use for the proper so we can't do it
-            if len(historyResults) == 0:
-                logger.log(
-                    u"Unable to find an original history entry for proper " + curProper.name + " so I'm not downloading it.")
+            # make sure that none of the existing history downloads are the same proper we're trying to download
+            clean_proper_name = self._genericName(helpers.remove_non_release_groups(curProper.name))
+            isSame = False
+            for curResult in historyResults:
+                # if the result exists in history already we need to skip it
+                if self._genericName(helpers.remove_non_release_groups(curResult["resource"])) == clean_proper_name:
+                    isSame = True
+                    break
+            if isSame:
+                logger.log(u"This proper is already in history, skipping it", logger.DEBUG)
                 continue
-
-            else:
-
-                # make sure that none of the existing history downloads are the same proper we're trying to download
-                clean_proper_name = self._genericName(helpers.remove_non_release_groups(curProper.name))
-                isSame = False
-                for curResult in historyResults:
-                    # if the result exists in history already we need to skip it
-                    if self._genericName(helpers.remove_non_release_groups(curResult["resource"])) == clean_proper_name:
-                        isSame = True
-                        break
-                if isSame:
-                    logger.log(u"This proper is already in history, skipping it", logger.DEBUG)
-                    continue
-
-                # get the episode object
-                epObj = curProper.show.getEpisode(curProper.season, curProper.episode)
-
-                # make the result object
-                result = curProper.provider.get_result([epObj])
-                result.show = curProper.show
-                result.url = curProper.url
-                result.name = curProper.name
-                result.quality = curProper.quality
-                result.release_group = curProper.release_group
-                result.version = curProper.version
-                result.content = curProper.content
-
-                # snatch it
-                snatchEpisode(result, SNATCHED_PROPER)
-                time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+            # get the episode object
+            epObj = curProper.show.getEpisode(curProper.season, curProper.episode)
+            # make the result object
+            result = curProper.provider.get_result([epObj])
+            result.show = curProper.show
+            result.url = curProper.url
+            result.name = curProper.name
+            result.quality = curProper.quality
+            result.release_group = curProper.release_group
+            result.version = curProper.version
+            result.content = curProper.content
+            # snatch it
+            snatchEpisode(result, SNATCHED_PROPER)
+            time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 
     @staticmethod
     def _genericName(name):

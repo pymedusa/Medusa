@@ -19,7 +19,6 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import re
-import requests
 try:
     import xml.etree.cElementTree as etree
 except ImportError:
@@ -27,7 +26,7 @@ except ImportError:
 
 import sickbeard
 from sickbeard import logger, common
-from sickbeard.helpers import getURL
+from sickbeard.helpers import getURL, make_session
 
 from sickrage.helper.exceptions import ex
 
@@ -35,15 +34,15 @@ from sickrage.helper.exceptions import ex
 class Notifier(object):
     def __init__(self):
         self.headers = {
-            'X-Plex-Device-Name': 'SickRage',
-            'X-Plex-Product': 'SickRage Notifier',
+            'X-Plex-Device-Name': 'Medusa',
+            'X-Plex-Product': 'Medusa Notifier',
             'X-Plex-Client-Identifier': sickbeard.common.USER_AGENT,
             'X-Plex-Version': '2016.02.10'
         }
-        self.session = requests.Session()
+        self.session = make_session()
 
     @staticmethod
-    def _notify_pht(message, title='SickRage', host=None, username=None, password=None, force=False):  # pylint: disable=too-many-arguments
+    def _notify_pht(message, title='Medusa', host=None, username=None, password=None, force=False):  # pylint: disable=too-many-arguments
         """Internal wrapper for the notify_snatch and notify_download functions
 
         Args:
@@ -101,7 +100,7 @@ class Notifier(object):
                 self._notify_pht(update_text.format(ipaddress), title)
 
     def test_notify_pht(self, host, username, password):
-        return self._notify_pht('This is a test notification from SickRage',
+        return self._notify_pht('This is a test notification from Medusa',
                                 'Test Notification', host, username, password, force=True)
 
     def test_notify_pms(self, host, username, password, plex_server_token):

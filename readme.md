@@ -1,6 +1,6 @@
 ![medusa-name-logo-green-snakes](https://cloud.githubusercontent.com/assets/1867464/13375559/ede197ae-dd70-11e5-8cd0-b0eb239c977e.png)
 
-[![Build Status](https://travis-ci.org/pymedusa/SickRage.svg?branch=develop)](https://travis-ci.org/pymedusa/SickRage) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/pymedusa/sickrage.svg)](http://isitmaintained.com/project/pymedusa/sickrage "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/pymedusa/sickrage.svg)](http://isitmaintained.com/project/pymedusa/sickrage "Percentage of issues still open") [![Coverage Status](https://coveralls.io/repos/pymedusa/SickRage/badge.svg?branch=develop&service=github)](https://coveralls.io/github/pymedusa/SickRage?branch=develop) [![HuBoard](https://img.shields.io/badge/Hu-Board-7965cc.svg)](https://huboard.com/pymedusa/SickRage)
+[![Build Status](https://travis-ci.org/pymedusa/SickRage.svg?branch=develop)](https://travis-ci.org/pymedusa/SickRage) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/pymedusa/SickRage.svg)](http://isitmaintained.com/project/pymedusa/SickRage "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/pymedusa/SickRage.svg)](http://isitmaintained.com/project/pymedusa/SickRage "Percentage of issues still open") [![Coverage Status](https://coveralls.io/repos/pymedusa/SickRage/badge.svg?branch=develop&service=github)](https://coveralls.io/github/pymedusa/SickRage?branch=develop) [![HuBoard](https://img.shields.io/badge/Hu-Board-7965cc.svg)](https://huboard.com/pymedusa/SickRage)
 =====
 Automatic Video Library Manager for TV Shows. It watches for new episodes of your favorite shows, and when they are posted it does its magic.
 
@@ -33,7 +33,7 @@ Automatic Video Library Manager for TV Shows. It watches for new episodes of you
 
 #### [![Feature Requests](https://cloud.githubusercontent.com/assets/390379/10127973/045b3a96-6560-11e5-9b20-31a2032956b2.png)](http://feathub.com/PyMedusa/SickRage)
 
-##### [SickRage Issue Tracker](https://github.com/PyMedusa/SickRage-issues)
+##### [SickRage Issue Tracker](https://github.com/PyMedusa/SickRage/issues)
 
 ##### [FAQ](https://github.com/PyMedusa/SickRage/wiki/Frequently-Asked-Questions)
 
@@ -45,7 +45,7 @@ We HIGHLY recommend starting out with no database files at all to make this a fr
 
 #### Supported providers
 
-A full list can be found here: [Link](https://github.com/PyMedusa/SickRage-issues/wiki/SickRage-Search-Providers)
+A full list can be found here: [Link](https://github.com/PyMedusa/SickRage/wiki/SickRage-Search-Providers)
 
 #### Special Thanks to:
 ![image](https://rarbg.com/favicon.ico)[RARBG](https://rarbg.to)

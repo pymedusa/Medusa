@@ -152,7 +152,7 @@
                                         <option value="enable" ${('', 'selected="selected"')[paused_value == 1]}>Yes</option>
                                         <option value="disable" ${('', 'selected="selected"')[paused_value == 0]}>No</option>
                                     </select><br/ >
-                                    Pause these shows (SickRage will not download episodes).
+                                    Pause these shows (Medusa will not download episodes).
                                 </span>
                             </label>
                         </div>

@@ -43,7 +43,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
 
                     <div class="component-group-desc">
                         <h3>Subtitles Search</h3>
-                        <p>Settings that dictate how SickRage handles subtitles search results.</p>
+                        <p>Settings that dictate how Medusa handles subtitles search results.</p>
                     </div>
 
                     <fieldset class="component-group-list">
@@ -69,7 +69,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     </label>
                                     <label>
                                             <span class="component-title">&nbsp;</span>
-                                            <span class="component-desc">The directory where SickRage should store your <i>Subtitles</i> files.</span>
+                                            <span class="component-desc">The directory where Medusa should store your <i>Subtitles</i> files.</span>
                                       </label>
                                     <label>
                                             <span class="component-title">&nbsp;</span>
@@ -156,6 +156,17 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     </label>
                                 </div>
                                 <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Pre-Scripts</span>
+                                        <input type="text" name="subtitles_pre_scripts" value="${'|'.join(sickbeard.SUBTITLES_PRE_SCRIPTS)}" class="form-control input-sm input350" autocapitalize="off" />
+                                    </label>
+                                    <label>
+                                        <span class="component-desc">
+                                            <p>Show's media filename is passed as argument for the pre-scripts. Pre-scripts are executed before trying to find subtitles from usual sources.</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
                                         <label>
                                         <span class="component-title">Extra Scripts</span>
                                            <input type="text" name="subtitles_extra_scripts" value="${'|'.join(sickbeard.SUBTITLES_EXTRA_SCRIPTS)}" class="form-control input-sm input350" autocapitalize="off" />
@@ -216,8 +227,9 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                     <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px">
                         <%
                             providerLoginDict = {
-                                'legendastv': {'user': sickbeard.LEGENDASTV_USER, 'pass': sickbeard.LEGENDASTV_PASS},
                                 'addic7ed': {'user': sickbeard.ADDIC7ED_USER, 'pass': sickbeard.ADDIC7ED_PASS},
+                                'itasa': {'user': sickbeard.ITASA_USER, 'pass': sickbeard.ITASA_PASS},
+                                'legendastv': {'user': sickbeard.LEGENDASTV_USER, 'pass': sickbeard.LEGENDASTV_PASS},
                                 'opensubtitles': {'user': sickbeard.OPENSUBTITLES_USER, 'pass': sickbeard.OPENSUBTITLES_PASS}}
                         %>
                         % for curService in sickbeard.subtitles.sorted_service_list():

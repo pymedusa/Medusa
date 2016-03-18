@@ -23,7 +23,6 @@ Recommend shows based on lists from indexers
 
 import os
 import posixpath
-import requests
 
 import sickbeard
 from sickbeard import helpers
@@ -62,7 +61,7 @@ class RecommendedShow(object):
 
         # Check if the show is currently already in the db
         self.show_in_list = self.indexer_id in {show.indexerid for show in sickbeard.showList if show.indexerid}
-        self.session = requests.Session()
+        self.session = helpers.make_session()
 
     def cache_image(self, image_url):
         """

@@ -39,7 +39,6 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         TorrentProvider.__init__(self, "Rarbg")
 
         self.public = True
-        self.ratio = None
         self.minseed = None
         self.ranked = None
         self.sorting = None
@@ -65,7 +64,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
             "app_id": "sickrage2"
         }
 
-        response = self.get_url(self.urls["api"], params=login_params, timeout=30, returns="json")
+        response = self.get_url(self.urls["api"], params=login_params, returns="json")
         if not response:
             logger.log("Unable to connect to provider", logger.WARNING)
             return False
@@ -120,7 +119,13 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                     logger.log("Search string: {}".format(search_string.decode("utf-8")),
                                logger.DEBUG)
 
-                time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+                # Check if token is still valid before search
+                if not self.login():
+                    continue
+
+                # Maximum requests allowed are 1req/2sec
+                time.sleep(max(2, cpu_presets[sickbeard.CPU_PRESET]))
+
                 data = self.get_url(self.urls["api"], params=search_params, returns="json")
                 if not isinstance(data, dict):
                     logger.log("No data returned from provider", logger.DEBUG)
@@ -159,22 +164,20 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                         torrent_size = item.pop("size", -1)
                         size = convert_size(torrent_size) or -1
 
-                        item = title, download_url, size, seeders, leechers
                         if mode != "RSS":
                             logger.log("Found result: {} with {} seeders and {} leechers".format
                                        (title, seeders, leechers), logger.DEBUG)
 
-                        items.append(item)
+                        result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers}
+                        items.append(result)
                     except StandardError:
                         continue
 
             # For each search mode sort all the items by seeders
-            items.sort(key=lambda tup: tup[3], reverse=True)
+            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
 
         return results
 
-    def seed_ratio(self):
-        return self.ratio
 
 provider = RarbgProvider()
