@@ -50,7 +50,7 @@ def getQualityClass(ep_obj):
 
 
 def getEpisode(show, season=None, episode=None, absolute=None):
-    """ Get a specific episode object based on show, season and episode number 
+    """ Get a specific episode object based on show, season and episode number
 
     :param show: Season number
     :param season: Season number
@@ -86,7 +86,7 @@ def getEpisodes(searchThread, searchstatus):
     showObj = Show.find(sickbeard.showList, int(searchThread.show.indexerid))
 
     if not showObj:
-        logger.log(u'No Show Object found for show with indexerID: ' + str(searchThread.show.indexerid), logger.ERROR)
+        logger.log(u'No Show Object found for show with indexerID: {}'.format(searchThread.show.indexerid), logger.ERROR)
         return results
 
     if isinstance(searchThread, (sickbeard.search_queue.ManualSearchQueueItem, sickbeard.search_queue.ManualSnatchQueueItem)):
@@ -109,8 +109,7 @@ def getEpisodes(searchThread, searchstatus):
                             'searchstatus': searchstatus,
                             'status': statusStrings[epObj.status],
                             'quality': getQualityClass(epObj),
-                            'overview': Overview.overviewStrings[showObj.getOverview(epObj.status)]
-                            })
+                            'overview': Overview.overviewStrings[showObj.getOverview(epObj.status)]})
 
     return results
 
@@ -155,7 +154,7 @@ def collectEpisodesFromSearchThread(show):
     return episodes
 
 
-def get_provider_cache_results(indexer, show_all_results=None, perform_search=None, **search_show):
+def get_provider_cache_results(indexer, show_all_results=None, perform_search=None, **search_show):  # pylint: disable=too-many-locals,unused-argument
     """
     Check all provider cache tables for search results
     """
@@ -168,9 +167,8 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     showObj = Show.find(sickbeard.showList, int(show))
 
     main_db_con = db.DBConnection('cache.db')
-    sql_return = {}
+    sql_return = found_items = []
     provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
-    found_items = []
 
     providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_daily]
     for curProvider in providers:
@@ -182,21 +180,22 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
         if table_exists and 'seeders' in columns and 'leechers' in columns and 'size' in columns:
+
+            common_sql = "SELECT rowid, ? as 'provider_type', ? as 'provider_image', \
+                          ? as 'provider', ? as 'provider_id', name, season, \
+                          episodes, indexerid, url, time, (select max(time) from '{provider_id}') as lastupdate, \
+                          quality, release_group, version, seeders, leechers, size, time \
+                          FROM '{provider_id}' WHERE indexerid = ?".format(provider_id=curProvider.get_id())
+            additional_sql = " AND episodes LIKE ? AND season = ?"
+
             if not int(show_all_results):
-                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, \
-                                                episodes, indexerid, url, time, (select max(time) from '%s') as lastupdate, \
-                                                quality, release_group, version, seeders, leechers, size, time \
-                                                FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ?"
-                                                % (curProvider.get_id(), curProvider.get_id()),
-                                                [curProvider.name, curProvider.get_id(),
-                                                 "%|" + episode + "|%", season, show])
-    
+                sql_return = main_db_con.select(common_sql + additional_sql,
+                                                (curProvider.provider_type.title(), curProvider.image_name(),
+                                                 curProvider.name, curProvider.get_id(), show, "|%" + episode + "|%", season))
             else:
-                sql_return = main_db_con.select("SELECT rowid, ? as 'provider', ? as 'provider_id', name, season, \
-                                                episodes, indexerid, url, time, (select max(time) from '%s') as lastupdate, \
-                                                quality, release_group, version, seeders, leechers, size, time \
-                                                FROM '%s' WHERE indexerid = ?" % (curProvider.name, curProvider.get_id()),
-                                                [curProvider.get_id(), show])
+                sql_return = main_db_con.select(common_sql,
+                                                (curProvider.provider_type.title(), curProvider.image_name(),
+                                                 curProvider.name, curProvider.get_id(), show))
 
         if sql_return:
             for item in sql_return:
@@ -212,12 +211,13 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # retrieve the episode object and fail if we can't get one
         ep_obj = getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
-            #ui.notifications.error(u"Something went wrong when starting the manual search for show {0}, and episode: {1}x{2}".
-            #                       format(showObj.name, season, episode))
-            provider_results['error'] = 'Something went wrong when starting the manual search for show {0}, and episode: {1}x{2}'.format(showObj.name, season, episode)
+            # ui.notifications.error(u"Something went wrong when starting the manual search for show {0}, and episode: {1}x{2}".
+            # format(showObj.name, season, episode))
+            provider_results['error'] = 'Something went wrong when starting the manual search for show {0}, \
+            and episode: {1}x{2}'.format(showObj.name, season, episode)
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True)
+        ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True)  # pylint: disable=maybe-no-member
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
