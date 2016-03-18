@@ -220,7 +220,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 old_release_group = (sql_results[0]['release_group'])
 
                 if -1 < old_version < bestResult.version:
-                    logger.log(u'Found new anime version {new} to replace existing version {new}: {name}'.format
+                    logger.log(u'Found new anime version {new} to replace existing version {old}: {name}'.format
                                (old=old_version, new=bestResult.version, name=bestResult.name))
                 else:
                     logger.log(u'Ignoring proper with the same or lower version: {name}'.format
