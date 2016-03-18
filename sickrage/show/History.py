@@ -22,6 +22,7 @@ from datetime import timedelta
 from sickbeard.common import Quality
 from sickbeard.db import DBConnection
 from sickrage.helper.common import try_int
+from collections import namedtuple
 
 
 class History(object):
@@ -57,20 +58,15 @@ class History(object):
         filter_sql = 'AND action in (' + ','.join(['?'] * len(actions)) + ') '
         order_sql = 'ORDER BY date DESC '
 
-        if limit == 0:
-            if actions:
-                results = self.db.select(common_sql + filter_sql + order_sql, actions)
-            else:
-                results = self.db.select(common_sql + order_sql)
+        if actions:
+            results = self.db.select(common_sql + filter_sql + order_sql, actions)
         else:
-            if actions:
-                results = self.db.select(common_sql + filter_sql + order_sql + 'LIMIT ?', actions + [limit])
-            else:
-                results = self.db.select(common_sql + order_sql + 'LIMIT ?', [limit])
+            results = self.db.select(common_sql + order_sql)
 
-        data = []
+        detailed_view = []
+        compact_view = []
         for result in results:
-            data.append({
+            detailed_view.append({
                 'action': result['action'],
                 'date': result['date'],
                 'episode': result['episode'],
@@ -82,7 +78,38 @@ class History(object):
                 'show_name': result['show_name']
             })
 
-        return data
+        for row in detailed_view:
+            action = {
+                'action': row['action'],
+                'provider': row['provider'],
+                'resource': row['resource'],
+                'time': row['date']
+            }
+            if not any((history['show_id'] == row['show_id'] and
+                        history['season'] == row['season'] and
+                        history['episode'] == row['episode'] and
+                        history['quality'] == row['quality']) for history in compact_view):
+                history = {
+                    'actions': [action],
+                    'episode': row['episode'],
+                    'quality': row['quality'],
+                    'resource': row['resource'],
+                    'season': row['season'],
+                    'show_id': row['show_id'],
+                    'show_name': row['show_name']
+                }
+                compact_view.append(history)
+            else:
+                index = [i for i, item in enumerate(compact_view)
+                         if item['show_id'] == row['show_id'] and
+                         item['season'] == row['season'] and
+                         item['episode'] == row['episode'] and
+                         item['quality'] == row['quality']][0]
+                history = compact_view[index]
+                history['actions'].append(action)
+                history['actions'].sort(key=lambda x: x['time'], reverse=True)
+        history = namedtuple('history', ['detailed', 'compact'])
+        return history(detailed_view[:limit], compact_view[:limit])
 
     def trim(self):
         """
