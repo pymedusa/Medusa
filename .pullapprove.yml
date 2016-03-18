@@ -13,13 +13,14 @@ reviewers:
       - medariox
       - p0psicles
       - adaur
-    conditions:
-      branches:
-        - master
-        - beta
-        - develop
-      files:
-        - "*.py"
+# # CONDITIONS REQUIRE PRO ACCOUNT
+#    conditions:
+#      branches:
+#        - master
+#        - beta
+#        - develop
+#      files:
+#        - "*.py"
   -
     name: gui-devs
     required: 1
@@ -27,13 +28,14 @@ reviewers:
       - Labrys
       - OmgImAlexis
       - p0psicles
-    conditions:
-      branches:
-        - master
-        - beta
-        - develop
-      files:
-        - "gui/"
+# # CONDITIONS REQUIRE PRO ACCOUNT
+#    conditions:
+#      branches:
+#        - master
+#        - beta
+#        - develop
+#      files:
+#        - "gui/"
   -
     name: support
     required: 0
