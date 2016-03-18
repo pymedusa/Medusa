@@ -2495,6 +2495,129 @@ var SICKRAGE = {
                 setSeasonSceneException(data);
             });
         },
+        snatchSelection: function() {
+            $.fn.loadContainer = function(path, loadingTxt, errorTxt) {
+                $(this).html('<img id="searchingAnim" src="' + srRoot + '/images/loading32' + themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
+                $(this).load(srRoot + path + ' #container', function(response, status) {
+                    if (status === "error") {
+                        $(this).empty().html(errorTxt);
+                    }
+                });
+            };
+
+            // Click event for the download button for snatching a result
+            $('body').on('click', '.epManualSnatch', function(event){
+                event.preventDefault();
+                var link = this;
+                $.getJSON(this.href, 
+                    function (data) {
+                    if (data.result === "success") {
+                        $(link).children('img').attr('src', srRoot + '/images/save.png');
+                    }
+                });   
+            });
+
+            // TODO: OMG need to migrate the imdb stars generating to a directive for the snatchSelection page
+            $.fn.generateStars = function() {
+                return this.each(function(i,e){
+                    $(e).html($('<span/>').width($(e).text()*12));
+                });
+            };
+
+            $('.imdbstars').generateStars();
+
+            function checkCacheUpdates(repeat) {
+                var self = this;
+                var pollInterval = 5000;
+                repeat = repeat || true;
+                
+                
+                var show = $('meta[data-last-prov-updates]').attr('data-show');
+                var season = $('meta[data-last-prov-updates]').attr('data-season');
+                var episode = $('meta[data-last-prov-updates]').attr('data-episode');
+                var data = $('meta[data-last-prov-updates]').data('last-prov-updates');
+
+                if (!$.isNumeric(show) || !$.isNumeric(season) || !$.isNumeric(episode)) {
+                    setTimeout(function() { checkCacheUpdates(true); }, 200);
+                }
+                
+                var url = srRoot + '/home/manualSnatchCheckCache?show='+show+'&season='+season+'&episode='+episode;
+                
+                self.refreshResults = function() {
+                    $('#wrapper').loadContainer(
+                            '/home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=0',
+                            'Loading new search results...',
+                            'Time out, refresh page to try again'
+                    );
+                };
+
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    data: data,
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.result === 'refresh') {
+                            self.refreshResults();
+                            $('#searchNotification').text('Refreshed results...');
+                        }
+
+                        if (data.result === 'searching') {
+                            // ep is searched, you will get a results any minute now
+                            pollInterval = 5000;
+                            $('#searchNotification').text('The episode is being searched, please wait...');
+                        }
+
+                        if (data.result === 'queued') {
+                            // ep is queued, this might take some time to get results
+                            pollInterval = 7000;
+                            $('#searchNotification').text('The episode has been queued, because another search is taking place. please wait..');
+                        }
+
+                        if (data.result === 'finished') {
+                            // ep search is finished
+                            $('#searchNotification').text('Search finished');
+                            repeat = false;
+                        }
+                        if (data.result === 'error') {
+                            // ep search is finished
+                            console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
+                            repeat = true;
+                        }
+                    },
+                    error: function () {
+                        //repeat = false;
+                        console.log('Error occurred!!');
+                    },
+                    complete: function () {
+                        if (repeat) {
+                            setTimeout(checkCacheUpdates, pollInterval);
+                        }
+                    },
+                    timeout: 15000 // timeout after 15s
+                });
+            }
+
+            checkCacheUpdates();
+
+            // Click event for the reload results and force search buttons
+            $('body').on('click', '.manualSearchButton', function(event){
+                event.preventDefault();
+                var show = $('meta[data-last-prov-updates]').attr('data-show');
+                var season = $('meta[data-last-prov-updates]').attr('data-season');
+                var episode = $('meta[data-last-prov-updates]').attr('data-episode');
+                var performSearch = $(this).attr('data-force-search');
+                
+                if ($.isNumeric(show) && $.isNumeric(season) && $.isNumeric(episode)) {
+                    $('#wrapper').loadContainer(
+                            '/home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=' + performSearch,
+                            'Loading new search results...',
+                            'Time out, refresh page to try again'
+                    );
+                    checkCacheUpdates(true);
+                }
+            });
+        },
         postProcess: function() {
             $('#episodeDir').fileBrowser({ title: 'Select Unprocessed Episode Folder', key: 'postprocessPath' });
         },

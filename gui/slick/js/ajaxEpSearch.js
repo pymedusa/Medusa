@@ -27,7 +27,7 @@ function updateImages(data) {
         var htmlContent = '';
         //Try to get the <a> Element
         var el = $('a[id=' + ep.show + 'x' + ep.season + 'x' + ep.episode+']');
-        var img = el.children('img');
+        var img = el.children('img[data-ep-search]');
         var parent = el.parent();
         if (el) {
             var rSearchTerm = '';
@@ -169,17 +169,15 @@ $(document).ready(function () {
                 url = url.replace("retryEpisode", "searchEpisode");
             }
 
-            url = url + "&downCurQuality=" + (qualityDownload ? '1' : '0');
-
             $.getJSON(url, function(data){
 
                 // if they failed then just put the red X
                 if (data.result.toLowerCase() === 'failure') {
                     imageName = options.noImage;
                     imageResult = 'failed';
-
-                // if the snatch was successful then apply the corresponding class and fill in the row appropriately
-                } else {
+                } else { 
+                    // if the snatch was successful then apply the 
+                    // corresponding class and fill in the row appropriately
                     imageName = options.loadingImage;
                     imageResult = 'success';
                     // color the row
@@ -219,6 +217,23 @@ $(document).ready(function () {
             } else {
                 manualSearch();
             }
+        });
+
+         $('.epManualSnatch').click(function(event){
+            event.preventDefault();
+            var performSearch = '0';
+            var showAllResults = '0';
+            
+            //TODO: Omg this disables all the manual snatch icons, when one is clicked
+            if ($(this).hasClass('disabled')) {
+                return false;
+            }
+
+            $('.epManualSnatch').addClass('disabled');
+            $('.epManualSnatch').fadeTo(1, 0.1);
+ 
+            window.location = this.href + '&perform_search=' + performSearch + 
+                                          '&show_all_results=' + showAllResults;
         });
 
         $('#manualSearchModalFailed .btn').click(function(){

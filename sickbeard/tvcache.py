@@ -20,7 +20,7 @@
 import time
 import datetime
 import itertools
-
+import traceback
 import sickbeard
 from sickbeard import db
 from sickbeard import logger
@@ -38,6 +38,7 @@ class CacheDBConnection(db.DBConnection):
         # Create the table if it's not already there
         try:
             if not self.hasTable(providerName):
+                logger.log(u"Creating cache table for provider {}".format(providerName), logger.DEBUG)
                 self.action(
                     "CREATE TABLE [" + providerName + "] (name TEXT, season NUMERIC, episodes TEXT, indexerid NUMERIC, url TEXT, time NUMERIC, quality TEXT, release_group TEXT)")
             else:
@@ -46,8 +47,12 @@ class CacheDBConnection(db.DBConnection):
                 for cur_dupe in sql_results:
                     self.action("DELETE FROM [" + providerName + "] WHERE url = ?", [cur_dupe["url"]])
 
+            # remove wrong old index
+            self.action("DROP INDEX IF EXISTS idx_url")
+
             # add unique index to prevent further dupes from happening if one does not exist
-            self.action("CREATE UNIQUE INDEX IF NOT EXISTS idx_url ON [" + providerName + "] (url)")
+            logger.log(u"Creating UNIQUE URL index for {}".format(providerName), logger.DEBUG)
+            self.action("CREATE UNIQUE INDEX IF NOT EXISTS idx_url_" + providerName + " ON [" + providerName + "] (url)")
 
             # add release_group column to table if missing
             if not self.hasColumn(providerName, 'release_group'):
@@ -56,6 +61,18 @@ class CacheDBConnection(db.DBConnection):
             # add version column to table if missing
             if not self.hasColumn(providerName, 'version'):
                 self.addColumn(providerName, 'version', "NUMERIC", "-1")
+
+            # add seeders column to table if missing
+            if not self.hasColumn(providerName, 'seeders'):
+                self.addColumn(providerName, 'seeders', "NUMERIC", "-1")
+
+            # add leechers column to table if missing
+            if not self.hasColumn(providerName, 'leechers'):
+                self.addColumn(providerName, 'leechers', "NUMERIC", "-1")
+
+            # add size column to table if missing
+            if not self.hasColumn(providerName, 'size'):
+                self.addColumn(providerName, 'size', "NUMERIC", "-1")
 
         except Exception as e:
             if str(e) != "table [" + providerName + "] already exists":
@@ -66,6 +83,8 @@ class CacheDBConnection(db.DBConnection):
             if not self.hasTable('lastUpdate'):
                 self.action("CREATE TABLE lastUpdate (provider TEXT, time NUMERIC)")
         except Exception as e:
+            logger.log(u"Error while searching " + self.provider.name + ", skipping: " + repr(e), logger.DEBUG)
+            logger.log(traceback.format_exc(), logger.DEBUG)
             if str(e) != "table lastUpdate already exists":
                 raise
 
@@ -86,12 +105,26 @@ class TVCache(object):
         return self.providerDB
 
     def _clearCache(self):
-        if self.shouldClearCache():
-            cache_db_con = self._getDB()
-            cache_db_con.action("DELETE FROM [" + self.providerID + "] WHERE 1")
+        # Clear only items older than 7 days
+        self._clearCacheItem()
+        #if self.shouldClearCache():
+        #    cache_db_con = self._getDB()
+        #    cache_db_con.action("DELETE FROM [" + self.providerID + "] WHERE 1")
+
+    def _clearCacheItem(self):
+        cache_db_con = self._getDB()
+        today = int(time.mktime(datetime.datetime.today().timetuple()))
+        # Keep item in cache for 7 days
+        cache_db_con.action("DELETE FROM [" + self.providerID + "] WHERE time > ? ", [today + 7*86400]) # 86400 POSIX day (exact value)
 
     def _get_title_and_url(self, item):
         return self.provider._get_title_and_url(item)  # pylint:disable=protected-access
+
+    def _get_result_info(self, item):
+        return self.provider._get_result_info(item)
+
+    def _get_size(self, item):
+        return self.provider._get_size(item)
 
     def _getRSSData(self):
         return {u'entries': self.provider.search(self.search_params)} if self.search_params else None
@@ -131,6 +164,26 @@ class TVCache(object):
         except Exception as e:
             logger.log(u"Error while searching " + self.provider.name + ", skipping: " + repr(e), logger.DEBUG)
 
+    def update_cache_manual_search(self, manual_data = None):
+
+        try:
+            cl = []
+            for item in manual_data:
+                logger.log(u"Adding to cache item found in manual search: {}".format(item.name), logger.DEBUG)
+                ci = self._addCacheEntry(item.name, item.url, item.seeders, item.leechers, item.size)
+                if ci is not None:
+                    cl.append(ci)
+        except Exception as e:
+            logger.log(u"Error while adding to cache item found in manual seach for provider " + self.provider.name + ", skipping: " + repr(e), logger.WARNING)
+
+        results = []
+        cache_db_con = self._getDB()
+        if len(cl) > 0:
+            logger.log("Mass updating cache table with manual results for provider: {}".format(self.provider.name), logger.DEBUG)
+            results = cache_db_con.mass_action(cl)
+
+        return any(results)
+
     def getRSSFeed(self, url, params=None):
         if self.provider.login():
             return getFeed(url, params=params, request_hook=self.provider.get_url)
@@ -146,6 +199,8 @@ class TVCache(object):
 
     def _parseItem(self, item):
         title, url = self._get_title_and_url(item)
+        seeders, leechers = self._get_result_info(item)
+        size = self._get_size(item)
 
         self._checkItemAuth(title, url)
 
@@ -154,7 +209,7 @@ class TVCache(object):
             url = self._translateLinkURL(url)
 
             # logger.log(u"Attempting to add item to cache: " + title, logger.DEBUG)
-            return self._addCacheEntry(title, url)
+            return self._addCacheEntry(title, url, seeders, leechers, size)
 
         else:
             logger.log(
@@ -224,12 +279,12 @@ class TVCache(object):
 
     def shouldClearCache(self):
         # if daily search hasn't used our previous results yet then don't clear the cache
-        if self.lastUpdate > self.lastSearch:
-            return False
+        #if self.lastUpdate > self.lastSearch:
+            #return False
 
-        return True
+        return False
 
-    def _addCacheEntry(self, name, url, parse_result=None, indexer_id=0):
+    def _addCacheEntry(self, name, url, seeders, leechers, size, parse_result=None, indexer_id=0):
 
         # check if we passed in a parsed result or should we try and create one
         if not parse_result:
@@ -249,10 +304,10 @@ class TVCache(object):
                 return None
 
         # if we made it this far then lets add the parsed result to cache for usager later on
-        season = parse_result.season_number if parse_result.season_number else 1
+        season = parse_result.season_number if parse_result.season_number is not None else 1
         episodes = parse_result.episode_numbers
 
-        if season and episodes:
+        if season is not None and episodes is not None:
             # store episodes as a seperated string
             episodeText = "|" + "|".join({str(episode) for episode in episodes if episode}) + "|"
 
@@ -273,8 +328,8 @@ class TVCache(object):
             logger.log(u"Added RSS item: [" + name + "] to cache: [" + self.providerID + "]", logger.DEBUG)
 
             return [
-                "INSERT OR IGNORE INTO [" + self.providerID + "] (name, season, episodes, indexerid, url, time, quality, release_group, version) VALUES (?,?,?,?,?,?,?,?,?)",
-                [name, season, episodeText, parse_result.show.indexerid, url, curTimestamp, quality, release_group, version]]
+                "INSERT OR REPLACE INTO [" + self.providerID + "] (name, season, episodes, indexerid, url, time, quality, release_group, version, seeders, leechers, size) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                [name, season, episodeText, parse_result.show.indexerid, url, curTimestamp, quality, release_group, version, seeders, leechers, size]]
 
     def searchCache(self, episode, manualSearch=False, downCurQuality=False):
         neededEps = self.findNeededEpisodes(episode, manualSearch, downCurQuality)
@@ -358,6 +413,9 @@ class TVCache(object):
             result = self.provider.get_result([epObj])
             result.show = showObj
             result.url = url
+            result.seeders = curResult["seeders"]
+            result.leechers = curResult["leechers"]
+            result.size = curResult["size"]
             result.name = title
             result.quality = curQuality
             result.release_group = curReleaseGroup

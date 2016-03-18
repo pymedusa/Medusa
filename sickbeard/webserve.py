@@ -27,17 +27,28 @@ import traceback
 import time
 import urllib
 
-from concurrent.futures import ThreadPoolExecutor
-from mako.exceptions import RichTraceback
-from mako.lookup import TemplateLookup
-from mako.runtime import UNDEFINED
-from mako.template import Template as MakoTemplate
-from tornado.concurrent import run_on_executor
-from tornado.gen import coroutine
-from tornado.ioloop import IOLoop
-from tornado.process import cpu_count
-from tornado.routes import route
-from tornado.web import RequestHandler, HTTPError, authenticated
+import sickbeard
+from sickbeard import config, sab
+from sickbeard import clients
+from sickbeard import notifiers, processTV
+from sickbeard import ui
+from sickbeard import logger, helpers, classes, db
+from sickbeard import search_queue
+from sickbeard import naming
+from sickbeard import subtitles
+from sickbeard import network_timezones
+from sickbeard.providers import newznab, rsstorrent
+from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
+from sickbeard.common import SNATCHED, UNAIRED, IGNORED, WANTED, FAILED, SKIPPED
+from sickbeard.blackandwhitelist import BlackAndWhiteList, short_group_names
+from sickbeard.browser import foldersAtPath
+from sickbeard.scene_numbering import get_scene_numbering, set_scene_numbering, get_scene_numbering_for_show, \
+    get_xem_numbering_for_show, get_scene_absolute_numbering_for_show, get_xem_absolute_numbering_for_show, \
+    get_scene_absolute_numbering
+from sickbeard.manual_snatch import (collectEpisodesFromSearchThread, getEpisode, get_provider_cache_results,
+                                     SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING)
+
+from sickbeard.webapi import function_mapper
 
 
 import adba
@@ -84,6 +95,22 @@ try:
     import json
 except ImportError:
     import simplejson as json
+
+from mako.template import Template as MakoTemplate
+from mako.lookup import TemplateLookup
+from mako.exceptions import RichTraceback
+
+from tornado.routes import route
+from tornado.web import RequestHandler, HTTPError, authenticated
+from tornado.gen import coroutine
+from tornado.ioloop import IOLoop
+
+from concurrent.futures import ThreadPoolExecutor
+from tornado.process import cpu_count
+
+from tornado.concurrent import run_on_executor
+
+from mako.runtime import UNDEFINED
 
 mako_lookup = None
 mako_cache = None
@@ -662,28 +689,6 @@ class Home(WebRoot):
     def _genericMessage(self, subject, message):
         t = PageTemplate(rh=self, filename="genericMessage.mako")
         return t.render(message=message, subject=subject, topmenu="home", title="")
-
-    @staticmethod
-    def _getEpisode(show, season=None, episode=None, absolute=None):
-        if show is None:
-            return "Invalid show parameters"
-
-        showObj = Show.find(sickbeard.showList, int(show))
-
-        if showObj is None:
-            return "Invalid show paramaters"
-
-        if absolute:
-            epObj = showObj.getEpisode(absolute_number=absolute)
-        elif season and episode:
-            epObj = showObj.getEpisode(season, episode)
-        else:
-            return "Invalid paramaters"
-
-        if epObj is None:
-            return "Episode couldn't be retrieved"
-
-        return epObj
 
     def index(self):
         t = PageTemplate(rh=self, filename="home.mako")
@@ -1378,6 +1383,215 @@ class Home(WebRoot):
             action="displayShow"
         )
 
+    def pickManualSnatch(self, show=None, season=None, episode=None, provider=None, rowid=None):
+
+        # Try to retrieve the cached result from the providers cache table.
+        # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
+
+        sql_results = []
+
+        try:
+            main_db_con = db.DBConnection('cache.db')
+            sql_return = main_db_con.action("SELECT * FROM '%s' WHERE rowid = ?" % (sickbeard.providers.getProviderClass(provider).get_id()), [rowid], fetchone=True)
+        except Exception as e:
+            return self._genericMessage("Error", "Couldn't read cached results. Error: {}".format(e))
+
+        try:
+            show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
+            showObj = Show.find(sickbeard.showList, show)
+        except (ValueError, TypeError):
+            return self._genericMessage("Error", "Invalid show ID: %s" % str(show))
+
+        if not showObj:
+            return self._genericMessage("Error", "Show is not in your library")
+
+        if not (sql_return['url'] or sql_return['quality'] or sql_return['name'] or provider or episode):
+            return self._genericMessage("Error", "Cached result doesn't have all needed info to snatch episode")
+
+        # retrieve the episode object and fail if we can't get one
+        ep_obj = getEpisode(show, season, episode)
+        if isinstance(ep_obj, str):
+            return json.dumps({'result': 'failure'})
+
+        # make a queue item for it and put it on the queue
+        ep_queue_item = search_queue.ManualSnatchQueueItem(ep_obj.show, ep_obj, season, episode,
+                                                           sql_return['url'], sql_return['quality'],
+                                                           provider, sql_return['name'])
+
+        sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
+
+        if not ep_queue_item.started and ep_queue_item.success is None:
+            return json.dumps(
+                {'result': 'success'})  # I Actually want to call it queued, because the search hasnt been started yet!
+        if ep_queue_item.started and ep_queue_item.success is None:
+            return json.dumps({'result': 'success'})
+        else:
+            return json.dumps({'result': 'failure'})
+
+    def manualSnatchCheckCache(self, show, season, episode, **kwargs):
+        """ Periodic check if the searchthread is still running for the selected show/season/ep
+        and if there are new results in the cache.db
+        """
+
+        REFRESH_RESULTS = 'refresh'
+
+        # To prevent it from keeping searching when no providers have been enabled
+        if not [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_daily]:
+            return {'result': SEARCH_STATUS_FINISHED}
+
+        # Let's try to get the timestamps for the last search per provider
+        if kwargs:
+            # Only need the first provided dict
+            last_prov_updates = kwargs.iteritems().next()[0]
+            last_prov_updates = json.loads(last_prov_updates.replace("'", '"'))
+        else:
+            last_prov_updates = {}
+
+        main_db_con = db.DBConnection('cache.db')
+
+        episodesInSearch = collectEpisodesFromSearchThread(show)
+
+        # Check if the requested ep is in a search thread
+        searched_item = [search for search in episodesInSearch if (str(search.get('show')) == show and
+                                                                   str(search.get('season')) == season and
+                                                                   str(search.get('episode')) == episode)]
+
+        # No last_prov_updates available, let's assume we need to refresh until we get some
+#         if not last_prov_updates:
+#             return {'result': REFRESH_RESULTS}
+
+        for provider, last_update in last_prov_updates.iteritems():
+            table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [provider])
+            if not table_exists:
+                continue
+            # Check if the cache table has a result for this show + season + ep wich has a later timestamp, then last_update
+            needs_update = main_db_con.select("SELECT * FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ? \
+                                              AND time > ?"
+                                              % (provider), ["%|" + episode + "|%", season, show, int(last_update)])
+
+            if needs_update:
+                return {'result': REFRESH_RESULTS}
+
+        # If the item is queued multiple times (don't know if this is posible), but then check if as soon as a search has finished
+        # Move on and show results
+        # Return a list of queues the episode has been found in
+        search_status = [item.get('searchstatus') for item in searched_item]
+        if (not len(searched_item) or
+            (last_prov_updates and
+             SEARCH_STATUS_QUEUED not in search_status and
+             SEARCH_STATUS_SEARCHING not in search_status and
+             SEARCH_STATUS_FINISHED in search_status)):
+                # If the ep not anymore in the QUEUED or SEARCHING Thread, and it has the status finished, return it as finished
+                return {'result': SEARCH_STATUS_FINISHED}
+
+        # Force a refresh when the last_prov_updates is empty due to the tables not existing yet.
+        # This can be removed if we make sure the provider cache tables always exist prior to the start of the first search
+        if not last_prov_updates and SEARCH_STATUS_FINISHED in search_status:
+            return {'result': REFRESH_RESULTS}
+
+        return {'result': searched_item[0]['searchstatus']}
+
+    def snatchSelection(self, show=None, season=None, episode=None, perform_search=0, down_cur_quality=0, show_all_results=0):
+        """ The view with results for the manual selected show/episode """
+
+        INDEXER_TVDB = 1
+        # todo: add more comprehensive show validation
+        try:
+            show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
+            showObj = Show.find(sickbeard.showList, show)
+        except (ValueError, TypeError):
+            return self._genericMessage("Error", "Invalid show ID: %s" % str(show))
+
+        if showObj is None:
+            return self._genericMessage("Error", "Show not in show list")
+
+        # Retrieve cache results from providers
+        search_show = {'show': show, 'season': season, 'episode': episode}
+        provider_results = get_provider_cache_results(INDEXER_TVDB, perform_search=perform_search,
+                                                      show_all_results=show_all_results, **search_show)
+
+        t = PageTemplate(rh=self, filename="snatchSelection.mako")
+        submenu = [{'title': 'Edit', 'path': 'home/editShow?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-pencil'}]
+
+        try:
+            showLoc = (showObj.location, True)
+        except ShowDirectoryNotFoundException:
+            showLoc = (showObj._location, False)  # pylint: disable=protected-access
+
+        show_message = sickbeard.showQueueScheduler.action.getQueueActionMessage(showObj)
+
+        if not sickbeard.showQueueScheduler.action.isBeingAdded(showObj):
+            if not sickbeard.showQueueScheduler.action.isBeingUpdated(showObj):
+                if showObj.paused:
+                    submenu.append({'title': 'Resume', 'path': 'home/togglePause?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-play'})
+                else:
+                    submenu.append({'title': 'Pause', 'path': 'home/togglePause?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-pause'})
+
+                submenu.append({'title': 'Remove', 'path': 'home/deleteShow?show=%d' % showObj.indexerid, 'class': 'removeshow', 'confirm': True, 'icon': 'ui-icon ui-icon-trash'})
+                submenu.append({'title': 'Re-scan files', 'path': 'home/refreshShow?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-refresh'})
+                submenu.append({'title': 'Force Full Update', 'path': 'home/updateShow?show=%d&amp;force=1' % showObj.indexerid, 'icon': 'ui-icon ui-icon-transfer-e-w'})
+                submenu.append({'title': 'Update show in KODI', 'path': 'home/updateKODI?show=%d' % showObj.indexerid, 'requires': self.haveKODI(), 'icon': 'submenu-icon-kodi'})
+                submenu.append({'title': 'Update show in Emby', 'path': 'home/updateEMBY?show=%d' % showObj.indexerid, 'requires': self.haveEMBY(), 'icon': 'ui-icon ui-icon-refresh'})
+                submenu.append({'title': 'Preview Rename', 'path': 'home/testRename?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-tag'})
+
+                if sickbeard.USE_SUBTITLES and not sickbeard.showQueueScheduler.action.isBeingSubtitled(
+                        showObj) and showObj.subtitles:
+                    submenu.append({'title': 'Download Subtitles', 'path': 'home/subtitleShow?show=%d' % showObj.indexerid, 'icon': 'ui-icon ui-icon-comment'})
+
+        def titler(x):
+            return (helpers.remove_article(x), x)[not x or sickbeard.SORT_ARTICLE]
+
+        if sickbeard.ANIME_SPLIT_HOME:
+            shows = []
+            anime = []
+            for show in sickbeard.showList:
+                if show.is_anime:
+                    anime.append(show)
+                else:
+                    shows.append(show)
+            sortedShowLists = [["Shows", sorted(shows, lambda x, y: cmp(titler(x.name), titler(y.name)))],
+                               ["Anime", sorted(anime, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+        else:
+            sortedShowLists = [
+                ["Shows", sorted(sickbeard.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+
+        bwl = None
+        if showObj.is_anime:
+            bwl = showObj.release_groups
+
+        showObj.exceptions = sickbeard.scene_exceptions.get_scene_exceptions(showObj.indexerid)
+
+        indexerid = int(showObj.indexerid)
+        indexer = int(showObj.indexer)
+
+        # Delete any previous occurrances
+        for index, recentShow in enumerate(sickbeard.SHOWS_RECENT):
+            if recentShow['indexerid'] == indexerid:
+                del sickbeard.SHOWS_RECENT[index]
+
+        # Only track 5 most recent shows
+        del sickbeard.SHOWS_RECENT[4:]
+
+        # Insert most recent show
+        sickbeard.SHOWS_RECENT.insert(0, {
+            'indexerid': indexerid,
+            'name': showObj.name,
+        })
+
+        return t.render(
+            submenu=submenu, showLoc=showLoc, show_message=show_message,
+            show=showObj, provider_results=provider_results, episode=episode,
+            sortedShowLists=sortedShowLists, bwl=bwl, season=season,
+            all_scene_exceptions=showObj.exceptions,
+            scene_numbering=get_scene_numbering_for_show(indexerid, indexer),
+            xem_numbering=get_xem_numbering_for_show(indexerid, indexer),
+            scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexerid, indexer),
+            xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexerid, indexer),
+            title=showObj.name,
+            controller="home",
+            action="snatchSelection"
+        )
+
     @staticmethod
     def plotDetails(show, season, episode):
         main_db_con = db.DBConnection()
@@ -1591,6 +1805,9 @@ class Home(WebRoot):
             except CantUpdateShowException as e:
                 errors.append("Unable to force an update on scene numbering of the show.")
 
+            # Must erase cached results when toggling scene numbering
+            self.erase_cache(showObj)
+
         if directCall:
             return errors
 
@@ -1599,6 +1816,24 @@ class Home(WebRoot):
                                    '<ul>' + '\n'.join(['<li>%s</li>' % error for error in errors]) + "</ul>")
 
         return self.redirect("/home/displayShow?show=" + show)
+        
+    def erase_cache(self, showObj):
+    
+        try:
+            main_db_con = db.DBConnection('cache.db')
+            for curProvider in sickbeard.providers.sortedProviderList():
+                # Let's check if this provider table already exists
+                table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [curProvider.get_id()])
+                if not table_exists:
+                    continue
+                try:
+                    main_db_con.action("DELETE FROM '%s' WHERE indexerid = ?" % curProvider.get_id(), [showObj.indexerid])
+                except Exception:
+                    logger.log(u"Unable to delete cached results for provider {} for show: {}".format(curProvider, showObj.name), logger.DEBUG)
+
+        except Exception:
+            logger.log(u"Unable to delete cached results for show: {}".format(showObj.name), logger.DEBUG)
+        
 
     def togglePause(self, show=None):
         error, show = Show.pause(show)
@@ -1968,17 +2203,23 @@ class Home(WebRoot):
 
         return self.redirect("/home/displayShow?show=" + show)
 
-    def searchEpisode(self, show=None, season=None, episode=None, downCurQuality=0):
+    def searchEpisode(self, show=None, season=None, episode=None, manual_snatch=None):
+        """
+        """
+        down_cur_quality = 0
 
         # retrieve the episode object and fail if we can't get one
-        ep_obj = self._getEpisode(show, season, episode)
+        ep_obj = getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
             return json.dumps({'result': 'failure'})
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(downCurQuality)))
+        ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), bool(manual_snatch))
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
+
+        # give the CPU a break and some time to start the queue
+        time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 
         if not ep_queue_item.started and ep_queue_item.success is None:
             return json.dumps(
@@ -1992,89 +2233,15 @@ class Home(WebRoot):
     # Possible status: Downloaded, Snatched, etc...
     # Returns {'show': 279530, 'episodes' : ['episode' : 6, 'season' : 1, 'searchstatus' : 'queued', 'status' : 'running', 'quality': '4013']
     def getManualSearchStatus(self, show=None):
-        def getEpisodes(searchThread, searchstatus):
-            results = []
-            showObj = Show.find(sickbeard.showList, int(searchThread.show.indexerid))
-
-            if not showObj:
-                logger.log(u'No Show Object found for show with indexerID: ' + str(searchThread.show.indexerid), logger.ERROR)
-                return results
-
-            if isinstance(searchThread, sickbeard.search_queue.ManualSearchQueueItem):
-                results.append({
-                    'show': searchThread.show.indexerid,
-                    'episode': searchThread.segment.episode,
-                    'episodeindexid': searchThread.segment.indexerid,
-                    'season': searchThread.segment.season,
-                    'searchstatus': searchstatus,
-                    'status': statusStrings[searchThread.segment.status],
-                    'quality': self.getQualityClass(searchThread.segment),
-                    'overview': Overview.overviewStrings[showObj.getOverview(searchThread.segment.status)]
-                })
-            else:
-                for epObj in searchThread.segment:
-                    results.append({'show': epObj.show.indexerid,
-                                    'episode': epObj.episode,
-                                    'episodeindexid': epObj.indexerid,
-                                    'season': epObj.season,
-                                    'searchstatus': searchstatus,
-                                    'status': statusStrings[epObj.status],
-                                    'quality': self.getQualityClass(epObj),
-                                    'overview': Overview.overviewStrings[showObj.getOverview(epObj.status)]
-                                    })
-
-            return results
-
         episodes = []
 
-        # Queued Searches
-        searchstatus = 'queued'
-        for searchThread in sickbeard.searchQueueScheduler.action.get_all_ep_from_queue(show):
-            episodes += getEpisodes(searchThread, searchstatus)
-
-        # Running Searches
-        searchstatus = 'searching'
-        if sickbeard.searchQueueScheduler.action.is_manualsearch_in_progress():
-            searchThread = sickbeard.searchQueueScheduler.action.currentItem
-
-            if searchThread.success:
-                searchstatus = 'finished'
-
-            episodes += getEpisodes(searchThread, searchstatus)
-
-        # Finished Searches
-        searchstatus = 'finished'
-        for searchThread in sickbeard.search_queue.MANUAL_SEARCH_HISTORY:
-            if show is not None:
-                if not str(searchThread.show.indexerid) == show:
-                    continue
-
-            if isinstance(searchThread, sickbeard.search_queue.ManualSearchQueueItem):
-                if not [x for x in episodes if x['episodeindexid'] == searchThread.segment.indexerid]:
-                    episodes += getEpisodes(searchThread, searchstatus)
-            else:
-                # ## These are only Failed Downloads/Retry SearchThreadItems.. lets loop through the segement/episodes
-                if not [i for i, j in zip(searchThread.segment, episodes) if i.indexerid == j['episodeindexid']]:
-                    episodes += getEpisodes(searchThread, searchstatus)
+        episodes = collectEpisodesFromSearchThread(show)
 
         return json.dumps({'episodes': episodes})
 
-    @staticmethod
-    def getQualityClass(ep_obj):
-        # return the correct json value
-
-        # Find the quality class for the episode
-        _, ep_quality = Quality.splitCompositeStatus(ep_obj.status)
-        if ep_quality in Quality.cssClassStrings:
-            quality_class = Quality.cssClassStrings[ep_quality]
-        else:
-            quality_class = Quality.cssClassStrings[Quality.UNKNOWN]
-
-        return quality_class
-
     def searchEpisodeSubtitles(self, show=None, season=None, episode=None):
         # retrieve the episode object and fail if we can't get one
-        ep_obj = self._getEpisode(show, season, episode)
+        ep_obj = getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
             return json.dumps({'result': 'failure'})
 
@@ -2135,9 +2302,9 @@ class Home(WebRoot):
 
         # retrieve the episode object and fail if we can't get one
         if showObj.is_anime:
-            ep_obj = self._getEpisode(show, absolute=forAbsolute)
+            ep_obj = getEpisode(show, absolute=forAbsolute)
         else:
-            ep_obj = self._getEpisode(show, forSeason, forEpisode)
+            ep_obj = getEpisode(show, forSeason, forEpisode)
 
         if isinstance(ep_obj, str):
             result['success'] = False
@@ -2186,7 +2353,7 @@ class Home(WebRoot):
 
     def retryEpisode(self, show, season, episode, downCurQuality):
         # retrieve the episode object and fail if we can't get one
-        ep_obj = self._getEpisode(show, season, episode)
+        ep_obj = getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
             return json.dumps({'result': 'failure'})
 

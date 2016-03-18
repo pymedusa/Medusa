@@ -3403,3 +3403,11 @@ input.tablesorter-filter.disabled {
 .ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header {
     font-weight: normal !important;
 }
+
+/* =======================================================================
+snatchSelection.mako
+========================================================================== */
+
+div#searchNotification {
+	display: inline-block;
+}
