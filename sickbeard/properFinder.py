@@ -86,45 +86,55 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         for curProvider in providers:
             threading.currentThread().name = origThreadName + " :: [" + curProvider.name + "]"
 
-            logger.log(u"Searching for any new PROPER releases from " + curProvider.name)
+            logger.log(u"Searching for any new PROPER releases from {provider}".format
+                       (provider=curProvider.name))
 
             try:
                 curPropers = curProvider.find_propers(search_date)
             except AuthException as e:
-                logger.log(u"Authentication error: " + ex(e), logger.DEBUG)
+                logger.log(u"Authentication error: {error}".format
+                           (error=ex(e)), logger.DEBUG)
                 continue
             except (SocketTimeout, TypeError) as e:
-                logger.log(u"Connection timed out (sockets) while searching propers in " + curProvider.name + ", skipping: " + ex(e), logger.DEBUG)
+                logger.log(u"Socket time out while searching for propers in {provider}, skipping: {error}".format
+                           (provider=curProvider.name, error=ex(e)), logger.DEBUG)
                 continue
             except (requests_exceptions.HTTPError, requests_exceptions.TooManyRedirects) as e:
-                logger.log(u"HTTP error while searching propers in " + curProvider.name + ", skipping: " + ex(e), logger.DEBUG)
+                logger.log(u"HTTP error while searching for propers in {provider}, skipping: {error}".format
+                           (provider=curProvider.name, error=ex(e)), logger.DEBUG)
                 continue
             except requests_exceptions.ConnectionError as e:
-                logger.log(u"Connection error while searching propers in " + curProvider.name + ", skipping: " + ex(e), logger.DEBUG)
+                logger.log(u"Connection error while searching for propers in {provider}, skipping: {error}".format
+                           (provider=curProvider.name, error=ex(e)), logger.DEBUG)
                 continue
             except requests_exceptions.Timeout as e:
-                logger.log(u"Connection timed out while searching propers in " + curProvider.name + ", skipping: " + ex(e), logger.DEBUG)
+                logger.log(u"Connection timed out while searching for propers in {provider}, skipping: {error}".format
+                           (provider=curProvider.name, error=ex(e)), logger.DEBUG)
                 continue
-            except requests_exceptions.ContentDecodingError:
-                logger.log(u"Content-Encoding was gzip, but content was not compressed while searching propers in " + curProvider.name + ", skipping: " + ex(e), logger.DEBUG)
+            except requests_exceptions.ContentDecodingError as e:
+                logger.log(u"Content-Encoding was gzip, but content was not compressed while searching for propers in {provider}, skipping: {error}".format
+                           (provider=curProvider.name, error=ex(e)), logger.DEBUG)
                 continue
             except Exception as e:
-                if 'ECONNRESET' in e or (hasattr(e, 'errno') and e.errno == errno.ECONNRESET):
-                    logger.log(u"Connection reseted by peer while searching propers in {}".format(curProvider.name), logger.WARNING)
+                if u'ECONNRESET' in e or (hasattr(e, 'errno') and e.errno == errno.ECONNRESET):
+                    logger.log(u"Connection reset by peer while searching for propers in {provider}, skipping: {error}".format
+                               (provider=curProvider.name, error=ex(e)), logger.DEBUG)
                 else:
-                    logger.log(u"Unknown exception while searching propers in " + curProvider.name + ", skipping: " + ex(e), logger.ERROR)
+                    logger.log(u"Unknown exception while searching for propers in {provider}, skipping: {error}".format
+                               (provider=curProvider.name, error=ex(e)), logger.DEBUG)
                     logger.log(traceback.format_exc(), logger.DEBUG)
                 continue
 
             # if they haven't been added by a different provider than add the proper to the list
             for proper in curPropers:
                 if not re.search(r'(^|[\. _-])(proper|repack|real)([\. _-]|$)', proper.name, re.I):
-                    logger.log(u'find_propers returned a non-proper, we have caught and skipped it.', logger.DEBUG)
+                    logger.log(u'Skipping non-proper: {name}'.format(name=proper.name))
                     continue
 
                 name = self._genericName(proper.name)
                 if name not in propers:
-                    logger.log(u'Found new proper result: {}'.format(proper.name), logger.DEBUG)
+                    logger.log(u'Found new proper result: {name}'.format
+                               (name=proper.name), logger.DEBUG)
                     proper.provider = curProvider
                     propers[name] = proper
 
@@ -142,15 +152,16 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             if not parse_result.series_name:
-                logger.log(u"Ignoring {} because it doesn't look like a valid show.".format(curProper.name), logger.DEBUG)
+                logger.log(u"Ignoring invalid show: {name}".format
+                           (name=curProper.name), logger.DEBUG)
                 continue
 
             if not parse_result.episode_numbers:
-                logger.log(u"Ignoring {} because it's for a full season rather than for a specific episode.".format
-                           (curProper.name), logger.DEBUG)
+                logger.log(u"Ignoring full season instead of episode: {name}".format
+                           (name=curProper.name), logger.DEBUG)
                 continue
 
-            logger.log(u'Successful match! Result {} matched to show {}'.format
+            logger.log(u'Successful match! Matched {} to show {}'.format
                        (parse_result.original_name, parse_result.show.name), logger.DEBUG)
 
             # set the indexerid in the db to the show's indexerid
@@ -171,13 +182,15 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # filter release
             bestResult = pickBestResult(curProper, parse_result.show)
             if not bestResult:
-                logger.log(u'Proper result {} was rejected by our release filters.'.format(curProper.name))
+                logger.log(u'Rejected proper due to release filters: {name}'.format
+                           (name=curProper.name))
                 continue
 
             # only get anime proper if it has release group and version
             if bestResult.show.is_anime:
                 if not bestResult.release_group and bestResult.version == -1:
-                    logger.log(u"Proper result {} doesn't have a release group and version, ignoring it.".format(bestResult.name))
+                    logger.log(u"Ignoring proper without release group and version: {name}".format
+                               (name=bestResult.name))
                     continue
 
             # check if we actually want this proper (if it's the right quality)
@@ -185,13 +198,15 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             sql_results = main_db_con.select('SELECT status FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?',
                                              [bestResult.indexerid, bestResult.season, bestResult.episode])
             if not sql_results:
-                logger.log(u"Proper result {} hasn't the correct quality, ignoring it.".format(bestResult.name))
+                logger.log(u"Ignoring proper with incorrect quality: {name}".format
+                           (name=bestResult.name))
                 continue
 
             # only keep the proper if we have already retrieved the same quality ep (don't get better/worse ones)
             oldStatus, oldQuality = Quality.splitCompositeStatus(int(sql_results[0]['status']))
             if oldStatus not in (DOWNLOADED, SNATCHED) or oldQuality != bestResult.quality:
-                logger.log(u"Proper result {} is already snatched or downloaded, ignoring it.".format(bestResult.name))
+                logger.log(u"Ignoring proper already snatched or downloaded: {name}".format
+                           (name=bestResult.name))
                 continue
 
             # check if we actually want this proper (if it's the right release group and a higher version)
@@ -205,22 +220,22 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 old_release_group = (sql_results[0]['release_group'])
 
                 if -1 < old_version < bestResult.version:
-                    logger.log(u'Found new anime version {} to replace existing version {}'.format
-                               (str(bestResult.version), str(old_version)))
+                    logger.log(u'Found new anime version {new} to replace existing version {old}: {name}'.format
+                               (old=old_version, new=bestResult.version, name=bestResult.name))
                 else:
-                    logger.log(u'Proper result {} has a lower or the same quality, ignoring it.'.format
-                               (bestResult.name))
+                    logger.log(u'Ignoring proper with the same or lower version: {name}'.format
+                               (name=bestResult.name))
                     continue
 
                 if old_release_group != bestResult.release_group:
-                    logger.log(u"Proper result's release group {} doesn't match existing release group {}, ignoring it.".format
-                               (bestResult.release_group, old_release_group))
+                    logger.log(u"Ignoring proper from release group {new} instead of current group {old}".format
+                               (new=bestResult.release_group, old=old_release_group))
                     continue
 
             # if the show is in our list and there hasn't been a proper already added for that particular episode then add it to our list of propers
             if bestResult.indexerid != -1 and (bestResult.indexerid, bestResult.season, bestResult.episode) not in map(
                     operator.attrgetter('indexerid', 'season', 'episode'), finalPropers):
-                logger.log(u'Found a proper result that we need: {}'.format(str(bestResult.name)))
+                logger.log(u'Found a desired proper: {name}'.format(name=bestResult.name))
                 finalPropers.append(bestResult)
 
         return finalPropers
