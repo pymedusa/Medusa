@@ -37,7 +37,7 @@ from sickrage.helper.exceptions import ShowDirectoryNotFoundException
 from sickbeard.helpers import get_showname_from_indexer
 from libtrakt import TraktAPI
 from sickrage.helper.encoding import ek
-from sickbeard.helpers import makeDir, chmodAsParent
+from sickbeard.helpers import makeDir, chmodAsParent, mapIndexersToShow
 from sickrage.helper.common import sanitize_filename
 
 
@@ -332,7 +332,7 @@ class QueueItemAdd(ShowQueueItem):
             t = sickbeard.indexerApi(self.indexer).indexer(**lINDEXER_API_PARMS)
             s = t[self.indexer_id]
 
-            # Let's try to create the show Dir if it's not provided. This way we force the show dir to build build using the
+            # Let's try to create the show Dir if it's not provided. This way we force the show dir to build using the
             # Indexers provided series name
             if not self.showDir and self.root_dir:
                 show_name = get_showname_from_indexer(self.indexer, self.indexer_id, self.lang)
@@ -355,7 +355,7 @@ class QueueItemAdd(ShowQueueItem):
 
                 ui.notifications.error("Unable to add show",
                                        "Show in " + self.showDir + " has no name on " + str(sickbeard.indexerApi(
-                                           self.indexer).name) + ", probably the wrong language. Delete .nfo and add manually in the correct language.")
+                                        self.indexer).name) + ", probably the wrong language. Delete .nfo and add manually in the correct language.")
                 self._finishEarly()
                 return
             # if the show has no episodes/seasons
@@ -503,6 +503,10 @@ class QueueItemAdd(ShowQueueItem):
         if self.show.default_ep_status == WANTED:
             logger.log(u"Launching backlog for this show since its episodes are WANTED")
             sickbeard.backlogSearchScheduler.action.searchBacklog([self.show])
+
+        # Always try to map the indexer to the show to other indexers.
+        # We don't need the mapped dict, only want to make sure it's updated in the indexer_mapping
+        mapIndexersToShow(self.show)
 
         self.show.writeMetadata()
         self.show.updateMetadata()
@@ -667,7 +671,7 @@ class QueueItemUpdate(ShowQueueItem):
         logger.log(u"Loading all episodes from the database", logger.DEBUG)
         DBEpList = self.show.loadEpisodesFromDB()
 
-        # get episode list from TVDB
+        # get episode list from the indexer
         logger.log(u"Loading all episodes from " + sickbeard.indexerApi(self.show.indexer).name + "", logger.DEBUG)
         try:
             IndexerEpList = self.show.loadEpisodesFromIndexer(cache=not self.force)

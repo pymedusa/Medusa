@@ -864,7 +864,13 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
         self.network = getattr(myEp, 'network', '')
         self.runtime = getattr(myEp, 'runtime', '')
 
+        # New indexers2indexers mappable attributes need to be added here
+        # The indexer_config setting mapped_to, should correspond to the attribute.
+        # Like mapped_to = 'tvdbid' -> self.tvdbid
         self.imdbid = getattr(myEp, 'imdb_id', '')
+        self.tvdbid = getattr(myEp, 'tvdb_id', '')
+        self.tvrageid = getattr(myEp, 'tvrage_id', '')
+        self.tvmazeid = getattr(myEp, 'tvmaze_id', '')
 
         if getattr(myEp, 'airs_dayofweek', None) is not None and getattr(myEp, 'airs_time', None) is not None:
             self.airs = myEp["airs_dayofweek"] + " " + myEp["airs_time"]
