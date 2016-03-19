@@ -47,7 +47,7 @@ def update_network_dict():
     url = 'http://raw.githubusercontent.com/pymedusa/sickrage.github.io/master/sb_network_timezones/network_timezones.txt'
     url_data = helpers.getURL(url, session=helpers.make_session(), returns='text')
     if not url_data:
-        logger.log(u'Updating network timezones failed, this can happen from time to time. URL: %s' % url, logger.WARNING)
+        logger.log(u'Updating network timezones failed, this can happen from time to time. URL: {0!s}'.format(url), logger.WARNING)
         load_network_dict()
         return
 
@@ -78,7 +78,7 @@ def update_network_dict():
 
     if network_list:
         purged = [x for x in network_list]
-        queries.append(['DELETE FROM network_timezones WHERE network_name IN (%s);' % ','.join(['?'] * len(purged)), purged])
+        queries.append(['DELETE FROM network_timezones WHERE network_name IN ({0!s});'.format(','.join(['?'] * len(purged))), purged])
 
     if queries:
         cache_db_con.mass_action(queries)
@@ -120,7 +120,7 @@ def get_network_timezone(network, _network_dict):
     if network_tz_name is None and network not in missing_network_timezones:
         missing_network_timezones.add(network)
         if network is not None:
-            logger.log(u'Missing time zone for network: %s' % network, logger.ERROR)
+            logger.log(u'Missing time zone for network: {0!s}'.format(network), logger.ERROR)
 
     return tz.gettz(network_tz_name) if network_tz_name else sb_timezone
 
