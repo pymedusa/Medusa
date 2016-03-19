@@ -148,6 +148,9 @@ class ImageCache(object):
     POSTER_THUMB = 4
     FANART = 5
 
+    # Preparing a dict to translate the image types: Poster, Banner, Etc.
+    image_type = {1: u"Banner", 2: u"Poster", 3: u"Banner Thumbnail", 4: u"Poster Thumbnail", 5: u"Fanart"}
+
     def which_type(self, path):
         """
         Analyzes the image provided and attempts to determine whether it is a poster or banner.
@@ -308,8 +311,8 @@ class ImageCache(object):
                 logger.log(u"Unable to search for images in show dir because it doesn't exist", logger.WARNING)
 
         # download from indexer for missing ones
-        for cur_image_type in [self.POSTER, self.BANNER, self.POSTER_THUMB, self.BANNER_THUMB, self.FANART]:
-            logger.log(u"Seeing if we still need an image of type " + str(cur_image_type) + ": " + str(
+        for cur_image_type, cur_image_type_desc in self.image_type.iteritems():  # image_type: 1: Banner, 2: Poster, 3: Banner_thumb, etc..
+            logger.log(u"Seeing if we still need an image of type " + cur_image_type_desc + ": " + str(
                 need_images[cur_image_type]), logger.DEBUG)
             if cur_image_type in need_images and need_images[cur_image_type]:
                 self._cache_image_from_indexer(show_obj, cur_image_type)
