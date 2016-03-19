@@ -189,13 +189,13 @@ class Mede8erMetadata(mediabrowser.MediaBrowserMetadata):
             imdb_id.attrib['moviedb'] = 'imdb'
             imdb_id.text = my_show['imdb_id']
 
-        if getattr(my_show, 'id', None):
-            indexer_id = etree.SubElement(tv_node, 'indexerid')
-            indexer_id.text = my_show['id']
+        if getattr(myShow, 'id', None):
+            indexerid = etree.SubElement(tv_node, "indexerid")
+            indexerid.text = str(myShow['id'])
 
-        if getattr(my_show, 'runtime', None):
-            runtime = etree.SubElement(tv_node, 'runtime')
-            runtime.text = my_show['runtime']
+        if getattr(myShow, 'runtime', None):
+            Runtime = etree.SubElement(tv_node, "runtime")
+            Runtime.text = str(myShow['runtime'])
 
         if getattr(my_show, '_actors', None):
             cast = etree.SubElement(tv_node, 'cast')
@@ -300,9 +300,9 @@ class Mede8erMetadata(mediabrowser.MediaBrowserMetadata):
                     overview = etree.SubElement(episode, 'episodeplot')
                     overview.text = ep_to_write.description
 
-                if getattr(my_show, 'contentrating', None):
-                    mpaa = etree.SubElement(episode, 'mpaa')
-                    mpaa.text = my_show['contentrating']
+                if getattr(myShow, 'contentrating', None):
+                    mpaa = etree.SubElement(episode, "mpaa")
+                    mpaa.text = str(myShow["contentrating"])
 
                 if not ep_obj.related_episodes and getattr(my_ep, 'rating', None):
                     try:
