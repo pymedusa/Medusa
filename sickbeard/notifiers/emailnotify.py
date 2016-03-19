@@ -67,7 +67,7 @@ class Notifier(object):
         if sickbeard.USE_EMAIL and sickbeard.EMAIL_NOTIFY_ONSNATCH:
             show = self._parseEp(ep_name)
             to = self._generate_recipients(show)
-            if len(to) == 0:
+            if not to:
                 logger.log('Skipping email notify because there are no configured recipients', logger.DEBUG)
             else:
                 try:
@@ -113,7 +113,7 @@ class Notifier(object):
         if sickbeard.USE_EMAIL and sickbeard.EMAIL_NOTIFY_ONDOWNLOAD:
             show = self._parseEp(ep_name)
             to = self._generate_recipients(show)
-            if len(to) == 0:
+            if not to:
                 logger.log('Skipping email notify because there are no configured recipients', logger.DEBUG)
             else:
                 try:
@@ -159,7 +159,7 @@ class Notifier(object):
         if sickbeard.USE_EMAIL and sickbeard.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD:
             show = self._parseEp(ep_name)
             to = self._generate_recipients(show)
-            if len(to) == 0:
+            if not to:
                 logger.log('Skipping email notify because there are no configured recipients', logger.DEBUG)
             else:
                 try:
@@ -199,7 +199,7 @@ class Notifier(object):
         '''
         if sickbeard.USE_EMAIL:
             to = self._generate_recipients(None)
-            if len(to) == 0:
+            if not to:
                 logger.log('Skipping email notify because there are no configured recipients', logger.DEBUG)
             else:
                 try:
@@ -236,7 +236,7 @@ class Notifier(object):
         '''
         if sickbeard.USE_EMAIL:
             to = self._generate_recipients(None)
-            if not len(to):
+            if not to:
                 logger.log('Skipping email notify because there are no configured recipients', logger.DEBUG)
             else:
                 try:
@@ -274,7 +274,7 @@ class Notifier(object):
         # Grab the global recipients
         if sickbeard.EMAIL_LIST:
             for addr in sickbeard.EMAIL_LIST.split(','):
-                if len(addr.strip()) > 0:
+                if addr.strip():
                     addrs.append(addr)
 
         # Grab the per-show-notification recipients
@@ -285,11 +285,11 @@ class Notifier(object):
                         if subs[b'notify_list'][0] == '{':
                             entries = dict(ast.literal_eval(subs[b'notify_list']))
                             for addr in entries[b'emails'].split(','):
-                                if len(addr.strip()) > 0:
+                                if addr.strip():
                                     addrs.append(addr)
                         else:                                           # Legacy
                             for addr in subs[b'notify_list'].split(','):
-                                if len(addr.strip()) > 0:
+                                if addr.strip():
                                     addrs.append(addr)
 
         addrs = set(addrs)

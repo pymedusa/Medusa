@@ -323,7 +323,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select("SELECT last_proper_search FROM info")
 
-        if len(sql_results) == 0:
+        if not sql_results:
             main_db_con.action("INSERT INTO info (last_backlog, last_indexer, last_proper_search) VALUES (?,?,?)",
                                [0, 0, str(when)])
         else:

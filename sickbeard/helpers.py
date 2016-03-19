@@ -83,7 +83,7 @@ def indentXML(elem, level=0):
     Does our pretty printing, makes Matt very happy
     """
     i = "\n" + level * "  "
-    if len(elem):
+    if elem:
         if not elem.text or not elem.text.strip():
             elem.text = i + "  "
         if not elem.tail or not elem.tail.strip():
@@ -738,7 +738,7 @@ def get_all_episodes_from_absolute_number(show, absolute_numbers, indexer_id=Non
     episodes = []
     season = None
 
-    if len(absolute_numbers):
+    if absolute_numbers:
         if not show and indexer_id:
             show = Show.find(sickbeard.showList, indexer_id)
 
@@ -1340,7 +1340,7 @@ def mapIndexersToShow(showObj):
                     "INSERT OR IGNORE INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) VALUES (?,?,?,?)",
                     [showObj.indexerid, showObj.indexer, int(mapped_show[0]['id']), indexer]])
 
-        if len(sql_l) > 0:
+        if sql_l:
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 
