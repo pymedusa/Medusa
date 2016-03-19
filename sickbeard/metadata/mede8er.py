@@ -187,11 +187,11 @@ class Mede8erMetadata(mediabrowser.MediaBrowserMetadata):
 
         if getattr(myShow, 'id', None):
             indexerid = etree.SubElement(tv_node, "indexerid")
-            indexerid.text = myShow['id']
+            indexerid.text = str(myShow['id'])
 
         if getattr(myShow, 'runtime', None):
             Runtime = etree.SubElement(tv_node, "runtime")
-            Runtime.text = myShow['runtime']
+            Runtime.text = str(myShow['runtime'])
 
         if getattr(myShow, '_actors', None):
             cast = etree.SubElement(tv_node, "cast")
@@ -295,7 +295,7 @@ class Mede8erMetadata(mediabrowser.MediaBrowserMetadata):
 
                 if getattr(myShow, 'contentrating', None):
                     mpaa = etree.SubElement(episode, "mpaa")
-                    mpaa.text = myShow["contentrating"]
+                    mpaa.text = str(myShow["contentrating"])
 
                 if not ep_obj.relatedEps and getattr(myEp, "rating", None):
                     try:
