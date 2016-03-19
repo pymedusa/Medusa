@@ -56,7 +56,8 @@ from sickrage.helper.common import http_code_description, media_extensions, pret
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
-from cachecontrol import CacheControl
+from cachecontrol import CacheControl, CacheControlAdapter
+from cachecontrol.cache import DictCache
 # from httpcache import CachingHTTPAdapter
 
 from itertools import izip, cycle
@@ -1305,23 +1306,37 @@ def mapIndexersToShow(showObj):
             t = sickbeard.indexerApi(indexer).indexer(**lINDEXER_API_PARMS)
 
             try:
-                mapped_show = t[showObj.name]
+                mapped_indexer = getattr(showObj, sickbeard.indexerApi(indexer).config.copy().get('mapped_to'), None)
+                mapped_show = t[showObj.name] if not mapped_indexer else t[mapped_indexer]
+                if not isinstance(mapped_show, list):
+                    mapped[indexer]
+                    mapped_show = [mapped_show]
             except Exception:
                 logger.log(u"Unable to map " + sickbeard.indexerApi(showObj.indexer).name + "->" + sickbeard.indexerApi(
                     indexer).name + " for show: " + showObj.name + ", skipping it", logger.DEBUG)
                 continue
 
-            if mapped_show and len(mapped_show) == 1:
-                logger.log(u"Mapping " + sickbeard.indexerApi(showObj.indexer).name + "->" + sickbeard.indexerApi(
-                    indexer).name + " for show: " + showObj.name, logger.DEBUG)
+            # We can get a list of results of OrderedDicts, or one Show object.
+            # We need a way to check both for the indexer_id.
+            try:
+                indexer_id = None
+                if mapped_show and len(mapped_show) == 1 and isinstance(mapped_show[0], dict):
+                    indexer_id = mapped_show[0]['id']
 
-                mapped[indexer] = int(mapped_show[0]['id'])
+                if indexer_id:
+                    logger.log(u"Mapping " + sickbeard.indexerApi(showObj.indexer).name + "->" + sickbeard.indexerApi(
+                        indexer).name + " for show: " + showObj.name, logger.DEBUG)
 
-                logger.log(u"Adding indexer mapping to DB for show: " + showObj.name, logger.DEBUG)
+                    mapped[indexer] = int(indexer_id)
 
-                sql_l.append([
-                    "INSERT OR IGNORE INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) VALUES (?,?,?,?)",
-                    [showObj.indexerid, showObj.indexer, int(mapped_show[0]['id']), indexer]])
+                    logger.log(u"Adding indexer mapping to DB for show: " + showObj.name, logger.DEBUG)
+
+                    sql_l.append([
+                        "INSERT OR IGNORE INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) VALUES (?,?,?,?)",
+                        [showObj.indexerid, showObj.indexer, mapped[indexer], indexer]])
+
+            except Exception:
+                logger.log(u"Unable to map indexer 2 indexer for show: {}".format(showObj.name), logger.DEBUG)
 
         if sql_l:
             main_db_con = db.DBConnection()
@@ -1366,12 +1381,24 @@ def _getTempDir():
     return ek(os.path.join, tempfile.gettempdir(), "sickrage-%s" % uid)
 
 
-def make_session():
+def make_session(cache_etags=True, serializer=None, heuristic=None):
     session = requests.Session()
+
+    adapter = CacheControlAdapter(
+        DictCache(),
+        cache_etags=cache_etags,
+        serializer=serializer,
+        heuristic=heuristic,
+    )
+
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+
+    session.cache_controller = adapter.controller
 
     session.headers.update({'User-Agent': USER_AGENT, 'Accept-Encoding': 'gzip,deflate'})
 
-    return CacheControl(sess=session, cache_etags=True)
+    return session
 
 
 def request_defaults(kwargs):
