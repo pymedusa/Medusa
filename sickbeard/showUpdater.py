@@ -77,10 +77,10 @@ class ShowUpdater(object):  # pylint: disable=too-few-public-methods
             update_file = 'updates_day.xml'
 
         # url = 'http://thetvdb.com/api/Updates.php?type=series&time=%s' % last_update
-        url = 'http://thetvdb.com/api/%s/updates/%s' % (sickbeard.indexerApi(INDEXER_TVDB).api_params['apikey'], update_file)
+        url = 'http://thetvdb.com/api/{0!s}/updates/{1!s}'.format(sickbeard.indexerApi(INDEXER_TVDB).api_params['apikey'], update_file)
         data = helpers.getURL(url, session=self.session, returns='text')
         if not data:
-            logger.log(u"Could not get the recently updated show data from %s. Retrying later. Url was: %s" % (sickbeard.indexerApi(INDEXER_TVDB).name, url))
+            logger.log(u"Could not get the recently updated show data from {0!s}. Retrying later. Url was: {1!s}".format(sickbeard.indexerApi(INDEXER_TVDB).name, url))
             self.amActive = False
             return
 
@@ -98,7 +98,7 @@ class ShowUpdater(object):  # pylint: disable=too-few-public-methods
         for cur_show in sickbeard.showList:
 
             if cur_show.indexer in bad_indexer:
-                logger.log(u"Indexer is no longer available for show [ %s ] " % cur_show.name, logger.WARNING)
+                logger.log(u"Indexer is no longer available for show [ {0!s} ] ".format(cur_show.name), logger.WARNING)
             else:
                 indexer_name = sickbeard.indexerApi(cur_show.indexer).name
 
