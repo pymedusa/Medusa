@@ -15,30 +15,30 @@ class TMDB:
         TMDB.url = 'https://api.themoviedb.org' + '/' + str(version)
 
     @staticmethod
-    def _request(method, path, params={}, json_body={}):
+    def _request(method, path, params={}, json_body={}, verify=False):
         url = TMDB.url + '/' + path + '?api_key=' + TMDB.api_key
         if method == 'GET':
             headers = {'Accept': 'application/json'}
-            content = requests.get(url, params=params, headers=headers).content
+            content = requests.get(url, params=params, headers=headers, verify=verify).content
         elif method == 'POST':
             for key in params.keys():
                 url += '&' + key + '=' + params[key]
-            headers = {'Content-Type': 'application/json', \
+            headers = {'Content-Type': 'application/json',
                        'Accept': 'application/json'}
-            content = requests.post(url, data=json.dumps(json_body), \
-                                    headers=headers).content
+            content = requests.post(url, data=json.dumps(json_body),
+                                    headers=headers, verify=verify).content
         elif method == 'DELETE':
             for key in params.keys():
                 url += '&' + key + '=' + params[key]
-            headers = {'Content-Type': 'application/json', \
+            headers = {'Content-Type': 'application/json',
                        'Accept': 'application/json'}
-            content = requests.delete(url, data=json.dumps(json_body), \
-                                    headers=headers).content
+            content = requests.delete(url, data=json.dumps(json_body),
+                                      headers=headers, verify=verify).content
         else:
             raise Exception('method: ' + method + ' not supported.')
         response = json.loads(content.decode('utf-8'))
         return response
-    
+
     #
     # Set attributes to dictionary values.
     # - e.g.
@@ -81,7 +81,7 @@ class TMDB:
             response = TMDB._request('GET', path, params)
             TMDB._set_attrs_to_values(self, response)
             return response
-            
+
         # optional parameters: page, language
         def lists(self, params={}):
             path = 'account' + '/' + str(self.session_id) + '/lists'
@@ -121,7 +121,7 @@ class TMDB:
             response = TMDB._request('GET', path, params)
             TMDB._set_attrs_to_values(self, response)
             return response
-            
+
         # required JSON body: movie_id, movie_watchlist
         def movie_watchlist_post(self, json_body):
             path = 'account' + '/' + str(json_body['movie_id']) + \
@@ -175,7 +175,7 @@ class TMDB:
             response = TMDB._request('GET', path, params)
             TMDB._set_attrs_to_values(self, response)
             return response
-            
+
         # optional parameters: page, start_date, end_date
         def person(self, params={}):
             path = 'person/changes'
@@ -218,7 +218,7 @@ class TMDB:
             response = TMDB._request('GET', path)
             TMDB._set_attrs_to_values(self, response)
             return response
-            
+
         # optional parameters: page, language
         def movies(self, params={}):
             path = 'company' + '/' + str(self.id) + '/movies'
@@ -297,7 +297,7 @@ class TMDB:
             response = TMDB._request('GET', path, params)
             TMDB._set_attrs_to_values(self, response)
             return response
-            
+
         # optional parameters: page, language, include_all_movies, include_adult
         def movies(self, params={}):
             path = 'genre' + '/' + str(self.id) + '/movies'
@@ -318,7 +318,7 @@ class TMDB:
             response = TMDB._request('GET', path)
             TMDB._set_attrs_to_values(self, response)
             return response
-            
+
     #
     # Keywords
     # http://docs.themoviedb.apiary.io/#keywords
@@ -378,7 +378,7 @@ class TMDB:
             response = TMDB._request('POST', path, params, json_body)
             TMDB._set_attrs_to_values(self, response)
             return response
-            
+
         # required JSON body: media_id
         def remove_item(self, json_body):
             path = 'list' + '/' + str(self.id) + '/remove_item'
