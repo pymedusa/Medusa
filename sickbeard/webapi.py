@@ -909,7 +909,7 @@ class CMD_EpisodeSetStatus(ApiCall):
                     start_backlog = True
                 ep_results.append(_ep_result(RESULT_SUCCESS, ep_obj))
 
-        if len(sql_l) > 0:
+        if sql_l:
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 
@@ -1492,7 +1492,7 @@ class CMD_SickBeardDeleteRootDir(ApiCall):
                 break
 
         root_dirs_new = [urllib.unquote_plus(x) for x in root_dirs_new]
-        if len(root_dirs_new) > 0:
+        if root_dirs_new:
             root_dirs_new.insert(0, new_index)
         root_dirs_new = "|".join(unicode(x) for x in root_dirs_new)
 
@@ -2577,7 +2577,7 @@ class CMD_ShowSeasons(ApiCall):
             sql_results = main_db_con.select(
                 "SELECT name, episode, airdate, status, location, file_size, release_name, subtitles FROM tv_episodes WHERE showid = ? AND season = ?",
                 [self.indexerid, self.season])
-            if len(sql_results) == 0:
+            if not sql_results:
                 return _responds(RESULT_FAILURE, msg="Season not found")
             seasons = {}
             for row in sql_results:

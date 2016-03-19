@@ -501,7 +501,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             search_name = re.sub(r"[\.\- ]", "_", curName)
             sql_results = main_db_con.select("SELECT showid, season, quality, version, resource FROM history WHERE resource LIKE ? AND (action % 100 = 4 OR action % 100 = 6)", [search_name])
 
-            if len(sql_results) == 0:
+            if not sql_results:
                 continue
 
             indexer_id = int(sql_results[0]["showid"])
@@ -1166,7 +1166,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                     cur_ep.download_subtitles(force=True)
 
         # now that processing has finished, we can put the info in the DB. If we do it earlier, then when processing fails, it won't try again.
-        if len(sql_l) > 0:
+        if sql_l:
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 
@@ -1177,7 +1177,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 cur_ep.location = ek(os.path.join, dest_path, new_file_name)
                 sql_l.append(cur_ep.get_sql())
 
-        if len(sql_l) > 0:
+        if sql_l:
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 

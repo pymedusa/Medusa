@@ -138,7 +138,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                         else:
                             page_links = []
 
-                        if len(page_links) > 0:
+                        if page_links:
                             for lnk in page_links:
                                 link_text = lnk.text.strip()
                                 if link_text.isdigit():
@@ -181,7 +181,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             torrent_rows = html.findAll("tr", {"class": re.compile('torrent_[0-9]*')})
 
                             # Continue only if a Release is found
-                            if len(torrent_rows) == 0:
+                            if not torrent_rows:
                                 logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
                                 continue
 

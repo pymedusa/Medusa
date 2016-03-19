@@ -188,7 +188,7 @@ def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branc
         if data:
             notifiers.trakt_notifier.update_watchlist(result.show, data_episode=data, update="add")
 
-    if len(sql_l) > 0:
+    if sql_l:
         main_db_con = db.DBConnection()
         main_db_con.mass_action(sql_l)
 
@@ -540,7 +540,7 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
 
             didSearch = True
 
-            if len(searchResults):
+            if searchResults:
                 # make a list of all the results for this provider
                 for curEp in searchResults:
                     if curEp in foundResults:

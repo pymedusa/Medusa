@@ -49,7 +49,7 @@ class Notifier(object):
         if sickbeard.PROWL_NOTIFY_ONSNATCH:
             show = self._parse_episode(ep_name)
             recipients = self._generate_recipients(show)
-            if len(recipients) == 0:
+            if not recipients:
                 logger.log('Skipping prowl notify because there are no configured recipients', logger.DEBUG)
             else:
                 for api in recipients:
@@ -61,7 +61,7 @@ class Notifier(object):
         if sickbeard.PROWL_NOTIFY_ONDOWNLOAD:
             show = self._parse_episode(ep_name)
             recipients = self._generate_recipients(show)
-            if len(recipients) == 0:
+            if not recipients:
                 logger.log('Skipping prowl notify because there are no configured recipients', logger.DEBUG)
             else:
                 for api in recipients:
@@ -73,7 +73,7 @@ class Notifier(object):
         if sickbeard.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD:
             show = self._parse_episode(ep_name)
             recipients = self._generate_recipients(show)
-            if len(recipients) == 0:
+            if not recipients:
                 logger.log('Skipping prowl notify because there are no configured recipients', logger.DEBUG)
             else:
                 for api in recipients:
@@ -102,7 +102,7 @@ class Notifier(object):
         # Grab the global recipient(s)
         if sickbeard.PROWL_API:
             for api in sickbeard.PROWL_API.split(','):
-                if len(api.strip()) > 0:
+                if api.strip():
                     apis.append(api)
 
         # Grab the per-show-notification recipients
@@ -113,7 +113,7 @@ class Notifier(object):
                         if subs['notify_list'][0] == '{':               # legacy format handling
                             entries = dict(ast.literal_eval(subs['notify_list']))
                             for api in entries['prowlAPIs'].split(','):
-                                if len(api.strip()) > 0:
+                                if api.strip():
                                     apis.append(api)
 
         apis = set(apis)
@@ -127,7 +127,7 @@ class Notifier(object):
 
         if prowl_api is None:
             prowl_api = sickbeard.PROWL_API
-            if len(prowl_api) == 0:
+            if not prowl_api:
                 return False
 
         if prowl_priority is None:

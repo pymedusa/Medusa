@@ -54,29 +54,28 @@ def logFailed(release):
     failed_db_con = db.DBConnection('failed.db')
     sql_results = failed_db_con.select("SELECT * FROM history WHERE release=?", [release])
 
-    if len(sql_results) == 0:
-        logger.log(
-            u"Release not found in snatch history.", logger.WARNING)
-    elif len(sql_results) > 1:
+    if not sql_results:
+        logger.log(u"Release not found in snatch history.", logger.WARNING)
+    elif len(sql_results) == 1:
+        size = sql_results[0]["size"]
+        provider = sql_results[0]["provider"]
+    else:
         logger.log(u"Multiple logged snatches found for release", logger.WARNING)
         sizes = len(set(x["size"] for x in sql_results))
         providers = len(set(x["provider"] for x in sql_results))
         if sizes == 1:
-            logger.log(u"However, they're all the same size. Continuing with found size.", logger.WARNING)
+            logger.log(u"However, they're all the same size. "
+                       u"Continuing with found size.", logger.WARNING)
             size = sql_results[0]["size"]
         else:
-            logger.log(
-                u"They also vary in size. Deleting the logged snatches and recording this release with no size/provider",
-                logger.WARNING)
+            logger.log(u"They also vary in size. Deleting the logged snatches and "
+                       u"recording this release with no size/provider", logger.WARNING)
             for result in sql_results:
                 deleteLoggedSnatch(result["release"], result["size"], result["provider"])
 
         if providers == 1:
             logger.log(u"They're also from the same provider. Using it as well.")
             provider = sql_results[0]["provider"]
-    else:
-        size = sql_results[0]["size"]
-        provider = sql_results[0]["provider"]
 
     if not hasFailed(release, size, provider):
         failed_db_con = db.DBConnection('failed.db')

@@ -155,7 +155,7 @@ class TVCache(object):
                     if ci is not None:
                         cl.append(ci)
 
-                if len(cl) > 0:
+                if cl:
                     cache_db_con = self._getDB()
                     cache_db_con.mass_action(cl)
 
@@ -178,7 +178,7 @@ class TVCache(object):
 
         results = []
         cache_db_con = self._getDB()
-        if len(cl) > 0:
+        if cl:
             logger.log("Mass updating cache table with manual results for provider: {}".format(self.provider.name), logger.DEBUG)
             results = cache_db_con.mass_action(cl)
 
