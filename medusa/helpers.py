@@ -42,7 +42,8 @@ import zipfile
 from itertools import cycle, izip
 
 import adba
-from cachecontrol import CacheControl
+from cachecontrol import CacheControlAdapter
+from cachecontrol.cache import DictCache
 import certifi
 import cfscrape
 from contextlib2 import closing, suppress
@@ -1109,23 +1110,38 @@ def mapIndexersToShow(show):
             t = app.indexerApi(indexer).indexer(**indexer_api_params)
 
             try:
-                mapped_show = t[show.name]
+                mapped_indexer = getattr(show, app.indexerApi(indexer).config.copy().get('mapped_to'), None)
+                mapped_show = t[show.name] if not mapped_indexer else t[mapped_indexer]
+                if not isinstance(mapped_show, list):
+                    mapped[indexer]
+                    mapped_show = [mapped_show]
             except Exception:
-                logger.debug(u"Unable to map " + app.indexerApi(show.indexer).name + "->" + app.indexerApi(
-                    indexer).name + " for show: " + show.name + ", skipping it")
+                logger.debug(u"Unable to map {name} -> {another_name} for show: {show}, skipping it",
+                             name=app.indexerApi(show.indexer).name,
+                             another_name=app.indexerApi(indexer).name, show=show.name)
                 continue
 
-            if mapped_show and len(mapped_show) == 1:
-                logger.debug(u"Mapping " + app.indexerApi(show.indexer).name + "->" + app.indexerApi(
-                    indexer).name + " for show: " + show.name)
+            # We can get a list of results of OrderedDicts, or one Show object.
+            # We need a way to check both for the indexer_id.
+            try:
+                indexer_id = None
+                if mapped_show and len(mapped_show) == 1 and isinstance(mapped_show[0], dict):
+                    indexer_id = mapped_show[0]['id']
 
-                mapped[indexer] = int(mapped_show[0]['id'])
+                if indexer_id:
+                    logger.debug(u"Mapping {name} -> {another_name} for show: {show}",
+                                 name=app.indexerApi(show.indexer).name,
+                                 another_name=app.indexerApi(indexer).name, show=show.name)
+                    mapped[indexer] = int(indexer_id)
 
-                logger.debug(u"Adding indexer mapping to DB for show: " + show.name)
+                    logger.debug(u"Adding indexer mapping to DB for show: {show}", show=show.name)
 
-                sql_l.append([
-                    "INSERT OR IGNORE INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) VALUES (?,?,?,?)",
-                    [show.indexerid, show.indexer, int(mapped_show[0]['id']), indexer]])
+                    sql_l.append([
+                        "INSERT OR IGNORE INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) VALUES (?,?,?,?)",
+                        [show.indexerid, show.indexer, mapped[indexer], indexer]])
+
+            except Exception:
+                logger.debug(u"Unable to map indexer 2 indexer for show: {show}", show=show.name)
 
         if sql_l:
             main_db_con = db.DBConnection()
@@ -1148,12 +1164,24 @@ def touchFile(fname, atime=None):
     return False
 
 
-def make_session():
+def make_session(cache_etags=True, serializer=None, heuristic=None):
     session = requests.Session()
+
+    adapter = CacheControlAdapter(
+        DictCache(),
+        cache_etags=cache_etags,
+        serializer=serializer,
+        heuristic=heuristic,
+    )
+
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+
+    session.cache_controller = adapter.controller
 
     session.headers.update({'User-Agent': USER_AGENT, 'Accept-Encoding': 'gzip,deflate'})
 
-    return CacheControl(sess=session, cache_etags=True)
+    return session
 
 
 def request_defaults(kwargs):
