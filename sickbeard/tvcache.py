@@ -164,7 +164,7 @@ class TVCache(object):
         except Exception as e:
             logger.log(u"Error while searching " + self.provider.name + ", skipping: " + repr(e), logger.DEBUG)
 
-    def update_cache_manual_search(self, manual_data = None):
+    def update_cache_manual_search(self, manual_data=None):
 
         try:
             cl = []
