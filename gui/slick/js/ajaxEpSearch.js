@@ -232,8 +232,12 @@ $(document).ready(function () {
             $('.epManualSnatch').addClass('disabled');
             $('.epManualSnatch').fadeTo(1, 0.1);
  
-            window.location = this.href + '&perform_search=' + performSearch + 
-                                          '&show_all_results=' + showAllResults;
+            var url = this.href + '&perform_search=' + performSearch + '&show_all_results=' + showAllResults;
+            if (event.shiftKey || event.ctrlKey || event.which === 2){
+                window.open(url, '_blank');
+            } else {
+                window.location = url;
+            }
         });
 
         $('#manualSearchModalFailed .btn').click(function(){
