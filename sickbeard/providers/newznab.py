@@ -82,8 +82,16 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
     @staticmethod
     def get_providers_list(data):
-        default_list = [x for x in [NewznabProvider._make_provider(x) for x in NewznabProvider._get_default_providers().split('!!!')] if x]
-        providers_list = [x for x in [NewznabProvider._make_provider(x) for x in data.split('!!!')] if x]
+        default_list = [
+            provider for provider in
+            (NewznabProvider._make_provider(x) for x in NewznabProvider._get_default_providers().split('!!!'))
+            if provider]
+
+        providers_list = [
+            provider for provider in
+            (NewznabProvider._make_provider(x) for x in data.split('!!!'))
+            if provider]
+
         seen_values = set()
         providers_set = []
 
@@ -95,7 +103,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 seen_values.add(value)
 
         providers_list = providers_set
-        providers_dict = dict(zip([x.name for x in providers_list], providers_list))
+        providers_dict = dict(zip([provider.name for provider in providers_list], providers_list))
 
         for default in default_list:
             if not default:
@@ -115,7 +123,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 providers_dict[default.name].enable_backlog = default.enable_backlog
                 providers_dict[default.name].catIDs = default.catIDs
 
-        return [x for x in providers_list if x]
+        return [provider for provider in providers_list if provider]
 
     def image_name(self):
         """
