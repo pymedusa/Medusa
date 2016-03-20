@@ -122,7 +122,7 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                             logger.log(u"Data returned from %s does not contain any torrents" % self.name, logger.DEBUG)
                             continue
 
-                        torrent_rows = torrent_table.findAll('tr', {'class': 'torrent'})
+                        torrent_rows = torrent_table('tr', {'class': 'torrent'})
 
                         # Continue only if one Release is found
                         if not torrent_rows:
@@ -161,7 +161,7 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                                                (title, seeders, leechers), logger.DEBUG)
                                 continue
 
-                            cells = torrent_row.find_all('td')
+                            cells = torrent_row('td')
                             torrent_size = cells[5].text.strip()
                             size = convert_size(torrent_size) or -1
 
