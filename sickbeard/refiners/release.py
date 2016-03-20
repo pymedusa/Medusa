@@ -39,15 +39,15 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
     :param str extension: the release file extension.
 
     """
-    logger.log(u'Starting release refiner [extension={}, release_name={}, release_file={}]'.format
+    logger.log(u'Starting release refiner [extension={0}, release_name={1}, release_file={2}]'.format
                (extension, release_name, release_file), logger.DEBUG)
     dirpath, filename = os.path.split(video.name)
     dirpath = dirpath or '.'
     fileroot, fileext = os.path.splitext(filename)
-    release_file = release_file if release_file else get_release_file(dirpath, extension, fileroot)
+    release_file = release_file if release_file else get_release_file(dirpath, fileroot, extension)
     release_name = release_name if release_name else get_release_name(release_file)
 
-    release_path = os.path.join(dirpath, '%s%s' % (release_name, fileext))
+    release_path = os.path.join(dirpath, release_name + fileext)
     logger.log(u'Guessing using {}'.format(release_path), logger.DEBUG)
 
     guess = guessit(release_path)
@@ -58,11 +58,22 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
 
         if new_value and old_value != new_value:
             setattr(video, key, new_value)
-            logger.log(u'Attribute {} changed from {} to {}'.format(key, old_value, new_value), logger.DEBUG)
+            logger.log(u'Attribute {0} changed from {1} to {2}'.format(key, old_value, new_value), logger.DEBUG)
 
 
-def get_release_file(dirpath, extension, fileroot):
-    release_file = os.path.join(dirpath, '%s.%s' % (fileroot, extension))
+def get_release_file(dirpath, filename, extension):
+    """
+    Given a `dirpath`, `filename` and `extension`, it returns the release file that should contain the original
+    release name.
+
+    Args:
+        dirpath: the file base folder
+        filename: the file name without extension
+        extension: the file extension
+
+    Returns: the release file if the file exists
+    """
+    release_file = os.path.join(dirpath, filename + extension)
 
     # skip if info file doesn't exist
     if os.path.isfile(release_file):
@@ -71,6 +82,14 @@ def get_release_file(dirpath, extension, fileroot):
 
 
 def get_release_name(release_file):
+    """
+    Given a `release_file` it will return the release name
+
+    Args:
+        release_file: the text file that contains the release name
+
+    Returns: the release name
+    """
     with open(release_file, 'r') as f:
         release_name = f.read().strip()
 
