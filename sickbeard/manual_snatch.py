@@ -167,7 +167,8 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     showObj = Show.find(sickbeard.showList, int(show))
 
     main_db_con = db.DBConnection('cache.db')
-    sql_return = found_items = []
+    sql_return = []
+    found_items = []
     provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
 
     providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_daily]
