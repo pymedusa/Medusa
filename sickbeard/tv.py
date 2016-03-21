@@ -1415,7 +1415,8 @@ class TVEpisode(object):  # pylint: disable=too-many-instance-attributes, too-ma
 
         subtitles_info = {'location': self.location, 'subtitles': self.subtitles, 'season': self.season,
                           'episode': self.episode, 'name': self.name, 'show_name': self.show.name,
-                          'show_indexerid': self.show.indexerid, 'status': self.status}
+                          'show_indexerid': self.show.indexerid, 'status': self.status,
+                          'release_name': self.release_name}
 
         self.subtitles, new_subtitles = subtitles.download_subtitles(subtitles_info)
 
