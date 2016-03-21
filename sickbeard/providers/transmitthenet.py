@@ -134,7 +134,12 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                             if self.freeleech and not freeleech:
                                 continue
 
-                            download_item = torrent_row.find('a', {'title': 'Download Torrent'})
+                            download_item = torrent_row.find('a', {'title': [
+                                'Download Torrent',  # Download link
+                                'Previously Grabbed Torrent File',  # Already Downloaded
+                                'Currently Seeding Torrent',  # Seeding
+                            ]})
+
                             if not download_item:
                                 continue
 
