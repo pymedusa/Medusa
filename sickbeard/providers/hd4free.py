@@ -75,12 +75,13 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                 else:
                     search_params.pop('search', '')
 
+                jdata = self.get_url(self.urls['search'], params=search_params, returns='json')
+
                 error = jdata.get('error')
                 if error:
                     logger.log(u"{}".format(error), logger.DEBUG)
                     return results
 
-                jdata = self.get_url(self.urls['search'], params=search_params, returns='json')
                 if not jdata:
                     logger.log(u"No data returned from provider", logger.DEBUG)
                     continue
