@@ -1816,9 +1816,9 @@ class Home(WebRoot):
                                    '<ul>' + '\n'.join(['<li>%s</li>' % error for error in errors]) + "</ul>")
 
         return self.redirect("/home/displayShow?show=" + show)
-        
+
     def erase_cache(self, showObj):
-    
+
         try:
             main_db_con = db.DBConnection('cache.db')
             for curProvider in sickbeard.providers.sortedProviderList():
@@ -1833,7 +1833,7 @@ class Home(WebRoot):
 
         except Exception:
             logger.log(u"Unable to delete cached results for show: {}".format(showObj.name), logger.DEBUG)
-        
+
 
     def togglePause(self, show=None):
         error, show = Show.pause(show)
@@ -2915,7 +2915,8 @@ class HomeAddShows(Home):
                 location = None
 
         if not location:
-            logger.log(u"There was an error creating the show, no root directory setting found")
+            logger.log(u"There was an error creating the show, "
+                       u"no root directory setting found", logger.WARNING)
             return "No root directories setup, please go back and add one."
 
         show_name = get_showname_from_indexer(1, indexer_id)
