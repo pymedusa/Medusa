@@ -48,6 +48,7 @@ function updateImages(data) {
                 img.prop('src',srRoot+'/images/' + queuedImage );
                 disableLink(el);
                 htmlContent = ep.searchstatus;
+
             } else if (ep.searchstatus.toLowerCase() === 'finished') {
                 //el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title','Searching');
@@ -126,12 +127,12 @@ $(document).ready(function () {
 (function(){
     $.ajaxEpSearch = {
         defaults: {
-            size:				16,
-            colorRow:         	false,
-            loadingImage:		'loading16.gif',
-            queuedImage:		'queued.png',
-            noImage:			'no16.png',
-            yesImage:			'yes16.png'
+            size: 16,
+            colorRow: false,
+            loadingImage: 'loading16.gif',
+            queuedImage: 'queued.png',
+            noImage: 'no16.png',
+            yesImage: 'yes16.png'
         }
     };
 
@@ -165,8 +166,13 @@ $(document).ready(function () {
 
             var url = selectedEpisode.prop('href');
 
-            if (failedDownload === false) {
+            if (!failedDownload) {
                 url = url.replace("retryEpisode", "searchEpisode");
+            } 
+
+            // Only pass the down_cur_quality flag when retryEpisode() is called
+            if (qualityDownload && url.indexOf('retryEpisode') >= 0) {
+                url = url + "&down_cur_quality=1";
             }
 
             $.getJSON(url, function(data){
