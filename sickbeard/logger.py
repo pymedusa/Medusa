@@ -333,7 +333,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
                     cur_error.message,
                     '```',
                     '---',
-                    '_STAFF NOTIFIED_: @SickRage/support @SickRage/moderators',
+                    '_STAFF NOTIFIED_: @pymedusa/support @pymedusa/moderators',
                 ]
 
                 message = '\n'.join(msg)
