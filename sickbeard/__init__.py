@@ -199,6 +199,7 @@ DEBUG = False
 DBDEBUG = False
 DISPLAY_ALL_SEASONS = True
 DEFAULT_PAGE = 'home'
+SEEDERS_LEECHERS_IN_NOTIFY = True
 
 
 USE_LISTVIEW = False
@@ -642,7 +643,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             METADATA_WDTV, METADATA_TIVO, METADATA_MEDE8ER, IGNORE_WORDS, PREFERRED_WORDS, UNDESIRED_WORDS, TRACKERS_LIST, IGNORED_SUBS_LIST, REQUIRE_WORDS, CALENDAR_UNPROTECTED, CALENDAR_ICONS, NO_RESTART, \
             USE_SUBTITLES, SUBTITLES_LANGUAGES, SUBTITLES_DIR, SUBTITLES_SERVICES_LIST, SUBTITLES_SERVICES_ENABLED, SUBTITLES_HISTORY, SUBTITLES_FINDER_FREQUENCY, SUBTITLES_MULTI, SUBTITLES_DOWNLOAD_IN_PP, SUBTITLES_KEEP_ONLY_WANTED, EMBEDDED_SUBTITLES_ALL, SUBTITLES_EXTRA_SCRIPTS, SUBTITLES_PRE_SCRIPTS, SUBTITLES_PERFECT_MATCH, subtitlesFinderScheduler, \
             SUBTITLES_HEARING_IMPAIRED, ADDIC7ED_USER, ADDIC7ED_PASS, ITASA_USER, ITASA_PASS, LEGENDASTV_USER, LEGENDASTV_PASS, OPENSUBTITLES_USER, OPENSUBTITLES_PASS, \
-            USE_FAILED_DOWNLOADS, DELETE_FAILED, ANON_REDIRECT, LOCALHOST_IP, DEBUG, DBDEBUG, DEFAULT_PAGE, PROXY_SETTING, PROXY_INDEXERS, \
+            USE_FAILED_DOWNLOADS, DELETE_FAILED, ANON_REDIRECT, LOCALHOST_IP, DEBUG, DBDEBUG, DEFAULT_PAGE, SEEDERS_LEECHERS_IN_NOTIFY, PROXY_SETTING, PROXY_INDEXERS, \
             AUTOPOSTPROCESSER_FREQUENCY, SHOWUPDATE_HOUR, \
             ANIME_DEFAULT, NAMING_ANIME, ANIMESUPPORT, USE_ANIDB, ANIDB_USERNAME, ANIDB_PASSWORD, ANIDB_USE_MYLIST, \
             ANIME_SPLIT_HOME, SCENE_DEFAULT, DOWNLOAD_URL, BACKLOG_DAYS, GIT_USERNAME, GIT_PASSWORD, \
@@ -691,6 +692,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         if DEFAULT_PAGE not in ('home', 'schedule', 'history', 'news', 'IRC'):
             DEFAULT_PAGE = 'home'
 
+        SEEDERS_LEECHERS_IN_NOTIFY = check_setting_int(CFG, 'General', 'seeders_leechers_in_notify', 1)
         ACTUAL_LOG_DIR = check_setting_str(CFG, 'General', 'log_dir', 'Logs')
         LOG_DIR = ek(os.path.normpath, ek(os.path.join, DATA_DIR, ACTUAL_LOG_DIR))
         LOG_NR = check_setting_int(CFG, 'General', 'log_nr', 5)  # Default to 5 backup file (sickrage.log.x)
@@ -1680,6 +1682,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['debug'] = int(DEBUG)
     new_config['General']['dbdebug'] = int(DBDEBUG)
     new_config['General']['default_page'] = DEFAULT_PAGE
+    new_config['General']['seeders_leechers_in_notify'] = int(SEEDERS_LEECHERS_IN_NOTIFY)
     new_config['General']['enable_https'] = int(ENABLE_HTTPS)
     new_config['General']['notify_on_login'] = int(NOTIFY_ON_LOGIN)
     new_config['General']['https_cert'] = HTTPS_CERT

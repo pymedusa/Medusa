@@ -173,10 +173,15 @@ def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branc
 
         if curEpObj.status not in Quality.DOWNLOADED:
             try:
-                notifiers.notify_snatch("{} from {}".format(curEpObj._format_pattern('%SN - %Sx%0E - %EN - %QN'),
-                                                            result.provider.name))  # pylint: disable=protected-access
+                notify_message = curEpObj.formatted_filename('%SN - %Sx%0E - %EN - %QN')
+                if all([sickbeard.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None), result.leechers not in (-1, None)]):
+                    notifiers.notify_snatch(
+                        "{0} with {1} seeders and {2} leechers from {3}".format(notify_message, result.seeders,
+                                                                                result.leechers, result.provider.name))
+                else:
+                    notifiers.notify_snatch("{0} from {1}".format(notify_message, result.provider.name))
             except Exception:
-                # Without this, when notification fail, it crashes the snatch thread and SR will
+                # Without this, when notification fail, it crashes the snatch thread and Medusa will
                 # keep snatching until notification is sent
                 logger.log(u"Failed to send snatch notification", logger.DEBUG)
 
