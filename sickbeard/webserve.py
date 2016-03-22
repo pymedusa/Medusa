@@ -2948,10 +2948,12 @@ class HomeAddShows(Home):
                        u"no root directory setting found", logger.WARNING)
             return "No root directories setup, please go back and add one."
 
+        # NOTE: Need to make this configurable, or at least use the default indexer
         show_name = get_showname_from_indexer(1, indexer_id)
         show_dir = None
 
         # add the show
+        # NOTE: Need to make this configurable, or at least use the default indexer
         sickbeard.showQueueScheduler.action.addShow(1, int(indexer_id), show_dir, int(default_status), quality, flatten_folders,
                                                     indexer_lang, subtitles, anime, scene, None, blacklist, whitelist,
                                                     int(default_status_after), root_dir=location)
