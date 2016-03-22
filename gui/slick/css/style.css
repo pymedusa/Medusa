@@ -1116,10 +1116,6 @@ span.snatched b {
     text-align: left !important;
 }
 
-.displayShowTable td.col-search {
-    text-align: center;
-}
-
 .sickbeardTable {
     table-layout: auto;
     width: 100%;
@@ -1226,7 +1222,7 @@ td.col-legend {
 
 th.col-search,
 td.col-search {
-  width: 46px;
+  width: 65px;
 }
 
 .showLegend {
