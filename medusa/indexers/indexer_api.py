@@ -69,7 +69,7 @@ class indexerApi(object):
 
     @property
     def indexers(self):
-        return dict((int(x['id']), x['name']) for x in indexerConfig.values())
+        return dict((int(x['id']), x['name']) for x in indexerConfig.values() if x.get('enabled', None))
 
     @property
     def session(self):
