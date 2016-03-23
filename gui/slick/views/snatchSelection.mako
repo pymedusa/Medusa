@@ -18,7 +18,6 @@
 <%block name="scripts">
 <script type="text/javascript" src="${srRoot}/js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
 <script type="text/javascript" src="${srRoot}/js/plotTooltip.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/sceneExceptionsTooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="${srRoot}/js/ratingTooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="${srRoot}/js/ajaxEpSubtitles.js?${sbPID}"></script>
 </%block>
