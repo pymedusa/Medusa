@@ -75,13 +75,13 @@ class CensoredFormatter(logging.Formatter, object):
         super(CensoredFormatter, self).__init__(fmt, datefmt)
         self.encoding = encoding
 
-    def format(self, record):
+    def censor_message(self, record):
         """
         Strips censored items from string
 
         :param record: to censor
         """
-        msg = super(CensoredFormatter, self).format(record)
+        msg = super(CensoredFormatter, self).censor_message(record)
 
         if not isinstance(msg, unicode):
             msg = msg.decode(self.encoding, 'replace')  # Convert to unicode
