@@ -1009,7 +1009,9 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 self._log(u"File exists and new file is same size, pretending we did something")
                 return True
 
-            if new_ep_quality <= old_ep_quality != common.Quality.UNKNOWN and existing_file_status != PostProcessor.DOESNT_EXIST:
+            if all([new_ep_quality <= old_ep_quality,
+                    old_ep_quality != common.Quality.UNKNOWN,
+                    existing_file_status != PostProcessor.DOESNT_EXIST]):
                 if self.is_proper and new_ep_quality == old_ep_quality:
                     self._log(u"New file is a proper/repack, marking it safe to replace")
                 else:
