@@ -18,7 +18,6 @@ setup(
     install_requires=[],
     test_suite="tests",
     tests_require=[
-        'coveralls',
         'nose',
         'rednose',
         'mock',
