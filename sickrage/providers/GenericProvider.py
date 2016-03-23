@@ -131,6 +131,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
                     continue
 
+            # NOTE: searched_scene_season is always None?
             if len(episodes) > 1 and search_mode == 'sponly' and searched_scene_season == episode.scene_season:
                 continue
 
