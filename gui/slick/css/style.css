@@ -922,6 +922,10 @@ h1.title {
     border-bottom: 1px solid #888;
 }
 
+h1.title a {
+    text-decoration: none;
+}
+
 .displayspecials {
     position: relative;
     top: -24px;
