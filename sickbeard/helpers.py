@@ -126,7 +126,7 @@ def remove_non_release_groups(name):
         r'\.\[720P\]\[HEVC\]$': 'searchre',
         r'\[AndroidTwoU\]$': 'searchre',
         r'\[brassetv\]$': 'searchre',
-        r'\[Talamasca32\]]$': 'searchre',
+        r'\[Talamasca32\]$': 'searchre',
         r'\(musicbolt\.com\)$': 'searchre',
         r'\.\[BT\]$': 'searchre',
         r' \[1044\]$': 'searchre',
