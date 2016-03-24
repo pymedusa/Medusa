@@ -1,26 +1,27 @@
 # coding=utf-8
-# This file is part of SickRage.
 #
-
 # Git: https://github.com/PyMedusa/SickRage.git
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from datetime import timedelta
+from collections import namedtuple
+from datetime import datetime, timedelta
+
 from sickbeard.common import Quality
 from sickbeard.db import DBConnection
+
 from sickrage.helper.common import try_int
 
 
@@ -48,68 +49,154 @@ class History(object):
         :return: The last ``limit`` elements of type ``action`` in the history
         """
 
-        actions = History._get_actions(action)
-        limit = History._get_limit(limit)
+        # TODO: Make this a generator instead
+        # TODO: Split compact and detailed into separate methods
+        # TODO: Add a date limit as well
+        # TODO: Clean up history.mako
 
-        common_sql = 'SELECT action, date, episode, provider, h.quality, resource, season, show_name, showid ' \
+        actions = History._get_actions(action)
+        limit = max(try_int(limit), 0)
+
+        common_sql = 'SELECT show_name, showid, season, episode, h.quality, ' \
+                     'action, provider, resource, date ' \
                      'FROM history h, tv_shows s ' \
                      'WHERE h.showid = s.indexer_id '
         filter_sql = 'AND action in (' + ','.join(['?'] * len(actions)) + ') '
         order_sql = 'ORDER BY date DESC '
 
-        if limit == 0:
-            if actions:
-                results = self.db.select(common_sql + filter_sql + order_sql, actions)
-            else:
-                results = self.db.select(common_sql + order_sql)
+        if actions:
+            sql_results = self.db.select(common_sql + filter_sql + order_sql,
+                                         actions)
         else:
-            if actions:
-                results = self.db.select(common_sql + filter_sql + order_sql + 'LIMIT ?', actions + [limit])
-            else:
-                results = self.db.select(common_sql + order_sql + 'LIMIT ?', [limit])
+            sql_results = self.db.select(common_sql + order_sql)
 
-        data = []
-        for result in results:
-            data.append({
-                'action': result['action'],
-                'date': result['date'],
-                'episode': result['episode'],
-                'provider': result['provider'],
-                'quality': result['quality'],
-                'resource': result['resource'],
-                'season': result['season'],
-                'show_id': result['showid'],
-                'show_name': result['show_name']
-            })
+        detailed = []
+        compact = dict()
 
-        return data
+        # TODO: Convert to a defaultdict and compact items as needed
+        # TODO: Convert to using operators to combine items
+        for row in sql_results:
+            row = History.Item(*row)
+            if row.index in compact:
+                compact[row.index].actions.append(row.cur_action)
+            elif not limit or len(compact) < limit:
+                detailed.append(row)
+                compact[row.index] = row.compacted()
 
-    def trim(self):
+        results = namedtuple('results', ['detailed', 'compact'])
+        return results(detailed, compact.values())
+
+    def trim(self, days=30):
         """
-        Remove all elements older than 30 days from the history
-        """
+        Remove expired elements from history
 
+        :param days: number of days to keep
+        """
+        date = datetime.today() - timedelta(days)
         self.db.action(
             'DELETE '
             'FROM history '
             'WHERE date < ?',
-            [(datetime.today() - timedelta(days=30)).strftime(History.date_format)]
+            [date.strftime(History.date_format)]
         )
 
     @staticmethod
     def _get_actions(action):
         action = action.lower() if isinstance(action, (str, unicode)) else ''
 
+        result = None
         if action == 'downloaded':
-            return Quality.DOWNLOADED
+            result = Quality.DOWNLOADED
+        elif action == 'snatched':
+            result = Quality.SNATCHED
 
-        if action == 'snatched':
-            return Quality.SNATCHED
+        return result or []
 
-        return []
+    action_fields = ('action', 'provider', 'resource', 'date', )
+    # A specific action from history
+    Action = namedtuple('Action', action_fields)
+    Action.width = len(action_fields)
 
-    @staticmethod
-    def _get_limit(limit):
-        limit = try_int(limit, 0)
+    index_fields = ('show_id', 'season', 'episode', 'quality', )
+    # An index for an item or compact item from history
+    Index = namedtuple('Index', index_fields)
+    Index.width = len(index_fields)
 
-        return max(limit, 0)
+    compact_fields = ('show_name', 'index', 'actions', )
+    # Related items compacted with a list of actions from history
+    CompactItem = namedtuple('CompactItem', compact_fields)
+
+    item_fields = tuple(  # make it a tuple so its immutable
+        ['show_name'] + list(index_fields) + list(action_fields)
+    )
+
+    class Item(namedtuple('Item', item_fields)):
+        # TODO: Allow items to be added to a compact item
+        """
+        An individual row item from history
+        """
+        # prevent creation of a __dict__ when subclassing
+        # from a class that uses __slots__
+        __slots__ = ()
+
+        @property
+        def index(self):
+            """
+            Create a look-up index for the item
+            """
+            return History.Index(
+                self.show_id,
+                self.season,
+                self.episode,
+                self.quality,
+            )
+
+        @property
+        def cur_action(self):
+            """
+            Create the current action from action_fields
+            """
+            return History.Action(
+                self.action,
+                self.provider,
+                self.resource,
+                self.date,
+            )
+
+        def compacted(self):
+            """
+            Create a CompactItem
+
+            :returns: the current item in compact form
+            """
+            result = History.CompactItem(
+                self.show_name,
+                self.index,
+                [self.cur_action],  # actions
+            )
+            return result
+
+        def __add__(self, other):
+            """
+            Combines two history items with the same index
+
+            :param other: The other item to add
+            :returns: a compact item with elements from both items
+            :raises AssertionError: if indexes do not match
+            """
+            # Index comparison and validation is done by _radd_
+            return self.compacted() + other
+
+        def __radd__(self, other):
+            """
+            Adds a history item to a compact item
+
+            :param other: The compact item to append
+            :returns: the updated compact item
+            :raises AssertionError: if indexes do not match
+            """
+            if self.index == other.index:
+                other.actions.append(self.cur_action)
+                return other
+            else:
+                raise AssertionError('cannot add items with different indexes')
