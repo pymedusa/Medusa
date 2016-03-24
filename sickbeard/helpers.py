@@ -127,7 +127,7 @@ def remove_non_release_groups(name):
         r'\[NO.RAR\]$': 'searchre',
         r'-\=\{SPARROW\}\=-$': 'searchre',
         r'\=\{SPARR$': 'searchre',
-        r'\.\[720P\]\[HEVC\]$': 'searchre',
+        r'\.\[\d*(P|p)\]\[HEVC\]$': 'searchre',
         r'\[AndroidTwoU\]$': 'searchre',
         r'\[brassetv\]$': 'searchre',
         r'\[Talamasca32\]$': 'searchre',
