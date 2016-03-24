@@ -356,11 +356,11 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                     title += filename_qt
 
                                 if not self._is_italian(result) and not self.subtitle:
-                                    logger.log(u"Torrent is subtitled, skipping: %s " % title, logger.DEBUG)
+                                    logger.log(u"Torrent is subtitled, skipping: {0} ".format(title), logger.DEBUG)
                                     continue
 
                                 if self.engrelease and not self._is_english(result):
-                                    logger.log(u"Torrent isnt english audio/subtitled , skipping: %s " % title, logger.DEBUG)
+                                    logger.log(u"Torrent isnt english audio/subtitled , skipping: {0} ".format(title), logger.DEBUG)
                                     continue
 
                                 search_show = re.split(r'([Ss][\d{1,2}]+)', search_string)[0]
@@ -388,12 +388,12 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                                 item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
                                 if mode != 'RSS':
-                                    logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
+                                    logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format(title, seeders, leechers), logger.DEBUG)
 
                                 items.append(item)
 
                     except Exception:
-                        logger.log(u"Failed parsing provider. Traceback: %s" % traceback.format_exc(), logger.ERROR)
+                        logger.log(u"Failed parsing provider. Traceback: {0}".format(traceback.format_exc()), logger.ERROR)
 
                 # For each search mode sort all the items by seeders if available if available
                 items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)

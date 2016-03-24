@@ -44,7 +44,7 @@ def dbFilename(filename="sickbeard.db", suffix=None):
     @return: the correct location of the database file.
     """
     if suffix:
-        filename = "%s.%s" % (filename, suffix)
+        filename = "{0}.{1}".format(filename, suffix)
     return ek(os.path.join, sickbeard.DATA_DIR, filename)
 
 
@@ -334,7 +334,7 @@ class DBConnection(object):
         :param tableName: name of table
         :return: array of name/type info
         """
-        sql_results = self.select("PRAGMA table_info(`%s`)" % tableName)
+        sql_results = self.select("PRAGMA table_info(`{0}`)".format(tableName))
         columns = {}
         for column in sql_results:
             columns[column['name']] = {'type': column['type']}
@@ -390,8 +390,8 @@ class DBConnection(object):
         :param type: Column type to add
         :param default: Default value for column
         """
-        self.action("ALTER TABLE [%s] ADD %s %s" % (table, column, type))
-        self.action("UPDATE [%s] SET %s = ?" % (table, column), (default,))
+        self.action("ALTER TABLE [{0}] ADD {1} {2}".format(table, column, type))
+        self.action("UPDATE [{0}] SET {1} = ?".format(table, column), (default,))
 
 
 def sanityCheckDatabase(connection, sanity_check):
@@ -471,8 +471,8 @@ class SchemaUpgrade(object):
         return column in self.connection.tableInfo(tableName)
 
     def addColumn(self, table, column, type="NUMERIC", default=0):
-        self.connection.action("ALTER TABLE [%s] ADD %s %s" % (table, column, type))
-        self.connection.action("UPDATE [%s] SET %s = ?" % (table, column), (default,))
+        self.connection.action("ALTER TABLE [{0}] ADD {1} {2}".format(table, column, type))
+        self.connection.action("UPDATE [{0}] SET {1} = ?".format(table, column), (default,))
 
     def checkDBVersion(self):
         return self.connection.checkDBVersion()

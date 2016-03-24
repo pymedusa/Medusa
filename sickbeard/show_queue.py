@@ -193,7 +193,7 @@ class ShowQueue(generic_queue.GenericQueue):
             raise CantRemoveShowException(u'Failed removing show: Show does not have an indexer id')
 
         if self._isInQueue(show, (ShowQueueActions.REMOVE,)):
-            raise CantRemoveShowException(u'[{!s}]: Show is already queued to be removed'.format(show.indexerid))
+            raise CantRemoveShowException(u'[{}]: Show is already queued to be removed'.format(show.indexerid))
 
         # remove other queued actions for this show.
         for item in self.queue:
@@ -368,14 +368,13 @@ class QueueItemAdd(ShowQueueItem):
                 self._finishEarly()
                 return
         except Exception as e:
-            logger.log(u"%s Error while loading information from indexer %s. Error: %r" % (self.indexer_id, sickbeard.indexerApi(self.indexer).name, ex(e)), logger.ERROR)
+            logger.log(u"{0} Error while loading information from indexer {1}. Error: {2!r}".format(self.indexer_id, sickbeard.indexerApi(self.indexer).name, ex(e)), logger.ERROR)
             # logger.log(u"Show name with ID %s doesn't exist on %s anymore. If you are using trakt, it will be removed from your TRAKT watchlist. If you are adding manually, try removing the nfo and adding again" %
             #            (self.indexer_id, sickbeard.indexerApi(self.indexer).name), logger.WARNING)
 
             ui.notifications.error(
                 "Unable to add show",
-                "Unable to look up the show in %s on %s using ID %s, not using the NFO. Delete .nfo and try adding manually again." %
-                (self.showDir, sickbeard.indexerApi(self.indexer).name, self.indexer_id)
+                "Unable to look up the show in {0} on {1} using ID {2}, not using the NFO. Delete .nfo and try adding manually again.".format(self.showDir, sickbeard.indexerApi(self.indexer).name, self.indexer_id)
             )
 
             if sickbeard.USE_TRAKT:
@@ -730,7 +729,7 @@ class QueueItemRemove(ShowQueueItem):
 
     def run(self):
         ShowQueueItem.run(self)
-        logger.log(u"Removing %s" % self.show.name)
+        logger.log(u"Removing {0}".format(self.show.name))
         self.show.deleteShow(full=self.full)
 
         if sickbeard.USE_TRAKT:

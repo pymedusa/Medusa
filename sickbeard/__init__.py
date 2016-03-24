@@ -732,7 +732,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         # git_remote
         GIT_REMOTE = check_setting_str(CFG, 'General', 'git_remote', 'origin')
         GIT_REMOTE_URL = check_setting_str(CFG, 'General', 'git_remote_url',
-                                           'https://github.com/%s/%s.git' % (GIT_ORG, GIT_REPO))
+                                           'https://github.com/{0}/{1}.git'.format(GIT_ORG, GIT_REPO))
 
         if 'com/sickrage' in GIT_REMOTE_URL.lower():
             GIT_REMOTE_URL = 'https://github.com/PyMedusa/SickRage.git'
@@ -1607,7 +1607,7 @@ def halt():
                 t.stop.set()
 
             for t in threads:
-                logger.log(u"Waiting for the %s thread to exit" % t.name)
+                logger.log(u"Waiting for the {0} thread to exit".format(t.name))
                 try:
                     t.join(10)
                 except Exception:
@@ -1628,7 +1628,7 @@ def halt():
 def sig_handler(signum=None, frame=None):
     _ = frame
     if not isinstance(signum, type(None)):
-        logger.log(u"Signal %i caught, saving and exiting..." % int(signum))
+        logger.log(u"Signal {0:d} caught, saving and exiting...".format(int(signum)))
         Shutdown.stop(PID)
 
 
@@ -2204,7 +2204,7 @@ def launchBrowser(protocol='http', startPort=None, web_root='/'):
     if not startPort:
         startPort = WEB_PORT
 
-    browserURL = '%s://localhost:%d%s/home/' % (protocol, startPort, web_root)
+    browserURL = '{0}://localhost:{1:d}{2}/home/'.format(protocol, startPort, web_root)
 
     try:
         webbrowser.open(browserURL, 2, 1)
