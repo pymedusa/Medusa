@@ -111,6 +111,7 @@ def remove_non_release_groups(name):
     removeWordsList = {
         r'\[rartv\]$': 'searchre',
         r'\[rarbg\]$': 'searchre',
+        r'\.\[oldeztv\]$': 'searchre',
         r'\.\[eztv\]$': 'searchre',
         r'\[eztv\]$': 'searchre',
         r'\[ettv\]$': 'searchre',
@@ -132,6 +133,8 @@ def remove_non_release_groups(name):
         r'\[brassetv\]$': 'searchre',
         r'\[Talamasca32\]$': 'searchre',
         r'\(musicbolt\.com\)$': 'searchre',
+        r'\.\(NLsub\)\.English$': 'searchre',
+        r'\_\(NLsub\)$': 'searchre',
         r'\.\(NLsub\)$': 'searchre',
         r'\(NLsub\)$': 'searchre',
         r'\.\[BT\]$': 'searchre',
