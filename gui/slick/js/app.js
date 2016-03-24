@@ -1,6 +1,5 @@
 // @TODO: The line below needs to be moved to jshint
-/* global angular */
-/* global SICKRAGE */
+/* global angular, SICKRAGE */
 
 var sickrage = angular.module('sickrage', [
     'ui.router',
@@ -12,10 +11,7 @@ var sickrage = angular.module('sickrage', [
 sickrage.config([
     '$stateProvider',
     '$urlRouterProvider',
-    '$locationProvider',
-    '$compileProvider',
-    '$httpProvider',
-    function($stateProvider, $urlRouterProvider, $locationProvider, $compileProvider, $httpProvider){
+    function($stateProvider, $urlRouterProvider){
         // Enable HTML5's history API to allow / instead of #/
         // Currently we use #/ since mako is still inside of Sickrage
         // $locationProvider.html5Mode(true);
@@ -218,7 +214,10 @@ sickrage.config([
 
 sickrage.run(function($rootScope, $http) {
     $rootScope.recentShows = [];
-    $rootScope.getRecentShows = function(){
+    $rootScope.settings = {};
+    $rootScope.errorsCounts = {};
+    $rootScope.loggedIn = false;
+    $rootScope.updateRootScope = function(){
         $http({
             method: 'GET',
             url: '/',
@@ -226,15 +225,19 @@ sickrage.run(function($rootScope, $http) {
                 'Accept': 'application/json'
             }
         }).then(function successCallback(response){
+            $rootScope.settings = response.data.settings;
             $rootScope.recentShows = response.data.recentShows;
+            $rootScope.errorsCounts = response.data.errorsCounts;
+            $rootScope.loggedIn = response.data.loggedIn;
+            $rootScope.newsUnread = response.data.newsUnread;
         });
     };
-    $rootScope.getRecentShows();
+    $rootScope.updateRootScope();
     $rootScope.seasonString = function(season, episode){
         season = (season < 10 ? '0' : '') + season;
         episode = (episode < 10 ? '0' : '') + episode;
         return 'S' + season + 'E' + episode;
-    }
+    };
 });
 
 sickrage.filter('timeago', function() {
@@ -244,13 +247,13 @@ sickrage.filter('timeago', function() {
         } else {
             return input;
         }
-    }
+    };
 });
 
 sickrage.filter('capitalise', function() {
     return function(input) {
         return (!!input) ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
-    }
+    };
 });
 
 sickrage.directive('qtip', function() {
@@ -293,12 +296,12 @@ sickrage.directive('qtip', function() {
                 });
 
             if(attrs.qtipVisible) {
-                scope.$watch('qtipVisible', function (newValue, oldValue) {
+                scope.$watch('qtipVisible', function (newValue) {
                     $(element).qtip('toggle', newValue);
                 });
             }
         }
-    }
+    };
 });
 
 sickrage.directive('a', function() {
@@ -309,16 +312,16 @@ sickrage.directive('a', function() {
                 attrs.$set('href', 'http://dereferer.org/?' + attrs.anonHref);
             }
         }
-    }
+    };
 });
 
 sickrage.directive('progressbar', function() {
     return {
-        link: function($scope, element, attrs) {
+        link: function($scope, element) {
             var percentage = $scope.progressbarPercentage;
             var classToAdd = percentage === 100 ? 100 : percentage > 80 ? 80 : percentage > 60 ? 60 : percentage > 40 ? 40 : 20;
             $(element).addClass('progressbar hidden-print');
-            $(element).attr('style', 'position:relative;')
+            $(element).attr('style', 'position:relative;');
             $(element).progressbar({
                 value: percentage
             });
@@ -332,7 +335,7 @@ sickrage.directive('progressbar', function() {
 
 sickrage.directive('hometablesorter', function(){
     return {
-        link: function($scope, element, attrs) {
+        link: function($scope, element) {
             $(element).tablesorter({
                 sortList: [[7,1],[2,0]],
                 textExtraction: {
@@ -421,12 +424,12 @@ sickrage.directive('hometablesorter', function(){
                 sortAppend: [[2,0]]
             });
         }
-    }
+    };
 });
 
 sickrage.directive('displayshowtablesorter', function(){
     return {
-        link: function($scope, element, attrs) {
+        link: function($scope, element) {
             $(element).tablesorter({
                 widgets: ['saveSort', 'stickyHeaders', 'columnSelector'],
                 widgetOptions : {
@@ -438,12 +441,12 @@ sickrage.directive('displayshowtablesorter', function(){
                 }
             });
         }
-    }
+    };
 });
 
 sickrage.directive('tablesorterpopover', function(){
     return {
-        link: function($scope, element, attrs) {
+        link: function($scope, element) {
             $(element).popover({
                 placement: 'bottom',
                 html: true, // required if content has HTML
@@ -463,7 +466,7 @@ sickrage.directive('header', function () {
         restrict: 'A',
         replace: true,
         templateUrl: '/templates/partials/header.html'
-    }
+    };
 });
 
 sickrage.directive('footer', function () {
@@ -471,14 +474,14 @@ sickrage.directive('footer', function () {
         restrict: 'A',
         replace: true,
         templateUrl: '/templates/partials/footer.html'
-    }
+    };
 });
 
 sickrage.directive('submenu', function () {
     return {
         restrict: 'A',
         replace: true,
-        controller: ['$scope', '$http', '$state', function ($scope, $http, $state) {
+        controller: ['$scope', '$http', '$state', function($scope, $http, $state) { // jshint ignore:line
             // $scope.$state = $state;
             // $http({
             //     method: 'GET',
@@ -512,11 +515,11 @@ sickrage.directive('submenu', function () {
         //     % endif
         // % endfor -->
         }]
-    }
+    };
 });
 
 // @TODO: All of the controllers need to be moved into a controller directory and/or file
-sickrage.controller('homeController', function($scope, $http, $rootScope) {
+sickrage.controller('homeController', function($scope, $http) {
     $.timeago.settings.allowFuture = true;
     $.timeago.settings.strings = {
         prefixAgo: null,
@@ -544,7 +547,7 @@ sickrage.controller('homeController', function($scope, $http, $rootScope) {
         }).then(function successCallback(response){
             $scope.layout = response.data.layout;
         });
-    }
+    };
     $scope.layout = getLayout();
     $scope.layouts = ['poster', 'banner', 'simple', 'small'];
     $scope.$watch('layout', function () {
@@ -568,7 +571,7 @@ sickrage.controller('bannerController', function($scope, $http) {
     });
 });
 
-sickrage.controller('bannerShowController', function($scope, $sce) {
+sickrage.controller('bannerShowController', function($scope) {
     var show = $scope.show;
 
     var downloadStat = show.stats.downloaded;
@@ -601,7 +604,7 @@ sickrage.controller('simpleController', function($scope, $http) {
     });
 });
 
-sickrage.controller('simpleShowController', function($scope, $sce) {
+sickrage.controller('simpleShowController', function($scope) {
     var show = $scope.show;
 
     var downloadStat = show.stats.downloaded;
@@ -634,7 +637,7 @@ sickrage.controller('smallController', function($scope, $http) {
     });
 });
 
-sickrage.controller('smallShowController', function($scope, $sce) {
+sickrage.controller('smallShowController', function($scope) {
     var show = $scope.show;
 
     var downloadStat = show.stats.downloaded;
@@ -674,7 +677,7 @@ sickrage.controller('posterController', function($scope, $http) {
     });
 });
 
-sickrage.controller('posterShowController', function($scope, $sce) {
+sickrage.controller('posterShowController', function($scope) {
     var show = $scope.show;
 
     var downloadStat = show.stats.downloaded;
@@ -725,7 +728,7 @@ sickrage.controller('scheduleController', function($scope, $http) {
         }).then(function successCallback(response){
             $scope.layout = response.data.layout;
         });
-    }
+    };
     $scope.layout = getLayout();
     $scope.layouts = ['poster', 'calendar', 'banner', 'list'];
     $scope.$watch('layout', function () {
@@ -738,7 +741,7 @@ sickrage.controller('scheduleController', function($scope, $http) {
         }).then(function successCallback(response){
             $scope.sort = response.data.sort;
         });
-    }
+    };
     $scope.sort = getSort();
     $scope.sorts = ['date', 'network', 'show'];
     $scope.$watch('sort', function () {
@@ -774,7 +777,7 @@ sickrage.controller('historyController', function() {
 });
 
 sickrage.controller('displayShowController', function($scope, $stateParams, $http, $rootScope) {
-    $rootScope.getRecentShows();
+    $rootScope.updateRootScope();
     $scope.getShow = function(showId){
         $http({
             method: 'GET',
@@ -783,9 +786,11 @@ sickrage.controller('displayShowController', function($scope, $stateParams, $htt
             $scope.show = response.data.show;
             var seasonsArray = [];
             for(var i in response.data.show.seasons){
-                var a = response.data.show.seasons[i];
-                a.seasonNumber = i;
-                seasonsArray.push(a)
+                if (response.data.show.seasons.hasOwnProperty(i)) {
+                    var a = response.data.show.seasons[i];
+                    a.seasonNumber = i;
+                    seasonsArray.push(a);
+                }
             }
             $scope.seasonsArray = seasonsArray.reverse();
             $scope.seasons = response.data.show.seasons;
@@ -800,7 +805,7 @@ sickrage.controller('displayShowController', function($scope, $stateParams, $htt
                 response.data.qualities.snatchedBest,
                 response.data.qualities.downloaded
             ).filter(function(item, pos, self) {
-                return self.indexOf(item) == pos;
+                return self.indexOf(item) === pos;
             });
             $scope.displaySpecials = response.data.displaySpecials;
             $scope.displayAllSeasons = response.data.displayAllSeasons;
@@ -809,7 +814,7 @@ sickrage.controller('displayShowController', function($scope, $stateParams, $htt
             $scope.downloadUrl = response.data.downloadUrl;
             $scope.rootDirs = response.data.rootDirs;
             $scope.seasonFolders = response.data.seasonFolders;
-            $scope.ratingTip = $scope.show.imdb_info ? $scope.show.imdb_info['rating'] + " / 10" + " Stars" + "<br>" + show.imdb_info['votes'] + " Votes" : "";
+            $scope.ratingTip = $scope.show['imdb_info'] ? $scope.show['imdb_info']['rating'] + " / 10" + " Stars" + "<br>" + show['imdb_info']['votes'] + " Votes" : ""; // jshint ignore:line
             $scope.qualityStrings = function(quality){
                 var qualityStrings = {
                     1: 'unaired',
@@ -856,18 +861,22 @@ sickrage.controller('displayShowController', function($scope, $stateParams, $htt
                     "all": 0
                 };
                 for(var season in response.data.show.seasons){
-                    for(var episode in season){
-                        episodeCounts['all']++;
-                        episodeCounts[qualityStrings[episode.status]]++;
+                    if (response.data.show.seasons.hasOwnProperty(season)) {
+                        for(var episode in season){
+                            if (season.hasOwnProperty(episode)) {
+                                episodeCounts.all++;
+                                episodeCounts[qualityStrings[episode.status]]++;
+                            }
+                        }
                     }
                 }
                 return episodeCounts[quality];
-            }
+            };
             $scope.menuShow = $scope.show;
         }, function errorCallback(response) {
             console.error(response);
         });
-    }
+    };
     $scope.menuShow = {};
     $scope.getShow($stateParams.showId);
     // @NOTE: This is a little hacky so many we should change this later on
@@ -879,7 +888,29 @@ sickrage.controller('displayShowController', function($scope, $stateParams, $htt
     // SICKRAGE.home.displayShow();
 });
 
-sickrage.controller('configController', function() {
+sickrage.controller('configController', function($scope, $http) {
+    $http({
+        method: 'GET',
+        url: '/config'
+    }).then(function successCallback(response) {
+        $scope.logDirectory = response.data.logDirectory;
+        $scope.locale = response.data.locale;
+        $scope.programDirectory = response.data.programDirectory;
+        $scope.user = response.data.user;
+        $scope.cacheDirectory = response.data.cacheDirectory;
+        $scope.sslVersion = response.data.sslVersion;
+        $scope.pythonVersion = response.data.pythonVersion;
+        $scope.configFile = response.data.configFile;
+        $scope.commitHash = response.data.commitHash;
+        $scope.branch = response.data.branch;
+        $scope.databaseFile = response.data.databaseFile;
+        $scope.os = response.data.os;
+        $scope.sickrageVersion = response.data.sickrageVersion;
+        $scope.sickrageArguments = response.data.sickrageArguments;
+        $scope.webRoot = response.data.webRoot;
+    }, function errorCallback(response) {
+        console.error(response);
+    });
     SICKRAGE.config.init();
 });
 
@@ -951,7 +982,7 @@ sickrage.controller('logsController', function($scope, $http, $stateParams) {
     }
 });
 
-sickrage.controller('statusController', function($scope, $http, $stateParams) {
+sickrage.controller('statusController', function($scope, $http) {
     $http({
         method: 'GET',
         url: '/home/status'
@@ -965,7 +996,7 @@ sickrage.controller('statusController', function($scope, $http, $stateParams) {
     });
 });
 
-sickrage.controller('newShowController', function($scope, $http, $state){
+sickrage.controller('newShowController', function(){
     console.log('newShowController');
     // $http({
     //     method: 'GET',

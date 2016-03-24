@@ -27,6 +27,8 @@ import datetime
 import traceback
 import ast
 import calendar
+import sys
+import platform
 from collections import namedtuple
 
 import sickbeard
@@ -107,7 +109,6 @@ mako_lookup = None
 mako_cache = None
 mako_path = None
 
-
 def get_lookup():
     global mako_lookup  # pylint: disable=global-statement
     global mako_cache  # pylint: disable=global-statement
@@ -125,7 +126,6 @@ def get_lookup():
                                      strict_undefined=use_strict,
                                      filesystem_checks=True)
     return mako_lookup
-
 
 class PageTemplate(MakoTemplate):
     def __init__(self, rh, filename):
@@ -182,7 +182,6 @@ class PageTemplate(MakoTemplate):
             kwargs['header'] = 'Mako Error'
             kwargs['backtrace'] = RichTraceback()
             return get_lookup().get_template('500.mako').render_unicode(*args, **kwargs)
-
 
 class BaseHandler(RequestHandler):
     startTime = 0.
@@ -262,7 +261,6 @@ class BaseHandler(RequestHandler):
         else:
             return True
 
-
 class WebHandler(BaseHandler):
     def __init__(self, *args, **kwargs):
         super(WebHandler, self).__init__(*args, **kwargs)
@@ -301,7 +299,6 @@ class WebHandler(BaseHandler):
 
     # post uses get method
     post = get
-
 
 class LoginHandler(BaseHandler):
     def get(self, *args, **kwargs):
@@ -425,7 +422,11 @@ class WebRoot(WebHandler):
                 "memoryUsed": memory_used,
                 "loadTime": "%.4f" % (time.time() - self.startTime) + "s",
                 "timeNow": datetime.datetime.now().strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET),
-                "recentShows": ([], sickbeard.SHOWS_RECENT)[sickbeard.SHOWS_RECENT is not None]
+                "recentShows": ([], sickbeard.SHOWS_RECENT)[sickbeard.SHOWS_RECENT is not None],
+                "errorsCounts": {
+                    "errors": len(classes.ErrorViewer.errors),
+                    "warnings": len(classes.WarningViewer.errors)
+                }
             }
 
         return PageTemplate(rh=self, filename="index.mako").render()
@@ -4127,7 +4128,8 @@ class Config(WebRoot):
         return menu
 
     def index(self):
-        t = PageTemplate(rh=self, filename="config.mako")
+        self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
+        self.set_header("Content-Type", "application/json")
 
         try:
             import pwd
@@ -4151,20 +4153,30 @@ class Config(WebRoot):
         except StandardError:
             ssl_version = 'Unknown'
 
-        sr_version = ''
-        if sickbeard.VERSION_NOTIFY:
-            updater = CheckVersion().updater
-            if updater:
-                updater.need_update()
-                sr_version = updater.get_cur_version()
+        # sr_version = ''
+        # if sickbeard.VERSION_NOTIFY:
+        #     updater = CheckVersion().updater
+        #     if updater:
+        #         updater.need_update()
+        #         sr_version = updater.get_cur_version()
 
-        return t.render(
-            submenu=self.ConfigMenu(), title='Medusa Configuration',
-            header='Medusa Configuration',
-            sr_user=sr_user, sr_locale=sr_locale, ssl_version=ssl_version,
-            sr_version=sr_version
-        )
-
+        return {
+            "pythonVersion": sys.version[:120],
+            "sslVersion": ssl_version,
+            "os": platform.platform(),
+            "locale": '.'.join([str(loc) for loc in sr_locale]),
+            "user": sr_user,
+            "sickrageVersion": sickbeard.NEWEST_VERSION_STRING,
+            "programDirectory": sickbeard.PROG_DIR,
+            "configFile": sickbeard.CONFIG_FILE,
+            "databaseFile": db.dbFilename(),
+            "cacheDirectory": sickbeard.CACHE_DIR,
+            "logDirectory": sickbeard.LOG_DIR,
+            "branch": sickbeard.BRANCH,
+            "commitHash": sickbeard.CUR_COMMIT_HASH,
+            "sickrageArguments": sickbeard.MY_ARGS,
+            "webRoot": sickbeard.WEB_ROOT
+        }
 
 @route('/config/general(/?.*)')
 class ConfigGeneral(Config):
