@@ -1416,7 +1416,7 @@ class Home(WebRoot):
         # make a queue item for it and put it on the queue
         ep_queue_item = search_queue.ManualSnatchQueueItem(ep_obj.show, ep_obj, season, episode,
                                                            sql_return['url'], sql_return['quality'],
-                                                           provider, sql_return['name'])
+                                                           provider, sql_return['name'], sql_return['seeders'], sql_return['leechers'])
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
