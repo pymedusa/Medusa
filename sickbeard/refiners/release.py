@@ -44,8 +44,8 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
     dirpath, filename = os.path.split(video.name)
     dirpath = dirpath or '.'
     fileroot, fileext = os.path.splitext(filename)
-    release_file = release_file if release_file else get_release_file(dirpath, fileroot, extension)
-    release_name = release_name if release_name else get_release_name(release_file)
+    release_file = get_release_file(dirpath, fileroot, extension) or release_file
+    release_name = get_release_name(release_file) or release_name
 
     release_path = os.path.join(dirpath, release_name + fileext)
     logger.log(u'Guessing using {}'.format(release_path), logger.DEBUG)
@@ -90,6 +90,9 @@ def get_release_name(release_file):
 
     Returns: the release name
     """
+    if not release_file:
+        return
+
     with open(release_file, 'r') as f:
         release_name = f.read().strip()
 
