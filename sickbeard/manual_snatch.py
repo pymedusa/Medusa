@@ -23,10 +23,11 @@
 import time
 
 import sickbeard
+import threading
 from sickbeard import search_queue
 from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
 from sickbeard import logger, db
-from sickrage.helper.common import try_int
+from sickrage.helper.common import try_int, enabled_providers
 
 from sickrage.show.Show import Show
 
@@ -170,13 +171,15 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     sql_return = []
     found_items = []
     provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
+    original_thread_name = threading.currentThread().name
 
-    providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_daily]
-    for curProvider in providers:
+
+    for cur_provider in enabled_providers('manualsearch'):
+        threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name, provider=cur_provider.name)
 
         # Let's check if this provider table already exists
-        table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [curProvider.get_id()])
-        columns = [i[1] for i in main_db_con.select("PRAGMA table_info('%s')" % curProvider.get_id())] if table_exists else []
+        table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [cur_provider.get_id()])
+        columns = [i[1] for i in main_db_con.select("PRAGMA table_info('%s')" % cur_provider.get_id())] if table_exists else []
 
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
@@ -186,26 +189,26 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
                           ? as 'provider', ? as 'provider_id', name, season, \
                           episodes, indexerid, url, time, (select max(time) from '{provider_id}') as lastupdate, \
                           quality, release_group, version, seeders, leechers, size, time \
-                          FROM '{provider_id}' WHERE indexerid = ?".format(provider_id=curProvider.get_id())
+                          FROM '{provider_id}' WHERE indexerid = ?".format(provider_id=cur_provider.get_id())
             additional_sql = " AND episodes LIKE ? AND season = ?"
 
             if not int(show_all_results):
                 sql_return = main_db_con.select(common_sql + additional_sql,
-                                                (curProvider.provider_type.title(), curProvider.image_name(),
-                                                 curProvider.name, curProvider.get_id(), show, "%|{0}|%".format(episode), season))
+                                                (cur_provider.provider_type.title(), cur_provider.image_name(),
+                                                 cur_provider.name, cur_provider.get_id(), show, "%|{0}|%".format(episode), season))
             else:
                 sql_return = main_db_con.select(common_sql,
-                                                (curProvider.provider_type.title(), curProvider.image_name(),
-                                                 curProvider.name, curProvider.get_id(), show))
+                                                (cur_provider.provider_type.title(), cur_provider.image_name(),
+                                                 cur_provider.name, cur_provider.get_id(), show))
 
         if sql_return:
             for item in sql_return:
                 found_items.append(dict(item))
 
             # Store the last table update, we'll need this to compare later
-            provider_results['last_prov_updates'][curProvider.get_id()] = str(sql_return[0]['lastupdate'])
+            provider_results['last_prov_updates'][cur_provider.get_id()] = str(sql_return[0]['lastupdate'])
         else:
-            provider_results['last_prov_updates'][curProvider.get_id()] = "0"
+            provider_results['last_prov_updates'][cur_provider.get_id()] = "0"
 
     # Always start a search when no items found in cache
     if not found_items or int(perform_search):
@@ -230,5 +233,8 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # Make unknown qualities at the botton
         found_items = [d for d in found_items if try_int(d['quality']) < 32768] + [d for d in found_items if try_int(d['quality']) == 32768]
         provider_results['found_items'] = found_items
+
+    # Remove provider from thread name before return results
+    threading.currentThread().name = original_thread_name
 
     return provider_results

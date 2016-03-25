@@ -77,7 +77,7 @@ from sickbeard.versionChecker import CheckVersion
 from sickbeard.webapi import function_mapper
 
 from sickrage.helper.common import (
-    episode_num, sanitize_filename, try_int,
+    episode_num, sanitize_filename, try_int, enabled_providers,
 )
 from sickrage.helper.encoding import ek, ss
 from sickrage.helper.exceptions import (
@@ -1433,7 +1433,7 @@ class Home(WebRoot):
         REFRESH_RESULTS = 'refresh'
 
         # To prevent it from keeping searching when no providers have been enabled
-        if not [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_daily]:
+        if not enabled_providers('manualsearch'):
             return {'result': SEARCH_STATUS_FINISHED}
 
         # Let's try to get the timestamps for the last search per provider
@@ -1817,15 +1817,15 @@ class Home(WebRoot):
 
         try:
             main_db_con = db.DBConnection('cache.db')
-            for curProvider in sickbeard.providers.sortedProviderList():
+            for cur_provider in sickbeard.providers.sortedProviderList():
                 # Let's check if this provider table already exists
-                table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [curProvider.get_id()])
+                table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [cur_provider.get_id()])
                 if not table_exists:
                     continue
                 try:
-                    main_db_con.action("DELETE FROM '%s' WHERE indexerid = ?" % curProvider.get_id(), [showObj.indexerid])
+                    main_db_con.action("DELETE FROM '%s' WHERE indexerid = ?" % cur_provider.get_id(), [showObj.indexerid])
                 except Exception:
-                    logger.log(u"Unable to delete cached results for provider {} for show: {}".format(curProvider, showObj.name), logger.DEBUG)
+                    logger.log(u"Unable to delete cached results for provider {} for show: {}".format(cur_provider, showObj.name), logger.DEBUG)
 
         except Exception:
             logger.log(u"Unable to delete cached results for show: {}".format(showObj.name), logger.DEBUG)
@@ -4707,6 +4707,12 @@ class ConfigProviders(Config):
                         newznabProviderDict[cur_id].enable_daily = 0
 
                     try:
+                        newznabProviderDict[cur_id].enable_manualsearch = config.checkbox_to_value(
+                            kwargs[cur_id + '_enable_manualsearch'])
+                    except Exception:
+                        newznabProviderDict[cur_id].enable_manualsearch = 0
+
+                    try:
                         newznabProviderDict[cur_id].enable_backlog = config.checkbox_to_value(
                             kwargs[cur_id + '_enable_backlog'])
                     except Exception:
@@ -4717,9 +4723,9 @@ class ConfigProviders(Config):
                 finishedNames.append(cur_id)
 
         # delete anything that is missing
-        for curProvider in sickbeard.newznabProviderList:
-            if curProvider.get_id() not in finishedNames:
-                sickbeard.newznabProviderList.remove(curProvider)
+        for cur_provider in sickbeard.newznabProviderList:
+            if cur_provider.get_id() not in finishedNames:
+                sickbeard.newznabProviderList.remove(cur_provider)
 
         torrentRssProviderDict = dict(
             zip([x.get_id() for x in sickbeard.torrentRssProviderList], sickbeard.torrentRssProviderList))
@@ -4750,30 +4756,30 @@ class ConfigProviders(Config):
                 finishedNames.append(curID)
 
         # delete anything that is missing
-        for curProvider in sickbeard.torrentRssProviderList:
-            if curProvider.get_id() not in finishedNames:
-                sickbeard.torrentRssProviderList.remove(curProvider)
+        for cur_provider in sickbeard.torrentRssProviderList:
+            if cur_provider.get_id() not in finishedNames:
+                sickbeard.torrentRssProviderList.remove(cur_provider)
 
         disabled_list = []
         # do the enable/disable
-        for curProviderStr in provider_str_list:
-            curProvider, curEnabled = curProviderStr.split(':')
+        for cur_providerStr in provider_str_list:
+            cur_provider, curEnabled = cur_providerStr.split(':')
             curEnabled = try_int(curEnabled)
 
             curProvObj = [x for x in sickbeard.providers.sortedProviderList() if
-                          x.get_id() == curProvider and hasattr(x, 'enabled')]
+                          x.get_id() == cur_provider and hasattr(x, 'enabled')]
             if curProvObj:
                 curProvObj[0].enabled = bool(curEnabled)
 
             if curEnabled:
-                provider_list.append(curProvider)
+                provider_list.append(cur_provider)
             else:
-                disabled_list.append(curProvider)
+                disabled_list.append(cur_provider)
 
-            if curProvider in newznabProviderDict:
-                newznabProviderDict[curProvider].enabled = bool(curEnabled)
-            elif curProvider in torrentRssProviderDict:
-                torrentRssProviderDict[curProvider].enabled = bool(curEnabled)
+            if cur_provider in newznabProviderDict:
+                newznabProviderDict[cur_provider].enabled = bool(curEnabled)
+            elif cur_provider in torrentRssProviderDict:
+                torrentRssProviderDict[cur_provider].enabled = bool(curEnabled)
 
         provider_list = provider_list + disabled_list
 
@@ -4909,6 +4915,13 @@ class ConfigProviders(Config):
                 except Exception:
                     curTorrentProvider.enable_daily = 0  # these exceptions are actually catching unselected checkboxes
 
+            if hasattr(curTorrentProvider, 'enable_manualsearch'):
+                try:
+                    curTorrentProvider.enable_manualsearch = config.checkbox_to_value(
+                        kwargs[curTorrentProvider.get_id() + '_enable_manualsearch'])
+                except Exception:
+                    curTorrentProvider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
+
             if hasattr(curTorrentProvider, 'enable_backlog'):
                 try:
                     curTorrentProvider.enable_backlog = config.checkbox_to_value(
@@ -4963,6 +4976,13 @@ class ConfigProviders(Config):
                         kwargs[curNzbProvider.get_id() + '_enable_daily'])
                 except Exception:
                     curNzbProvider.enable_daily = 0  # these exceptions are actually catching unselected checkboxes
+
+            if hasattr(curNzbProvider, 'enable_manualsearch'):
+               try:
+                   curNzbProvider.enable_manualsearch = config.checkbox_to_value(
+                       kwargs[curNzbProvider.get_id() + '_enable_manualsearch'])
+               except Exception:
+                   curNzbProvider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curNzbProvider, 'enable_backlog'):
                 try:

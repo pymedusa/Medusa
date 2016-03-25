@@ -75,7 +75,7 @@ CFG = None
 CONFIG_FILE = None
 
 # This is the version of the config we EXPECT to find
-CONFIG_VERSION = 8
+CONFIG_VERSION = 9
 
 # Default encryption version (0 for None)
 ENCRYPTION_VERSION = 0
@@ -1361,6 +1361,11 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                                            curTorrentProvider.get_id() + '_enable_backlog',
                                                                            curTorrentProvider.supports_backlog))
 
+            if hasattr(curTorrentProvider, 'enable_manualsearch'):
+                curTorrentProvider.enable_manualsearch = bool(check_setting_int(CFG, curTorrentProvider.get_id().upper(),
+                                                                           curTorrentProvider.get_id() + '_enable_manualsearch',
+                                                                           1))
+
             if hasattr(curTorrentProvider, 'cat'):
                 curTorrentProvider.cat = check_setting_int(CFG, curTorrentProvider.get_id().upper(),
                                                            curTorrentProvider.get_id() + '_cat', 0)
@@ -1395,6 +1400,11 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                 curNzbProvider.enable_backlog = bool(check_setting_int(CFG, curNzbProvider.get_id().upper(),
                                                                        curNzbProvider.get_id() + '_enable_backlog',
                                                                        curNzbProvider.supports_backlog))
+
+            if hasattr(curNzbProvider, 'enable_manualsearch'):
+                curNzbProvider.enable_manualsearch = bool(check_setting_int(CFG, curNzbProvider.get_id().upper(),
+                                                                     curNzbProvider.get_id() + '_enable_manualsearch',
+                                                                     1))
 
         if not ek(os.path.isfile, CONFIG_FILE):
             logger.log(u"Unable to find '" + CONFIG_FILE + "', all settings will be default!", logger.DEBUG)
@@ -1856,6 +1866,9 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
         if hasattr(curTorrentProvider, 'enable_backlog'):
             new_config[curTorrentProvider.get_id().upper()][curTorrentProvider.get_id() + '_enable_backlog'] = int(
                 curTorrentProvider.enable_backlog)
+        if hasattr(curTorrentProvider, 'enable_manualsearch'):
+            new_config[curTorrentProvider.get_id().upper()][curTorrentProvider.get_id() + '_enable_manualsearch'] = int(
+                curTorrentProvider.enable_manualsearch)
         if hasattr(curTorrentProvider, 'cat'):
             new_config[curTorrentProvider.get_id().upper()][curTorrentProvider.get_id() + '_cat'] = int(
                 curTorrentProvider.cat)
@@ -1886,6 +1899,9 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
         if hasattr(curNzbProvider, 'enable_backlog'):
             new_config[curNzbProvider.get_id().upper()][curNzbProvider.get_id() + '_enable_backlog'] = int(
                 curNzbProvider.enable_backlog)
+        if hasattr(curNzbProvider, 'enable_manualsearch'):
+            new_config[curNzbProvider.get_id().upper()][curNzbProvider.get_id() + '_enable_manualsearch'] = int(
+                curNzbProvider.enable_manualsearch)
 
     new_config['NZBs'] = {}
     new_config['NZBs']['nzbs'] = int(NZBS)

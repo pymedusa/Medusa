@@ -36,6 +36,7 @@ from sickbeard.search import pickBestResult
 from sickbeard.common import DOWNLOADED, SNATCHED, SNATCHED_PROPER, Quality, cpu_presets
 from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.History import History
+from sickrage.helper.common import enabled_providers
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
 
 
@@ -81,47 +82,47 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         search_date = datetime.datetime.today() - datetime.timedelta(days=2)
 
         # for each provider get a list of the
-        origThreadName = threading.currentThread().name
-        providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active()]
-        for curProvider in providers:
-            threading.currentThread().name = origThreadName + " :: [" + curProvider.name + "]"
+        original_thread_name = threading.currentThread().name
+        providers = enabled_providers('backlog')
+        for cur_provider in providers:
+            threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name, provider=cur_provider.name)
 
             logger.log(u"Searching for any new PROPER releases from {provider}".format
-                       (provider=curProvider.name))
+                       (provider=cur_provider.name))
 
             try:
-                curPropers = curProvider.find_propers(search_date)
+                curPropers = cur_provider.find_propers(search_date)
             except AuthException as e:
                 logger.log(u"Authentication error: {error}".format
                            (error=ex(e)), logger.DEBUG)
                 continue
             except (SocketTimeout, TypeError) as e:
                 logger.log(u"Socket time out while searching for propers in {provider}, skipping: {error}".format
-                           (provider=curProvider.name, error=ex(e)), logger.DEBUG)
+                           (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
                 continue
             except (requests_exceptions.HTTPError, requests_exceptions.TooManyRedirects) as e:
                 logger.log(u"HTTP error while searching for propers in {provider}, skipping: {error}".format
-                           (provider=curProvider.name, error=ex(e)), logger.DEBUG)
+                           (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
                 continue
             except requests_exceptions.ConnectionError as e:
                 logger.log(u"Connection error while searching for propers in {provider}, skipping: {error}".format
-                           (provider=curProvider.name, error=ex(e)), logger.DEBUG)
+                           (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
                 continue
             except requests_exceptions.Timeout as e:
                 logger.log(u"Connection timed out while searching for propers in {provider}, skipping: {error}".format
-                           (provider=curProvider.name, error=ex(e)), logger.DEBUG)
+                           (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
                 continue
             except requests_exceptions.ContentDecodingError as e:
                 logger.log(u"Content-Encoding was gzip, but content was not compressed while searching for propers in {provider}, skipping: {error}".format
-                           (provider=curProvider.name, error=ex(e)), logger.DEBUG)
+                           (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
                 continue
             except Exception as e:
                 if u'ECONNRESET' in e or (hasattr(e, 'errno') and e.errno == errno.ECONNRESET):
                     logger.log(u"Connection reset by peer while searching for propers in {provider}, skipping: {error}".format
-                               (provider=curProvider.name, error=ex(e)), logger.DEBUG)
+                               (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
                 else:
                     logger.log(u"Unknown exception while searching for propers in {provider}, skipping: {error}".format
-                               (provider=curProvider.name, error=ex(e)), logger.DEBUG)
+                               (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
                     logger.log(traceback.format_exc(), logger.DEBUG)
                 continue
 
@@ -135,10 +136,10 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 if name not in propers:
                     logger.log(u'Found new proper result: {name}'.format
                                (name=proper.name), logger.DEBUG)
-                    proper.provider = curProvider
+                    proper.provider = cur_provider
                     propers[name] = proper
 
-            threading.currentThread().name = origThreadName
+            threading.currentThread().name = original_thread_name
 
         # take the list of unique propers and get it sorted by
         sortedPropers = sorted(propers.values(), key=operator.attrgetter('date'), reverse=True)
