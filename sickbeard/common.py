@@ -361,8 +361,11 @@ class Quality(object):
 
         # Is it SD?
         elif ep.xvid or ep.avc:
+            # Is it aussie p2p?  If so its 720p
+            if all([ep.tv == u'hd', ep.widescreen, ep.aussie]):
+                result = Quality.HDTV
             # SD DVD
-            if ep.dvd or ep.bluray:
+            elif ep.dvd or ep.bluray:
                 result = Quality.SDDVD
             # SDTV
             elif ep.res == u'480p' or any([ep.tv, ep.sat, ep.web]):
