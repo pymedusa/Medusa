@@ -365,6 +365,7 @@ class GitUpdateManager(UpdateManager):
         self._newest_commit_hash = None
         self._num_commits_behind = 0
         self._num_commits_ahead = 0
+        self._cur_version = ''
 
     def get_cur_commit_hash(self):
         return self._cur_commit_hash
@@ -373,13 +374,16 @@ class GitUpdateManager(UpdateManager):
         return self._newest_commit_hash
 
     def get_cur_version(self):
-        return self._run_git(self._git_path, 'describe --abbrev=0 {}'.format(self._cur_commit_hash))[0]
+        if self._cur_commit_hash or self._find_installed_version():
+            self._cur_version = self._run_git(self._git_path, 'describe --abbrev=0 {}'.format(self._cur_commit_hash))[0]
+        return self._cur_version
 
     def get_newest_version(self):
         if self._newest_commit_hash:
-            return self._run_git(self._git_path, "describe --abbrev=0 " + self._newest_commit_hash)[0]
+            self._cur_version = self._run_git(self._git_path, "describe --abbrev=0 " + self._newest_commit_hash)[0]
         else:
-            return self._run_git(self._git_path, "describe --abbrev=0 " + self._cur_commit_hash)[0]
+            self._cur_version = self._run_git(self._git_path, "describe --abbrev=0 " + self._cur_commit_hash)[0]
+        return self._cur_version
 
     def get_num_commits_behind(self):
         return self._num_commits_behind
