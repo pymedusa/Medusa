@@ -487,8 +487,14 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
 
     origThreadName = threading.currentThread().name
 
-    providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
-                 if x.is_active() and x.enable_backlog]
+    if manual_snatch:
+        logger.log("Using manual search providers")
+        providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
+                    if x.is_active() and x.enable_manualsearch]
+    else:
+        providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
+                    if x.is_active() and x.enable_backlog]
+
     if not manualSearch:
         for curProvider in providers:
             threading.currentThread().name = origThreadName + " :: [" + curProvider.name + "]"

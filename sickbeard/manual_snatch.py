@@ -23,6 +23,7 @@
 import time
 
 import sickbeard
+import threading
 from sickbeard import search_queue
 from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
 from sickbeard import logger, db
@@ -170,9 +171,11 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     sql_return = []
     found_items = []
     provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
+    original_thread_name = threading.currentThread().name
 
-    providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_daily]
+    providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS) if x.is_active() and x.enable_manualsearch]
     for curProvider in providers:
+        threading.currentThread().name = original_thread_name + " :: [" + curProvider.name + "]"
 
         # Let's check if this provider table already exists
         table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [curProvider.get_id()])
@@ -230,5 +233,8 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # Make unknown qualities at the botton
         found_items = [d for d in found_items if try_int(d['quality']) < 32768] + [d for d in found_items if try_int(d['quality']) == 32768]
         provider_results['found_items'] = found_items
+
+    # Remove provider from thread name before return results
+    threading.currentThread().name = original_thread_name
 
     return provider_results

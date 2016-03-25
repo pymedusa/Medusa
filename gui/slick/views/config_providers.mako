@@ -168,6 +168,18 @@ $('#config-components').tabs();
                         </div>
                         % endif
 
+                        % if hasattr(curNewznabProvider, 'enable_manualsearch'):
+                        <div class="field-pair">
+                            <label for="${curNewznabProvider.get_id()}_enable_manualsearch">
+                                <span class="component-title">Enable provider for manual searches</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="${curNewznabProvider.get_id()}_enable_manualsearch" id="${curNewznabProvider.get_id()}_enable_manualsearch" ${('', 'checked="checked"')[bool(curNewznabProvider.enable_manualsearch)]}/>
+                                    <p>enable provider to use in manual searches.</p>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
+
                         % if hasattr(curNewznabProvider, 'enable_backlog'):
                         <div class="field-pair${(' hidden', '')[curNewznabProvider.supports_backlog]}">
                             <label for="${curNewznabProvider.get_id()}_enable_backlog">
@@ -254,6 +266,19 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
+
+                        % if hasattr(curNzbProvider, 'enable_manualsearch'):
+                        <div class="field-pair">
+                            <label for="${curNzbProvider.get_id()}_enable_manualsearch">
+                                <span class="component-title">Enable provider for manual searches</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="${curNzbProvider.get_id()}_enable_manualsearch" id="${curNzbProvider.get_id()}_enable_manualsearch" ${('', 'checked="checked"')[bool(curNzbProvider.enable_manualsearch)]}/>
+                                    <p>enable provider to use in manual searches.</p>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
+
 
                         % if hasattr(curNzbProvider, 'enable_backlog'):
                         <div class="field-pair${(' hidden', '')[curNzbProvider.supports_backlog]}">
@@ -523,6 +548,18 @@ $('#config-components').tabs();
                                 <span class="component-desc">
                                     <input type="checkbox" name="${curTorrentProvider.get_id()}_enable_daily" id="${curTorrentProvider.get_id()}_enable_daily" ${('', 'checked="checked"')[bool(curTorrentProvider.enable_daily)]}/>
                                     <p>enable provider to perform daily searches.</p>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
+
+                        % if hasattr(curTorrentProvider, 'enable_manualsearch'):
+                        <div class="field-pair">
+                            <label for="${curTorrentProvider.get_id()}_enable_manualsearch">
+                                <span class="component-title">Enable provider for manual searches</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_enable_manualsearch" id="${curTorrentProvider.get_id()}_enable_manualsearch" ${('', 'checked="checked"')[bool(curTorrentProvider.enable_manualsearch)]}/>
+                                    <p>enable provider to use in manual searches.</p>
                                 </span>
                             </label>
                         </div>
