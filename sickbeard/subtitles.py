@@ -238,7 +238,7 @@ def download_subtitles(subtitles_info):  # pylint: disable=too-many-locals, too-
             history.logSubtitle(subtitles_info['show_indexerid'], subtitles_info['season'],
                                 subtitles_info['episode'], subtitles_info['status'], subtitle)
 
-        if sickbeard.SUBTITLES_EXTRA_SCRIPTS and isMediaFile(video_path) and not sickbeard.EMBEDDED_SUBTITLES_ALL:
+        if sickbeard.SUBTITLES_EXTRA_SCRIPTS and isMediaFile(video_path):
             run_subs_scripts(subtitles_info, subtitle.language, subtitle_path, video.name)
 
     new_subtitles = sorted({subtitle.language.opensubtitles for subtitle in found_subtitles})
@@ -416,8 +416,8 @@ class SubtitlesFinder(object):
                     if isMediaFile(filename):
                         subtitles_enabled = processTV.subtitles_enabled(filename)
                         if subtitles_enabled:
-                            if sickbeard.SUBTITLES_PRE_SCRIPTS and not sickbeard.EMBEDDED_SUBTITLES_ALL:
-                                run_subs_scripts(None, None, None, filename, is_pre=True)
+                            if sickbeard.SUBTITLES_PRE_SCRIPTS:
+                                run_subs_scripts(None, None, None, os.path.join(root, filename), is_pre=True)
 
                             try:
                                 release_name = os.path.splitext(filename)[0]
@@ -602,16 +602,19 @@ class SubtitlesFinder(object):
 
 
 def run_subs_scripts(subtitles_info, subtitle_language, subtitle_path, video_filename, is_pre=None):
+    """
+    Execute subtitle scripts
+    """
 
     subtitle_scripts = sickbeard.SUBTITLES_PRE_SCRIPTS if is_pre else sickbeard.SUBTITLES_EXTRA_SCRIPTS
     for script_name in subtitle_scripts:
         script_cmd = [piece for piece in re.split("( |\\\".*?\\\"|'.*?')", script_name) if piece.strip()]
-        script_cmd[0] = os.path.abspath(script_cmd[0])
-        logger.log(u'Absolute path to script: {}'.format(script_cmd[0]), logger.DEBUG)
 
         if is_pre:
-            inner_cmd = script_cmd + ['/'.join([sickbeard.TV_DOWNLOAD_DIR, video_filename])]
+            logger.log(u'Running subtitle pre-script: {}'.format(script_name))
+            inner_cmd = script_cmd + [video_filename]
         else:
+            logger.log(u'Running subtitle extra-script: {}'.format(script_name))
             inner_cmd = script_cmd + [video_filename, subtitle_path, subtitle_language.opensubtitles,
                                       subtitles_info['show_name'], str(subtitles_info['season']),
                                       str(subtitles_info['episode']), subtitles_info['name'],
