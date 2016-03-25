@@ -1202,7 +1202,7 @@ class Home(WebRoot):
     @staticmethod
     def getDBcompare():
 
-        checkversion = CheckVersion()
+        checkversion = CheckVersion()  # TODO: replace with settings var
         db_status = checkversion.getDBcompare()
 
         if db_status == 'upgrade':
@@ -3988,7 +3988,6 @@ class Config(WebRoot):
         if sickbeard.VERSION_NOTIFY:
             updater = CheckVersion().updater
             if updater:
-                updater.need_update()
                 sr_version = updater.get_cur_version()
 
         return t.render(
