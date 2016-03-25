@@ -579,11 +579,15 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
 
         # Update the cache if a manual search is being runned
         if manual_snatch:
-            for searched_episode in episodes:
-                results = curProvider.cache.update_cache_manual_search(searchResults[searched_episode.episode])
-                if results is not None:
+            # Let's create a list with episodes that we where looking for
+            searched_episode_list = [episode_obj.episode for episode_obj in episodes]
+            # Add the -1 to also match season pack results
+            searched_episode_list.append(-1)
+            for searched_episode in searched_episode_list:
+                if (searched_episode in searchResults and
+                        curProvider.cache.update_cache_manual_search(searchResults[searched_episode])):
                     # If we have at least a result from one provider, it's good enough to be marked as result
-                    manual_snatch_results.append(results)
+                    manual_snatch_results.append(True)
             # Continue because we don't want to pick best results as we are running a manual search by user
             continue
 
