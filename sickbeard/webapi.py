@@ -1047,10 +1047,10 @@ class CMD_History(ApiCall):
 
     def run(self):
         """ Get the downloaded and/or snatched history """
-        data = History().get(self.limit, self.type)
+        history = History().get(self.limit, self.type)
         results = []
 
-        for row in data:
+        for row in history.detailed:
             status, quality = Quality.splitCompositeStatus(int(row["action"]))
             status = _get_status_strings(status)
 
