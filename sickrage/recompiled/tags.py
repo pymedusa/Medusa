@@ -4,6 +4,7 @@ import re
 
 # Resolutions
 resolution = re.compile(r'(?P<vres>4320|2160|1080|720|480|360)(?P<scan>[pi])', re.IGNORECASE)
+widescreen = re.compile(r'\b(w(?:ide)?s(?:creen)?)\b', re.IGNORECASE)
 
 # Sources
 tv = re.compile(r'([sph]d).?tv|tv(rip|mux)', re.IGNORECASE)
@@ -12,6 +13,7 @@ web = re.compile(r'(web(?P<type>rip|mux|hd|.?dl|\b))', re.IGNORECASE)
 bluray = re.compile(r'(blue?-?ray|b[rd](?:rip|mux))', re.IGNORECASE)
 sat = re.compile(r'(dsr|satrip)', re.IGNORECASE)
 itunes = re.compile(r'(itunes)', re.IGNORECASE)
+aussie = re.compile(r'\b(bf1)\b', re.IGNORECASE)  # aussie p2p release group
 
 # Codecs
 avc = re.compile(r'([xh].?26[45]|(?:he|a)vc)', re.IGNORECASE)
