@@ -126,7 +126,7 @@ def revertEpisode(epObj):
     history_eps = {res["episode"]: res for res in sql_results} 
 
     try:
-        logger.log(u"Reverting episode (%s, %s): %s" % (epObj.season, epObj.episode, epObj.name))
+        logger.log(u"Reverting episode ({0}, {1}): {2}".format(epObj.season, epObj.episode, epObj.name))
         with epObj.lock:
             if epObj.episode in history_eps:
                 logger.log(u"Found in history")
@@ -241,9 +241,9 @@ def findRelease(epObj):
         failed_db_con.action("DELETE FROM history WHERE release=? AND date!=?", [release, date])
 
         # Found a previously failed release
-        logger.log(u"Failed release found for season (%s): (%s)" % (epObj.season, result["release"]), logger.DEBUG)
+        logger.log(u"Failed release found for season ({0}): ({1})".format(epObj.season, result["release"]), logger.DEBUG)
         return release, provider
 
     # Release was not found
-    logger.log(u"No releases found for season (%s) of (%s)" % (epObj.season, epObj.show.indexerid), logger.DEBUG)
+    logger.log(u"No releases found for season ({0}) of ({1})".format(epObj.season, epObj.show.indexerid), logger.DEBUG)
     return release, provider

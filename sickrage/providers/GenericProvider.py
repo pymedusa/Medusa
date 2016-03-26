@@ -88,17 +88,17 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                     'Referer': '/'.join(url.split('/')[:3]) + '/'
                 })
 
-            logger.log(u'Downloading a result from %s at %s' % (self.name, url))
+            logger.log(u'Downloading a result from {0} at {1}'.format(self.name, url))
 
             if url.endswith(GenericProvider.TORRENT) and filename.endswith(GenericProvider.NZB):
                 filename = replace_extension(filename, GenericProvider.TORRENT)
 
             if download_file(url, filename, session=self.session, headers=self.headers, hooks={'response': self.get_url_hook}):
                 if self._verify_download(filename):
-                    logger.log(u'Saved result to %s' % filename, logger.INFO)
+                    logger.log(u'Saved result to {0}'.format(filename), logger.INFO)
                     return True
 
-                logger.log(u'Could not download %s' % url, logger.WARNING)
+                logger.log(u'Could not download {0}'.format(url), logger.WARNING)
                 remove_file_failed(filename)
 
         if urls:
@@ -258,7 +258,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                 actual_episodes = parse_result.episode_numbers
 
             if add_cache_entry:
-                logger.log(u'Adding item from search to cache: %s' % title, logger.DEBUG)
+                logger.log(u'Adding item from search to cache: {0}'.format(title), logger.DEBUG)
                 # pylint: disable=protected-access
                 # Access to a protected member of a client class
                 ci = self.cache._addCacheEntry(title, url, seeders, leechers, size, parse_result=parse_result)
@@ -402,7 +402,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                 episode_string += ('|', ' ')[len(self.proper_strings) > 1]
                 episode_string += episode.airdate.strftime('%b')
             elif episode.show.anime:
-                episode_string += '%02d' % int(episode.scene_absolute_number)
+                episode_string += '{0:02d}'.format(int(episode.scene_absolute_number))
             else:
                 episode_string += sickbeard.config.naming_ep_type[2] % {
                     'seasonnumber': episode.scene_season,
@@ -427,9 +427,9 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             if episode.show.air_by_date or episode.show.sports:
                 episode_string += str(episode.airdate).split('-')[0]
             elif episode.show.anime:
-                episode_string += '%d' % int(episode.scene_absolute_number)
+                episode_string += '{0:d}'.format(int(episode.scene_absolute_number))
             else:
-                episode_string += 'S%02d' % int(episode.scene_season)
+                episode_string += 'S{0:02d}'.format(int(episode.scene_season))
 
             search_string['Season'].append(episode_string.encode('utf-8').strip())
 
@@ -483,12 +483,12 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                     torrent_hash = b16encode(b32decode(torrent_hash)).upper()
 
                 if not torrent_hash:
-                    logger.log(u'Unable to extract torrent hash from magnet: %s' % ex(result.url), logger.ERROR)
+                    logger.log(u'Unable to extract torrent hash from magnet: {0}'.format(ex(result.url)), logger.ERROR)
                     return urls, filename
 
                 urls = [x.format(torrent_hash=torrent_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
             except Exception:
-                logger.log(u'Unable to extract torrent hash or name from magnet: %s' % ex(result.url), logger.ERROR)
+                logger.log(u'Unable to extract torrent hash or name from magnet: {0}'.format(ex(result.url)), logger.ERROR)
                 return urls, filename
         else:
             urls = [result.url]
