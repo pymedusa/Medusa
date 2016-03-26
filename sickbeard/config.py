@@ -915,3 +915,10 @@ class ConfigMigrator(object):
         sickbeard.PLEX_SERVER_USERNAME = check_setting_str(self.config_obj, 'Plex', 'plex_username', '', censor_log=True)
         sickbeard.PLEX_SERVER_PASSWORD = check_setting_str(self.config_obj, 'Plex', 'plex_password', '', censor_log=True)
         sickbeard.USE_PLEX_SERVER = bool(check_setting_int(self.config_obj, 'Plex', 'use_plex', 0))
+
+    def _migrate_v9(self):
+        """
+        Migrate to config version 9
+        """
+        # Added setting "enable_manualsearch" for providers (dynamic setting)
+        pass

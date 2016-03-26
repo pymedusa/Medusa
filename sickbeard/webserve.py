@@ -4749,6 +4749,12 @@ class ConfigProviders(Config):
                         newznabProviderDict[cur_id].enable_daily = 0
 
                     try:
+                        newznabProviderDict[cur_id].enable_manualsearch = config.checkbox_to_value(
+                            kwargs[cur_id + '_enable_manualsearch'])
+                    except Exception:
+                        newznabProviderDict[cur_id].enable_manualsearch = 1
+
+                    try:
                         newznabProviderDict[cur_id].enable_backlog = config.checkbox_to_value(
                             kwargs[cur_id + '_enable_backlog'])
                     except Exception:
@@ -4951,6 +4957,13 @@ class ConfigProviders(Config):
                 except Exception:
                     curTorrentProvider.enable_daily = 0  # these exceptions are actually catching unselected checkboxes
 
+            if hasattr(curTorrentProvider, 'enable_manualsearch'):
+                try:
+                    curTorrentProvider.enable_manualsearch = config.checkbox_to_value(
+                        kwargs[curTorrentProvider.get_id() + '_enable_manualsearch'])
+                except Exception:
+                    curTorrentProvider.enable_manualsearch = 1  # these exceptions are actually catching unselected checkboxes
+
             if hasattr(curTorrentProvider, 'enable_backlog'):
                 try:
                     curTorrentProvider.enable_backlog = config.checkbox_to_value(
@@ -5005,6 +5018,13 @@ class ConfigProviders(Config):
                         kwargs[curNzbProvider.get_id() + '_enable_daily'])
                 except Exception:
                     curNzbProvider.enable_daily = 0  # these exceptions are actually catching unselected checkboxes
+
+            if hasattr(curNzbProvider, 'enable_manualsearch'):
+                try:
+                    curNzbProvider.enable_manualsearch = config.checkbox_to_value(
+                        kwargs[curNzbProvider.get_id() + '_enable_manualsearch'])
+                except Exception:
+                    curNzbProvider.enable_manualsearch = 1  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curNzbProvider, 'enable_backlog'):
                 try:

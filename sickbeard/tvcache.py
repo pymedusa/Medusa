@@ -155,8 +155,8 @@ class TVCache(object):
                     if ci is not None:
                         cl.append(ci)
 
+                cache_db_con = self._getDB()
                 if cl:
-                    cache_db_con = self._getDB()
                     cache_db_con.mass_action(cl)
 
         except AuthException as e:
