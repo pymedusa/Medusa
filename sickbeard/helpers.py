@@ -111,15 +111,19 @@ def remove_non_release_groups(name):
     removeWordsList = {
         r'\[rartv\]$': 'searchre',
         r'\[rarbg\]$': 'searchre',
+        r'\.\[eztv\]$': 'searchre',
         r'\[eztv\]$': 'searchre',
         r'\[ettv\]$': 'searchre',
         r'\[cttv\]$': 'searchre',
+        r'\.\[vtv\]$': 'searchre',
         r'\[vtv\]$': 'searchre',
         r'\[EtHD\]$': 'searchre',
         r'\[GloDLS\]$': 'searchre',
         r'\[silv4\]$': 'searchre',
         r'\[Seedbox\]$': 'searchre',
         r'\[PublicHD\]$': 'searchre',
+        r'\.\[PublicHD\]$': 'searchre',
+        r'\.\[NO.RAR\]$': 'searchre',
         r'\[NO.RAR\]$': 'searchre',
         r'-\=\{SPARROW\}\=-$': 'searchre',
         r'\=\{SPARR$': 'searchre',
@@ -128,9 +132,18 @@ def remove_non_release_groups(name):
         r'\[brassetv\]$': 'searchre',
         r'\[Talamasca32\]$': 'searchre',
         r'\(musicbolt\.com\)$': 'searchre',
+        r'\.\(NLsub\)$': 'searchre',
         r'\(NLsub\)$': 'searchre',
+        r'\.\[BT\]$': 'searchre',
         r' \[1044\]$': 'searchre',
+        r'\.RiPSaLoT$': 'searchre',
+        r'\.GiuseppeTnT$': 'searchre',
+        r'\.Renc$': 'searchre',
+        r'\.gz$': 'searchre',
+        r'\.English$': 'searchre',
+        r'\.German$': 'searchre',
         r'\.\.Italian$': 'searchre',
+        r'\.Italian$': 'searchre',
         r'(?<![57])\.1$': 'searchre',
         r'-NZBGEEK$': 'searchre',
         r'-Siklopentan$': 'searchre',
@@ -140,13 +153,20 @@ def remove_non_release_groups(name):
         r'-\[SpastikusTV\]$': 'searchre',
         r'-RP$': 'searchre',
         r'-20-40$': 'searchre',
-        r'^(-|_|\]|)?(.*)((\[|\{|\.)(.*|)www.*)': 'searchre', # [www.*] or [ www.*] or { www.*} or "- [ www"
+        r'\.\[www\.usabit\.com\]$': 'searchre',
+        r'^\[www\.Cpasbien\.pe\] ': 'searchre',
+        r'^\[www\.Cpasbien\.com\] ': 'searchre',
+        r'^\[ www\.Cpasbien\.pw \] ': 'searchre',
+        r'^\.www\.Cpasbien\.pw': 'searchre',
+        r'^\[www\.newpct1\.com\]': 'searchre',
+        r'^\[ www\.Cpasbien\.com \] ': 'searchre',
+        r'- \{ www\.SceneTime\.com \}$': 'searchre',
+        r'^\{ www\.SceneTime\.com \} - ': 'searchre',
+        r'^\]\.\[www\.tensiontorrent.com\] - ': 'searchre',
+        r'^\]\.\[ www\.tensiontorrent.com \] - ': 'searchre',
+        r'- \[ www\.torrentday\.com \]$': 'searchre',
+        r'^\[ www\.TorrentDay\.com \] - ': 'searchre',
         r'\[NO-RAR\] - \[ www\.torrentday\.com \]$': 'searchre',
-        r'–(.*)': 'searchre', # AAF–FUNNY.BiT–Thank.You.Notes (\u2013)
-        r'(\\u2013)(.*)$': 'searchre', # AAF\u2013FUNNY.BiT\u2013Thank.You.Notes
-        r'((\.|_)(\[|\().*(\]|\)))$': 'searchre', # DIMENSION.[SNEAkY] or DIMENSION.(repack) or _(NLsub)
-        r'\.(.*)$': 'searchre', # 2HD.info or 2HD.nzb
-        r'\.$': 'searchre', # 2HD. or KILLERS.
     }
 
     _name = name
