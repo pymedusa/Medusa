@@ -161,7 +161,7 @@ class Notifier(object):
 
     def _notifyPushover(self, title, message, sound=None, userKey=None, apiKey=None, force=False):
         """
-        Sends a pushover notification based on the provided info or SR config
+        Sends a pushover notification based on the provided info or Medusa config
 
         title: The title of the notification to send
         message: The message string to send

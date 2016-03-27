@@ -908,20 +908,20 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
         _, old_ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)
 
-        # if SR downloaded this on purpose we likely have a priority download
+        # if Medusa downloaded this on purpose we likely have a priority download
         if self.in_history or ep_obj.status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
             # if the episode is still in a snatched status, then we can assume we want this
             if not self.in_history:
-                self._log(u"SR snatched this episode and it is not processed before", logger.DEBUG)
+                self._log(u"Medusa snatched this episode and it is not processed before", logger.DEBUG)
                 return True
 
             # if it's in history, we only want it if the new quality is higher or if it's a proper of equal or higher quality
             if new_ep_quality > old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-                self._log(u"SR snatched this episode and it is a higher quality so I'm marking it as priority", logger.DEBUG)
+                self._log(u"Medusa snatched this episode and it is a higher quality so I'm marking it as priority", logger.DEBUG)
                 return True
 
             if self.is_proper and new_ep_quality >= old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-                self._log(u"SR snatched this episode and it is a proper of equal or higher quality so I'm marking it as priority", logger.DEBUG)
+                self._log(u"Medusa snatched this episode and it is a proper of equal or higher quality so I'm marking it as priority", logger.DEBUG)
                 return True
 
             return False
@@ -969,7 +969,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         # try to find the file info
         (show, season, episodes, quality, version) = self._find_info()
         if not show:
-            self._log(u"This show isn't in your list, you need to add it to SR before post-processing an episode")
+            self._log(u"This show isn't in your list, you need to add it to Medusa before post-processing an episode")
             raise EpisodePostProcessingFailedException()
         elif season is None or not episodes:
             self._log(u"Not enough information to determine what episode this is. Quitting post-processing")

@@ -1,7 +1,7 @@
 # coding=utf-8
 
 """
-Test the SR API
+Test the Medusa API
 """
 
 import unittest
