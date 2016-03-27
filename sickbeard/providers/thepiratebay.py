@@ -74,7 +74,7 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         }
 
         # Units
-        units = ["B", "KB", "MB", "GB", "TB", "PB"]
+        units = ["B", "KIB", "MIB", "GIB", "TIB", "PIB"]
 
         def process_column_header(th):
             result = ""
