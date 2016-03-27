@@ -42,7 +42,7 @@ missing_network_timezones = set()
 
 # update the network timezone table
 def update_network_dict():
-    """Update timezone information from SR repositories"""
+    """Update timezone information from Medusa repositories"""
 
     url = 'http://raw.githubusercontent.com/pymedusa/sickrage.github.io/master/sb_network_timezones/network_timezones.txt'
     url_data = helpers.getURL(url, session=helpers.make_session(), returns='text')
