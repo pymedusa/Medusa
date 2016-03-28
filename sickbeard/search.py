@@ -44,6 +44,7 @@ from sickbeard import common
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import AuthException, ex
 from sickrage.providers.GenericProvider import GenericProvider
+from sickrage.helper.common import enabled_providers
 
 
 def _downloadResult(result):
@@ -413,24 +414,23 @@ def searchForNeededEpisodes():
         logger.log(u"No episodes needed.", logger.INFO)
         return foundResults.values()
 
-    origThreadName = threading.currentThread().name
+    original_thread_name = threading.currentThread().name
 
-    providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
-                 if x.is_active() and x.enable_daily]
-    for curProvider in providers:
-        threading.currentThread().name = origThreadName + " :: [" + curProvider.name + "]"
-        curProvider.cache.updateCache()
+    providers = enabled_providers('daily')
+    for cur_provider in providers:
+        threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name, provider=cur_provider.name)
+        cur_provider.cache.updateCache()
 
-    for curProvider in providers:
-        threading.currentThread().name = origThreadName + " :: [" + curProvider.name + "]"
+    for cur_provider in providers:
+        threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name, provider=cur_provider.name)
         curFoundResults = {}
         try:
-            curFoundResults = curProvider.search_rss(episodes)
+            curFoundResults = cur_provider.search_rss(episodes)
         except AuthException as e:
             logger.log(u"Authentication error: " + ex(e), logger.ERROR)
             continue
         except Exception as e:
-            logger.log(u"Error while searching " + curProvider.name + ", skipping: " + ex(e), logger.ERROR)
+            logger.log(u"Error while searching " + cur_provider.name + ", skipping: " + ex(e), logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
             continue
 
@@ -455,7 +455,7 @@ def searchForNeededEpisodes():
 
             foundResults[curEp] = bestResult
 
-    threading.currentThread().name = origThreadName
+    threading.currentThread().name = original_thread_name
 
     if not didSearch:
         logger.log(
@@ -485,28 +485,34 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
     # build name cache for show
     sickbeard.name_cache.buildNameCache(show)
 
-    origThreadName = threading.currentThread().name
+    original_thread_name = threading.currentThread().name
 
-    providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
-                 if x.is_active() and x.enable_backlog]
+    if manual_snatch:
+        logger.log("Using manual search providers")
+        providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
+                    if x.is_active() and x.enable_manualsearch]
+    else:
+        providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
+                    if x.is_active() and x.enable_backlog]
+
     if not manualSearch:
-        for curProvider in providers:
-            threading.currentThread().name = origThreadName + " :: [" + curProvider.name + "]"
-            curProvider.cache.updateCache()
+        for cur_provider in providers:
+            threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name, provider=cur_provider.name)
+            cur_provider.cache.updateCache()
 
-    threading.currentThread().name = origThreadName
+    threading.currentThread().name = original_thread_name
 
-    for curProvider in providers:
-        threading.currentThread().name = origThreadName + " :: [" + curProvider.name + "]"
+    for cur_provider in providers:
+        threading.currentThread().name = original_thread_name + " :: [" + cur_provider.name + "]"
 
-        if curProvider.anime_only and not show.is_anime:
+        if cur_provider.anime_only and not show.is_anime:
             logger.log(u"" + str(show.name) + " is not an anime, skipping", logger.DEBUG)
             continue
 
-        foundResults[curProvider.name] = {}
+        foundResults[cur_provider.name] = {}
 
         searchCount = 0
-        search_mode = curProvider.search_mode
+        search_mode = cur_provider.search_mode
 
         # Always search for episode when manually searching when in sponly
         if search_mode == 'sponly' and (manualSearch or manual_snatch):
@@ -521,34 +527,34 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
                 logger.log(u"Performing season pack search for " + show.name)
 
             try:
-                searchResults = curProvider.find_search_results(show, episodes, search_mode,
+                searchResults = cur_provider.find_search_results(show, episodes, search_mode,
                                                                 manualSearch, downCurQuality, manual_snatch)
             except AuthException as e:
                 logger.log(u"Authentication error: " + ex(e), logger.ERROR)
                 break
             except (SocketTimeout, TypeError) as e:
                 logger.log(u"Connection timed out (sockets) while searching %s. Error: %r" %
-                           (curProvider.name, ex(e)), logger.DEBUG)
+                           (cur_provider.name, ex(e)), logger.DEBUG)
                 break
             except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects) as e:
-                logger.log(u"HTTP error while searching %s. Error: %r" % (curProvider.name, ex(e)), logger.DEBUG)
+                logger.log(u"HTTP error while searching %s. Error: %r" % (cur_provider.name, ex(e)), logger.DEBUG)
                 break
             except requests.exceptions.ConnectionError as e:
-                logger.log(u"Connection error while searching %s. Error: %r" % (curProvider.name, ex(e)), logger.DEBUG)
+                logger.log(u"Connection error while searching %s. Error: %r" % (cur_provider.name, ex(e)), logger.DEBUG)
                 break
             except requests.exceptions.Timeout as e:
-                logger.log(u"Connection timed out while searching %s. Error: %r" % (curProvider.name, ex(e)), logger.DEBUG)
+                logger.log(u"Connection timed out while searching %s. Error: %r" % (cur_provider.name, ex(e)), logger.DEBUG)
                 break
             except requests.exceptions.ContentDecodingError:
                 logger.log(u"Content-Encoding was gzip, but content was not compressed while searching %s. Error: %r" %
-                           (curProvider.name, ex(e)), logger.DEBUG)
+                           (cur_provider.name, ex(e)), logger.DEBUG)
                 break
             except Exception as e:
                 if 'ECONNRESET' in e or (hasattr(e, 'errno') and e.errno == errno.ECONNRESET):
                     logger.log(u"Connection reseted by peer while searching %s. Error: %r" %
-                               (curProvider.name, ex(e)), logger.WARNING)
+                               (cur_provider.name, ex(e)), logger.WARNING)
                 else:
-                    logger.log(u"Unknown exception while searching %s. Error: %r" % (curProvider.name, ex(e)), logger.ERROR)
+                    logger.log(u"Unknown exception while searching %s. Error: %r" % (cur_provider.name, ex(e)), logger.ERROR)
                     logger.log(traceback.format_exc(), logger.DEBUG)
                 break
 
@@ -557,13 +563,13 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
             if searchResults:
                 # make a list of all the results for this provider
                 for curEp in searchResults:
-                    if curEp in foundResults[curProvider.name]:
-                        foundResults[curProvider.name][curEp] += searchResults[curEp]
+                    if curEp in foundResults[cur_provider.name]:
+                        foundResults[cur_provider.name][curEp] += searchResults[curEp]
                     else:
-                        foundResults[curProvider.name][curEp] = searchResults[curEp]
+                        foundResults[cur_provider.name][curEp] = searchResults[curEp]
 
                 break
-            elif not curProvider.search_fallback or searchCount == 2:
+            elif not cur_provider.search_fallback or searchCount == 2:
                 break
 
             if search_mode == 'sponly':
@@ -574,7 +580,7 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
                 search_mode = 'sponly'
 
         # skip to next provider if we have no results to process
-        if not foundResults[curProvider.name]:
+        if not foundResults[cur_provider.name]:
             continue
 
         # Update the cache if a manual search is being runned
@@ -585,7 +591,7 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
             searched_episode_list.append(-1)
             for searched_episode in searched_episode_list:
                 if (searched_episode in searchResults and
-                        curProvider.cache.update_cache_manual_search(searchResults[searched_episode])):
+                        cur_provider.cache.update_cache_manual_search(searchResults[searched_episode])):
                     # If we have at least a result from one provider, it's good enough to be marked as result
                     manual_snatch_results.append(True)
             # Continue because we don't want to pick best results as we are running a manual search by user
@@ -593,12 +599,12 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
 
         # pick the best season NZB
         bestSeasonResult = None
-        if SEASON_RESULT in foundResults[curProvider.name]:
-            bestSeasonResult = pickBestResult(foundResults[curProvider.name][SEASON_RESULT], show)
+        if SEASON_RESULT in foundResults[cur_provider.name]:
+            bestSeasonResult = pickBestResult(foundResults[cur_provider.name][SEASON_RESULT], show)
 
         highest_quality_overall = 0
-        for cur_episode in foundResults[curProvider.name]:
-            for cur_result in foundResults[curProvider.name][cur_episode]:
+        for cur_episode in foundResults[cur_provider.name]:
+            for cur_result in foundResults[cur_provider.name][cur_episode]:
                 if cur_result.quality != Quality.UNKNOWN and cur_result.quality > highest_quality_overall:
                     highest_quality_overall = cur_result.quality
         logger.log(u"The highest quality of any match is " + Quality.qualityStrings[highest_quality_overall],
@@ -646,7 +652,7 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
                 bestSeasonResult.episodes = epObjs
 
                 # Remove provider from thread name before return results
-                threading.currentThread().name = origThreadName
+                threading.currentThread().name = original_thread_name
 
                 return [bestSeasonResult]
 
@@ -668,10 +674,10 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
                         elif len(curResult.episodes) > 1:
                             epNum = MULTI_EP_RESULT
 
-                        if epNum in foundResults[curProvider.name]:
-                            foundResults[curProvider.name][epNum].append(curResult)
+                        if epNum in foundResults[cur_provider.name]:
+                            foundResults[cur_provider.name][epNum].append(curResult)
                         else:
-                            foundResults[curProvider.name][epNum] = [curResult]
+                            foundResults[cur_provider.name][epNum] = [curResult]
 
                 # If this is a torrent all we can do is leech the entire torrent, user will have to select which eps not do download in his torrent client
                 else:
@@ -686,15 +692,15 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
                             epObjs.append(show.getEpisode(season, curEpNum))
                     bestSeasonResult.episodes = epObjs
 
-                    if MULTI_EP_RESULT in foundResults[curProvider.name]:
-                        foundResults[curProvider.name][MULTI_EP_RESULT].append(bestSeasonResult)
+                    if MULTI_EP_RESULT in foundResults[cur_provider.name]:
+                        foundResults[cur_provider.name][MULTI_EP_RESULT].append(bestSeasonResult)
                     else:
-                        foundResults[curProvider.name][MULTI_EP_RESULT] = [bestSeasonResult]
+                        foundResults[cur_provider.name][MULTI_EP_RESULT] = [bestSeasonResult]
 
         # go through multi-ep results and see if we really want them or not, get rid of the rest
         multiResults = {}
-        if MULTI_EP_RESULT in foundResults[curProvider.name]:
-            for _multiResult in foundResults[curProvider.name][MULTI_EP_RESULT]:
+        if MULTI_EP_RESULT in foundResults[cur_provider.name]:
+            for _multiResult in foundResults[cur_provider.name][MULTI_EP_RESULT]:
 
                 logger.log(u"Seeing if we want to bother with multi-episode result " + _multiResult.name, logger.DEBUG)
 
@@ -708,7 +714,7 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
                 notNeededEps = []
                 for epObj in multiResult.episodes:
                     # if we have results for the episode
-                    if epObj.episode in foundResults[curProvider.name] and len(foundResults[curProvider.name][epObj.episode]) > 0:
+                    if epObj.episode in foundResults[cur_provider.name] and len(foundResults[cur_provider.name][epObj.episode]) > 0:
                         notNeededEps.append(epObj.episode)
                     else:
                         neededEps.append(epObj.episode)
@@ -744,23 +750,23 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
                 # don't bother with the single result if we're going to get it with a multi result
                 for epObj in multiResult.episodes:
                     multiResults[epObj.episode] = multiResult
-                    if epObj.episode in foundResults[curProvider.name]:
+                    if epObj.episode in foundResults[cur_provider.name]:
                         logger.log(
                             u"A needed multi-episode result overlaps with a single-episode result for ep #" + str(
                                 epObj.episode) + ", removing the single-episode results from the list", logger.DEBUG)
-                        del foundResults[curProvider.name][epObj.episode]
+                        del foundResults[cur_provider.name][epObj.episode]
 
         # of all the single ep results narrow it down to the best one for each episode
         finalResults += set(multiResults.values())
-        for curEp in foundResults[curProvider.name]:
+        for curEp in foundResults[cur_provider.name]:
             if curEp in (MULTI_EP_RESULT, SEASON_RESULT):
                 continue
 
-            if not foundResults[curProvider.name][curEp]:
+            if not foundResults[cur_provider.name][curEp]:
                 continue
 
             # if all results were rejected move on to the next episode
-            bestResult = pickBestResult(foundResults[curProvider.name][curEp], show)
+            bestResult = pickBestResult(foundResults[cur_provider.name][curEp], show)
             if not bestResult:
                 continue
 
@@ -793,7 +799,7 @@ def searchProviders(show, episodes, manualSearch=False, downCurQuality=False, ma
                    logger.WARNING)
 
     # Remove provider from thread name before return results
-    threading.currentThread().name = origThreadName
+    threading.currentThread().name = original_thread_name
 
     if manual_snatch:
         # If results in manual search return True, else False

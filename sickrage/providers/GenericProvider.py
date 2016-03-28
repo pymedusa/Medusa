@@ -56,6 +56,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         ]
         self.cache = TVCache(self)
         self.enable_backlog = False
+        self.enable_manualsearch = False
         self.enable_daily = False
         self.enabled = False
         self.headers = {'User-Agent': UA_POOL.random}
