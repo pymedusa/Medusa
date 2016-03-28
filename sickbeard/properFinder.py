@@ -172,7 +172,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # populate our Proper instance
             curProper.show = parse_result.show
-            curProper.season = parse_result.season_number if parse_result.season_number is not None else 1
+            curProper.season = parse_result.season_number if parse_result.season_number else 1
             curProper.episode = parse_result.episode_numbers[0]
             curProper.release_group = parse_result.release_group
             curProper.version = parse_result.version

@@ -181,7 +181,7 @@ class DBConnection(object):
         :return: list of results
         """
         # remove None types
-        querylist = [i for i in querylist if i is not None and len(i)]
+        querylist = [i for i in querylist if i and len(i)]
 
         sql_results = []
         attempt = 0

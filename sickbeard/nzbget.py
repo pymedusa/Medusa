@@ -109,7 +109,7 @@ def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-sta
         nzbget_version_str = nzbGetRPC.version()
         nzbget_version = try_int(nzbget_version_str[:nzbget_version_str.find('.')])
         if nzbget_version == 0:
-            if nzbcontent64 is not None:
+            if nzbcontent64:
                 nzbget_result = nzbGetRPC.append(nzb.name + '.nzb', category, addToTop, nzbcontent64)
             else:
                 if nzb.resultType == 'nzb':
@@ -124,7 +124,7 @@ def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-sta
 
                 nzbget_result = nzbGetRPC.append(nzb.name + '.nzb', category, addToTop, nzbcontent64)
         elif nzbget_version == 12:
-            if nzbcontent64 is not None:
+            if nzbcontent64:
                 nzbget_result = nzbGetRPC.append(nzb.name + '.nzb', category, nzbgetprio, False,
                                                  nzbcontent64, False, dupekey, dupescore, 'score')
             else:
@@ -134,11 +134,11 @@ def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-sta
         # also the return value has changed from boolean to integer
         # (Positive number representing NZBID of the queue item. 0 and negative numbers represent error codes.)
         elif nzbget_version >= 13:
-            nzbget_result = nzbGetRPC.append(nzb.name + '.nzb', nzbcontent64 if nzbcontent64 is not None else nzb.url,
+            nzbget_result = nzbGetRPC.append(nzb.name + '.nzb', nzbcontent64 if nzbcontent64 else nzb.url,
                                              category, nzbgetprio, False, False, dupekey, dupescore,
                                              'score') > 0
         else:
-            if nzbcontent64 is not None:
+            if nzbcontent64:
                 nzbget_result = nzbGetRPC.append(nzb.name + '.nzb', category, nzbgetprio, False,
                                                  nzbcontent64)
             else:

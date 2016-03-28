@@ -343,11 +343,11 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
                 def is_ascii_error(title):
                     # [APP SUBMITTED]: 'ascii' codec can't encode characters in position 00-00: ordinal not in range(128)
                     # [APP SUBMITTED]: 'charmap' codec can't decode byte 0x00 in position 00: character maps to <undefined>
-                    return re.search(r'.* codec can\'t .*code .* in position .*:', title) is not None
+                    return re.search(r'.* codec can\'t .*code .* in position .*:', title)
 
                 def is_malformed_error(title):
                     # [APP SUBMITTED]: not well-formed (invalid token): line 0, column 0
-                    return re.search(r'.* not well-formed \(invalid token\): line .* column .*', title) is not None
+                    return re.search(r'.* not well-formed \(invalid token\): line .* column .*', title)
 
                 ascii_error = is_ascii_error(title_error)
                 malformed_error = is_malformed_error(title_error)

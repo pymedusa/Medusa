@@ -291,7 +291,7 @@ def searchIndexerForShowID(regShowName, indexer=None, indexer_id=None, ui=None):
     for i in sickbeard.indexerApi().indexers if not indexer else int(indexer or []):
         # Query Indexers for each search term and build the list of results
         lINDEXER_API_PARMS = sickbeard.indexerApi(i).api_params.copy()
-        if ui is not None:
+        if ui:
             lINDEXER_API_PARMS['custom_ui'] = ui
         t = sickbeard.indexerApi(i).indexer(**lINDEXER_API_PARMS)
 
@@ -317,9 +317,9 @@ def searchIndexerForShowID(regShowName, indexer=None, indexer_id=None, ui=None):
                 continue
             ShowObj = Show.find(sickbeard.showList, int(series_id))
             # Check if we can find the show in our list (if not, it's not the right show)
-            if (indexer_id is None) and (ShowObj is not None) and (ShowObj.indexerid == int(series_id)):
+            if (indexer_id is None) and (ShowObj) and (ShowObj.indexerid == int(series_id)):
                 return seriesname, i, int(series_id)
-            elif (indexer_id is not None) and (int(indexer_id) == int(series_id)):
+            elif (indexer_id) and (int(indexer_id) == int(series_id)):
                 return seriesname, i, int(indexer_id)
 
         if indexer:
@@ -1287,7 +1287,7 @@ def mapIndexersToShow(showObj):
 
     # for each mapped entry
     for curResult in sql_results:
-        nlist = [i for i in curResult if i is not None]
+        nlist = [i for i in curResult if i]
         # Check if its mapped with both tvdb and tvrage.
         if len(nlist) >= 4:
             logger.log(u"Found indexer mapping in cache for show: " + showObj.name, logger.DEBUG)

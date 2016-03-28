@@ -53,7 +53,7 @@ class ShowQueue(generic_queue.GenericQueue):
         return show.indexerid in [x.show.indexerid if x.show else 0 for x in self.queue if x.action_id in actions]
 
     def _isBeingSomethinged(self, show, actions):
-        return self.currentItem is not None and show == self.currentItem.show and self.currentItem.action_id in actions
+        return self.currentItem and show == self.currentItem.show and self.currentItem.action_id in actions
 
     def isInUpdateQueue(self, show):
         return self._isInQueue(show, (ShowQueueActions.UPDATE, ShowQueueActions.FORCEUPDATE))
@@ -83,7 +83,7 @@ class ShowQueue(generic_queue.GenericQueue):
         return self._isBeingSomethinged(show, (ShowQueueActions.SUBTITLE,))
 
     def _getLoadingShowList(self):
-        return [x for x in self.queue + [self.currentItem] if x is not None and x.isLoading]
+        return [x for x in self.queue + [self.currentItem] if x and x.isLoading]
 
     def getQueueActionMessage(self, show):
         show_message = None
@@ -410,12 +410,12 @@ class QueueItemAdd(ShowQueueItem):
 
             # set up initial values
             self.show.location = self.showDir
-            self.show.subtitles = self.subtitles if self.subtitles is not None else sickbeard.SUBTITLES_DEFAULT
+            self.show.subtitles = self.subtitles if self.subtitles else sickbeard.SUBTITLES_DEFAULT
             self.show.quality = self.quality if self.quality else sickbeard.QUALITY_DEFAULT
-            self.show.flatten_folders = self.flatten_folders if self.flatten_folders is not None else sickbeard.FLATTEN_FOLDERS_DEFAULT
-            self.show.anime = self.anime if self.anime is not None else sickbeard.ANIME_DEFAULT
-            self.show.scene = self.scene if self.scene is not None else sickbeard.SCENE_DEFAULT
-            self.show.paused = self.paused if self.paused is not None else False
+            self.show.flatten_folders = self.flatten_folders if self.flatten_folders else sickbeard.FLATTEN_FOLDERS_DEFAULT
+            self.show.anime = self.anime if self.anime else sickbeard.ANIME_DEFAULT
+            self.show.scene = self.scene if self.scene else sickbeard.SCENE_DEFAULT
+            self.show.paused = self.paused if self.paused else False
 
             # set up default new/missing episode status
             logger.log(u"Setting all episodes to the specified default status: " + str(self.show.default_ep_status))
@@ -536,7 +536,7 @@ class QueueItemAdd(ShowQueueItem):
         self.finish()
 
     def _finishEarly(self):
-        if self.show is not None:
+        if self.show:
             sickbeard.showQueueScheduler.action.removeShow(self.show)
 
         self.finish()

@@ -518,7 +518,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             self.version = version
             to_return = (show, season, [], quality, version)
 
-            qual_str = common.Quality.qualityStrings[quality] if quality is not None else quality
+            qual_str = common.Quality.qualityStrings[quality] if quality else quality
             self._log("Found result in history for {} - Season: {} - Quality: {} - Version: {}".format
                       (show.name if show else "UNDEFINED", season, qual_str, version), logger.DEBUG)
 
@@ -537,11 +537,11 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
         # remember whether it's a proper
         if parse_result.extra_info:
-            self.is_proper = re.search(r'(^|[\. _-])(proper|repack)([\. _-]|$)', parse_result.extra_info, re.I) is not None
+            self.is_proper = re.search(r'(^|[\. _-])(proper|repack)([\. _-]|$)', parse_result.extra_info, re.I)
 
         # if the result is complete then remember that for later
         # if the result is complete then set release name
-        if parse_result.series_name and ((parse_result.season_number is not None and parse_result.episode_numbers) or
+        if parse_result.series_name and ((parse_result.season_number and parse_result.episode_numbers) or
                                          parse_result.air_date) and parse_result.release_group:
 
             if not self.release_name:
@@ -676,10 +676,10 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 quality = cur_quality
 
             # we only get current version for animes from history to prevent issues with old database entries
-            if cur_version is not None:
+            if cur_version:
                 version = cur_version
 
-            if cur_season is not None:
+            if cur_season:
                 season = cur_season
             if cur_episodes:
                 episodes = cur_episodes
@@ -1113,7 +1113,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
         # Just want to keep this consistent for failed handling right now
         releaseName = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
-        if releaseName is not None:
+        if releaseName:
             failed_history.logSuccess(releaseName)
         else:
             self._log(u"Couldn't find release in snatch history", logger.WARNING)

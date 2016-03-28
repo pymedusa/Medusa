@@ -71,7 +71,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
 
         self.token = response.get("token")
         self.token_expires = datetime.datetime.now() + datetime.timedelta(minutes=14) if self.token else None
-        return self.token is not None
+        return self.token
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals, too-many-statements
         results = []
@@ -89,7 +89,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
             "token": self.token,
         }
 
-        if ep_obj is not None:
+        if ep_obj:
             ep_indexerid = ep_obj.show.indexerid
             ep_indexer = ep_obj.show.indexer
         else:

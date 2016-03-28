@@ -132,7 +132,7 @@ def check_force_season_folders(pattern=None, multi=None, anime_type=None):
 
     valid = not validate_name(pattern, None, anime_type, file_only=True)
 
-    if multi is not None:
+    if multi:
         valid = valid or not validate_name(pattern, multi, anime_type, file_only=True)
 
     return valid
@@ -153,7 +153,7 @@ def check_valid_naming(pattern=None, multi=None, anime_type=None):
     logger.log(u"Checking whether the pattern " + pattern + " is valid for a single episode", logger.DEBUG)
     valid = validate_name(pattern, None, anime_type)
 
-    if multi is not None:
+    if multi:
         logger.log(u"Checking whether the pattern " + pattern + " is valid for a multi episode", logger.DEBUG)
         valid = valid and validate_name(pattern, multi, anime_type)
 
@@ -264,7 +264,7 @@ def generate_sample_ep(multi=None, abd=False, sports=False, anime_type=None):
         else:
             ep._release_name = 'Show.Name.S02E03.HDTV.XviD-RLSGROUP'
 
-    if multi is not None:
+    if multi:
         ep._name = "Ep Name (1)"
 
         if anime_type != 3:

@@ -114,7 +114,7 @@ class Notifier(object):
             data = {}
             try:
                 # URL parameters
-                if show_obj is not None:
+                if show_obj:
                     trakt_id = sickbeard.indexerApi(show_obj.indexer).config['trakt_id']
                     data = {
                         'shows': [
@@ -130,16 +130,16 @@ class Notifier(object):
                         data['shows'][0]['ids']['tvdb'] = show_obj.indexerid
                     else:
                         data['shows'][0]['ids']['tvrage'] = show_obj.indexerid
-                elif data_show is not None:
+                elif data_show:
                     data.update(data_show)
                 else:
                     logger.log(u"there's a coding problem contact developer. It's needed to be provided at lest one of the two: data_show or show_obj", logger.WARNING)
                     return False
 
-                if data_episode is not None:
+                if data_episode:
                     data['shows'][0].update(data_episode)
 
-                elif s is not None:
+                elif s:
                     # trakt URL parameters
                     season = {
                         'season': [
@@ -149,7 +149,7 @@ class Notifier(object):
                         ]
                     }
 
-                    if e is not None:
+                    if e:
                         # trakt URL parameters
                         episode = {
                             'episodes': [
@@ -226,7 +226,7 @@ class Notifier(object):
         try:
             trakt_api = TraktAPI(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
             trakt_api.validateAccount()
-            if blacklist_name and blacklist_name is not None:
+            if blacklist_name and blacklist_name:
                 trakt_lists = trakt_api.traktRequest("users/" + username + "/lists")
                 found = False
                 for trakt_list in trakt_lists:

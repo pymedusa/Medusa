@@ -47,14 +47,14 @@ def sendNZB(nzb):  # pylint:disable=too-many-return-statements, too-many-branche
 
     # set up a dict with the URL params in it
     params = {'output': 'json'}
-    if sickbeard.SAB_USERNAME is not None:
+    if sickbeard.SAB_USERNAME:
         params['ma_username'] = sickbeard.SAB_USERNAME
-    if sickbeard.SAB_PASSWORD is not None:
+    if sickbeard.SAB_PASSWORD:
         params['ma_password'] = sickbeard.SAB_PASSWORD
-    if sickbeard.SAB_APIKEY is not None:
+    if sickbeard.SAB_APIKEY:
         params['apikey'] = sickbeard.SAB_APIKEY
 
-    if category is not None:
+    if category:
         params['cat'] = category
 
     if nzb.priority:

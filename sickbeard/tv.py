@@ -115,7 +115,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
         self.release_groups = None
 
         otherShow = Show.find(sickbeard.showList, self.indexerid)
-        if otherShow is not None:
+        if otherShow:
             raise MultipleShowObjectsException("Can't create a show if it already exists")
 
         self.loadFromDB()
@@ -199,7 +199,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
 
         sql_selection = sql_selection + " FROM tv_episodes tve WHERE showid = " + str(self.indexerid)
 
-        if season is not None:
+        if season:
             sql_selection = sql_selection + " AND season = " + str(season)
 
         if has_location:
@@ -275,7 +275,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
             else:
                 ep = TVEpisode(self, season, episode)
 
-            if ep is not None:
+            if ep:
                 self.episodes[season][episode] = ep
 
         return self.episodes[season][episode]
@@ -439,7 +439,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
                 curEpisode.release_name = ep_file_name
 
             # store the reference in the show
-            if curEpisode is not None:
+            if curEpisode:
                 if self.subtitles:
                     try:
                         curEpisode.refreshSubtitles()
@@ -637,7 +637,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
             logger.log(u"{}: {}".format(self.indexerid, error), logger.DEBUG)
             return None
 
-        episodes = [ep for ep in parse_result.episode_numbers if ep is not None]
+        episodes = [ep for ep in parse_result.episode_numbers if ep]
         if not episodes:
             logger.log(u"{}: parse_result: {}".format(self.indexerid, parse_result))
             logger.log(u"{}: No episode number found in {}, ignoring it".format
@@ -645,7 +645,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
             return None
 
         # for now lets assume that any episode in the show dir belongs to that show
-        season = parse_result.season_number if parse_result.season_number is not None else 1
+        season = parse_result.season_number if parse_result.season_number else 1
         rootEp = None
 
         sql_l = []
@@ -727,7 +727,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
                 elif oldStatus not in (SNATCHED, SNATCHED_PROPER):
                     newStatus = DOWNLOADED
 
-                if newStatus is not None:
+                if newStatus:
                     with curEp.lock:
                         logger.log(u"{}: We have an associated file, so setting the status from {} to DOWNLOADED/{}".format
                                    (self.indexerid, curEp.status, Quality.statusFromName(filepath, anime=self.is_anime)), logger.DEBUG)
@@ -866,13 +866,13 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
 
         self.imdbid = getattr(myEp, 'imdb_id', '')
 
-        if getattr(myEp, 'airs_dayofweek', None) is not None and getattr(myEp, 'airs_time', None) is not None:
+        if getattr(myEp, 'airs_dayofweek', None) and getattr(myEp, 'airs_time', None):
             self.airs = myEp["airs_dayofweek"] + " " + myEp["airs_time"]
 
         if self.airs is None:
             self.airs = ''
 
-        if getattr(myEp, 'firstaired', None) is not None:
+        if getattr(myEp, 'firstaired', None):
             self.startyear = int(str(myEp["firstaired"]).split('-')[0])
 
         self.status = getattr(myEp, 'status', 'Unknown')
@@ -1553,7 +1553,7 @@ class TVEpisode(object):  # pylint: disable=too-many-instance-attributes, too-ma
                     self.season, self.episode
                 )
 
-            if sql_results[0]["release_name"] is not None:
+            if sql_results[0]["release_name"]:
                 self.release_name = sql_results[0]["release_name"]
 
             if sql_results[0]["is_proper"]:
@@ -1562,7 +1562,7 @@ class TVEpisode(object):  # pylint: disable=too-many-instance-attributes, too-ma
             if sql_results[0]["version"]:
                 self.version = int(sql_results[0]["version"])
 
-            if sql_results[0]["release_group"] is not None:
+            if sql_results[0]["release_group"]:
                 self.release_group = sql_results[0]["release_group"]
 
             self.dirty = False

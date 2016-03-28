@@ -152,7 +152,7 @@ class TVCache(object):
                 cl = []
                 for item in data['entries'] or []:
                     ci = self._parseItem(item)
-                    if ci is not None:
+                    if ci:
                         cl.append(ci)
 
                 if cl:
@@ -171,7 +171,7 @@ class TVCache(object):
             for item in manual_data:
                 logger.log(u"Adding to cache item found in manual search: {}".format(item.name), logger.DEBUG)
                 ci = self._addCacheEntry(item.name, item.url, item.seeders, item.leechers, item.size)
-                if ci is not None:
+                if ci:
                     cl.append(ci)
         except Exception as e:
             logger.log(u"Error while adding to cache item found in manual seach for provider " + self.provider.name + ", skipping: " + repr(e), logger.WARNING)
@@ -304,10 +304,10 @@ class TVCache(object):
                 return None
 
         # if we made it this far then lets add the parsed result to cache for usager later on
-        season = parse_result.season_number if parse_result.season_number is not None else 1
+        season = parse_result.season_number if parse_result.season_number else 1
         episodes = parse_result.episode_numbers
 
-        if season is not None and episodes is not None:
+        if season and episodes:
             # store episodes as a seperated string
             episodeText = "|" + "|".join({str(episode) for episode in episodes if episode}) + "|"
 
@@ -339,7 +339,7 @@ class TVCache(object):
         cache_db_con = self._getDB()
         sql = "SELECT * FROM [" + self.providerID + "] WHERE name LIKE '%.PROPER.%' OR name LIKE '%.REPACK.%'"
 
-        if date is not None:
+        if date:
             sql += " AND time >= " + str(int(time.mktime(date.timetuple())))
 
         propers_results = cache_db_con.select(sql)

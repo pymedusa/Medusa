@@ -173,7 +173,7 @@ def logSnatch(searchResult):
     release = prepareFailedName(searchResult.name)
 
     providerClass = searchResult.provider
-    if providerClass is not None:
+    if providerClass:
         provider = providerClass.name
     else:
         provider = "unknown"

@@ -39,7 +39,7 @@ class rTorrentAPI(GenericClient):  # pylint: disable=invalid-name
     def _get_auth(self):
         self.auth = None
 
-        if self.auth is not None:
+        if self.auth:
             return self.auth
 
         if not self.host:
@@ -179,7 +179,7 @@ class rTorrentAPI(GenericClient):  # pylint: disable=invalid-name
         try:
             self._get_auth()
 
-            if self.auth is not None:
+            if self.auth:
                 return True, u'Success: Connected and Authenticated'
             else:
                 return False, u'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)

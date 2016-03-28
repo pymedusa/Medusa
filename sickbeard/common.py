@@ -231,7 +231,7 @@ class Quality(object):
         """
         to_return = {}
         for quality in Quality.qualityStrings:
-            if quality is not None:
+            if quality:
                 stat = Quality.statusPrefixes[status]
                 qual = Quality.qualityStrings[quality]
                 comp = Quality.compositeStatus(status, quality)
@@ -436,8 +436,8 @@ class Quality(object):
             return Quality.UNKNOWN
 
         base_filename = ek(path.basename, filename)
-        bluray = re.search(r"blue?-?ray|hddvd|b[rd](rip|mux)", base_filename, re.I) is not None
-        webdl = re.search(r"web.?dl|web(rip|mux|hd)", base_filename, re.I) is not None
+        bluray = re.search(r"blue?-?ray|hddvd|b[rd](rip|mux)", base_filename, re.I)
+        webdl = re.search(r"web.?dl|web(rip|mux|hd)", base_filename, re.I)
 
         ret = Quality.UNKNOWN
         if 3240 < height:
@@ -449,7 +449,7 @@ class Quality(object):
         elif 680 < height <= 800:
             ret = ((Quality.HDTV, Quality.HDBLURAY)[bluray], Quality.HDWEBDL)[webdl]
         elif height <= 680:
-            ret = (Quality.SDTV, Quality.SDDVD)[re.search(r'dvd|b[rd]rip|blue?-?ray', base_filename, re.I) is not None]
+            ret = (Quality.SDTV, Quality.SDDVD)[re.search(r'dvd|b[rd]rip|blue?-?ray', base_filename, re.I)]
 
         return ret
 
@@ -562,12 +562,12 @@ class Quality(object):
     SNATCHED_BEST = None
     ARCHIVED = None
 
-Quality.DOWNLOADED = [Quality.compositeStatus(DOWNLOADED, x) for x in Quality.qualityStrings if x is not None]
-Quality.SNATCHED = [Quality.compositeStatus(SNATCHED, x) for x in Quality.qualityStrings if x is not None]
-Quality.SNATCHED_BEST = [Quality.compositeStatus(SNATCHED_BEST, x) for x in Quality.qualityStrings if x is not None]
-Quality.SNATCHED_PROPER = [Quality.compositeStatus(SNATCHED_PROPER, x) for x in Quality.qualityStrings if x is not None]
-Quality.FAILED = [Quality.compositeStatus(FAILED, x) for x in Quality.qualityStrings if x is not None]
-Quality.ARCHIVED = [Quality.compositeStatus(ARCHIVED, x) for x in Quality.qualityStrings if x is not None]
+Quality.DOWNLOADED = [Quality.compositeStatus(DOWNLOADED, x) for x in Quality.qualityStrings if x]
+Quality.SNATCHED = [Quality.compositeStatus(SNATCHED, x) for x in Quality.qualityStrings if x]
+Quality.SNATCHED_BEST = [Quality.compositeStatus(SNATCHED_BEST, x) for x in Quality.qualityStrings if x]
+Quality.SNATCHED_PROPER = [Quality.compositeStatus(SNATCHED_PROPER, x) for x in Quality.qualityStrings if x]
+Quality.FAILED = [Quality.compositeStatus(FAILED, x) for x in Quality.qualityStrings if x]
+Quality.ARCHIVED = [Quality.compositeStatus(ARCHIVED, x) for x in Quality.qualityStrings if x]
 
 Quality.DOWNLOADED.sort()
 Quality.SNATCHED.sort()

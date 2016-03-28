@@ -364,7 +364,7 @@ class KeyHandler(RequestHandler):
                     (self.get_argument('p', None) == password or not password):
                 api_key = sickbeard.API_KEY
 
-            self.finish({'success': api_key is not None, 'api_key': api_key})
+            self.finish({'success': api_key, 'api_key': api_key})
         except Exception:
             logger.log(u'Failed doing key request: %s' % (traceback.format_exc()), logger.ERROR)
             self.finish({'success': False, 'error': 'Failed returning results'})
@@ -428,7 +428,7 @@ class WebRoot(WebHandler):
         elif which[0:7] == 'network':
             media = ShowNetworkLogo(show, media_format)
 
-        if media is not None:
+        if media:
             self.set_header('Content-Type', media.get_media_type())
 
             return media.get_media()
@@ -928,7 +928,7 @@ class Home(WebRoot):
     def testPMS(self, host=None, username=None, password=None, plex_server_token=None):
         self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
 
-        if password is not None and set('*') == set(password):
+        if password and set('*') == set(password):
             password = sickbeard.PLEX_SERVER_PASSWORD
 
         finalResult = ''
@@ -1062,12 +1062,12 @@ class Home(WebRoot):
                 else:
                     entries = dict(ast.literal_eval(subs['notify_list']))
 
-        if emails is not None:
+        if emails:
             entries['emails'] = emails
             if not main_db_con.action("UPDATE tv_shows SET notify_list = ? WHERE show_id = ?", [str(entries), show]):
                 return 'ERROR'
 
-        if prowlAPIs is not None:
+        if prowlAPIs:
             entries['prowlAPIs'] = prowlAPIs
             if not main_db_con.action("UPDATE tv_shows SET notify_list = ? WHERE show_id = ?", [str(entries), show]):
                 return 'ERROR'
@@ -1838,7 +1838,7 @@ class Home(WebRoot):
     def togglePause(self, show=None):
         error, show = Show.pause(show)
 
-        if error is not None:
+        if error:
             return self._genericMessage('Error', error)
 
         ui.notifications.message('%s has been %s' % (show.name, ('resumed', 'paused')[show.paused]))
@@ -1849,7 +1849,7 @@ class Home(WebRoot):
         if show:
             error, show = Show.delete(show, full)
 
-            if error is not None:
+            if error:
                 return self._genericMessage('Error', error)
 
             ui.notifications.message(
@@ -1873,11 +1873,11 @@ class Home(WebRoot):
         error, show = Show.refresh(show)
 
         # This is a show validation error
-        if error is not None and show is None:
+        if error and show is None:
             return self._genericMessage('Error', error)
 
         # This is a refresh error
-        if error is not None:
+        if error:
             ui.notifications.error('Unable to refresh this show.', error)
 
         time.sleep(cpu_presets[sickbeard.CPU_PRESET])
@@ -2316,7 +2316,7 @@ class Home(WebRoot):
             show = int(show)
             indexer = int(indexer)
             forAbsolute = int(forAbsolute)
-            if sceneAbsolute is not None:
+            if sceneAbsolute:
                 sceneAbsolute = int(sceneAbsolute)
 
             set_scene_numbering(show, indexer, absolute_number=forAbsolute, sceneAbsolute=sceneAbsolute)
@@ -2328,9 +2328,9 @@ class Home(WebRoot):
             indexer = int(indexer)
             forSeason = int(forSeason)
             forEpisode = int(forEpisode)
-            if sceneSeason is not None:
+            if sceneSeason:
                 sceneSeason = int(sceneSeason)
-            if sceneEpisode is not None:
+            if sceneEpisode:
                 sceneEpisode = int(sceneEpisode)
 
             set_scene_numbering(show, indexer, season=forSeason, episode=forEpisode, sceneSeason=sceneSeason,
@@ -2472,7 +2472,7 @@ class HomePostProcess(Home):
                 is_priority=argToBool(is_priority), delete_on=argToBool(delete_on), failed=argToBool(failed), proc_type=type
             )
 
-            if quiet is not None and int(quiet) == 1:
+            if quiet and int(quiet) == 1:
                 return result
 
             result = result.replace("\n", "<br>\n")
@@ -2748,7 +2748,7 @@ class HomeAddShows(Home):
             not_liked_show = ""
             if sickbeard.TRAKT_ACCESS_TOKEN != '':
                 library_shows = trakt_api.traktRequest("sync/collection/shows?extended=full") or []
-                if sickbeard.TRAKT_BLACKLIST_NAME is not None and sickbeard.TRAKT_BLACKLIST_NAME:
+                if sickbeard.TRAKT_BLACKLIST_NAME and sickbeard.TRAKT_BLACKLIST_NAME:
                     not_liked_show = trakt_api.traktRequest("users/" + sickbeard.TRAKT_USERNAME + "/lists/" + sickbeard.TRAKT_BLACKLIST_NAME + "/items") or []
                 else:
                     logger.log(u"Trakt blacklist name is empty", logger.DEBUG)
@@ -3105,7 +3105,7 @@ class HomeAddShows(Home):
         for cur_show in indexer_id_given:
             indexer, show_dir, indexer_id, show_name = cur_show
 
-            if indexer is not None and indexer_id is not None:
+            if indexer and indexer_id:
                 # add the show
                 sickbeard.showQueueScheduler.action.addShow(
                     indexer, indexer_id, show_dir,
@@ -3627,37 +3627,37 @@ class Manage(Home, WebRoot):
 
     def massUpdate(self, toUpdate=None, toRefresh=None, toRename=None, toDelete=None, toRemove=None, toMetadata=None,
                    toSubtitle=None):
-        if toUpdate is not None:
+        if toUpdate:
             toUpdate = toUpdate.split('|')
         else:
             toUpdate = []
 
-        if toRefresh is not None:
+        if toRefresh:
             toRefresh = toRefresh.split('|')
         else:
             toRefresh = []
 
-        if toRename is not None:
+        if toRename:
             toRename = toRename.split('|')
         else:
             toRename = []
 
-        if toSubtitle is not None:
+        if toSubtitle:
             toSubtitle = toSubtitle.split('|')
         else:
             toSubtitle = []
 
-        if toDelete is not None:
+        if toDelete:
             toDelete = toDelete.split('|')
         else:
             toDelete = []
 
-        if toRemove is not None:
+        if toRemove:
             toRemove = toRemove.split('|')
         else:
             toRemove = []
 
-        if toMetadata is not None:
+        if toMetadata:
             toMetadata = toMetadata.split('|')
         else:
             toMetadata = []
@@ -3779,7 +3779,7 @@ class Manage(Home, WebRoot):
         else:
             sql_results = failed_db_con.select("SELECT * FROM failed LIMIT ?", [limit])
 
-        toRemove = toRemove.split("|") if toRemove is not None else []
+        toRemove = toRemove.split("|") if toRemove else []
 
         for release in toRemove:
             failed_db_con.action("DELETE FROM failed WHERE failed.release = ?", [release])
@@ -4470,10 +4470,10 @@ class ConfigPostProcessing(Config):
     @staticmethod
     def testNaming(pattern=None, multi=None, abd=False, sports=False, anime_type=None):
 
-        if multi is not None:
+        if multi:
             multi = int(multi)
 
-        if anime_type is not None:
+        if anime_type:
             anime_type = int(anime_type)
 
         result = naming.test_name(pattern, multi, abd, sports, anime_type)
@@ -4487,10 +4487,10 @@ class ConfigPostProcessing(Config):
         if pattern is None:
             return "invalid"
 
-        if multi is not None:
+        if multi:
             multi = int(multi)
 
-        if anime_type is not None:
+        if anime_type:
             anime_type = int(anime_type)
 
         # air by date shows just need one check, we don't need to worry about season folders

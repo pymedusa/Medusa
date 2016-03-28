@@ -60,7 +60,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
 
     def login(self):
 
-        if self.token is not None:
+        if self.token:
             if time.time() < (self.tokenLastUpdate + 30 * 60):
                 return True
 
