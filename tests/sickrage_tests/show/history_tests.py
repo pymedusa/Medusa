@@ -65,38 +65,6 @@ class HistoryTests(unittest.TestCase):
             for (action, result) in tests.iteritems():
                 self.assertEqual(History._get_actions(action), result)  # pylint: disable=protected-access
 
-    def test_get_limit(self):
-        """
-        Test get limit
-        """
-        test_cases = {
-            None: 0,
-            '': 0,
-            '0': 0,
-            '5': 5,
-            '-5': 0,
-            '1.5': 0,
-            '-1.5': 0,
-            5: 5,
-            -5: 0,
-            1.5: 1,
-            -1.5: 0,
-        }
-
-        unicode_test_cases = {
-            u'': 0,
-            u'0': 0,
-            u'5': 5,
-            u'-5': 0,
-            u'1.5': 0,
-            u'-1.5': 0,
-        }
-
-        for tests in test_cases, unicode_test_cases:
-            for (action, result) in tests.iteritems():
-                self.assertEqual(History._get_limit(action), result)  # pylint: disable=protected-access
-
-
 if __name__ == '__main__':
     print('=====> Testing %s' % __file__)
 

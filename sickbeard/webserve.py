@@ -2,6 +2,7 @@
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # URL: http://code.google.com/p/sickbeard/
 #
+# Git: https://github.com/PyMedusa/SickRage.git
 # This file is part of Medusa.
 #
 # Medusa is free software: you can redistribute it and/or modify
@@ -16,6 +17,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 # pylint: disable=abstract-method,too-many-lines
 
 import ast
@@ -25,61 +27,67 @@ import os
 import re
 import traceback
 import time
-import urllib
-
-import sickbeard
-from sickbeard import config, sab
-from sickbeard import clients
-from sickbeard import notifiers, processTV
-from sickbeard import ui
-from sickbeard import logger, helpers, classes, db
-from sickbeard import search_queue
-from sickbeard import naming
-from sickbeard import subtitles
-from sickbeard import network_timezones
-from sickbeard.providers import newznab, rsstorrent
-from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
-from sickbeard.common import SNATCHED, UNAIRED, IGNORED, WANTED, FAILED, SKIPPED
-from sickbeard.blackandwhitelist import BlackAndWhiteList, short_group_names
-from sickbeard.browser import foldersAtPath
-from sickbeard.scene_numbering import get_scene_numbering, set_scene_numbering, get_scene_numbering_for_show, \
-    get_xem_numbering_for_show, get_scene_absolute_numbering_for_show, get_xem_absolute_numbering_for_show, \
-    get_scene_absolute_numbering
-from sickbeard.manual_snatch import (collectEpisodesFromSearchThread, getEpisode, get_provider_cache_results,
-                                     SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING)
-
-from sickbeard.webapi import function_mapper
-
 
 import adba
+from concurrent.futures import ThreadPoolExecutor
 from dateutil import tz
 from libtrakt import TraktAPI
 from libtrakt.exceptions import traktException
+from mako.template import Template as MakoTemplate
+from mako.lookup import TemplateLookup
+from mako.exceptions import RichTraceback
+from mako.runtime import UNDEFINED
 import markdown2
+from requests.compat import unquote_plus, quote_plus
+from tornado.concurrent import run_on_executor
+from tornado.gen import coroutine
+from tornado.ioloop import IOLoop
+from tornado.process import cpu_count
+from tornado.routes import route
+from tornado.web import RequestHandler, HTTPError, authenticated
 from unrar2 import RarFile
 
 import sickbeard
-from sickbeard import (config, sab, clients, notifiers, processTV, ui, logger, helpers, classes, db, search_queue,
-                       naming, subtitles, network_timezones)
+from sickbeard import (
+    classes, clients, config, db, helpers, logger, naming,
+    network_timezones, notifiers, processTV, sab, search_queue,
+    subtitles, ui,
+)
 from sickbeard.blackandwhitelist import BlackAndWhiteList, short_group_names
 from sickbeard.browser import foldersAtPath
-from sickbeard.common import (Quality, Overview, statusStrings, cpu_presets,
-                              SNATCHED, UNAIRED, IGNORED, WANTED, FAILED, SKIPPED)
+from sickbeard.common import (
+    cpu_presets, Overview, Quality, statusStrings,
+    SNATCHED, UNAIRED, IGNORED, WANTED, FAILED, SKIPPED
+)
 from sickbeard.helpers import get_showname_from_indexer
 from sickbeard.imdbPopular import imdb_popular
 from sickbeard.indexers.indexer_exceptions import indexer_exception
+from sickbeard.manual_snatch import (
+    collectEpisodesFromSearchThread, get_provider_cache_results, getEpisode,
+    SEARCH_STATUS_FINISHED, SEARCH_STATUS_SEARCHING, SEARCH_STATUS_QUEUED,
+)
 from sickbeard.providers import newznab, rsstorrent
-from sickbeard.scene_numbering import (get_scene_numbering,  get_scene_numbering_for_show,
-                                       get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
-                                       get_xem_numbering_for_show, get_xem_absolute_numbering_for_show,
-                                       set_scene_numbering, )
+from sickbeard.scene_numbering import (
+    get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
+    get_scene_numbering, get_scene_numbering_for_show,
+    get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
+    set_scene_numbering,
+)
 from sickbeard.versionChecker import CheckVersion
 from sickbeard.webapi import function_mapper
 
-from sickrage.helper.common import sanitize_filename, try_int, episode_num
+from sickrage.helper.common import (
+    episode_num, sanitize_filename, try_int,
+)
 from sickrage.helper.encoding import ek, ss
-from sickrage.helper.exceptions import (CantRefreshShowException, CantUpdateShowException, ex, NoNFOException,
-                                        MultipleShowObjectsException, ShowDirectoryNotFoundException, )
+from sickrage.helper.exceptions import (
+    ex,
+    CantRefreshShowException,
+    CantUpdateShowException,
+    MultipleShowObjectsException,
+    NoNFOException,
+    ShowDirectoryNotFoundException,
+)
 from sickrage.media.ShowBanner import ShowBanner
 from sickrage.media.ShowFanArt import ShowFanArt
 from sickrage.media.ShowNetworkLogo import ShowNetworkLogo
@@ -91,26 +99,12 @@ from sickrage.show.Show import Show
 from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
 
+# Conditional imports
 try:
     import json
 except ImportError:
     import simplejson as json
 
-from mako.template import Template as MakoTemplate
-from mako.lookup import TemplateLookup
-from mako.exceptions import RichTraceback
-
-from tornado.routes import route
-from tornado.web import RequestHandler, HTTPError, authenticated
-from tornado.gen import coroutine
-from tornado.ioloop import IOLoop
-
-from concurrent.futures import ThreadPoolExecutor
-from tornado.process import cpu_count
-
-from tornado.concurrent import run_on_executor
-
-from mako.runtime import UNDEFINED
 
 mako_lookup = None
 mako_cache = None
@@ -202,7 +196,9 @@ class BaseHandler(RequestHandler):
         super(BaseHandler, self).__init__(*args, **kwargs)
 
     # def set_default_headers(self):
-    #     self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+    #     self.set_header(
+    #         'Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0'
+    #     )
 
     def write_error(self, status_code, **kwargs):
         # handle 404 http errors
@@ -225,18 +221,22 @@ class BaseHandler(RequestHandler):
             error = exc_info[1]
 
             self.set_header('Content-Type', 'text/html')
-            self.finish("""<html>
-                                 <title>%s</title>
-                                 <body>
-                                    <h2>Error</h2>
-                                    <p>%s</p>
-                                    <h2>Traceback</h2>
-                                    <p>%s</p>
-                                    <h2>Request Info</h2>
-                                    <p>%s</p>
-                                    <button onclick="window.location='%s/errorlogs/';">View Log(Errors)</button>
-                                 </body>
-                               </html>""" % (error, error, trace_info, request_info, sickbeard.WEB_ROOT))
+            self.finish(
+                """
+                <html>
+                    <title>%s</title>
+                    <body>
+                        <h2>Error</h2>
+                        <p>%s</p>
+                        <h2>Traceback</h2>
+                        <p>%s</p>
+                        <h2>Request Info</h2>
+                        <p>%s</p>
+                        <button onclick="window.location='%s/errorlogs/';">View Log(Errors)</button>
+                     </body>
+                </html>
+                """ % (error, error, trace_info, request_info, sickbeard.WEB_ROOT)
+            )
 
     def redirect(self, url, permanent=False, status=None):
         """Sends a redirect to the given (optionally relative) URL.
@@ -837,9 +837,9 @@ class Home(WebRoot):
             pw_append = " with password: " + password
 
         if result:
-            return "Registered and Tested growl successfully " + urllib.unquote_plus(host) + pw_append
+            return "Registered and Tested growl successfully " + unquote_plus(host) + pw_append
         else:
-            return "Registration and Testing of growl failed " + urllib.unquote_plus(host) + pw_append
+            return "Registration and Testing of growl failed " + unquote_plus(host) + pw_append
 
     @staticmethod
     def testProwl(prowl_api=None, prowl_priority=0):
@@ -897,11 +897,11 @@ class Home(WebRoot):
         host = config.clean_hosts(host)
         finalResult = ''
         for curHost in [x.strip() for x in host.split(",")]:
-            curResult = notifiers.kodi_notifier.test_notify(urllib.unquote_plus(curHost), username, password)
+            curResult = notifiers.kodi_notifier.test_notify(unquote_plus(curHost), username, password)
             if len(curResult.split(":")) > 2 and 'OK' in curResult.split(":")[2]:
-                finalResult += "Test KODI notice sent successfully to " + urllib.unquote_plus(curHost)
+                finalResult += "Test KODI notice sent successfully to " + unquote_plus(curHost)
             else:
-                finalResult += "Test KODI notice failed to " + urllib.unquote_plus(curHost)
+                finalResult += "Test KODI notice failed to " + unquote_plus(curHost)
             finalResult += "<br>\n"
 
         return finalResult
@@ -914,14 +914,14 @@ class Home(WebRoot):
 
         finalResult = ''
         for curHost in [x.strip() for x in host.split(',')]:
-            curResult = notifiers.plex_notifier.test_notify_pht(urllib.unquote_plus(curHost), username, password)
+            curResult = notifiers.plex_notifier.test_notify_pht(unquote_plus(curHost), username, password)
             if len(curResult.split(':')) > 2 and 'OK' in curResult.split(':')[2]:
-                finalResult += 'Successful test notice sent to Plex Home Theater ... ' + urllib.unquote_plus(curHost)
+                finalResult += 'Successful test notice sent to Plex Home Theater ... ' + unquote_plus(curHost)
             else:
-                finalResult += 'Test failed for Plex Home Theater ... ' + urllib.unquote_plus(curHost)
+                finalResult += 'Test failed for Plex Home Theater ... ' + unquote_plus(curHost)
             finalResult += '<br>' + '\n'
 
-        ui.notifications.message('Tested Plex Home Theater(s): ', urllib.unquote_plus(host.replace(',', ', ')))
+        ui.notifications.message('Tested Plex Home Theater(s): ', unquote_plus(host.replace(',', ', ')))
 
         return finalResult
 
@@ -933,16 +933,16 @@ class Home(WebRoot):
 
         finalResult = ''
 
-        curResult = notifiers.plex_notifier.test_notify_pms(urllib.unquote_plus(host), username, password, plex_server_token)
+        curResult = notifiers.plex_notifier.test_notify_pms(unquote_plus(host), username, password, plex_server_token)
         if curResult is None:
-            finalResult += 'Successful test of Plex Media Server(s) ... ' + urllib.unquote_plus(host.replace(',', ', '))
+            finalResult += 'Successful test of Plex Media Server(s) ... ' + unquote_plus(host.replace(',', ', '))
         elif curResult is False:
             finalResult += 'Test failed, No Plex Media Server host specified'
         else:
-            finalResult += 'Test failed for Plex Media Server(s) ... ' + urllib.unquote_plus(str(curResult).replace(',', ', '))
+            finalResult += 'Test failed for Plex Media Server(s) ... ' + unquote_plus(str(curResult).replace(',', ', '))
         finalResult += '<br>' + '\n'
 
-        ui.notifications.message('Tested Plex Media Server host(s): ', urllib.unquote_plus(host.replace(',', ', ')))
+        ui.notifications.message('Tested Plex Media Server host(s): ', unquote_plus(host.replace(',', ', ')))
 
         return finalResult
 
@@ -958,17 +958,17 @@ class Home(WebRoot):
     def testEMBY(host=None, emby_apikey=None):
 
         host = config.clean_host(host)
-        result = notifiers.emby_notifier.test_notify(urllib.unquote_plus(host), emby_apikey)
+        result = notifiers.emby_notifier.test_notify(unquote_plus(host), emby_apikey)
         if result:
-            return "Test notice sent successfully to " + urllib.unquote_plus(host)
+            return "Test notice sent successfully to " + unquote_plus(host)
         else:
-            return "Test notice failed to " + urllib.unquote_plus(host)
+            return "Test notice failed to " + unquote_plus(host)
 
     @staticmethod
     def testNMJ(host=None, database=None, mount=None):
 
         host = config.clean_host(host)
-        result = notifiers.nmj_notifier.test_notify(urllib.unquote_plus(host), database, mount)
+        result = notifiers.nmj_notifier.test_notify(unquote_plus(host), database, mount)
         if result:
             return "Successfully started the scan update"
         else:
@@ -978,7 +978,7 @@ class Home(WebRoot):
     def settingsNMJ(host=None):
 
         host = config.clean_host(host)
-        result = notifiers.nmj_notifier.notify_settings(urllib.unquote_plus(host))
+        result = notifiers.nmj_notifier.notify_settings(unquote_plus(host))
         if result:
             return '{"message": "Got settings from %(host)s", "database": "%(database)s", "mount": "%(mount)s"}' % {
                 "host": host, "database": sickbeard.NMJ_DATABASE, "mount": sickbeard.NMJ_MOUNT}
@@ -989,17 +989,17 @@ class Home(WebRoot):
     def testNMJv2(host=None):
 
         host = config.clean_host(host)
-        result = notifiers.nmjv2_notifier.test_notify(urllib.unquote_plus(host))
+        result = notifiers.nmjv2_notifier.test_notify(unquote_plus(host))
         if result:
-            return "Test notice sent successfully to " + urllib.unquote_plus(host)
+            return "Test notice sent successfully to " + unquote_plus(host)
         else:
-            return "Test notice failed to " + urllib.unquote_plus(host)
+            return "Test notice failed to " + unquote_plus(host)
 
     @staticmethod
     def settingsNMJv2(host=None, dbloc=None, instance=None):
 
         host = config.clean_host(host)
-        result = notifiers.nmjv2_notifier.notify_settings(urllib.unquote_plus(host), dbloc, instance)
+        result = notifiers.nmjv2_notifier.notify_settings(unquote_plus(host), dbloc, instance)
         if result:
             return '{"message": "NMJ Database found at: %(host)s", "database": "%(database)s"}' % {"host": host,
                                                                                                    "database": sickbeard.NMJv2_DATABASE}
@@ -1218,7 +1218,7 @@ class Home(WebRoot):
             logger.log(u"Checkout branch couldn't compare DB version.", logger.ERROR)
             return json.dumps({"status": "error", 'message': 'General exception'})
 
-    def getSeasonSceneExceptions(self, indexer, indexer_id):  # @TODO: OMG, You can use this as an example to create the Api for the season exception indicators
+    def getSeasonSceneExceptions(self, indexer, indexer_id):
         """Get show name scene exceptions per season
 
         :param indexer: The shows indexer
@@ -1227,7 +1227,6 @@ class Home(WebRoot):
         """
 
         exceptions_list = {}
-        xem_numbering_season = {}
 
         exceptions_list['seasonExceptions'] = sickbeard.scene_exceptions.get_all_scene_exceptions(indexer_id)
 
@@ -1239,7 +1238,7 @@ class Home(WebRoot):
         return json.dumps(exceptions_list)
 
     def displayShow(self, show=None):
-        # todo: add more comprehensive show validation
+        # TODO: add more comprehensive show validation
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
             showObj = Show.find(sickbeard.showList, show)
@@ -1388,8 +1387,6 @@ class Home(WebRoot):
         # Try to retrieve the cached result from the providers cache table.
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
 
-        sql_results = []
-
         try:
             main_db_con = db.DBConnection('cache.db')
             sql_return = main_db_con.action("SELECT * FROM '%s' WHERE rowid = ?" % (sickbeard.providers.getProviderClass(provider).get_id()), [rowid], fetchone=True)
@@ -1467,7 +1464,7 @@ class Home(WebRoot):
             # Check if the cache table has a result for this show + season + ep wich has a later timestamp, then last_update
             needs_update = main_db_con.select("SELECT * FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ? \
                                               AND time > ?"
-                                              % (provider), ["%|" + episode + "|%", season, show, int(last_update)])
+                                              % provider, ["%|" + episode + "|%", season, show, int(last_update)])
 
             if needs_update:
                 return {'result': REFRESH_RESULTS}
@@ -1495,7 +1492,7 @@ class Home(WebRoot):
         """ The view with results for the manual selected show/episode """
 
         INDEXER_TVDB = 1
-        # todo: add more comprehensive show validation
+        # TODO: add more comprehensive show validation
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
             showObj = Show.find(sickbeard.showList, show)
@@ -1655,7 +1652,6 @@ class Home(WebRoot):
                         anime = adba.Anime(sickbeard.ADBA_CONNECTION, name=showObj.name)
                         groups = anime.get_groups()
                     except Exception as e:
-                        anidb_failed = True
                         ui.notifications.error('Unable to retreive Fansub Groups from AniDB.')
                         logger.log(u'Unable to retreive Fansub Groups from AniDB. Error is {0}'.format(str(e)), logger.DEBUG)
 
@@ -1795,14 +1791,14 @@ class Home(WebRoot):
             try:
                 sickbeard.scene_exceptions.update_scene_exceptions(showObj.indexerid, exceptions_list)  # @UndefinedVdexerid)
                 time.sleep(cpu_presets[sickbeard.CPU_PRESET])
-            except CantUpdateShowException as e:
+            except CantUpdateShowException:
                 errors.append("Unable to force an update on scene exceptions of the show.")
 
         if do_update_scene_numbering:
             try:
                 sickbeard.scene_numbering.xem_refresh(showObj.indexerid, showObj.indexer)
                 time.sleep(cpu_presets[sickbeard.CPU_PRESET])
-            except CantUpdateShowException as e:
+            except CantUpdateShowException:
                 errors.append("Unable to force an update on scene numbering of the show.")
 
             # Must erase cached results when toggling scene numbering
@@ -1833,7 +1829,6 @@ class Home(WebRoot):
 
         except Exception:
             logger.log(u"Unable to delete cached results for show: {}".format(showObj.name), logger.DEBUG)
-
 
     def togglePause(self, show=None):
         error, show = Show.pause(show)
@@ -1929,7 +1924,7 @@ class Home(WebRoot):
         if show:
             showObj = Show.find(sickbeard.showList, int(show))
             if showObj:
-                showName = urllib.quote_plus(showObj.name.encode('utf-8'))
+                showName = quote_plus(showObj.name.encode('utf-8'))
 
         if sickbeard.KODI_UPDATE_ONLYFIRST:
             host = sickbeard.KODI_HOST.split(",")[0].strip()
@@ -2130,8 +2125,6 @@ class Home(WebRoot):
         except ShowDirectoryNotFoundException:
             return self._genericMessage("Error", "Can't rename episodes when the show dir is missing.")
 
-        ep_obj_rename_list = []
-
         ep_obj_list = showObj.getAllEpisodes(has_location=True)
         ep_obj_list = [x for x in ep_obj_list if x.location]
         ep_obj_rename_list = []
@@ -2233,7 +2226,6 @@ class Home(WebRoot):
     # Possible status: Downloaded, Snatched, etc...
     # Returns {'show': 279530, 'episodes' : ['episode' : 6, 'season' : 1, 'searchstatus' : 'queued', 'status' : 'running', 'quality': '4013']
     def getManualSearchStatus(self, show=None):
-        episodes = []
 
         episodes = collectEpisodesFromSearchThread(show)
 
@@ -2444,7 +2436,8 @@ class HomePostProcess(Home):
         t = PageTemplate(rh=self, filename="home_postprocess.mako")
         return t.render(title='Post Processing', header='Post Processing', topmenu='home', controller="home", action="postProcess")
 
-    # TODO: PR to NZBtoMedia so that we can rename dir to proc_dir, and type to proc_type. Using names of builtins as var names is bad
+    # TODO: PR to NZBtoMedia so that we can rename dir to proc_dir, and type to proc_type.
+    # Using names of builtins as var names is bad
     # pylint: disable=redefined-builtin
     def processEpisode(self, dir=None, nzbName=None, jobName=None, quiet=None, process_method=None, force=None,
                        is_priority=None, delete_on="0", failed="0", type="auto", *args, **kwargs):
@@ -2555,7 +2548,7 @@ class HomeAddShows(Home):
         else:
             root_dirs = rootDir
 
-        root_dirs = [urllib.unquote_plus(x) for x in root_dirs]
+        root_dirs = [unquote_plus(x) for x in root_dirs]
 
         if sickbeard.ROOT_DIRS:
             default_index = int(sickbeard.ROOT_DIRS.split('|')[0])
@@ -3074,7 +3067,7 @@ class HomeAddShows(Home):
         elif not isinstance(shows_to_add, list):
             shows_to_add = [shows_to_add]
 
-        shows_to_add = [urllib.unquote_plus(x) for x in shows_to_add]
+        shows_to_add = [unquote_plus(x) for x in shows_to_add]
 
         promptForSettings = config.checkbox_to_value(promptForSettings)
 
@@ -3872,47 +3865,13 @@ class History(WebRoot):
             else:
                 limit = 100
         else:
-            limit = int(limit)
+            limit = try_int(limit, 100)
 
         sickbeard.HISTORY_LIMIT = limit
 
         sickbeard.save_config()
 
-        compact = []
-        data = self.history.get(limit)
-
-        for row in data:
-            action = {
-                'action': row['action'],
-                'provider': row['provider'],
-                'resource': row['resource'],
-                'time': row['date']
-            }
-
-            if not any((history['show_id'] == row['show_id'] and
-                        history['season'] == row['season'] and
-                        history['episode'] == row['episode'] and
-                        history['quality'] == row['quality']) for history in compact):
-                history = {
-                    'actions': [action],
-                    'episode': row['episode'],
-                    'quality': row['quality'],
-                    'resource': row['resource'],
-                    'season': row['season'],
-                    'show_id': row['show_id'],
-                    'show_name': row['show_name']
-                }
-
-                compact.append(history)
-            else:
-                index = [i for i, item in enumerate(compact)
-                         if item['show_id'] == row['show_id'] and
-                         item['season'] == row['season'] and
-                         item['episode'] == row['episode'] and
-                         item['quality'] == row['quality']][0]
-                history = compact[index]
-                history['actions'].append(action)
-                history['actions'].sort(key=lambda x: x['time'], reverse=True)
+        history = self.history.get(limit)
 
         t = PageTemplate(rh=self, filename="history.mako")
         submenu = [
@@ -3920,7 +3879,7 @@ class History(WebRoot):
             {'title': 'Trim History', 'path': 'history/trimHistory', 'icon': 'menu-icon-cut', 'class': 'trimhistory', 'confirm': True},
         ]
 
-        return t.render(historyResults=data, compactResults=compact, limit=limit,
+        return t.render(historyResults=history.detailed, compactResults=history.compact, limit=limit,
                         submenu=submenu, title='History', header='History',
                         topmenu="history", controller="history", action="index")
 
@@ -4598,7 +4557,6 @@ class ConfigProviders(Config):
         http://yournewznaburl.com/api?t=caps&apikey=yourapikey
         """
         error = ""
-        success = False
 
         if not name:
             error += "\nNo Provider Name specified"
