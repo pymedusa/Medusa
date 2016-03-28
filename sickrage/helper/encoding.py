@@ -81,7 +81,7 @@ def _fix_list_encoding(var):
     """
 
     if isinstance(var, (list, tuple)):
-        return filter(lambda x: x is not None, map(_to_unicode, var))
+        return filter(lambda x: x, map(_to_unicode, var))
 
     return var
 

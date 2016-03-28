@@ -205,7 +205,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                     else:
                         if not all([
                             # pylint: disable=bad-continuation
-                            parse_result.season_number is not None,
+                            parse_result.season_number,
                             parse_result.episode_numbers,
                             [ep for ep in episodes if (ep.season, ep.scene_season)[ep.show.is_scene] ==
                              parse_result.season_number and (ep.episode, ep.scene_episode)[ep.show.is_scene] in parse_result.episode_numbers]
@@ -263,7 +263,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                 # Access to a protected member of a client class
                 ci = self.cache._addCacheEntry(title, url, seeders, leechers, size, parse_result=parse_result)
 
-                if ci is not None:
+                if ci:
                     cl.append(ci)
 
                 continue

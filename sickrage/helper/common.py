@@ -219,7 +219,7 @@ def convert_size(size, default=None, use_decimal=False, **kwargs):
 
     # TODO: Make sure fallback methods obey default units
     except AttributeError:
-        result = size if size is not None else default
+        result = size if size else default
 
     except ValueError:
         result = default
@@ -314,7 +314,7 @@ def episode_num(season=None, episode=None, **kwargs):
     numbering = kwargs.pop('numbering', 'standard')
 
     if numbering == 'standard':
-        if season is not None and episode:
+        if season and episode:
             return 'S{0:0>2}E{1:02}'.format(season, episode)
     elif numbering == 'absolute':
         if not (season and episode) and (season or episode):
