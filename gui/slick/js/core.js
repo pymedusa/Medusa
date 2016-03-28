@@ -2510,12 +2510,15 @@ var SICKRAGE = {
             $('body').on('click', '.epManualSnatch', function(event){
                 event.preventDefault();
                 var link = this;
-                $.getJSON(this.href, 
+                $(link).children('img').attr('src', srRoot + '/images/loading16.gif');
+                $.getJSON(this.href,
                     function (data) {
                     if (data.result === "success") {
                         $(link).children('img').attr('src', srRoot + '/images/save.png');
+                    } else {
+                        $(link).children('img').attr('src', srRoot + '/images/no16.png');
                     }
-                });   
+                });
             });
 
             // TODO: OMG need to migrate the imdb stars generating to a directive for the snatchSelection page
