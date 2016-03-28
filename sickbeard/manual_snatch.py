@@ -192,7 +192,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             if not int(show_all_results):
                 sql_return = main_db_con.select(common_sql + additional_sql,
                                                 (curProvider.provider_type.title(), curProvider.image_name(),
-                                                 curProvider.name, curProvider.get_id(), show, "|%" + episode + "|%", season))
+                                                 curProvider.name, curProvider.get_id(), show, "%|{0}|%".format(episode), season))
             else:
                 sql_return = main_db_con.select(common_sql,
                                                 (curProvider.provider_type.title(), curProvider.image_name(),
