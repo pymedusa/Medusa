@@ -4809,7 +4809,7 @@ class ConfigProviders(Config):
                 try:
                     ratio = float(str(kwargs[curTorrentProvider.get_id() + '_ratio']).strip())
                     curTorrentProvider.ratio = (ratio, -1)[ratio < 0]
-                except (AttributeError, KeyError):
+                except (AttributeError, KeyError, ValueError):
                     curTorrentProvider.ratio = None  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'digest'):
@@ -4921,7 +4921,6 @@ class ConfigProviders(Config):
                         kwargs[curTorrentProvider.get_id() + '_enable_manualsearch'])
                 except (AttributeError, KeyError):
                     curTorrentProvider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
-                    raise
 
             if hasattr(curTorrentProvider, 'enable_backlog'):
                 try:
