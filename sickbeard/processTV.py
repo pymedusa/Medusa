@@ -482,7 +482,7 @@ def unRAR(path, rarFiles, force, result):  # pylint: disable=too-many-branches,t
             except Exception as e:
                 failure = (ex(e), u'Unpacking failed for an unknown reason')
 
-            if failure is not None:
+            if failure:
                 result.output += logHelper(u'Failed Unrar archive {}: {}'.format(archive, failure[0]), logger.ERROR)
                 result.missedfiles.append(u'{} : Unpacking failed: {}'.format(archive, failure[1]))
                 result.result = False

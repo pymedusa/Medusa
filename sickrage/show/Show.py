@@ -43,7 +43,7 @@ class Show(object):
 
         error, show = Show._validate_indexer_id(indexer_id)
 
-        if error is not None:
+        if error:
             return error, show
 
         if show:
@@ -133,7 +133,7 @@ class Show(object):
 
         error, show = Show._validate_indexer_id(indexer_id)
 
-        if error is not None:
+        if error:
             return error, show
 
         if pause is None:
@@ -157,7 +157,7 @@ class Show(object):
 
         error, show = Show._validate_indexer_id(indexer_id)
 
-        if error is not None:
+        if error:
             return error, show
 
         try:

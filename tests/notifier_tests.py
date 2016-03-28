@@ -289,7 +289,7 @@ class NotifierTests(test.SickbeardTestDBCase):  # pylint: disable=too-many-publi
         :param text: to spew
         :return:
         """
-        if __name__ == '__main__' and text is not None:
+        if __name__ == '__main__' and text:
             print text
 
     def _get_showid_by_showname(self, showname):
@@ -299,7 +299,7 @@ class NotifierTests(test.SickbeardTestDBCase):  # pylint: disable=too-many-publi
         :param showname:
         :return:
         """
-        if showname is not None:
+        if showname:
             rows = self.mydb.select("SELECT show_id FROM tv_shows WHERE show_name = ?", [showname])
             if len(rows) == 1:
                 return rows[0]['show_id']

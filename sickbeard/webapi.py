@@ -885,7 +885,7 @@ class CMD_EpisodeSetStatus(ApiCall):
 
                 # don't let them mess up UN-AIRED episodes
                 if ep_obj.status == UNAIRED:
-                    if self.e is not None:  # setting the status of an un-aired is only considered a failure if we directly wanted this episode, but is ignored on a season request
+                    if self.e:  # setting the status of an un-aired is only considered a failure if we directly wanted this episode, but is ignored on a season request
                         ep_results.append(
                             _ep_result(RESULT_FAILURE, ep_obj, "Refusing to change status because it is UN-AIRED"))
                         failure = True
@@ -1811,10 +1811,10 @@ class CMD_SickBeardSetDefaults(ApiCall):
                 raise ApiError("Status Prohibited")
             sickbeard.STATUS_DEFAULT = self.status
 
-        if self.flatten_folders is not None:
+        if self.flatten_folders:
             sickbeard.FLATTEN_FOLDERS_DEFAULT = int(self.flatten_folders)
 
-        if self.future_show_paused is not None:
+        if self.future_show_paused:
             sickbeard.COMING_EPS_DISPLAY_PAUSED = int(self.future_show_paused)
 
         return _responds(RESULT_SUCCESS, msg="Saved defaults")
@@ -2824,7 +2824,7 @@ class CMD_Shows(ApiCall):
         shows = {}
         for curShow in sickbeard.showList:
             # If self.paused is None: show all, 0: show un-paused, 1: show paused
-            if self.paused is not None and self.paused != curShow.paused:
+            if self.paused and self.paused != curShow.paused:
                 continue
 
             indexer_show = helpers.mapIndexersToShow(curShow)

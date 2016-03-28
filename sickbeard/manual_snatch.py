@@ -139,7 +139,7 @@ def collectEpisodesFromSearchThread(show):
     # Finished Searches
     searchstatus = SEARCH_STATUS_FINISHED
     for searchThread in sickbeard.search_queue.MANUAL_SEARCH_HISTORY:
-        if show is not None:
+        if show:
             if not str(searchThread.show.indexerid) == show:
                 continue
 

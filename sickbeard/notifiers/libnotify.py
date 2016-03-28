@@ -66,7 +66,7 @@ class Notifier(object):
         self.gobject = None
 
     def init_notify(self):
-        if self.Notify is not None:
+        if self.Notify:
             return True
         try:
             from gi.repository import Notify

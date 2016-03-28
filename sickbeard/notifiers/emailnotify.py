@@ -278,7 +278,7 @@ class Notifier(object):
                     addrs.append(addr)
 
         # Grab the per-show-notification recipients
-        if show is not None:
+        if show:
             for s in show:
                 for subs in main_db_con.select('SELECT notify_list FROM tv_shows WHERE show_name = ?', (s,)):
                     if subs[b'notify_list']:

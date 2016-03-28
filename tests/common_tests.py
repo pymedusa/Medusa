@@ -449,7 +449,7 @@ class StatusStringsTests(unittest.TestCase):
         for i in unused:
             if i is None:
                 with self.assertRaises(TypeError):
-                    status_strings[str(i)] = 1  # 'None' is not None
+                    status_strings[str(i)] = 1  # 'None'
                 status_strings[i] = 1  # ...but None can still be used as a key
             else:
                 status_strings[str(i)] = 1

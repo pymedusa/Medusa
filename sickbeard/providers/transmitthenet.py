@@ -130,7 +130,7 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                             continue
 
                         for torrent_row in torrent_rows:
-                            freeleech = torrent_row.find('img', alt="Freeleech") is not None
+                            freeleech = torrent_row.find('img', alt="Freeleech")
                             if self.freeleech and not freeleech:
                                 continue
 

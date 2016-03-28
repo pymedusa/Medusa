@@ -350,7 +350,7 @@ class NameParser(object):
         b = getattr(second, attr)
 
         # if a is good use it
-        if a is not None or (isinstance(a, list) and a):
+        if a or (isinstance(a, list) and a):
             return a
         # if not use b (if b isn't set it'll just be default)
         else:
@@ -526,11 +526,11 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
         ])
 
     def __str__(self):
-        if self.series_name is not None:
+        if self.series_name:
             to_return = self.series_name + u' - '
         else:
             to_return = u''
-        if self.season_number is not None:
+        if self.season_number:
             to_return += 'S' + str(self.season_number).zfill(2)
         if self.episode_numbers:
             for e in self.episode_numbers:

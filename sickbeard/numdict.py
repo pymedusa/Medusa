@@ -27,7 +27,7 @@ class NumDict(MutableMapping):
     def __init__(self, iterable=None, **kwargs):
         self.data = {}
         iterable = kwargs.pop('dict', None) if iterable is None else iterable
-        if iterable is not None:
+        if iterable:
             self.update(iterable)
         if kwargs:
             self.update(kwargs)
@@ -122,5 +122,5 @@ class NumDict(MutableMapping):
         try:
             return int(key)
         except (TypeError, ValueError):
-            if key is not None:
+            if key:
                 raise KeyError(key)

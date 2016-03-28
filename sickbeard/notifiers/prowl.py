@@ -106,7 +106,7 @@ class Notifier(object):
                     apis.append(api)
 
         # Grab the per-show-notification recipients
-        if show is not None:
+        if show:
             for value in show:
                 for subs in mydb.select("SELECT notify_list FROM tv_shows WHERE show_name = ?", (value,)):
                     if subs['notify_list']:

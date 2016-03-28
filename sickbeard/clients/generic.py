@@ -71,7 +71,7 @@ class GenericClient(object):
 
         code_description = http_code_description(self.response.status_code)
 
-        if code_description is not None:
+        if code_description:
             logger.log(self.name + u': ' + code_description, logger.INFO)
             return False
 

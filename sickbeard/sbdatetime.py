@@ -146,15 +146,15 @@ class sbdatetime(datetime.datetime):
         strt = ''
         try:
             if self is None:
-                if dt is not None:
-                    if t_preset is not None:
+                if dt:
+                    if t_preset:
                         strt = dt.strftime(t_preset)
                     elif show_seconds:
                         strt = dt.strftime(sickbeard.TIME_PRESET_W_SECONDS)
                     else:
                         strt = dt.strftime(sickbeard.TIME_PRESET)
             else:
-                if t_preset is not None:
+                if t_preset:
                     strt = self.strftime(t_preset)
                 elif show_seconds:
                     strt = self.strftime(sickbeard.TIME_PRESET_W_SECONDS)
@@ -189,13 +189,13 @@ class sbdatetime(datetime.datetime):
         strd = ''
         try:
             if self is None:
-                if dt is not None:
-                    if d_preset is not None:
+                if dt:
+                    if d_preset:
                         strd = dt.strftime(d_preset)
                     else:
                         strd = dt.strftime(sickbeard.DATE_PRESET)
             else:
-                if d_preset is not None:
+                if d_preset:
                     strd = self.strftime(d_preset)
                 else:
                     strd = self.strftime(sickbeard.DATE_PRESET)
@@ -230,8 +230,8 @@ class sbdatetime(datetime.datetime):
         strd = ''
         try:
             if self is None:
-                if dt is not None:
-                    if d_preset is not None:
+                if dt:
+                    if d_preset:
                         strd = dt.strftime(d_preset)
                     else:
                         strd = dt.strftime(sickbeard.DATE_PRESET)
@@ -244,14 +244,14 @@ class sbdatetime(datetime.datetime):
                                 locale.setlocale(locale.LC_TIME, sbdatetime.en_US_norm)
                         except Exception:
                             sbdatetime.has_locale = False
-                    if t_preset is not None:
+                    if t_preset:
                         strd += ', ' + dt.strftime(t_preset)
                     elif show_seconds:
                         strd += ', ' + dt.strftime(sickbeard.TIME_PRESET_W_SECONDS)
                     else:
                         strd += ', ' + dt.strftime(sickbeard.TIME_PRESET)
             else:
-                if d_preset is not None:
+                if d_preset:
                     strd = self.strftime(d_preset)
                 else:
                     strd = self.strftime(sickbeard.DATE_PRESET)
@@ -264,7 +264,7 @@ class sbdatetime(datetime.datetime):
                             locale.setlocale(locale.LC_TIME, sbdatetime.en_US_norm)
                     except Exception:
                         sbdatetime.has_locale = False
-                if t_preset is not None:
+                if t_preset:
                     strd += ', ' + self.strftime(t_preset)
                 elif show_seconds:
                     strd += ', ' + self.strftime(sickbeard.TIME_PRESET_W_SECONDS)

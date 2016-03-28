@@ -131,7 +131,7 @@ class ProgressIndicators(object):
 
         # if any of the progress indicators are done take them off the list
         for curPI in ProgressIndicators._pi[name]:
-            if curPI is not None and curPI.percentComplete() == 100:
+            if curPI and curPI.percentComplete() == 100:
                 ProgressIndicators._pi[name].remove(curPI)
 
         # return the list of progress indicators associated with this name

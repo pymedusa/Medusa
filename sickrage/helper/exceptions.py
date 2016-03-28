@@ -32,7 +32,7 @@ def ex(e):
         return message
 
     for arg in e.args:
-        if arg is not None:
+        if arg:
             if isinstance(arg, (str, unicode)):
                 fixed_arg = ss(arg)
             else:

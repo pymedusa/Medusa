@@ -119,7 +119,7 @@ def get_network_timezone(network, _network_dict):
 
     if network_tz_name is None and network not in missing_network_timezones:
         missing_network_timezones.add(network)
-        if network is not None:
+        if network:
             logger.log(u'Missing time zone for network: %s' % network, logger.ERROR)
 
     return tz.gettz(network_tz_name) if network_tz_name else sb_timezone
@@ -166,4 +166,4 @@ def parse_date_time(d, t, network):
 
 
 def test_timeformat(time_string):
-    return time_regex.search(time_string) is not None
+    return time_regex.search(time_string)

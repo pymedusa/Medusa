@@ -188,7 +188,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             for individual_torrent in torrent_rows:
 
                                 # skip if torrent has been nuked due to poor quality
-                                if individual_torrent.find('img', alt='Nuked') is not None:
+                                if individual_torrent.find('img', alt='Nuked'):
                                     continue
 
                                 try:
