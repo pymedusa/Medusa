@@ -4691,32 +4691,32 @@ class ConfigProviders(Config):
 
                     try:
                         newznabProviderDict[cur_id].search_mode = str(kwargs[cur_id + '_search_mode']).strip()
-                    except Exception:
-                        pass
+                    except (AttributeError, KeyError):
+                        pass  # these exceptions are actually catching unselected checkboxes
 
                     try:
                         newznabProviderDict[cur_id].search_fallback = config.checkbox_to_value(
                             kwargs[cur_id + '_search_fallback'])
-                    except Exception:
-                        newznabProviderDict[cur_id].search_fallback = 0
+                    except (AttributeError, KeyError):
+                        newznabProviderDict[cur_id].search_fallback = 0  # these exceptions are actually catching unselected checkboxes
 
                     try:
                         newznabProviderDict[cur_id].enable_daily = config.checkbox_to_value(
                             kwargs[cur_id + '_enable_daily'])
-                    except Exception:
-                        newznabProviderDict[cur_id].enable_daily = 0
+                    except (AttributeError, KeyError):
+                        newznabProviderDict[cur_id].enable_daily = 0  # these exceptions are actually catching unselected checkboxes
 
                     try:
                         newznabProviderDict[cur_id].enable_manualsearch = config.checkbox_to_value(
                             kwargs[cur_id + '_enable_manualsearch'])
-                    except Exception:
-                        newznabProviderDict[cur_id].enable_manualsearch = 0
+                    except (AttributeError, KeyError):
+                        newznabProviderDict[cur_id].enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
 
                     try:
                         newznabProviderDict[cur_id].enable_backlog = config.checkbox_to_value(
                             kwargs[cur_id + '_enable_backlog'])
-                    except Exception:
-                        newznabProviderDict[cur_id].enable_backlog = 0
+                    except (AttributeError, KeyError):
+                        newznabProviderDict[cur_id].enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
                 else:
                     sickbeard.newznabProviderList.append(newProvider)
 
@@ -4790,157 +4790,158 @@ class ConfigProviders(Config):
             if hasattr(curTorrentProvider, 'custom_url'):
                 try:
                     curTorrentProvider.custom_url = str(kwargs[curTorrentProvider.get_id() + '_custom_url']).strip()
-                except Exception:
-                    curTorrentProvider.custom_url = None
+                except (AttributeError, KeyError):
+                    curTorrentProvider.custom_url = None  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'minseed'):
                 try:
                     curTorrentProvider.minseed = int(str(kwargs[curTorrentProvider.get_id() + '_minseed']).strip())
-                except Exception:
-                    curTorrentProvider.minseed = 0
+                except (AttributeError, KeyError):
+                    curTorrentProvider.minseed = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'minleech'):
                 try:
                     curTorrentProvider.minleech = int(str(kwargs[curTorrentProvider.get_id() + '_minleech']).strip())
-                except Exception:
-                    curTorrentProvider.minleech = 0
+                except (AttributeError, KeyError):
+                    curTorrentProvider.minleech = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'ratio'):
                 try:
                     ratio = float(str(kwargs[curTorrentProvider.get_id() + '_ratio']).strip())
                     curTorrentProvider.ratio = (ratio, -1)[ratio < 0]
-                except Exception:
-                    curTorrentProvider.ratio = None
+                except (AttributeError, KeyError):
+                    curTorrentProvider.ratio = None  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'digest'):
                 try:
                     curTorrentProvider.digest = str(kwargs[curTorrentProvider.get_id() + '_digest']).strip()
-                except Exception:
-                    curTorrentProvider.digest = None
+                except (AttributeError, KeyError):
+                    curTorrentProvider.digest = None  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'hash'):
                 try:
                     curTorrentProvider.hash = str(kwargs[curTorrentProvider.get_id() + '_hash']).strip()
-                except Exception:
-                    curTorrentProvider.hash = None
+                except (AttributeError, KeyError):
+                    curTorrentProvider.hash = None  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'api_key'):
                 try:
                     curTorrentProvider.api_key = str(kwargs[curTorrentProvider.get_id() + '_api_key']).strip()
-                except Exception:
-                    curTorrentProvider.api_key = None
+                except (AttributeError, KeyError):
+                    curTorrentProvider.api_key = None  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'username'):
                 try:
                     curTorrentProvider.username = str(kwargs[curTorrentProvider.get_id() + '_username']).strip()
-                except Exception:
-                    curTorrentProvider.username = None
+                except (AttributeError, KeyError):
+                    curTorrentProvider.username = None  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'password'):
                 try:
                     curTorrentProvider.password = str(kwargs[curTorrentProvider.get_id() + '_password']).strip()
-                except Exception:
-                    curTorrentProvider.password = None
+                except (AttributeError, KeyError):
+                    curTorrentProvider.password = None  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'passkey'):
                 try:
                     curTorrentProvider.passkey = str(kwargs[curTorrentProvider.get_id() + '_passkey']).strip()
-                except Exception:
-                    curTorrentProvider.passkey = None
+                except (AttributeError, KeyError):
+                    curTorrentProvider.passkey = None  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'pin'):
                 try:
                     curTorrentProvider.pin = str(kwargs[curTorrentProvider.get_id() + '_pin']).strip()
-                except Exception:
-                    curTorrentProvider.pin = None
+                except (AttributeError, KeyError):
+                    curTorrentProvider.pin = None  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'confirmed'):
                 try:
                     curTorrentProvider.confirmed = config.checkbox_to_value(
                         kwargs[curTorrentProvider.get_id() + '_confirmed'])
-                except Exception:
-                    curTorrentProvider.confirmed = 0
+                except (AttributeError, KeyError):
+                    curTorrentProvider.confirmed = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'ranked'):
                 try:
                     curTorrentProvider.ranked = config.checkbox_to_value(
                         kwargs[curTorrentProvider.get_id() + '_ranked'])
-                except Exception:
-                    curTorrentProvider.ranked = 0
+                except (AttributeError, KeyError):
+                    curTorrentProvider.ranked = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'engrelease'):
                 try:
                     curTorrentProvider.engrelease = config.checkbox_to_value(
                         kwargs[curTorrentProvider.get_id() + '_engrelease'])
-                except Exception:
-                    curTorrentProvider.engrelease = 0
+                except (AttributeError, KeyError):
+                    curTorrentProvider.engrelease = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'onlyspasearch'):
                 try:
                     curTorrentProvider.onlyspasearch = config.checkbox_to_value(
                         kwargs[curTorrentProvider.get_id() + '_onlyspasearch'])
-                except Exception:
-                    curTorrentProvider.onlyspasearch = 0
+                except (AttributeError, KeyError):
+                    curTorrentProvider.onlyspasearch = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'sorting'):
                 try:
                     curTorrentProvider.sorting = str(kwargs[curTorrentProvider.get_id() + '_sorting']).strip()
-                except Exception:
-                    curTorrentProvider.sorting = 'seeders'
+                except (AttributeError, KeyError):
+                    curTorrentProvider.sorting = 'seeders'  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'freeleech'):
                 try:
                     curTorrentProvider.freeleech = config.checkbox_to_value(
                         kwargs[curTorrentProvider.get_id() + '_freeleech'])
-                except Exception:
-                    curTorrentProvider.freeleech = 0
+                except (AttributeError, KeyError):
+                    curTorrentProvider.freeleech = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'search_mode'):
                 try:
                     curTorrentProvider.search_mode = str(kwargs[curTorrentProvider.get_id() + '_search_mode']).strip()
-                except Exception:
-                    curTorrentProvider.search_mode = 'eponly'
+                except (AttributeError, KeyError):
+                    curTorrentProvider.search_mode = 'eponly'  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'search_fallback'):
                 try:
                     curTorrentProvider.search_fallback = config.checkbox_to_value(
                         kwargs[curTorrentProvider.get_id() + '_search_fallback'])
-                except Exception:
+                except (AttributeError, KeyError):
                     curTorrentProvider.search_fallback = 0  # these exceptions are catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'enable_daily'):
                 try:
                     curTorrentProvider.enable_daily = config.checkbox_to_value(
                         kwargs[curTorrentProvider.get_id() + '_enable_daily'])
-                except Exception:
+                except (AttributeError, KeyError):
                     curTorrentProvider.enable_daily = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'enable_manualsearch'):
                 try:
                     curTorrentProvider.enable_manualsearch = config.checkbox_to_value(
                         kwargs[curTorrentProvider.get_id() + '_enable_manualsearch'])
-                except Exception:
+                except (AttributeError, KeyError):
                     curTorrentProvider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
+                    raise
 
             if hasattr(curTorrentProvider, 'enable_backlog'):
                 try:
                     curTorrentProvider.enable_backlog = config.checkbox_to_value(
                         kwargs[curTorrentProvider.get_id() + '_enable_backlog'])
-                except Exception:
+                except (AttributeError, KeyError):
                     curTorrentProvider.enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'cat'):
                 try:
                     curTorrentProvider.cat = int(str(kwargs[curTorrentProvider.get_id() + '_cat']).strip())
-                except Exception:
-                    curTorrentProvider.cat = 0
+                except (AttributeError, KeyError):
+                    curTorrentProvider.cat = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curTorrentProvider, 'subtitle'):
                 try:
                     curTorrentProvider.subtitle = config.checkbox_to_value(
                         kwargs[curTorrentProvider.get_id() + '_subtitle'])
-                except Exception:
-                    curTorrentProvider.subtitle = 0
+                except (AttributeError, KeyError):
+                    curTorrentProvider.subtitle = 0  # these exceptions are actually catching unselected checkboxes
 
         for curNzbProvider in [prov for prov in sickbeard.providers.sortedProviderList() if
                                prov.provider_type == GenericProvider.NZB]:
@@ -4948,47 +4949,47 @@ class ConfigProviders(Config):
             if hasattr(curNzbProvider, 'api_key'):
                 try:
                     curNzbProvider.api_key = str(kwargs[curNzbProvider.get_id() + '_api_key']).strip()
-                except Exception:
-                    curNzbProvider.api_key = None
+                except (AttributeError, KeyError):
+                    curNzbProvider.api_key = None  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curNzbProvider, 'username'):
                 try:
                     curNzbProvider.username = str(kwargs[curNzbProvider.get_id() + '_username']).strip()
-                except Exception:
-                    curNzbProvider.username = None
+                except (AttributeError, KeyError):
+                    curNzbProvider.username = None  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curNzbProvider, 'search_mode'):
                 try:
                     curNzbProvider.search_mode = str(kwargs[curNzbProvider.get_id() + '_search_mode']).strip()
-                except Exception:
-                    curNzbProvider.search_mode = 'eponly'
+                except (AttributeError, KeyError):
+                    curNzbProvider.search_mode = 'eponly'  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curNzbProvider, 'search_fallback'):
                 try:
                     curNzbProvider.search_fallback = config.checkbox_to_value(
                         kwargs[curNzbProvider.get_id() + '_search_fallback'])
-                except Exception:
+                except (AttributeError, KeyError):
                     curNzbProvider.search_fallback = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curNzbProvider, 'enable_daily'):
                 try:
                     curNzbProvider.enable_daily = config.checkbox_to_value(
                         kwargs[curNzbProvider.get_id() + '_enable_daily'])
-                except Exception:
+                except (AttributeError, KeyError):
                     curNzbProvider.enable_daily = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curNzbProvider, 'enable_manualsearch'):
                try:
                    curNzbProvider.enable_manualsearch = config.checkbox_to_value(
                        kwargs[curNzbProvider.get_id() + '_enable_manualsearch'])
-               except Exception:
+               except (AttributeError, KeyError):
                    curNzbProvider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curNzbProvider, 'enable_backlog'):
                 try:
                     curNzbProvider.enable_backlog = config.checkbox_to_value(
                         kwargs[curNzbProvider.get_id() + '_enable_backlog'])
-                except Exception:
+                except (AttributeError, KeyError):
                     curNzbProvider.enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
 
         sickbeard.NEWZNAB_DATA = '!!!'.join([x.configStr() for x in sickbeard.newznabProviderList])
