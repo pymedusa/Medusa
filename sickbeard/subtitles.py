@@ -553,7 +553,7 @@ def get_subtitles_dir(video_path):
     if sickbeard.helpers.makeDir(new_subtitles_path):
         sickbeard.helpers.chmodAsParent(new_subtitles_path)
     else:
-        logger.log(u'Unable to create subtitles folder {0}'.format(new_subtitles_path), logger.ERROR)
+        logger.log(u'Unable to create subtitles folder {0}'.format(new_subtitles_path), logger.WARNING)
 
     return new_subtitles_path
 
@@ -822,7 +822,7 @@ class SubtitlesFinder(object):
 
             except Exception as error:
                 logger.log(u'Error while searching subtitles for {0} {1}. Error: {2}'.format
-                           (ep_to_sub['show_name'], ep_num, ex(error)), logger.ERROR)
+                           (ep_to_sub['show_name'], ep_num, ex(error)), logger.WARNING)
                 continue
 
         logger.log(u'Finished checking for missed subtitles', logger.INFO)
