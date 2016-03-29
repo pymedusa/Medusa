@@ -1023,8 +1023,8 @@ class CMD_History(ApiCall):
         # required
         # optional
         self.limit, args = self.check_params(args, kwargs, "limit", 100, False, "int", [])
-        self.type, args = self.check_params(args, kwargs, "type", None, False, "string", ["downloaded", "snatched"])
-        self.type = self.type.lower() if isinstance(self.type, str) else ''
+        self.type, args = self.check_params(args, kwargs, "type", None, False, "string", [None, "downloaded", "snatched"])
+        self.type = self.type.lower() if isinstance(self.type, str) else None
 
         # super, missing, help
         ApiCall.__init__(self, args, kwargs)
@@ -1054,7 +1054,7 @@ class CMD_History(ApiCall):
                 ).strftime(dateTimeFormat)
 
             composite = Quality.splitCompositeStatus(cur_item.action)
-            if cur_type == statusStrings[composite.status].lower():
+            if cur_type in (statusStrings[composite.status].lower(), None):
                 return {
                     'status': statusStrings[composite.status],
                     'quality': get_quality_string(composite.quality),
@@ -1067,7 +1067,7 @@ class CMD_History(ApiCall):
                     'tvdbid': cur_item.show_id,
                 }
 
-        results = [make_result(x, self.type) for x in history]
+        results = [make_result(x, self.type) for x in history if x]
         return _responds(RESULT_SUCCESS, results)
 
 
