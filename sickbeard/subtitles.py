@@ -884,7 +884,7 @@ def run_subs_scripts(scripts, script_args):
             process = subprocess.Popen(inner_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                        stderr=subprocess.STDOUT, cwd=sickbeard.PROG_DIR)
             out, _ = process.communicate()  # @UnusedVariable
-            logger.log(u'Script result: {0}'.format(out), logger.DEBUG)
+            logger.log(u'Script result: {0}'.format(out.rstrip()), logger.DEBUG)
 
         except Exception as error:
             logger.log(u'Unable to run subtitles script: {0}'.format(ex(error)))
