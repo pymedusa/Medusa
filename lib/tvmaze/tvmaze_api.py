@@ -479,6 +479,8 @@ class TVmaze(object):
                         new_dict['airs_dayofweek'] = u', '.join(value.value('days')) if value.get('days') else None
                     if key == 'network':
                         new_dict['network'] = value.get('name')
+                        new_dict['code'] = value.get('country', {'code': 'NA'})['code']
+                        new_dict['timezone'] = value.get('country', {'timezone': 'NA'})['timezone']
                     if key == 'webChannel':
                         new_dict['webchannel'] = value.get('name')
                     if key == 'image':
