@@ -446,6 +446,8 @@ class TVmaze(object):
         self.config['url_seriesInfo'] = u"%(base_url)s/shows/%%s" % self.config
         self.config['url_actorsInfo'] = u"%(base_url)s/shows/%%s/cast" % self.config
 
+        self.config['url_seriesInfoById'] = u"%(base_url)s/lookup/shows?%%s=%%s" % self.config
+
         # No Banners support, no artworkPrefix required
         # TODO: updates
 #         self.config['url_updates_all'] = u"%(base_url)s/api/%(apikey)s/updates_all.zip" % self.config
@@ -662,11 +664,28 @@ class TVmaze(object):
 
         return map_data(results.values())['series']
 
-    def get_show_by_id(self, tvmaze_id, embed=False):  # pylint: disable=unused-argument
-        log().debug('Getting all show data for %s', [tvmaze_id])
-        results = self._getetsrc(
-            self.config['url_seriesInfo'] % (tvmaze_id)
-        )
+    def get_show_by_id(self, tvmaze_id=None, embed=False, **external_id):  # pylint: disable=unused-argument
+        """
+        Retrieve tvmaze show information by tvmaze id, or if no tvmaze id provided by passed external id.
+
+        :param tvmaze_id: The shows tvmaze id
+        :param embed: An optional parameter to embed additional show information
+        :param **external_id: kwargs for providing an external id. The following kwargs 
+        should be in the format of: {'source': 'tvdbid', 'id': '81189'}, 
+        to search for the show "Breaking Bad". Other sources that can be provided are: 'tvrage' and 'imdb'
+        :return: An ordered dict with the show searched for.
+        """
+
+        if tvmaze_id:
+            log().debug('Getting all show data for %s', [tvmaze_id])
+            results = self._getetsrc(
+                self.config['url_seriesInfo'] % (tvmaze_id)
+            )
+        else:
+            log().debug('Getting all show data for external source %s with id %s', [external_id.get('source'), external_id.get('id')])
+            results = self._getetsrc(
+                self.config['url_seriesInfoById'] % (external_id.get('source'), external_id.get('id'))
+            )
 
         if not results:
             return
