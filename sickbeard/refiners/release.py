@@ -73,7 +73,7 @@ def get_release_file(dirpath, filename, extension):
 
     Returns: the release file if the file exists
     """
-    release_file = os.path.join(dirpath, filename + extension)
+    release_file = os.path.join(dirpath, filename + '.' + extension)
 
     # skip if info file doesn't exist
     if os.path.isfile(release_file):

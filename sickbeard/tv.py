@@ -1400,11 +1400,15 @@ class TVEpisode(object):  # pylint: disable=too-many-instance-attributes, too-ma
 
     def refreshSubtitles(self):
         """Look for subtitles files and refresh the subtitles property."""
-        episode_info = {'show_name': self.show.name, 'location': self.location,
-                        'season': self.season, 'episode': self.episode}
-        self.subtitles, save_subtitles = subtitles.refresh_subtitles(episode_info, self.subtitles)
-        if save_subtitles:
-            self.saveToDB()
+        current_subtitles = subtitles.get_current_subtitles(self.location)
+        if current_subtitles:
+            if self.subtitles == current_subtitles:
+                ep_num = episode_num(self.season, self.episode) or \
+                         episode_num(self.season, self.episode, numbering='absolute')
+                logger.log(u'No changed subtitles for {0} {1}'.format(self.show.name, ep_num), logger.DEBUG)
+            else:
+                self.subtitles = current_subtitles
+                self.saveToDB()
 
     def download_subtitles(self, force=False):
         if not ek(os.path.isfile, self.location):
@@ -1413,12 +1417,12 @@ class TVEpisode(object):  # pylint: disable=too-many-instance-attributes, too-ma
                         episode_num(self.season, self.episode, numbering='absolute')), logger.DEBUG)
             return
 
-        subtitles_info = {'location': self.location, 'subtitles': self.subtitles, 'season': self.season,
-                          'episode': self.episode, 'name': self.name, 'show_name': self.show.name,
-                          'show_indexerid': self.show.indexerid, 'status': self.status,
-                          'release_name': self.release_name}
-
-        self.subtitles, new_subtitles = subtitles.download_subtitles(subtitles_info)
+        new_subtitles = subtitles.download_subtitles(video_path=self.location, show_name=self.show.name,
+                                                     season=self.season, episode=self.episode, episode_name=self.name,
+                                                     show_indexerid=self.show.indexerid, release_name=self.release_name,
+                                                     status=self.status, existing_subtitles=self.subtitles)
+        if new_subtitles:
+            self.subtitles = subtitles.merge_subtitles(self.subtitles, new_subtitles)
 
         self.subtitles_searchcount += 1 if self.subtitles_searchcount else 1
         self.subtitles_lastsearch = datetime.datetime.now().strftime(dateTimeFormat)
