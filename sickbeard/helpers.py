@@ -1580,6 +1580,9 @@ def verify_freespace(src, dest, oldfile=None):
 
     try:
         diskfree = getDiskSpaceUsage(dest, None)
+        if not diskfree:
+            logger.log(u"Unable to determine the free space on your OS.", logger.WARNING)
+            return True
     except Exception:
         logger.log(u"Unable to determine free space, so I will assume there is enough.", logger.WARNING)
         return True
@@ -1594,7 +1597,7 @@ def verify_freespace(src, dest, oldfile=None):
     if diskfree > neededspace:
         return True
     else:
-        logger.log(u"Not enough free space: Needed: {0} bytes ({1}), found: {2} bytes ({3})".format
+        logger.log(u"Not enough free space. Needed: {0} bytes ({1}), found: {2} bytes ({3})".format
                    (neededspace, pretty_file_size(neededspace), diskfree, pretty_file_size(diskfree)), logger.WARNING)
         return False
 
@@ -1661,7 +1664,7 @@ def getDiskSpaceUsage(diskPath=None, pretty=True):
     """
     returns the free space in human readable bytes for a given path or False if no path given
     :param diskPath: the filesystem path being checked
-    :param pretty: return as Bytes if None
+    :param pretty: return as bytes if None
     """
 
     if diskPath and ek(os.path.exists, diskPath):
