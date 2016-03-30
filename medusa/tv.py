@@ -2045,8 +2045,6 @@ class TVEpisode(TVObject):
         self.season = season
         self.episode = episode
 
-        xem_refresh(self.show.indexerid, self.show.indexer)
-
         self.scene_absolute_number = get_scene_absolute_numbering(
             self.show.indexerid,
             self.show.indexer,

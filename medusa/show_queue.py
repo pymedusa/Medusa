@@ -31,7 +31,7 @@ from .helper.exceptions import (
     CantRefreshShowException, CantRemoveShowException, CantUpdateShowException,
     EpisodeDeletedException, MultipleShowObjectsException, ShowDirectoryNotFoundException, ex
 )
-from .helpers import chmodAsParent, get_showname_from_indexer, makeDir, mapIndexersToShow
+from .helpers import chmodAsParent, get_mapped_indexer_id, get_showname_from_indexer, makeDir, mapIndexersToShow=======
 from .tv import TVShow
 
 
@@ -512,6 +512,10 @@ class QueueItemAdd(ShowQueueItem):
         # Always try to map the indexer to the show to other indexers.
         # We don't need the mapped dict, only want to make sure it's updated in the indexer_mapping
         mapIndexersToShow(self.show)
+
+        # Moved the xem_refresh down, because we shouldn't be doing this for every episode
+        mapped_indexer_id = get_mapped_indexer_id(self.show.indexerid)
+        scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer, mapped_indexer_id=mapped_indexer_id)
 
         self.show.write_metadata()
         self.show.update_metadata()
