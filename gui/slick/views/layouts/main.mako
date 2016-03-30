@@ -83,16 +83,14 @@
         <link rel="stylesheet" type="text/css" href="${srRoot}/css/style.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="${srRoot}/css/${sickbeard.THEME_NAME}.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="${srRoot}/css/print.css?${sbPID}" />
-        % if srLogin:
         <link rel="stylesheet" type="text/css" href="${srRoot}/css/country-flags.css?${sbPID}"/>
-        % endif
         <%block name="css" />
     </head>
     <body data-controller="${controller}" data-action="${action}">
         <nav class="navbar navbar-default navbar-fixed-top hidden-print" role="navigation">
             <div class="container-fluid">
                 <div class="navbar-header">
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main_nav">
                         <span class="sr-only">Toggle navigation</span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
@@ -101,8 +99,8 @@
                     <a class="navbar-brand" href="${srRoot}/home/" title="SickRage"><img alt="SickRage" src="${srRoot}/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
                 </div>
 
-            % if srLogin:
-                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            % if loggedIn:
+                <div class="collapse navbar-collapse" id="main_nav">
                     <ul class="nav navbar-nav navbar-right">
                         <li id="NAVhome" class="navbar-split dropdown${('', ' active')[topmenu == 'home']}">
                             <a href="${srRoot}/home/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
@@ -179,25 +177,6 @@
                             <div style="clear:both;"></div>
                         </li>
 
-                        <%
-                            if sickbeard.NEWS_UNREAD:
-                                newsBadge = ' <span class="badge">'+str(sickbeard.NEWS_UNREAD)+'</span>'
-                            else:
-                                newsBadge = ''
-
-                            numCombined = numErrors + numWarnings + sickbeard.NEWS_UNREAD
-                            if numCombined:
-                                if numErrors:
-                                    toolsBadgeClass = ' btn-danger'
-                                elif numWarnings:
-                                    toolsBadgeClass = ' btn-warning'
-                                else:
-                                    toolsBadgeClass = ''
-
-                                toolsBadge = ' <span class="badge'+toolsBadgeClass+'">'+str(numCombined)+'</span>'
-                            else:
-                                toolsBadge = ''
-                        %>
                         <li id="NAVsystem" class="navbar-split dropdown${('', ' active')[topmenu == 'system']}">
                             <a href="${srRoot}/home/status/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="${srRoot}/images/menu/system18-2.png" class="navbaricon hidden-xs" />${toolsBadge}
                             <b class="caret"></b>
@@ -219,7 +198,7 @@
                                 <li><a href="${srRoot}/home/updateCheck?pid=${sbPID}"><i class="menu-icon-update"></i>&nbsp;Check For Updates</a></li>
                                 <li><a href="${srRoot}/home/restart/?pid=${sbPID}" class="confirm restart"><i class="menu-icon-restart"></i>&nbsp;Restart</a></li>
                                 <li><a href="${srRoot}/home/shutdown/?pid=${sbPID}" class="confirm shutdown"><i class="menu-icon-shutdown"></i>&nbsp;Shutdown</a></li>
-                                % if srLogin is not True:
+                                % if loggedIn is not True:
                                     <li><a href="${srRoot}/logout" class="confirm logout"><i class="menu-icon-shutdown"></i>&nbsp;Logout</a></li>
                                 % endif
                                 <li role="separator" class="divider"></li>
@@ -258,13 +237,13 @@
             </span>
         </div>
         % endif
-        % if sickbeard.BRANCH and sickbeard.BRANCH != 'master' and not sickbeard.DEVELOPER and srLogin:
+        % if sickbeard.BRANCH and sickbeard.BRANCH != 'master' and not sickbeard.DEVELOPER and loggedIn:
         <div class="alert alert-danger upgrade-notification hidden-print" role="alert">
             <span>You're using the ${sickbeard.BRANCH} branch. Please use 'master' unless specifically asked</span>
         </div>
         % endif
 
-        % if sickbeard.NEWEST_VERSION_STRING and srLogin:
+        % if sickbeard.NEWEST_VERSION_STRING and loggedIn:
         <div class="alert alert-success upgrade-notification hidden-print" role="alert">
             <span>${sickbeard.NEWEST_VERSION_STRING}</span>
         </div>
@@ -275,7 +254,7 @@
                 <%block name="content" />
             </div> <!-- /content -->
         </div> <!-- /contentWrapper -->
-    % if srLogin:
+    % if loggedIn:
         <footer>
             <div class="footer clearfix">
             <%
