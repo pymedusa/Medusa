@@ -53,7 +53,7 @@ class Show(object):
         return None, show
 
     @staticmethod
-    def find(shows, indexer_id):
+    def find(shows, indexer_id, indexer=None):
         """
         Find a show by its indexer id in the provided list of shows
         :param shows: The list of shows to search in
@@ -73,6 +73,9 @@ class Show(object):
 
         if len(results) == 1:
             return results[0]
+
+        if indexer:
+            return [result for result in results if result.indexer == int(indexer)][0]
 
         raise MultipleShowObjectsException()
 
