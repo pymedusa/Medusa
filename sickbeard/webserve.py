@@ -1389,7 +1389,8 @@ class Home(WebRoot):
 
         try:
             main_db_con = db.DBConnection('cache.db')
-            sql_return = main_db_con.action("SELECT * FROM '%s' WHERE rowid = ?" % (sickbeard.providers.getProviderClass(provider).get_id()), [rowid], fetchone=True)
+            sql_return = main_db_con.action("SELECT * FROM '%s' WHERE rowid = ?" %
+                                            (sickbeard.providers.getProviderClass(provider).get_id()), [rowid], fetchone=True)
         except Exception as e:
             return self._genericMessage("Error", "Couldn't read cached results. Error: {}".format(e))
 
@@ -1417,13 +1418,12 @@ class Home(WebRoot):
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
-        if not ep_queue_item.started and ep_queue_item.success is None:
-            return json.dumps(
-                {'result': 'success'})  # I Actually want to call it queued, because the search hasnt been started yet!
-        if ep_queue_item.started and ep_queue_item.success is None:
-            return json.dumps({'result': 'success'})
-        else:
-            return json.dumps({'result': 'failure'})
+        while ep_queue_item.success is not False:
+            if ep_queue_item.started and ep_queue_item.success:
+                return json.dumps({'result': 'success'})
+            time.sleep(1)
+
+        return json.dumps({'result': 'failure'})
 
     def manualSnatchCheckCache(self, show, season, episode, **kwargs):
         """ Periodic check if the searchthread is still running for the selected show/season/ep
