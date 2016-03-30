@@ -362,6 +362,31 @@ inc_top.mako
     background-position: -742px 0px;
 }
 
+.enable-daily-search-icon {
+    background-image: url("../images/search_daily_8x8.png")!important;
+    width: 8px;
+    height: 8px;
+    margin-top: 5px;
+    margin-right: 3px;
+}
+
+.enable-backlog-search-icon {
+    background-image: url("../images/search_backlog_8x8.png")!important;
+    width: 8px;
+    height: 8px;
+    margin-top: 5px;
+    margin-right: 3px;
+}
+
+.enable-manual-search-icon {
+    background-image: url("../images/search_manual_8x8.png")!important;
+    width: 8px;
+    height: 8px;
+    margin-top: 5px;
+    margin-right: 3px;
+}
+
+
 /* =======================================================================
 inc_bottom.mako
 ========================================================================== */
