@@ -53,6 +53,7 @@ indexerConfig = {
         },
         'trakt_id': 'tvdb_id',
         'xem_origin': 'tvdb',
+        'xem_mapped_to': INDEXER_TVDB,
         'icon': 'tvmaze16.png',
         'scene_loc': 'https://api.pymedusa.com/scene_exceptions.json',
         'show_url': 'http://www.tvmaze.com/shows/',
