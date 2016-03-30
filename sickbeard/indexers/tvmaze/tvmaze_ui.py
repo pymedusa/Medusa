@@ -20,7 +20,7 @@
 
 import logging
 import warnings
-from tvmaze.tvmaze_exceptions import tvmaze_userabort
+from tvmaze_exceptions import tvmaze_userabort
 
 __author__ = "p0psicles"
 __version__ = "1.0"
