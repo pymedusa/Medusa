@@ -101,7 +101,7 @@ class CheckVersion(object):
                 ui.notifications.message('Backup', 'Config backup successful, updating...')
                 return True
             else:
-                logger.log(u"Config backup failed, aborting update", logger.ERROR)
+                logger.log(u"Config backup failed, aborting update", logger.WARNING)
                 ui.notifications.message('Backup', 'Config backup failed, aborting update')
                 return False
         except Exception as e:
@@ -165,7 +165,7 @@ class CheckVersion(object):
                     'type': logger.WARNING,
                     'text': u"We can't proceed with the update. New update has a new DB version. Please manually update"},
                 'downgrade': {
-                    'type': logger.ERROR,
+                    'type': logger.WARNING,
                     'text': u"We can't proceed with the update. New update has a old DB version. It's not possible to downgrade"},
             }
             try:
@@ -173,7 +173,7 @@ class CheckVersion(object):
                 if result in message:
                     logger.log(message[result]['text'], message[result]['type'])  # unpack the result message into a log entry
                 else:
-                    logger.log(u"We can't proceed with the update. Unable to check remote DB version. Error: %s" % result, logger.ERROR)
+                    logger.log(u"We can't proceed with the update. Unable to check remote DB version. Error: %s" % result, logger.WARNING)
                 return result in ['equal']  # add future True results to the list
             except Exception as error:
                 logger.log(u"We can't proceed with the update. Unable to compare DB version. Error: %s" % repr(error), logger.ERROR)
@@ -475,7 +475,7 @@ class GitUpdateManager(UpdateManager):
             if 'stash' in output:
                 logger.log(u"Please enable 'git reset' in settings or stash your changes in local files", logger.WARNING)
             else:
-                logger.log(cmd + u" returned : " + str(output), logger.ERROR)
+                logger.log(cmd + u" returned : " + str(output), logger.WARNING)
             exit_status = 1
 
         elif exit_status == 128 or 'fatal:' in output or err:
@@ -483,7 +483,7 @@ class GitUpdateManager(UpdateManager):
             exit_status = 128
 
         else:
-            logger.log(cmd + u" returned : " + str(output) + u", treat as error for now", logger.ERROR)
+            logger.log(cmd + u" returned : " + str(output) + u", treat as error for now", logger.WARNING)
             exit_status = 1
 
         return output, err, exit_status
@@ -502,7 +502,7 @@ class GitUpdateManager(UpdateManager):
         if exit_status == 0 and output:
             cur_commit_hash = output.strip()
             if not re.match('^[a-z0-9]+$', cur_commit_hash):
-                logger.log(u"Output doesn't look like a hash, not using it", logger.ERROR)
+                logger.log(u"Output doesn't look like a hash, not using it", logger.WARNING)
                 return False
             self._cur_commit_hash = cur_commit_hash
             sickbeard.CUR_COMMIT_HASH = str(cur_commit_hash)
@@ -843,7 +843,7 @@ class SourceUpdateManager(UpdateManager):
                 return False
 
             if not ek(tarfile.is_tarfile, tar_download_path):
-                logger.log(u"Retrieved version from " + tar_download_url + " is corrupt, can't update", logger.ERROR)
+                logger.log(u"Retrieved version from " + tar_download_url + " is corrupt, can't update", logger.WARNING)
                 return False
 
             # extract to sr-update dir
@@ -860,7 +860,7 @@ class SourceUpdateManager(UpdateManager):
             update_dir_contents = [x for x in ek(os.listdir, sr_update_dir) if
                                    ek(os.path.isdir, ek(os.path.join, sr_update_dir, x))]
             if len(update_dir_contents) != 1:
-                logger.log(u"Invalid update data, update failed: " + str(update_dir_contents), logger.ERROR)
+                logger.log(u"Invalid update data, update failed: " + str(update_dir_contents), logger.WARNING)
                 return False
             content_dir = ek(os.path.join, sr_update_dir, update_dir_contents[0])
 
