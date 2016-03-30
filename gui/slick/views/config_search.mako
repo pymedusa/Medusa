@@ -507,7 +507,6 @@
                                         </label>
                                     </div>
 
-                                    <div></div>
                                     <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                                 </div>
                             </div>
