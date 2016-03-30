@@ -30,58 +30,14 @@ import re
 import cgi
 
 from collections import OrderedDict
-from tvmaze.tvmaze_exceptions import (tvmaze_error, tvmaze_shownotfound, tvmaze_showincomplete,
-                                      tvmaze_seasonnotfound, tvmaze_episodenotfound, tvmaze_attributenotfound)
-from tvmaze.tvmaze_ui import BaseUI, ConsoleUI
+from tvmaze_exceptions import (tvmaze_error, tvmaze_shownotfound, tvmaze_showincomplete,
+                               tvmaze_seasonnotfound, tvmaze_episodenotfound, tvmaze_attributenotfound)
+from tvmaze_ui import BaseUI, ConsoleUI
 from pytvmaze import API
 
 
 def log():
-    return logging.getLogger("tvdb_api")
-
-
-def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
-    """Retry calling the decorated function using an exponential backoff.
-
-    http://www.saltycrane.com/blog/2009/11/trying-out-retry-decorator-python/
-    original from: http://wiki.python.org/moin/PythonDecoratorLibrary#Retry
-
-    :param ExceptionToCheck: the exception to check. may be a tuple of
-        exceptions to check
-    :type ExceptionToCheck: Exception or tuple
-    :param tries: number of times to try (not retry) before giving up
-    :type tries: int
-    :param delay: initial delay between retries in seconds
-    :type delay: int
-    :param backoff: backoff multiplier e.g. value of 2 will double the delay
-        each retry
-    :type backoff: int
-    :param logger: logger to use. If None, print
-    :type logger: logging.Logger instance
-    """
-
-    def deco_retry(f):
-
-        @wraps(f)
-        def f_retry(*args, **kwargs):
-            mtries, mdelay = tries, delay
-            while mtries > 1:
-                try:
-                    return f(*args, **kwargs)
-                except ExceptionToCheck, e:
-                    msg = "%s, Retrying in %d seconds..." % (str(e), mdelay)
-                    if logger:
-                        logger.warning(msg)
-                    else:
-                        print msg
-                    time.sleep(mdelay)
-                    mtries -= 1
-                    mdelay *= backoff
-            return f(*args, **kwargs)
-
-        return f_retry  # true decorator
-
-    return deco_retry
+    return logging.getLogger('tvdb_api')
 
 
 class ShowContainer(dict):
@@ -116,7 +72,7 @@ class Show(dict):
         self.data = {}
 
     def __repr__(self):
-        return "<Show %s (containing %s seasons)>" % (
+        return '<Show %s (containing %s seasons)>' % (
             self.data.get(u'seriesname', 'instance'),
             len(self)
         )
@@ -144,16 +100,16 @@ class Show(dict):
         # Data wasn't found, raise appropriate error
         if isinstance(key, int) or key.isdigit():
             # Episode number x was not found
-            raise tvmaze_seasonnotfound("Could not find season %s" % (repr(key)))
+            raise tvmaze_seasonnotfound('Could not find season %s' % (repr(key)))
         else:
             # If it's not numeric, it must be an attribute name, which
             # doesn't exist, so attribute error.
-            raise tvmaze_attributenotfound("Cannot find attribute %s" % (repr(key)))
+            raise tvmaze_attributenotfound('Cannot find attribute %s' % (repr(key)))
 
     def airedOn(self, date):
         ret = self.search(str(date), 'firstaired')
         if len(ret) == 0:
-            raise tvmaze_episodenotfound("Could not find any episodes that aired on %s" % date)
+            raise tvmaze_episodenotfound('Could not find any episodes that aired on %s' % date)
         return ret
 
     def search(self, term=None, key=None):
@@ -223,7 +179,7 @@ class Season(dict):
         self.show = show
 
     def __repr__(self):
-        return "<Season instance (containing %s episodes)>" % (
+        return '<Season instance (containing %s episodes)>' % (
             len(self.keys())
         )
 
@@ -234,7 +190,7 @@ class Season(dict):
 
     def __getitem__(self, episode_number):
         if episode_number not in self:
-            raise tvmaze_episodenotfound("Could not find episode %s" % (repr(episode_number)))
+            raise tvmaze_episodenotfound('Could not find episode %s' % (repr(episode_number)))
         else:
             return dict.__getitem__(self, episode_number)
 
@@ -270,9 +226,9 @@ class Episode(dict):
         epno = int(self.get(u'episodenumber', 0))
         epname = self.get(u'episodename')
         if epname is not None:
-            return "<Episode %02dx%02d - %s>" % (seasno, epno, epname)
+            return '<Episode %02dx%02d - %s>' % (seasno, epno, epname)
         else:
-            return "<Episode %02dx%02d>" % (seasno, epno)
+            return '<Episode %02dx%02d>' % (seasno, epno)
 
     def __getattr__(self, key):
         if key in self:
@@ -283,7 +239,7 @@ class Episode(dict):
         try:
             return dict.__getitem__(self, key)
         except KeyError:
-            raise tvmaze_attributenotfound("Cannot find attribute %s" % (repr(key)))
+            raise tvmaze_attributenotfound('Cannot find attribute %s' % (repr(key)))
 
     def search(self, term=None, key=None):
         """Search episode data for term, if it matches, return the Episode (self).
@@ -308,7 +264,7 @@ class Episode(dict):
         >>>
         """
         if term is None:
-            raise TypeError("must supply string to search for (contents)")
+            raise TypeError('must supply string to search for (contents)')
 
         term = unicode(term).lower()
         for cur_key, cur_value in self.items():
@@ -337,7 +293,7 @@ class Actor(dict):
     """
 
     def __repr__(self):
-        return "<Actor \"%s\">" % (self.get("name"))
+        return '<Actor "%s">' % (self.get('name'))
 
 
 class TVmaze(object):
@@ -394,7 +350,7 @@ class TVmaze(object):
             self.config['cache_enabled'] = True
             self.config['cache_location'] = cache
         else:
-            raise ValueError("Invalid value for Cache %r (type was %s)" % (cache, type(cache)))
+            raise ValueError('Invalid value for Cache %r (type was %s)' % (cache, type(cache)))
 
         self.config['session'] = session if session else requests.Session()
 
@@ -402,17 +358,17 @@ class TVmaze(object):
         self.config['actors_enabled'] = actors
 
         if self.config['debug_enabled']:
-            warnings.warn("The debug argument to tvmaze_api.__init__ will be removed in the next version. "
-                          "To enable debug messages, use the following code before importing: "
-                          "import logging; logging.basicConfig(level=logging.DEBUG)")
+            warnings.warn('The debug argument to tvmaze_api.__init__ will be removed in the next version. '
+                          'To enable debug messages, use the following code before importing: '
+                          'import logging; logging.basicConfig(level=logging.DEBUG)')
             logging.basicConfig(level=logging.DEBUG)
 
         # List of language from http://thetvmaze.com/api/0629B785CE550C8D/languages.xml
         # Hard-coded here as it is realtively static, and saves another HTTP request, as
         # recommended on http://thetvmaze.com/wiki/index.php/API:languages.xml
         self.config['valid_languages'] = [
-            "da", "fi", "nl", "de", "it", "es", "fr", "pl", "hu", "el", "tr",
-            "ru", "he", "ja", "pt", "zh", "cs", "sl", "hr", "ko", "en", "sv", "no"
+            'da', 'fi', 'nl', 'de', 'it', 'es', 'fr', 'pl', 'hu', 'el', 'tr',
+            'ru', 'he', 'ja', 'pt', 'zh', 'cs', 'sl', 'hr', 'ko', 'en', 'sv', 'no'
         ]
 
         # thetvdb.com should be based around numeric language codes,
@@ -428,35 +384,16 @@ class TVmaze(object):
             self.config['language'] = 'en'
         else:
             if language not in self.config['valid_languages']:
-                raise ValueError("Invalid language %s, options are: %s" % (
+                raise ValueError('Invalid language %s, options are: %s' % (
                     language, self.config['valid_languages']
                 ))
             else:
                 self.config['language'] = language
 
-        # The following url_ configs are based of the
-        # http://thetvdb.com/wiki/index.php/Programmers_API
-        self.config['base_url'] = "http://api.tvmaze.com"
+        # Initiate the pytvmaze API
+        self.API = API(self.config['session'])
 
-        self.config['url_getSeries'] = u"%(base_url)s/search/shows" % self.config
-        self.config['params_getSeries'] = {"q": ""}
-
-        self.config['url_epInfo'] = u"%(base_url)s/shows/%%s/episodes" % self.config
-        self.config['params_epInfo'] = {"specials": "1"}
-
-        self.config['url_seriesInfo'] = u"%(base_url)s/shows/%%s" % self.config
-        self.config['url_actorsInfo'] = u"%(base_url)s/shows/%%s/cast" % self.config
-
-        self.config['url_seriesInfoById'] = u"%(base_url)s/lookup/shows?%%s=%%s" % self.config
-
-        # No Banners support, no artworkPrefix required
-        # TODO: updates
-#         self.config['url_updates_all'] = u"%(base_url)s/api/%(apikey)s/updates_all.zip" % self.config
-#         self.config['url_updates_month'] = u"%(base_url)s/api/%(apikey)s/updates_month.zip" % self.config
-#         self.config['url_updates_week'] = u"%(base_url)s/api/%(apikey)s/updates_week.zip" % self.config
-#         self.config['url_updates_day'] = u"%(base_url)s/api/%(apikey)s/updates_day.zip" % self.config
-
-    def _parse_show_data(self, indexer_data, parsing_into_key="series"):  # pylint: disable=no-self-use
+    def _parse_show_data(self, indexer_data, parsing_into_key='series'):  # pylint: disable=no-self-use
         """ These are the fields we'd like to see for a show search"""
         new_dict = OrderedDict()
         name_map = {
@@ -468,7 +405,7 @@ class TVmaze(object):
             'url': 'show_url',
         }
 
-        for key, value in indexer_data[0].iteritems():
+        for key, value in indexer_data.get('data').__dict__.iteritems():
             try:
                 # Try to map the object value using the name_map dict
                 if isinstance(value, (unicode, str, int)):
@@ -508,69 +445,15 @@ class TVmaze(object):
         tvdb_api-myuser)
         """
         if hasattr(os, 'getuid'):
-            uid = "u%d" % (os.getuid())  # pylint: disable=no-member
+            uid = 'u%d' % (os.getuid())  # pylint: disable=no-member
         else:
             # For Windows
             try:
                 uid = getpass.getuser()
             except ImportError:
-                return os.path.join(tempfile.gettempdir(), "tvmaze_api")
+                return os.path.join(tempfile.gettempdir(), 'tvmaze_api')
 
-        return os.path.join(tempfile.gettempdir(), "tvdb_api-%s" % (uid))
-
-    @retry(tvmaze_error)
-    def _loadUrl_replace(self, url, params=None, language=None):  # pylint: disable=unused-argument
-        try:
-            log().debug("Retrieving URL %s", [url])
-
-            # get response from TVmaze
-            if self.config['cache_enabled']:
-
-                session = self.config['session']
-
-                if self.config['proxy']:
-                    log().debug("Using proxy for URL: %s", [url])
-                    session.proxies = {
-                        "http": self.config['proxy'],
-                        "https": self.config['proxy'],
-                    }
-
-                resp = session.get(url.strip(), params=params)
-            else:
-                resp = requests.get(url.strip(), params=params)
-
-            resp.raise_for_status()
-
-        except requests.exceptions.HTTPError, e:
-            raise tvmaze_error("HTTP error " + str(e.errno) + " while loading URL " + str(url))
-        except requests.exceptions.ConnectionError, e:
-            raise tvmaze_error("Connection error " + str(e.message) + " while loading URL " + str(url))
-        except requests.exceptions.Timeout, e:
-            raise tvmaze_error("Connection timed out " + str(e.message) + " while loading URL " + str(url))
-        except Exception:
-            raise tvmaze_error("Unknown exception while loading URL " + url + ": " + traceback.format_exc())
-
-        try:
-            return OrderedDict({"data": resp.json()})
-        except Exception:
-            return dict([(u'data', None)])
-
-    @retry(tvmaze_error)
-    def _get_from_api(self, url, params=None, language=None):
-        """Loads a URL using caching, returns a json of the source
-        """
-        try:
-            return self._loadUrl(url, params=params, language=language)
-        except Exception, e:
-            raise tvmaze_error(e)
-
-    def _getetsrc_replace(self, url, params=None, language=None):
-        """Loads a URL using caching, returns an ElementTree of the source
-        """
-        try:
-            return self._loadUrl(url, params=params, language=language)
-        except Exception, e:
-            raise tvmaze_error(e)
+        return os.path.join(tempfile.gettempdir(), 'tvdb_api-%s' % (uid))
 
     def _setItem(self, sid, seas, ep, attrib, value):  # pylint: disable=too-many-arguments
         """Creates a new episode, creating Show(), Season() and
@@ -611,7 +494,7 @@ class TVmaze(object):
         """
 
         if isinstance(data, basestring):
-            data = data.replace(u"&amp;", u"&")
+            data = data.replace(u'&amp;', u'&')
             data = data.strip()
 
             tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
@@ -622,6 +505,19 @@ class TVmaze(object):
 
         return data
 
+    def _show_search(self, show):
+        """
+        Uses the pytvmaze API to search for a show
+        @param show: The show name that's searched for as a string
+        @return: A list of Show objects. Includes the search score.
+        """
+
+        results = OrderedDict({'data': self.API.show_search(show)})
+        if results:
+            return results
+        else:
+            return OrderedDict({'data': None})
+
     # Tvdb implementation
     def search(self, series):
         """This searches tvmaze.com for the series name
@@ -629,11 +525,10 @@ class TVmaze(object):
         :param series: the query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
         """
-        series = series.encode("utf-8")
-        log().debug("Searching for show %s", [series])
-        self.config['params_getSeries']['q'] = series
+        series = series.encode('utf-8')
+        log().debug('Searching for show %s', [series])
 
-        results = self._get_from_api(self.config['url_getSeries'], self.config['params_getSeries'])
+        results = self._show_search(series)
 
         if not results:
             return
@@ -653,9 +548,9 @@ class TVmaze(object):
                 'url': 'show_url',
             }
 
-            for i, series in enumerate(indexer_data[0]):  # @UnusedVariable, pylint: disable=unused-variable
+            for series in indexer_data.get('data', []):  # @UnusedVariable, pylint: disable=unused-variable
                 new_dict = OrderedDict()
-                for key, value in series['show'].iteritems():
+                for key, value in series.__dict__.iteritems():
                     try:
                         # Try to map the object value using the name_map dict
                         if isinstance(value, (unicode, str, int)):
@@ -664,7 +559,7 @@ class TVmaze(object):
                             # Try to map more complex structures, and overwrite the default mapping
                             if key == 'schedule':
                                 new_dict['airs_time'] = value.get('time')
-                                new_dict["airs_dayofweek"] = u', '.join(value.get('days')) if key.get('days') else None
+                                new_dict['airs_dayofweek'] = u', '.join(value.get('days')) if key.get('days') else None
                             if key == 'network':
                                 new_dict['network'] = value.get('name')
                             if key == 'image':
@@ -674,39 +569,28 @@ class TVmaze(object):
                     except Exception:
                         pass
                 series_list.append(new_dict)
-            return OrderedDict({"series": series_list})
+            return OrderedDict({'series': series_list})
 
-        return map_data(results.values())['series']
+        return map_data(results)['series']
 
-    def get_show_by_id(self, tvmaze_id=None, embed=False, **external_id):  # pylint: disable=unused-argument
+    def _get_show_by_id(self, tvmaze_id=None):  # pylint: disable=unused-argument
         """
         Retrieve tvmaze show information by tvmaze id, or if no tvmaze id provided by passed external id.
 
         :param tvmaze_id: The shows tvmaze id
-        :param embed: An optional parameter to embed additional show information
-        :param **external_id: kwargs for providing an external id. The following kwargs 
-        should be in the format of: {'source': 'tvdbid', 'id': '81189'}, 
-        to search for the show "Breaking Bad". Other sources that can be provided are: 'tvrage' and 'imdb'
         :return: An ordered dict with the show searched for.
         """
 
         if tvmaze_id:
             log().debug('Getting all show data for %s', [tvmaze_id])
-            results = self._getetsrc(
-                self.config['url_seriesInfo'] % (tvmaze_id)
-            )
-        else:
-            log().debug('Getting all show data for external source %s with id %s', [external_id.get('source'), external_id.get('id')])
-            results = self._getetsrc(
-                self.config['url_seriesInfoById'] % (external_id.get('source'), external_id.get('id'))
-            )
+            results = OrderedDict({'data': self.API.get_show(tvmaze_id)})
 
         if not results:
             return
 
-        return self._parse_show_data(results.values())
+        return self._parse_show_data(results)
 
-    def episode_list(self, maze_id, specials=False):  # pylint: disable=unused-argument
+    def _get_episode_list(self, maze_id, specials=False):  # pylint: disable=unused-argument
         """
         Get all the episodes for a show by tvmaze id
 
@@ -715,37 +599,36 @@ class TVmaze(object):
         """
         # Parse episode data
         log().debug('Getting all episodes of %s', [maze_id])
-        url = self.config['url_epInfo'] % (maze_id)
-        params = self.config['params_epInfo']
-        results = self._getetsrc(url, params)
+        results = {'data': self.API.episode_list(maze_id, specials)}
 
         def map_data(indexer_data):
             # These are the fields we'd like to see for a show search
-            new_dict = OrderedDict()
+
             episode_list = []
             name_map = {
-                'id': 'id',
+                'maze_id': 'id',
                 'image': 'fanart',
                 'epnum': 'absolute_number',
-                'name': 'episodename',
+                'title': 'episodename',
                 'airdate': 'firstaired',
                 'screencap': 'filename',
-                'number': 'episodenumber',
-                'season': 'seasonnumber',
+                'episode_number': 'episodenumber',
+                'season_number': 'seasonnumber',
                 'summary': 'overview'
             }
 
-            for i, episode in enumerate(indexer_data):  # @UnusedVariable, pylint: disable=unused-variable
+            for episode in indexer_data.get('data', []):  # @UnusedVariable, pylint: disable=unused-variable
                 new_dict = OrderedDict()
-                for key, value in episode.iteritems():
-                    try:
-                        new_dict[name_map.get(key) or key] = value
-                    except Exception:
-                        pass
+                for key, value in episode.__dict__.iteritems():
+                    if isinstance(value, (int, str, unicode)) or value is None:
+                        try:
+                            new_dict[name_map.get(key) or key] = value
+                        except Exception:
+                            pass
                 episode_list.append(new_dict)
             return episode_list
 
-        return OrderedDict({"episode": map_data(results['data'])})
+        return OrderedDict({'episode': map_data(results)})
 
     def _getSeries(self, series):
         """This searches TVmaze.com for the series name,
@@ -760,13 +643,13 @@ class TVmaze(object):
         allSeries = self.search(series)
         if not allSeries:
             log().debug('Series result returned zero')
-            raise tvmaze_shownotfound("Show search returned zero results (cannot find show on TVDB)")
+            raise tvmaze_shownotfound('Show search returned zero results (cannot find show on TVDB)')
 
         if not isinstance(allSeries, list):
             allSeries = [allSeries]
 
         if self.config['custom_ui'] is not None:
-            log().debug("Using custom UI %s", [repr(self.config['custom_ui'])])
+            log().debug('Using custom UI %s', [repr(self.config['custom_ui'])])
             CustomUI = self.config['custom_ui']
             ui = CustomUI(config=self.config)
         else:
@@ -815,7 +698,7 @@ class TVmaze(object):
                                                      u'_bannerpath': image_original,
                                                      u'id': u'1035106'}}}}
 
-        self._setShowData(sid, "_banners", banners)
+        self._setShowData(sid, '_banners', banners)
 
     def _parseActors(self, sid):
         """Parsers actors XML, from
@@ -841,15 +724,16 @@ class TVmaze(object):
         Any key starting with an underscore has been processed (not the raw
         data from the XML)
         """
-        log().debug("Getting actors for %s", [sid])
-        actorsEt = self._getetsrc(self.config['url_actorsInfo'] % (sid))
+        log().debug('Getting actors for %s', [sid])
+        # actorsEt = self._getetsrc(self.config['url_actorsInfo'] % (sid))
+        actors = {'data': self.API.show_cast(sid)}
 
-        if not actorsEt:
+        if not actors:
             log().debug('Actors result returned zero')
             return
 
         cur_actors = Actors()
-        for cur_actor in actorsEt['data'] if isinstance(actorsEt['data'], list) else [actorsEt['data']]:
+        for cur_actor in actors['data'] if isinstance(actors['data'], list) else [actors['data']]:
             curActor = Actor()
             curActor['id'] = cur_actor['person']['id']
             curActor['image'] = cur_actor['person']['image']['original']
@@ -879,11 +763,11 @@ class TVmaze(object):
             getShowInLanguage = self.config['language']
 
         # Parse show information
-        seriesInfoEt = self.get_show_by_id(sid)
+        seriesInfoEt = self._get_show_by_id(sid)
 
         if not seriesInfoEt:
             log().debug('Series result returned zero')
-            raise tvmaze_error("Series result returned zero")
+            raise tvmaze_error('Series result returned zero')
 
         # get series data
         for k, v in seriesInfoEt['series'].items():
@@ -903,16 +787,16 @@ class TVmaze(object):
                 self._parseActors(sid)
 
             # Parse episode data
-            epsEt = self.episode_list(sid)
+            epsEt = self._get_episode_list(sid, specials=False)
 
             if not epsEt:
                 log().debug('Series results incomplete')
-                raise tvmaze_showincomplete("Show search returned incomplete results (cannot find complete show on TVmaze)")
+                raise tvmaze_showincomplete('Show search returned incomplete results (cannot find complete show on TVmaze)')
 
             if 'episode' not in epsEt:
                 return False
 
-            episodes = epsEt["episode"]
+            episodes = epsEt['episode']
             if not isinstance(episodes, list):
                 episodes = [episodes]
 
@@ -924,12 +808,12 @@ class TVmaze(object):
                     use_dvd = False
 
                 if use_dvd:
-                    seasnum, epno = cur_ep['dvd_season'], cur_ep['dvd_episodenumber']
+                    seasnum, epno = cur_ep.get('dvd_season'), cur_ep.get('dvd_episodenumber')
                 else:
-                    seasnum, epno = cur_ep['seasonnumber'], cur_ep['episodenumber']
+                    seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
 
                 if seasnum is None or epno is None:
-                    log().warning("An episode has incomplete season/episode number (season: %r, episode: %r)", seasnum, epno)
+                    log().warning('An episode has incomplete season/episode number (season: %r, episode: %r)', seasnum, epno)
                     continue  # Skip to next episode
 
                 # float() is because https://github.com/dbr/tvnamer/issues/95 - should probably be fixed in TVDB data
