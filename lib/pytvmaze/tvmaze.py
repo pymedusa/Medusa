@@ -33,7 +33,7 @@ def _valid_encoding(text):
 class API(object):
     def __init__(self, session=None):
         self.session = session or requests.Session()
-        self.session.headers.setdefault({'user-agent': 'pytvmaze/{}.{}.{}'.format(*__version__)})
+        self.session.headers.setdefault('user-agent', 'pytvmaze/{}.{}.{}'.format(*__version__))
 
     def _query_endpoint(self, url):
         """
