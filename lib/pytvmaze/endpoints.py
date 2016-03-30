@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# coding=utf-8
 
 show_search = 'http://api.tvmaze.com/search/shows?q={0}'
 show_single_search = 'http://api.tvmaze.com/singlesearch/shows?q={0}'
