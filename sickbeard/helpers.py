@@ -1574,38 +1574,12 @@ def verify_freespace(src, dest, oldfile=None):
 
     logger.log(u"Trying to determine free space on destination drive", logger.DEBUG)
 
-    if platform.system() == 'Windows':
-        import sys
-
-        def disk_usage(path):
-            _, total, free = ctypes.c_ulonglong(), ctypes.c_ulonglong(), ctypes.c_ulonglong()
-            if sys.version_info >= (3,) or isinstance(path, unicode):
-                method = ctypes.windll.kernel32.GetDiskFreeSpaceExW
-            else:
-                method = ctypes.windll.kernel32.GetDiskFreeSpaceExA
-            ret = method(path, ctypes.byref(_), ctypes.byref(total), ctypes.byref(free))
-            if ret == 0:
-                logger.log(u"Unable to determine free space, something went wrong", logger.WARNING)
-                raise ctypes.WinError()
-            return free.value
-
-    elif hasattr(os, 'statvfs'):  # POSIX
-        def disk_usage(path):
-            import subprocess
-            call = subprocess.Popen(["df", path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            output = call.communicate()[0]
-            return output.split("\n")[1].split()[3]
-
-    else:
-        logger.log(u"Unable to determine free space on your OS")
-        return True
-
     if not ek(os.path.isfile, src):
         logger.log("A path to a file is required for the source. {0} is not a file.".format(src), logger.WARNING)
         return True
 
     try:
-        diskfree = disk_usage(dest)
+        diskfree = getDiskSpaceUsage(dest, None)
     except Exception:
         logger.log(u"Unable to determine free space, so I will assume there is enough.", logger.WARNING)
         return True
@@ -1620,8 +1594,8 @@ def verify_freespace(src, dest, oldfile=None):
     if diskfree > neededspace:
         return True
     else:
-        logger.log(u"Not enough free space: Needed: %s bytes ( %s ), found: %s bytes ( %s )"
-                   % (neededspace, pretty_file_size(neededspace), diskfree, pretty_file_size(diskfree)), logger.WARNING)
+        logger.log(u"Not enough free space: Needed: {0} bytes ({1}), found: {2} bytes ({3})".format
+                   (neededspace, pretty_file_size(neededspace), diskfree, pretty_file_size(diskfree)), logger.WARNING)
         return False
 
 
@@ -1683,19 +1657,22 @@ def isFileLocked(checkfile, writeLockCheck=False):
     return False
 
 
-def getDiskSpaceUsage(diskPath=None):
+def getDiskSpaceUsage(diskPath=None, pretty=True):
     """
     returns the free space in human readable bytes for a given path or False if no path given
     :param diskPath: the filesystem path being checked
+    :param pretty: return as Bytes if None
     """
+
     if diskPath and ek(os.path.exists, diskPath):
         if platform.system() == 'Windows':
             free_bytes = ctypes.c_ulonglong(0)
             ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(diskPath), None, None, ctypes.pointer(free_bytes))
-            return pretty_file_size(free_bytes.value)
+            return pretty_file_size(free_bytes.value) if pretty else free_bytes.value
         else:
             st = ek(os.statvfs, diskPath)
-            return pretty_file_size(st.f_bavail * st.f_frsize)  # pylint: disable=no-member
+            file_size = st.f_bavail * st.f_frsize
+            return pretty_file_size(file_size) if pretty else file_size  # pylint: disable=no-member
     else:
         return False
 
