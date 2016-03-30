@@ -171,6 +171,23 @@ class PageTemplate(MakoTemplate):
         self.arguments['controller'] = "FixME"
         self.arguments['action'] = "FixME"
         self.arguments['show'] = UNDEFINED
+        self.arguments['newsBadge'] = ''
+        self.arguments['toolsBadge'] = ''
+        self.arguments['toolsBadgeClass'] = ''
+
+        error_count = len(classes.ErrorViewer.errors)
+        warning_count = len(classes.WarningViewer.errors)
+
+        if sickbeard.NEWS_UNREAD:
+            self.arguments['newsBadge'] = ' <span class="badge">' + str(sickbeard.NEWS_UNREAD) + '</span>'
+
+        numCombined = error_count + warning_count + sickbeard.NEWS_UNREAD
+        if numCombined:
+            if error_count:
+                self.arguments['toolsBadgeClass'] = ' btn-danger'
+            elif warning_count:
+                self.arguments['toolsBadgeClass'] = ' btn-warning'
+            self.arguments['toolsBadge'] = ' <span class="badge' + self.arguments['toolsBadgeClass'] + '">' + str(numCombined) + '</span>'
 
     def render(self, *args, **kwargs):
         for key in self.arguments:
