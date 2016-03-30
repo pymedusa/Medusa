@@ -76,11 +76,12 @@ def get_scene_exceptions(indexer_id, season=-1):
     """
 
     exceptionsList = []
+    mapped_indexer_id = helpers.get_mapped_indexer_id(indexer_id)
 
     if indexer_id not in exceptionsCache or season not in exceptionsCache[indexer_id]:
         cache_db_con = db.DBConnection('cache.db')
         exceptions = cache_db_con.select("SELECT show_name FROM scene_exceptions WHERE indexer_id = ? and season = ?",
-                                         [indexer_id, season])
+                                         [mapped_indexer_id or indexer_id, season])
         if exceptions:
             exceptionsList = list({cur_exception["show_name"] for cur_exception in exceptions})
 
@@ -105,9 +106,10 @@ def get_all_scene_exceptions(indexer_id):
     :return: dict of exceptions
     """
     exceptionsDict = {}
+    mapped_indexer_id = helpers.get_mapped_indexer_id(indexer_id)
 
     cache_db_con = db.DBConnection('cache.db')
-    exceptions = cache_db_con.select("SELECT show_name,season FROM scene_exceptions WHERE indexer_id = ?", [indexer_id])
+    exceptions = cache_db_con.select("SELECT show_name,season FROM scene_exceptions WHERE indexer_id = ?", [mapped_indexer_id or indexer_id])
 
     if exceptions:
         for cur_exception in exceptions:
@@ -123,20 +125,21 @@ def get_scene_seasons(indexer_id):
     return a list of season numbers that have scene exceptions
     """
     exceptionsSeasonList = []
+    mapped_indexer_id = helpers.get_mapped_indexer_id(indexer_id)
 
     if indexer_id not in exceptionsSeasonCache:
         cache_db_con = db.DBConnection('cache.db')
         sql_results = cache_db_con.select("SELECT DISTINCT(season) as season FROM scene_exceptions WHERE indexer_id = ?",
-                                          [indexer_id])
+                                          [mapped_indexer_id or indexer_id])
         if sql_results:
             exceptionsSeasonList = list({int(x["season"]) for x in sql_results})
 
-            if indexer_id not in exceptionsSeasonCache:
-                exceptionsSeasonCache[indexer_id] = {}
+            if mapped_indexer_id or indexer_id not in exceptionsSeasonCache:
+                exceptionsSeasonCache[mapped_indexer_id or indexer_id] = {}
 
-            exceptionsSeasonCache[indexer_id] = exceptionsSeasonList
+            exceptionsSeasonCache[mapped_indexer_id or indexer_id] = exceptionsSeasonList
     else:
-        exceptionsSeasonList = exceptionsSeasonCache[indexer_id]
+        exceptionsSeasonList = exceptionsSeasonCache[mapped_indexer_id or indexer_id]
 
     return exceptionsSeasonList
 
@@ -296,6 +299,7 @@ def _anidb_exceptions_fetcher():
     return anidb_exception_dict
 
 xem_session = helpers.make_session()
+
 
 def _xem_exceptions_fetcher():
     if shouldRefresh('xem'):

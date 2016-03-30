@@ -1649,8 +1649,6 @@ class TVEpisode(object):  # pylint: disable=too-many-instance-attributes, too-ma
         self.season = season
         self.episode = episode
 
-        sickbeard.scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
-
         self.scene_absolute_number = sickbeard.scene_numbering.get_scene_absolute_numbering(
             self.show.indexerid,
             self.show.indexer,

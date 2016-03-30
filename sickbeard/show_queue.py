@@ -30,6 +30,7 @@ from sickbeard import notifiers
 from sickbeard import ui
 from sickbeard import generic_queue
 from sickbeard import name_cache
+from sickbeard.helpers import get_mapped_indexer_id
 from sickbeard.blackandwhitelist import BlackAndWhiteList
 from sickrage.helper.exceptions import CantRefreshShowException, CantRemoveShowException, CantUpdateShowException
 from sickrage.helper.exceptions import EpisodeDeletedException, ex, MultipleShowObjectsException
@@ -507,6 +508,10 @@ class QueueItemAdd(ShowQueueItem):
         # Always try to map the indexer to the show to other indexers.
         # We don't need the mapped dict, only want to make sure it's updated in the indexer_mapping
         mapIndexersToShow(self.show)
+
+        # Moved the xem_refresh down, because we shouldn't be doing this for every episode
+        mapped_indexer_id = get_mapped_indexer_id(self.show.indexerid)
+        sickbeard.scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer, mapped_indexer_id=mapped_indexer_id)
 
         self.show.writeMetadata()
         self.show.updateMetadata()

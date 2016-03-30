@@ -28,6 +28,7 @@ import datetime
 import traceback
 
 import sickbeard
+import helpers
 from sickbeard import logger
 from sickbeard import db
 from sickrage.helper.exceptions import ex
@@ -455,7 +456,7 @@ def get_xem_absolute_numbering_for_show(indexer_id, indexer):
     return result
 
 
-def xem_refresh(indexer_id, indexer, force=False):
+def xem_refresh(indexer_id, indexer, mapped_indexer_id=None, force=False):
     """
     Refresh data from xem for a tv show
 
@@ -466,6 +467,12 @@ def xem_refresh(indexer_id, indexer, force=False):
 
     indexer_id = int(indexer_id)
     indexer = int(indexer)
+    if mapped_indexer_id:
+        mapped_indexer_id = int(mapped_indexer_id)
+        logger.log(
+            u'Looking up XEM scene mapping, using a mapped indexer_id from {0} -> {1} for show {2}'.
+            format(indexer_id, mapped_indexer_id, sickbeard.indexerApi(indexer).name),
+            logger.DEBUG)
 
     MAX_REFRESH_AGE_SECS = 86400  # 1 day
 
@@ -495,11 +502,12 @@ def xem_refresh(indexer_id, indexer, force=False):
             # XEM MAP URL
             url = "http://thexem.de/map/havemap?origin=%s" % sickbeard.indexerApi(indexer).config['xem_origin']
             parsedJSON = sickbeard.helpers.getURL(url, session=xem_session, returns='json')
-            if not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result'] or 'data' not in parsedJSON or str(indexer_id) not in parsedJSON['data']:
+            if (not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result'] or
+                    'data' not in parsedJSON or str(mapped_indexer_id or indexer_id) not in parsedJSON['data']):
                 return
 
             # XEM API URL
-            url = "http://thexem.de/map/all?id=%s&origin=%s&destination=scene" % (indexer_id, sickbeard.indexerApi(indexer).config['xem_origin'])
+            url = "http://thexem.de/map/all?id=%s&origin=%s&destination=scene" % (mapped_indexer_id or indexer_id, sickbeard.indexerApi(indexer).config['xem_origin'])
 
             parsedJSON = sickbeard.helpers.getURL(url, session=xem_session, returns='json')
             if not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result']:
