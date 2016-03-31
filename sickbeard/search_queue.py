@@ -123,7 +123,10 @@ class SearchQueue(generic_queue.GenericQueue):
         elif isinstance(item, BacklogQueueItem) and not self.is_in_queue(item.show, item.segment):
             # backlog searches
             generic_queue.GenericQueue.add_item(self, item)
-        elif isinstance(item, (ManualSearchQueueItem, ManualSnatchQueueItem, FailedQueueItem)) and not self.is_ep_in_queue(item.segment):
+        elif isinstance(item, (ManualSearchQueueItem, FailedQueueItem)) and not self.is_ep_in_queue(item.segment):
+            # manual and failed searches
+            generic_queue.GenericQueue.add_item(self, item)
+        elif isinstance(item, ManualSnatchQueueItem):
             # manual and failed searches
             generic_queue.GenericQueue.add_item(self, item)
         else:
@@ -136,7 +139,6 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
         self.success = None
         self.started = None
-
 
     def run(self):
         generic_queue.QueueItem.run(self)
@@ -188,7 +190,6 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
         self.downCurQuality = downCurQuality
         self.manual_snatch = manual_snatch
 
-
     def run(self):
         generic_queue.QueueItem.run(self)
         self.started = True
@@ -201,10 +202,11 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
             if not self.manual_snatch and searchResult:
                 # just use the first result for now
                 if searchResult[0].seeders not in (-1, None) and searchResult[0].leechers not in (-1, None):
-                     logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(searchResult[0].name,
-                     searchResult[0].seeders, searchResult[0].leechers, searchResult[0].provider.name))
+                    logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".
+                                format(searchResult[0].name, 
+                                       searchResult[0].seeders, searchResult[0].leechers, searchResult[0].provider.name))
                 else:
-                     logger.log(u"Downloading {0} from {1}".format(searchResult[0].name, searchResult[0].provider.name))
+                    logger.log(u"Downloading {0} from {1}".format(searchResult[0].name, searchResult[0].provider.name))
                 self.success = search.snatchEpisode(searchResult[0])
 
                 # give the CPU a break
@@ -230,31 +232,31 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
 
         self.finish()
 
+
 class ManualSnatchQueueItem(generic_queue.QueueItem):
-    def __init__(self, searchResult, segment):
+    def __init__(self, searchResult):
         generic_queue.QueueItem.__init__(self, u'Manual Snatch', MANUAL_SNATCH)
         self.priority = generic_queue.QueuePriorities.HIGH
 
         self.success = None
         self.started = None
         self.results = None
-        self.segment = segment
         self.searchResult = searchResult
-
 
     def run(self):
         generic_queue.QueueItem.run(self)
         self.started = True
 
         try:
-            logger.log(u"Beginning to manual snatch release: {} from provider: {}".format(self.searchResult.name, self.searchResult.provider.name))
+            logger.log(u"Beginning to manual snatch release: {}".format(self.searchResult.name))
 
             if self.searchResult:
                 if self.searchResult.seeders not in (-1, None) and self.searchResult.leechers not in (-1, None):
-                     logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(self.searchResult.name,
-                     self.searchResult.seeders, self.searchResult.seeders, self.searchResult.provider.name))
+                    logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".
+                               format(self.searchResult.name,
+                                      self.searchResult.seeders, self.searchResult.seeders, self.searchResult.provider.name))
                 else:
-                     logger.log(u"Downloading {0} from {1}".format(self.searchResult.name, self.searchResult.provider.name))
+                    logger.log(u"Downloading {0} from {1}".format(self.searchResult.name, self.searchResult.provider.name))
                 self.success = search.snatchEpisode(self.searchResult)
             else:
                 logger.log(u"Unable to snatch release: {}".format(self.searchResult.name))
@@ -265,7 +267,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         except Exception:
             self.success = False
             logger.log(traceback.format_exc(), logger.DEBUG)
-            ui.notifications.message('Error while snatching selected result', "Couldn't snatch the result for <i>%s</i>".format(searchResult.name))
+            ui.notifications.message('Error while snatching selected result', "Couldn't snatch the result for <i>%s</i>".format(self.searchResult.name))
 
         if self.success is None:
             self.success = False
