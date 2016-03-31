@@ -245,20 +245,19 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
     def run(self):
         generic_queue.QueueItem.run(self)
         self.started = True
-        searchResult = self.searchResult
 
         try:
-            logger.log(u"Beginning to manual snatch release: {}".format(searchResult.name))
+            logger.log(u"Beginning to manual snatch release: {} from provider: {}".format(self.searchResult.name, self.searchResult.provider.name))
 
-            if searchResult:
-                if searchResult.seeders not in (-1, None) and searchResult.leechers not in (-1, None):
-                     logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(searchResult.name,
-                     searchResult.seeders, searchResult.seeders, searchResult.provider.name))
+            if self.searchResult:
+                if self.searchResult.seeders not in (-1, None) and self.searchResult.leechers not in (-1, None):
+                     logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(self.searchResult.name,
+                     self.searchResult.seeders, self.searchResult.seeders, self.searchResult.provider.name))
                 else:
-                     logger.log(u"Downloading {0} from {1}".format(searchResult.name, searchResult.provider.name))
-                self.success = search.snatchEpisode(searchResult)
+                     logger.log(u"Downloading {0} from {1}".format(self.searchResult.name, self.searchResult.provider.name))
+                self.success = search.snatchEpisode(self.searchResult)
             else:
-                logger.log(u"Unable to snatch release: {}".format(searchResult.name))
+                logger.log(u"Unable to snatch release: {}".format(self.searchResult.name))
 
             # give the CPU a break
             time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])

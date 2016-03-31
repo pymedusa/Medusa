@@ -1443,6 +1443,7 @@ class Home(WebRoot):
         search_result.leechers = int(sql_return['leechers'])
         search_result.release_group = sql_return['release_group']
         search_result.version = int(sql_return['version'])
+        search_result.resultType = search_result.provider.provider_type
 
         ep_queue_item = search_queue.ManualSnatchQueueItem(search_result, ep_objs[0])
 
