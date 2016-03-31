@@ -1425,17 +1425,17 @@ class Home(WebRoot):
         # Create a list of episode object(s)
         # if multi-episode: |1|2|
         # if single-episode: |1|
+        # TODO:  Handle Season Packs: || (no episode)
         episodes = sql_return['episodes'].strip("|").split("|")
         ep_objs = []
         for episode in episodes:
             if episode:
                 ep_objs.append(TVEpisode(show_obj, int(season), int(episode)))
 
-        # Create the search_result object
-        search_result = SearchResult(episodes=ep_objs)
-        search_result.provider = sickbeard.providers.getProviderClass(provider)
+        # TODO: Can this be moved to the ManualSnatchQueueItem?
+        search_result = sickbeard.providers.getProviderClass(provider).get_result(ep_objs)
         search_result.show = show_obj
-        search_result.url = sql_return['url'] 
+        search_result.url = sql_return['url']
         search_result.quality = int(sql_return['quality'])
         search_result.name = sql_return['name']
         search_result.size = int(sql_return['size'])
@@ -1443,9 +1443,8 @@ class Home(WebRoot):
         search_result.leechers = int(sql_return['leechers'])
         search_result.release_group = sql_return['release_group']
         search_result.version = int(sql_return['version'])
-        search_result.resultType = search_result.provider.provider_type
 
-        ep_queue_item = search_queue.ManualSnatchQueueItem(search_result, ep_objs[0])
+        ep_queue_item = search_queue.ManualSnatchQueueItem(search_result)
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
