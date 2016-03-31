@@ -144,7 +144,7 @@ class PageTemplate(MakoTemplate):
         self.arguments['sbHandleReverseProxy'] = sickbeard.HANDLE_REVERSE_PROXY
         self.arguments['sbThemeName'] = sickbeard.THEME_NAME
         self.arguments['sbDefaultPage'] = sickbeard.DEFAULT_PAGE
-        self.arguments['srLogin'] = rh.get_current_user()
+        self.arguments['loggedIn'] = rh.get_current_user()
         self.arguments['sbStartTime'] = rh.startTime
 
         if rh.request.headers['Host'][0] == '[':
@@ -171,6 +171,23 @@ class PageTemplate(MakoTemplate):
         self.arguments['controller'] = "FixME"
         self.arguments['action'] = "FixME"
         self.arguments['show'] = UNDEFINED
+        self.arguments['newsBadge'] = ''
+        self.arguments['toolsBadge'] = ''
+        self.arguments['toolsBadgeClass'] = ''
+
+        error_count = len(classes.ErrorViewer.errors)
+        warning_count = len(classes.WarningViewer.errors)
+
+        if sickbeard.NEWS_UNREAD:
+            self.arguments['newsBadge'] = ' <span class="badge">' + str(sickbeard.NEWS_UNREAD) + '</span>'
+
+        numCombined = error_count + warning_count + sickbeard.NEWS_UNREAD
+        if numCombined:
+            if error_count:
+                self.arguments['toolsBadgeClass'] = ' btn-danger'
+            elif warning_count:
+                self.arguments['toolsBadgeClass'] = ' btn-warning'
+            self.arguments['toolsBadge'] = ' <span class="badge' + self.arguments['toolsBadgeClass'] + '">' + str(numCombined) + '</span>'
 
     def render(self, *args, **kwargs):
         for key in self.arguments:
