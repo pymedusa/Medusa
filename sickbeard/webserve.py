@@ -1425,7 +1425,7 @@ class Home(WebRoot):
         # Create a list of episode object(s)
         # if multi-episode: |1|2|
         # if single-episode: |1|
-        episodes = sql_return['episodes'].split("|")
+        episodes = sql_return['episodes'].strip("|").split("|")
         ep_objs = []
         for episode in episodes:
             if episode:
