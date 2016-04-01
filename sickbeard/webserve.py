@@ -98,6 +98,8 @@ from sickrage.show.History import History as HistoryTool
 from sickrage.show.Show import Show
 from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
+from sickbeard.tv import TVEpisode
+from sickbeard.classes import SearchResult
 
 # Conditional imports
 try:
@@ -1411,27 +1413,38 @@ class Home(WebRoot):
         except Exception as e:
             return self._genericMessage("Error", "Couldn't read cached results. Error: {}".format(e))
 
-        try:
-            show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
-            showObj = Show.find(sickbeard.showList, show)
-        except (ValueError, TypeError):
-            return self._genericMessage("Error", "Invalid show ID: %s" % str(show))
-
-        if not showObj:
-            return self._genericMessage("Error", "Show is not in your library")
-
         if not (sql_return['url'] or sql_return['quality'] or sql_return['name'] or provider or episode):
             return self._genericMessage("Error", "Cached result doesn't have all needed info to snatch episode")
 
-        # retrieve the episode object and fail if we can't get one
-        ep_obj = getEpisode(show, season, episode)
-        if isinstance(ep_obj, str):
-            return json.dumps({'result': 'failure'})
+        try:
+            show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
+            show_obj = Show.find(sickbeard.showList, show)
+        except (ValueError, TypeError):
+            return self._genericMessage("Error", "Invalid show ID: {}".format(show))
 
-        # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ManualSnatchQueueItem(ep_obj.show, ep_obj, season, episode,
-                                                           sql_return['url'], sql_return['quality'],
-                                                           provider, sql_return['name'], sql_return['seeders'], sql_return['leechers'])
+        # Create a list of episode object(s)
+        # if multi-episode: |1|2|
+        # if single-episode: |1|
+        # TODO:  Handle Season Packs: || (no episode)
+        episodes = sql_return['episodes'].strip("|").split("|")
+        ep_objs = []
+        for episode in episodes:
+            if episode:
+                ep_objs.append(TVEpisode(show_obj, int(season), int(episode)))
+
+        # TODO: Can this be moved to the ManualSnatchQueueItem?
+        search_result = sickbeard.providers.getProviderClass(provider).get_result(ep_objs)
+        search_result.show = show_obj
+        search_result.url = sql_return['url']
+        search_result.quality = int(sql_return['quality'])
+        search_result.name = sql_return['name']
+        search_result.size = int(sql_return['size'])
+        search_result.seeders = int(sql_return['seeders'])
+        search_result.leechers = int(sql_return['leechers'])
+        search_result.release_group = sql_return['release_group']
+        search_result.version = int(sql_return['version'])
+
+        ep_queue_item = search_queue.ManualSnatchQueueItem(search_result)
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
