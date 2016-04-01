@@ -58,7 +58,7 @@ ${('Not in progress', 'In Progress')[dailySearchStatus]}<br>
 <h3>Search Queue:</h3>
 Backlog: <i>${queueLength['backlog']} pending items</i><br>
 Daily: <i>${queueLength['daily']} pending items</i><br>
-Manual: <i>${queueLength['manual']} pending items</i><br>
+Manual: <i>${queueLength['forced_search']} pending items</i><br>
 Failed: <i>${queueLength['failed']} pending items</i><br>
 </div>
 </div>

@@ -4,7 +4,7 @@ var qualityDownload = false;
 var selectedEpisode = '';
 PNotify.prototype.options.maxonscreen = 5;
 
-$.fn.manualSearches = [];
+$.fn.forcedSearches = [];
 
 function enableLink(el) {
     el.on('click.disabled', false);
@@ -147,10 +147,10 @@ $(document).ready(function () {
 
             selectedEpisode = $(this);
 
-            $("#manualSearchModalFailed").modal('show');
+            $("#forcedSearchModalFailed").modal('show');
         });
 
-        function manualSearch(){
+        function forcedSearch(){
             var imageName, imageResult, htmlContent;
 
             var parent = selectedEpisode.parent();
@@ -219,13 +219,13 @@ $(document).ready(function () {
             selectedEpisode = $(this);
 
             if ($(this).parent().parent().children(".col-status").children(".quality").length) {
-                $("#manualSearchModalQuality").modal('show');
+                $("#forcedSearchModalQuality").modal('show');
             } else {
-                manualSearch();
+                forcedSearch();
             }
         });
 
-         $('.epManualSnatch').click(function(event){
+         $('.epManualSearch').click(function(event){
             event.preventDefault();
             var performSearch = '0';
             var showAllResults = '0';
@@ -235,8 +235,8 @@ $(document).ready(function () {
                 return false;
             }
 
-            $('.epManualSnatch').addClass('disabled');
-            $('.epManualSnatch').fadeTo(1, 0.1);
+            $('.epManualSearch').addClass('disabled');
+            $('.epManualSearch').fadeTo(1, 0.1);
  
             var url = this.href + '&perform_search=' + performSearch + '&show_all_results=' + showAllResults;
             if (event.shiftKey || event.ctrlKey || event.which === 2){
@@ -246,14 +246,14 @@ $(document).ready(function () {
             }
         });
 
-        $('#manualSearchModalFailed .btn').click(function(){
+        $('#forcedSearchModalFailed .btn').click(function(){
             failedDownload = ($(this).text().toLowerCase() === 'yes');
-            $("#manualSearchModalQuality").modal('show');
+            $("#forcedSearchModalQuality").modal('show');
         });
 
-        $('#manualSearchModalQuality .btn').click(function(){
+        $('#forcedSearchModalQuality .btn').click(function(){
             qualityDownload = ($(this).text().toLowerCase() === 'yes');
-            manualSearch();
+            forcedSearch();
         });
     };
 })();
