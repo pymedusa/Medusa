@@ -1024,7 +1024,7 @@ class CMD_History(ApiCall):
         # optional
         self.limit, args = self.check_params(args, kwargs, "limit", 100, False, "int", [])
         self.type, args = self.check_params(args, kwargs, "type", None, False, "string", ["downloaded", "snatched"])
-        self.type = self.type.lower() if isinstance(self.type, str) else ''
+        self.type = self.type.lower() if isinstance(self.type, str) else None
 
         # super, missing, help
         ApiCall.__init__(self, args, kwargs)
@@ -1054,20 +1054,24 @@ class CMD_History(ApiCall):
                 ).strftime(dateTimeFormat)
 
             composite = Quality.splitCompositeStatus(cur_item.action)
-            if cur_type == statusStrings[composite.status].lower():
+            if cur_type in (statusStrings[composite.status].lower(), None):
                 return {
-                    'status': statusStrings[composite.status],
-                    'quality': get_quality_string(composite.quality),
                     'date': convert_date(cur_item.date),
+                    'episode': cur_item.episode,
                     'indexerid': cur_item.show_id,
+                    'provider': cur_item.provider,
+                    'quality': get_quality_string(composite.quality),
                     'resource': ek(os.path.basename, cur_item.resource),
                     'resource_path': ek(os.path.dirname, cur_item.resource),
+                    'season': cur_item.season,
+                    'show_name': cur_item.show_name,
+                    'status': statusStrings[composite.status],
                     # Add tvdbid for backward compatibility
                     # TODO: Make this actual tvdb id for other indexers
                     'tvdbid': cur_item.show_id,
                 }
 
-        results = [make_result(x, self.type) for x in history]
+        results = [make_result(x, self.type) for x in history if x]
         return _responds(RESULT_SUCCESS, results)
 
 
