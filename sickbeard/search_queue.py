@@ -56,7 +56,7 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def is_ep_in_queue(self, segment):
         for cur_item in self.queue:
-            if isinstance(cur_item, (ManualSearchQueueItem, ManualSnatchQueueItem, FailedQueueItem)) and cur_item.segment == segment:
+            if isinstance(cur_item, (ManualSearchQueueItem, FailedQueueItem, ManualSnatchQueueItem)) and cur_item.segment == segment:
                 return True
         return False
 
@@ -201,8 +201,9 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
             if not self.manual_snatch and searchResult:
                 # just use the first result for now
                 if searchResult[0].seeders not in (-1, None) and searchResult[0].leechers not in (-1, None):
-                     logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(searchResult[0].name,
-                     searchResult[0].seeders, searchResult[0].leechers, searchResult[0].provider.name))
+                    logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".
+                                format(searchResult[0].name,
+                                       searchResult[0].seeders, searchResult[0].leechers, searchResult[0].provider.name))
                 else:
                      logger.log(u"Downloading {0} from {1}".format(searchResult[0].name, searchResult[0].provider.name))
                 self.success = search.snatchEpisode(searchResult[0])
@@ -231,56 +232,57 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
         self.finish()
 
 class ManualSnatchQueueItem(generic_queue.QueueItem):
-    def __init__(self, show, segment, season, episode, url, quality, provider, search_name, seeders, leechers):
+    """
+    A queue item that can be used to queue the snatch of a search result.
+    Currently used for the snatchSelection feature.
+
+    @param show: A show object
+    @param segment: A list of episode objects
+    @param provider: The provider id. For example nyaatorrent and not NyaaTorrent. Or usernet_crawler and not Usenet-Crawler
+    @param cached_result: An sql result of the searched result retrieved from the provider cache table.
+
+    @return: The run() methods snatches the episode(s) if possible.
+    """
+    def __init__(self, show, segment, provider, cached_result):
         generic_queue.QueueItem.__init__(self, u'Manual Snatch', MANUAL_SNATCH)
         self.priority = generic_queue.QueuePriorities.HIGH
 
         self.success = None
         self.started = None
         self.results = None
-
-        self.show = show
+        self.provider = provider
         self.segment = segment
-        self.season = season
-        self.episode = episode
-        self.url = url
-        self.quality = int(quality)
-        self.provider = providers.getProviderClass(GenericProvider.make_id(provider))
-        self.search_name = search_name
-        self.seeders = seeders
-        self.leechers = leechers
-
+        self.show = show
+        self.cached_result = cached_result
 
     def run(self):
         generic_queue.QueueItem.run(self)
         self.started = True
 
+        search_result = sickbeard.providers.getProviderClass(self.provider).get_result(self.segment)
+        search_result.show = self.show
+        search_result.url = self.cached_result['url']
+        search_result.quality = int(self.cached_result['quality'])
+        search_result.name = self.cached_result['name']
+        search_result.size = int(self.cached_result['size'])
+        search_result.seeders = int(self.cached_result['seeders'])
+        search_result.leechers = int(self.cached_result['leechers'])
+        search_result.release_group = self.cached_result['release_group']
+        search_result.version = int(self.cached_result['version'])
+
         try:
-            logger.log(u"Beginning custom manual search for: [" + self.segment.prettyName() + "]")
+            logger.log(u"Beginning to manual snatch release: {0}".format(search_result.name))
 
-            # Build a valid result
-            # get the episode object
-            epObj = self.show.getEpisode(self.season, self.episode)
-
-            # make the result object
-            result = self.provider.get_result([epObj])
-            result.show = self.show
-            result.url = self.url
-            result.name = self.search_name
-            result.quality = self.quality
-            result.seeders = self.seeders
-            result.leechers = self.leechers
-            result.content = None
-
-            if result:
-                if result.seeders not in (-1, None) and result.leechers not in (-1, None):
-                     logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(result.name,
-                     result.seeders, result.leechers, result.provider.name))
+            if search_result:
+                if search_result.seeders not in (-1, None) and search_result.leechers not in (-1, None):
+                    logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".
+                               format(search_result.name,
+                                      search_result.seeders, search_result.leechers, search_result.provider.name))
                 else:
-                     logger.log(u"Downloading {0} from {1}".format(result.name, result.provider.name))
-                self.success = search.snatchEpisode(result)
+                    logger.log(u"Downloading {0} from {1}".format(search_result.name, search_result.provider.name))
+                self.success = search.snatchEpisode(search_result)
             else:
-                logger.log(u"Unable to find a download for: [" + self.segment.prettyName() + "]")
+                logger.log(u"Unable to snatch release: {0}".format(search_result.name))
 
             # give the CPU a break
             time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
@@ -288,10 +290,9 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         except Exception:
             self.success = False
             logger.log(traceback.format_exc(), logger.DEBUG)
-            ui.notifications.message('Error while snatching selected result', "Couldn't snatch the result for <i>%s</i>" % self.segment.prettyName())
 
-        ## Keep a list with the 100 last executed searches
-        fifo(MANUAL_SEARCH_HISTORY, self, MANUAL_SEARCH_HISTORY_SIZE)
+            ui.notifications.message('Error while snatching selected result',
+                                     "Couldn't snatch the result for <i>{0}</i>".format(search_result.name))
 
         if self.success is None:
             self.success = False
@@ -324,8 +325,9 @@ class BacklogQueueItem(generic_queue.QueueItem):
                     for result in searchResult:
                         # just use the first result for now
                         if result.seeders not in (-1, None) and result.leechers not in (-1, None):
-                            logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(result.name,
-                            result.seeders, result.leechers, result.provider.name))
+                            logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".
+                                       format(result.name,
+                                              result.seeders, result.leechers, result.provider.name))
                         else:
                             logger.log(u"Downloading {0} from {1}".format(result.name, result.provider.name))
                         self.success = search.snatchEpisode(result)
