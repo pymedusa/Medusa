@@ -21,7 +21,6 @@
 import time
 import traceback
 import threading
-
 import sickbeard
 from sickbeard import common
 from sickbeard import logger
@@ -29,7 +28,6 @@ from sickbeard import generic_queue
 from sickbeard import search, failed_history, history
 from sickbeard import ui
 from sickbeard import providers
-from sickrage.providers.GenericProvider import GenericProvider
 
 search_queue_lock = threading.Lock()
 
@@ -123,11 +121,8 @@ class SearchQueue(generic_queue.GenericQueue):
         elif isinstance(item, BacklogQueueItem) and not self.is_in_queue(item.show, item.segment):
             # backlog searches
             generic_queue.GenericQueue.add_item(self, item)
-        elif isinstance(item, (ManualSearchQueueItem, FailedQueueItem)) and not self.is_ep_in_queue(item.segment):
-            # manual and failed searches
-            generic_queue.GenericQueue.add_item(self, item)
-        elif isinstance(item, ManualSnatchQueueItem) and not self.is_ep_in_queue(item.segment):
-            # manual and failed searches
+        elif isinstance(item, (ManualSearchQueueItem, ManualSnatchQueueItem, FailedQueueItem)) and not self.is_ep_in_queue(item.segment):
+            # manual, snatch and failed searches
             generic_queue.GenericQueue.add_item(self, item)
         else:
             logger.log(u"Not adding item, it's already in the queue", logger.DEBUG)
@@ -146,16 +141,16 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
         try:
             logger.log(u"Beginning daily search for new episodes")
-            foundResults = search.searchForNeededEpisodes()
+            found_results = search.searchForNeededEpisodes()
 
-            if not foundResults:
+            if not found_results:
                 logger.log(u"No needed episodes found")
             else:
-                for result in foundResults:
+                for result in found_results:
                     # just use the first result for now
                     if result.seeders not in (-1, None) and result.leechers not in (-1, None):
                         logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(result.name,
-                        result.seeders, result.leechers, result.provider.name))
+                                   result.seeders, result.leechers, result.provider.name))
                     else:
                         logger.log(u"Downloading {0} from {1}".format(result.name, result.provider.name))
                     self.success = search.snatchEpisode(result)
@@ -197,22 +192,22 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
         try:
             logger.log(u"Beginning manual search for: [" + self.segment.prettyName() + "]")
 
-            searchResult = search.searchProviders(self.show, [self.segment], True, self.downCurQuality, self.manual_snatch)
+            search_result = search.searchProviders(self.show, [self.segment], True, self.downCurQuality, self.manual_snatch)
 
-            if not self.manual_snatch and searchResult:
+            if not self.manual_snatch and search_result:
                 # just use the first result for now
-                if searchResult[0].seeders not in (-1, None) and searchResult[0].leechers not in (-1, None):
+                if search_result[0].seeders not in (-1, None) and search_result[0].leechers not in (-1, None):
                     logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".
-                                format(searchResult[0].name,
-                                       searchResult[0].seeders, searchResult[0].leechers, searchResult[0].provider.name))
+                               format(search_result[0].name,
+                                      search_result[0].seeders, search_result[0].leechers, search_result[0].provider.name))
                 else:
-                    logger.log(u"Downloading {0} from {1}".format(searchResult[0].name, searchResult[0].provider.name))
-                self.success = search.snatchEpisode(searchResult[0])
+                    logger.log(u"Downloading {0} from {1}".format(search_result[0].name, search_result[0].provider.name))
+                self.success = search.snatchEpisode(search_result[0])
 
                 # give the CPU a break
                 time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
-            elif self.manual_snatch and searchResult:
-                self.results = searchResult
+            elif self.manual_snatch and search_result:
+                self.results = search_result
                 self.success = True
                 ui.notifications.message("We have found downloads for %s" % self.segment.prettyName(),
                                          "These should become visible in the manual select page.")
@@ -235,7 +230,7 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
 
 class ManualSnatchQueueItem(generic_queue.QueueItem):
     """
-    A queue item that can be used to queue the snatch of a search result. 
+    A queue item that can be used to queue the snatch of a search result.
     Currently used for the snatchSelection feature.
 
     @param show: A show object
@@ -261,7 +256,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         generic_queue.QueueItem.run(self)
         self.started = True
 
-        search_result = sickbeard.providers.getProviderClass(self.provider).get_result(self.segment)
+        search_result = providers.getProviderClass(self.provider).get_result(self.segment)
         search_result.show = self.show
         search_result.url = self.cached_result['url']
         search_result.quality = int(self.cached_result['quality'])
@@ -320,10 +315,10 @@ class BacklogQueueItem(generic_queue.QueueItem):
         if not self.show.paused:
             try:
                 logger.log(u"Beginning backlog search for: [" + self.show.name + "]")
-                searchResult = search.searchProviders(self.show, self.segment, False, False)
+                search_result = search.searchProviders(self.show, self.segment, False, False)
 
-                if searchResult:
-                    for result in searchResult:
+                if search_result:
+                    for result in search_result:
                         # just use the first result for now
                         if result.seeders not in (-1, None) and result.leechers not in (-1, None):
                             logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".
@@ -382,14 +377,14 @@ class FailedQueueItem(generic_queue.QueueItem):
 
             # If it is wanted, self.downCurQuality doesnt matter
             # if it isnt wanted, we need to make sure to not overwrite the existing ep that we reverted to!
-            searchResult = search.searchProviders(self.show, self.segment, True, False, False)
+            search_result = search.searchProviders(self.show, self.segment, True, False, False)
 
-            if searchResult:
-                for result in searchResult:
+            if search_result:
+                for result in search_result:
                     # just use the first result for now
                     if result.seeders not in (-1, None) and result.leechers not in (-1, None):
                         logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(result.name,
-                        result.seeders, result.leechers, result.provider.name))
+                                   result.seeders, result.leechers, result.provider.name))
                     else:
                         logger.log(u"Downloading {0} from {1}".format(result.name, result.provider.name))
                     self.success = search.snatchEpisode(result)

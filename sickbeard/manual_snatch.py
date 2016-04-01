@@ -1,6 +1,6 @@
 # coding=utf-8
 # Author: p0psicles
-
+#
 # Git: https://github.com/PyMedusa/SickRage.git
 #
 # This file is part of SickRage.
@@ -17,18 +17,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
-#
 
 
 import time
-
 import sickbeard
 import threading
 from sickbeard import search_queue
 from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
 from sickbeard import logger, db
 from sickrage.helper.common import try_int, enabled_providers
-
 from sickrage.show.Show import Show
 
 SEARCH_STATUS_FINISHED = "finished"
@@ -62,55 +59,55 @@ def getEpisode(show, season=None, episode=None, absolute=None):
     if show is None:
         return "Invalid show parameters"
 
-    showObj = Show.find(sickbeard.showList, int(show))
+    show_obj = Show.find(sickbeard.showList, int(show))
 
-    if showObj is None:
+    if show_obj is None:
         return "Invalid show paramaters"
 
     if absolute:
-        epObj = showObj.getEpisode(absolute_number=absolute)
+        ep_obj = show_obj.getEpisode(absolute_number=absolute)
     elif season and episode:
-        epObj = showObj.getEpisode(season, episode)
+        ep_obj = show_obj.getEpisode(season, episode)
     else:
         return "Invalid paramaters"
 
-    if epObj is None:
+    if ep_obj is None:
         return "Episode couldn't be retrieved"
 
-    return epObj
+    return ep_obj
 
 
-def getEpisodes(searchThread, searchstatus):
-    """ Get all episodes located in a searchThread with a specific status """
+def getEpisodes(search_thread, searchstatus):
+    """ Get all episodes located in a search thread with a specific status """
 
     results = []
-    showObj = Show.find(sickbeard.showList, int(searchThread.show.indexerid))
+    show_obj = Show.find(sickbeard.showList, int(search_thread.show.indexerid))
 
-    if not showObj:
-        logger.log(u'No Show Object found for show with indexerID: {}'.format(searchThread.show.indexerid), logger.ERROR)
+    if not show_obj:
+        logger.log(u'No Show Object found for show with indexerID: {}'.format(search_thread.show.indexerid), logger.ERROR)
         return results
 
-    if isinstance(searchThread, sickbeard.search_queue.ManualSearchQueueItem):
+    if isinstance(search_thread, sickbeard.search_queue.ManualSearchQueueItem):
         results.append({
-            'show': searchThread.show.indexerid,
-            'episode': searchThread.segment.episode,
-            'episodeindexid': searchThread.segment.indexerid,
-            'season': searchThread.segment.season,
+            'show': search_thread.show.indexerid,
+            'episode': search_thread.segment.episode,
+            'episodeindexid': search_thread.segment.indexerid,
+            'season': search_thread.segment.season,
             'searchstatus': searchstatus,
-            'status': statusStrings[searchThread.segment.status],
-            'quality': getQualityClass(searchThread.segment),
-            'overview': Overview.overviewStrings[showObj.getOverview(searchThread.segment.status)]
+            'status': statusStrings[search_thread.segment.status],
+            'quality': getQualityClass(search_thread.segment),
+            'overview': Overview.overviewStrings[show_obj.getOverview(search_thread.segment.status)]
         })
     else:
-        for epObj in searchThread.segment:
-            results.append({'show': epObj.show.indexerid,
-                            'episode': epObj.episode,
-                            'episodeindexid': epObj.indexerid,
-                            'season': epObj.season,
+        for ep_obj in search_thread.segment:
+            results.append({'show': ep_obj.show.indexerid,
+                            'episode': ep_obj.episode,
+                            'episodeindexid': ep_obj.indexerid,
+                            'season': ep_obj.season,
                             'searchstatus': searchstatus,
-                            'status': statusStrings[epObj.status],
-                            'quality': getQualityClass(epObj),
-                            'overview': Overview.overviewStrings[showObj.getOverview(epObj.status)]})
+                            'status': statusStrings[ep_obj.status],
+                            'quality': getQualityClass(ep_obj),
+                            'overview': Overview.overviewStrings[show_obj.getOverview(ep_obj.status)]})
 
     return results
 
@@ -124,33 +121,33 @@ def collectEpisodesFromSearchThread(show):
 
     # Queued Searches
     searchstatus = SEARCH_STATUS_QUEUED
-    for searchThread in sickbeard.searchQueueScheduler.action.get_all_ep_from_queue(show):
-        episodes += getEpisodes(searchThread, searchstatus)
+    for search_thread in sickbeard.searchQueueScheduler.action.get_all_ep_from_queue(show):
+        episodes += getEpisodes(search_thread, searchstatus)
 
     # Running Searches
     searchstatus = SEARCH_STATUS_SEARCHING
     if sickbeard.searchQueueScheduler.action.is_manualsearch_in_progress():
-        searchThread = sickbeard.searchQueueScheduler.action.currentItem
+        search_thread = sickbeard.searchQueueScheduler.action.currentItem
 
-        if searchThread.success:
+        if search_thread.success:
             searchstatus = SEARCH_STATUS_FINISHED
 
-        episodes += getEpisodes(searchThread, searchstatus)
+        episodes += getEpisodes(search_thread, searchstatus)
 
     # Finished Searches
     searchstatus = SEARCH_STATUS_FINISHED
-    for searchThread in sickbeard.search_queue.MANUAL_SEARCH_HISTORY:
+    for search_thread in sickbeard.search_queue.MANUAL_SEARCH_HISTORY:
         if show:
-            if not str(searchThread.show.indexerid) == show:
+            if not str(search_thread.show.indexerid) == show:
                 continue
 
-        if isinstance(searchThread, sickbeard.search_queue.ManualSearchQueueItem):
-            if not [x for x in episodes if x['episodeindexid'] == searchThread.segment.indexerid]:
-                episodes += getEpisodes(searchThread, searchstatus)
+        if isinstance(search_thread, sickbeard.search_queue.ManualSearchQueueItem):
+            if not [x for x in episodes if x['episodeindexid'] == search_thread.segment.indexerid]:
+                episodes += getEpisodes(search_thread, searchstatus)
         else:
-            # ## These are only Failed Downloads/Retry SearchThreadItems.. lets loop through the segment/episodes
-            if not [i for i, j in zip(searchThread.segment, episodes) if i.indexerid == j['episodeindexid']]:
-                episodes += getEpisodes(searchThread, searchstatus)
+            # These are only Failed Downloads/Retry search thread items.. lets loop through the segment/episodes
+            if not [i for i, j in zip(search_thread.segment, episodes) if i.indexerid == j['episodeindexid']]:
+                episodes += getEpisodes(search_thread, searchstatus)
 
     return episodes
 
@@ -165,14 +162,13 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     episode = search_show.get('episode')
 
     down_cur_quality = 0
-    showObj = Show.find(sickbeard.showList, int(show))
+    show_obj = Show.find(sickbeard.showList, int(show))
 
     main_db_con = db.DBConnection('cache.db')
     sql_return = []
     found_items = []
     provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
     original_thread_name = threading.currentThread().name
-
 
     for cur_provider in enabled_providers('manualsearch'):
         threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name, provider=cur_provider.name)
@@ -216,9 +212,9 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         ep_obj = getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
             # ui.notifications.error(u"Something went wrong when starting the manual search for show {0}, and episode: {1}x{2}".
-            # format(showObj.name, season, episode))
+            # format(show_obj.name, season, episode))
             provider_results['error'] = 'Something went wrong when starting the manual search for show {0}, \
-            and episode: {1}x{2}'.format(showObj.name, season, episode)
+            and episode: {1}x{2}'.format(show_obj.name, season, episode)
 
         # make a queue item for it and put it on the queue
         ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True)  # pylint: disable=maybe-no-member
