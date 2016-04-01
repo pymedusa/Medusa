@@ -56,20 +56,20 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def is_ep_in_queue(self, segment):
         for cur_item in self.queue:
-            if isinstance(cur_item, (ManualSearchQueueItem, FailedQueueItem)) and cur_item.segment == segment:
+            if isinstance(cur_item, (ManualSearchQueueItem, ManualSnatchQueueItem, FailedQueueItem)) and cur_item.segment == segment:
                 return True
         return False
 
     def is_show_in_queue(self, show):
         for cur_item in self.queue:
-            if isinstance(cur_item, (ManualSearchQueueItem, FailedQueueItem)) and cur_item.show.indexerid == show:
+            if isinstance(cur_item, (ManualSearchQueueItem, ManualSnatchQueueItem, FailedQueueItem)) and cur_item.show.indexerid == show:
                 return True
         return False
 
     def get_all_ep_from_queue(self, show):
         ep_obj_list = []
         for cur_item in self.queue:
-            if isinstance(cur_item, (ManualSearchQueueItem, FailedQueueItem)) and str(cur_item.show.indexerid) == show:
+            if isinstance(cur_item, (ManualSearchQueueItem, ManualSnatchQueueItem, FailedQueueItem)) and str(cur_item.show.indexerid) == show:
                 ep_obj_list.append(cur_item)
         return ep_obj_list
 
@@ -85,7 +85,7 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def is_manualsearch_in_progress(self):
         # Only referenced in webserve.py, only current running manualsearch or failedsearch is needed!!
-        if isinstance(self.currentItem, (ManualSearchQueueItem, FailedQueueItem)):
+        if isinstance(self.currentItem, (ManualSearchQueueItem, ManualSnatchQueueItem, FailedQueueItem)):
             return True
         return False
 
@@ -123,10 +123,7 @@ class SearchQueue(generic_queue.GenericQueue):
         elif isinstance(item, BacklogQueueItem) and not self.is_in_queue(item.show, item.segment):
             # backlog searches
             generic_queue.GenericQueue.add_item(self, item)
-        elif isinstance(item, (ManualSearchQueueItem, FailedQueueItem)) and not self.is_ep_in_queue(item.segment):
-            # manual and failed searches
-            generic_queue.GenericQueue.add_item(self, item)
-        elif isinstance(item, ManualSnatchQueueItem):
+        elif isinstance(item, (ManualSearchQueueItem, ManualSnatchQueueItem, FailedQueueItem)) and not self.is_ep_in_queue(item.segment):
             # manual and failed searches
             generic_queue.GenericQueue.add_item(self, item)
         else:
@@ -139,6 +136,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
         self.success = None
         self.started = None
+
 
     def run(self):
         generic_queue.QueueItem.run(self)
@@ -190,6 +188,7 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
         self.downCurQuality = downCurQuality
         self.manual_snatch = manual_snatch
 
+
     def run(self):
         generic_queue.QueueItem.run(self)
         self.started = True
@@ -202,11 +201,10 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
             if not self.manual_snatch and searchResult:
                 # just use the first result for now
                 if searchResult[0].seeders not in (-1, None) and searchResult[0].leechers not in (-1, None):
-                    logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".
-                                format(searchResult[0].name, 
-                                       searchResult[0].seeders, searchResult[0].leechers, searchResult[0].provider.name))
+                     logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(searchResult[0].name,
+                     searchResult[0].seeders, searchResult[0].leechers, searchResult[0].provider.name))
                 else:
-                    logger.log(u"Downloading {0} from {1}".format(searchResult[0].name, searchResult[0].provider.name))
+                     logger.log(u"Downloading {0} from {1}".format(searchResult[0].name, searchResult[0].provider.name))
                 self.success = search.snatchEpisode(searchResult[0])
 
                 # give the CPU a break
@@ -232,34 +230,57 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
 
         self.finish()
 
-
 class ManualSnatchQueueItem(generic_queue.QueueItem):
-    def __init__(self, searchResult):
+    def __init__(self, show, segment, season, episode, url, quality, provider, search_name, seeders, leechers):
         generic_queue.QueueItem.__init__(self, u'Manual Snatch', MANUAL_SNATCH)
         self.priority = generic_queue.QueuePriorities.HIGH
 
         self.success = None
         self.started = None
         self.results = None
-        self.searchResult = searchResult
+
+        self.show = show
+        self.segment = segment
+        self.season = season
+        self.episode = episode
+        self.url = url
+        self.quality = int(quality)
+        self.provider = providers.getProviderClass(GenericProvider.make_id(provider))
+        self.search_name = search_name
+        self.seeders = seeders
+        self.leechers = leechers
+
 
     def run(self):
         generic_queue.QueueItem.run(self)
         self.started = True
 
         try:
-            logger.log(u"Beginning to manual snatch release: {}".format(self.searchResult.name))
+            logger.log(u"Beginning custom manual search for: [" + self.segment.prettyName() + "]")
 
-            if self.searchResult:
-                if self.searchResult.seeders not in (-1, None) and self.searchResult.leechers not in (-1, None):
-                    logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".
-                               format(self.searchResult.name,
-                                      self.searchResult.seeders, self.searchResult.seeders, self.searchResult.provider.name))
+            # Build a valid result
+            # get the episode object
+            epObj = self.show.getEpisode(self.season, self.episode)
+
+            # make the result object
+            result = self.provider.get_result([epObj])
+            result.show = self.show
+            result.url = self.url
+            result.name = self.search_name
+            result.quality = self.quality
+            result.seeders = self.seeders
+            result.leechers = self.leechers
+            result.content = None
+
+            if result:
+                if result.seeders not in (-1, None) and result.leechers not in (-1, None):
+                     logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(result.name,
+                     result.seeders, result.leechers, result.provider.name))
                 else:
-                    logger.log(u"Downloading {0} from {1}".format(self.searchResult.name, self.searchResult.provider.name))
-                self.success = search.snatchEpisode(self.searchResult)
+                     logger.log(u"Downloading {0} from {1}".format(result.name, result.provider.name))
+                self.success = search.snatchEpisode(result)
             else:
-                logger.log(u"Unable to snatch release: {}".format(self.searchResult.name))
+                logger.log(u"Unable to find a download for: [" + self.segment.prettyName() + "]")
 
             # give the CPU a break
             time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
@@ -267,7 +288,10 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         except Exception:
             self.success = False
             logger.log(traceback.format_exc(), logger.DEBUG)
-            ui.notifications.message('Error while snatching selected result', "Couldn't snatch the result for <i>%s</i>".format(self.searchResult.name))
+            ui.notifications.message('Error while snatching selected result', "Couldn't snatch the result for <i>%s</i>" % self.segment.prettyName())
+
+        ## Keep a list with the 100 last executed searches
+        fifo(MANUAL_SEARCH_HISTORY, self, MANUAL_SEARCH_HISTORY_SIZE)
 
         if self.success is None:
             self.success = False

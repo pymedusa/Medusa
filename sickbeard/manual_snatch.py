@@ -90,7 +90,7 @@ def getEpisodes(searchThread, searchstatus):
         logger.log(u'No Show Object found for show with indexerID: {}'.format(searchThread.show.indexerid), logger.ERROR)
         return results
 
-    if isinstance(searchThread, sickbeard.search_queue.ManualSearchQueueItem):
+    if isinstance(searchThread, (sickbeard.search_queue.ManualSearchQueueItem, sickbeard.search_queue.ManualSnatchQueueItem)):
         results.append({
             'show': searchThread.show.indexerid,
             'episode': searchThread.segment.episode,
@@ -140,11 +140,11 @@ def collectEpisodesFromSearchThread(show):
     # Finished Searches
     searchstatus = SEARCH_STATUS_FINISHED
     for searchThread in sickbeard.search_queue.MANUAL_SEARCH_HISTORY:
-        if show:
+        if show is not None:
             if not str(searchThread.show.indexerid) == show:
                 continue
 
-        if isinstance(searchThread, sickbeard.search_queue.ManualSearchQueueItem):
+        if isinstance(searchThread, (sickbeard.search_queue.ManualSearchQueueItem, sickbeard.search_queue.ManualSnatchQueueItem)):
             if not [x for x in episodes if x['episodeindexid'] == searchThread.segment.indexerid]:
                 episodes += getEpisodes(searchThread, searchstatus)
         else:
