@@ -1399,44 +1399,61 @@ class Home(WebRoot):
             action="displayShow"
         )
 
-    def pickManualSnatch(self, show=None, season=None, episode=None, provider=None, rowid=None):
+    def pickManualSnatch(self, provider=None, rowid=None):
+        """
+        Tries to Perform the snatch for a manualSelected episode, episodes or season pack.
+
+        @param provider: The provider id, passed as usenet_crawler and not the provider name (Usenet-Crawler)
+        @param rowid: The provider's cache table's rowid. (currently the implicit sqlites rowid is used, needs to be replaced in future)
+
+        @return: A json with a {'success': true} or false.
+        """
 
         # Try to retrieve the cached result from the providers cache table.
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
 
         try:
             main_db_con = db.DBConnection('cache.db')
-            sql_return = main_db_con.action("SELECT * FROM '%s' WHERE rowid = ?" %
-                                            (sickbeard.providers.getProviderClass(provider).get_id()), [rowid], fetchone=True)
+            cached_result = main_db_con.action("SELECT * FROM '%s' WHERE rowid = ?" %
+                                               provider, [rowid], fetchone=True)
         except Exception as e:
             return self._genericMessage("Error", "Couldn't read cached results. Error: {}".format(e))
 
-        try:
-            show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
-            showObj = Show.find(sickbeard.showList, show)
-        except (ValueError, TypeError):
-            return self._genericMessage("Error", "Invalid show ID: %s" % str(show))
-
-        if not showObj:
-            return self._genericMessage("Error", "Show is not in your library")
-
-        if not (sql_return['url'] or sql_return['quality'] or sql_return['name'] or provider or episode):
+        if not all([cached_result['url'],
+                    cached_result['quality'],
+                    cached_result['name'],
+                    cached_result['indexerid'],
+                    cached_result['season'],
+                    provider]):
             return self._genericMessage("Error", "Cached result doesn't have all needed info to snatch episode")
 
-        # retrieve the episode object and fail if we can't get one
-        ep_obj = getEpisode(show, season, episode)
-        if isinstance(ep_obj, str):
-            return json.dumps({'result': 'failure'})
+        try:
+            show = int(cached_result['indexerid'])  # fails if show id ends in a period SickRage/sickrage-issues#65
+            show_obj = Show.find(sickbeard.showList, show)
+        except (ValueError, TypeError):
+            return self._genericMessage("Error", "Invalid show ID: {0}".format(show))
 
-        # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ManualSnatchQueueItem(ep_obj.show, ep_obj, season, episode,
-                                                           sql_return['url'], sql_return['quality'],
-                                                           provider, sql_return['name'], sql_return['seeders'], sql_return['leechers'])
+        if not show_obj:
+            return self._genericMessage("Error", "Could not find a show with id {0} in the list of shows, did you remove the show?".format(show))
 
-        sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
+        # Create a list of episode object(s)
+        # if multi-episode: |1|2|
+        # if single-episode: |1|
+        # TODO:  Handle Season Packs: || (no episode)
+        episodes = cached_result['episodes'].strip("|").split("|")
+        ep_objs = []
+        for episode in episodes:
+            if episode:
+                ep_objs.append(TVEpisode(show_obj, int(cached_result['season']), int(episode)))
 
-        while ep_queue_item.success is not False:
-            if ep_queue_item.started and ep_queue_item.success:
+        # Create the queue item
+        snatch_queue_item = search_queue.ManualSnatchQueueItem(show_obj, ep_objs, provider, cached_result)
+
+        # Add the queue item to the queue
+        sickbeard.searchQueueScheduler.action.add_item(snatch_queue_item)
+
+        while snatch_queue_item.success is not False:
+            if snatch_queue_item.started and snatch_queue_item.success:
                 return json.dumps({'result': 'success'})
             time.sleep(1)
 
