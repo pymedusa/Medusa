@@ -637,21 +637,14 @@ class GitUpdateManager(UpdateManager):
             _, _, exit_status = self._run_git(self._git_path, 'checkout -f ' + self.branch)  # @UnusedVariable
 
         if exit_status == 0:
-            _, _, exit_status = self._run_git(self._git_path, 'submodule update --init --recursive')
-
-            if exit_status == 0:
-                self._find_installed_version()
-
-                # Notify update successful
-                if sickbeard.NOTIFY_ON_UPDATE:
-                    try:
-                        notifiers.notify_git_update(sickbeard.CUR_COMMIT_HASH or "")
-                    except Exception:
-                        logger.log(u"Unable to send update notification. Continuing the update process", logger.DEBUG)
-                return True
-
-            else:
-                return False
+            self._find_installed_version()
+            # Notify update successful
+            if sickbeard.NOTIFY_ON_UPDATE:
+                try:
+                    notifiers.notify_git_update(sickbeard.CUR_COMMIT_HASH or "")
+                except Exception:
+                    logger.log(u"Unable to send update notification. Continuing the update process", logger.DEBUG)
+            return True
 
         else:
             return False
