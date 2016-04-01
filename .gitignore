@@ -1,4 +1,4 @@
-#  SR User Related   #
+#  Medusa User Related   #
 ######################
 /cache/
 /Logs/
@@ -13,7 +13,7 @@ autoProcessTV.cfg
 server.crt
 server.key
 
-#  SR Test Related   #
+#  Medusa Test Related   #
 ######################
 /tests/Logs/
 /tests/cache/
@@ -72,6 +72,6 @@ lib/unrar2/UnRAR.exe
 .coverage
 htmlcov
 
-# nzbToMedia #
+# Contrib #
 ######################
-contrib/nzbToMedia
+contrib/
