@@ -25,7 +25,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="${srRoot}/home/" title="SickRage"><img alt="SickRage" src="${srRoot}/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
+            <a class="navbar-brand" href="${srRoot}/home/" title="SickRage"><img alt="SickRage" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
         </div>
 
     % if loggedIn:
@@ -89,7 +89,7 @@
                 </li>
 
                 <li id="NAVconfig" class="navbar-split dropdown${('', ' active')[topmenu == 'config']}">
-                    <a href="${srRoot}/config/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Config</span><img src="${srRoot}/images/menu/system18.png" class="navbaricon hidden-xs" />
+                    <a href="${srRoot}/config/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Config</span><img src="images/menu/system18.png" class="navbaricon hidden-xs" />
                     <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">
@@ -107,7 +107,7 @@
                 </li>
 
                 <li id="NAVsystem" class="navbar-split dropdown${('', ' active')[topmenu == 'system']}">
-                    <a href="${srRoot}/home/status/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="${srRoot}/images/menu/system18-2.png" class="navbaricon hidden-xs" />${toolsBadge}
+                    <a href="${srRoot}/home/status/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="images/menu/system18-2.png" class="navbaricon hidden-xs" />${toolsBadge}
                     <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">

@@ -25,13 +25,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 
         <!-- These values come from css/dark.css and css/light.css -->
-        % if sickbeard.THEME_NAME == "dark":
-        <meta name="theme-color" content="#15528F">
-        % elif sickbeard.THEME_NAME == "light":
-        <meta name="theme-color" content="#333333">
-        % endif
+        <meta name="theme-color" content="${('#333333', '#15528F')[sickbeard.THEME_NAME == "dark"]}">
 
         <title>Medusa - ${title}</title>
+
+        <base href="${('/', srRoot + "/")[bool(srRoot)]}">
 
         <!--[if lt IE 9]>
             <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>

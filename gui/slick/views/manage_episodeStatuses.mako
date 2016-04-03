@@ -5,7 +5,7 @@
 %>
 <%block name="scripts">
 % if whichStatus or (whichStatus and ep_counts):
-<script type="text/javascript" src="${srRoot}/js/manageEpisodeStatuses.js?${sbPID}"></script>
+<script type="text/javascript" src="js/manageEpisodeStatuses.js?${sbPID}"></script>
 % endif:
 </%block>
 <%block name="content">
