@@ -140,9 +140,9 @@ def collectEpisodesFromSearchThread(show):
         if show and not str(search_thread.show.indexerid) == show:
             continue
 
-        if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem) and \
-            not [x for x in episodes if x['episodeindexid'] == search_thread.segment.indexerid]:
-            episodes += getEpisodes(search_thread, searchstatus)
+        if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem):
+            if not [x for x in episodes if x['episodeindexid'] == search_thread.segment.indexerid]:
+                episodes += getEpisodes(search_thread, searchstatus)
         else:
             # These are only Failed Downloads/Retry search thread items.. lets loop through the segment/episodes
             if not [i for i, j in zip(search_thread.segment, episodes) if i.indexerid == j['episodeindexid']]:
