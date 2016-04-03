@@ -217,6 +217,9 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # make a queue item for it and put it on the queue
         ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True)  # pylint: disable=maybe-no-member
 
+        # Remove item from DailySearcher/BacklogSearcher before adding item to manual search queue
+        # sickbeard.searchQueueScheduler.action.remove_item(???)
+
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
         # give the CPU a break and some time to start the queue
