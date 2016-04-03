@@ -1461,7 +1461,7 @@ class Home(WebRoot):
 
         return json.dumps({'result': 'failure'})
 
-    def manualSnatchCheckCache(self, show, season, episode, **kwargs):
+    def manualSearchCheckCache(self, show, season, episode, **kwargs):
         """ Periodic check if the searchthread is still running for the selected show/season/ep
         and if there are new results in the cache.db
         """

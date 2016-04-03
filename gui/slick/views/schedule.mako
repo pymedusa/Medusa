@@ -167,10 +167,10 @@
 
             <td align="center">
                 <a href="${srRoot}/home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}" title="Forced Search" id="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" class="forceUpdate epSearch">
-                    <img alt="[search]" height="16" width="16" data-ep-search src="images/search16.png" id="forceUpdateImage-${cur_result['showid']}" />
+                    <img alt="[forcedSearch]" height="16" width="16" data-ep-search src="images/search16.png" id="forceUpdateImage-${cur_result['showid']}" />
                 </a>
                 <a href="${srRoot}/home/snatchSelection?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}" title="Manual Search" id="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" class="epManualSearch">
-                    <img alt="[manualSnatch]" height="16" width="16" data-ep-manual-search src="images/manualsearch.png" id="manualSearchImage-${cur_result['showid']}" />
+                    <img alt="[manualSearch]" height="16" width="16" data-ep-manual-search src="images/manualsearch.png" id="manualSearchImage-${cur_result['showid']}" />
                 </a>
             </td>
         </tr>
@@ -313,7 +313,7 @@
                         <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}"><img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
 % endif
                         <a href="${anon_url(sickbeard.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${sickbeard.indexerApi(cur_indexer).config['show_url']}"><img alt="${sickbeard.indexerApi(cur_indexer).name}" height="16" width="16" src="images/${sickbeard.indexerApi(cur_indexer).config['icon']}" /></a>
-                        <span><a href="${srRoot}/home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}" title="Forced Search" id="forceUpdate-${cur_result['showid']}" class="epSearch forceUpdate"><img alt="[search]" height="16" width="16" src="images/search16.png" id="forceUpdateImage-${cur_result['showid']}" /></a></span>
+                        <span><a href="${srRoot}/home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}" title="Forced Search" id="forceUpdate-${cur_result['showid']}" class="epSearch forceUpdate"><img alt="[forcedSearch]" height="16" width="16" src="images/search16.png" id="forceUpdateImage-${cur_result['showid']}" /></a></span>
                     </span>
                 </div>
 
