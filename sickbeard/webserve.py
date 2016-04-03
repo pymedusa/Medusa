@@ -1401,7 +1401,7 @@ class Home(WebRoot):
             action="displayShow"
         )
 
-    def pickManualSnatch(self, provider=None, rowid=None):
+    def pickManualSearch(self, provider=None, rowid=None):
         """
         Tries to Perform the snatch for a manualSelected episode, episodes or season pack.
 
