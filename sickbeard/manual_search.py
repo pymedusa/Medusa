@@ -164,14 +164,13 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     show_obj = Show.find(sickbeard.showList, int(show))
 
     main_db_con = db.DBConnection('cache.db')
-    sql_return = []
     found_items = []
     provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
     original_thread_name = threading.currentThread().name
 
     for cur_provider in enabled_providers('manualsearch'):
         threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name, provider=cur_provider.name)
-
+        sql_return = []
         # Let's check if this provider table already exists
         table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [cur_provider.get_id()])
         columns = [i[1] for i in main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))] if table_exists else []
