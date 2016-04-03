@@ -4,10 +4,10 @@
     from sickbeard.helpers import anon_url
 %>
 <%block name="scripts">
-<script type="text/javascript" src="${srRoot}/js/qualityChooser.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/addShowOptions.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/rootDirs.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/blackwhite.js?${sbPID}"></script>
+<script type="text/javascript" src="js/qualityChooser.js?${sbPID}"></script>
+<script type="text/javascript" src="js/addShowOptions.js?${sbPID}"></script>
+<script type="text/javascript" src="js/rootDirs.js?${sbPID}"></script>
+<script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 % if not header is UNDEFINED:

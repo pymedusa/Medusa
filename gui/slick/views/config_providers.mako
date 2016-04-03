@@ -5,7 +5,7 @@
     from sickrage.providers.GenericProvider import GenericProvider
 %>
 <%block name="scripts">
-<script type="text/javascript" src="${srRoot}/js/configProviders.js"></script>
+<script type="text/javascript" src="js/configProviders.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
     % if sickbeard.USE_NZBS:
@@ -84,7 +84,7 @@ $('#config-components').tabs();
                             %>
                             <li class="ui-state-default ${('nzb-provider', 'torrent-provider')[bool(curProvider.provider_type == GenericProvider.TORRENT)]}" id="${curName}">
                                 <input type="checkbox" id="enable_${curName}" class="provider_enabler" ${('', 'checked="checked"')[curProvider.is_enabled() is True]}/>
-                                <a href="${anon_url(curURL)}" class="imgLink" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><img src="${srRoot}/images/providers/${curProvider.image_name()}" alt="${curProvider.name}" title="${curProvider.name}" width="16" height="16" style="vertical-align:middle;"/></a>
+                                <a href="${anon_url(curURL)}" class="imgLink" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><img src="images/providers/${curProvider.image_name()}" alt="${curProvider.name}" title="${curProvider.name}" width="16" height="16" style="vertical-align:middle;"/></a>
                                 <span style="vertical-align:middle;">${curProvider.name}</span>
                                 ${('<span class="red-text">*</span>', '')[bool(curProvider.supports_backlog)]}
                                 ${('<span class="red-text">!</span>', '')[bool(curProvider.get_id() not in broken_providers)]}

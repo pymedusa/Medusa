@@ -77,7 +77,7 @@
                 <span class="icon-bar"></span>
             </button>
             <a class="navbar-brand" href="${srRoot}/apibuilder/" title="SickRage">
-                <img alt="SickRage" src="${srRoot}/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" />
+                <img alt="SickRage" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left" />
                 <p class="navbar-text hidden-xs">${title}</p>
             </a>
         </div>
@@ -96,7 +96,7 @@
                 <li><a href="${srRoot}/home/">Back to Medusa</a></li>
                 <li class="hidden-xs">
                     <a href="https://github.com/PyMedusa/SickRage/wiki/Donations" rel="noreferrer" onclick="window.open('${sickbeard.ANON_REDIRECT}' + this.href); return false;">
-                        <img src="${srRoot}/images/donate.jpg" alt="[donate]" class="navbaricon" />
+                        <img src="images/donate.jpg" alt="[donate]" class="navbaricon" />
                     </a>
                 </li>
             </ul>
@@ -184,9 +184,9 @@
 var commands = ${sorted(commands)};
 var episodes = ${episodes};
 </script>
-<script type="text/javascript" src="${srRoot}/js/vender.min.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/core.min.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/apibuilder.js?${sbPID}"></script>
+<script type="text/javascript" src="js/vender.min.js?${sbPID}"></script>
+<script type="text/javascript" src="js/core.min.js?${sbPID}"></script>
+<script type="text/javascript" src="js/apibuilder.js?${sbPID}"></script>
 </body>
 </html>
 

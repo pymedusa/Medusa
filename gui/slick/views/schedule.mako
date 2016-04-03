@@ -8,8 +8,8 @@
     import re
 %>
 <%block name="scripts">
-<script type="text/javascript" src="${srRoot}/js/ajaxEpSearch.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/plotTooltip.js?${sbPID}"></script>
+<script type="text/javascript" src="js/ajaxEpSearch.js?${sbPID}"></script>
+<script type="text/javascript" src="js/plotTooltip.js?${sbPID}"></script>
 </%block>
 <%block name="css">
 <style type="text/css">
@@ -137,9 +137,9 @@
 
             <td>
 % if cur_result['description']:
-                <img alt="" src="${srRoot}/images/info32.png" height="16" width="16" class="plotInfo" id="plot_info_${'%s_%s_%s' % (cur_result['showid'], cur_result['season'], cur_result['episode'])}" />
+                <img alt="" src="images/info32.png" height="16" width="16" class="plotInfo" id="plot_info_${'%s_%s_%s' % (cur_result['showid'], cur_result['season'], cur_result['episode'])}" />
 % else:
-                <img alt="" src="${srRoot}/images/info32.png" width="16" height="16" class="plotInfoNone"  />
+                <img alt="" src="images/info32.png" width="16" height="16" class="plotInfoNone"  />
 % endif
                 ${cur_result['name']}
             </td>
@@ -158,19 +158,19 @@
 
             <td align="center" style="vertical-align: middle;">
 % if cur_result['imdb_id']:
-                <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}"><img alt="[imdb]" height="16" width="16" src="${srRoot}/images/imdb.png" />
+                <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}"><img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
 % endif
                 <a href="${anon_url(sickbeard.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${sickbeard.indexerApi(cur_indexer).config['show_url']}${cur_result['showid']}">
-                    <img alt="${sickbeard.indexerApi(cur_indexer).name}" height="16" width="16" src="${srRoot}/images/${sickbeard.indexerApi(cur_indexer).config['icon']}" />
+                    <img alt="${sickbeard.indexerApi(cur_indexer).name}" height="16" width="16" src="images/${sickbeard.indexerApi(cur_indexer).config['icon']}" />
                 </a>
             </td>
 
             <td align="center">
                 <a href="${srRoot}/home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}" title="Forced Search" id="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" class="forceUpdate epSearch">
-                    <img alt="[search]" height="16" width="16" data-ep-search src="${srRoot}/images/search16.png" id="forceUpdateImage-${cur_result['showid']}" />
+                    <img alt="[search]" height="16" width="16" data-ep-search src="images/search16.png" id="forceUpdateImage-${cur_result['showid']}" />
                 </a>
                 <a href="${srRoot}/home/snatchSelection?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}" title="Manual Search" id="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" class="epManualSearch">
-                    <img alt="[manualSnatch]" height="16" width="16" data-ep-manual-search src="${srRoot}/images/manualsearch.png" id="manualSearchImage-${cur_result['showid']}" />
+                    <img alt="[manualSnatch]" height="16" width="16" data-ep-manual-search src="images/manualsearch.png" id="manualSearchImage-${cur_result['showid']}" />
                 </a>
             </td>
         </tr>
@@ -293,7 +293,7 @@
         <tr>
             <th ${('class="nobg"', 'rowspan="2"')[layout == 'poster']} valign="top">
                 <a href="${srRoot}/home/displayShow?show=${cur_result['showid']}">
-                    <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" src="${srRoot}/showPoster/?show=${cur_result['showid']}&amp;which=${(layout, 'poster_thumb')[layout == 'poster']}" />
+                    <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" src="showPoster/?show=${cur_result['showid']}&amp;which=${(layout, 'poster_thumb')[layout == 'poster']}" />
                 </a>
             </th>
 % if 'banner' == layout:
@@ -310,10 +310,10 @@
 
                     <span class="tvshowTitleIcons">
 % if cur_result['imdb_id']:
-                        <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}"><img alt="[imdb]" height="16" width="16" src="${srRoot}/images/imdb.png" />
+                        <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}"><img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
 % endif
-                        <a href="${anon_url(sickbeard.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${sickbeard.indexerApi(cur_indexer).config['show_url']}"><img alt="${sickbeard.indexerApi(cur_indexer).name}" height="16" width="16" src="${srRoot}/images/${sickbeard.indexerApi(cur_indexer).config['icon']}" /></a>
-                        <span><a href="${srRoot}/home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}" title="Forced Search" id="forceUpdate-${cur_result['showid']}" class="epSearch forceUpdate"><img alt="[search]" height="16" width="16" src="${srRoot}/images/search16.png" id="forceUpdateImage-${cur_result['showid']}" /></a></span>
+                        <a href="${anon_url(sickbeard.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${sickbeard.indexerApi(cur_indexer).config['show_url']}"><img alt="${sickbeard.indexerApi(cur_indexer).name}" height="16" width="16" src="images/${sickbeard.indexerApi(cur_indexer).config['icon']}" /></a>
+                        <span><a href="${srRoot}/home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}" title="Forced Search" id="forceUpdate-${cur_result['showid']}" class="epSearch forceUpdate"><img alt="[search]" height="16" width="16" src="images/search16.png" id="forceUpdateImage-${cur_result['showid']}" /></a></span>
                     </span>
                 </div>
 
@@ -334,10 +334,10 @@
                 <div>
 % if cur_result['description']:
                         <span class="title" style="vertical-align:middle;">Plot:</span>
-                        <img class="ep_summaryTrigger" src="${srRoot}/images/plus.png" height="16" width="16" alt="" title="Toggle Summary" /><div class="ep_summary">${cur_result['description']}</div>
+                        <img class="ep_summaryTrigger" src="images/plus.png" height="16" width="16" alt="" title="Toggle Summary" /><div class="ep_summary">${cur_result['description']}</div>
 % else:
                         <span class="title ep_summaryTriggerNone" style="vertical-align:middle;">Plot:</span>
-                        <img class="ep_summaryTriggerNone" src="${srRoot}/images/plus.png" height="16" width="16" alt="" />
+                        <img class="ep_summaryTriggerNone" src="images/plus.png" height="16" width="16" alt="" />
 % endif
                 </div>
             </td>
@@ -388,7 +388,7 @@
                 <tr>
                     <td class="calendarShow">
                         <div class="poster">
-                            <a title="${cur_result['show_name']}" href="${srRoot}/home/displayShow?show=${cur_result['showid']}"><img alt="" src="${srRoot}/showPoster/?show=${cur_result['showid']}&amp;which=poster_thumb" /></a>
+                            <a title="${cur_result['show_name']}" href="${srRoot}/home/displayShow?show=${cur_result['showid']}"><img alt="" src="showPoster/?show=${cur_result['showid']}&amp;which=poster_thumb" /></a>
                         </div>
                         <div class="text">
                             <span class="airtime">
