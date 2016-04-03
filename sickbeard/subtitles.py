@@ -26,6 +26,7 @@ import operator
 import traceback
 import subprocess
 import sickbeard
+import time
 from babelfish import Language, language_converters
 from subliminal import (compute_score, ProviderPool, provider_manager, refiner_manager, refine, region, save_subtitles,
                         scan_video)
@@ -306,6 +307,9 @@ def download_best_subs(video_path, subtitles_dir, release_name, languages, subti
 
         if sickbeard.SUBTITLES_PRE_SCRIPTS:
             run_subs_pre_scripts(video_path)
+
+        # give the CPU and providers a break
+        time.sleep(3)
 
         subtitles_list = pool.list_subtitles(video, languages)
         for provider in pool.providers:
