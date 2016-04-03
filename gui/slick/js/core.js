@@ -5,13 +5,13 @@ function getMeta(pyVar){
     return $('meta[data-var="' + pyVar + '"]').data('content');
 }
 
-var srRoot = getMeta('srRoot'),
-    srDefaultPage = getMeta('srDefaultPage'),
-    srPID = getMeta('srPID'),
-    themeSpinner = getMeta('themeSpinner'),
-    anonURL = getMeta('anonURL'),
-    topImageHtml = '<img src="' + srRoot + '/images/top.gif" width="31" height="11" alt="Jump to top" />', // jshint ignore:line
-    loading = '<img src="' + srRoot + '/images/loading16' + themeSpinner + '.gif" height="16" width="16" />';
+var srRoot = getMeta('srRoot');
+var srDefaultPage = getMeta('srDefaultPage');
+var srPID = getMeta('srPID');
+var themeSpinner = getMeta('themeSpinner');
+var anonURL = getMeta('anonURL');
+var topImageHtml = '<img src="' + srRoot + '/images/top.gif" width="31" height="11" alt="Jump to top" />'; // jshint ignore:line
+var loading = '<img src="' + srRoot + '/images/loading16' + themeSpinner + '.gif" height="16" width="16" />';
 
 var configSuccess = function(){
     $('.config_submitter').each(function(){
@@ -48,15 +48,6 @@ function isMeta(pyVar, result){
 var SICKRAGE = {
     common: {
         init: function() {
-            (function init() {
-                var imgDefer = document.getElementsByTagName('img');
-                for (var i=0; i<imgDefer.length; i++) {
-                    if(imgDefer[i].getAttribute('data-src')) {
-                        imgDefer[i].setAttribute('src',imgDefer[i].getAttribute('data-src'));
-                    }
-                }
-            })();
-
             $.confirm.options = {
                 confirmButton: "Yes",
                 cancelButton: "Cancel",
@@ -229,7 +220,6 @@ var SICKRAGE = {
                 if (def) { $('#date_presets').val(def); }
             });
 
-            // bind 'myForm' and provide a simple callback function
             $('#configForm').ajaxForm({
                 beforeSubmit: function(){
                     $('.config_submitter .config_submitter_refresh').each(function(){
@@ -304,21 +294,23 @@ var SICKRAGE = {
                 $("#Backup").attr("disabled", true);
                 $('#Backup-result').html(loading);
                 var backupDir = $("#backupDir").val();
-                $.get(srRoot + "/config/backuprestore/backup", {'backupDir': backupDir})
-                    .done(function (data) {
-                        $('#Backup-result').html(data);
-                        $("#Backup").attr("disabled", false);
-                    });
+                $.get(srRoot + "/config/backuprestore/backup", {
+                    'backupDir': backupDir
+                }).done(function (data) {
+                    $('#Backup-result').html(data);
+                    $("#Backup").attr("disabled", false);
+                });
             });
             $('#Restore').on('click', function() {
                 $("#Restore").attr("disabled", true);
                 $('#Restore-result').html(loading);
                 var backupFile = $("#backupFile").val();
-                $.get(srRoot + "/config/backuprestore/restore", {'backupFile': backupFile})
-                    .done(function (data) {
-                        $('#Restore-result').html(data);
-                        $("#Restore").attr("disabled", false);
-                    });
+                $.get(srRoot + "/config/backuprestore/restore", {
+                    'backupFile': backupFile
+                }).done(function (data) {
+                    $('#Restore-result').html(data);
+                    $("#Restore").attr("disabled", false);
+                });
             });
 
             $('#backupDir').fileBrowser({ title: 'Select backup folder to save to', key: 'backupPath' });
@@ -996,12 +988,8 @@ var SICKRAGE = {
             loadShowNotifyLists();
 
             // Update the internal data struct anytime settings are saved to the server
-            $('#email_show').on('notify', function() {
-                loadShowNotifyLists();
-            });
-            $('#prowl_show').on('notify', function() {
-                loadShowNotifyLists();
-            });
+            $('#email_show').on('notify', loadShowNotifyLists);
+            $('#prowl_show').on('notify', loadShowNotifyLists);
 
             $('#email_show_save').on('click', function() {
                 $.post(srRoot + "/home/saveShowNotifyList", {
@@ -1325,37 +1313,14 @@ var SICKRAGE = {
             // @TODO all of these on change funcitons should be able to be rolled into a generic jQuery function or maybe we could
             //       move all of the setup functions into these handlers?
 
-            $('#name_presets').on('change', function(){
-                setupNaming();
-            });
-
-            $('#name_abd_presets').on('change', function(){
-                setupAbdNaming();
-            });
-
-            $('#naming_custom_abd').on('change', function(){
-                setupAbdNaming();
-            });
-
-            $('#name_sports_presets').on('change', function(){
-                setupSportsNaming();
-            });
-
-            $('#naming_custom_sports').on('change', function(){
-                setupSportsNaming();
-            });
-
-            $('#name_anime_presets').on('change', function(){
-                setupAnimeNaming();
-            });
-
-            $('#naming_custom_anime').on('change', function(){
-                setupAnimeNaming();
-            });
-
-            $('input[name="naming_anime"]').on('click', function(){
-                setupAnimeNaming();
-            });
+            $('#name_presets').on('change', setupNaming);
+            $('#name_abd_presets').on('change', setupAbdNaming);
+            $('#naming_custom_abd').on('change', setupAbdNaming);
+            $('#name_sports_presets').on('change', setupSportsNaming);
+            $('#naming_custom_sports').on('change', setupSportsNaming);
+            $('#name_anime_presets').on('change', setupAnimeNaming);
+            $('#naming_custom_anime').on('change', setupAnimeNaming);
+            $('input[name="naming_anime"]').on('click', setupAnimeNaming);
 
             // @TODO We might be able to change these from typewatch to _ debounce like we've done on the log page
             //       The main reason for doing this would be to use only open source stuff that's still being maintained
@@ -1562,12 +1527,12 @@ var SICKRAGE = {
             $('#torrent_path').fileBrowser({ title: 'Select .torrent download location' });
 
             $.fn.nzbMethodHandler = function() {
-                var selectedProvider = $('#nzb_method :selected').val(),
-                    blackholeSettings = '#blackhole_settings',
-                    sabnzbdSettings = '#sabnzbd_settings',
-                    testSABnzbd = '#testSABnzbd',
-                    testSABnzbdResult = '#testSABnzbd_result',
-                    nzbgetSettings = '#nzbget_settings';
+                var selectedProvider = $('#nzb_method :selected').val();
+                var blackholeSettings = '#blackhole_settings';
+                var sabnzbdSettings = '#sabnzbd_settings';
+                var testSABnzbd = '#testSABnzbd';
+                var testSABnzbdResult = '#testSABnzbd_result';
+                var nzbgetSettings = '#nzbget_settings';
 
                 $('#nzb_method_icon').removeClass (function (index, css) {
                     return (css.match (/(^|\s)add-client-icon-\S+/g) || []).join(' ');
@@ -1595,13 +1560,13 @@ var SICKRAGE = {
                 $('#options_torrent_clients').hide();
                 $('#options_torrent_blackhole').hide();
 
-                var selectedProvider = $('#torrent_method :selected').val(),
-                    host = ' host:port',
-                    username = ' username',
-                    password = ' password',
-                    client = '',
-                    optionPanel = '#options_torrent_blackhole',
-                    rpcurl = ' RPC URL';
+                var selectedProvider = $('#torrent_method :selected').val();
+                var host = ' host:port';
+                var username = ' username';
+                var password = ' password';
+                var client = '';
+                var optionPanel = '#options_torrent_blackhole';
+                var rpcurl = ' RPC URL';
 
                 $('#torrent_method_icon').removeClass (function (index, css) {
                     return (css.match (/(^|\s)add-client-icon-\S+/g) || []).join(' ');
@@ -1706,15 +1671,13 @@ var SICKRAGE = {
             $('#torrent_host').on('input', function(){
                 if($('#torrent_method :selected').val().toLowerCase() === 'rtorrent') {
                     var hostname = $('#torrent_host').val();
-                    var isMatch = hostname.substr(0, 7) === "scgi://";
-
-                    if(isMatch) {
+                    if(hostname.substr(0, 7) === 'scgi://') {
                         $('#torrent_username_option').hide();
                         $('#torrent_username').prop('value', '');
                         $('#torrent_password_option').hide();
                         $('#torrent_password').prop('value', '');
                         $('#torrent_auth_type_option').hide();
-                        $("#torrent_auth_type option[value=none]").attr('selected', 'selected');
+                        $('#torrent_auth_type option[value=none]').attr('selected', 'selected');
                     } else {
                         $('#torrent_username_option').show();
                         $('#torrent_password_option').show();
@@ -1806,25 +1769,17 @@ var SICKRAGE = {
                 $("#service_order").val(finalArr.join(' '));
             };
 
-            $('#editAService').on('change', function(){
-                $(this).showHideServices();
-            });
+            $('#editAService').on('change', $(this).showHideServices);
 
-            $('.service_enabler').on('click', function(){
-                $(this).refreshServiceList();
-            });
+            $('.service_enabler').on('click', $(this).refreshServiceList);
 
             // initialization stuff
             $(this).showHideServices();
 
             $("#service_order_list").sortable({
-                placeholder: 'ui-state-highlight',
-                update: function() {
-                    $(this).refreshServiceList();
-                },
-                create: function() {
-                    $(this).refreshServiceList();
-                }
+                'placeholder': 'ui-state-highlight',
+                'update': $(this).refreshServiceList,
+                'create': $(this).refreshServiceList
             });
 
             $("#service_order_list").disableSelection();
@@ -1949,10 +1904,10 @@ var SICKRAGE = {
                     7: { filter: 'parsed' }
                 },
                 widgetOptions: {
-                    filter_columnFilters: true, // jshint ignore:line
-                    filter_hideFilters: true, // jshint ignore:line
-                    filter_saveFilters: true, // jshint ignore:line
-                    filter_functions: { // jshint ignore:line
+                    'filter_columnFilters': true,
+                    'filter_hideFilters': true,
+                    'filter_saveFilters': true,
+                    'filter_functions': {
                         5: function(e, n, f) {
                             var test = false;
                             var pct = Math.floor((n % 1) * 1000);
@@ -2118,11 +2073,12 @@ var SICKRAGE = {
                 if(metaToBool('sickbeard.ANIME_SPLIT_HOME')){
                     $.tablesorter.columnSelector.attachTo( $('#showListTableAnime'), '#popover-target');
                 }
-
             });
         },
         displayShow: function() {
-            $('#srRoot').ajaxEpSearch({'colorRow': true});
+            $('#srRoot').ajaxEpSearch({
+                'colorRow': true
+            });
 
             $('#srRoot').ajaxEpSubtitlesSearch();
 
@@ -2130,7 +2086,9 @@ var SICKRAGE = {
                 var id = $('#seasonJump option:selected').val();
                 if (id && id !== 'jump') {
                     var season = $('#seasonJump option:selected').data('season');
-                    $('html,body').animate({scrollTop: $('[name ="' + id.substring(1) + '"]').offset().top - 50}, 'slow');
+                    $('html,body').animate({
+                        scrollTop: $('[name ="' + id.substring(1) + '"]').offset().top - 50
+                    }, 'slow');
                     $('#collapseSeason-' + season).collapse('show');
                     location.hash = id;
                 }
@@ -2177,7 +2135,6 @@ var SICKRAGE = {
 
             var lastCheck = null;
             $('.epCheck').on('click', function (event) {
-
                 if (!lastCheck || !event.shiftKey) {
                     lastCheck = this;
                     return;
@@ -2339,10 +2296,18 @@ var SICKRAGE = {
 
             function setInputValidInvalid(valid, el) {
                 if (valid) {
-                    $(el).css({'background-color': '#90EE90','color': '#FFF', 'font-weight': 'bold'}); //green
+                    $(el).css({
+                        'background-color': '#90EE90',  //green
+                        'color': '#FFF',
+                        'font-weight': 'bold'
+                    });
                     return true;
                 } else {
-                    $(el).css({'background-color': '#FF0000','color': '#FFF!important', 'font-weight': 'bold'}); //red
+                    $(el).css({
+                        'background-color': '#FF0000',  //red
+                        'color': '#FFF!important',
+                        'font-weight': 'bold'
+                    });
                     return false;
                 }
             }
@@ -2353,9 +2318,9 @@ var SICKRAGE = {
                 $(this).val(value.replace(/[^0-9xX]*/g, ''));
                 var forSeason = $(this).attr('data-for-season');
                 var forEpisode = $(this).attr('data-for-episode');
-                
+
                 // If empty reset the field
-                if (value === '') {
+                if (!value) {
                     setEpisodeSceneNumbering(forSeason, forEpisode, null, null);
                     return;
                 }
@@ -2376,11 +2341,11 @@ var SICKRAGE = {
                 } else {
                     isValid = setInputValidInvalid(false, $(this));
                 }
-                
+
                 if (isValid){
                     setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode);
                 }
-                
+
             });
 
             $('.sceneAbsolute').on('change', function() {
@@ -2399,9 +2364,24 @@ var SICKRAGE = {
             $('.addQTip').each(function () {
                 $(this).css({'cursor':'help', 'text-shadow':'0px 0px 0.5px #666'});
                 $(this).qtip({
-                    show: {solo:true},
-                    position: {viewport:$(window), my:'left center', adjust:{ y: -10, x: 2 }},
-                    style: {tip:{corner:true, method:'polygon'}, classes:'qtip-rounded qtip-shadow ui-tooltip-sb'}
+                    show: {
+                        solo:true
+                    },
+                    position: {
+                        viewport:$(window),
+                        my:'left center',
+                        adjust:{
+                            y: -10,
+                            x: 2
+                        }
+                    },
+                    style: {
+                        tip:{
+                            corner:true,
+                            method:'polygon'
+                        },
+                        classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
+                    }
                 });
             });
             $.fn.generateStars = function() {
@@ -2413,7 +2393,11 @@ var SICKRAGE = {
             $('.imdbstars').generateStars();
 
             $("#showTable, #animeTable").tablesorter({
-                widgets: ['saveSort', 'stickyHeaders', 'columnSelector'],
+                widgets: [
+                    'saveSort',
+                    'stickyHeaders',
+                    'columnSelector'
+                ],
                 widgetOptions : {
                     columnSelector_saveColumns: true, // jshint ignore:line
                     columnSelector_layout : '<br><label><input type="checkbox">{name}</label>', // jshint ignore:line
@@ -2426,9 +2410,7 @@ var SICKRAGE = {
                 placement: 'bottom',
                 html: true, // required if content has HTML
                 content: '<div id="popover-target"></div>'
-            })
-            // bootstrap popover event triggered when the popover opens
-            .on('shown.bs.popover', function (){
+            }).on('shown.bs.popover', function (){ // bootstrap popover event triggered when the popover opens
                 $.tablesorter.columnSelector.attachTo($("#showTable, #animeTable"), '#popover-target');
             });
 
@@ -2500,7 +2482,7 @@ var SICKRAGE = {
             $.fn.loadContainer = function(path, loadingTxt, errorTxt) {
                 $(this).html('<img id="searchingAnim" src="' + srRoot + '/images/loading32' + themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
                 $(this).load(srRoot + path + ' #container', function(response, status) {
-                    if (status === "error") {
+                    if (status === 'error') {
                         $(this).empty().html(errorTxt);
                     }
                 });
@@ -2509,14 +2491,12 @@ var SICKRAGE = {
             // Click event for the download button for snatching a result
             $('body').on('click', '.epManualSearch', function(event){
                 event.preventDefault();
-                var link = this;
-                $(link).children('img').attr('src', srRoot + '/images/loading16.gif');
-                $.getJSON(this.href,
-                    function (data) {
+                $(this).children('img').attr('src', srRoot + '/images/loading16.gif');
+                $.getJSON(this.href, function (data) {
                     if (data.result === "success") {
-                        $(link).children('img').attr('src', srRoot + '/images/save.png');
+                        $(this).children('img').attr('src', srRoot + '/images/save.png');
                     } else {
-                        $(link).children('img').attr('src', srRoot + '/images/no16.png');
+                        $(this).children('img').attr('src', srRoot + '/images/no16.png');
                     }
                 });
             });
@@ -2534,8 +2514,7 @@ var SICKRAGE = {
                 var self = this;
                 var pollInterval = 5000;
                 repeat = repeat || true;
-                
-                
+
                 var show = $('meta[data-last-prov-updates]').attr('data-show');
                 var season = $('meta[data-last-prov-updates]').attr('data-season');
                 var episode = $('meta[data-last-prov-updates]').attr('data-episode');
@@ -2544,22 +2523,20 @@ var SICKRAGE = {
                 if (!$.isNumeric(show) || !$.isNumeric(season) || !$.isNumeric(episode)) {
                     setTimeout(function() { checkCacheUpdates(true); }, 200);
                 }
-                
                 var url = srRoot + '/home/manualSearchCheckCache?show='+show+'&season='+season+'&episode='+episode;
-                
                 self.refreshResults = function() {
                     $('#wrapper').loadContainer(
-                            '/home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=0',
-                            'Loading new search results...',
-                            'Time out, refresh page to try again'
+                        '/home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=0',
+                        'Loading new search results...',
+                        'Time out, refresh page to try again'
                     );
                 };
 
                 $.ajax({
                     url: url,
-                    type: "GET",
+                    type: 'GET',
                     data: data,
-                    contentType: "application/json",
+                    contentType: 'application/json',
                     success: function (data) {
                         if (data.result === 'refresh') {
                             self.refreshResults();
@@ -2611,19 +2588,22 @@ var SICKRAGE = {
                 var season = $('meta[data-last-prov-updates]').attr('data-season');
                 var episode = $('meta[data-last-prov-updates]').attr('data-episode');
                 var performSearch = $(this).attr('data-force-search');
-                
+
                 if ($.isNumeric(show) && $.isNumeric(season) && $.isNumeric(episode)) {
                     $('#wrapper').loadContainer(
-                            '/home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=' + performSearch,
-                            'Loading new search results...',
-                            'Time out, refresh page to try again'
+                        '/home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=' + performSearch,
+                        'Loading new search results...',
+                        'Time out, refresh page to try again'
                     );
                     checkCacheUpdates(true);
                 }
             });
         },
         postProcess: function() {
-            $('#episodeDir').fileBrowser({ title: 'Select Unprocessed Episode Folder', key: 'postprocessPath' });
+            $('#episodeDir').fileBrowser({
+                title: 'Select Unprocessed Episode Folder',
+                key: 'postprocessPath'
+            });
         },
         status: function() {
             $("#schedulerStatusTable").tablesorter({
@@ -2678,7 +2658,6 @@ var SICKRAGE = {
                 row += '  <td>' + season + 'x' + episode + '</td>';
                 row += '  <td class="tableright" style="width: 100%">' + name + '</td>';
                 row += ' </tr>';
-
                 return row;
             };
 
@@ -2687,7 +2666,7 @@ var SICKRAGE = {
                 row += '<tr class="good show-' + indexerId + '">';
                 row += '<td align="center"><input type="checkbox" class="' + indexerId + '-epcheck" name="' + indexerId + '-' + season + 'x' + episode + '"' + (checked ? ' checked' : '') + '></td>';
                 row += '<td style="width: 2%;">' + season + 'x' + episode + '</td>';
-                if (subtitles.length > 0) {
+                if (subtitles.length) {
                     row += '<td style="width: 8%;">';
                     subtitles = subtitles.split(',');
                     for (var i in subtitles) {
@@ -2759,7 +2738,9 @@ var SICKRAGE = {
             $('#pickShow').on('change', function(){
                 var id = $(this).val();
                 if (id) {
-                    $('html,body').animate({scrollTop: $('#show-' + id).offset().top -25},'slow');
+                    $('html,body').animate({
+                        scrollTop: $('#show-' + id).offset().top -25
+                    }, 'slow');
                 }
             });
         },
@@ -2777,20 +2758,20 @@ var SICKRAGE = {
                 var removeArr = [];
 
                 $('.removeCheck').each(function() {
-                    if (this.checked === true) {
+                    if (this.checked) {
                         removeArr.push($(this).attr('id').split('-')[1]);
                     }
                 });
 
-                if (removeArr.length === 0) { return false; }
+                if (!removeArr.length) { return false; }
 
-                window.location.href = srRoot + '/manage/failedDownloads?toRemove='+removeArr.join('|');
+                window.location.href = srRoot + '/manage/failedDownloads?toRemove=' + removeArr.join('|');
             });
 
             if($('.removeCheck').length){
                 $('.removeCheck').each(function(name) {
                     var lastCheck = null;
-                    $(name).click(function(event) {
+                    $(name).on('click', function(event) {
                         if(!lastCheck || !event.shiftKey) {
                             lastCheck = this;
                             return;
@@ -2799,7 +2780,7 @@ var SICKRAGE = {
                         var check = this;
                         var found = 0;
 
-                        $(name+':visible').each(function() {
+                        $(name + ':visible').each(function() {
                             switch (found) {
                                 case 2: return false;
                                 case 1: this.checked = lastCheck.checked;
@@ -2812,7 +2793,9 @@ var SICKRAGE = {
             }
         },
         massEdit: function() {
-            $('#location').fileBrowser({ title: 'Select Show Location' });
+            $('#location').fileBrowser({
+                title: 'Select Show Location'
+            });
         },
         episodeStatuses: function() {
             $('.allCheck').on('click', function(){
@@ -2830,7 +2813,7 @@ var SICKRAGE = {
                 if(!clicked) {
                     $.getJSON(srRoot+'/manage/showEpisodeStatuses',{
                         'indexer_id': curIndexerId,
-                        whichStatus: $('#oldStatus').val()
+                        'whichStatus': $('#oldStatus').val()
                     }, function (data) {
                         $.each(data, function(season,eps){
                             $.each(eps, function(episode, name) {
@@ -3044,7 +3027,7 @@ var SICKRAGE = {
             if(isMeta('sickbeard.COMING_EPS_LAYOUT', ['banner', 'poster'])){
                 $('#srRoot').ajaxEpSearch({'size': 16, 'loadingImage': 'loading16' + themeSpinner + '.gif'});
                 $('.ep_summary').hide();
-                $('.ep_summaryTrigger').click(function() {
+                $('.ep_summaryTrigger').on('click', function() {
                     $(this).next('.ep_summary').slideToggle('normal', function() {
                         $(this).prev('.ep_summaryTrigger').attr('src', function(i, src) {
                             return $(this).next('.ep_summary').is(':visible') ? src.replace('plus','minus') : src.replace('minus','plus');
@@ -3076,28 +3059,13 @@ var SICKRAGE = {
                 $('#showsortdirection').val('asc');
 
                 $('#showsort').on('change', function() {
-                    var sortCriteria;
-                    switch (this.value) {
-                        case 'original':
-                            sortCriteria = 'original-order';
-                            break;
-                        case 'rating':
-                            /* randomise, else the rating_votes can already
-                             * have sorted leaving this with nothing to do.
-                             */
-                            $('#container').isotope({sortBy: 'random'});
-                            sortCriteria = 'rating';
-                            break;
-                        case 'rating_votes':
-                            sortCriteria = ['rating', 'votes'];
-                            break;
-                        case 'votes':
-                            sortCriteria = 'votes';
-                            break;
-                        default:
-                            sortCriteria = 'name';
-                            break;
-                    }
+                    var sortCriterias = {
+                        'original': 'original-order',
+                        'rating': 'rating',
+                        'rating_votes': ['rating', 'votes'],
+                        'votes': 'votes'
+                    };
+                    var sortCriteria = Object.keys(sortCriterias).indexOf(this.value) > 0 ? sortCriterias[this.value] : 'name';
                     $('#container').isotope({
                         sortBy: sortCriteria
                     });
@@ -3126,7 +3094,7 @@ var SICKRAGE = {
             $.fn.loadRemoteShows = function(path, loadingTxt, errorTxt) {
                 $(this).html('<img id="searchingAnim" src="' + srRoot + '/images/loading32' + themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
                 $(this).load(srRoot + path + ' #container', function(response, status) {
-                    if (status === "error") {
+                    if (status === 'error') {
                         $(this).empty().html(errorTxt);
                     } else {
                         $.initRemoteShowGrid();
@@ -3165,16 +3133,13 @@ var SICKRAGE = {
             }
 
             function updateSampleText() {
-                // if something's selected then we have some behavior to figure out
-
-                var showName, sepChar;
+                var showName = '';
+                var sepChar = '';
                 // if they've picked a radio button then use that
                 if ($('input:radio[name=whichSeries]:checked').length) {
                     showName = $('input:radio[name=whichSeries]:checked').val().split('|')[4];
                 } else if ($('input:hidden[name=whichSeries]').length && $('input:hidden[name=whichSeries]').val().length) { // if we provided a show in the hidden field, use that
                     showName = $('#providedName').val();
-                } else {
-                    showName = '';
                 }
                 updateBlackWhiteList(showName);
                 var sampleText = 'Adding show <b>' + showName + '</b> into <b>';
@@ -3186,8 +3151,6 @@ var SICKRAGE = {
                         sepChar = '/';
                     } else if (rootDirectoryText.indexOf('\\') >= 0) {
                         sepChar = '\\';
-                    } else {
-                        sepChar = '';
                     }
 
                     if (rootDirectoryText.substr(sampleText.length - 1) !== sepChar) {
@@ -3380,7 +3343,7 @@ var SICKRAGE = {
                     }
                 });
 
-                if (dirArr.length === 0) {
+                if (!dirArr.length) {
                     return false;
                 }
 
@@ -3436,7 +3399,9 @@ var SICKRAGE = {
             $('#tableDiv').on('click', '.showManage', function(event) {
                 event.preventDefault();
                 $("#tabs").tabs('option', 'active', 0);
-                $('html,body').animate({scrollTop:0}, 1000);
+                $('html,body').animate({
+                    scrollTop:0
+                }, 1000);
             });
         },
         recommendedShows: function(){
