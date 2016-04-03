@@ -331,8 +331,8 @@ class TVCache(object):
                 "INSERT OR REPLACE INTO [" + self.providerID + "] (name, season, episodes, indexerid, url, time, quality, release_group, version, seeders, leechers, size) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                 [name, season, episodeText, parse_result.show.indexerid, url, curTimestamp, quality, release_group, version, seeders, leechers, size]]
 
-    def searchCache(self, episode, manualSearch=False, downCurQuality=False):
-        neededEps = self.findNeededEpisodes(episode, manualSearch, downCurQuality)
+    def searchCache(self, episode, forced_search=False, downCurQuality=False):
+        neededEps = self.findNeededEpisodes(episode, forced_search, downCurQuality)
         return neededEps[episode] if episode in neededEps else []
 
     def listPropers(self, date=None):
@@ -345,7 +345,7 @@ class TVCache(object):
         propers_results = cache_db_con.select(sql)
         return [x for x in propers_results if x['indexerid']]
 
-    def findNeededEpisodes(self, episode, manualSearch=False, downCurQuality=False):  # pylint:disable=too-many-locals, too-many-branches
+    def findNeededEpisodes(self, episode, forced_search=False, downCurQuality=False):  # pylint:disable=too-many-locals, too-many-branches
         neededEps = {}
         cl = []
 
@@ -398,7 +398,7 @@ class TVCache(object):
             curVersion = curResult["version"]
 
             # if the show says we want that episode then add it to the list
-            if not showObj.wantEpisode(curSeason, curEp, curQuality, manualSearch, downCurQuality):
+            if not showObj.wantEpisode(curSeason, curEp, curQuality, forced_search, downCurQuality):
                 logger.log(u"Ignoring " + curResult["name"], logger.DEBUG)
                 continue
 

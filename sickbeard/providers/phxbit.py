@@ -108,7 +108,7 @@ class PhxBitProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    # Use exact=1 parameter if we're doing a backlog or manual search
+                    # Use exact=1 parameter if we're doing a backlog or forced search
                     search_params['exact'] = 1
                     logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
                                logger.DEBUG)

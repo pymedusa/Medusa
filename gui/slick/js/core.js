@@ -2507,7 +2507,7 @@ var SICKRAGE = {
             };
 
             // Click event for the download button for snatching a result
-            $('body').on('click', '.epManualSnatch', function(event){
+            $('body').on('click', '.epManualSearch', function(event){
                 event.preventDefault();
                 var link = this;
                 $(link).children('img').attr('src', srRoot + '/images/loading16.gif');

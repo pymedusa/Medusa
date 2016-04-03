@@ -112,7 +112,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         return [Proper(x['name'], x['url'], datetime.fromtimestamp(x['time']), self.show) for x in results]
 
-    def find_search_results(self, show, episodes, search_mode, manual_search=False, download_current_quality=False, manualSelect=False):  # pylint: disable=too-many-branches,too-many-arguments,too-many-locals,too-many-statements
+    def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False, manualSelect=False):  # pylint: disable=too-many-branches,too-many-arguments,too-many-locals,too-many-statements
         self._check_auth()
         self.show = show
 
@@ -122,8 +122,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         for episode in episodes:
             if not manualSelect:
-                cache_result = self.cache.searchCache(episode, manualSearch=manual_search,
-                                                  downCurQuality=download_current_quality)
+                cache_result = self.cache.searchCache(episode, forced_search=forced_search,
+                                                      downCurQuality=download_current_quality)
                 if cache_result:
                     if episode.episode not in results:
                         results[episode.episode] = cache_result
@@ -273,7 +273,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
             if not manualSelect:
                 for episode_number in actual_episodes:
-                    if not show_object.wantEpisode(actual_season, episode_number, quality, manual_search,
+                    if not show_object.wantEpisode(actual_season, episode_number, quality, forced_search,
                                                    download_current_quality):
                         episode_wanted = False
                         break

@@ -62,7 +62,7 @@ from sickbeard.common import (
 from sickbeard.helpers import get_showname_from_indexer
 from sickbeard.imdbPopular import imdb_popular
 from sickbeard.indexers.indexer_exceptions import indexer_exception
-from sickbeard.manual_snatch import (
+from sickbeard.manual_search import (
     collectEpisodesFromSearchThread, get_provider_cache_results, getEpisode,
     SEARCH_STATUS_FINISHED, SEARCH_STATUS_SEARCHING, SEARCH_STATUS_QUEUED,
 )
@@ -1449,7 +1449,7 @@ class Home(WebRoot):
                 ep_objs.append(TVEpisode(show_obj, int(cached_result['season']), int(episode)))
 
         # Create the queue item
-        snatch_queue_item = search_queue.ManualSnatchQueueItem(show_obj, ep_objs, provider, cached_result)
+        snatch_queue_item = search_queue.ManualSearchQueueItem(show_obj, ep_objs, provider, cached_result)
 
         # Add the queue item to the queue
         sickbeard.searchQueueScheduler.action.add_item(snatch_queue_item)
@@ -2232,7 +2232,7 @@ class Home(WebRoot):
 
         return self.redirect("/home/displayShow?show=" + show)
 
-    def searchEpisode(self, show=None, season=None, episode=None, manual_snatch=None):
+    def searchEpisode(self, show=None, season=None, episode=None, manual_search=None):
         """
         """
         down_cur_quality = 0
@@ -2243,7 +2243,7 @@ class Home(WebRoot):
             return json.dumps({'result': 'failure'})
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), bool(manual_snatch))
+        ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), bool(manual_search))
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 

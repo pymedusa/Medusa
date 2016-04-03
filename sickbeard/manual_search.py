@@ -87,7 +87,7 @@ def getEpisodes(search_thread, searchstatus):
         logger.log(u'No Show Object found for show with indexerID: {}'.format(search_thread.show.indexerid), logger.ERROR)
         return results
 
-    if isinstance(search_thread, sickbeard.search_queue.ManualSearchQueueItem):
+    if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem):
         results.append({
             'show': search_thread.show.indexerid,
             'episode': search_thread.segment.episode,
@@ -115,7 +115,7 @@ def getEpisodes(search_thread, searchstatus):
 def collectEpisodesFromSearchThread(show):
     """
     Collects all episodes from from the searchQueueScheduler and looks for episodes that are in status queued or searching.
-    If episodes are found in MANUAL_SEARCH_HISTORY, these are set to status finished.
+    If episodes are found in FORCED_SEARCH_HISTORY, these are set to status finished.
     """
     episodes = []
 
@@ -136,14 +136,13 @@ def collectEpisodesFromSearchThread(show):
 
     # Finished Searches
     searchstatus = SEARCH_STATUS_FINISHED
-    for search_thread in sickbeard.search_queue.MANUAL_SEARCH_HISTORY:
-        if show:
-            if not str(search_thread.show.indexerid) == show:
-                continue
+    for search_thread in sickbeard.search_queue.FORCED_SEARCH_HISTORY:
+        if show and not str(search_thread.show.indexerid) == show:
+            continue
 
-        if isinstance(search_thread, sickbeard.search_queue.ManualSearchQueueItem):
-            if not [x for x in episodes if x['episodeindexid'] == search_thread.segment.indexerid]:
-                episodes += getEpisodes(search_thread, searchstatus)
+        if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem) and \
+            not [x for x in episodes if x['episodeindexid'] == search_thread.segment.indexerid]:
+            episodes += getEpisodes(search_thread, searchstatus)
         else:
             # These are only Failed Downloads/Retry search thread items.. lets loop through the segment/episodes
             if not [i for i, j in zip(search_thread.segment, episodes) if i.indexerid == j['episodeindexid']]:
@@ -175,7 +174,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
 
         # Let's check if this provider table already exists
         table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [cur_provider.get_id()])
-        columns = [i[1] for i in main_db_con.select("PRAGMA table_info('%s')" % cur_provider.get_id())] if table_exists else []
+        columns = [i[1] for i in main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))] if table_exists else []
 
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
@@ -217,7 +216,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             and episode: {1}x{2}'.format(show_obj.name, season, episode)
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True)  # pylint: disable=maybe-no-member
+        ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True)  # pylint: disable=maybe-no-member
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
