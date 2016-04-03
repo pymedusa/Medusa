@@ -2545,7 +2545,7 @@ var SICKRAGE = {
                     setTimeout(function() { checkCacheUpdates(true); }, 200);
                 }
                 
-                var url = srRoot + '/home/manualSnatchCheckCache?show='+show+'&season='+season+'&episode='+episode;
+                var url = srRoot + '/home/manualSearchCheckCache?show='+show+'&season='+season+'&episode='+episode;
                 
                 self.refreshResults = function() {
                     $('#wrapper').loadContainer(

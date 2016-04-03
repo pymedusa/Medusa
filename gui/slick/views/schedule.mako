@@ -170,7 +170,7 @@
                     <img alt="[search]" height="16" width="16" data-ep-search src="images/search16.png" id="forceUpdateImage-${cur_result['showid']}" />
                 </a>
                 <a href="${srRoot}/home/snatchSelection?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}" title="Manual Search" id="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" class="epManualSearch">
-                    <img alt="[manualSnatch]" height="16" width="16" data-ep-manual-search src="images/manualsearch.png" id="manualSearchImage-${cur_result['showid']}" />
+                    <img alt="[manualSearch]" height="16" width="16" data-ep-manual-search src="images/manualsearch.png" id="manualSearchImage-${cur_result['showid']}" />
                 </a>
             </td>
         </tr>
