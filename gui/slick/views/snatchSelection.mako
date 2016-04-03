@@ -214,7 +214,7 @@
                     <td align="center">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
                     <td align="center">${hItem["provider_type"]}</td>
                     <td align="center">${datetime.datetime.fromtimestamp(hItem["time"]).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</td>
-                    <td align="center" class="col-search" width="5%"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="${srRoot}/home/pickManualSnatch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
+                    <td align="center" class="col-search" width="5%"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="${srRoot}/home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                 </tr>
             % endfor
             </tbody>

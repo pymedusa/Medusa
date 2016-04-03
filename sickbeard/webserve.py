@@ -1401,7 +1401,7 @@ class Home(WebRoot):
             action="displayShow"
         )
 
-    def pickManualSnatch(self, provider=None, rowid=None):
+    def pickManualSearch(self, provider=None, rowid=None):
         """
         Tries to Perform the snatch for a manualSelected episode, episodes or season pack.
 
@@ -1461,7 +1461,7 @@ class Home(WebRoot):
 
         return json.dumps({'result': 'failure'})
 
-    def manualSnatchCheckCache(self, show, season, episode, **kwargs):
+    def manualSearchCheckCache(self, show, season, episode, **kwargs):
         """ Periodic check if the searchthread is still running for the selected show/season/ep
         and if there are new results in the cache.db
         """
