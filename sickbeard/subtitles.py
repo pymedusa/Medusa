@@ -171,7 +171,8 @@ def from_code(code, unknown='und'):
     :type code: str
     :param unknown: the code to be returned for unknown language codes
     :type unknown: str
-    :return: babelfish.Language
+    :return: a language object
+    :rtype: babelfish.Language
     """
     code = code.strip()
     if code and code in language_converters['opensubtitles'].codes:
@@ -181,13 +182,14 @@ def from_code(code, unknown='und'):
 
 
 def from_ietf_code(code, unknown='und'):
-    """Converts an IETF code to a 3-letter opensubtitles code
+    """Converts an IETF code to a proper babelfish.Language object
 
     :param code: an IETF language code
     :type code: str
     :param unknown: the code to be returned for unknown language codes
     :type unknown: str
-    :return: babelfish.Language
+    :return: a language object
+    :rtype: babelfish.Language
     """
     try:
         return Language.fromietf(code)
@@ -292,7 +294,7 @@ def download_best_subs(video_path, subtitles_dir, release_name, languages, subti
     :param provider_pool: provider pool to be used
     :type provider_pool: subliminal.ProviderPool
     :return: the downloaded subtitles
-    :rtype:
+    :rtype: list of subliminal.subtitle.Subtitle
     """
     try:
         video = get_video(video_path, subtitles_dir=subtitles_dir, subtitles=subtitles,
@@ -436,7 +438,9 @@ def get_current_subtitles(video_path):
     """Returns a list of current subtitles for the episode
 
     :param video_path: the video path
-    :return: the current subtitles for the specified video
+    :type video_path: str
+    :return: the current subtitles (3-letter opensubtitles codes) for the specified video
+    :rtype: list of str
     """
     video = get_video(video_path)
     if not video:
