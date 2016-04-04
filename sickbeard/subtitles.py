@@ -27,6 +27,7 @@ import traceback
 import subprocess
 import sickbeard
 from babelfish import Language, language_converters
+from dogpile.cache.api import NO_VALUE
 from subliminal import (compute_score, ProviderPool, provider_manager, refiner_manager, refine, region, save_subtitles,
                         scan_video)
 from subliminal.core import search_external_subtitles
@@ -51,6 +52,7 @@ provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiPr
 refiner_manager.register('release = sickbeard.refiners.release:refine')
 
 region.configure('dogpile.cache.memory')
+video_key = __name__ + ':video|{video_path}|{subtitles_dir}|{subtitles}|{embedded_subtitles}|{release_name}'
 
 episode_refiners = ('metadata', 'release', 'tvdb', 'omdb')
 
@@ -509,13 +511,13 @@ def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles
     :return: video
     :rtype: subliminal.video
     """
-    return _get_video(video_path, subtitles_dir, subtitles, embedded_subtitles, release_name)
+    key = video_key.format(video_path=video_path, subtitles_dir=subtitles_dir, subtitles=subtitles,
+                           embedded_subtitles=embedded_subtitles, release_name=release_name)
+    video = region.get(key, expiration_time=VIDEO_EXPIRATION_TIME)
+    if video != NO_VALUE:
+        logger.log(u'Found cached video information under key {0}'.format(key), logger.DEBUG)
+        return video
 
-
-@region.cache_on_arguments(expiration_time=VIDEO_EXPIRATION_TIME)  # Should we provide a way to invalidate this cache?
-def _get_video(video_path, subtitles_dir, subtitles, embedded_subtitles, release_name):
-    """Internal get_video method since dogpile cache default function_key_generator doesn't accept keyword arguments
-    """
     try:
         video_path = encode(video_path)
         subtitles_dir = encode(subtitles_dir or get_subtitles_dir(video_path))
@@ -532,6 +534,10 @@ def _get_video(video_path, subtitles_dir, subtitles, embedded_subtitles, release
 
         refine(video, episode_refiners=episode_refiners, embedded_subtitles=embedded_subtitles,
                release_name=release_name)
+
+        region.set(key, video)
+        logger.log(u'Video information cached under key {0}'.format(key), logger.DEBUG)
+
         return video
     except Exception as error:
         logger.log(u'Exception: {0}'.format(error), logger.DEBUG)
