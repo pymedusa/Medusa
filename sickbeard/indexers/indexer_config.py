@@ -55,7 +55,7 @@ indexerConfig = {
         'xem_origin': 'tvdb',
         'xem_mapped_to': INDEXER_TVDB,
         'icon': 'tvmaze16.png',
-        'scene_loc': 'https://api.pymedusa.com/scene_exceptions.json',
+        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
         'show_url': 'http://www.tvmaze.com/shows/',
         'base_url': 'http://api.tvmaze.com/',
         'mapped_to': 'tvmazeid'  # The attribute to which other indexers can map there tvmaze id to
