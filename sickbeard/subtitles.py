@@ -797,13 +797,16 @@ class SubtitlesFinder(object):
                     now = datetime.datetime.now()
                     days = int(ep_to_sub['age'])
                     delay_time = datetime.timedelta(hours=1 if days <= 10 else 8 if days <= 30 else 30 * 24)
+                    delay = lastsearched + delay_time - now
 
                     # Search every hour until 10 days pass
                     # After 10 days, search every 8 hours, after 30 days search once a month
                     # Will always try an episode regardless of age for 3 times
-                    if lastsearched + delay_time > now and int(ep_to_sub['searchcount']) > 2:
+                    # The time resolution is minute
+                    # Only delay is the it's bigger than one minute and avoid wrongly skipping the search slot.
+                    if delay.total_seconds() > 60 and int(ep_to_sub['searchcount']) > 2:
                         logger.log(u'Subtitle search for {0} {1} delayed for {2}'.format
-                                   (ep_to_sub['show_name'], ep_num, dhm(lastsearched + delay_time - now)), logger.DEBUG)
+                                   (ep_to_sub['show_name'], ep_num, dhm(delay)), logger.DEBUG)
                         continue
 
                 show_object = Show.find(sickbeard.showList, int(ep_to_sub['showid']))
