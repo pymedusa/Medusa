@@ -27,6 +27,7 @@ import traceback
 import subprocess
 import sickbeard
 from babelfish import Language, language_converters
+from dogpile.cache.api import NO_VALUE
 from subliminal import (compute_score, ProviderPool, provider_manager, refiner_manager, refine, region, save_subtitles,
                         scan_video)
 from subliminal.core import search_external_subtitles
@@ -51,6 +52,7 @@ provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiPr
 refiner_manager.register('release = sickbeard.refiners.release:refine')
 
 region.configure('dogpile.cache.memory')
+video_key = __name__ + ':video|{video_path}|{subtitles_dir}|{subtitles}|{embedded_subtitles}|{release_name}'
 
 episode_refiners = ('metadata', 'release', 'tvdb', 'omdb')
 
@@ -171,7 +173,8 @@ def from_code(code, unknown='und'):
     :type code: str
     :param unknown: the code to be returned for unknown language codes
     :type unknown: str
-    :return: babelfish.Language
+    :return: a language object
+    :rtype: babelfish.Language
     """
     code = code.strip()
     if code and code in language_converters['opensubtitles'].codes:
@@ -181,13 +184,14 @@ def from_code(code, unknown='und'):
 
 
 def from_ietf_code(code, unknown='und'):
-    """Converts an IETF code to a 3-letter opensubtitles code
+    """Converts an IETF code to a proper babelfish.Language object
 
     :param code: an IETF language code
     :type code: str
     :param unknown: the code to be returned for unknown language codes
     :type unknown: str
-    :return: babelfish.Language
+    :return: a language object
+    :rtype: babelfish.Language
     """
     try:
         return Language.fromietf(code)
@@ -292,7 +296,7 @@ def download_best_subs(video_path, subtitles_dir, release_name, languages, subti
     :param provider_pool: provider pool to be used
     :type provider_pool: subliminal.ProviderPool
     :return: the downloaded subtitles
-    :rtype:
+    :rtype: list of subliminal.subtitle.Subtitle
     """
     try:
         video = get_video(video_path, subtitles_dir=subtitles_dir, subtitles=subtitles,
@@ -436,7 +440,9 @@ def get_current_subtitles(video_path):
     """Returns a list of current subtitles for the episode
 
     :param video_path: the video path
-    :return: the current subtitles for the specified video
+    :type video_path: str
+    :return: the current subtitles (3-letter opensubtitles codes) for the specified video
+    :rtype: list of str
     """
     video = get_video(video_path)
     if not video:
@@ -474,6 +480,7 @@ def get_subtitle_description(subtitle):
     :rtype: str
     """
     desc = None
+    sub_id = str(subtitle.id)
     if hasattr(subtitle, 'filename') and subtitle.filename:
         desc = subtitle.filename.lower()
     elif hasattr(subtitle, 'name') and subtitle.name:
@@ -484,9 +491,9 @@ def get_subtitle_description(subtitle):
         desc = str(subtitle.releases).lower()
 
     if not desc:
-        desc = subtitle.id
+        desc = sub_id
 
-    return subtitle.id + '-' + desc if desc not in subtitle.id else desc
+    return sub_id + '-' + desc if desc not in sub_id else desc
 
 
 def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles=None, release_name=None):
@@ -505,13 +512,13 @@ def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles
     :return: video
     :rtype: subliminal.video
     """
-    return _get_video(video_path, subtitles_dir, subtitles, embedded_subtitles, release_name)
+    key = video_key.format(video_path=video_path, subtitles_dir=subtitles_dir, subtitles=subtitles,
+                           embedded_subtitles=embedded_subtitles, release_name=release_name)
+    video = region.get(key, expiration_time=VIDEO_EXPIRATION_TIME)
+    if video != NO_VALUE:
+        logger.log(u'Found cached video information under key {0}'.format(key), logger.DEBUG)
+        return video
 
-
-@region.cache_on_arguments(expiration_time=VIDEO_EXPIRATION_TIME)  # Should we provide a way to invalidate this cache?
-def _get_video(video_path, subtitles_dir, subtitles, embedded_subtitles, release_name):
-    """Internal get_video method since dogpile cache default function_key_generator doesn't accept keyword arguments
-    """
     try:
         video_path = encode(video_path)
         subtitles_dir = encode(subtitles_dir or get_subtitles_dir(video_path))
@@ -528,6 +535,10 @@ def _get_video(video_path, subtitles_dir, subtitles, embedded_subtitles, release
 
         refine(video, episode_refiners=episode_refiners, embedded_subtitles=embedded_subtitles,
                release_name=release_name)
+
+        region.set(key, video)
+        logger.log(u'Video information cached under key {0}'.format(key), logger.DEBUG)
+
         return video
     except Exception as error:
         logger.log(u'Exception: {0}'.format(error), logger.DEBUG)
@@ -793,13 +804,16 @@ class SubtitlesFinder(object):
                     now = datetime.datetime.now()
                     days = int(ep_to_sub['age'])
                     delay_time = datetime.timedelta(hours=1 if days <= 10 else 8 if days <= 30 else 30 * 24)
+                    delay = lastsearched + delay_time - now
 
                     # Search every hour until 10 days pass
                     # After 10 days, search every 8 hours, after 30 days search once a month
                     # Will always try an episode regardless of age for 3 times
-                    if lastsearched + delay_time > now and int(ep_to_sub['searchcount']) > 2:
+                    # The time resolution is minute
+                    # Only delay is the it's bigger than one minute and avoid wrongly skipping the search slot.
+                    if delay.total_seconds() > 60 and int(ep_to_sub['searchcount']) > 2:
                         logger.log(u'Subtitle search for {0} {1} delayed for {2}'.format
-                                   (ep_to_sub['show_name'], ep_num, dhm(lastsearched + delay_time - now)), logger.DEBUG)
+                                   (ep_to_sub['show_name'], ep_num, dhm(delay)), logger.DEBUG)
                         continue
 
                 show_object = Show.find(sickbeard.showList, int(ep_to_sub['showid']))
