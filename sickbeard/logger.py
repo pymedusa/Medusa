@@ -31,9 +31,11 @@ import sys
 import logging
 import logging.handlers
 from logging import NullHandler
-import threading
+import pkgutil
 import platform
 import locale
+import subliminal
+import tornado
 import traceback
 
 from urllib import quote
@@ -65,6 +67,16 @@ LOGGING_LEVELS = {
 }
 
 censored_items = {}  # pylint: disable=invalid-name
+
+
+class ContextFilter(logging.Filter):
+    """
+    This is a filter which injects contextual information into the log, in our case: commit hash
+    """
+
+    def filter(self, record):
+        record.curhash = sickbeard.CUR_COMMIT_HASH[:7] if sickbeard.CUR_COMMIT_HASH and len(sickbeard.CUR_COMMIT_HASH) > 6 else ''
+        return True
 
 
 class CensoredFormatter(logging.Formatter, object):
@@ -108,6 +120,15 @@ class CensoredFormatter(logging.Formatter, object):
         return msg
 
 
+def list_modules(package):
+    return [modname for importer, modname, ispkg in pkgutil.walk_packages(
+        path=package.__path__, prefix=package.__name__+'.', onerror=lambda x: None)]
+
+
+def get_loggers(package):
+    return [logging.getLogger(modname) for modname in list_modules(package)]
+
+
 class Logger(object):  # pylint: disable=too-many-instance-attributes
     """
     Logger to create log entries
@@ -116,12 +137,10 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         self.logger = logging.getLogger('sickrage')
 
         self.loggers = [
-            logging.getLogger('sickrage'),
-            logging.getLogger('tornado.general'),
-            logging.getLogger('tornado.application'),
-            # logging.getLogger('subliminal'),
-            # logging.getLogger('tornado.access'),
+            self.logger
         ]
+        self.loggers.extend(get_loggers(tornado))
+        self.loggers.extend(get_loggers(subliminal))
 
         self.console_logging = False
         self.file_logging = False
@@ -149,12 +168,16 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         logging.addLevelName(DB, 'DB')  # add a new logging level DB
         logging.getLogger().addHandler(NullHandler())  # nullify root logger
 
+        log_filter = ContextFilter()
+        self.logger.addFilter(log_filter)
+
         # set custom root logger
         for logger in self.loggers:
             if logger is not self.logger:
                 logger.root = self.logger
                 logger.parent = self.logger
                 logger.propagate = False
+                logger.addFilter(log_filter)
 
         log_level = DB if self.database_logging else DEBUG if self.debug_logging else INFO
 
@@ -164,8 +187,9 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
 
         # console log handler
         if self.console_logging:
+            pattern = '%(asctime)s %(levelname)s::%(threadName)s :: [%(curhash)s] %(message)s'
             console = logging.StreamHandler()
-            console.setFormatter(CensoredFormatter('%(asctime)s %(levelname)s::%(message)s', '%H:%M:%S'))
+            console.setFormatter(CensoredFormatter(pattern, '%H:%M:%S'))
             console.setLevel(log_level)
 
             for logger in self.loggers:
@@ -173,8 +197,11 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
 
         # rotating log file handler
         if self.file_logging:
-            rfh = logging.handlers.RotatingFileHandler(self.log_file, maxBytes=int(sickbeard.LOG_SIZE * 1048576), backupCount=sickbeard.LOG_NR, encoding='utf-8')
-            rfh.setFormatter(CensoredFormatter('%(asctime)s %(levelname)-8s %(message)s', dateTimeFormat))
+            pattern = '%(asctime)s %(levelname)-8s %(threadName)s :: [%(curhash)s] %(message)s'
+            rfh = logging.handlers.RotatingFileHandler(
+                self.log_file, maxBytes=int(sickbeard.LOG_SIZE * 1048576), backupCount=sickbeard.LOG_NR,
+                encoding='utf-8')
+            rfh.setFormatter(CensoredFormatter(pattern, dateTimeFormat))
             rfh.setLevel(log_level)
 
             for logger in self.loggers:
@@ -196,13 +223,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         :param args: to pass to logger
         :param kwargs: to pass to logger
         """
-        cur_thread = threading.currentThread().getName()
-        cur_hash = '[{}] '.format(
-            sickbeard.CUR_COMMIT_HASH[:7]
-        ) if sickbeard.CUR_COMMIT_HASH and len(sickbeard.CUR_COMMIT_HASH) > 6 else ''
-
-        message = '{thread} :: {hash}{message}'.format(
-            thread=cur_thread, hash=cur_hash, message=msg)
+        message = msg
 
         # Change the SSL error to a warning with a link to information about how to fix it.
         # Check for u'error [SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] sslv3 alert handshake failure (_ssl.c:590)'
