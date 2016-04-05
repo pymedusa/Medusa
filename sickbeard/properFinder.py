@@ -51,6 +51,14 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         :param force: Start even if already running (currently not used, defaults to False)
         """
         logger.log(u"Beginning the search for new propers")
+        
+        if self.amActive:
+            logger.log(u"Find propers is still running, not starting it again", logger.DEBUG)
+            return
+
+        if sickbeard.searchQueueScheduler.action.is_manualsearch_in_progress():
+            logger.log(u"Manual search is running. Can't start Find propers", logger.WARNING)
+            return
 
         self.amActive = True
 

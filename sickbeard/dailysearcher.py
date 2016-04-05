@@ -43,7 +43,13 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         :param force: Force search
         """
         if self.amActive:
+            logger.log(u"Daily search is still running, not starting it again", logger.DEBUG)
             return
+
+        if sickbeard.searchQueueScheduler.action.is_manualsearch_in_progress():
+            logger.log(u"Manual search is running. Can't start Daily search", logger.WARNING)
+            return
+
 
         self.amActive = True
         _ = force
