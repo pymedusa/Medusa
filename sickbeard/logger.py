@@ -154,6 +154,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
             if logger is not self.logger:
                 logger.root = self.logger
                 logger.parent = self.logger
+                logger.propagate = False
 
         log_level = DB if self.database_logging else DEBUG if self.debug_logging else INFO
 
