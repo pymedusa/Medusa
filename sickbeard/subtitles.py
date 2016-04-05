@@ -480,6 +480,7 @@ def get_subtitle_description(subtitle):
     :rtype: str
     """
     desc = None
+    sub_id = str(subtitle.id)
     if hasattr(subtitle, 'filename') and subtitle.filename:
         desc = subtitle.filename.lower()
     elif hasattr(subtitle, 'name') and subtitle.name:
@@ -490,9 +491,9 @@ def get_subtitle_description(subtitle):
         desc = str(subtitle.releases).lower()
 
     if not desc:
-        desc = subtitle.id
+        desc = sub_id
 
-    return subtitle.id + '-' + desc if desc not in subtitle.id else desc
+    return sub_id + '-' + desc if desc not in sub_id else desc
 
 
 def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles=None, release_name=None):
