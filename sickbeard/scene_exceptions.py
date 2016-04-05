@@ -307,7 +307,10 @@ def _xem_exceptions_fetcher():
             logger.log(u"Checking for XEM scene exception updates for {}".format
                        (sickbeard.indexerApi(indexer).name))
 
-            url = "http://thexem.de/map/allNames?origin={}&seasonNumbers=1".format(sickbeard.indexerApi(indexer).config['xem_origin'])
+            if sickbeard.indexerApi(indexer).config.get('xem_origin'):
+                url = "http://thexem.de/map/allNames?origin={}&seasonNumbers=1".format(sickbeard.indexerApi(indexer).config.get('xem_origin'))
+            else:
+                return None
 
             parsedJSON = helpers.getURL(url, session=xem_session, timeout=90, returns='json')
             if not parsedJSON:
