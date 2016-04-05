@@ -196,7 +196,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         self.started = True
 
         try:
-            logger.log(u"Beginning forced search for: [" + self.segment.prettyName() + "]")
+            logger.log(u"Beginning {0} search for: [{1}]".format(('forced','manual')[bool(self.manual_search)], self.segment.prettyName()))
 
             search_result = search.searchProviders(self.show, [self.segment], True, self.downCurQuality, self.manual_search)
 
