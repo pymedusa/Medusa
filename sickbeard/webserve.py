@@ -1421,12 +1421,12 @@ class Home(WebRoot):
         except Exception as e:
             return self._genericMessage("Error", "Couldn't read cached results. Error: {}".format(e))
 
-        if not all([cached_result['url'],
-                    cached_result['quality'],
-                    cached_result['name'],
-                    cached_result['indexerid'],
-                    cached_result['season'],
-                    provider]):
+        if not cached_result or not all([cached_result['url'],
+                                         cached_result['quality'],
+                                         cached_result['name'],
+                                         cached_result['indexerid'],
+                                         cached_result['season'],
+                                         provider]):
             return self._genericMessage("Error", "Cached result doesn't have all needed info to snatch episode")
 
         try:
