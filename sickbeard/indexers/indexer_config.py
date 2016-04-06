@@ -2,6 +2,7 @@
 
 from tvdb_api.tvdb_api import Tvdb
 from tvmaze.tvmaze_api import TVmaze
+from anidb.anidb_api import Anidb_API
 from sickbeard import helpers
 
 initConfig = {
@@ -20,6 +21,7 @@ initConfig = {
 INDEXER_TVDB = 1
 INDEXER_TVRAGE = 2  # Must keep
 INDEXER_TVMAZE = 3
+INDEXER_ANIDB = 4
 
 indexerConfig = {
     INDEXER_TVDB: {
@@ -59,6 +61,21 @@ indexerConfig = {
         'show_url': 'http://www.tvmaze.com/shows/',
         'base_url': 'http://api.tvmaze.com/',
         'mapped_to': 'tvmazeid'  # The attribute to which other indexers can map there tvmaze id to
+    },
+    INDEXER_ANIDB: {
+        'enabled': True,
+        'id': INDEXER_ANIDB,
+        'name': 'Anidb',
+        'module': Anidb_API,
+        'api_params': {
+            'language': 'en',
+            'useZip': True,
+            'session': helpers.make_session(cache_etags=False),
+        },
+        'icon': 'anidb.ico',
+        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
+        'show_url': 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid=',
+        'base_url': 'http://api.anidb.net:9001/'
     }
 }
 
