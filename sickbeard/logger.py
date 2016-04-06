@@ -31,9 +31,11 @@ import sys
 import logging
 import logging.handlers
 from logging import NullHandler
-import threading
+import pkgutil
 import platform
 import locale
+import subliminal
+import tornado
 import traceback
 
 from urllib import quote
@@ -64,7 +66,50 @@ LOGGING_LEVELS = {
     'DB': DB,
 }
 
+SSL_ERRORS = {
+    r'error \[Errno \d+\] _ssl.c:\d+: error:\d+\s*:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert internal error',
+    r'error \[SSL: SSLV3_ALERT_HANDSHAKE_FAILURE\] sslv3 alert handshake failure \(_ssl\.c:\d+\)',
+}
+
+SSL_ERRORS_WIKI_URL = 'https://git.io/vVaIj'
+SSL_ERROR_HELP_MSG = 'See: {0}'.format(SSL_ERRORS_WIKI_URL)
+
 censored_items = {}  # pylint: disable=invalid-name
+
+
+class ContextFilter(logging.Filter):
+    """
+    This is a filter which injects contextual information into the log, in our case: commit hash
+    """
+
+    def filter(self, record):
+        cur_commit_hash = sickbeard.CUR_COMMIT_HASH
+        record.curhash = cur_commit_hash[:7] if cur_commit_hash and len(cur_commit_hash) > 6 else ''
+
+        # add exception traceback for errors
+        if record.levelno == ERROR:
+            record.exc_info = sys.exc_info()
+
+        return True
+
+
+class UIViewHandler(logging.Handler):
+
+    def __init__(self):
+        super(UIViewHandler, self).__init__(WARNING)
+
+    def emit(self, record):
+        # SSL errors might change the record.levelno to WARNING
+        message = self.format(record)
+
+        level = record.levelno
+        if level not in (WARNING, ERROR):
+            return
+
+        if level == WARNING:
+            classes.WarningViewer.add(classes.UIError(message))
+        elif level == ERROR:
+            classes.ErrorViewer.add(classes.UIError(message))
 
 
 class CensoredFormatter(logging.Formatter, object):
@@ -85,6 +130,15 @@ class CensoredFormatter(logging.Formatter, object):
 
         if not isinstance(msg, unicode):
             msg = msg.decode(self.encoding, 'replace')  # Convert to unicode
+
+        # Change the SSL error to a warning with a link to information about how to fix it.
+        # Check for u'error [SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] sslv3 alert handshake failure (_ssl.c:590)'
+        for ssl_error in SSL_ERRORS:
+            if re.findall(ssl_error, msg):
+                record.levelno = WARNING
+                record.levelname = logging.getLevelName(record.levelno)
+                msg = super(CensoredFormatter, self).format(record)
+                msg = re.sub(ssl_error, SSL_ERROR_HELP_MSG, msg)
 
         # set of censored items
         censored = {item for _, item in censored_items.iteritems() if item}
@@ -108,6 +162,15 @@ class CensoredFormatter(logging.Formatter, object):
         return msg
 
 
+def list_modules(package):
+    return [modname for importer, modname, ispkg in pkgutil.walk_packages(
+        path=package.__path__, prefix=package.__name__+'.', onerror=lambda x: None)]
+
+
+def get_loggers(package):
+    return [logging.getLogger(modname) for modname in list_modules(package)]
+
+
 class Logger(object):  # pylint: disable=too-many-instance-attributes
     """
     Logger to create log entries
@@ -116,12 +179,10 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         self.logger = logging.getLogger('sickrage')
 
         self.loggers = [
-            logging.getLogger('sickrage'),
-            logging.getLogger('tornado.general'),
-            logging.getLogger('tornado.application'),
-            # logging.getLogger('subliminal'),
-            # logging.getLogger('tornado.access'),
+            self.logger
         ]
+        self.loggers.extend(get_loggers(tornado))
+        self.loggers.extend(get_loggers(subliminal))
 
         self.console_logging = False
         self.file_logging = False
@@ -149,11 +210,25 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         logging.addLevelName(DB, 'DB')  # add a new logging level DB
         logging.getLogger().addHandler(NullHandler())  # nullify root logger
 
+        log_filter = ContextFilter()
+        console_log_pattern = '%(asctime)s %(levelname)s::%(threadName)s :: [%(curhash)s] %(message)s'
+        file_log_pattern = '%(asctime)s %(levelname)-8s %(threadName)s :: [%(curhash)s] %(message)s'
+
+        console_formatter = CensoredFormatter(console_log_pattern, '%H:%M:%S')
+
+        ui_handler = UIViewHandler()
+        ui_handler.setLevel(INFO)
+        ui_handler.setFormatter(console_formatter)
+
         # set custom root logger
         for logger in self.loggers:
+            logger.addFilter(log_filter)
+            logger.addHandler(ui_handler)
+
             if logger is not self.logger:
                 logger.root = self.logger
                 logger.parent = self.logger
+                logger.propagate = False
 
         log_level = DB if self.database_logging else DEBUG if self.debug_logging else INFO
 
@@ -164,7 +239,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         # console log handler
         if self.console_logging:
             console = logging.StreamHandler()
-            console.setFormatter(CensoredFormatter('%(asctime)s %(levelname)s::%(message)s', '%H:%M:%S'))
+            console.setFormatter(console_formatter)
             console.setLevel(log_level)
 
             for logger in self.loggers:
@@ -172,8 +247,11 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
 
         # rotating log file handler
         if self.file_logging:
-            rfh = logging.handlers.RotatingFileHandler(self.log_file, maxBytes=int(sickbeard.LOG_SIZE * 1048576), backupCount=sickbeard.LOG_NR, encoding='utf-8')
-            rfh.setFormatter(CensoredFormatter('%(asctime)s %(levelname)-8s %(message)s', dateTimeFormat))
+
+            rfh = logging.handlers.RotatingFileHandler(
+                self.log_file, maxBytes=int(sickbeard.LOG_SIZE * 1048576), backupCount=sickbeard.LOG_NR,
+                encoding='utf-8')
+            rfh.setFormatter(CensoredFormatter(file_log_pattern, dateTimeFormat))
             rfh.setLevel(log_level)
 
             for logger in self.loggers:
@@ -195,36 +273,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         :param args: to pass to logger
         :param kwargs: to pass to logger
         """
-        cur_thread = threading.currentThread().getName()
-        cur_hash = '[{}] '.format(
-            sickbeard.CUR_COMMIT_HASH[:7]
-        ) if sickbeard.CUR_COMMIT_HASH and len(sickbeard.CUR_COMMIT_HASH) > 6 else ''
-
-        message = '{thread} :: {hash}{message}'.format(
-            thread=cur_thread, hash=cur_hash, message=msg)
-
-        # Change the SSL error to a warning with a link to information about how to fix it.
-        # Check for u'error [SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] sslv3 alert handshake failure (_ssl.c:590)'
-
-        ssl_errors = [
-            r'error \[Errno \d+\] _ssl.c:\d+: error:\d+\s*:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert internal error',
-            r'error \[SSL: SSLV3_ALERT_HANDSHAKE_FAILURE\] sslv3 alert handshake failure \(_ssl\.c:\d+\)',
-        ]
-        for ssl_error in ssl_errors:
-            check = re.sub(ssl_error, 'See: http://git.io/vuU5V', message)
-            if check != message:
-                message = check
-                level = WARNING
-
-        if level == ERROR:
-            classes.ErrorViewer.add(classes.UIError(message))
-        elif level == WARNING:
-            classes.WarningViewer.add(classes.UIError(message))
-
-        if level == ERROR:
-            self.logger.exception(message, *args, **kwargs)
-        else:
-            self.logger.log(level, message, *args, **kwargs)
+        self.logger.log(level, msg, *args, **kwargs)
 
     def log_error_and_exit(self, error_msg, *args, **kwargs):
         self.log(error_msg, ERROR, *args, **kwargs)
