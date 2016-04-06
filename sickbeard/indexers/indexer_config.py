@@ -73,7 +73,7 @@ indexerConfig = {
             'session': helpers.make_session(cache_etags=False),
         },
         'icon': 'anidb.ico',
-        'scene_loc': 'https://api.pymedusa.com/scene_exceptions.json',
+        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
         'show_url': 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid=',
         'base_url': 'http://api.anidb.net:9001/'
     }
