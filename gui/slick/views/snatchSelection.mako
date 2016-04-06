@@ -199,9 +199,9 @@
             <tbody aria-live="polite" aria-relevant="all">
             % for hItem in provider_results['found_items']:
                 <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
-                    <td class="tvShow" class="col-name" width="35%">${hItem["name"]}</td>
+                    <td class="tvShow">${hItem["name"]}</td>
                     <td align="center">${helpers.remove_non_release_groups(hItem["release_group"])}</td>
-                    <td align="center">
+                    <td class="col-provider">
                         % if hItem["provider_image"]:
                             <img src="${srRoot}/images/providers/${hItem["provider_image"]}" width="16" height="16" style="vertical-align:middle;" alt="${hItem["provider"]}" style="cursor: help;" title="${hItem["provider"]}"/> ${hItem["provider"]}
                         % else:
@@ -211,10 +211,10 @@
                     <td align="center">${renderQualityPill(int(hItem["quality"]))}</td>
                     <td align="center">${hItem["seeders"] if hItem["seeders"] > -1 else '-'}</td>
                     <td align="center">${hItem["leechers"] if hItem["leechers"] > -1 else '-'}</td>
-                    <td align="center">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
+                    <td class="col-size">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
                     <td align="center">${hItem["provider_type"]}</td>
-                    <td align="center">${datetime.datetime.fromtimestamp(hItem["time"]).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</td>
-                    <td align="center" class="col-search" width="5%"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="${srRoot}/home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
+                    <td class="col-date">${datetime.datetime.fromtimestamp(hItem["time"]).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</td>
+                    <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="${srRoot}/home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                 </tr>
             % endfor
             </tbody>

@@ -1255,7 +1255,25 @@ td.col-legend {
 
 th.col-search,
 td.col-search {
-  width: 65px;
+	width: 65px;
+}
+
+td.col-date {
+	min-width: 104px;
+	text-align: center;
+	white-space: nowrap;
+}
+
+td.col-size {
+	min-width: 79px;
+	text-align: center;
+	white-space: nowrap;
+}
+
+td.col-provider {
+	min-width: 133px;
+	text-align: center;
+	white-space: nowrap;
 }
 
 .showLegend {
