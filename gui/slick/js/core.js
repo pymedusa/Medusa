@@ -2497,13 +2497,23 @@ var SICKRAGE = {
             });
         },
         snatchSelection: function() {
+            var spinner = $('#searchNotification');
+            var updateSpinner = function(spinner, message, showSpinner) {
+                if (showSpinner) {
+                    $(spinner).html('<img id="searchingAnim" src="' + srRoot + '/images/loading32' + themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message);
+                } else {
+                    $(spinner).empty().html(message);
+                }
+            };
+            
             $.fn.loadContainer = function(path, loadingTxt, errorTxt) {
-                $(this).html('<img id="searchingAnim" src="' + srRoot + '/images/loading32' + themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
+                updateSpinner(spinner, loadingTxt);
                 $(this).load(srRoot + path + ' #container', function(response, status) {
                     if (status === "error") {
-                        $(this).empty().html(errorTxt);
+                        updateSpinner(spinner, errorTxt, false);
                     }
                 });
+                
             };
 
             // Click event for the download button for snatching a result
@@ -2535,7 +2545,6 @@ var SICKRAGE = {
                 var pollInterval = 5000;
                 repeat = repeat || true;
                 
-                
                 var show = $('meta[data-last-prov-updates]').attr('data-show');
                 var season = $('meta[data-last-prov-updates]').attr('data-season');
                 var episode = $('meta[data-last-prov-updates]').attr('data-episode');
@@ -2563,35 +2572,37 @@ var SICKRAGE = {
                     success: function (data) {
                         if (data.result === 'refresh') {
                             self.refreshResults();
-                            $('#searchNotification').text('Refreshed results...');
+                            updateSpinner(spinner, 'Refreshed results...', true);
                         }
-
                         if (data.result === 'searching') {
                             // ep is searched, you will get a results any minute now
                             pollInterval = 5000;
-                            $('#searchNotification').text('The episode is being searched, please wait...');
+                            $('.manualSearchButton').attr("disabled", true);
+                            updateSpinner(spinner, 'The episode is being searched, please wait......', true);
                         }
-
                         if (data.result === 'queued') {
                             // ep is queued, this might take some time to get results
                             pollInterval = 7000;
-                            $('#searchNotification').text('The episode has been queued, because another search is taking place. please wait..');
+                            $('.manualSearchButton').attr("disabled", true);
+                            updateSpinner(spinner, 'The episode has been queued, because another search is taking place. please wait..', true);
                         }
-
                         if (data.result === 'finished') {
                             // ep search is finished
-                            $('#searchNotification').text('Search finished');
+                            updateSpinner(spinner, 'Search finished', false);
+                            $('.manualSearchButton').removeAttr("disabled");
                             repeat = false;
                         }
                         if (data.result === 'error') {
                             // ep search is finished
                             console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
+                            $('.manualSearchButton').removeAttr("disabled");
                             repeat = true;
                         }
                     },
                     error: function () {
                         //repeat = false;
                         console.log('Error occurred!!');
+                        $('.manualSearchButton').removeAttr("disabled");
                     },
                     complete: function () {
                         if (repeat) {
@@ -2602,23 +2613,27 @@ var SICKRAGE = {
                 });
             }
 
-            checkCacheUpdates();
+            setTimeout(checkCacheUpdates, 2000);
 
             // Click event for the reload results and force search buttons
             $('body').on('click', '.manualSearchButton', function(event){
                 event.preventDefault();
+                $('.manualSearchButton').attr("disabled", true);
                 var show = $('meta[data-last-prov-updates]').attr('data-show');
                 var season = $('meta[data-last-prov-updates]').attr('data-season');
                 var episode = $('meta[data-last-prov-updates]').attr('data-episode');
-                var performSearch = $(this).attr('data-force-search');
-                
+                var forceSearch = $(this).attr('data-force-search');
+
                 if ($.isNumeric(show) && $.isNumeric(season) && $.isNumeric(episode)) {
-                    $('#wrapper').loadContainer(
-                            '/home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=' + performSearch,
-                            'Loading new search results...',
-                            'Time out, refresh page to try again'
-                    );
-                    checkCacheUpdates(true);
+                    updateSpinner(spinner, 'Started a forced manual search...', true);
+                    $.getJSON(srRoot + '/home/snatchSelection',{
+                          'show': show,
+                          'season': season,
+                          'episode': episode,
+                          'perform_search': forceSearch,
+                    });
+                    // Force the search, but give the checkCacheUpdates the time to start up a search thread
+                    setTimeout(function() {checkCacheUpdates(true);}, 2000);
                 }
             });
         },
