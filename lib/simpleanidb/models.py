@@ -51,7 +51,7 @@ class Anime(object):
             "protover": 1,
             "aid": self.id
         }
-        r = requests.get("http://api.anidb.net:9001/httpapi", params=params)
+        r = self.anidb.session.get("http://api.anidb.net:9001/httpapi", params=params)
         self._xml = ET.fromstring(r.text.encode("UTF-8"))
         if self._xml.tag == 'error':
             raise GeneralError(self._xml.text)

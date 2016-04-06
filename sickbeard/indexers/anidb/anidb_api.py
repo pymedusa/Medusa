@@ -405,38 +405,20 @@ class Anidb_API(object):
             'url': 'show_url',
         }
 
-        for key, value in indexer_data.get('data').__dict__.iteritems():
-            try:
-                # Try to map the object value using the name_map dict
-                if isinstance(value, (unicode, str, int)):
-                    new_dict[name_map.get(key) or key] = value
-                else:
-                    # Try to map more complex structures, and overwrite the default mapping
-                    if key == 'schedule':
-                        new_dict['airs_time'] = value.get('time')
-                        new_dict['airs_dayofweek'] = u', '.join(value.value('days')) if value.get('days') else None
-                    if key == 'network':
-                        new_dict['network'] = value.get('name')
-                        new_dict['code'] = value.get('country', {'code': 'NA'})['code']
-                        new_dict['timezone'] = value.get('country', {'timezone': 'NA'})['timezone']
-                    if key == 'webChannel':
-                        new_dict['webchannel'] = value.get('name')
-                    if key == 'image':
-                        if value.get('medium'):
-                            new_dict['image_medium'] = value.get('medium')
-                            new_dict['image_original'] = value.get('original')
-                            new_dict['poster'] = value.get('original')
-                    if key == 'externals':
-                        new_dict['tvrage_id'] = value.get('tvrage')
-                        new_dict['tvdb_id'] = value.get('thetvdb')
-                        new_dict['imdb_id'] = value.get('imdb')
-                    if key == 'genres' and isinstance(value, list):
-                        new_dict['genre'] = '|' + '|'.join(value) + '|'
-            except Exception:
-                continue
-
-        # Fix network for webChannel shows.
-        new_dict['network'] = new_dict.get('network') or new_dict.get('webchannel')
+        new_dict['airs_time'] = indexer_data['data'].get('time')
+        new_dict['airs_time'] = indexer_data['data'].get('time')
+        new_dict['airs_dayofweek'] = u', '.join(indexer_data['data'].indexer_data['data']('days')) if indexer_data['data'].get('days') else None
+        new_dict['network'] = indexer_data['data'].get('name')
+        new_dict['code'] = indexer_data['data'].get('country', {'code': 'NA'})['code']
+        new_dict['timezone'] = indexer_data['data'].get('country', {'timezone': 'NA'})['timezone']
+        new_dict['webchannel'] = indexer_data['data'].get('name')
+        new_dict['image_medium'] = indexer_data['data'].get('medium')
+        new_dict['image_original'] = indexer_data['data'].get('original')
+        new_dict['poster'] = indexer_data['data'].get('original')
+        new_dict['tvrage_id'] = indexer_data['data'].get('tvrage')
+        new_dict['tvdb_id'] = indexer_data['data'].get('thetvdb')
+        new_dict['imdb_id'] = indexer_data['data'].get('imdb')
+        new_dict['genre'] = '|' + '|'.join(indexer_data['data']) + '|'
 
         return OrderedDict({parsing_into_key: new_dict})
 
@@ -512,7 +494,7 @@ class Anidb_API(object):
         @return: A list of Show objects. Includes the search score.
         """
 
-        results = OrderedDict({'data': self.API.search(show, autoload=True)})
+        results = OrderedDict({'data': self.API.search(show, autoload=False)})
         if results:
             return results
         else:
@@ -538,23 +520,13 @@ class Anidb_API(object):
             # These are the fields we'd like to see for a show search
             series_list = []
 
-            name_map = {
-                'id': 'id',
-                'name': 'seriesname',
-                'summary': 'overview',
-                'premiered': 'firstaired',
-                'genres': 'genre',
-                'image': 'fanart',
-                'url': 'show_url',
-            }
-
             for series in indexer_data.get('data', []):  # @UnusedVariable, pylint: disable=unused-variable
                 new_dict = OrderedDict()
                 new_dict['id'] = series.id
-                new_dict['seriesname'] = str(series.title)
+                new_dict['seriesname'] = re.sub(r'[^a-zA-Z0-9 ]', '', unicode(series.title))
 
                 if series.loaded:
-                    new_dict['firstaired'] = series.start_date
+                    new_dict['firstaired'] = str(series.start_date)
 
                 series_list.append(new_dict)
             return OrderedDict({'series': series_list})
@@ -571,7 +543,7 @@ class Anidb_API(object):
 
         if anidb_id:
             log().debug('Getting all show data for %s', [anidb_id])
-            results = OrderedDict({'data': self.API.get_show(anidb_id)})
+            results = OrderedDict({'data': self.API.anime(anidb_id)})
 
         if not results:
             return
