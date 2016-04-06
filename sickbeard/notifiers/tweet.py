@@ -22,6 +22,7 @@ import sickbeard
 
 from sickbeard import logger, common
 from sickrage.helper.exceptions import ex
+from sickbeard import helpers
 
 # parse_qsl moved to urlparse module in v2.6
 try:
@@ -34,13 +35,25 @@ import pythontwitter as twitter
 
 
 class Notifier(object):
-    consumer_key = "vHHtcB6WzpWDG6KYlBMr8g"
-    consumer_secret = "zMqq5CB3f8cWKiRO2KzWPTlBanYmV0VYxSXZ0Pxds0E"
 
     REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
     ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
     AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
     SIGNIN_URL = 'https://api.twitter.com/oauth/authenticate'
+
+    @staticmethod
+    def _get_consumer_values(self):
+        """
+        Retrieve consumer values from cdn
+        """
+        
+        try:
+            twitter = helpers.getURL('https://cdn.pymedusa.com/twitter', session=helpers.make_session(), returns='json')
+        except Exception:
+            logger.log(u"Could not load twitter application data", logger.WARNING)
+    
+        consumer_secret = twitter['consumer_secret'] if twitter['consumer_secret'] else None
+        consumer_key = twitter['consumer_key'] if twitter['consumer_key'] else None
 
     def notify_snatch(self, ep_name):
         if sickbeard.TWITTER_NOTIFY_ONSNATCH:
@@ -71,6 +84,7 @@ class Notifier(object):
 
     def _get_authorization(self):
 
+        self._get_consumer_values
         signature_method_hmac_sha1 = oauth.SignatureMethod_HMAC_SHA1()  # @UnusedVariable
         oauth_consumer = oauth.Consumer(key=self.consumer_key, secret=self.consumer_secret)
         oauth_client = oauth.Client(oauth_consumer)
@@ -90,6 +104,7 @@ class Notifier(object):
             return self.AUTHORIZATION_URL + "?oauth_token=" + request_token['oauth_token']
 
     def _get_credentials(self, key):
+        self._get_consumer_values
         request_token = {
             'oauth_token': sickbeard.TWITTER_USERNAME,
             'oauth_token_secret': sickbeard.TWITTER_PASSWORD,
