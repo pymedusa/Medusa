@@ -325,7 +325,7 @@ class GenericMetadata(object):
                 if not self._has_season_poster(show_obj, season):
                     logger.log(u"Metadata provider " + self.name + " creating season posters for " + show_obj.name,
                                logger.DEBUG)
-                    result.extend(self.save_season_posters(show_obj, season))
+                    result.append(self.save_season_posters(show_obj, season))
             return all(result)
         return False
 
