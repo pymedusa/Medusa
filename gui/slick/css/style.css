@@ -2165,6 +2165,10 @@ span.true {
     /* green */
 }
 
+span.break-word {
+	word-wrap: break-word;
+}
+
 option.flag {
     padding-left: 35px;
     background-repeat: no-repeat;

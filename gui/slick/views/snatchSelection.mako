@@ -199,8 +199,8 @@
             <tbody aria-live="polite" aria-relevant="all">
             % for hItem in provider_results['found_items']:
                 <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
-                    <td class="tvShow">${hItem["name"]}</td>
-                    <td align="center">${helpers.remove_non_release_groups(hItem["release_group"])}</td>
+                    <td class="tvShow"><span class="break-word">${hItem["name"]}</span></td>
+                    <td align="center"><span class="break-word">${helpers.remove_non_release_groups(hItem["release_group"])}</span></td>
                     <td class="col-provider">
                         % if hItem["provider_image"]:
                             <img src="${srRoot}/images/providers/${hItem["provider_image"]}" width="16" height="16" style="vertical-align:middle;" alt="${hItem["provider"]}" style="cursor: help;" title="${hItem["provider"]}"/> ${hItem["provider"]}
