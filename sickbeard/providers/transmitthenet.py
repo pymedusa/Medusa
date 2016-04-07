@@ -138,6 +138,7 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                                 'Download Torrent',  # Download link
                                 'Previously Grabbed Torrent File',  # Already Downloaded
                                 'Currently Seeding Torrent',  # Seeding
+                                'Currently Leeching Torrent',  # Leeching
                             ]})
 
                             if not download_item:
