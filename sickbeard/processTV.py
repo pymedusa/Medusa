@@ -142,25 +142,25 @@ def logHelper(logMessage, logLevel=logger.INFO):
     return logMessage + u"\n"
 
 
-def OneRunPP():
-    isRunning = [False]
+#def OneRunPP():
+#    isRunning = [False]
+#
+#    def decorate(func):
+#        @wraps(func)
+#        def func_wrapper(*args, **kargs):
+#            if isRunning[0]:
+#                return logHelper(u'Post processor is already running', logger.WARNING)
 
-    def decorate(func):
-        @wraps(func)
-        def func_wrapper(*args, **kargs):
-            if isRunning[0]:
-                return logHelper(u'Post processor is already running', logger.WARNING)
-
-            isRunning[0] = True
-            ret = func(*args, **kargs)
-            isRunning[0] = False
-            return ret
-        return func_wrapper
-    return decorate
+#            isRunning[0] = True
+#            ret = func(*args, **kargs)
+#            isRunning[0] = False
+#            return ret
+#        return func_wrapper
+#    return decorate
 
 
 # pylint: disable=too-many-arguments,too-many-branches,too-many-statements,too-many-locals
-@OneRunPP()
+#@OneRunPP()
 def processDir(dirName, nzbName=None, process_method=None, force=False, is_priority=None, delete_on=False, failed=False, proc_type="auto"):
     """
     Scans through the files in dirName and processes whatever media files it finds
