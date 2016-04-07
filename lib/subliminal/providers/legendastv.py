@@ -215,8 +215,9 @@ class LegendasTVProvider(Provider):
             title_id = int(source['id_filme'])
 
             # extract type, title and year
-            title = {'type': type_map[source['tipo']], 'title': source['dsc_nome'],
-                     'year': int(source['dsc_data_lancamento'])}
+            title = {'type': type_map[source['tipo']], 'title': source['dsc_nome']}
+            if source['dsc_data_lancamento'] and source['dsc_data_lancamento'].isdigit():
+                title['year'] = int(source['dsc_data_lancamento'])
 
             # extract imdb_id
             if source['id_imdb'] != '0':
