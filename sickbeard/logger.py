@@ -81,6 +81,10 @@ level_mapping = {
     'subliminal.refiner': ERROR  # subliminal refiner is too verbose. Overriding level to ERROR
 }
 
+downlevel_mapping = {
+    'subliminal': INFO - DEBUG
+}
+
 
 class ContextFilter(logging.Filter):
     """
@@ -90,6 +94,13 @@ class ContextFilter(logging.Filter):
     def filter(self, record):
         cur_commit_hash = sickbeard.CUR_COMMIT_HASH
         record.curhash = cur_commit_hash[:7] if cur_commit_hash and len(cur_commit_hash) > 6 else ''
+
+        fullname = record.name
+        basename = fullname.split('.')[0]
+        decrease = downlevel_mapping.get(fullname) or downlevel_mapping.get(basename)
+        if decrease and record.levelno > DEBUG:
+            record.levelno -= decrease
+            record.levelname = logging.getLevelName(record.levelno)
 
         # add exception traceback for errors
         if record.levelno == ERROR:
