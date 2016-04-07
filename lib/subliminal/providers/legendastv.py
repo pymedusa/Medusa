@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import io
 import json
 import logging
@@ -15,10 +16,12 @@ from zipfile import ZipFile, is_zipfile
 
 from . import ParserBeautifulSoup, Provider
 from .. import __short_version__
-from ..cache import EPISODE_EXPIRATION_TIME, SHOW_EXPIRATION_TIME, region
+from ..cache import SHOW_EXPIRATION_TIME, region
 from ..exceptions import AuthenticationError, ConfigurationError
 from ..subtitle import SUBTITLE_EXTENSIONS, Subtitle, fix_line_ending, guess_matches, sanitize
 from ..video import Episode, Movie
+
+RELEASES_EXPIRATION_TIME = datetime.timedelta(minutes=15).total_seconds()
 
 logger = logging.getLogger(__name__)
 
@@ -238,7 +241,6 @@ class LegendasTVProvider(Provider):
 
         return titles
 
-    @region.cache_on_arguments(expiration_time=EPISODE_EXPIRATION_TIME)
     def get_archives(self, title_id, language_code):
         """Get the archive list from a given `title_id` and `language_code`.
 
@@ -360,7 +362,7 @@ class LegendasTVProvider(Provider):
                         continue
 
                 # attempt to get the releases from the cache
-                releases = region.get(releases_key.format(archive_id=a.id))
+                releases = region.get(releases_key.format(archive_id=a.id), expiration_time=RELEASES_EXPIRATION_TIME)
 
                 # the releases are not in cache or cache is expired
                 if releases == NO_VALUE:
