@@ -31,7 +31,7 @@ rarfile.PATH_SEP = '/'
 type_map = {'M': 'movie', 'S': 'episode', 'C': 'episode'}
 
 #: BR title season parsing regex
-season_re = re.compile(' - (?P<season>\d+)(\xaa|a) temporada', re.IGNORECASE)
+season_re = re.compile(' - (?P<season>\d+)(\xaa|a|st|nd|rd|th) (temporada|season)', re.IGNORECASE)
 
 #: Rating parsing regex
 rating_re = re.compile('^(?P<downloads>\d+) downloads, nota (?P<rating>\d+)?')
@@ -228,7 +228,8 @@ class LegendasTVProvider(Provider):
                     title['season'] = int(source['temporada'])
                 else:
                     match = season_re.search(source['dsc_nome_br'])
-                    title['season'] = int(match.group('season'))
+                    if match:
+                        title['season'] = int(match.group('season'))
 
             # add title
             titles[title_id] = title
