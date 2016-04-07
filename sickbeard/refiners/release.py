@@ -14,9 +14,11 @@ EPISODE_ATTRIBUTES = {'series': 'title', 'season': 'season', 'episode': 'episode
 
 def refine(video, release_name=None, release_file=None, extension='release', **kwargs):
     """Refine a video by using the original release name.
-    The refiner will first try to use the release_name passed as an argument;
-    If no release name, then it will read release_file;
-    If no release file, then it will read the file video_name.<extension> seeking for a release name.
+    The refiner will first try:
+    - Read the file video_name.<extension> seeking for a release name
+    - If no release name, it will read the file release file seeking for a release name
+    - If no release name, it will use the release_name passed as an argument
+    - If no release name, then no change in the video object is made
 
     When a release name is found, the video object will be enhanced using the guessit properties extracted from it.
 
@@ -46,6 +48,9 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
     fileroot, fileext = os.path.splitext(filename)
     release_file = get_release_file(dirpath, fileroot, extension) or release_file
     release_name = get_release_name(release_file) or release_name
+
+    if not release_name:
+        return
 
     release_path = os.path.join(dirpath, release_name + fileext)
     logger.log(u'Guessing using {}'.format(release_path), logger.DEBUG)
