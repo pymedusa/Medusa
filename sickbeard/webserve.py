@@ -4146,6 +4146,9 @@ class ConfigGeneral(Config):
 
         sickbeard.save_config()
 
+        # reconfigure the logger
+        logger.reconfigure_levels()
+
         if len(results) > 0:
             for x in results:
                 logger.log(x, logger.ERROR)

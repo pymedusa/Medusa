@@ -1273,6 +1273,9 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         POSTER_SORTDIR = check_setting_int(CFG, 'GUI', 'poster_sortdir', 1)
         DISPLAY_ALL_SEASONS = bool(check_setting_int(CFG, 'General', 'display_all_seasons', 1))
 
+        # reconfigure the logger
+        logger.reconfigure_levels()
+
         # initialize NZB and TORRENT providers
         providerList = providers.makeProviderList()
 

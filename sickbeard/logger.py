@@ -52,6 +52,7 @@ from sickrage.helper.common import dateTimeFormat
 # pylint: disable=line-too-long
 
 # log levels
+CRITICAL = logging.CRITICAL
 ERROR = logging.ERROR
 WARNING = logging.WARNING
 INFO = logging.INFO
@@ -75,6 +76,10 @@ SSL_ERRORS_WIKI_URL = 'https://git.io/vVaIj'
 SSL_ERROR_HELP_MSG = 'See: {0}'.format(SSL_ERRORS_WIKI_URL)
 
 censored_items = {}  # pylint: disable=invalid-name
+
+level_mapping = {
+    'subliminal.refiner': ERROR  # subliminal refiner is too verbose. Overriding level to ERROR
+}
 
 
 class ContextFilter(logging.Filter):
@@ -230,7 +235,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
                 logger.parent = self.logger
                 logger.propagate = False
 
-        log_level = DB if self.database_logging else DEBUG if self.debug_logging else INFO
+        log_level = self.get_default_level()
 
         # set minimum logging level allowed for loggers
         for logger in self.loggers:
@@ -256,6 +261,24 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
 
             for logger in self.loggers:
                 logger.addHandler(rfh)
+
+    def get_default_level(self):
+        return DB if self.database_logging else DEBUG if self.debug_logging else INFO
+
+    def reconfigure_levels(self):
+        default_level = self.get_default_level()
+        mapping = dict(level_mapping)
+
+        if not sickbeard.SUBLIMINAL_LOG:
+            modname = 'subliminal'
+            mapping.update({key: CRITICAL if key.startswith(modname) else value for key, value in mapping.iteritems()})
+            mapping.update({modname: CRITICAL})
+
+        for logger in self.loggers:
+            fullname = logger.name
+            basename = fullname.split('.')[0]
+            level = mapping.get(fullname) or mapping.get(basename) or default_level
+            logger.setLevel(level)
 
     @staticmethod
     def shutdown():
