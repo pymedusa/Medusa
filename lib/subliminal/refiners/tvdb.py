@@ -201,16 +201,20 @@ def search_series(name):
     :rtype: list
 
     """
+    results = tvdb_client.search_series(name)
+    if not results:
+        return None
+
     def match(series):
         key = 0
         if series['status'] != 'Continuing':
             key += 1
-        if series['seriesName'].lower() != name and name not in [alias.lower() for alias in series['aliases']]:
+        if series['seriesName'] != name:
             key += 2
 
         return key
 
-    return sorted(tvdb_client.search_series(name), key=match)
+    return sorted(results, key=match)
 
 
 @region.cache_on_arguments(expiration_time=REFINER_EXPIRATION_TIME)
@@ -273,7 +277,7 @@ def refine(video, **kwargs):
     logger.info('Searching series %r', video.series)
     results = search_series(video.series.lower())
     if not results:
-        logger.warning('No result for series')
+        logger.warning('No results for series')
         return
     logger.debug('Found %d results', len(results))
 
@@ -284,7 +288,7 @@ def refine(video, **kwargs):
             logger.debug('Found result for original series without year')
             found = True
             break
-        if result['firstAired'] and video.year == datetime.strptime(result['firstAired'], '%Y-%m-%d').year:
+        if video.year == datetime.strptime(result['firstAired'], '%Y-%m-%d').year:
             logger.debug('Found result with matching year')
             found = True
             break
@@ -299,8 +303,7 @@ def refine(video, **kwargs):
     # add series information
     logger.debug('Found series %r', result)
     video.series = result['seriesName']
-    if result['firstAired']:
-        video.year = datetime.strptime(result['firstAired'], '%Y-%m-%d').year
+    video.year = datetime.strptime(result['firstAired'], '%Y-%m-%d').year
     video.series_imdb_id = result['imdbId']
     video.series_tvdb_id = result['id']
 
@@ -308,7 +311,7 @@ def refine(video, **kwargs):
     logger.info('Getting series episode %dx%d', video.season, video.episode)
     result = get_series_episode(video.series_tvdb_id, video.season, video.episode)
     if not result:
-        logger.warning('No result for episode')
+        logger.warning('No results for episode')
         return
 
     # add episode information

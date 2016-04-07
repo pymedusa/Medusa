@@ -215,7 +215,6 @@ config_file = 'config.ini'
 @click.group(context_settings={'max_content_width': 100}, epilog='Suggestions and bug reports are greatly appreciated: '
              'https://github.com/Diaoul/subliminal/')
 @click.option('--addic7ed', type=click.STRING, nargs=2, metavar='USERNAME PASSWORD', help='Addic7ed configuration.')
-@click.option('--itasa', type=click.STRING, nargs=2, metavar='USERNAME PASSWORD', help='ItaSA configuration.')
 @click.option('--legendastv', type=click.STRING, nargs=2, metavar='USERNAME PASSWORD', help='LegendasTV configuration.')
 @click.option('--opensubtitles', type=click.STRING, nargs=2, metavar='USERNAME PASSWORD',
               help='OpenSubtitles configuration.')
@@ -225,7 +224,7 @@ config_file = 'config.ini'
 @click.option('--debug', is_flag=True, help='Print useful information for debugging subliminal and for reporting bugs.')
 @click.version_option(__version__)
 @click.pass_context
-def subliminal(ctx, addic7ed, itasa, legendastv, opensubtitles, subscenter, cache_dir, debug):
+def subliminal(ctx, addic7ed, legendastv, opensubtitles, subscenter, cache_dir, debug):
     """Subtitles, faster than your thoughts."""
     # create cache directory
     try:
@@ -249,8 +248,6 @@ def subliminal(ctx, addic7ed, itasa, legendastv, opensubtitles, subscenter, cach
     ctx.obj = {'provider_configs': {}}
     if addic7ed:
         ctx.obj['provider_configs']['addic7ed'] = {'username': addic7ed[0], 'password': addic7ed[1]}
-    if itasa:
-        ctx.obj['provider_configs']['itasa'] = {'username': itasa[0], 'password': itasa[1]}
     if legendastv:
         ctx.obj['provider_configs']['legendastv'] = {'username': legendastv[0], 'password': legendastv[1]}
     if opensubtitles:
@@ -289,6 +286,8 @@ def cache(ctx, clear_subliminal):
 @click.option('-m', '--min-score', type=click.IntRange(0, 100), default=0, help='Minimum score for a subtitle '
               'to be downloaded (0 to 100).')
 @click.option('-w', '--max-workers', type=click.IntRange(1, 50), default=None, help='Maximum number of threads to use.')
+@click.option('-z/-Z', '--archives/--no-archives', default=True, show_default=True, help='Scan archives for videos '
+              '(supported extensions: %s).' % ', '.join(ARCHIVE_EXTENSIONS))
 @click.option('-v', '--verbose', count=True, help='Increase verbosity.')
 @click.argument('path', type=click.Path(), required=True, nargs=-1)
 @click.pass_obj
@@ -402,9 +401,9 @@ def download(obj, provider, refiner, language, age, directory, encoding, single,
                                                       hearing_impaired=hearing_impaired, only_one=single)
                 downloaded_subtitles[v] = subtitles
 
-    if p.discarded_providers:
-                click.secho('Some providers have been discarded due to unexpected errors: %s' %
-                            ', '.join(p.discarded_providers), fg='yellow')
+        if p.discarded_providers:
+            click.secho('Some providers have been discarded due to unexpected errors: %s' %
+                        ', '.join(p.discarded_providers), fg='yellow')
 
     # save subtitles
     total_subtitles = 0
