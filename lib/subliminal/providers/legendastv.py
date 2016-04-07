@@ -232,8 +232,7 @@ class LegendasTVProvider(Provider):
                     title['season'] = int(source['temporada'])
                 else:
                     match = season_re.search(source['dsc_nome_br'])
-                    if match:
-                        title['season'] = int(match.group('season'))
+                    title['season'] = int(match.group('season')) if match else None
 
             # add title
             titles[title_id] = title
