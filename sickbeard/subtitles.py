@@ -46,7 +46,6 @@ PROVIDER_POOL_EXPIRATION_TIME = datetime.timedelta(minutes=15).total_seconds()
 VIDEO_EXPIRATION_TIME = datetime.timedelta(days=1).total_seconds()
 
 provider_manager.register('itasa = subliminal.providers.itasa:ItaSAProvider')
-provider_manager.register('legendastv = subliminal.providers.legendastv:LegendasTvProvider')
 provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider')
 
 refiner_manager.register('release = sickbeard.refiners.release:refine')
