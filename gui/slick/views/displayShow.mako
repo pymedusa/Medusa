@@ -187,8 +187,8 @@
                 % endif
 
                 <%
-                    preferred_words = ", ".join(sickbeard.PREFERRED_WORDS) if sickbeard.PREFERRED_WORDS.split(',') else ''
-                    undesired_words = ", ".join(sickbeard.UNDESIRED_WORDS) if sickbeard.UNDESIRED_WORDS.split(',') else ''
+                    preferred_words = ", ".join(sickbeard.PREFERRED_WORDS.split(',')) if sickbeard.PREFERRED_WORDS.split(',') else ''
+                    undesired_words = ", ".join(sickbeard.UNDESIRED_WORDS.split(',')) if sickbeard.UNDESIRED_WORDS.split(',') else ''
                     ignore_words = sickbeard.IGNORE_WORDS.split(',')
                     if show.rls_require_words:
                         ignore_words = ", ".join(set(ignore_words).difference(x.strip() for x in show.rls_require_words.split(',') if x.strip()))
