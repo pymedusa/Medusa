@@ -109,7 +109,8 @@ class ContextFilter(logging.Filter):
 
         # add exception traceback for errors
         if record.levelno == ERROR:
-            record.exc_info = sys.exc_info()
+            exc_info = sys.exc_info()
+            record.exc_info = exc_info if exc_info != (None, None, None) else None
 
         return True
 
@@ -232,14 +233,13 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         logging.getLogger().addHandler(NullHandler())  # nullify root logger
 
         log_filter = ContextFilter()
+        view_log_pattern = '%(threadName)s :: [%(curhash)s] %(message)s'
         console_log_pattern = '%(asctime)s %(levelname)s::%(threadName)s :: [%(curhash)s] %(message)s'
         file_log_pattern = '%(asctime)s %(levelname)-8s %(threadName)s :: [%(curhash)s] %(message)s'
 
-        console_formatter = CensoredFormatter(console_log_pattern, '%H:%M:%S')
-
         ui_handler = UIViewHandler()
         ui_handler.setLevel(INFO)
-        ui_handler.setFormatter(console_formatter)
+        ui_handler.setFormatter(CensoredFormatter(view_log_pattern))
 
         # set custom root logger
         for logger in self.loggers:
@@ -260,7 +260,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         # console log handler
         if self.console_logging:
             console = logging.StreamHandler()
-            console.setFormatter(console_formatter)
+            console.setFormatter(CensoredFormatter(console_log_pattern, '%H:%M:%S'))
             console.setLevel(log_level)
 
             for logger in self.loggers:
