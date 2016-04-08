@@ -537,6 +537,16 @@
                         </div>
 
                         <div class="field-pair">
+                            <label for="subliminal_log">
+                                <span class="component-title">Subliminal logs</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="subliminal_log" id="subliminal_log" ${('', 'checked="checked"')[bool(sickbeard.SUBLIMINAL_LOG)]}/>
+                                    <p>enable logs from subliminal library (subtitles)</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="field-pair">
                             <label for="ssl_verify">
                                 <span class="component-title">Verify SSL Certs</span>
                                     <span class="component-desc">

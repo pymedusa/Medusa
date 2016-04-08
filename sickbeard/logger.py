@@ -52,6 +52,7 @@ from sickrage.helper.common import dateTimeFormat
 # pylint: disable=line-too-long
 
 # log levels
+CRITICAL = logging.CRITICAL
 ERROR = logging.ERROR
 WARNING = logging.WARNING
 INFO = logging.INFO
@@ -66,6 +67,8 @@ LOGGING_LEVELS = {
     'DB': DB,
 }
 
+LEVEL_STEP = INFO - DEBUG
+
 SSL_ERRORS = {
     r'error \[Errno \d+\] _ssl.c:\d+: error:\d+\s*:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert internal error',
     r'error \[SSL: SSLV3_ALERT_HANDSHAKE_FAILURE\] sslv3 alert handshake failure \(_ssl\.c:\d+\)',
@@ -76,6 +79,16 @@ SSL_ERROR_HELP_MSG = 'See: {0}'.format(SSL_ERRORS_WIKI_URL)
 
 censored_items = {}  # pylint: disable=invalid-name
 
+level_mapping = {
+    'subliminal': LEVEL_STEP,
+    'subliminal.providers.addic7ed': 2 * LEVEL_STEP,
+    'subliminal.providers.itasa': 2 * LEVEL_STEP,
+    'subliminal.providers.tvsubtitles': 2 * LEVEL_STEP,
+    'subliminal.refiners.omdb': 2 * LEVEL_STEP,
+    'subliminal.refiners.metadata': 2 * LEVEL_STEP,
+    'subliminal.refiners.tvdb': 2 * LEVEL_STEP,
+}
+
 
 class ContextFilter(logging.Filter):
     """
@@ -85,6 +98,14 @@ class ContextFilter(logging.Filter):
     def filter(self, record):
         cur_commit_hash = sickbeard.CUR_COMMIT_HASH
         record.curhash = cur_commit_hash[:7] if cur_commit_hash and len(cur_commit_hash) > 6 else ''
+
+        fullname = record.name
+        basename = fullname.split('.')[0]
+        decrease = level_mapping.get(fullname) or level_mapping.get(basename) or 0
+        level = max(DEBUG, record.levelno - decrease)
+        if record.levelno != level:
+            record.levelno = level
+            record.levelname = logging.getLevelName(record.levelno)
 
         # add exception traceback for errors
         if record.levelno == ERROR:
@@ -230,7 +251,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
                 logger.parent = self.logger
                 logger.propagate = False
 
-        log_level = DB if self.database_logging else DEBUG if self.debug_logging else INFO
+        log_level = self.get_default_level()
 
         # set minimum logging level allowed for loggers
         for logger in self.loggers:
@@ -256,6 +277,29 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
 
             for logger in self.loggers:
                 logger.addHandler(rfh)
+
+    # TODO: Read the user configuration instead of using the initial config
+    def get_default_level(self):
+        """Returns the default log level to be used based on the initial user configuration.
+        :return: the default log level
+        :rtype: int
+        """
+        return DB if self.database_logging else DEBUG if self.debug_logging else INFO
+
+    def reconfigure_levels(self):
+        """Reconfigures the log levels. Right now, only subliminal module is affected"""
+        default_level = self.get_default_level()
+        mapping = dict()
+
+        if not sickbeard.SUBLIMINAL_LOG:
+            modname = 'subliminal'
+            mapping.update({modname: CRITICAL})
+
+        for logger in self.loggers:
+            fullname = logger.name
+            basename = fullname.split('.')[0]
+            level = mapping.get(fullname) or mapping.get(basename) or default_level
+            logger.setLevel(level)
 
     @staticmethod
     def shutdown():

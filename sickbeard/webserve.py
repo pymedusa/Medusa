@@ -4051,7 +4051,7 @@ class ConfigGeneral(Config):
                     calendar_unprotected=None, calendar_icons=None, debug=None, ssl_verify=None, no_restart=None, coming_eps_missed_range=None,
                     fuzzy_dating=None, trim_zero=None, date_preset=None, date_preset_na=None, time_preset=None,
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
-                    git_reset=None, git_username=None, git_password=None, display_all_seasons=None):
+                    git_reset=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None):
 
         results = []
 
@@ -4103,6 +4103,7 @@ class ConfigGeneral(Config):
             sickbeard.ENCRYPTION_VERSION = 0
         sickbeard.WEB_USERNAME = web_username
         sickbeard.WEB_PASSWORD = web_password
+        sickbeard.SUBLIMINAL_LOG = config.checkbox_to_value(subliminal_log)
 
         sickbeard.FUZZY_DATING = config.checkbox_to_value(fuzzy_dating)
         sickbeard.TRIM_ZERO = config.checkbox_to_value(trim_zero)
@@ -4144,6 +4145,9 @@ class ConfigGeneral(Config):
         sickbeard.DEFAULT_PAGE = default_page
 
         sickbeard.save_config()
+
+        # reconfigure the logger
+        logger.reconfigure_levels()
 
         if len(results) > 0:
             for x in results:
