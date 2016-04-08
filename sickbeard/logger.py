@@ -67,6 +67,8 @@ LOGGING_LEVELS = {
     'DB': DB,
 }
 
+LEVEL_STEP = INFO - DEBUG
+
 SSL_ERRORS = {
     r'error \[Errno \d+\] _ssl.c:\d+: error:\d+\s*:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert internal error',
     r'error \[SSL: SSLV3_ALERT_HANDSHAKE_FAILURE\] sslv3 alert handshake failure \(_ssl\.c:\d+\)',
@@ -78,11 +80,13 @@ SSL_ERROR_HELP_MSG = 'See: {0}'.format(SSL_ERRORS_WIKI_URL)
 censored_items = {}  # pylint: disable=invalid-name
 
 level_mapping = {
-    'subliminal.refiner': ERROR  # subliminal refiner is too verbose. Overriding level to ERROR
-}
-
-downlevel_mapping = {
-    'subliminal': INFO - DEBUG
+    'subliminal': LEVEL_STEP,
+    'subliminal.providers.addic7ed': 2 * LEVEL_STEP,
+    'subliminal.providers.itasa': 2 * LEVEL_STEP,
+    'subliminal.providers.tvsubtitles': 2 * LEVEL_STEP,
+    'subliminal.refiners.omdb': 2 * LEVEL_STEP,
+    'subliminal.refiners.metadata': 2 * LEVEL_STEP,
+    'subliminal.refiners.tvdb': 2 * LEVEL_STEP,
 }
 
 
@@ -97,9 +101,10 @@ class ContextFilter(logging.Filter):
 
         fullname = record.name
         basename = fullname.split('.')[0]
-        decrease = downlevel_mapping.get(fullname) or downlevel_mapping.get(basename)
-        if decrease and record.levelno > DEBUG:
-            record.levelno -= decrease
+        decrease = level_mapping.get(fullname) or level_mapping.get(basename) or 0
+        level = max(DEBUG, record.levelno - decrease)
+        if record.levelno != level:
+            record.levelno = level
             record.levelname = logging.getLevelName(record.levelno)
 
         # add exception traceback for errors
@@ -273,16 +278,21 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
             for logger in self.loggers:
                 logger.addHandler(rfh)
 
+    # TODO: Read the user configuration instead of using the initial config
     def get_default_level(self):
+        """Returns the default log level to be used based on the initial user configuration.
+        :return: the default log level
+        :rtype: int
+        """
         return DB if self.database_logging else DEBUG if self.debug_logging else INFO
 
     def reconfigure_levels(self):
+        """Reconfigures the log levels. Right now, only subliminal module is affected"""
         default_level = self.get_default_level()
-        mapping = dict(level_mapping)
+        mapping = dict()
 
         if not sickbeard.SUBLIMINAL_LOG:
             modname = 'subliminal'
-            mapping.update({key: CRITICAL if key.startswith(modname) else value for key, value in mapping.iteritems()})
             mapping.update({modname: CRITICAL})
 
         for logger in self.loggers:
