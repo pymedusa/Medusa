@@ -118,13 +118,36 @@
                 % else:
                     <tr><td class="showLegend"><span style="color: red;">Location: </span></td><td><span style="color: red;">${showLoc[0]}</span> (Missing)</td></tr>
                 % endif
-                    <tr><td class="showLegend">Scene Name:</td><td>${(show.name, " | ".join(show.exceptions))[show.exceptions != 0]}</td></tr>
-
-                % if show.rls_require_words:
-                    <tr><td class="showLegend">Required Words: </td><td>${show.rls_require_words}</td></tr>
+                % if show.exceptions:
+                    <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${(show.name, " | ".join(show.exceptions))[show.exceptions != 0]}</td></tr>
                 % endif
-                % if show.rls_ignore_words:
-                    <tr><td class="showLegend">Ignored Words: </td><td>${show.rls_ignore_words}</td></tr>
+
+                <%
+                    preferred_words = ", ".join(sickbeard.PREFERRED_WORDS) if sickbeard.PREFERRED_WORDS.split(',') else ''
+                    undesired_words = ", ".join(sickbeard.UNDESIRED_WORDS) if sickbeard.UNDESIRED_WORDS.split(',') else ''
+                    ignore_words = sickbeard.IGNORE_WORDS.split(',')
+                    if show.rls_require_words:
+                        ignore_words = ", ".join(set(ignore_words).difference(x.strip() for x in show.rls_require_words.split(',') if x.strip()))
+                    else:
+                        ignore_words = ", ".join(ignore_words)                
+                    require_words = sickbeard.REQUIRE_WORDS.split(',')
+                    if show.rls_ignore_words:
+                        require_words = ", ".join(set(require_words).difference(x.strip() for x in show.rls_ignore_words.split(',') if x.strip()))
+                    else:
+                        require_words = ", ".join(require_words)
+                %>
+
+                % if require_words:
+                    <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">${require_words}</span></td></tr>
+                % endif
+                % if ignore_words:
+                    <tr><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word">${ignore_words}</span></td></tr>
+                % endif
+                % if preferred_words:
+                    <tr><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word">${preferred_words}</span></td></tr>
+                % endif
+                % if undesired_words:
+                    <tr><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word">${undesired_words}</span></td></tr>
                 % endif
                 % if bwl and bwl.whitelist:
                     <tr>
