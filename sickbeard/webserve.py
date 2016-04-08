@@ -4103,6 +4103,10 @@ class ConfigGeneral(Config):
             sickbeard.ENCRYPTION_VERSION = 0
         sickbeard.WEB_USERNAME = web_username
         sickbeard.WEB_PASSWORD = web_password
+        
+        # Reconfigure the logger only if subliminal setting changed
+        if sickbeard.SUBLIMINAL_LOG != config.checkbox_to_value(subliminal_log):
+            logger.reconfigure_levels()
         sickbeard.SUBLIMINAL_LOG = config.checkbox_to_value(subliminal_log)
 
         sickbeard.FUZZY_DATING = config.checkbox_to_value(fuzzy_dating)
@@ -4145,9 +4149,6 @@ class ConfigGeneral(Config):
         sickbeard.DEFAULT_PAGE = default_page
 
         sickbeard.save_config()
-
-        # reconfigure the logger
-        logger.reconfigure_levels()
 
         if len(results) > 0:
             for x in results:
