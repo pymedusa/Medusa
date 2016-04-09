@@ -189,16 +189,16 @@
                 <%
                     preferred_words = ", ".join(sickbeard.PREFERRED_WORDS.split(',')) if sickbeard.PREFERRED_WORDS.split(',') else ''
                     undesired_words = ", ".join(sickbeard.UNDESIRED_WORDS.split(',')) if sickbeard.UNDESIRED_WORDS.split(',') else ''
-                    ignore_words = sickbeard.IGNORE_WORDS.split(',')
-                    if show.rls_require_words:
-                        ignore_words = ", ".join(set(ignore_words).difference(x.strip() for x in show.rls_require_words.split(',') if x.strip()))
-                    else:
-                        ignore_words = ", ".join(ignore_words)                
-                    require_words = sickbeard.REQUIRE_WORDS.split(',')
-                    if show.rls_ignore_words:
-                        require_words = ", ".join(set(require_words).difference(x.strip() for x in show.rls_ignore_words.split(',') if x.strip()))
-                    else:
-                        require_words = ", ".join(require_words)
+
+                    ignore_words = sickbeard.IGNORE_WORDS.lower().split(',')
+                    show_require = show.rls_require_words if show.rls_require_words else ''
+                    show_ignore = set(show.rls_ignore_words.lower().split(',')) | set(ignore_words).difference(x.strip() for x in show.rls_require_words.lower().split(',') if x.strip())
+                    ignore_words = ", ".join(sorted(show_ignore))
+             
+                    require_words = sickbeard.REQUIRE_WORDS.lower().split(',')
+                    show_ignore = show.rls_ignore_words if show.rls_ignore_words else ''
+                    show_require = set(show.rls_require_words.lower()) | set(require_words).difference(x.strip() for x in show.rls_ignore_words.lower().split(',') if x.strip())
+                    require_words = ", ".join(sorted(show_require))
                 %>
 
                 % if require_words:
