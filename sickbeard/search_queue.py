@@ -89,13 +89,19 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def is_backlog_in_progress(self):
         for cur_item in self.queue + [self.currentItem]:
-            if isinstance(cur_item, BacklogQueueItem):
+            if isinstance(cur_item, (BacklogQueueItem, FailedQueueItem)):
                 return True
         return False
 
     def is_dailysearch_in_progress(self):
         for cur_item in self.queue + [self.currentItem]:
             if isinstance(cur_item, DailySearchQueueItem):
+                return True
+        return False
+
+    def is_forced_search_in_progress(self):
+        for cur_item in self.queue + [self.currentItem]:
+            if isinstance(cur_item, ForcedSearchQueueItem):
                 return True
         return False
 
