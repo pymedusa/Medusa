@@ -1401,14 +1401,15 @@ class TVEpisode(object):  # pylint: disable=too-many-instance-attributes, too-ma
     def refreshSubtitles(self):
         """Look for subtitles files and refresh the subtitles property."""
         current_subtitles = subtitles.get_current_subtitles(self.location)
-        if current_subtitles:
-            if self.subtitles == current_subtitles:
-                ep_num = episode_num(self.season, self.episode) or \
-                         episode_num(self.season, self.episode, numbering='absolute')
-                logger.log(u'No changed subtitles for {0} {1}'.format(self.show.name, ep_num), logger.DEBUG)
-            else:
-                self.subtitles = current_subtitles
-                self.saveToDB()
+        ep_num = episode_num(self.season, self.episode) or \
+                 episode_num(self.season, self.episode, numbering='absolute')
+        if self.subtitles == current_subtitles:
+            logger.log(u'No changed subtitles for {0} {1}. Current subtitles: {2}'.format(self.show.name, ep_num, current_subtitles), logger.DEBUG)
+        else:
+            logger.log(u'Subtitle changes detected for this show {0} {1}. Current subtitles: {2}'.format(self.show.name, ep_num, current_subtitles), logger.DEBUG)
+            self.subtitles = current_subtitles
+            self.saveToDB()
+
 
     def download_subtitles(self, force=False):
         if not ek(os.path.isfile, self.location):
