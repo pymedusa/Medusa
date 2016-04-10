@@ -51,7 +51,7 @@ provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiPr
 refiner_manager.register('release = sickbeard.refiners.release:refine')
 
 region.configure('dogpile.cache.memory')
-video_key = __name__ + ':video|{video_path}|{subtitles_dir}|{subtitles}|{embedded_subtitles}|{release_name}'
+video_key = __name__ + ':video|{video_path}'
 
 episode_refiners = ('metadata', 'release', 'tvdb', 'omdb')
 
@@ -436,13 +436,17 @@ def get_min_score():
 
 
 def get_current_subtitles(video_path):
-    """Returns a list of current subtitles for the episode
+    """Returns a list of current subtitles for the episode.
 
     :param video_path: the video path
     :type video_path: str
     :return: the current subtitles (3-letter opensubtitles codes) for the specified video
     :rtype: list of str
     """
+    # invalidate the cached video entry for the given path
+    invalidate_video_cache(video_path)
+
+    # get the latest video information
     video = get_video(video_path)
     if not video:
         logger.log(u"Exception caught in subliminal.scan_video, subtitles couldn't be refreshed", logger.DEBUG)
@@ -495,8 +499,19 @@ def get_subtitle_description(subtitle):
     return sub_id + '-' + desc if desc not in sub_id else desc
 
 
+def invalidate_video_cache(video_path):
+    """Invalidates the cached subliminal.video for the specified path
+
+    :param video_path: the video path
+    :type video_path: str
+    """
+    key = video_key.format(video_path=video_path)
+    region.delete(key)
+
+
 def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles=None, release_name=None):
-    """Returns the subliminal video for the given path
+    """Returns the subliminal video for the given path. The video_path is used as a key to cache the video to avoid
+    scanning and parsing the video metadata all the time
 
     :param video_path: the video path
     :type video_path: str
@@ -511,8 +526,7 @@ def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles
     :return: video
     :rtype: subliminal.video
     """
-    key = video_key.format(video_path=video_path, subtitles_dir=subtitles_dir, subtitles=subtitles,
-                           embedded_subtitles=embedded_subtitles, release_name=release_name)
+    key = video_key.format(video_path=video_path)
     video = region.get(key, expiration_time=VIDEO_EXPIRATION_TIME)
     if video != NO_VALUE:
         logger.log(u'Found cached video information under key {0}'.format(key), logger.DEBUG)
