@@ -87,7 +87,7 @@ def getEpisodes(search_thread, searchstatus):
         logger.log(u'No Show Object found for show with indexerID: {}'.format(search_thread.show.indexerid), logger.ERROR)
         return results
 
-    if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem):
+    if isinstance(search_thread, (sickbeard.search_queue.ManualSearchQueueItem, sickbeard.search_queue.ForcedSearchQueueItem)):
         results.append({
             'show': search_thread.show.indexerid,
             'episode': search_thread.segment.episode,
@@ -115,7 +115,7 @@ def getEpisodes(search_thread, searchstatus):
 def collectEpisodesFromSearchThread(show):
     """
     Collects all episodes from from the searchQueueScheduler and looks for episodes that are in status queued or searching.
-    If episodes are found in FORCED_SEARCH_HISTORY, these are set to status finished.
+    If episodes are found in MANUAL_SEARCH_HISTORY or FORCED_SEARCH_HISTORY, these are set to status finished.
     """
     episodes = []
 
@@ -136,11 +136,11 @@ def collectEpisodesFromSearchThread(show):
 
     # Finished Searches
     searchstatus = SEARCH_STATUS_FINISHED
-    for search_thread in sickbeard.search_queue.FORCED_SEARCH_HISTORY:
+    for search_thread in sickbeard.search_queue.MANUAL_SEARCH_HISTORY + sickbeard.search_queue.FORCED_SEARCH_HISTORY:
         if show and not str(search_thread.show.indexerid) == show:
             continue
 
-        if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem):
+        if isinstance(search_thread, (sickbeard.search_queue.ManualSearchQueueItem, sickbeard.search_queue.ForcedSearchQueueItem)):
             if not [x for x in episodes if x['episodeindexid'] == search_thread.segment.indexerid]:
                 episodes += getEpisodes(search_thread, searchstatus)
         else:
@@ -215,7 +215,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             and episode: {1}x{2}'.format(show_obj.name, season, episode)
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True)  # pylint: disable=maybe-no-member
+        ep_queue_item = search_queue.ManualSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)))  # pylint: disable=maybe-no-member
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
