@@ -2528,6 +2528,12 @@ var SICKRAGE = {
                     } else {
                         $(link).children('img').attr('src', srRoot + '/images/no16.png');
                     }
+                    if (data.message != '') {
+                        $('#manual-select-warning').removeClass('hidden');
+                        $('#manual-select-warning span').text(data.message);
+                    } else {
+                        $('#manual-select-warning').addClass('hidden');
+                    }
                 });
             });
 

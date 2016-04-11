@@ -183,9 +183,15 @@
             </div>
         </div>
     
-    <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
-    <input class="btn manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-force-search="1" />
+    <div id="manual-search-navigation">
+        <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
+        <input class="btn manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-force-search="1" />
+    </div>
     <div id="searchNotification"></div>
+    <div id="manual-select-warning" class="alert alert-danger hidden-print hidden" role="alert">
+            <span></span>
+    </div>
+        
     
     <div class="clearfix"></div>
     <div id="wrapper">

@@ -1414,6 +1414,8 @@ class Home(WebRoot):
         # Try to retrieve the cached result from the providers cache table.
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
 
+        message = ''
+
         try:
             main_db_con = db.DBConnection('cache.db')
             cached_result = main_db_con.action("SELECT * FROM '%s' WHERE rowid = ?" %
@@ -1454,12 +1456,26 @@ class Home(WebRoot):
         # Add the queue item to the queue
         sickbeard.searchQueueScheduler.action.add_item(snatch_queue_item)
 
+        # Check if a daily search, backlog search (for this show) or Proper search is running
+        # If this is the case, show an informative message
+        if sickbeard.searchQueueScheduler.action.is_forced_search_in_progress():
+            message += 'Please note, a forced search is currently in progress, ' \
+                        'this can interfere with your manual searched result!'
+
+        if sickbeard.searchQueueScheduler.action.is_dailysearch_in_progress():
+            message += 'Please note, a daily search is currently in progress, ' \
+                        'this can interfere with your manual searched result!'
+
+        if sickbeard.searchQueueScheduler.action.is_backlog_in_progress():
+            message += 'Please note, a backlog search or failed download search is currently in progress, ' \
+                        'this can interfere with your manual searched result!'
+
         while snatch_queue_item.success is not False:
             if snatch_queue_item.started and snatch_queue_item.success:
-                return json.dumps({'result': 'success'})
+                return json.dumps({'result': 'success', 'message': message})
             time.sleep(1)
 
-        return json.dumps({'result': 'failure'})
+        return json.dumps({'result': 'failure', 'message': message})
 
     def manualSearchCheckCache(self, show, season, episode, **kwargs):
         """ Periodic check if the searchthread is still running for the selected show/season/ep
