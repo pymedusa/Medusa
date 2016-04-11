@@ -335,7 +335,7 @@ def download_best_subs(video_path, subtitles_dir, release_name, languages, subti
             logger.log(u'No subtitles found for {0} with min_score {1}'.format(video_path, min_score))
             return list()
 
-        save_subtitles(video, found_subtitles, directory=subtitles_dir, single=not sickbeard.SUBTITLES_MULTI)
+        save_subtitles(video, found_subtitles, directory=encode(subtitles_dir), single=not sickbeard.SUBTITLES_MULTI)
 
         for subtitle in found_subtitles:
             logger.log(u'Found subtitle for {0} in {1} provider with language {2}'.format
