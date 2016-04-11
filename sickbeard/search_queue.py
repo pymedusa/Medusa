@@ -36,10 +36,12 @@ DAILY_SEARCH = 20
 FAILED_SEARCH = 30
 FORCED_SEARCH = 40
 MANUAL_SEARCH = 50
+MANUAL_SNATCH = 60
 
 FORCED_SEARCH_HISTORY = []
 FORCED_SEARCH_HISTORY_SIZE = 100
-
+MANUAL_SEARCH_HISTORY = []
+MANUAL_SEARCH_HISTORY_SIZE = 100
 
 class SearchQueue(generic_queue.GenericQueue):
     def __init__(self):
@@ -60,14 +62,14 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def is_show_in_queue(self, show):
         for cur_item in self.queue:
-            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and cur_item.show.indexerid == show:
+            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem, ManualSearchQueueItem)) and cur_item.show.indexerid == show:
                 return True
         return False
 
     def get_all_ep_from_queue(self, show):
         ep_obj_list = []
         for cur_item in self.queue:
-            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and str(cur_item.show.indexerid) == show:
+            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem, ManualSearchQueueItem)) and str(cur_item.show.indexerid) == show:
                 ep_obj_list.append(cur_item)
         return ep_obj_list
 
@@ -83,7 +85,7 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def is_manualsearch_in_progress(self):
         # Only referenced in webserve.py, only current running manualsearch or failedsearch is needed!!
-        if isinstance(self.currentItem, (ForcedSearchQueueItem, FailedQueueItem)):
+        if isinstance(self.currentItem, (ForcedSearchQueueItem, FailedQueueItem, ManualSearchQueueItem)):
             return True
         return False
 
@@ -110,7 +112,7 @@ class SearchQueue(generic_queue.GenericQueue):
                 length['forced_search'] += 1
             elif isinstance(cur_item, FailedQueueItem):
                 length['failed'] += 1
-            elif isinstance(cur_item, ManualSearchQueueItem):
+            elif isinstance(cur_item, (ManualSearchQueueItem, ManualSnatchQueueItem)):
                 length['manual_search'] += 1
         return length
 
@@ -131,7 +133,7 @@ class SearchQueue(generic_queue.GenericQueue):
 class DailySearchQueueItem(generic_queue.QueueItem):
     def __init__(self):
         generic_queue.QueueItem.__init__(self, u'Daily Search', DAILY_SEARCH)
-
+        self.name = 'DAILYSEARCH'
         self.success = None
         self.started = None
 
@@ -160,8 +162,6 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
                     # give the CPU a break
                     time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
-            # What is this for ?!
-            generic_queue.QueueItem.finish(self)
 
         except Exception:
             self.success = False
@@ -174,10 +174,10 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
 
 class ForcedSearchQueueItem(generic_queue.QueueItem):
-    def __init__(self, show, segment, downCurQuality=False, manual_search=False):
+    def __init__(self, show, segment, downCurQuality=False):
         generic_queue.QueueItem.__init__(self, u'Forced Search', FORCED_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
-        self.name = 'FORCEDSEARCH-' + str(show.indexerid)
+        self.name = 'FORCEDSEARCH-{0}'.format(show.indexerid)
 
         self.success = None
         self.started = None
@@ -186,7 +186,6 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         self.show = show
         self.segment = segment
         self.downCurQuality = downCurQuality
-        self.manual_search = manual_search
 
     def run(self):
         """
@@ -196,11 +195,11 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         self.started = True
 
         try:
-            logger.log(u"Beginning {0} search for: [{1}]".format(('forced','manual')[bool(self.manual_search)], self.segment.prettyName()))
+            logger.log(u"Beginning forced search for: [{0}]".format(self.segment.prettyName()))
 
-            search_result = search.searchProviders(self.show, [self.segment], True, self.downCurQuality, self.manual_search)
+            search_result = search.searchProviders(self.show, [self.segment], True, self.downCurQuality, False)
 
-            if not self.manual_search and search_result:
+            if search_result:
                 # just use the first result for now
                 if search_result[0].seeders not in (-1, None) and search_result[0].leechers not in (-1, None):
                     logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".
@@ -212,11 +211,6 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
 
                 # give the CPU a break
                 time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
-            elif self.manual_search and search_result:
-                self.results = search_result
-                self.success = True
-                ui.notifications.message("We have found downloads for {0}".format(self.segment.prettyName()),
-                                         "These should become visible in the manual select page.")
             else:
                 ui.notifications.message('No downloads were found', "Couldn't find a download for <i>{0}</i>".format(self.segment.prettyName()))
                 logger.log(u"Unable to find a download for: [{0}]".format(self.segment.prettyName()))
@@ -236,6 +230,64 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
 
 class ManualSearchQueueItem(generic_queue.QueueItem):
     """
+    A queue item that can be used to make a manual search.
+    Currently used for the manual search feature.
+
+    @param show: A show object
+    @param segment: A list of episode objects
+    @param downCurQuality: Boolean, should we re-download currently available quality file
+
+    @return: The run() methods searches for the episode.
+    """
+    def __init__(self, show, segment, downCurQuality=False):
+        generic_queue.QueueItem.__init__(self, u'Forced Search', MANUAL_SEARCH)
+        self.priority = generic_queue.QueuePriorities.HIGH
+        self.name = 'MANUALSEARCH-{0}'.format(show.indexerid)
+
+        self.success = None
+        self.started = None
+        self.results = None
+
+        self.show = show
+        self.segment = segment
+        self.downCurQuality = downCurQuality
+
+    def run(self):
+        """
+        Run manual search thread
+        """
+        generic_queue.QueueItem.run(self)
+        self.started = True
+
+        try:
+            logger.log(u"Beginning manual search for: [{0}]".format(self.segment.prettyName()))
+
+            search_result = search.searchProviders(self.show, [self.segment], True, self.downCurQuality, True)
+
+            if search_result:
+                self.results = search_result
+                self.success = True
+                ui.notifications.message("We have found downloads for {0}".format(self.segment.prettyName()),
+                                         "These should become visible in the manual select page.")
+            else:
+                ui.notifications.message('No downloads were found', "Couldn't find a download for <i>{0}</i>".format(self.segment.prettyName()))
+                logger.log(u"Unable to find a download for: [{0}]".format(self.segment.prettyName()))
+
+        except Exception:
+            self.success = False
+            logger.log(traceback.format_exc(), logger.DEBUG)
+
+        # ## Keep a list with the 100 last executed searches
+        fifo(MANUAL_SEARCH_HISTORY, self, MANUAL_SEARCH_HISTORY_SIZE)
+
+        if self.success is None:
+            self.success = False
+
+        self.finish()
+
+
+class ManualSnatchQueueItem(generic_queue.QueueItem):
+    """
     A queue item that can be used to queue the snatch of a search result.
     Currently used for the snatchSelection feature.
 
@@ -247,9 +299,9 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
     @return: The run() methods snatches the episode(s) if possible.
     """
     def __init__(self, show, segment, provider, cached_result):
-        generic_queue.QueueItem.__init__(self, u'Manual Search', MANUAL_SEARCH)
+        generic_queue.QueueItem.__init__(self, u'Manual Search', MANUAL_SNATCH)
         self.priority = generic_queue.QueuePriorities.HIGH
-        self.name = 'MANUALSEARCH-' + str(show.indexerid)
+        self.name = 'MANUALSNATCH-{0}'.format(show.indexerid)
         self.success = None
         self.started = None
         self.results = None
@@ -309,7 +361,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
     def __init__(self, show, segment):
         generic_queue.QueueItem.__init__(self, u'Backlog', BACKLOG_SEARCH)
         self.priority = generic_queue.QueuePriorities.LOW
-        self.name = 'BACKLOG-' + str(show.indexerid)
+        self.name = 'BACKLOG-{0}'.format(show.indexerid)
 
         self.success = None
         self.started = None
@@ -359,7 +411,7 @@ class FailedQueueItem(generic_queue.QueueItem):
     def __init__(self, show, segment, downCurQuality=False):
         generic_queue.QueueItem.__init__(self, u'Retry', FAILED_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
-        self.name = 'RETRY-' + str(show.indexerid)
+        self.name = 'RETRY-{0}'.format(show.indexerid)
 
         self.success = None
         self.started = None
