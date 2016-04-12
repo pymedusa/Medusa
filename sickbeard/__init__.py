@@ -99,7 +99,7 @@ events = None
 # github
 gh = None
 
-# schedualers
+# schedulers
 dailySearchScheduler = None
 backlogSearchScheduler = None
 showUpdateScheduler = None

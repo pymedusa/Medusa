@@ -20,6 +20,7 @@
 <h3>Backlog Search:</h3>
 <a class="btn" href="${srRoot}/manage/manageSearches/forceBacklog"><i class="icon-exclamation-sign"></i> Force</a>
 <a class="btn" href="${srRoot}/manage/manageSearches/pauseBacklog?paused=${('1', '0')[bool(backlogPaused)]}"><i class="icon-${('paused', 'play')[bool(backlogPaused)]}"></i> ${('pause', 'Unpause')[bool(backlogPaused)]}</a>
+<a class="btn" href="${srRoot}/manage/manageSearches/stopBacklog"><i class="icon-exclamation-sign"></i> Stop</a>
 % if not backlogRunning:
     Not in progress<br>
 % else:

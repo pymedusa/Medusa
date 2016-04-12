@@ -3885,6 +3885,12 @@ class ManageSearches(Manage):
 
         return self.redirect("/manage/manageSearches/")
 
+    def stopBacklog(self):
+        """Will stop all running and queued backlog items/jobs"""
+        sickbeard.searchQueueScheduler.action.stop_backlog()
+
+        return self.redirect("/manage/manageSearches/")
+
 
 @route('/history(/?.*)')
 class History(WebRoot):

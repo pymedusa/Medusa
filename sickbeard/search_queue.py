@@ -81,6 +81,14 @@ class SearchQueue(generic_queue.GenericQueue):
         # backlog priorities are NORMAL, this should be done properly somewhere
         return self.min_priority >= generic_queue.QueuePriorities.NORMAL
 
+    def stop_backlog(self):
+        """Function to stop all running and queued backlog queue items"""
+        if isinstance(self.currentItem, BacklogQueueItem):
+            self.currentItem.force_stop[0] = True
+        for queued_item in self.queue:
+            if isinstance(queued_item, BacklogQueueItem):
+                queued_item.force_stop[0] = True
+
     def is_manualsearch_in_progress(self):
         # Only referenced in webserve.py, only current running manualsearch or failedsearch is needed!!
         if isinstance(self.currentItem, (ForcedSearchQueueItem, FailedQueueItem)):
@@ -177,7 +185,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
     def __init__(self, show, segment, downCurQuality=False, manual_search=False):
         generic_queue.QueueItem.__init__(self, u'Forced Search', FORCED_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
-        self.name = 'FORCEDSEARCH-' + str(show.indexerid)
+        self.name = 'FORCEDSEARCH-' + str(show.indexerid) if not manual_search else 'MANUALSEARCH-' + str(show.indexerid)
 
         self.success = None
         self.started = None
@@ -187,6 +195,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         self.segment = segment
         self.downCurQuality = downCurQuality
         self.manual_search = manual_search
+        self.search_prov = search.Search(manual_search=manual_search, force_stop=self.force_stop)
 
     def run(self):
         """
@@ -198,7 +207,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         try:
             logger.log(u"Beginning {0} search for: [{1}]".format(('forced','manual')[bool(self.manual_search)], self.segment.prettyName()))
 
-            search_result = search.searchProviders(self.show, [self.segment], True, self.downCurQuality, self.manual_search)
+            search_result = self.search_prov.searchProviders(self.show, [self.segment], True, self.downCurQuality, self.manual_search)
 
             if not self.manual_search and search_result:
                 # just use the first result for now
@@ -316,6 +325,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
 
         self.show = show
         self.segment = segment
+        self.search_prov = search.Search(manual_search=False, force_stop=self.force_stop)
 
     def run(self):
         """
@@ -327,7 +337,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
         if not self.show.paused:
             try:
                 logger.log(u"Beginning backlog search for: [" + self.show.name + "]")
-                search_result = search.searchProviders(self.show, self.segment, False, False)
+                search_result = self.search_prov.searchProviders(self.show, self.segment, False, False)
 
                 if search_result:
                     for result in search_result:
@@ -367,6 +377,7 @@ class FailedQueueItem(generic_queue.QueueItem):
         self.show = show
         self.segment = segment
         self.downCurQuality = downCurQuality
+        self.search_prov = search.Search(manual_search=False, force_stop=self.force_stop)
 
     def run(self):
         """
@@ -392,7 +403,7 @@ class FailedQueueItem(generic_queue.QueueItem):
 
             # If it is wanted, self.downCurQuality doesnt matter
             # if it isnt wanted, we need to make sure to not overwrite the existing ep that we reverted to!
-            search_result = search.searchProviders(self.show, self.segment, True, False, False)
+            search_result = self.search_prov.searchProviders(self.show, self.segment, True, False, False)
 
             if search_result:
                 for result in search_result:

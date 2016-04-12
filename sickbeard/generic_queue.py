@@ -120,6 +120,7 @@ class QueueItem(threading.Thread):
         self.priority = QueuePriorities.NORMAL
         self.action_id = action_id
         self.stop = threading.Event()
+        self.force_stop = [False]
         self.added = None
 
     def run(self):
