@@ -207,7 +207,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         try:
             logger.log(u"Beginning {0} search for: [{1}]".format(('forced','manual')[bool(self.manual_search)], self.segment.prettyName()))
 
-            search_result = self.search_prov.searchProviders(self.show, [self.segment], True, self.downCurQuality, self.manual_search)
+            search_result = self.search_prov.searchProviders(self.show, [self.segment], True, self.downCurQuality)
 
             if not self.manual_search and search_result:
                 # just use the first result for now
