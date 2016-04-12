@@ -78,8 +78,8 @@ class SearchQueue(generic_queue.GenericQueue):
         self.min_priority = 0
 
     def is_backlog_paused(self):
-        # backlog priorities are NORMAL, this should be done properly somewhere
-        return self.min_priority >= generic_queue.QueuePriorities.NORMAL
+        # backlog priorities are LOW, this should be done properly somewhere
+        return self.min_priority >= generic_queue.QueuePriorities.LOW
 
     def is_manualsearch_in_progress(self):
         # Only referenced in webserve.py, only current running manualsearch or failedsearch is needed!!
@@ -126,6 +126,13 @@ class SearchQueue(generic_queue.GenericQueue):
             generic_queue.GenericQueue.add_item(self, item)
         else:
             logger.log(u"Not adding item, it's already in the queue", logger.DEBUG)
+
+    def remove_item(self, item):
+        """
+        Removes a item from generic queue
+        """
+
+        generic_queue.GenericQueue.remove_item(self, item)
 
 
 class DailySearchQueueItem(generic_queue.QueueItem):

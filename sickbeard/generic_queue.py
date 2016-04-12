@@ -66,6 +66,18 @@ class GenericQueue(object):
 
             return item
 
+    def remove_item(self, item):
+        """
+        Removes an item to this queue
+
+        :param item: Queue object to remove
+        :return: item
+        """
+        with self.lock:
+            self.queue = [queue_item for queue_item in self.queue if queue_item != item]
+
+            return item
+
     def run(self, force=False):
         """
         Process items in this queue
