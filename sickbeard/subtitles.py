@@ -18,29 +18,30 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
-
+import datetime
+import logging
+import operator
 import os
 import re
-import datetime
-import operator
-import traceback
-import subprocess
 import sickbeard
+import subprocess
+import traceback
+
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
-from subliminal import (compute_score, ProviderPool, provider_manager, refiner_manager, refine, region, save_subtitles,
+from sickrage.helper.common import dateTimeFormat, episode_num, subtitle_extensions
+from sickrage.helper.exceptions import ex
+from sickrage.show.Show import Show
+from subliminal import (compute_score, ProviderPool, provider_manager, refine, refiner_manager, region, save_subtitles,
                         scan_video)
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
-from sickbeard import logger
-from sickbeard import history
-from sickbeard import db
-from sickbeard import processTV
-from sickbeard.helpers import remove_non_release_groups, isMediaFile, isRarFile
-from sickrage.helper.common import episode_num, dateTimeFormat, subtitle_extensions
-from sickrage.helper.exceptions import ex
-from sickrage.show.Show import Show
+
+from . import db, history, processTV
+from .helpers import isMediaFile, isRarFile, remove_non_release_groups
+
+logger = logging.getLogger(__name__)
 
 PROVIDER_POOL_EXPIRATION_TIME = datetime.timedelta(minutes=15).total_seconds()
 VIDEO_EXPIRATION_TIME = datetime.timedelta(days=1).total_seconds()
@@ -126,7 +127,7 @@ def get_needed_languages(subtitles):
     """Given the existing subtitles, returns a set of the needed subtitles
 
     :param subtitles: the existing subtitles (opensubtitles codes)
-    :type subtitles: set of str
+    :type subtitles: list of str
     :return: the needed subtitles
     :rtype: set of babelfish.Language
     """
@@ -252,12 +253,10 @@ def download_subtitles(video_path, show_name, season, episode, episode_name, sho
     languages = get_needed_languages(existing_subtitles)
 
     if not languages:
-        logger.log(u'Episode already has all needed subtitles, skipping {0} {1}'.format
-                   (show_name, ep_num), logger.DEBUG)
-        return list()
+        logger.debug(u'Episode already has all needed subtitles, skipping %s %s', show_name, ep_num)
+        return []
 
-    logger.log(u'Checking subtitle candidates for {0} {1} ({2})'.format
-               (show_name, ep_num, os.path.basename(video_path)), logger.DEBUG)
+    logger.debug(u'Checking subtitle candidates for %s %s (%s)', show_name, ep_num, os.path.basename(video_path))
 
     subtitles_dir = get_subtitles_dir(video_path)
     found_subtitles = download_best_subs(video_path, subtitles_dir, release_name, languages)
@@ -269,8 +268,7 @@ def download_subtitles(video_path, show_name, season, episode, episode_name, sho
                                    subtitle_language=subtitle.language, show_name=show_name, season=season,
                                    episode=episode, episode_name=episode_name, show_indexerid=show_indexerid)
         if sickbeard.SUBTITLES_HISTORY:
-            logger.log(u'history.logSubtitle {0}, {1}'.format
-                       (subtitle.provider_name, subtitle.language.opensubtitles), logger.DEBUG)
+            logger.debug(u'history.logSubtitle %s, %s', subtitle.provider_name, subtitle.language.opensubtitles)
             history.logSubtitle(show_indexerid, season, episode, status, subtitle)
 
     return sorted({subtitle.language.opensubtitles for subtitle in found_subtitles})
@@ -302,8 +300,8 @@ def download_best_subs(video_path, subtitles_dir, release_name, languages, subti
                           embedded_subtitles=embedded_subtitles, release_name=release_name)
 
         if not video:
-            logger.log(u'Exception caught in subliminal.scan_video for {0}'.format(video_path), logger.DEBUG)
-            return list()
+            logger.info(u'Exception caught in subliminal.scan_video for %s', video_path)
+            return []
 
         pool = provider_pool or get_provider_pool()
 
@@ -313,33 +311,32 @@ def download_best_subs(video_path, subtitles_dir, release_name, languages, subti
         subtitles_list = pool.list_subtitles(video, languages)
         for provider in pool.providers:
             if provider in pool.discarded_providers:
-                logger.log(u'Could not search in {0} provider. Discarding for now'.format(provider), logger.DEBUG)
+                logger.debug(u'Could not search in %s provider. Discarding for now', provider)
 
         if not subtitles_list:
-            logger.log(u'No subtitles found for {0}'.format(video_path))
-            return list()
+            logger.info(u'No subtitles found for %s', video_path)
+            return []
 
         min_score = get_min_score()
         scored_subtitles = sorted([(s, compute_score(s, video, hearing_impaired=sickbeard.SUBTITLES_HEARING_IMPAIRED))
                                   for s in subtitles_list], key=operator.itemgetter(1), reverse=True)
         for subtitle, score in scored_subtitles:
-            logger.log(u'[{0:>13s}:{1:<5s}] score = {2:3d}/{3:3d} for {4}'.format
-                       (subtitle.provider_name, subtitle.language, score, min_score,
-                        get_subtitle_description(subtitle)), logger.DEBUG)
+            logger.debug(u'[{0:>13s}:{1:<5s}] score = {2:3d}/{3:3d} for {4}'.format(
+                subtitle.provider_name, subtitle.language, score, min_score, get_subtitle_description(subtitle)))
 
         found_subtitles = pool.download_best_subtitles(subtitles_list, video, languages=languages,
                                                        hearing_impaired=sickbeard.SUBTITLES_HEARING_IMPAIRED,
                                                        min_score=min_score, only_one=not sickbeard.SUBTITLES_MULTI)
 
         if not found_subtitles:
-            logger.log(u'No subtitles found for {0} with min_score {1}'.format(video_path, min_score))
-            return list()
+            logger.info(u'No subtitles found for %s with min_score %d', video_path, min_score)
+            return []
 
         save_subtitles(video, found_subtitles, directory=encode(subtitles_dir), single=not sickbeard.SUBTITLES_MULTI)
 
         for subtitle in found_subtitles:
-            logger.log(u'Found subtitle for {0} in {1} provider with language {2}'.format
-                       (video_path, subtitle.provider_name, subtitle.language.opensubtitles), logger.INFO)
+            logger.info(u'Found subtitle for %s in %s provider with language %s', video_path, subtitle.provider_name,
+                        subtitle.language.opensubtitles)
             subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
 
             sickbeard.helpers.chmodAsParent(subtitle_path)
@@ -348,15 +345,15 @@ def download_best_subs(video_path, subtitles_dir, release_name, languages, subti
         return found_subtitles
     except IOError as error:
         if 'No space left on device' in ex(error):
-            logger.log(u'Not enough space on the drive to save subtitles', logger.WARNING)
+            logger.warning(u'Not enough space on the drive to save subtitles')
         else:
-            logger.log(traceback.format_exc(), logger.WARNING)
+            logger.warning(traceback.format_exc())
     except Exception as error:
-        logger.log(u'Exception: {0}'.format(error), logger.DEBUG)
-        logger.log(u'Error occurred when downloading subtitles for: {0}'.format(video_path))
-        logger.log(traceback.format_exc(), logger.ERROR)
+        logger.debug(u'Exception: %s', error)
+        logger.info(u'Error occurred when downloading subtitles for: %s', video_path)
+        logger.error(traceback.format_exc())
 
-    return list()
+    return []
 
 
 @region.cache_on_arguments(expiration_time=PROVIDER_POOL_EXPIRATION_TIME)
@@ -366,7 +363,7 @@ def get_provider_pool():
     :return: subliminal provider pool to be used
     :rtype: subliminal.ProviderPool
     """
-    logger.log(u'Creating a new ProviderPool instance', logger.DEBUG)
+    logger.debug(u'Creating a new ProviderPool instance')
     provider_configs = {'addic7ed': {'username': sickbeard.ADDIC7ED_USER,
                                      'password': sickbeard.ADDIC7ED_PASS},
                         'itasa': {'username': sickbeard.ITASA_USER,
@@ -449,7 +446,7 @@ def get_current_subtitles(video_path):
     # get the latest video information
     video = get_video(video_path)
     if not video:
-        logger.log(u"Exception caught in subliminal.scan_video, subtitles couldn't be refreshed", logger.DEBUG)
+        logger.info(u"Exception caught in subliminal.scan_video, subtitles couldn't be refreshed for %s", video_path)
     else:
         return get_subtitles(video)
 
@@ -500,13 +497,14 @@ def get_subtitle_description(subtitle):
 
 
 def invalidate_video_cache(video_path):
-    """Invalidates the cached subliminal.video for the specified path
+    """Invalidates the cached subliminal.video.Video for the specified path
 
     :param video_path: the video path
     :type video_path: str
     """
     key = video_key.format(video_path=video_path)
     region.delete(key)
+    logger.debug(u'Cached video information under key %s was invalidated', key)
 
 
 def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles=None, release_name=None):
@@ -524,19 +522,19 @@ def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles
     :param release_name: the release name
     :type release_name: str
     :return: video
-    :rtype: subliminal.video
+    :rtype: subliminal.video.Video
     """
     key = video_key.format(video_path=video_path)
     video = region.get(key, expiration_time=VIDEO_EXPIRATION_TIME)
     if video != NO_VALUE:
-        logger.log(u'Found cached video information under key {0}'.format(key), logger.DEBUG)
+        logger.debug(u'Found cached video information under key %s', key)
         return video
 
     try:
         video_path = encode(video_path)
         subtitles_dir = encode(subtitles_dir or get_subtitles_dir(video_path))
 
-        logger.log(u'Scanning video {0}...'.format(video_path), logger.DEBUG)
+        logger.debug(u'Scanning video %s...', video_path)
         video = scan_video(video_path)
 
         # external subtitles
@@ -550,11 +548,11 @@ def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles
                release_name=release_name)
 
         region.set(key, video)
-        logger.log(u'Video information cached under key {0}'.format(key), logger.DEBUG)
+        logger.debug(u'Video information cached under key %s', key)
 
         return video
     except Exception as error:
-        logger.log(u'Exception: {0}'.format(error), logger.DEBUG)
+        logger.info(u'Exception: %s', error)
 
 
 def get_subtitles_dir(video_path):
@@ -577,7 +575,7 @@ def get_subtitles_dir(video_path):
     if sickbeard.helpers.makeDir(new_subtitles_path):
         sickbeard.helpers.chmodAsParent(new_subtitles_path)
     else:
-        logger.log(u'Unable to create subtitles folder {0}'.format(new_subtitles_path), logger.WARNING)
+        logger.warning(u'Unable to create subtitles folder %s', new_subtitles_path)
 
     return new_subtitles_path
 
@@ -586,7 +584,7 @@ def get_subtitles(video):
     """Returns a sorted list of detected subtitles for the given video file.
 
     :param video: the video to be inspected
-    :type video: subliminal.video
+    :type video: subliminal.video.Video
     :return: sorted list of opensubtitles code for the given video
     :rtype: list of str
     """
@@ -605,11 +603,11 @@ def unpack_rar_files(dirpath):
         if rar_files and sickbeard.UNPACK:
             video_files = [video_file for video_file in files if isMediaFile(video_file)]
             if u'_UNPACK' not in root and (not video_files or root == sickbeard.TV_DOWNLOAD_DIR):
-                logger.log(u'Found rar files in post-process folder: {0}'.format(rar_files), logger.DEBUG)
+                logger.debug(u'Found rar files in post-process folder: %s', rar_files)
                 result = processTV.ProcessResult()
                 processTV.unRAR(root, rar_files, False, result)
         elif rar_files and not sickbeard.UNPACK:
-            logger.log(u'Unpack is disabled. Skipping: {0}'.format(rar_files), logger.WARNING)
+            logger.warning(u'Unpack is disabled. Skipping: %s', rar_files)
 
 
 def delete_unwanted_subtitles(dirpath, filename):
@@ -630,10 +628,10 @@ def delete_unwanted_subtitles(dirpath, filename):
     if language.opensubtitles not in sickbeard.SUBTITLES_LANGUAGES:
         try:
             os.remove(os.path.join(dirpath, filename))
-            logger.log(u"Deleted '{0}' because we don't want subtitle language '{1}'. We only want '{2}' language(s)".
-                       format(filename, language, ','.join(sickbeard.SUBTITLES_LANGUAGES)), logger.DEBUG)
+            logger.debug(u"Deleted '%s' because we don't want subtitle language '%s'. We only want '%s' language(s)",
+                         filename, language, ','.join(sickbeard.SUBTITLES_LANGUAGES))
         except Exception as error:
-            logger.log(u"Couldn't delete subtitle: {0}. Error: {1}".format(filename, ex(error)), logger.DEBUG)
+            logger.info(u"Couldn't delete subtitle: %s. Error: %s", filename, ex(error))
 
 
 def clear_non_release_groups(filepath):
@@ -653,7 +651,7 @@ def clear_non_release_groups(filepath):
             os.rename(filepath, new_filepath)
             filepath = new_filepath
     except Exception as error:
-        logger.log(u"Couldn't remove non release groups from video file. Error: {0}".format(ex(error)), logger.DEBUG)
+        logger.debug(u"Couldn't remove non release groups from video file. Error: %s", ex(error))
 
     return filepath
 
@@ -671,11 +669,11 @@ class SubtitlesFinder(object):
     def subtitles_download_in_pp():  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """Checks for needed subtitles in the post process folder.
         """
-        logger.log(u'Checking for needed subtitles in Post-Process folder', logger.INFO)
+        logger.info(u'Checking for needed subtitles in Post-Process folder')
 
         # Check if PP folder is set
         if not sickbeard.TV_DOWNLOAD_DIR or not os.path.isdir(sickbeard.TV_DOWNLOAD_DIR):
-            logger.log(u'You must set a valid post-process folder in "Post Processing" settings', logger.WARNING)
+            logger.warning(u'You must set a valid post-process folder in "Post Processing" settings')
             return
 
         # Search for all wanted languages
@@ -698,21 +696,21 @@ class SubtitlesFinder(object):
                     continue
 
                 if processTV.subtitles_enabled(filename) is False:
-                    logger.log(u"Subtitle disabled for show: {0}".format(filename), logger.DEBUG)
+                    logger.debug(u'Subtitle disabled for show: %s', filename)
                     continue
 
                 video_path = os.path.join(root, filename)
                 release_name = os.path.splitext(filename)[0]
                 found_subtitles = download_best_subs(video_path, root, release_name, languages, subtitles=False,
                                                      embedded_subtitles=False, provider_pool=pool)
-                downloaded_languages = [s.language.opensubtitles for s in found_subtitles]
+                downloaded_languages = {s.language.opensubtitles for s in found_subtitles}
 
                 # Don't run post processor unless at least one file has all of the needed subtitles
                 if not run_post_process and not needs_subtitles(downloaded_languages):
                     run_post_process = True
 
         if run_post_process:
-            logger.log(u'Starting post-process with default settings now that we found subtitles')
+            logger.info(u'Starting post-process with default settings now that we found subtitles')
             processTV.processDir(sickbeard.TV_DOWNLOAD_DIR)
 
     def run(self, force=False):  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
@@ -725,8 +723,8 @@ class SubtitlesFinder(object):
             return
 
         if not sickbeard.subtitles.enabled_service_list():
-            logger.log(u'Not enough services selected. At least 1 service is required to '
-                       u'search subtitles in the background', logger.WARNING)
+            logger.warning(u'Not enough services selected. At least 1 service is required to search subtitles in the '
+                           u'background')
             return
 
         self.amActive = True
@@ -749,7 +747,7 @@ class SubtitlesFinder(object):
         if sickbeard.SUBTITLES_DOWNLOAD_IN_PP:
             self.subtitles_download_in_pp()
 
-        logger.log(u'Checking for missed subtitles', logger.INFO)
+        logger.info(u'Checking for missed subtitles')
 
         database = db.DBConnection()
         # Shows with air date <= 30 days, have a limit of 100 results
@@ -789,7 +787,7 @@ class SubtitlesFinder(object):
             )
 
         if not sql_results:
-            logger.log(u'No subtitles to download', logger.INFO)
+            logger.info(u'No subtitles to download')
             self.amActive = False
             return
 
@@ -798,13 +796,12 @@ class SubtitlesFinder(object):
                      episode_num(ep_to_sub['season'], ep_to_sub['episode'], numbering='absolute')
             subtitle_path = encode(ep_to_sub['location'], encoding=sickbeard.SYS_ENCODING, fallback='utf-8')
             if not os.path.isfile(subtitle_path):
-                logger.log(u'Episode file does not exist, cannot download subtitles for {0} {1}'.format
-                           (ep_to_sub['show_name'], ep_num), logger.DEBUG)
+                logger.debug(u'Episode file does not exist, cannot download subtitles for %s %s',
+                             ep_to_sub['show_name'], ep_num)
                 continue
 
             if not needs_subtitles(ep_to_sub['subtitles']):
-                logger.log(u'Episode already has all needed subtitles, skipping {0} {1}'.format
-                           (ep_to_sub['show_name'], ep_num), logger.DEBUG)
+                logger.log(u'Episode already has all needed subtitles, skipping %s %s', ep_to_sub['show_name'], ep_num)
                 continue
 
             try:
@@ -825,34 +822,33 @@ class SubtitlesFinder(object):
                     # The time resolution is minute
                     # Only delay is the it's bigger than one minute and avoid wrongly skipping the search slot.
                     if delay.total_seconds() > 60 and int(ep_to_sub['searchcount']) > 2:
-                        logger.log(u'Subtitle search for {0} {1} delayed for {2}'.format
-                                   (ep_to_sub['show_name'], ep_num, dhm(delay)), logger.DEBUG)
+                        logger.debug(u'Subtitle search for %s %s delayed for %s',
+                                     ep_to_sub['show_name'], ep_num, dhm(delay))
                         continue
 
                 show_object = Show.find(sickbeard.showList, int(ep_to_sub['showid']))
                 if not show_object:
-                    logger.log(u'Show with ID {0} not found in the database'.format(ep_to_sub['showid']), logger.DEBUG)
+                    logger.debug(u'Show with ID %s not found in the database', ep_to_sub['showid'])
                     continue
 
                 episode_object = show_object.getEpisode(ep_to_sub['season'], ep_to_sub['episode'])
                 if isinstance(episode_object, str):
-                    logger.log(u'{0} {1} not found in the database'.format
-                               (ep_to_sub['show_name'], ep_num), logger.DEBUG)
+                    logger.debug(u'%s %s not found in the database', ep_to_sub['show_name'], ep_num)
                     continue
 
                 try:
                     episode_object.download_subtitles()
                 except Exception as error:
-                    logger.log(u'Unable to find subtitles for {0} {1}. Error: {2}'.format
-                               (ep_to_sub['show_name'], ep_num, ex(error)), logger.ERROR)
+                    logger.error(u'Unable to find subtitles for %s %s. Error: %s',
+                                 ep_to_sub['show_name'], ep_num, ex(error))
                     continue
 
             except Exception as error:
-                logger.log(u'Error while searching subtitles for {0} {1}. Error: {2}'.format
-                           (ep_to_sub['show_name'], ep_num, ex(error)), logger.WARNING)
+                logger.warning(u'Error while searching subtitles for %s %s. Error: %s',
+                               ep_to_sub['show_name'], ep_num, ex(error))
                 continue
 
-        logger.log(u'Finished checking for missed subtitles', logger.INFO)
+        logger.info(u'Finished checking for missed subtitles')
         self.amActive = False
 
 
@@ -862,7 +858,7 @@ def run_subs_pre_scripts(video_path):
     :param video_path: the video path
     :type video_path: str
     """
-    run_subs_scripts(sickbeard.SUBTITLES_PRE_SCRIPTS, [video_path])
+    run_subs_scripts(video_path, sickbeard.SUBTITLES_PRE_SCRIPTS, [video_path])
 
 
 def run_subs_extra_scripts(video_path, subtitle_path, subtitle_language, show_name, season, episode, episode_name,
@@ -886,14 +882,16 @@ def run_subs_extra_scripts(video_path, subtitle_path, subtitle_language, show_na
     :param show_indexerid: the show indexer id
     :type show_indexerid: int
     """
-    run_subs_scripts(sickbeard.SUBTITLES_EXTRA_SCRIPTS,
+    run_subs_scripts(video_path, sickbeard.SUBTITLES_EXTRA_SCRIPTS,
                      [video_path, subtitle_path, subtitle_language.opensubtitles, show_name, str(season), str(episode),
                       episode_name, str(show_indexerid)])
 
 
-def run_subs_scripts(scripts, script_args):
+def run_subs_scripts(video_path, scripts, script_args):
     """Execute subtitle scripts
 
+    :param video_path: the video path
+    :type video_path: str
     :param scripts: the script commands to be executed
     :type scripts: list of str
     :param script_args: the arguments to be passed to the script
@@ -902,16 +900,18 @@ def run_subs_scripts(scripts, script_args):
     for script_name in scripts:
         script_cmd = [piece for piece in re.split("( |\\\".*?\\\"|'.*?')", script_name) if piece.strip()]
 
-        logger.log(u'Running subtitle {0}-script: {1}'.format('extra' if len(script_args) > 1 else 'pre', script_name))
+        logger.info(u'Running subtitle %s-script: %s', 'extra' if len(script_args) > 1 else 'pre', script_name)
         inner_cmd = script_cmd + script_args
 
         # use subprocess to run the command and capture output
-        logger.log(u'Executing command: {0}'.format(inner_cmd))
+        logger.info(u'Executing command: %s', inner_cmd)
         try:
             process = subprocess.Popen(inner_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                        stderr=subprocess.STDOUT, cwd=sickbeard.PROG_DIR)
             out, _ = process.communicate()  # @UnusedVariable
-            logger.log(u'Script result: {0}'.format(out), logger.DEBUG)
+            logger.debug(u'Script result: %s', out)
 
         except Exception as error:
-            logger.log(u'Unable to run subtitles script: {0}'.format(ex(error)))
+            logger.info(u'Unable to run subtitles script: %s', ex(error))
+
+    invalidate_video_cache(video_path)

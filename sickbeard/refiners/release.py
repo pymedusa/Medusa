@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
 
 from guessit import guessit
-from sickbeard import logger
 
+logger = logging.getLogger(__name__)
 
 MOVIE_ATTRIBUTES = {'title': 'title', 'year': 'year', 'format': 'format', 'release_group': 'release_group',
                     'resolution': 'screen_size',  'video_codec': 'video_codec', 'audio_codec': 'audio_codec'}
@@ -41,8 +42,8 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
     :param str extension: the release file extension.
 
     """
-    logger.log(u'Starting release refiner [extension={0}, release_name={1}, release_file={2}]'.format
-               (extension, release_name, release_file), logger.DEBUG)
+    logger.debug(u'Starting release refiner [extension=%s, release_name=%s, release_file=%s]',
+                 extension, release_name, release_file)
     dirpath, filename = os.path.split(video.name)
     dirpath = dirpath or '.'
     fileroot, fileext = os.path.splitext(filename)
@@ -50,10 +51,11 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
     release_name = get_release_name(release_file) or release_name
 
     if not release_name:
+        logger.debug(u'No release name for %s', video.name)
         return
 
     release_path = os.path.join(dirpath, release_name + fileext)
-    logger.log(u'Guessing using {}'.format(release_path), logger.DEBUG)
+    logger.debug(u'Guessing using %s', release_path)
 
     guess = guessit(release_path)
     attributes = MOVIE_ATTRIBUTES if guess.get('type') == 'movie' else EPISODE_ATTRIBUTES
@@ -63,7 +65,7 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
 
         if new_value and old_value != new_value:
             setattr(video, key, new_value)
-            logger.log(u'Attribute {0} changed from {1} to {2}'.format(key, old_value, new_value), logger.DEBUG)
+            logger.debug(u'Attribute %s changed from %s to %s', key, old_value, new_value)
 
 
 def get_release_file(dirpath, filename, extension):
@@ -82,7 +84,7 @@ def get_release_file(dirpath, filename, extension):
 
     # skip if info file doesn't exist
     if os.path.isfile(release_file):
-        logger.log(u'Found release file {}'.format(release_file), logger.DEBUG)
+        logger.debug(u'Found release file %s', release_file)
         return release_file
 
 
@@ -103,6 +105,6 @@ def get_release_name(release_file):
 
     # skip if no release name was found
     if not release_name:
-        logger.log(u'Release file {} does not contain a release name'.format(release_file), logger.WARNING)
+        logger.warning(u'Release file %s does not contain a release name', release_file)
 
     return release_name
