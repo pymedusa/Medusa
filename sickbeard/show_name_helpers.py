@@ -28,6 +28,7 @@ from sickbeard.scene_exceptions import get_scene_exceptions
 from sickbeard import logger
 from sickrage.helper.encoding import ek
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
+from collections import namedtuple
 
 resultFilters = [
     "sub(bed|ed|pack|s)",
@@ -52,14 +53,21 @@ def containsAtLeastOneWord(name, words):
     """
     if isinstance(words, basestring):
         words = words.split(',')
-    items = [(re.compile(r'(^|[\W_])%s($|[\W_])' % re.escape(word.strip()), re.I), word.strip()) for word in words]
+    items = [(re.compile(r'(^|[\W_])%s($|[\W_])' % word.strip(), re.I), word.strip()) for word in words]
     for regexp, word in items:
         if regexp.search(name):
-            return word
+            # subs_words = '.dub.' or '.dksub.' or else
+            subs_word = regexp.search(name).group(0)
+            # If word is a regex like "dub(bed)?" or "sub(bed|ed|pack|s)" 
+            # then return just the matched word: "dub" and not full regex
+            if word in resultFilters:
+                return subs_word.replace(".","")
+            else:
+                return word
     return False
 
 
-def filterBadReleases(name, parse=True, show=None):
+def filterBadReleases(name, parse=True):
     """
     Filters out non-english and just all-around stupid releases by comparing them
     to the resultFilters contents.
@@ -77,32 +85,12 @@ def filterBadReleases(name, parse=True, show=None):
         return False
     except InvalidShowException:
         pass
-    # except InvalidShowException as error:
-    #    logger.log(u"{}".format(error), logger.DEBUG)
-    #    return False
 
     # if any of the bad strings are in the name then say no
-    ignore_words = list(resultFilters)
-    if sickbeard.IGNORE_WORDS:
-        ignore_words.extend(sickbeard.IGNORE_WORDS.split(','))
-
-    if show and show.rls_require_words:
-        ignore_words = set(ignore_words).difference(x.strip() for x in show.rls_require_words.split(',') if x.strip())
-    word = containsAtLeastOneWord(name, ignore_words)
+    word = containsAtLeastOneWord(name, resultFilters)
     if word:
-        logger.log(u"Invalid scene release: " + name + " contains " + word + ", ignoring it", logger.DEBUG)
+        logger.log(u"Unwanted scene release: {0}. Contain unwanted word: {1}. Ignoring it".format(name, word), logger.WARNING)
         return False
-
-    # if any of the good strings aren't in the name then say no
-    if sickbeard.REQUIRE_WORDS:
-        require_words = sickbeard.REQUIRE_WORDS.split(',')
-        if show and show.rls_ignore_words:
-            require_words = set(require_words).difference(x.strip() for x in show.rls_ignore_words.split(',') if x.strip())
-        if not containsAtLeastOneWord(name, require_words):
-            logger.log(u"Invalid scene release: " + name + " doesn't contain any of " + sickbeard.REQUIRE_WORDS +
-                       ", ignoring it", logger.DEBUG)
-            return False
-
     return True
 
 
@@ -186,3 +174,31 @@ def determineReleaseName(dir_name=None, nzb_name=None):
         return folder
 
     return None
+
+
+def show_words(showObj):
+    """
+    Returns all related words to show: preferred, undesired, ignore, require.
+    """
+
+    ShowWords = namedtuple('show_words', ['preferred_words', 'undesired_words', 'ignore_words', 'require_words'])
+    
+    preferred_words = ",".join(sickbeard.PREFERRED_WORDS.split(',')) if sickbeard.PREFERRED_WORDS.split(',') else ''
+    undesired_words = ",".join(sickbeard.UNDESIRED_WORDS.split(',')) if sickbeard.UNDESIRED_WORDS.split(',') else ''
+
+    global_ignore = sickbeard.IGNORE_WORDS.split(',') if sickbeard.IGNORE_WORDS else []
+    global_require = sickbeard.REQUIRE_WORDS.split(',') if sickbeard.REQUIRE_WORDS else []
+    show_ignore = showObj.rls_ignore_words.split(',') if showObj.rls_ignore_words else []
+    show_require = showObj.rls_require_words.split(',') if showObj.rls_require_words else []
+
+    # If word is in global ignore and also in show require, then remove it from global ignore
+    # Join new global ignore with show ignore
+    final_ignore = show_ignore + [i for i in global_ignore if i.lower() not in [r.lower() for r in show_require]]
+    # If word is in global require and also in show ignore, then remove it from global require
+    # Join new global required with show require
+    final_require = show_require + [i for i in global_require if i.lower() not in [r.lower() for r in show_ignore]]
+
+    ignore_words = ",".join(final_ignore)
+    require_words = ",".join(final_require)
+    
+    return ShowWords(preferred_words, undesired_words, ignore_words, require_words)

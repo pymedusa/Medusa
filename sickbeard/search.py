@@ -234,20 +234,24 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
         if cur_result.quality not in anyQualities + bestQualities:
             logger.log(cur_result.name + " is a quality we know we don't want, rejecting it", logger.DEBUG)
             continue
-
-        if show.rls_ignore_words and show_name_helpers.containsAtLeastOneWord(cur_result.name, cur_result.show.rls_ignore_words):
-            logger.log(u"Ignoring " + cur_result.name + " based on ignored words filter: " + show.rls_ignore_words,
-                       logger.INFO)
+        
+        show_words = show_name_helpers.show_words(cur_result.show)
+        ignore_words = show_words.ignore_words
+        require_words = show_words.require_words
+        found_ignore_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, ignore_words)
+        found_require_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, require_words)        
+        
+        if ignore_words and found_ignore_word:
+            logger.log(u"Ignoring " + cur_result.name + " based on ignored words filter: " + found_ignore_word,
+                       logger.WARNING)
             continue
 
-        if show.rls_require_words and not show_name_helpers.containsAtLeastOneWord(cur_result.name, cur_result.show.rls_require_words):
-            logger.log(u"Ignoring " + cur_result.name + " based on required words filter: " + show.rls_require_words,
-                       logger.INFO)
+        if require_words and not found_require_word:
+            logger.log(u"Ignoring " + cur_result.name + " based on required words filter: " + require_words,
+                       logger.WARNING)
             continue
 
-        if not show_name_helpers.filterBadReleases(cur_result.name, parse=False, show=show):
-            logger.log(u"Ignoring " + cur_result.name + " because its not a valid scene release that we want, ignoring it",
-                       logger.INFO)
+        if not show_name_helpers.filterBadReleases(cur_result.name, parse=False):
             continue
 
         if hasattr(cur_result, 'size'):

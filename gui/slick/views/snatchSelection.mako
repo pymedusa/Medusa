@@ -5,7 +5,7 @@
     import ntpath
     import os.path
     import sickbeard
-    from sickbeard import subtitles, sbdatetime, network_timezones, helpers
+    from sickbeard import subtitles, sbdatetime, network_timezones, helpers, show_name_helpers
     import sickbeard.helpers
 
     from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
@@ -222,6 +222,8 @@
                 if hItem["name"] and require_words and any([i for i in require_words.split(',') if i.lower() in hItem["name"].lower()]):
                     name_require = True
                 if hItem["name"] and ignore_words and any([i for i in ignore_words.split(',') if i.lower() in hItem["name"].lower()]):
+                    name_ignore = True
+                if hItem["name"] and not show_name_helpers.filterBadReleases(hItem["name"]):
                     name_ignore = True
 
 
