@@ -122,21 +122,6 @@
                     <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${(show.name, " | ".join(show.exceptions))[show.exceptions != 0]}</td></tr>
                 % endif
 
-                <%
-                    preferred_words = ", ".join(sickbeard.PREFERRED_WORDS.split(',')) if sickbeard.PREFERRED_WORDS.split(',') else ''
-                    undesired_words = ", ".join(sickbeard.UNDESIRED_WORDS.split(',')) if sickbeard.UNDESIRED_WORDS.split(',') else ''
-
-                    ignore_words = sickbeard.IGNORE_WORDS.lower().split(',')
-                    show_require = show.rls_require_words if show.rls_require_words else ''
-                    show_ignore = set(show.rls_ignore_words.lower().split(',')) | set(ignore_words).difference(x.strip() for x in show.rls_require_words.lower().split(',') if x.strip())
-                    ignore_words = ", ".join(sorted([ignore_word for ignore_word in show_ignore if ignore_word != '']))
-             
-                    require_words = sickbeard.REQUIRE_WORDS.lower().split(',')
-                    show_ignore = show.rls_ignore_words if show.rls_ignore_words else ''
-                    show_require = set(show.rls_require_words.lower().split(',')) | set(require_words).difference(x.strip() for x in show.rls_ignore_words.lower().split(',') if x.strip())
-                    require_words = ", ".join(sorted([require_word for require_word in show_require if require_word != '']))
-                %>
-
                 % if require_words:
                     <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">${require_words}</span></td></tr>
                 % endif
@@ -221,9 +206,42 @@
 
             <tbody aria-live="polite" aria-relevant="all">
             % for hItem in provider_results['found_items']:
+
+                <%
+                release_group_ignore = False
+                release_group_require = False
+                name_ignore = False
+                name_require = False
+                
+                release_group = helpers.remove_non_release_groups(hItem["release_group"])
+                if release_group and ignore_words and release_group.lower() in ignore_words.lower().split(','):
+                    release_group_ignore = True
+                elif release_group and require_words and release_group.lower() in require_words.lower().split(','):
+                    release_group_require = True
+
+                if hItem["name"] and require_words and any([i for i in require_words.split(',') if i.lower() in hItem["name"].lower()]):
+                    name_require = True
+                if hItem["name"] and ignore_words and any([i for i in ignore_words.split(',') if i.lower() in hItem["name"].lower()]):
+                    name_ignore = True
+
+
+                %>
+
                 <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
-                    <td class="tvShow"><span class="break-word">${hItem["name"]}</span></td>
-                    <td class="col-group"><span class="break-word">${helpers.remove_non_release_groups(hItem["release_group"])}</span></td>
+                    % if name_ignore:
+                        <td class="tvShow"><span class="break-word"><font color="red">${hItem["name"]}</font></span></td>
+                    % elif name_require:
+                        <td class="tvShow"><span class="break-word"><font color="green">${hItem["name"]}</font></span></td>
+                    % else:
+                        <td class="tvShow"><span class="break-word">${hItem["name"]}</span></td>
+                    % endif
+                    % if release_group_ignore:
+                        <td class="col-group"><span class="break-word"><font color="red">${release_group}</font></span></td>
+                    % elif release_group_require:
+                        <td class="col-group"><span class="break-word"><font color="green">${release_group}</font></span></td>
+                    % else:
+                        <td class="col-group"><span class="break-word">${release_group}</span></td>
+                    % endif
                     <td class="col-provider">
                         % if hItem["provider_image"]:
                             <img src="${srRoot}/images/providers/${hItem["provider_image"]}" width="16" height="16" style="vertical-align:middle;" alt="${hItem["provider"]}" style="cursor: help;" title="${hItem["provider"]}"/> ${hItem["provider"]}

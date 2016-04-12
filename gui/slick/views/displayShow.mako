@@ -186,21 +186,6 @@
                     <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${(show.name, " | ".join(show.exceptions))[show.exceptions != 0]}</td></tr>
                 % endif
 
-                <%
-                    preferred_words = ", ".join(sickbeard.PREFERRED_WORDS.split(',')) if sickbeard.PREFERRED_WORDS.split(',') else ''
-                    undesired_words = ", ".join(sickbeard.UNDESIRED_WORDS.split(',')) if sickbeard.UNDESIRED_WORDS.split(',') else ''
-
-                    ignore_words = sickbeard.IGNORE_WORDS.lower().split(',')
-                    show_require = show.rls_require_words if show.rls_require_words else ''
-                    show_ignore = set(show.rls_ignore_words.lower().split(',')) | set(ignore_words).difference(x.strip() for x in show.rls_require_words.lower().split(',') if x.strip())
-                    ignore_words = ", ".join(sorted([ignore_word for ignore_word in show_ignore if ignore_word != '']))
-             
-                    require_words = sickbeard.REQUIRE_WORDS.lower().split(',')
-                    show_ignore = show.rls_ignore_words if show.rls_ignore_words else ''
-                    show_require = set(show.rls_require_words.lower().split(',')) | set(require_words).difference(x.strip() for x in show.rls_ignore_words.lower().split(',') if x.strip())
-                    require_words = ", ".join(sorted([require_word for require_word in show_require if require_word != '']))
-                %>
-
                 % if require_words:
                     <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">${require_words}</span></td></tr>
                 % endif

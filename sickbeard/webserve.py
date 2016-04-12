@@ -1398,7 +1398,11 @@ class Home(WebRoot):
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexerid, indexer),
             title=showObj.name,
             controller="home",
-            action="displayShow"
+            action="displayShow",
+            preferred_words=self.show_words(showObj)[0],
+            undesired_words=self.show_words(showObj)[1],
+            ignore_words=self.show_words(showObj)[2],
+            require_words=self.show_words(showObj)[3]
         )
 
     def pickManualSearch(self, provider=None, rowid=None):
@@ -1622,8 +1626,31 @@ class Home(WebRoot):
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexerid, indexer),
             title=showObj.name,
             controller="home",
-            action="snatchSelection"
+            action="snatchSelection",
+            preferred_words=self.show_words(showObj)[0],
+            undesired_words=self.show_words(showObj)[1],
+            ignore_words=self.show_words(showObj)[2],
+            require_words=self.show_words(showObj)[3]
         )
+
+    @staticmethod
+    def show_words(showObj):
+        preferred_words = ", ".join(sickbeard.PREFERRED_WORDS.split(',')) if sickbeard.PREFERRED_WORDS.split(',') else ''
+        undesired_words = ", ".join(sickbeard.UNDESIRED_WORDS.split(',')) if sickbeard.UNDESIRED_WORDS.split(',') else ''
+
+        global_ignore = sickbeard.IGNORE_WORDS.split(',') if sickbeard.IGNORE_WORDS else []
+        show_ignore = showObj.rls_ignore_words.split(',') if showObj.rls_ignore_words else []
+        show_require = showObj.rls_require_words.split(',') if showObj.rls_require_words else []
+        final_ignore = show_ignore + [i for i in global_ignore if i.lower() not in [r.lower() for r in show_require]]
+        ignore_words = ", ".join(final_ignore)
+        
+        global_require = sickbeard.REQUIRE_WORDS.split(',') if sickbeard.REQUIRE_WORDS else []
+        show_require = showObj.rls_require_words.split(',') if showObj.rls_require_words else []
+        show_ignore = showObj.rls_ignore_words.split(',') if showObj.rls_ignore_words else []
+        final_require = show_require + [i for i in global_require if i.lower() not in [r.lower() for r in show_ignore]]
+        require_words = ", ".join(final_require)
+        
+        return [preferred_words, undesired_words, ignore_words, require_words]
 
     @staticmethod
     def plotDetails(show, season, episode):
@@ -5543,3 +5570,5 @@ class ErrorLogs(WebRoot):
         submitter_notification(submitter_result)
 
         return self.redirect("/errorlogs/")
+
+
