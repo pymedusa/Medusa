@@ -1455,10 +1455,10 @@ class Home(WebRoot):
                 ep_objs.append(TVEpisode(show_obj, int(cached_result['season']), int(episode)))
 
         # Create the queue item
-        snatch_queue_item = search_queue.ManualSearchQueueItem(show_obj, ep_objs, provider, cached_result)
+        snatch_queue_item = search_queue.ManualSnatchQueueItem(show_obj, ep_objs, provider, cached_result)
 
         # Add the queue item to the queue
-        sickbeard.searchQueueScheduler.action.add_item(snatch_queue_item)
+        sickbeard.manualSnatchScheduler.action.add_item(snatch_queue_item)
 
         while snatch_queue_item.success is not False:
             if snatch_queue_item.started and snatch_queue_item.success:
