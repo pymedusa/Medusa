@@ -1407,7 +1407,7 @@ class TVEpisode(object):  # pylint: disable=too-many-instance-attributes, too-ma
             logger.log(u'No changed subtitles for {0} {1}. Current subtitles: {2}'.format(self.show.name, ep_num, current_subtitles), logger.DEBUG)
         else:
             logger.log(u'Subtitle changes detected for this show {0} {1}. Current subtitles: {2}'.format(self.show.name, ep_num, current_subtitles), logger.DEBUG)
-            self.subtitles = current_subtitles
+            self.subtitles = current_subtitles if current_subtitles else []
             self.saveToDB()
 
 
