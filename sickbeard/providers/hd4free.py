@@ -79,15 +79,15 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                 except ValueError:
                     logger.log("No data returned from provider", logger.DEBUG)
                     continue
-
+                
+                if not jdata:
+                    logger.log(u"No data returned from provider", logger.DEBUG)
+                    continue
+                
                 error = jdata.get('error')
                 if error:
                     logger.log(u"{}".format(error), logger.DEBUG)
                     return results
-
-                if not jdata:
-                    logger.log(u"No data returned from provider", logger.DEBUG)
-                    continue
 
                 try:
                     if jdata['0']['total_results'] == 0:
