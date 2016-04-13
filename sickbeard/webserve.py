@@ -51,7 +51,7 @@ import sickbeard
 from sickbeard import (
     classes, clients, config, db, helpers, logger, naming,
     network_timezones, notifiers, processTV, sab, search_queue,
-    subtitles, ui,
+    subtitles, ui, show_name_helpers
 )
 from sickbeard.blackandwhitelist import BlackAndWhiteList, short_group_names
 from sickbeard.browser import foldersAtPath
@@ -1387,6 +1387,8 @@ class Home(WebRoot):
             'name': showObj.name,
         })
 
+        show_words = show_name_helpers.show_words(showObj)
+
         return t.render(
             submenu=submenu, showLoc=showLoc, show_message=show_message,
             show=showObj, sql_results=sql_results, seasonResults=seasonResults,
@@ -1399,10 +1401,10 @@ class Home(WebRoot):
             title=showObj.name,
             controller="home",
             action="displayShow",
-            preferred_words=self.show_words(showObj)[0],
-            undesired_words=self.show_words(showObj)[1],
-            ignore_words=self.show_words(showObj)[2],
-            require_words=self.show_words(showObj)[3]
+            preferred_words=show_words.preferred_words,
+            undesired_words=show_words.undesired_words,
+            ignore_words=show_words.ignore_words,
+            require_words=show_words.require_words
         )
 
     def pickManualSearch(self, provider=None, rowid=None):
@@ -1615,6 +1617,8 @@ class Home(WebRoot):
             'name': showObj.name,
         })
 
+        show_words = show_name_helpers.show_words(showObj)
+
         return t.render(
             submenu=submenu, showLoc=showLoc, show_message=show_message,
             show=showObj, provider_results=provider_results, episode=episode,
@@ -1627,30 +1631,12 @@ class Home(WebRoot):
             title=showObj.name,
             controller="home",
             action="snatchSelection",
-            preferred_words=self.show_words(showObj)[0],
-            undesired_words=self.show_words(showObj)[1],
-            ignore_words=self.show_words(showObj)[2],
-            require_words=self.show_words(showObj)[3]
+            preferred_words=show_words.preferred_words,
+            undesired_words=show_words.undesired_words,
+            ignore_words=show_words.ignore_words,
+            require_words=show_words.require_words
         )
 
-    @staticmethod
-    def show_words(showObj):
-        preferred_words = ", ".join(sickbeard.PREFERRED_WORDS.split(',')) if sickbeard.PREFERRED_WORDS.split(',') else ''
-        undesired_words = ", ".join(sickbeard.UNDESIRED_WORDS.split(',')) if sickbeard.UNDESIRED_WORDS.split(',') else ''
-
-        global_ignore = sickbeard.IGNORE_WORDS.split(',') if sickbeard.IGNORE_WORDS else []
-        show_ignore = showObj.rls_ignore_words.split(',') if showObj.rls_ignore_words else []
-        show_require = showObj.rls_require_words.split(',') if showObj.rls_require_words else []
-        final_ignore = show_ignore + [i for i in global_ignore if i.lower() not in [r.lower() for r in show_require]]
-        ignore_words = ", ".join(final_ignore)
-        
-        global_require = sickbeard.REQUIRE_WORDS.split(',') if sickbeard.REQUIRE_WORDS else []
-        show_require = showObj.rls_require_words.split(',') if showObj.rls_require_words else []
-        show_ignore = showObj.rls_ignore_words.split(',') if showObj.rls_ignore_words else []
-        final_require = show_require + [i for i in global_require if i.lower() not in [r.lower() for r in show_ignore]]
-        require_words = ", ".join(final_require)
-        
-        return [preferred_words, undesired_words, ignore_words, require_words]
 
     @staticmethod
     def plotDetails(show, season, episode):
