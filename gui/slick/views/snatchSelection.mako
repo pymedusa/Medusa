@@ -123,16 +123,16 @@
                 % endif
 
                 % if require_words:
-                    <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">${require_words}</span></td></tr>
+                    <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word"><font color="green">${require_words}</font></span></td></tr>
                 % endif
                 % if ignore_words:
-                    <tr><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word">${ignore_words}</span></td></tr>
+                    <tr><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word"><font color="red">${ignore_words}</font></span></td></tr>
                 % endif
                 % if preferred_words:
-                    <tr><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word">${preferred_words}</span></td></tr>
+                    <tr><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word"><font color="blue">${preferred_words}</font></span></td></tr>
                 % endif
                 % if undesired_words:
-                    <tr><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word">${undesired_words}</span></td></tr>
+                    <tr><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word"><font color="orange">${undesired_words}</font></span></td></tr>
                 % endif
                 % if bwl and bwl.whitelist:
                     <tr>
@@ -210,14 +210,22 @@
                 <%
                 release_group_ignore = False
                 release_group_require = False
+                release_group_preferred = False
+                release_group_undesired = False
                 name_ignore = False
                 name_require = False
+                name_undesired = False
+                name_preferred = False
                 
                 release_group = helpers.remove_non_release_groups(hItem["release_group"])
                 if release_group and ignore_words and release_group.lower() in ignore_words.lower().split(','):
                     release_group_ignore = True
                 elif release_group and require_words and release_group.lower() in require_words.lower().split(','):
                     release_group_require = True
+                elif release_group and preferred_words and release_group.lower() in preferred_words.lower().split(','):
+                    release_group_preferred = True
+                elif release_group and undesired_words and release_group.lower() in undesired_words.lower().split(','):
+                    release_group_undesired = True
 
                 if hItem["name"] and require_words and any([i for i in require_words.split(',') if i.lower() in hItem["name"].lower()]):
                     name_require = True
@@ -225,7 +233,10 @@
                     name_ignore = True
                 if hItem["name"] and not show_name_helpers.filterBadReleases(hItem["name"]):
                     name_ignore = True
-
+                if hItem["name"] and undesired_words and any([i for i in undesired_words.split(',') if i.lower() in hItem["name"].lower()]):
+                    name_undesired = True
+                if hItem["name"] and preferred_words and any([i for i in preferred_words.split(',') if i.lower() in hItem["name"].lower()]):
+                    name_preferred = True
 
                 %>
 
@@ -234,6 +245,10 @@
                         <td class="tvShow"><span class="break-word"><font color="red">${hItem["name"]}</font></span></td>
                     % elif name_require:
                         <td class="tvShow"><span class="break-word"><font color="green">${hItem["name"]}</font></span></td>
+                    % elif name_undesired:
+                        <td class="tvShow"><span class="break-word"><font color="orange">${hItem["name"]}</font></span></td>
+                    % elif name_preferred:
+                        <td class="tvShow"><span class="break-word"><font color="blue">${hItem["name"]}</font></span></td>
                     % else:
                         <td class="tvShow"><span class="break-word">${hItem["name"]}</span></td>
                     % endif
@@ -241,6 +256,10 @@
                         <td class="col-group"><span class="break-word"><font color="red">${release_group}</font></span></td>
                     % elif release_group_require:
                         <td class="col-group"><span class="break-word"><font color="green">${release_group}</font></span></td>
+                    % elif release_group_preferred:
+                        <td class="col-group"><span class="break-word"><font color="blue">${release_group}</font></span></td>
+                    % elif release_group_undesired:
+                        <td class="col-group"><span class="break-word"><font color="orange">${release_group}</font></span></td>
                     % else:
                         <td class="col-group"><span class="break-word">${release_group}</span></td>
                     % endif
