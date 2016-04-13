@@ -81,7 +81,7 @@ def _downloadResult(result):
             helpers.chmodAsParent(file_name)
 
         except EnvironmentError as e:
-            logger.log(u"Error trying to save NZB to black hole: " + ex(e), logger.ERROR)
+            logger.log(u"Error trying to save NZB to black hole: {0!r}".format(ex(e)), logger.ERROR)
             new_result = False
     elif result.resultType == "torrent":
         new_result = res_provider.download_result(result)
@@ -127,7 +127,7 @@ def snatchEpisode(result, end_status=SNATCHED):  # pylint: disable=too-many-bran
             is_proper = True if end_status == SNATCHED_PROPER else False
             dlResult = nzbget.sendNZB(result, is_proper)
         else:
-            logger.log(u"Unknown NZB action specified in config: " + sickbeard.NZB_METHOD, logger.ERROR)
+            logger.log(u"Unknown NZB action specified in config: {0}".format(sickbeard.NZB_METHOD), logger.ERROR)
             dlResult = False
 
     # Torrents can be sent to clients or saved to disk
@@ -354,13 +354,13 @@ def wantedEpisodes(show, from_date):
     """
     wanted = []
     if show.paused:
-        logger.log(u"Not checking for episodes of %s because the show is paused" % show.name, logger.DEBUG)
+        logger.log(u"Not checking for episodes of {0} because the show is paused".format(show.name), logger.DEBUG)
         return wanted
 
     allowed_qualities, preferred_qualities = common.Quality.splitQuality(show.quality)
     all_qualities = list(set(allowed_qualities + preferred_qualities))
 
-    logger.log(u"Seeing if we need anything from " + show.name, logger.DEBUG)
+    logger.log(u"Seeing if we need anything from {0}".format(show.name), logger.DEBUG)
     con = db.DBConnection()
 
     sql_results = con.select(
@@ -427,10 +427,10 @@ def searchForNeededEpisodes():
         try:
             cur_found_results = cur_provider.search_rss(episodes)
         except AuthException as e:
-            logger.log(u"Authentication error: " + ex(e), logger.ERROR)
+            logger.log(u"Authentication error: {0!r}".format(ex(e)), logger.ERROR)
             continue
         except Exception as e:
-            logger.log(u"Error while searching " + cur_provider.name + ", skipping: " + ex(e), logger.ERROR)
+            logger.log(u"Error while searching {0}, skipping: {1!r}".format(cur_provider.name, ex(e)), logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
             continue
 
@@ -439,14 +439,14 @@ def searchForNeededEpisodes():
         # pick a single result for each episode, respecting existing results
         for cur_ep in cur_found_results:
             if not cur_ep.show or cur_ep.show.paused:
-                logger.log(u"Skipping %s because the show is paused " % cur_ep.prettyName(), logger.DEBUG)
+                logger.log(u"Skipping {0} because the show is paused".format(cur_ep.prettyName()), logger.DEBUG)
                 continue
 
             best_result = pickBestResult(cur_found_results[cur_ep], cur_ep.show)
 
             # if all results were rejected move on to the next episode
             if not best_result:
-                logger.log(u"All found results for " + cur_ep.prettyName() + " were rejected.", logger.DEBUG)
+                logger.log(u"All found results for {0} were rejected.".format(cur_ep.prettyName()), logger.DEBUG)
                 continue
 
             # if it's already in the list (from another provider) and the newly found quality is no better then skip it
@@ -552,31 +552,29 @@ class Search(object):
                     search_results = cur_provider.find_search_results(show, episodes, search_mode,
                                                                       forced_search, down_cur_quality, self.manual_search)
                 except AuthException as e:
-                    logger.log(u"Authentication error: " + ex(e), logger.ERROR)
+                    logger.log(u"Authentication error: {0!r}".format(ex(e)), logger.ERROR)
                     break
                 except (SocketTimeout, TypeError) as e:
-                    logger.log(u"Connection timed out (sockets) while searching %s. Error: %r" %
-                               (cur_provider.name, ex(e)), logger.DEBUG)
+                    logger.log(u"Connection timed out (sockets) while searching {0}. Error: {1!r}".format(cur_provider.name, ex(e)), logger.DEBUG)
                     break
                 except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects) as e:
-                    logger.log(u"HTTP error while searching %s. Error: %r" % (cur_provider.name, ex(e)), logger.DEBUG)
+                    logger.log(u"HTTP error while searching {0}. Error: {1!r}".format(cur_provider.name, ex(e)), logger.DEBUG)
                     break
                 except requests.exceptions.ConnectionError as e:
-                    logger.log(u"Connection error while searching %s. Error: %r" % (cur_provider.name, ex(e)), logger.DEBUG)
+                    logger.log(u"Connection error while searching {0}. Error: {1!r}".format(cur_provider.name, ex(e)), logger.DEBUG)
                     break
                 except requests.exceptions.Timeout as e:
-                    logger.log(u"Connection timed out while searching %s. Error: %r" % (cur_provider.name, ex(e)), logger.DEBUG)
+                    logger.log(u"Connection timed out while searching {0}. Error: {1!r}".format(cur_provider.name, ex(e)), logger.DEBUG)
                     break
                 except requests.exceptions.ContentDecodingError:
-                    logger.log(u"Content-Encoding was gzip, but content was not compressed while searching %s. Error: %r" %
-                               (cur_provider.name, ex(e)), logger.DEBUG)
+                    logger.log(u"Content-Encoding was gzip, but content was not compressed while searching {0}. Error: {1!r}".
+                               format(cur_provider.name, ex(e)), logger.DEBUG)
                     break
                 except Exception as e:
                     if 'ECONNRESET' in e or (hasattr(e, 'errno') and e.errno == errno.ECONNRESET):
-                        logger.log(u"Connection reseted by peer while searching %s. Error: %r" %
-                                   (cur_provider.name, ex(e)), logger.WARNING)
+                        logger.log(u"Connection reseted by peer while searching {0}. Error: {1!r}".format(cur_provider.name, ex(e)), logger.WARNING)
                     else:
-                        logger.log(u"Unknown exception while searching %s. Error: %r" % (cur_provider.name, ex(e)), logger.ERROR)
+                        logger.log(u"Unknown exception while searching {0}. Error: {1!r}".format(cur_provider.name, ex(e)), logger.ERROR)
                         logger.log(traceback.format_exc(), logger.DEBUG)
                     break
 
@@ -648,9 +646,9 @@ class Search(object):
                           ( season IN ( " + ','.join(searched_seasons) + " ) )",
                                                         [show.indexerid])]
 
-                logger.log(u"Executed query: [SELECT episode FROM tv_episodes WHERE showid = %s AND season in  %s]" %
-                           (show.indexerid, ','.join(searched_seasons)))
-                logger.log(u"Episode list: " + str(all_eps), logger.DEBUG)
+                logger.log(u"Executed query: [SELECT episode FROM tv_episodes WHERE showid = {0} AND season in {1}]".
+                           format(show.indexerid, ','.join(searched_seasons)))
+                logger.log(u"Episode list: {0!s}".format(all_eps), logger.DEBUG)
 
                 all_wanted = True
                 any_wanted = False
@@ -664,9 +662,8 @@ class Search(object):
                 # if we need every ep in the season and there's nothing better then just download this and be done with it
                 # (unless single episodes are preferred)
                 if all_wanted and best_season_result.quality == highest_quality_overall:
-                    logger.log(
-                        u"Every ep in this season is needed, downloading the whole " +
-                        best_season_result.provider.provider_type + " " + best_season_result.name)
+                    logger.log(u"Every ep in this season is needed, downloading the whole {0} {1}".
+                               format(best_season_result.provider.provider_type, best_season_result.name))
                     ep_objs = []
                     for cur_ep_num in all_eps:
                         for season in {x.season for x in episodes}:
@@ -679,10 +676,8 @@ class Search(object):
                     return [best_season_result]
 
                 elif not any_wanted:
-                    logger.log(
-                        u"No eps from this season are wanted at this quality, ignoring the result of " + best_season_result.name,
-                        logger.DEBUG)
-
+                    logger.log(u"No eps from this season are wanted at this quality, ignoring the result of {0}".
+                               format(best_season_result.name), logger.DEBUG)
                 else:
 
                     if best_season_result.provider.provider_type == GenericProvider.NZB:
@@ -724,7 +719,8 @@ class Search(object):
             if MULTI_EP_RESULT in found_results[cur_provider.name]:
                 for _multi_results in found_results[cur_provider.name][MULTI_EP_RESULT]:
 
-                    logger.log(u"Seeing if we want to bother with multi-episode result " + _multi_results.name, logger.DEBUG)
+                    logger.log(u"Seeing if we want to bother with multi-episode result {0}".
+                               format(_multi_results.name), logger.DEBUG)
 
                     # Filter result by ignore/required/whitelist/blacklist/quality, etc
                     multi_results = pickBestResult(_multi_results, show)
@@ -741,9 +737,8 @@ class Search(object):
                         else:
                             needed_eps.append(ep_obj.episode)
 
-                    logger.log(
-                        u"Single-ep check result is needed_eps: " + str(needed_eps) + ", not_needed_eps: " + str(not_needed_eps),
-                        logger.DEBUG)
+                    logger.log(u"Single-ep check result is needed_eps: {0!s}, not_needed_eps: {1!s}".format(needed_eps, not_needed_eps),
+                               logger.DEBUG)
 
                     if not needed_eps:
                         logger.log(u"All of these episodes were covered by single episode results, \
@@ -759,9 +754,8 @@ class Search(object):
                         else:
                             multi_needed_eps.append(ep_obj.episode)
 
-                    logger.log(
-                        u"Multi-ep check result is multi_needed_eps: " + str(multi_needed_eps) + ", multi_not_needed_eps: " + str(
-                            multi_not_needed_eps), logger.DEBUG)
+                    logger.log(u"Multi-ep check result is multi_needed_eps: {0!s}, multi_not_needed_eps: {1!s}".
+                               format(multi_needed_eps, multi_not_needed_eps), logger.DEBUG)
 
                     if not multi_needed_eps:
                         logger.log(
@@ -774,8 +768,9 @@ class Search(object):
                         multi_results[ep_obj.episode] = multi_results
                         if ep_obj.episode in found_results[cur_provider.name]:
                             logger.log(
-                                u"A needed multi-episode result overlaps with a single-episode result for ep #" + str(
-                                    ep_obj.episode) + ", removing the single-episode results from the list", logger.DEBUG)
+                                u"A needed multi-episode result overlaps with a single-episode result for ep #{0!s}, \
+                                removing the single-episode results from the list".
+                                format(ep_obj.episode), logger.DEBUG)
                             del found_results[cur_provider.name][ep_obj.episode]
 
             # of all the single ep results narrow it down to the best one for each episode
