@@ -516,7 +516,7 @@ class QueueItemAdd(ShowQueueItem):
 
             # add show to trakt.tv library
             if sickbeard.TRAKT_SYNC:
-                sickbeard.traktCheckerScheduler.action.add_show_watchlist(self.show)
+                sickbeard.traktCheckerScheduler.action.add_show_trakt_library(self.show)
 
             if sickbeard.TRAKT_SYNC_WATCHLIST:
                 logger.log(u"update watchlist")
