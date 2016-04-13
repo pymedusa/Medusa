@@ -34,6 +34,7 @@ from logging import NullHandler
 import pkgutil
 import platform
 import locale
+import sickrage
 import subliminal
 import tornado
 import traceback
@@ -200,11 +201,11 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
     def __init__(self):
         self.logger = logging.getLogger('sickrage')
 
-        self.loggers = [
-            self.logger
-        ]
-        self.loggers.extend(get_loggers(tornado))
+        self.loggers = [self.logger]
+        self.loggers.extend(get_loggers(sickrage))
+        self.loggers.extend(get_loggers(sickbeard))
         self.loggers.extend(get_loggers(subliminal))
+        self.loggers.extend(get_loggers(tornado))
 
         self.console_logging = False
         self.file_logging = False
