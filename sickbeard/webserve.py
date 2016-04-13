@@ -31,8 +31,6 @@ import time
 import adba
 from concurrent.futures import ThreadPoolExecutor
 from dateutil import tz
-from libtrakt import TraktAPI
-from libtrakt.exceptions import traktException
 from mako.template import Template as MakoTemplate
 from mako.lookup import TemplateLookup
 from mako.exceptions import RichTraceback
@@ -1043,7 +1041,7 @@ class Home(WebRoot):
         if access_token:
             sickbeard.TRAKT_ACCESS_TOKEN = access_token
             sickbeard.TRAKT_REFRESH_TOKEN = refresh_token
-        response = trakt_api.traktToken(trakt_pin)
+        response = trakt_api.get_token(trakt_pin)
         if response:
             return "Trakt Authorized"
         return "Trakt Not Authorized!"
