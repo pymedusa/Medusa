@@ -57,6 +57,9 @@ class TraktPopular(object):
     def fetch_and_refresh_token(self, trakt_api, path):
         try:
             library_shows = trakt_api.request(path) or []
+            if trakt_api.access_token_refreshed:
+                sickbeard.TRAKT_ACCESS_TOKEN = trakt_api.access_token
+                sickbeard.TRAKT_REFRESH_TOKEN = trakt_api.refresh_token
         except TraktAuthException:
             logger.log(u"Refreshing Trakt token", logger.DEBUG)
             (access_token, refresh_token) = trakt_api.get_token(sickbeard.TRAKT_REFRESH_TOKEN)

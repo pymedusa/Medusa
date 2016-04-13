@@ -46,6 +46,9 @@ class TraktApi(object):
         self.timeout = timeout if timeout else None
         self.auth_url = trakt_settings.get('trakt_auth_url', 'https://trakt.tv/')  # oauth url
         self.api_url = trakt_settings.get('trakt_api_url', 'https://api-v2launch.trakt.tv/')  # api url
+        self.access_token = trakt_settings.get('trakt_access_token', '')
+        self.refresh_token = None
+        self.access_token_refreshed = False
         self.headers = headers
         self.trakt_settings = trakt_settings
 
@@ -53,10 +56,10 @@ class TraktApi(object):
         """function or refreshing a trakt token"""
 
         if trakt_access_token:
-            self.trakt_access_token = trakt_access_token
+            self.access_token = trakt_access_token
 
         if count > 3:
-            self.trakt_access_token = ""
+            self.access_token = ""
             return (False, False)
         elif count > 0:
             time.sleep(2)
@@ -82,14 +85,16 @@ class TraktApi(object):
         resp = self.request("oauth/token", data=data, headers=headers, url=self.auth_url, method="POST", count=count)
 
         if "access_token" in resp:
-            access_token = resp["access_token"]
+            self.access_token = resp["access_token"]
             if "refresh_token" in resp:
-                refresh_token = resp["refresh_token"]
-            return (access_token, refresh_token)
+                self.refresh_token = resp["refresh_token"]
+                self.access_token_refreshed = True
+            return (self.access_token, self.refresh_token)
         return (None, None)
 
     def request(self, path, data=None, headers=None, url=None, method="GET", count=0):  # pylint: disable-msg=too-many-arguments,too-many-branches
         """function for performing the trakt request"""
+        access_token = self.trakt_settings.get("trakt_access_token", self.access_token)
         if not self.trakt_settings.get("trakt_access_token") and count >= 2:
             raise TraktMissingTokenException(u"You must get a Trakt TOKEN. Check your Trakt settings")
 
@@ -97,7 +102,7 @@ class TraktApi(object):
             headers = self.headers
 
         if self.trakt_settings.get("trakt_access_token"):
-            headers["Authorization"] = "Bearer " + self.trakt_settings.get("trakt_access_token")
+            headers["Authorization"] = "Bearer " + access_token
 
         if url is None:
             url = self.api_url
@@ -112,6 +117,9 @@ class TraktApi(object):
         try:
             resp = self.session.request(method, url + path, headers=headers, timeout=self.timeout,
                                         data=data, verify=self.ssl_verify)
+
+            # check for http errors and raise if any are present
+            resp.raise_for_status()
 
             # convert response to json
             resp = resp.json()
@@ -131,8 +139,11 @@ class TraktApi(object):
                 log.debug(u"Retrying trakt api request: %s", path)
                 return self.request(path, data, headers, url, method)
             elif code == 401:
-                log.warning(u"Unauthorized. Please check your Trakt settings")
-                raise TraktAuthException(u"Unauthorized. Please check your Trakt settings")
+                if self.get_token(refresh_token=True, count=count):
+                    return self.request(path, data, headers, url, method)
+                else:
+                    log.warning(u"Unauthorized. Please check your Trakt settings")
+                    raise TraktAuthException(u"Unauthorized. Please check your Trakt settings")
             elif code in (500, 501, 503, 504, 520, 521, 522):
                 # http://docs.trakt.apiary.io/#introduction/status-codes
                 log.debug(u"Trakt may have some issues and it's unavailable. Try again later please")
@@ -153,6 +164,8 @@ class TraktApi(object):
             else:
                 raise TraktException("Unknown Error")
 
+        # If it got this far, the access token should be correct. It could be the access token
+        # has been refreshed in the mean time.
         return resp
 
     def validate_account(self):
