@@ -466,6 +466,7 @@ def searchForNeededEpisodes():
 
 
 class Search(object):
+    """Search Class"""
     def __init__(self, manual_search=False, force_stop=None):
         """Initialize Search object
         This Class has been created to keep an external reference to the self.force_stop attribute.
@@ -474,12 +475,12 @@ class Search(object):
         :param manual_search: Pass as True or False to mark the searchProvider as a manual search,
         which will not automatically snatch the best result, but update the providers cache table instead
         :param force_stop: A mutable attribute pass as [True] or [False]. The list is used to keep an external
-        reference. The force_stop attribute will gracefully stop the searchProviders() method.
+        reference. The force_stop attribute will gracefully stop the search_providers() method.
         """
         self.manual_search = manual_search
         self.force_stop = force_stop
 
-    def searchProviders(self, show, episodes, forced_search=False, down_cur_quality=False):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    def search_providers(self, show, episodes, forced_search=False, down_cur_quality=False):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """
         Walk providers for information on shows
 
