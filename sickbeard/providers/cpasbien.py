@@ -72,7 +72,7 @@ class CpasbienProvider(TorrentProvider):
 
                             seeders = try_int(result.find(class_="up").get_text(strip=True))
                             leechers = try_int(result.find(class_="down").get_text(strip=True))
-                            if seeders < self.minseed or leechers < self.minleech:
+                            if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
                                 if mode != 'RSS':
                                     logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format
                                                (title, seeders, leechers), logger.DEBUG)

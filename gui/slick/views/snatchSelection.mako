@@ -216,6 +216,8 @@
                 name_require = False
                 name_undesired = False
                 name_preferred = False
+                below_minseed = False
+                below_minleech = False
                 
                 release_group = helpers.remove_non_release_groups(hItem["release_group"])
                 if release_group and ignore_words and release_group.lower() in ignore_words.lower().split(','):
@@ -231,12 +233,17 @@
                     name_require = True
                 if hItem["name"] and ignore_words and any([i for i in ignore_words.split(',') if i.lower() in hItem["name"].lower()]):
                     name_ignore = True
-                if hItem["name"] and not show_name_helpers.filterBadReleases(hItem["name"]):
+                if hItem["name"] and not show_name_helpers.filterBadReleases(hItem["name"], False):
                     name_ignore = True
                 if hItem["name"] and undesired_words and any([i for i in undesired_words.split(',') if i.lower() in hItem["name"].lower()]):
                     name_undesired = True
                 if hItem["name"] and preferred_words and any([i for i in preferred_words.split(',') if i.lower() in hItem["name"].lower()]):
                     name_preferred = True
+                
+                if hItem["provider_minseed"] and hItem["seeders"] and hItem["seeders"] > -1 and int(hItem["seeders"]) < hItem["provider_minseed"]:
+                    below_minseed = True
+                if hItem["provider_minleech"] and hItem["leechers"] and hItem["leechers"] > -1 and int(hItem["leechers"]) < hItem["provider_minleech"]:
+                    below_minleech = True
 
                 %>
 
@@ -271,8 +278,16 @@
                         % endif
                     </td>
                     <td align="center">${renderQualityPill(int(hItem["quality"]))}</td>
-                    <td align="center">${hItem["seeders"] if hItem["seeders"] > -1 else '-'}</td>
-                    <td align="center">${hItem["leechers"] if hItem["leechers"] > -1 else '-'}</td>
+                    % if below_minseed:
+                        <td align="center"><font color="red">${hItem["seeders"] if hItem["seeders"] > -1 else '-'}</font></td>
+                    % else:
+                        <td align="center">${hItem["seeders"] if hItem["seeders"] > -1 else '-'}</td>               
+                    % endif
+                    % if below_minleech:
+                        <td align="center"><font color="red">${hItem["leechers"] if hItem["leechers"] > -1 else '-'}</font></td>
+                    % else:
+                        <td align="center">${hItem["leechers"] if hItem["leechers"] > -1 else '-'}</td>               
+                    % endif
                     <td class="col-size">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
                     <td align="center">${hItem["provider_type"]}</td>
                     <td class="col-date">${datetime.datetime.fromtimestamp(hItem["time"]).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</td>

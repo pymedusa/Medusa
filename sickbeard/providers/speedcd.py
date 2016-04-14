@@ -154,7 +154,7 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                             leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
 
                             # Filter unseeded torrent
-                            if seeders < self.minseed or leechers < self.minleech:
+                            if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
                                 if mode != 'RSS':
                                     logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format(title, seeders, leechers), logger.DEBUG)
                                 continue
