@@ -18,11 +18,12 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+import re
 
 import sickbeard
 from sickbeard import logger, tvcache
 
-from sickrage.helper.common import try_int
+from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.nzb.NZBProvider import NZBProvider
 
 
@@ -74,7 +75,18 @@ class OmgwtfnzbsProvider(NZBProvider):
         return item['release'], item['getnzb']
 
     def _get_size(self, item):
-        return try_int(item['sizebytes'], -1)
+        size = item.get('sizebytes', -1)
+
+        # Try to get the size from the summary tag
+        if size == -1:
+            # Units
+            units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+            summary = item.get('summary')
+            if summary:
+                size_match = re.search(ur'Size[^\d]*([0-9.]*.[A-Z]*)', summary)
+                size = convert_size(size_match.group(1), units=units) or -1 if size_match else -1
+
+        return try_int(size)
 
     def search(self, search_strings, age=0, ep_obj=None):
         results = []
