@@ -382,16 +382,20 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
                 try:
                     title_error = ss(str(cur_error.title))
                     if not title_error or title_error == 'None':
-                        title_error = re.match(r'^[A-Z0-9\-\[\] :]+::\s*(.*)(?: \[[\w]{7}\])$', ss(cur_error.message)).group(1)
+                        # Match: SEARCHQUEUE-FORCEDSEARCH-262407 :: [HDTorrents] :: [ea015c6] Error1
+                        # Match: MAIN :: [ea015c6] Error1
+                        # We only need Error title
+                        title_error = re.match(r'^(.*)(\[[\w]{7}\])\s*+(.*)$', ss(cur_error.message)).group(2)
 
                     if len(title_error) > 1000:
                         title_error = title_error[0:1000]
 
                 except Exception as err_msg:  # pylint: disable=broad-except
                     self.log('Unable to get error title : %s' % ex(err_msg), ERROR)
+                    continue
 
                 gist = None
-                regex = r'^(%s)\s+([A-Z]+)\s+([0-9A-Z\-]+)\s*(.*)(?: \[[\w]{7}\])$' % cur_error.time
+                regex = r'^(%s)\s+([A-Z]+)\s+(.*)\s*::\s*(\[[\w]{7}\])\s*(.*)$' % cur_error.time
                 for i, data in enumerate(log_data):
                     match = re.match(regex, data)
                     if match:
