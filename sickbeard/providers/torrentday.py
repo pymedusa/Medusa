@@ -143,7 +143,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     leechers = int(torrent['leech']) if torrent['leech'] else 0
 
                     # Filter unseeded torrent
-                    if seeders < self.minseed or leechers < self.minleech:
+                    if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
                         if mode != 'RSS':
                             logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format(title, seeders, leechers), logger.DEBUG)
                         continue

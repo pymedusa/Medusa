@@ -137,7 +137,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             leechers = try_int(torrent.find(title='Leechers').get_text(strip=True))
 
                             # Filter unseeded torrent
-                            if seeders < self.minseed or leechers < self.minleech:
+                            if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
                                 if mode != 'RSS':
                                     logger.log('Discarding torrent because it doesn\'t meet the'
                                                ' minimum seeders or leechers: {} (S:{} L:{})'.format

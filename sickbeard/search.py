@@ -237,8 +237,11 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
 
         # If doesnt have min seeders OR min leechers then discard it
         if cur_result.seeders not in (-1, None) and cur_result.leechers not in (-1, None) \
-            and (int(cur_result.seeders) < int(cur_result.provider.minseed) or int(cur_result.leechers) < int(cur_result.provider.minleech)):
-            logger.log(u"Discarding torrent because it doesn't meet the minimum provider setting S:{0} L:{1}. Result has S:{2} L:{3}".format(cur_result.provider.minseed, cur_result.provider.minleech, cur_result.seeders, cur_result.leechers))
+            and (int(cur_result.seeders) < int(cur_result.provider.minseed) or 
+                 int(cur_result.leechers) < int(cur_result.provider.minleech)):
+            logger.log(u"Discarding torrent because it doesn't meet the minimum provider setting \
+                        S:{0} L:{1}. Result has S:{2} L:{3}".format(cur_result.provider.minseed,
+                        cur_result.provider.minleech, cur_result.seeders, cur_result.leechers))
             continue
         
         show_words = show_name_helpers.show_words(cur_result.show)

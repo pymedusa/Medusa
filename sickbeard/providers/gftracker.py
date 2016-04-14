@@ -160,7 +160,7 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             leechers = try_int(peers[1])
 
                             # Filter unseeded torrent
-                            if seeders < self.minseed or leechers < self.minleech:
+                            if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
                                 if mode != 'RSS':
                                     logger.log(u"Discarding torrent because it doesn't meet the"
                                                u" minimum seeders or leechers: {} (S:{} L:{})".format
