@@ -353,8 +353,10 @@
     <tbody class="tablesorter-no-sort">
         <tr style="height: 60px;">
             <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
-                <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[int(epResult["season"]) > 0]}</h3>
+                <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[int(epResult["season"]) > 0]}
                 <!-- @TODO: port the season scene exceptions to angular -->
+                <a class="epManualSearch" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=1&amp;mode=season"><img data-ep-manual-search src="${srRoot}/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                </h3>
                 <div class="season-scene-exception" data-season=${("Specials", str(epResult["season"]))[int(epResult["season"]) > 0]}></div>
                 % if sickbeard.DISPLAY_ALL_SEASONS is False:
                     <button id="showseason-${epResult['season']}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
@@ -385,7 +387,9 @@
     <tbody class="tablesorter-no-sort">
         <tr style="height: 60px;">
             <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
-                <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[bool(int(epResult["season"]))]}</h3>
+                <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[bool(int(epResult["season"]))]}
+                <a class="epManualSearch" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=1&amp;mode=season"><img data-ep-manual-search src="${srRoot}/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                </h3>
                 <!-- @TODO: port the season scene exceptions to angular -->
                 <div class="season-scene-exception" data-season=${str(epResult["season"])}></div>
                 % if sickbeard.DISPLAY_ALL_SEASONS is False:
@@ -521,9 +525,9 @@
                     % else:
                         <a class="epSearch" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="searchEpisode?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-search src="${srRoot}/images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
                     % endif
-                    <a class="epManualSearch" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-manual-search src="${srRoot}/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                    <a class="epManualSearch" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}&amp;mode=episode"><img data-ep-manual-search src="${srRoot}/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                 % else:
-                    <a class="epManualSearch" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-manual-search src="${srRoot}/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                    <a class="epManualSearch" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}&amp;mode=episode"><img data-ep-manual-search src="${srRoot}/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                 % endif
                 % if int(epResult["status"]) not in Quality.SNATCHED + Quality.SNATCHED_PROPER and sickbeard.USE_SUBTITLES and show.subtitles and epResult["location"] and subtitles.needs_subtitles(epResult['subtitles']):
                     <a class="epSubtitlesSearch" href="searchEpisodeSubtitles?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="${srRoot}/images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></a>

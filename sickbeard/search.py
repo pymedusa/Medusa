@@ -478,7 +478,7 @@ def searchForNeededEpisodes():
     return foundResults.values()
 
 
-def searchProviders(show, episodes, forced_search=False, downCurQuality=False, manual_search=False):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+def searchProviders(show, episodes, forced_search=False, downCurQuality=False, manual_search=False, mode='episode'):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     """
     Walk providers for information on shows
 
@@ -531,6 +531,9 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
         if search_mode == 'sponly' and (forced_search or manual_search):
             search_mode = 'eponly'
 
+        if manual_search and mode == 'season':
+            search_mode = 'sponly'
+
         while True:
             searchCount += 1
 
@@ -541,7 +544,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
 
             try:
                 searchResults = cur_provider.find_search_results(show, episodes, search_mode,
-                                                                 forced_search, downCurQuality, manual_search)
+                                                                 forced_search, downCurQuality, manual_search, mode)
             except AuthException as e:
                 logger.log(u"Authentication error: " + ex(e), logger.ERROR)
                 break
@@ -585,6 +588,10 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
             elif not cur_provider.search_fallback or searchCount == 2:
                 break
 
+            # Dont fallback when doing manual season search
+            if mode == 'season':
+                break
+
             if search_mode == 'sponly':
                 logger.log(u"Fallback episode search initiated", logger.DEBUG)
                 search_mode = 'eponly'
@@ -600,8 +607,11 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
         if manual_search:
             # Let's create a list with episodes that we where looking for
             searched_episode_list = [episode_obj.episode for episode_obj in episodes]
-            # Add the -1 to also match season pack results
+            # Add the -1 to also match multi epi results
             searched_episode_list.append(-1)
+            if mode == 'season':
+                # Add the -2 to also match season pack results
+                searched_episode_list.append(-2)
             for searched_episode in searched_episode_list:
                 if (searched_episode in searchResults and
                         cur_provider.cache.update_cache_manual_search(searchResults[searched_episode])):

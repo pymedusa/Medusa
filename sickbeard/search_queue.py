@@ -219,7 +219,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
 
 class ForcedSearchQueueItem(generic_queue.QueueItem):
-    def __init__(self, show, segment, downCurQuality=False, manual_search=False):
+    def __init__(self, show, segment, downCurQuality=False, manual_search=False, mode='episode'):
         generic_queue.QueueItem.__init__(self, u'Forced Search', FORCED_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
         self.name = 'FORCEDSEARCH-' + str(show.indexerid)
@@ -232,6 +232,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         self.segment = segment
         self.downCurQuality = downCurQuality
         self.manual_search = manual_search
+        self.mode = mode
 
     def run(self):
         """
@@ -241,9 +242,11 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         self.started = True
 
         try:
-            logger.log(u"Beginning {0} search for: [{1}]".format(('forced','manual')[bool(self.manual_search)], self.segment.prettyName()))
+            logger.log(u"Beginning {0} {1}search for: [{2}]".format(
+                ('forced','manual')[bool(self.manual_search)],
+                ('','season pack ')[bool(self.mode=='season')], self.segment.prettyName()))
 
-            search_result = search.searchProviders(self.show, [self.segment], True, self.downCurQuality, self.manual_search)
+            search_result = search.searchProviders(self.show, [self.segment], True, self.downCurQuality, self.manual_search, self.mode)
 
             if not self.manual_search and search_result:
                 # just use the first result for now
@@ -260,11 +263,17 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
             elif self.manual_search and search_result:
                 self.results = search_result
                 self.success = True
-                ui.notifications.message("We have found downloads for {0}".format(self.segment.prettyName()),
-                                         "These should become visible in the manual select page.")
+                if self.mode == 'season':
+                    ui.notifications.message("We have found season pack results for {0}".format(self.show.name),
+                                             "These should become visible in the manual select page.")
+                else:
+                    ui.notifications.message("We have found single results for {0}".format(self.segment.prettyName()),
+                                             "These should become visible in the manual select page.")
             else:
-                ui.notifications.message('No downloads were found', "Couldn't find a download for <i>{0}</i>".format(self.segment.prettyName()))
-                logger.log(u"Unable to find a download for: [{0}]".format(self.segment.prettyName()))
+                ui.notifications.message('No results were found')
+                logger.log(u"Unable to find {0} {1}results for: [{2}]".format(
+                ('forced','manual')[bool(self.manual_search)],
+                ('','season pack ')[bool(self.mode=='season')], self.segment.prettyName()))
 
         except Exception:
             self.success = False

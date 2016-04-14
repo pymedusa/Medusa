@@ -1407,7 +1407,7 @@ class Home(WebRoot):
             require_words=show_words.require_words
         )
 
-    def pickManualSearch(self, provider=None, rowid=None):
+    def pickManualSearch(self, provider=None, rowid=None, mode='episode'):
         """
         Tries to Perform the snatch for a manualSelected episode, episodes or season pack.
 
@@ -1448,7 +1448,7 @@ class Home(WebRoot):
         # if multi-episode: |1|2|
         # if single-episode: |1|
         # TODO:  Handle Season Packs: || (no episode)
-        episodes = cached_result['episodes'].strip("|").split("|")
+        episodes = [1] if mode == 'season' else cached_result['episodes'].strip("|").split("|")
         ep_objs = []
         for episode in episodes:
             if episode:
@@ -1467,7 +1467,7 @@ class Home(WebRoot):
 
         return json.dumps({'result': 'failure'})
 
-    def manualSearchCheckCache(self, show, season, episode, **kwargs):
+    def manualSearchCheckCache(self, show, season, episode, mode, **kwargs):
         """ Periodic check if the searchthread is still running for the selected show/season/ep
         and if there are new results in the cache.db
         """
@@ -1499,6 +1499,8 @@ class Home(WebRoot):
 #         if not last_prov_updates:
 #             return {'result': REFRESH_RESULTS}
 
+        sql_episode = '' if mode == 'season' else episode
+
         for provider, last_update in last_prov_updates.iteritems():
             table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [provider])
             if not table_exists:
@@ -1506,7 +1508,7 @@ class Home(WebRoot):
             # Check if the cache table has a result for this show + season + ep wich has a later timestamp, then last_update
             needs_update = main_db_con.select("SELECT * FROM '%s' WHERE episodes LIKE ? AND season = ? AND indexerid = ? \
                                               AND time > ?"
-                                              % provider, ["%|" + episode + "|%", season, show, int(last_update)])
+                                              % provider, ["%|" + sql_episode + "|%", season, show, int(last_update)])
 
             if needs_update:
                 return {'result': REFRESH_RESULTS}
@@ -1530,7 +1532,7 @@ class Home(WebRoot):
 
         return {'result': searched_item[0]['searchstatus']}
 
-    def snatchSelection(self, show=None, season=None, episode=None, perform_search=0, down_cur_quality=0, show_all_results=0):
+    def snatchSelection(self, show=None, season=None, episode=None, mode="episode", perform_search=0, down_cur_quality=0, show_all_results=0):
         """ The view with results for the manual selected show/episode """
 
         INDEXER_TVDB = 1
@@ -1545,7 +1547,8 @@ class Home(WebRoot):
             return self._genericMessage("Error", "Show not in show list")
 
         # Retrieve cache results from providers
-        search_show = {'show': show, 'season': season, 'episode': episode}
+        search_show = {'show': show, 'season': season, 'episode': episode, 'mode': mode}
+
         provider_results = get_provider_cache_results(INDEXER_TVDB, perform_search=perform_search,
                                                       show_all_results=show_all_results, **search_show)
 
@@ -1622,7 +1625,7 @@ class Home(WebRoot):
         return t.render(
             submenu=submenu, showLoc=showLoc, show_message=show_message,
             show=showObj, provider_results=provider_results, episode=episode,
-            sortedShowLists=sortedShowLists, bwl=bwl, season=season,
+            sortedShowLists=sortedShowLists, bwl=bwl, season=season, mode=mode,
             all_scene_exceptions=showObj.exceptions,
             scene_numbering=get_scene_numbering_for_show(indexerid, indexer),
             xem_numbering=get_xem_numbering_for_show(indexerid, indexer),

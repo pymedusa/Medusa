@@ -159,6 +159,9 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     show = search_show.get('show')
     season = search_show.get('season')
     episode = search_show.get('episode')
+    mode = search_show.get('mode','episode')
+    sql_episode = '' if mode == 'season' else episode
+
 
     down_cur_quality = 0
     show_obj = Show.find(sickbeard.showList, int(show))
@@ -193,7 +196,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
                 sql_return = main_db_con.select(common_sql + additional_sql,
                                                 (cur_provider.provider_type.title(), cur_provider.image_name(),
                                                  cur_provider.name, cur_provider.get_id(), 
-                                                 minseed, minleech, show, "%|{0}|%".format(episode), season))
+                                                 minseed, minleech, show, "%|{0}|%".format(sql_episode), season))
             else:
                 sql_return = main_db_con.select(common_sql,
                                                 (cur_provider.provider_type.title(), cur_provider.image_name(),
@@ -219,7 +222,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             and episode: {1}x{2}'.format(show_obj.name, season, episode)
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True)  # pylint: disable=maybe-no-member
+        ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True, mode)  # pylint: disable=maybe-no-member
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
