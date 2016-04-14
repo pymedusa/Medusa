@@ -512,7 +512,6 @@ class Search(object):
         if not forced_search:
             for cur_provider in providers:
                 if self.force_stop:
-                    logger.log(u"A forced stop was detected, skipping cache update for provider [{0}]".format(cur_provider.name), logger.DEBUG)
                     continue
                 threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name, provider=cur_provider.name)
                 cur_provider.cache.updateCache()
@@ -522,7 +521,6 @@ class Search(object):
         for cur_provider in providers:
             # If force_stop is toggled, lets skip all remaining providers, but process the results we have
             if self.force_stop:
-                logger.log(u"A forced stop was detected, skipping search for provider [{0}]".format(cur_provider.name), logger.DEBUG)
                 continue
 
             threading.currentThread().name = original_thread_name + " :: [" + cur_provider.name + "]"
@@ -810,7 +808,10 @@ class Search(object):
             if wanted_ep_count == len(episodes):
                 break
 
-        if not did_search:
+        if self.force_stop:
+            logger.log(u"A forced stop was detected, some provider searches might have been skipped!", logger.INFO)
+
+        if not did_search and not self.force_stop:
             logger.log(u"No NZB/Torrent providers found or enabled in the sickrage config for backlog searches. \
             Please check your settings.",
                        logger.WARNING)
