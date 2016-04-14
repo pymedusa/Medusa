@@ -801,7 +801,7 @@ class SubtitlesFinder(object):
                 continue
 
             if not needs_subtitles(ep_to_sub['subtitles']):
-                logger.log(u'Episode already has all needed subtitles, skipping %s %s', ep_to_sub['show_name'], ep_num)
+                logger.debug(u'Episode already has all needed subtitles, skipping %s %s', ep_to_sub['show_name'], ep_num)
                 continue
 
             try:
