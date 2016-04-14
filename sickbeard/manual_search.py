@@ -174,14 +174,17 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # Let's check if this provider table already exists
         table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [cur_provider.get_id()])
         columns = [i[1] for i in main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))] if table_exists else []
+        minseed = int(cur_provider.minseed) if hasattr(cur_provider, 'minseed') else -1
+        minleech = int(cur_provider.minleech) if hasattr(cur_provider, 'minleech') else -1
 
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
         if table_exists and 'seeders' in columns and 'leechers' in columns and 'size' in columns:
 
             common_sql = "SELECT rowid, ? as 'provider_type', ? as 'provider_image', \
-                          ? as 'provider', ? as 'provider_id', name, season, \
-                          episodes, indexerid, url, time, (select max(time) from '{provider_id}') as lastupdate, \
+                          ? as 'provider', ? as 'provider_id', ? 'provider_minseed', ? 'provider_minleech', \
+                          name, season, episodes, indexerid, url, time, (select max(time) \
+                          from '{provider_id}') as lastupdate, \
                           quality, release_group, version, seeders, leechers, size, time \
                           FROM '{provider_id}' WHERE indexerid = ?".format(provider_id=cur_provider.get_id())
             additional_sql = " AND episodes LIKE ? AND season = ?"
@@ -189,11 +192,12 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             if not int(show_all_results):
                 sql_return = main_db_con.select(common_sql + additional_sql,
                                                 (cur_provider.provider_type.title(), cur_provider.image_name(),
-                                                 cur_provider.name, cur_provider.get_id(), show, "%|{0}|%".format(episode), season))
+                                                 cur_provider.name, cur_provider.get_id(), 
+                                                 minseed, minleech, show, "%|{0}|%".format(episode), season))
             else:
                 sql_return = main_db_con.select(common_sql,
                                                 (cur_provider.provider_type.title(), cur_provider.image_name(),
-                                                 cur_provider.name, cur_provider.get_id(), show))
+                                                 cur_provider.name, cur_provider.get_id(), minseed, minleech, show))
 
         if sql_return:
             for item in sql_return:
