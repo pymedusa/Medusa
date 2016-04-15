@@ -162,7 +162,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         """
         def recursive_glob(treeroot, pattern):
             results = []
-            for base, _, files in ek(os.walk, treeroot.encode(sickbeard.SYS_ENCODING)):
+            for base, _, files in os.walk(treeroot):
                 goodfiles = fnmatch.filter(files, pattern)
                 results.extend(ek(os.path.join, base, f) for f in goodfiles)
             return results
@@ -550,11 +550,11 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         else:
             logger.log(u"Parse result not sufficient (all following have to be set). will not save release name",
                        logger.DEBUG)
-            logger.log(u"Parse result(series_name): " + str(parse_result.series_name), logger.DEBUG)
-            logger.log(u"Parse result(season_number): " + str(parse_result.season_number), logger.DEBUG)
-            logger.log(u"Parse result(episode_numbers): " + str(parse_result.episode_numbers), logger.DEBUG)
-            logger.log(u" or Parse result(air_date): " + str(parse_result.air_date), logger.DEBUG)
-            logger.log(u"Parse result(release_group): " + str(parse_result.release_group), logger.DEBUG)
+            logger.log(u"Parse result(series_name): {}".format(parse_result.series_name), logger.DEBUG)
+            logger.log(u"Parse result(season_number): {}".format(parse_result.season_number), logger.DEBUG)
+            logger.log(u"Parse result(episode_numbers): {}".format(parse_result.episode_numbers), logger.DEBUG)
+            logger.log(u" or Parse result(air_date): {}".format(parse_result.air_date), logger.DEBUG)
+            logger.log(u"Parse result(release_group): {}".format(parse_result.release_group), logger.DEBUG)
 
     def _analyze_name(self, name):
         """

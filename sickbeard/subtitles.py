@@ -52,7 +52,7 @@ provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiPr
 refiner_manager.register('release = sickbeard.refiners.release:refine')
 
 region.configure('dogpile.cache.memory')
-video_key = __name__ + ':video|{video_path}'
+video_key = u'{name}:video|{{video_path}}'.format(name=__name__)
 
 episode_refiners = ('metadata', 'release', 'tvdb', 'omdb')
 
@@ -480,7 +480,7 @@ def get_subtitle_description(subtitle):
     :rtype: str
     """
     desc = None
-    sub_id = str(subtitle.id)
+    sub_id = unicode(subtitle.id)
     if hasattr(subtitle, 'filename') and subtitle.filename:
         desc = subtitle.filename.lower()
     elif hasattr(subtitle, 'name') and subtitle.name:
@@ -488,7 +488,7 @@ def get_subtitle_description(subtitle):
     if hasattr(subtitle, 'release') and subtitle.release:
         desc = subtitle.release.lower()
     if hasattr(subtitle, 'releases') and subtitle.releases:
-        desc = str(subtitle.releases).lower()
+        desc = unicode(subtitle.releases).lower()
 
     if not desc:
         desc = sub_id
@@ -531,8 +531,8 @@ def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles
         return video
 
     try:
-        video_path = encode(video_path)
-        subtitles_dir = encode(subtitles_dir or get_subtitles_dir(video_path))
+        video_path = unicode(video_path)
+        subtitles_dir = unicode(subtitles_dir or get_subtitles_dir(video_path))
 
         logger.debug(u'Scanning video %s...', video_path)
         video = scan_video(video_path)
@@ -883,30 +883,30 @@ def run_subs_extra_scripts(video_path, subtitle_path, subtitle_language, show_na
     :type show_indexerid: int
     """
     run_subs_scripts(video_path, sickbeard.SUBTITLES_EXTRA_SCRIPTS,
-                     [video_path, subtitle_path, subtitle_language.opensubtitles, show_name, str(season), str(episode),
-                      episode_name, str(show_indexerid)])
+                     [video_path, subtitle_path, subtitle_language.opensubtitles, show_name, season, episode,
+                      episode_name, show_indexerid])
 
 
-def run_subs_scripts(video_path, scripts, script_args):
+def run_subs_scripts(video_path, scripts, *args):
     """Execute subtitle scripts
 
     :param video_path: the video path
     :type video_path: str
     :param scripts: the script commands to be executed
     :type scripts: list of str
-    :param script_args: the arguments to be passed to the script
-    :type script_args: list of str
+    :param args: the arguments to be passed to the script
+    :type args: list of str
     """
     for script_name in scripts:
         script_cmd = [piece for piece in re.split("( |\\\".*?\\\"|'.*?')", script_name) if piece.strip()]
+        script_cmd.extend(str(arg) for arg in args)
 
-        logger.info(u'Running subtitle %s-script: %s', 'extra' if len(script_args) > 1 else 'pre', script_name)
-        inner_cmd = script_cmd + script_args
+        logger.info(u'Running subtitle %s-script: %s', 'extra' if len(args) > 1 else 'pre', script_name)
 
         # use subprocess to run the command and capture output
-        logger.info(u'Executing command: %s', inner_cmd)
+        logger.info(u'Executing command: %s', script_cmd)
         try:
-            process = subprocess.Popen(inner_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            process = subprocess.Popen(script_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                        stderr=subprocess.STDOUT, cwd=sickbeard.PROG_DIR)
             out, _ = process.communicate()  # @UnusedVariable
             logger.debug(u'Script result: %s', out)
