@@ -31,13 +31,22 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 class BTDiggProvider(TorrentProvider):
 
     def __init__(self):
-
+        
+        # Provider Init
         TorrentProvider.__init__(self, "BTDigg")
 
         self.public = True
+        
+         # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
+        # URLs
         self.url = "https://btdigg.org"
         self.urls = {"api": "https://api.btdigg.org/api/private-341ada3245790954/s02"}
         self.custom_url = None
+        
+        # Proper Strings
         self.proper_strings = ["PROPER", "REPACK"]
 
         # Use this hacky way for RSS search since most results will use this codecs
@@ -90,7 +99,14 @@ class BTDiggProvider(TorrentProvider):
                             continue
                         leechers = torrent.pop("leechers", 0)
                         seeders = torrent.pop("seeders", 1)
-                        
+
+                        # Filter unseeded torrent
+                        if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
+                            if mode != "RSS":
+                                logger.log("Discarding torrent because it doesn't meet the"
+                                           " minimum seeders or leechers: {} (S:{} L:{})".format
+                                           (title, seeders, leechers), logger.DEBUG)
+                                continue                        
                         torrent_size = torrent.pop("size")
                         size = convert_size(torrent_size) or -1
 
