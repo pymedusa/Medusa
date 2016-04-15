@@ -112,7 +112,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         return [Proper(x['name'], x['url'], datetime.fromtimestamp(x['time']), self.show) for x in results]
 
-    def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False, manualSelect=False):  # pylint: disable=too-many-branches,too-many-arguments,too-many-locals,too-many-statements
+    def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False, manual_search=False, manual_search_type='episode'):  # pylint: disable=too-many-branches,too-many-arguments,too-many-locals,too-many-statements
         self._check_auth()
         self.show = show
 
@@ -121,7 +121,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         searched_scene_season = None
 
         for episode in episodes:
-            if not manualSelect:
+            if not manual_search:
                 cache_result = self.cache.searchCache(episode, forced_search=forced_search,
                                                       downCurQuality=download_current_quality)
                 if cache_result:
@@ -133,13 +133,13 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                     continue
 
             # NOTE: searched_scene_season is always None?
-            if len(episodes) > 1 and search_mode == 'sponly' and searched_scene_season == episode.scene_season:
+            if (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly' and searched_scene_season == episode.scene_season:
                 continue
 
             search_strings = []
             searched_scene_season = episode.scene_season
 
-            if len(episodes) > 1 and search_mode == 'sponly':
+            if (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly':
                 search_strings = self._get_season_search_strings(episode)
             elif search_mode == 'eponly':
                 search_strings = self._get_episode_search_strings(episode)
@@ -187,7 +187,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             version = parse_result.version
             add_cache_entry = False
 
-            if not manualSelect:
+            if not manual_search:
                 if not (show_object.air_by_date or show_object.sports):
                     if search_mode == 'sponly':
                         if parse_result.episode_numbers:
@@ -209,7 +209,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                             parse_result.season_number is not None,
                             parse_result.episode_numbers,
                             [ep for ep in episodes if (ep.season, ep.scene_season)[ep.show.is_scene] ==
-                             parse_result.season_number and (ep.episode, ep.scene_episode)[ep.show.is_scene] in parse_result.episode_numbers]
+                            parse_result.season_number and (ep.episode, ep.scene_episode)[ep.show.is_scene] in parse_result.episode_numbers]
                         ]):
 
                             logger.log(
@@ -271,7 +271,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
             episode_wanted = True
 
-            if not manualSelect:
+            if not manual_search:
                 for episode_number in actual_episodes:
                     if not show_object.wantEpisode(actual_season, episode_number, quality, forced_search,
                                                    download_current_quality):

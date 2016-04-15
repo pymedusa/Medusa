@@ -2549,16 +2549,17 @@ var SICKRAGE = {
                 var season = $('meta[data-last-prov-updates]').attr('data-season');
                 var episode = $('meta[data-last-prov-updates]').attr('data-episode');
                 var data = $('meta[data-last-prov-updates]').data('last-prov-updates');
+                var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
 
                 if (!$.isNumeric(show) || !$.isNumeric(season) || !$.isNumeric(episode)) {
                     setTimeout(function() { checkCacheUpdates(true); }, 200);
                 }
                 
-                var url = srRoot + '/home/manualSearchCheckCache?show='+show+'&season='+season+'&episode='+episode;
+                var url = srRoot + '/home/manualSearchCheckCache?show='+show+'&season='+season+'&episode='+episode+'&manual_search_type='+manualSearchType;
                 
                 self.refreshResults = function() {
                     $('#wrapper').loadContainer(
-                            '/home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&perform_search=0',
+                            '/home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&manual_search_type=' + manualSearchType + '&perform_search=0',
                             'Loading new search results...',
                             'Time out, refresh page to try again'
                     );
@@ -2622,6 +2623,7 @@ var SICKRAGE = {
                 var show = $('meta[data-last-prov-updates]').attr('data-show');
                 var season = $('meta[data-last-prov-updates]').attr('data-season');
                 var episode = $('meta[data-last-prov-updates]').attr('data-episode');
+                var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
                 var forceSearch = $(this).attr('data-force-search');
 
                 if ($.isNumeric(show) && $.isNumeric(season) && $.isNumeric(episode)) {
@@ -2630,6 +2632,7 @@ var SICKRAGE = {
                           'show': show,
                           'season': season,
                           'episode': episode,
+                          'manual_search_type' : manualSearchType,
                           'perform_search': forceSearch,
                     });
                     // Force the search, but give the checkCacheUpdates the time to start up a search thread
