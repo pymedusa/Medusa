@@ -503,10 +503,10 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
     if manual_search:
         logger.log("Using manual search providers")
         providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
-                    if x.is_active() and x.enable_manualsearch]
+                     if x.is_active() and x.enable_manualsearch]
     else:
         providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
-                    if x.is_active() and x.enable_backlog]
+                     if x.is_active() and x.enable_backlog]
 
     if not forced_search:
         for cur_provider in providers:

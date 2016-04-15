@@ -54,7 +54,7 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def is_ep_in_queue(self, segment):
         for cur_item in self.queue:
-            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem, ManualSearchQueueItem)) and cur_item.segment == segment:
+            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and cur_item.segment == segment:
                 return True
         return False
 
@@ -106,11 +106,11 @@ class SearchQueue(generic_queue.GenericQueue):
                 length['daily'] += 1
             elif isinstance(cur_item, BacklogQueueItem):
                 length['backlog'] += 1
-            elif isinstance(cur_item, ForcedSearchQueueItem):
-                length['forced_search'] += 1
             elif isinstance(cur_item, FailedQueueItem):
                 length['failed'] += 1
-            elif isinstance(cur_item, ManualSearchQueueItem):
+            elif isinstance(cur_item, ForcedSearchQueueItem) and not cur_item.manual_search:
+                length['forced_search'] += 1
+            elif isinstance(cur_item, ForcedSearchQueueItem) and cur_item.manual_search:
                 length['manual_search'] += 1
         return length
 
@@ -121,8 +121,55 @@ class SearchQueue(generic_queue.GenericQueue):
         elif isinstance(item, BacklogQueueItem) and not self.is_in_queue(item.show, item.segment):
             # backlog searches
             generic_queue.GenericQueue.add_item(self, item)
-        elif isinstance(item, (ForcedSearchQueueItem, ManualSearchQueueItem, FailedQueueItem)) and not self.is_ep_in_queue(item.segment):
+        elif isinstance(item, (ForcedSearchQueueItem, FailedQueueItem)) and not self.is_ep_in_queue(item.segment):
             # manual, snatch and failed searches
+            generic_queue.GenericQueue.add_item(self, item)
+        else:
+            logger.log(u"Not adding item, it's already in the queue", logger.DEBUG)
+
+
+class SnatchQueue(generic_queue.GenericQueue):
+    """Queue for queuing ManualSnatchQueueItem objects (snatch jobs)"""
+    def __init__(self):
+        """Initialize the SnatchQueue object"""
+        generic_queue.GenericQueue.__init__(self)
+        self.queue_name = "SNATCHQUEUE"
+
+    def is_in_queue(self, show, segment):
+        """Check if the passed show and segment (episode of list of episodes) is in the queue
+        @param show: show object
+        @param segment: list of episode objects
+
+        @return: True or False
+        """
+        for cur_item in self.queue:
+            if cur_item.show == show and cur_item.segment == segment:
+                return True
+        return False
+
+    def is_ep_in_queue(self, segment):
+        """Check if the passed segment (episode of list of episodes) is in the queue
+        @param segment: list of episode objects
+
+        @return: True or False
+        """
+        for cur_item in self.queue:
+            if cur_item.segment == segment:
+                return True
+        return False
+
+    def queue_length(self):
+        """Get the length of the current queue
+        @return: length of queue
+        """
+        return {'manual_snatch': len(self.queue)}
+
+    def add_item(self, item):
+        """Add a ManualSnatchQueueItem queue item
+        @param item: ManualSnatchQueueItem gueue object
+        """
+        if not self.is_in_queue(item.show, item.segment):
+            # backlog searches
             generic_queue.GenericQueue.add_item(self, item)
         else:
             logger.log(u"Not adding item, it's already in the queue", logger.DEBUG)
@@ -160,8 +207,6 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
                     # give the CPU a break
                     time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
-            # What is this for ?!
-            generic_queue.QueueItem.finish(self)
 
         except Exception:
             self.success = False
@@ -234,7 +279,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         self.finish()
 
 
-class ManualSearchQueueItem(generic_queue.QueueItem):
+class ManualSnatchQueueItem(generic_queue.QueueItem):
     """
     A queue item that can be used to queue the snatch of a search result.
     Currently used for the snatchSelection feature.
@@ -249,7 +294,7 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
     def __init__(self, show, segment, provider, cached_result):
         generic_queue.QueueItem.__init__(self, u'Manual Search', MANUAL_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
-        self.name = 'MANUALSEARCH-' + str(show.indexerid)
+        self.name = 'MANUALSNATCH-' + str(show.indexerid)
         self.success = None
         self.started = None
         self.results = None
@@ -260,7 +305,7 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
 
     def run(self):
         """
-        Run manual search thread
+        Run manual snatch job
         """
         generic_queue.QueueItem.run(self)
         self.started = True
