@@ -20,6 +20,8 @@
 
 from __future__ import unicode_literals
 
+import validators
+
 from sickbeard import logger, tvcache
 
 from sickrage.helper.common import convert_size
@@ -35,7 +37,7 @@ class BTDiggProvider(TorrentProvider):
         self.public = True
         self.url = "https://btdigg.org"
         self.urls = {"api": "https://api.btdigg.org/api/private-341ada3245790954/s02"}
-
+        self.custom_url = None
         self.proper_strings = ["PROPER", "REPACK"]
 
         # Use this hacky way for RSS search since most results will use this codecs
@@ -58,8 +60,14 @@ class BTDiggProvider(TorrentProvider):
                                logger.DEBUG)
                 else:
                     search_params["order"] = 2
-
-                jdata = self.get_url(self.urls["api"], params=search_params, returns="json")
+                if self.custom_url:
+                    # if not validators.url(self.custom_url):
+                        # logger.log("Invalid custom url set, please check your settings", logger.WARNING)
+                        # return results
+                    search_url = self.custom_url + "api/private-341ada3245790954/s02"
+                else:
+                    search_url = self.urls["api"]
+                jdata = self.get_url(search_url, params=search_params, returns="json")
                 if not jdata:
                     logger.log("Provider did not return data", logger.DEBUG)
                     continue
@@ -80,11 +88,9 @@ class BTDiggProvider(TorrentProvider):
                             logger.log("Ignoring result for {} because it has no files".format
                                        (title), logger.DEBUG)
                             continue
-
-                        # Provider doesn't provide seeders/leechers
-                        seeders = 1
-                        leechers = 0
-
+                        leechers = torrent.pop("leechers", 0)
+                        seeders = torrent.pop("seeders", 1)
+                        
                         torrent_size = torrent.pop("size")
                         size = convert_size(torrent_size) or -1
 
