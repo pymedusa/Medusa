@@ -478,7 +478,7 @@ def searchForNeededEpisodes():
     return foundResults.values()
 
 
-def searchProviders(show, episodes, forced_search=False, downCurQuality=False, manual_search=False, mode='episode'):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+def searchProviders(show, episodes, forced_search=False, downCurQuality=False, manual_search=False, manual_search_type='episode'):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     """
     Walk providers for information on shows
 
@@ -531,7 +531,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
         if search_mode == 'sponly' and (forced_search or manual_search):
             search_mode = 'eponly'
 
-        if manual_search and mode == 'season':
+        if manual_search and manual_search_type == 'season':
             search_mode = 'sponly'
 
         while True:
@@ -544,7 +544,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
 
             try:
                 searchResults = cur_provider.find_search_results(show, episodes, search_mode,
-                                                                 forced_search, downCurQuality, manual_search, mode)
+                                                                 forced_search, downCurQuality, manual_search, manual_search_type)
             except AuthException as e:
                 logger.log(u"Authentication error: " + ex(e), logger.ERROR)
                 break
@@ -589,7 +589,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
                 break
 
             # Dont fallback when doing manual season search
-            if mode == 'season':
+            if manual_search_type == 'season':
                 break
 
             if search_mode == 'sponly':
@@ -609,7 +609,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
             searched_episode_list = [episode_obj.episode for episode_obj in episodes]
             # Add the -1 to also match multi epi results
             searched_episode_list.append(-1)
-            if mode == 'season':
+            if manual_search_type == 'season':
                 # Add the -2 to also match season pack results
                 searched_episode_list.append(-2)
             for searched_episode in searched_episode_list:

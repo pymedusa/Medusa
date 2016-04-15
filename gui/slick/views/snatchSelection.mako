@@ -188,13 +188,12 @@
 
     <!-- @TODO: Change this to use the REST API -->
     <!-- add provider meta data -->
-    <meta data-last-prov-updates="${provider_results['last_prov_updates']}" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-mode="${mode}">
-    
+    <meta data-last-prov-updates="${provider_results['last_prov_updates']}" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
         <table id="showTable" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
             <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
             <tr style="height: 60px;" role="row">
                 <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader displayShowTable">
-                    % if mode == 'season':
+                    % if manual_search_type == 'season':
                         <h3 style="display: inline;"><a name="season-${season}" style="position: absolute; font-size: 1px; visibility: hidden;">.</a>Season ${season}</h3>
                     % else:
                         <h3 style="display: inline;"><a name="season-${season}" style="position: absolute; font-size: 1px; visibility: hidden;">.</a>Season ${season} Episode ${episode}</h3>
@@ -222,7 +221,7 @@
             % for hItem in provider_results['found_items']:
 
                 <%
-                if mode == 'season' and 'E00' in hItem["name"]:
+                if manual_search_type == 'season' and 'E00' in hItem["name"]:
                     continue
 
                 release_group_ignore = False
@@ -308,7 +307,7 @@
                     <td class="col-size">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
                     <td align="center">${hItem["provider_type"]}</td>
                     <td class="col-date">${datetime.datetime.fromtimestamp(hItem["time"]).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</td>
-                    <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="${srRoot}/home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;mode=${mode}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
+                    <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href="${srRoot}/home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}"><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                 </tr>
             % endfor
             </tbody>

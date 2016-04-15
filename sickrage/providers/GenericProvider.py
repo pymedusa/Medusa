@@ -112,7 +112,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         return [Proper(x['name'], x['url'], datetime.fromtimestamp(x['time']), self.show) for x in results]
 
-    def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False, manual_search=False, mode='episode'):  # pylint: disable=too-many-branches,too-many-arguments,too-many-locals,too-many-statements
+    def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False, manual_search=False, manual_search_type='episode'):  # pylint: disable=too-many-branches,too-many-arguments,too-many-locals,too-many-statements
         self._check_auth()
         self.show = show
 
@@ -133,13 +133,13 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                     continue
 
             # NOTE: searched_scene_season is always None?
-            if (len(episodes) > 1 or mode == 'season') and search_mode == 'sponly' and searched_scene_season == episode.scene_season:
+            if (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly' and searched_scene_season == episode.scene_season:
                 continue
 
             search_strings = []
             searched_scene_season = episode.scene_season
 
-            if (len(episodes) > 1 or mode == 'season') and search_mode == 'sponly':
+            if (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly':
                 search_strings = self._get_season_search_strings(episode)
             elif search_mode == 'eponly':
                 search_strings = self._get_episode_search_strings(episode)

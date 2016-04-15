@@ -219,7 +219,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
 
 class ForcedSearchQueueItem(generic_queue.QueueItem):
-    def __init__(self, show, segment, downCurQuality=False, manual_search=False, mode='episode'):
+    def __init__(self, show, segment, downCurQuality=False, manual_search=False, manual_search_type='episode'):
         generic_queue.QueueItem.__init__(self, u'Forced Search', FORCED_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
         self.name = 'FORCEDSEARCH-' + str(show.indexerid)
@@ -232,7 +232,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         self.segment = segment
         self.downCurQuality = downCurQuality
         self.manual_search = manual_search
-        self.mode = mode
+        self.manual_search_type = manual_search_type
 
     def run(self):
         """
@@ -244,9 +244,9 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         try:
             logger.log(u"Beginning {0} {1}search for: [{2}]".format(
                 ('forced','manual')[bool(self.manual_search)],
-                ('','season pack ')[bool(self.mode=='season')], self.segment.prettyName()))
+                ('','season pack ')[bool(self.manual_search_type=='season')], self.segment.prettyName()))
 
-            search_result = search.searchProviders(self.show, [self.segment], True, self.downCurQuality, self.manual_search, self.mode)
+            search_result = search.searchProviders(self.show, [self.segment], True, self.downCurQuality, self.manual_search, self.manual_search_type)
 
             if not self.manual_search and search_result:
                 # just use the first result for now
@@ -263,7 +263,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
             elif self.manual_search and search_result:
                 self.results = search_result
                 self.success = True
-                if self.mode == 'season':
+                if self.manual_search_type == 'season':
                     ui.notifications.message("We have found season pack results for {0}".format(self.show.name),
                                              "These should become visible in the manual select page.")
                 else:
@@ -273,7 +273,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                 ui.notifications.message('No results were found')
                 logger.log(u"Unable to find {0} {1}results for: [{2}]".format(
                 ('forced','manual')[bool(self.manual_search)],
-                ('','season pack ')[bool(self.mode=='season')], self.segment.prettyName()))
+                ('','season pack ')[bool(self.manual_search_type=='season')], self.segment.prettyName()))
 
         except Exception:
             self.success = False

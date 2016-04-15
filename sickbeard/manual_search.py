@@ -159,8 +159,8 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     show = search_show.get('show')
     season = search_show.get('season')
     episode = search_show.get('episode')
-    mode = search_show.get('mode','episode')
-    sql_episode = '' if mode == 'season' else episode
+    manual_search_type = search_show.get('manual_search_type')
+    sql_episode = '' if manual_search_type == 'season' else episode
 
 
     down_cur_quality = 0
@@ -222,7 +222,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             and episode: {1}x{2}'.format(show_obj.name, season, episode)
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True, mode)  # pylint: disable=maybe-no-member
+        ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
 
         sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
 
