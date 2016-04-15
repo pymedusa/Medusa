@@ -235,7 +235,7 @@
                 below_minseed = False
                 below_minleech = False
 
-                release_group = helpers.remove_non_release_groups(hItem["release_group"])
+                release_group = hItem["release_group"]
                 if release_group and ignore_words and release_group.lower() in ignore_words.lower().split(','):
                     release_group_ignore = True
                 elif release_group and require_words and release_group.lower() in require_words.lower().split(','):
