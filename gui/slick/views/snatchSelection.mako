@@ -196,6 +196,9 @@
                     % else:
                         <h3 style="display: inline;"><a name="season-${season}" style="position: absolute; font-size: 1px; visibility: hidden;">.</a>Season ${season} Episode ${episode}</h3>
                     % endif
+                    % if episode_status:
+                        ${statusStrings[Quality.splitCompositeStatus(episode_status).status]} ${renderQualityPill(Quality.splitCompositeStatus(episode_status).quality)} - ${os.path.basename(release_name)}
+                    % endif
                 </th>
             </tr>
             </tbody>
