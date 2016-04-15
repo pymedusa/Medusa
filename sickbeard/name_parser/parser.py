@@ -29,6 +29,7 @@ from sickbeard import logger, helpers, scene_numbering, common, scene_exceptions
 from sickrage.helper.common import remove_extension
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
+from sickbeard.helpers import remove_non_release_groups
 import dateutil
 
 
@@ -105,6 +106,9 @@ class NameParser(object):
 
         matches = []
         bestResult = None
+        
+        # Remove non release groups from filename
+        name = remove_non_release_groups(name)
 
         for (cur_regex_num, cur_regex_name, cur_regex) in self.compiled_regexes:
             match = cur_regex.match(name)
