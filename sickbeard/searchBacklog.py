@@ -73,8 +73,8 @@ class BacklogSearcher(object):
         if self.amActive:
             logger.log(u"Backlog is still running, not starting it again", logger.DEBUG)
             return
-        
-        if sickbeard.searchQueueScheduler.action.is_manualsearch_in_progress():
+
+        if sickbeard.forcedSearchQueueScheduler.action.is_forced_search_in_progress():
             logger.log(u"Manual search is running. Can't start Backlog Search", logger.WARNING)
             return
 

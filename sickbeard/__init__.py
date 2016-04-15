@@ -106,6 +106,7 @@ showUpdateScheduler = None
 versionCheckScheduler = None
 showQueueScheduler = None
 searchQueueScheduler = None
+forcedSearchQueueScheduler = None
 manualSnatchScheduler = None
 properFinderScheduler = None
 autoPostProcesserScheduler = None
@@ -631,7 +632,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             USE_PUSHBULLET, PUSHBULLET_NOTIFY_ONSNATCH, PUSHBULLET_NOTIFY_ONDOWNLOAD, PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD, PUSHBULLET_API, PUSHBULLET_DEVICE, \
             versionCheckScheduler, VERSION_NOTIFY, AUTO_UPDATE, NOTIFY_ON_UPDATE, PROCESS_AUTOMATICALLY, NO_DELETE, UNPACK, CPU_PRESET, \
             KEEP_PROCESSED_DIR, PROCESS_METHOD, DELRARCONTENTS, TV_DOWNLOAD_DIR, UPDATE_FREQUENCY, \
-            showQueueScheduler, searchQueueScheduler, manualSnatchScheduler, ROOT_DIRS, CACHE_DIR, ACTUAL_CACHE_DIR, TIMEZONE_DISPLAY, \
+            showQueueScheduler, searchQueueScheduler, forcedSearchQueueScheduler, manualSnatchScheduler, ROOT_DIRS, CACHE_DIR, ACTUAL_CACHE_DIR, TIMEZONE_DISPLAY, \
             NAMING_PATTERN, NAMING_MULTI_EP, NAMING_ANIME_MULTI_EP, NAMING_FORCE_FOLDERS, NAMING_ABD_PATTERN, NAMING_CUSTOM_ABD, NAMING_SPORTS_PATTERN, NAMING_CUSTOM_SPORTS, NAMING_ANIME_PATTERN, NAMING_CUSTOM_ANIME, NAMING_STRIP_YEAR, \
             RENAME_EPISODES, AIRDATE_EPISODES, FILE_TIMESTAMP_TIMEZONE, properFinderScheduler, PROVIDER_ORDER, autoPostProcesserScheduler, \
             providerList, newznabProviderList, torrentRssProviderList, \
@@ -1480,6 +1481,10 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                    cycleTime=datetime.timedelta(seconds=3),
                                                    threadName="SEARCHQUEUE")
 
+        forcedSearchQueueScheduler = scheduler.Scheduler(search_queue.ForcedSearchQueue(),
+                                                         cycleTime=datetime.timedelta(seconds=3),
+                                                         threadName="FORCEDSEARCHQUEUE")
+
         # TODO: update_interval should take last daily/backlog times into account!
         update_interval = datetime.timedelta(minutes=DAILYSEARCH_FREQUENCY)
         dailySearchScheduler = scheduler.Scheduler(dailysearcher.DailySearcher(),
@@ -1564,6 +1569,10 @@ def start():
             searchQueueScheduler.enable = True
             searchQueueScheduler.start()
 
+            # start the forced search queue checker
+            forcedSearchQueueScheduler.enable = True
+            forcedSearchQueueScheduler.start()
+
             # start the search queue checker
             manualSnatchScheduler.enable = True
             manualSnatchScheduler.start()
@@ -1623,6 +1632,7 @@ def halt():
                 versionCheckScheduler,
                 showQueueScheduler,
                 searchQueueScheduler,
+                forcedSearchQueueScheduler,
                 manualSnatchScheduler,
                 autoPostProcesserScheduler,
                 traktCheckerScheduler,

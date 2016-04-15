@@ -2275,7 +2275,7 @@ class Home(WebRoot):
         # make a queue item for it and put it on the queue
         ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), bool(manual_search))
 
-        sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
+        sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
 
         # give the CPU a break and some time to start the queue
         time.sleep(cpu_presets[sickbeard.CPU_PRESET])
@@ -2417,7 +2417,7 @@ class Home(WebRoot):
 
         # make a queue item for it and put it on the queue
         ep_queue_item = search_queue.FailedQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)))  # pylint: disable=no-member
-        sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
+        sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
 
         if not ep_queue_item.started and ep_queue_item.success is None:
             return json.dumps(
@@ -3864,8 +3864,11 @@ class ManageSearches(Manage):
         # t.backlogPI = sickbeard.backlogSearchScheduler.action.getProgressIndicator()
 
         return t.render(backlogPaused=sickbeard.searchQueueScheduler.action.is_backlog_paused(),
-                        backlogRunning=sickbeard.searchQueueScheduler.action.is_backlog_in_progress(), dailySearchStatus=sickbeard.dailySearchScheduler.action.amActive,
-                        findPropersStatus=sickbeard.properFinderScheduler.action.amActive, queueLength=sickbeard.searchQueueScheduler.action.queue_length(),
+                        backlogRunning=sickbeard.searchQueueScheduler.action.is_backlog_in_progress(),
+                        dailySearchStatus=sickbeard.dailySearchScheduler.action.amActive,
+                        findPropersStatus=sickbeard.properFinderScheduler.action.amActive,
+                        searchQueueLength=sickbeard.searchQueueScheduler.action.queue_length(),
+                        forcedSearchQueueLength=sickbeard.forcedSearchQueueScheduler.action.queue_length(),
                         subtitlesFinderStatus=sickbeard.subtitlesFinderScheduler.action.amActive,
                         title='Manage Searches', header='Manage Searches', topmenu='manage',
                         controller="manage", action="manageSearches")

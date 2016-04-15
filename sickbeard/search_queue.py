@@ -52,25 +52,6 @@ class SearchQueue(generic_queue.GenericQueue):
                 return True
         return False
 
-    def is_ep_in_queue(self, segment):
-        for cur_item in self.queue:
-            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and cur_item.segment == segment:
-                return True
-        return False
-
-    def is_show_in_queue(self, show):
-        for cur_item in self.queue:
-            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and cur_item.show.indexerid == show:
-                return True
-        return False
-
-    def get_all_ep_from_queue(self, show):
-        ep_obj_list = []
-        for cur_item in self.queue:
-            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and str(cur_item.show.indexerid) == show:
-                ep_obj_list.append(cur_item)
-        return ep_obj_list
-
     def pause_backlog(self):
         self.min_priority = generic_queue.QueuePriorities.HIGH
 
@@ -80,12 +61,6 @@ class SearchQueue(generic_queue.GenericQueue):
     def is_backlog_paused(self):
         # backlog priorities are NORMAL, this should be done properly somewhere
         return self.min_priority >= generic_queue.QueuePriorities.NORMAL
-
-    def is_manualsearch_in_progress(self):
-        # Only referenced in webserve.py, only current running manualsearch or failedsearch is needed!!
-        if isinstance(self.currentItem, (ForcedSearchQueueItem, FailedQueueItem)):
-            return True
-        return False
 
     def is_backlog_in_progress(self):
         for cur_item in self.queue + [self.currentItem]:
@@ -100,18 +75,12 @@ class SearchQueue(generic_queue.GenericQueue):
         return False
 
     def queue_length(self):
-        length = {'backlog': 0, 'daily': 0, 'forced_search': 0, 'manual_search': 0, 'failed': 0}
+        length = {'backlog': 0, 'daily': 0}
         for cur_item in self.queue:
             if isinstance(cur_item, DailySearchQueueItem):
                 length['daily'] += 1
             elif isinstance(cur_item, BacklogQueueItem):
                 length['backlog'] += 1
-            elif isinstance(cur_item, FailedQueueItem):
-                length['failed'] += 1
-            elif isinstance(cur_item, ForcedSearchQueueItem) and not cur_item.manual_search:
-                length['forced_search'] += 1
-            elif isinstance(cur_item, ForcedSearchQueueItem) and cur_item.manual_search:
-                length['manual_search'] += 1
         return length
 
     def add_item(self, item):
@@ -121,7 +90,92 @@ class SearchQueue(generic_queue.GenericQueue):
         elif isinstance(item, BacklogQueueItem) and not self.is_in_queue(item.show, item.segment):
             # backlog searches
             generic_queue.GenericQueue.add_item(self, item)
-        elif isinstance(item, (ForcedSearchQueueItem, FailedQueueItem)) and not self.is_ep_in_queue(item.segment):
+        else:
+            logger.log(u"Not adding item, it's already in the queue", logger.DEBUG)
+
+    def force_daily(self):
+        if not self.is_dailysearch_in_progress and not self.currentItem.amActive:
+            self.force = True
+            return True
+        return False
+
+
+class ForcedSearchQueue(generic_queue.GenericQueue):
+    """Search Queueu used for Forced Search, Failed Search and """
+    def __init__(self):
+        """Initialize ForcedSearch Queue"""
+        generic_queue.GenericQueue.__init__(self)
+        self.queue_name = "FORCEDSEARCHQUEUE"
+
+    def is_in_queue(self, show, segment):
+        """
+        Verify if the show and segment (episode or number of episodes) are scheduled.
+        """
+        for cur_item in self.queue:
+            if cur_item.show == show and cur_item.segment == segment:
+                return True
+        return False
+
+    def is_ep_in_queue(self, segment):
+        """
+        Verify if the show and segment (episode or number of episodes) are scheduled in a
+        ForcedSearchQueueItem or FailedQueueItem.
+        """
+        for cur_item in self.queue:
+            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and cur_item.segment == segment:
+                return True
+        return False
+
+    def is_show_in_queue(self, show):
+        """Verify if the show is queued in this queue as a ForcedSearchQueueItem or FailedQueueItem."""
+        for cur_item in self.queue:
+            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and cur_item.show.indexerid == show:
+                return True
+        return False
+
+    def get_all_ep_from_queue(self, show):
+        """
+        Get QueueItems from the queue if the queue item is scheduled to search for the passed Show.
+        @param show: Show indexer_id
+
+        @return: A list of ForcedSearchQueueItem or FailedQueueItem items
+        @todo: In future a show object should be passed instead of the indexer_id, as we might migrate
+        to a system with multiple indexer_id's for one added show.
+        """
+        ep_obj_list = []
+        for cur_item in self.queue:
+            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and str(cur_item.show.indexerid) == show:
+                ep_obj_list.append(cur_item)
+        return ep_obj_list
+
+    def is_backlog_paused(self):
+        """
+        Verify if the ForcedSearchQueue's min_priority has been changed. This indicates that the
+        queue has been paused.
+        # backlog priorities are NORMAL, this should be done properly somewhere
+        """
+        return self.min_priority >= generic_queue.QueuePriorities.NORMAL
+
+    def is_forced_search_in_progress(self):
+        """Tests of a forced search is currently running, it doesn't check what's in queue"""
+        if isinstance(self.currentItem, (ForcedSearchQueueItem, FailedQueueItem)):
+            return True
+        return False
+
+    def queue_length(self):
+        length = {'forced_search': 0, 'manual_search': 0, 'failed': 0}
+        for cur_item in self.queue:
+            if isinstance(cur_item, FailedQueueItem):
+                length['failed'] += 1
+            elif isinstance(cur_item, ForcedSearchQueueItem) and not cur_item.manual_search:
+                length['forced_search'] += 1
+            elif isinstance(cur_item, ForcedSearchQueueItem) and cur_item.manual_search:
+                length['manual_search'] += 1
+        return length
+
+    def add_item(self, item):
+        """Add a new ForcedSearchQueueItem or FailedQueueItem to the ForcedSearchQueue"""
+        if isinstance(item, (ForcedSearchQueueItem, FailedQueueItem)) and not self.is_ep_in_queue(item.segment):
             # manual, snatch and failed searches
             generic_queue.GenericQueue.add_item(self, item)
         else:

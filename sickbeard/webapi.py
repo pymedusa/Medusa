@@ -781,7 +781,7 @@ class CMD_EpisodeSearch(ApiCall):
 
         # make a queue item for it and put it on the queue
         ep_queue_item = search_queue.ForcedSearchQueueItem(show_obj, ep_obj)
-        sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
+        sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
 
         # wait until the queue item tells us whether it worked or not
         while ep_queue_item.success is None:  # @UndefinedVariable
