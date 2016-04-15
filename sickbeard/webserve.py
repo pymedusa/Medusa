@@ -1425,6 +1425,7 @@ class Home(WebRoot):
             cached_result = main_db_con.action("SELECT * FROM '%s' WHERE rowid = ?" %
                                                provider, [rowid], fetchone=True)
         except Exception as e:
+            logger.log("Couldn't read cached results. Error: {}".format(e))
             return self._genericMessage("Error", "Couldn't read cached results. Error: {}".format(e))
 
         if not cached_result or not all([cached_result['url'],
@@ -1434,6 +1435,19 @@ class Home(WebRoot):
                                          cached_result['season'],
                                          provider]):
             return self._genericMessage("Error", "Cached result doesn't have all needed info to snatch episode")
+
+        if mode == 'season':
+            try:
+                main_db_con = db.DBConnection()
+                season_pack_episodes_result = main_db_con.action("SELECT episode FROM tv_episodes WHERE showid = ? and season = ?",  
+                                                                 [cached_result['indexerid'], cached_result['season']])
+            except Exception as e:
+                logger.log("Couldn't read episodes for season pack result. Error: {}".format(e))
+                return self._genericMessage("Error", "Couldn't read episodes for season pack result. Error: {}".format(e))
+
+            season_pack_episodes = []
+            for item in season_pack_episodes_result:
+                season_pack_episodes.append(int(item['episode']))
 
         try:
             show = int(cached_result['indexerid'])  # fails if show id ends in a period SickRage/sickrage-issues#65
@@ -1448,7 +1462,7 @@ class Home(WebRoot):
         # if multi-episode: |1|2|
         # if single-episode: |1|
         # TODO:  Handle Season Packs: || (no episode)
-        episodes = [1] if mode == 'season' else cached_result['episodes'].strip("|").split("|")
+        episodes = season_pack_episodes if mode == 'season' else cached_result['episodes'].strip("|").split("|")
         ep_objs = []
         for episode in episodes:
             if episode:
