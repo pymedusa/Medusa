@@ -52,7 +52,6 @@
     <span class="imdbstars" qtip-content="${rating_tip}">${show.imdb_info['rating']}</span>
 % endif
 
-<% _show = show %>
 % if not show.imdbid:
     <span>(${show.startyear}) - ${show.runtime} minutes - </span>
 % else:
@@ -61,17 +60,28 @@
                 <img src="${srRoot}/images/blank.png" class="country-flag flag-${country}" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
         % endfor
     % endif
-    <span>
-    % if 'year' in show.imdb_info and show.imdb_info['year']:
-                (${show.imdb_info['year']}) -
+                <span>
+    % if show.imdb_info.get('year'):
+                    (${show.imdb_info['year']}) -
     % endif
-                ${show.imdb_info['runtimes']} minutes</span>
+    % if show.imdb_info.get('runtimes'):
+                    ${show.imdb_info['runtimes']} minutes
+    % endif
+                </span>
 
-                <a href="${anon_url('http://www.imdb.com/title/', _show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdbid}"><img alt="[imdb]" height="16" width="16" src="${srRoot}/images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/></a>
+                <a href="${anon_url('http://www.imdb.com/title/', show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdbid}">
+                    <img alt="[imdb]" height="16" width="16" src="${srRoot}/images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
+                </a>
 % endif
-                <a href="${anon_url(sickbeard.indexerApi(_show.indexer).config['show_url'], _show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${sickbeard.indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}"><img alt="${sickbeard.indexerApi(show.indexer).name}" height="16" width="16" src="${srRoot}/images/${sickbeard.indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/></a>
+
+                <a href="${anon_url(sickbeard.indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${sickbeard.indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
+                    <img alt="${sickbeard.indexerApi(show.indexer).name}" height="16" width="16" src="${srRoot}/images/${sickbeard.indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
+                </a>
+
 % if xem_numbering or xem_absolute_numbering:
-                <a href="${anon_url('http://thexem.de/search?q=', _show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}"><img alt="[xem]" height="16" width="16" src="${srRoot}/images/xem.png" style="margin-top: -1px; vertical-align:middle;"/></a>
+                <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
+                    <img alt="[xem]" height="16" width="16" src="${srRoot}/images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
+                </a>
 % endif
             </div>
 
@@ -157,7 +167,7 @@
                     % if sickbeard.USE_SUBTITLES:
                     <tr><td class="showLegend">Subtitles: </td><td><img src="${srRoot}/images/${("no16.png", "yes16.png")[bool(show.subtitles)]}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
                     % endif
-                    <tr><td class="showLegend">Season Folders: </td><td><img src="${srRoot}/images/${("no16.png", "yes16.png")[bool(not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS)]}" alt=="${("N", "Y")[bool(not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
+                    <tr><td class="showLegend">Season Folders: </td><td><img src="${srRoot}/images/${("no16.png", "yes16.png")[bool(not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS)]}" alt="${("N", "Y")[bool(not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
                     <tr><td class="showLegend">Paused: </td><td><img src="${srRoot}/images/${("no16.png", "yes16.png")[bool(show.paused)]}" alt="${("N", "Y")[bool(show.paused)]}" width="16" height="16" /></td></tr>
                     <tr><td class="showLegend">Air-by-Date: </td><td><img src="${srRoot}/images/${("no16.png", "yes16.png")[bool(show.air_by_date)]}" alt="${("N", "Y")[bool(show.air_by_date)]}" width="16" height="16" /></td></tr>
                     <tr><td class="showLegend">Sports: </td><td><img src="${srRoot}/images/${("no16.png", "yes16.png")[bool(show.is_sports)]}" alt="${("N", "Y")[bool(show.is_sports)]}" width="16" height="16" /></td></tr>
@@ -167,19 +177,19 @@
                 </table>
             </div>
         </div>
-    
+
     <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
     <input class="btn manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-force-search="1" />
     <div id="searchNotification"></div>
-    
+
     <div class="clearfix"></div>
     <div id="wrapper">
     <div id="container">
-    
+
     <!-- @TODO: Change this to use the REST API -->
     <!-- add provider meta data -->
     <meta data-last-prov-updates="${provider_results['last_prov_updates']}" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}">
-    
+
         <table id="showTable" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
             <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
             <tr style="height: 60px;" role="row">
@@ -188,7 +198,7 @@
                 </th>
             </tr>
             </tbody>
-   
+
             <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
                 <tr>
                     <th class="col-name">Release</th>
@@ -218,7 +228,7 @@
                 name_preferred = False
                 below_minseed = False
                 below_minleech = False
-                
+
                 release_group = helpers.remove_non_release_groups(hItem["release_group"])
                 if release_group and ignore_words and release_group.lower() in ignore_words.lower().split(','):
                     release_group_ignore = True
@@ -239,7 +249,7 @@
                     name_undesired = True
                 if hItem["name"] and preferred_words and any([i for i in preferred_words.split(',') if i.lower() in hItem["name"].lower()]):
                     name_preferred = True
-                
+
                 if hItem["provider_minseed"] and hItem["seeders"] and hItem["seeders"] > -1 and int(hItem["seeders"]) < hItem["provider_minseed"]:
                     below_minseed = True
                 if hItem["provider_minleech"] and hItem["leechers"] and hItem["leechers"] > -1 and int(hItem["leechers"]) < hItem["provider_minleech"]:
@@ -281,12 +291,12 @@
                     % if below_minseed:
                         <td align="center"><font color="red">${hItem["seeders"] if hItem["seeders"] > -1 else '-'}</font></td>
                     % else:
-                        <td align="center">${hItem["seeders"] if hItem["seeders"] > -1 else '-'}</td>               
+                        <td align="center">${hItem["seeders"] if hItem["seeders"] > -1 else '-'}</td>
                     % endif
                     % if below_minleech:
                         <td align="center"><font color="red">${hItem["leechers"] if hItem["leechers"] > -1 else '-'}</font></td>
                     % else:
-                        <td align="center">${hItem["leechers"] if hItem["leechers"] > -1 else '-'}</td>               
+                        <td align="center">${hItem["leechers"] if hItem["leechers"] > -1 else '-'}</td>
                     % endif
                     <td class="col-size">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
                     <td align="center">${hItem["provider_type"]}</td>
