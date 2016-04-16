@@ -487,7 +487,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
             curSeason = int(curResult["season"])
             curEpisode = int(curResult["episode"])
             curShowid = int(curResult['showid'])
-            curShowName = str(curResult['show_name'])
+            curShowName = unicode(curResult['show_name'])
 
             logger.log(u"%s: Loading %s episodes from DB" % (curShowid, curShowName), logger.DEBUG)
             deleteEp = False
@@ -877,84 +877,51 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
 
         self.status = getattr(myEp, 'status', 'Unknown')
 
-    def loadIMDbInfo(self):  # pylint: disable=too-many-branches
-
-        imdb_info = {
-            'imdb_id': self.imdbid,
-            'title': '',
-            'year': '',
-            'akas': [],
-            'runtimes': '',
-            'genres': [],
-            'countries': '',
-            'country_codes': [],
-            'certificates': [],
-            'rating': '',
-            'votes': '',
-            'last_update': ''
-        }
-
-        i = imdb.IMDb()
+    def load_imdb_info(self):  # pylint: disable=too-many-branches
+        """Load all required show information from IMDb with IMDbPY."""
+        imdb_api = imdb.IMDb()
         if not self.imdbid:
-            self.imdbid = i.title2imdbID(self.name, kind='tv series')
+            self.imdbid = imdb_api.title2imdbID(self.name, kind='tv series')
 
         if not self.imdbid:
-            logger.log(str(self.indexerid) + u": Not loading show info from IMDb, because we don't know the imdbid", logger.DEBUG)
+            logger.log(u"{0}: Not loading show info from IMDb, "
+                       u"because we don't know its ID".format(self.indexerid), logger.ERROR)
             return
 
-        logger.log(str(self.indexerid) + u": Loading show info from IMDb", logger.DEBUG)
+        # Make sure we only use one ID
+        imdb_id = self.imdbid.split(',')[0]
 
-        imdbTv = i.get_movie(str(re.sub(r"[^0-9]", "", self.imdbid)))
+        logger.log(u'{0}: Loading show info from IMDb with ID: {1}'.format(
+                   self.indexerid, imdb_id), logger.DEBUG)
 
-        for key in [x for x in imdb_info.keys() if x.replace('_', ' ') in imdbTv.keys()]:
-            # Store only the first value for string type
-            if isinstance(imdb_info[key], basestring) and isinstance(imdbTv.get(key.replace('_', ' ')), list):
-                imdb_info[key] = imdbTv.get(key.replace('_', ' '))[0]
-            else:
-                imdb_info[key] = imdbTv.get(key.replace('_', ' '))
+        # Remove first two chars from ID
+        imdb_obj = imdb_api.get_movie(imdb_id[2:])
 
-        # Filter only the value
-        if imdb_info['runtimes']:
-            imdb_info['runtimes'] = re.search(r'\d+', imdb_info['runtimes']).group(0)
-        else:
-            imdb_info['runtimes'] = self.runtime
+        self.imdb_info = {
+            'imdb_id': imdb_id,
+            'title': imdb_obj.get('title', ''),
+            'year': imdb_obj.get('year', ''),
+            'akas': '|'.join(imdb_obj.get('akas', '')),
+            'genres': '|'.join(imdb_obj.get('genres', '')),
+            'countries': '|'.join(imdb_obj.get('countries', '')),
+            'country_codes': '|'.join(imdb_obj.get('country codes', '')),
+            'rating': imdb_obj.get('rating', ''),
+            'votes': imdb_obj.get('votes', ''),
+            'last_update': datetime.date.today().toordinal()
+        }
 
-        if imdb_info['akas']:
-            imdb_info['akas'] = '|'.join(imdb_info['akas'])
-        else:
-            imdb_info['akas'] = ''
-
-        # Join all genres in a string
-        if imdb_info['genres']:
-            imdb_info['genres'] = '|'.join(imdb_info['genres'])
-        else:
-            imdb_info['genres'] = ''
+        if imdb_obj.get('runtimes'):
+            self.imdb_info['runtimes'] = re.search(r'\d+', imdb_obj['runtimes'][0]).group(0)
 
         # Get only the production country certificate if any
-        if imdb_info['certificates'] and imdb_info['countries']:
-            dct = {}
-            try:
-                for item in imdb_info['certificates']:
-                    dct[item.split(':')[0]] = item.split(':')[1]
+        if imdb_obj.get('certificates') and imdb_obj.get('countries'):
+            for certificate in imdb_obj['certificates']:
+                if certificate.split(':')[0] in imdb_obj['countries']:
+                    self.imdb_info['certificates'] = certificate.split(':')[1]
+                    break
 
-                imdb_info['certificates'] = dct[imdb_info['countries']]
-            except Exception:
-                imdb_info['certificates'] = ''
-
-        else:
-            imdb_info['certificates'] = ''
-
-        if imdb_info['country_codes']:
-            imdb_info['country_codes'] = '|'.join(imdb_info['country_codes'])
-        else:
-            imdb_info['country_codes'] = ''
-
-        imdb_info['last_update'] = datetime.date.today().toordinal()
-
-        # Rename dict keys without spaces for DB upsert
-        self.imdb_info = dict(
-            (k.replace(' ', '_'), k(v) if hasattr(v, 'keys') else v) for k, v in imdb_info.iteritems())
-        logger.log(str(self.indexerid) + u": Obtained info from IMDb ->" + str(self.imdb_info), logger.DEBUG)
+        logger.log(u'{0}: Obtained info from IMDb: {1}'.format(
+                   self.indexerid, self.imdb_info), logger.DEBUG)
 
     def nextEpisode(self):
         logger.log(str(self.indexerid) + ": Finding the episode which airs next", logger.DEBUG)

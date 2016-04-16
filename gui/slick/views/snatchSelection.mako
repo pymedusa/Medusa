@@ -64,9 +64,7 @@
     % if show.imdb_info.get('year'):
                     (${show.imdb_info['year']}) -
     % endif
-    % if show.imdb_info.get('runtimes'):
-                    ${show.imdb_info['runtimes']} minutes
-    % endif
+                    ${show.imdb_info.get('runtimes') or show.runtime} minutes
                 </span>
 
                 <a href="${anon_url('http://www.imdb.com/title/', show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdbid}">
@@ -87,13 +85,13 @@
 
             <div id="tags">
                 <ul class="tags">
-                    % if ('genres' not in show.imdb_info or not show.imdb_info['genres']) and show.genre:
-                        % for genre in show.genre[1:-1].split('|'):
-                            <a href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></a>
-                        % endfor
-                    % elif 'genres' in show.imdb_info and show.imdb_info['genres']:
+                    % if show.imdb_info.get('genres'):
                         % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi','Science-Fiction').split('|'):
                             <a href="${anon_url('http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=', imdbgenre.lower())}" target="_blank" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></a>
+                        % endfor
+                    % elif show.genre:
+                        % for genre in show.genre[1:-1].split('|'):
+                            <a href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></a>
                         % endfor
                     % endif
                 </ul>

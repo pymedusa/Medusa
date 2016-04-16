@@ -464,9 +464,9 @@ class QueueItemAdd(ShowQueueItem):
 
         logger.log(u"Retrieving show info from IMDb", logger.DEBUG)
         try:
-            self.show.loadIMDbInfo()
+            self.show.load_imdb_info()
         except imdb_exceptions.IMDbError as e:
-            logger.log(u" Something wrong on IMDb api: " + ex(e), logger.WARNING)
+            logger.log(u"Something wrong on IMDb api: " + ex(e), logger.WARNING)
         except Exception as e:
             logger.log(u"Error loading IMDb info: " + ex(e), logger.ERROR)
 
@@ -649,9 +649,9 @@ class QueueItemUpdate(ShowQueueItem):
 
         logger.log(u"Retrieving show info from IMDb", logger.DEBUG)
         try:
-            self.show.loadIMDbInfo()
+            self.show.load_imdb_info()
         except imdb_exceptions.IMDbError as e:
-            logger.log(u" Something wrong on IMDb api: " + ex(e), logger.WARNING)
+            logger.log(u"Something wrong on IMDb api: " + ex(e), logger.WARNING)
         except Exception as e:
             logger.log(u"Error loading IMDb info: " + ex(e), logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
