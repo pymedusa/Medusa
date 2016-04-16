@@ -5,6 +5,7 @@
     import ntpath
     import os.path
     import sickbeard
+    import time
     from sickbeard import subtitles, sbdatetime, network_timezones, helpers, show_name_helpers
     import sickbeard.helpers
 
@@ -12,6 +13,8 @@
     from sickbeard.common import Quality, qualityPresets, statusStrings, Overview
     from sickbeard.helpers import anon_url
     from sickrage.helper.common import pretty_file_size
+    from sickbeard.sbdatetime import sbdatetime
+    from sickrage.show.History import History
 
     from sickrage.helper.encoding import ek
 %>
@@ -184,6 +187,45 @@
     <div id="wrapper">
     <div id="container">
 
+    <table id="history" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
+
+            <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
+            <tr style="height: 60px;" role="row">
+                <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader displayShowTable">
+                <h3 style="display: inline;"><a name="history" style="position: absolute; font-size: 1px; visibility: hidden;">.</a>History</h3>
+                </th>
+            </tr>
+            </tbody>
+
+        <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
+            <tr>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Release</th>
+            </tr>
+        </tbody>
+
+        <tbody aria-live="polite" aria-relevant="all">
+        % if episode_history:
+            % for item in episode_history:
+                <tr>
+                <td style="width: auto;">
+                    <% action_date = sbdatetime.sbfdatetime(datetime.datetime.strptime(str(item['date']), History.date_format), show_seconds=True) %>
+                    ${action_date}
+                </td>
+                <td  style="width: auto;">
+                ${statusStrings[Quality.splitCompositeStatus(item['action']).status]} ${renderQualityPill(Quality.splitCompositeStatus(item['action']).quality)}
+                </td>
+                <td  style="width: auto;">
+                ${os.path.basename(item['resource'])}
+                </td>
+                </tr>
+                % endfor
+        % endif
+        </tbody>
+    </table>
+
+
     <!-- @TODO: Change this to use the REST API -->
     <!-- add provider meta data -->
     <meta data-last-prov-updates="${provider_results['last_prov_updates']}" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
@@ -195,9 +237,6 @@
                         <h3 style="display: inline;"><a name="season-${season}" style="position: absolute; font-size: 1px; visibility: hidden;">.</a>Season ${season}</h3>
                     % else:
                         <h3 style="display: inline;"><a name="season-${season}" style="position: absolute; font-size: 1px; visibility: hidden;">.</a>Season ${season} Episode ${episode}</h3>
-                    % endif
-                    % if episode_status:
-                        ${statusStrings[Quality.splitCompositeStatus(episode_status).status]} ${renderQualityPill(Quality.splitCompositeStatus(episode_status).quality)} - ${os.path.basename(release_name)}
                     % endif
                 </th>
             </tr>
