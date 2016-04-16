@@ -1638,7 +1638,7 @@ class Home(WebRoot):
         episode_history = []
         try:
             main_db_con = db.DBConnection()
-            episode_status_result = main_db_con.action("SELECT date, action, resource from history where showid = ? and \
+            episode_status_result = main_db_con.action("SELECT date, action, provider, resource from history where showid = ? and \
                                                         season = ? and episode = ? and (action like '%4' or action like '%2') \
                                                         order by date DESC LIMIT 10", [indexerid, season, episode])
             if episode_status_result:

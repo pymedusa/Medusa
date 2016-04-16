@@ -201,6 +201,7 @@
             <tr>
                 <th>Date</th>
                 <th>Status</th>
+                <th>Provider</th>
                 <th>Release</th>
             </tr>
         </tbody>
@@ -216,7 +217,10 @@
                 <td  style="width: auto;">
                 ${statusStrings[Quality.splitCompositeStatus(item['action']).status]} ${renderQualityPill(Quality.splitCompositeStatus(item['action']).quality)}
                 </td>
-                <td  style="width: auto;">
+                <td style="width: auto;">
+                ${item['provider']}
+                </td>
+                <td style="width: auto;">
                 ${os.path.basename(item['resource'])}
                 </td>
                 </tr>
