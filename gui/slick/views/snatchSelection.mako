@@ -16,6 +16,8 @@
     from sickbeard.sbdatetime import sbdatetime
     from sickrage.show.History import History
     from sickbeard.failed_history import prepareFailedName
+    from sickrage.providers.GenericProvider import GenericProvider
+    from sickbeard import providers
 
     from sickrage.helper.encoding import ek
 %>
@@ -202,7 +204,7 @@
             <tr>
                 <th>Date</th>
                 <th>Status</th>
-                <th>Provider</th>
+                <th>Provider/Release</th>
                 <th>Release</th>
             </tr>
         </tbody>
@@ -224,7 +226,12 @@
                 ${statusStrings[Quality.splitCompositeStatus(item['action']).status]} ${renderQualityPill(Quality.splitCompositeStatus(item['action']).quality)}
                 </td>
                 <td align="center" style="width: auto;">
-                ${item['provider']}
+                    <% provider = providers.getProviderClass(GenericProvider.make_id(item["provider"])) %>
+                    % if provider is not None:
+                        <img src="${srRoot}/images/providers/${provider.image_name()}" width="16" height="16" alt="${provider.name}" title="${provider.name}"/> ${item["provider"]}
+                    % else:
+                        ${item['provider']}
+                    % endif
                 </td>
                 <td style="width: auto;">
                 ${os.path.basename(item['resource'])}
