@@ -270,7 +270,7 @@
                     <th>Size</th>
                     <th>Type</th>
                     <th>Date</th>
-                    <th class="col-search">Download</th>
+                    <th class="col-search">Snatch</th>
                 </tr>
             </tbody>
 
@@ -321,9 +321,7 @@
                 %>
                 % if any([i for i in episode_history if prepareFailedName(str(hItem["name"])) in i['resource'] and (hItem['release_group'] == i['provider'] or  hItem['provider'] == i['provider']) and str(i['action'])[2:] == '11' ]):
                     <tr style="text-decoration:line-through" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
-                % elif any([i for i in episode_history if hItem["name"] in i['resource'] and hItem['release_group'] == i['provider']]) and any([i for i in episode_history if hItem["name"] in i['resource'] and hItem['provider'] == i['provider']]):
-                    <tr style="background-color:#C3E3C8" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
-                % elif any([i for i in episode_history if hItem["name"] in i['resource'] and hItem['provider'] == i['provider']]):
+                % elif any([i for i in episode_history if str(i['action'])[2:] == '02' and hItem["name"] in i['resource'] and hItem['provider'] == i['provider']]):
                     <tr style="background-color:#EBC1EA" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
                 % else:
                     <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
