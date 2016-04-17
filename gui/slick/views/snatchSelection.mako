@@ -307,7 +307,13 @@
 
                 %>
 
-                <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
+                % if any([i for i in episode_history if hItem["name"] in i['resource'] and hItem['release_group'] == i['provider']]) and any([i for i in episode_history if hItem["name"] in i['resource'] and hItem['provider'] == i['provider']]):
+                    <tr style="background-color:#C3E3C8"id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
+                % elif any([i for i in episode_history if hItem["name"] in i['resource'] and hItem['provider'] == i['provider']]):
+                    <tr style="background-color:#EBC1EA"id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
+                % else:
+                    <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
+                % endif
                     % if name_ignore:
                         <td class="tvShow"><span class="break-word"><font color="red">${hItem["name"]}</font></span></td>
                     % elif name_require:
