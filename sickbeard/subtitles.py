@@ -331,7 +331,7 @@ def download_best_subs(video_path, subtitles_dir, release_name, languages, subti
             logger.info(u'No subtitles found for %s with min_score %d', video_path, min_score)
             return []
 
-        save_subtitles(video, found_subtitles, directory=encode(subtitles_dir), single=not sickbeard.SUBTITLES_MULTI)
+        save_subtitles(video, found_subtitles, directory=_encode(subtitles_dir), single=not sickbeard.SUBTITLES_MULTI)
 
         for subtitle in found_subtitles:
             logger.info(u'Found subtitle for %s in %s provider with language %s', video_path, subtitle.provider_name,
@@ -450,7 +450,7 @@ def get_current_subtitles(video_path):
         return get_subtitles(video)
 
 
-def encode(value, encoding='utf-8', fallback=None):
+def _encode(value, encoding='utf-8', fallback=None):
     """Encode the value using the specified encoding.
 
     It fallbacks to the specified encoding or SYS_ENCODING if not defined
@@ -467,10 +467,12 @@ def encode(value, encoding='utf-8', fallback=None):
     try:
         return value.encode(encoding)
     except UnicodeEncodeError:
+        logger.debug(u'Failed to encode to %s, falling back to %s: %r',
+                     encoding, fallback or sickbeard.SYS_ENCODING, value)
         return value.encode(fallback or sickbeard.SYS_ENCODING)
 
 
-def decode(value, encoding='utf-8', fallback=None):
+def _decode(value, encoding='utf-8', fallback=None):
     """Decode the value using the specified encoding.
 
     It fallbacks to the specified encoding or SYS_ENCODING if not defined
@@ -487,6 +489,8 @@ def decode(value, encoding='utf-8', fallback=None):
     try:
         return value.decode(encoding)
     except UnicodeDecodeError:
+        logger.debug(u'Failed to decode to %s, falling back to %s: %r',
+                     encoding, fallback or sickbeard.SYS_ENCODING, value)
         return value.decode(fallback or sickbeard.SYS_ENCODING)
 
 
@@ -552,8 +556,8 @@ def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles
         return video
 
     try:
-        video_path = encode(video_path)
-        subtitles_dir = encode(subtitles_dir or get_subtitles_dir(video_path))
+        video_path = _encode(video_path)
+        subtitles_dir = _encode(subtitles_dir or get_subtitles_dir(video_path))
 
         logger.debug(u'Scanning video %s...', video_path)
         video = scan_video(video_path)
@@ -590,7 +594,7 @@ def get_subtitles_dir(video_path):
         return os.path.dirname(video_path)
 
     if os.path.isabs(sickbeard.SUBTITLES_DIR):
-        return decode(sickbeard.SUBTITLES_DIR)
+        return _decode(sickbeard.SUBTITLES_DIR)
 
     new_subtitles_path = os.path.join(os.path.dirname(video_path), sickbeard.SUBTITLES_DIR)
     if sickbeard.helpers.makeDir(new_subtitles_path):
@@ -814,7 +818,7 @@ class SubtitlesFinder(object):
         for ep_to_sub in sql_results:
             ep_num = episode_num(ep_to_sub['season'], ep_to_sub['episode']) or \
                      episode_num(ep_to_sub['season'], ep_to_sub['episode'], numbering='absolute')
-            subtitle_path = encode(ep_to_sub['location'], encoding=sickbeard.SYS_ENCODING, fallback='utf-8')
+            subtitle_path = _encode(ep_to_sub['location'], encoding=sickbeard.SYS_ENCODING, fallback='utf-8')
             if not os.path.isfile(subtitle_path):
                 logger.debug(u'Episode file does not exist, cannot download subtitles for %s %s',
                              ep_to_sub['show_name'], ep_num)
