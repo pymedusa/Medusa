@@ -15,6 +15,7 @@
     from sickrage.helper.common import pretty_file_size
     from sickbeard.sbdatetime import sbdatetime
     from sickrage.show.History import History
+    from sickbeard.failed_history import prepareFailedName
 
     from sickrage.helper.encoding import ek
 %>
@@ -306,7 +307,7 @@
                     below_minleech = True
 
                 %>
-                % if any([i for i in episode_history if hItem["name"] in i['resource'] and hItem['release_group'] == i['provider'] and str(i['action'])[2:] == '11' ]):
+                % if any([i for i in episode_history if prepareFailedName(str(hItem["name"])) in i['resource'] and hItem['release_group'] == i['provider'] and str(i['action'])[2:] == '11' ]):
                     <tr style="background-color:red"id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
                 % elif any([i for i in episode_history if hItem["name"] in i['resource'] and hItem['release_group'] == i['provider']]) and any([i for i in episode_history if hItem["name"] in i['resource'] and hItem['provider'] == i['provider']]):
                     <tr style="background-color:#C3E3C8"id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
