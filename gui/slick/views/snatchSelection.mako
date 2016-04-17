@@ -210,15 +210,20 @@
         <tbody aria-live="polite" aria-relevant="all">
         % if episode_history:
             % for item in episode_history:
-                <tr>
-                <td style="width: auto;">
+                % if str(item['action'])[2:] == '04':
+                <tr style="background-color:#C3E3C8">
+                % elif str(item['action'])[2:] == '02':
+                <tr style="background-color:#EBC1EA">
+                % endif
+
+                <td align="center" style="width: auto;">
                     <% action_date = sbdatetime.sbfdatetime(datetime.datetime.strptime(str(item['date']), History.date_format), show_seconds=True) %>
                     ${action_date}
                 </td>
-                <td  style="width: auto;">
+                <td  align="center" style="width: auto;">
                 ${statusStrings[Quality.splitCompositeStatus(item['action']).status]} ${renderQualityPill(Quality.splitCompositeStatus(item['action']).quality)}
                 </td>
-                <td style="width: auto;">
+                <td align="center" style="width: auto;">
                 ${item['provider']}
                 </td>
                 <td style="width: auto;">
