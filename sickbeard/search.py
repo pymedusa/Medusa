@@ -237,6 +237,7 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
 
         # If doesnt have min seeders OR min leechers then discard it
         if cur_result.seeders not in (-1, None) and cur_result.leechers not in (-1, None) \
+            and hasattr(cur_result.provider, 'minseed') and hasattr(cur_result.provider, 'minleech') \
             and (int(cur_result.seeders) < int(cur_result.provider.minseed) or 
                  int(cur_result.leechers) < int(cur_result.provider.minleech)):
             logger.log(u"Discarding torrent because it doesn't meet the minimum provider setting \
