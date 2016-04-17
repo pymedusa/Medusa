@@ -196,20 +196,21 @@
             <tr style="height: 60px;" role="row">
                 <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader displayShowTable">
                 <h3 style="display: inline;"><a name="history" style="position: absolute; font-size: 1px; visibility: hidden;">.</a>History</h3>
+                 <button id="showhistory" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="#historydata">Show History</button>
                 </th>
             </tr>
             </tbody>
 
         <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
             <tr>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Provider/Release</th>
-                <th>Release</th>
+                <th width="15%">Date</th>
+                <th width="18%">Status</th>
+                <th width="15%">Provider/Group</th>
+                <th width="52%">Release</th>
             </tr>
         </tbody>
 
-        <tbody aria-live="polite" aria-relevant="all">
+        <tbody class="toggle collapse" aria-live="polite" aria-relevant="all" id="historydata">
         % if episode_history:
             % for item in episode_history:
                 % if str(item['action'])[2:] == '04':
