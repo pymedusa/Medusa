@@ -71,7 +71,7 @@ PROVIDER_URLS = {
 
 
 def sorted_service_list():
-    """Returns an list of subliminal providers (it's not sorted, but the order matters!)
+    """Return an list of subliminal providers (it's not sorted, but the order matters!).
 
     Each item in the list is a dict containing:
         name: str: provider name
@@ -106,7 +106,7 @@ def sorted_service_list():
 
 
 def enabled_service_list():
-    """Returns an ordered list of enabled and valid subliminal provider names
+    """Return an ordered list of enabled and valid subliminal provider names.
 
     :return: list of provider names
     :rtype: list of str
@@ -115,7 +115,7 @@ def enabled_service_list():
 
 
 def wanted_languages():
-    """Returns the wanted language codes
+    """Return the wanted language codes.
 
     :return: set of wanted subtitles (opensubtitles codes)
     :rtype: frozenset
@@ -124,7 +124,7 @@ def wanted_languages():
 
 
 def get_needed_languages(subtitles):
-    """Given the existing subtitles, returns a set of the needed subtitles
+    """Given the existing subtitles, returns a set of the needed subtitles.
 
     :param subtitles: the existing subtitles (opensubtitles codes)
     :type subtitles: list of str
@@ -137,7 +137,7 @@ def get_needed_languages(subtitles):
 
 
 def subtitle_code_filter():
-    """Returns a set of all 3-letter code languages of opensubtitles
+    """Return a set of all 3-letter code languages of opensubtitles.
 
     :return: all 3-letter language codes
     :rtype: set of str
@@ -146,7 +146,7 @@ def subtitle_code_filter():
 
 
 def needs_subtitles(subtitles):
-    """Given the existing subtitles and wanted languages, returns True if subtitles are still needed
+    """Given the existing subtitles and wanted languages, returns True if subtitles are still needed.
 
     :param subtitles: the existing subtitles
     :type subtitles: set of str
@@ -167,7 +167,7 @@ def needs_subtitles(subtitles):
 
 
 def from_code(code, unknown='und'):
-    """Converts an opensubtitles language code to a proper babelfish.Language object
+    """Convert an opensubtitles language code to a proper babelfish.Language object.
 
     :param code: an opensubtitles language code to be converted
     :type code: str
@@ -184,7 +184,7 @@ def from_code(code, unknown='und'):
 
 
 def from_ietf_code(code, unknown='und'):
-    """Converts an IETF code to a proper babelfish.Language object
+    """Convert an IETF code to a proper babelfish.Language object.
 
     :param code: an IETF language code
     :type code: str
@@ -200,7 +200,7 @@ def from_ietf_code(code, unknown='und'):
 
 
 def name_from_code(code):
-    """Returns the language name for the given language code
+    """Return the language name for the given language code.
 
     :param code: the opensubtitles language code
     :type code: str
@@ -211,20 +211,19 @@ def name_from_code(code):
 
 
 def code_from_code(code):
-    """Converts an opensubtitles code to a 3-letter opensubtitles code
+    """Convert an opensubtitles code to a 3-letter opensubtitles code.
 
     :param code: an opensubtitles language code
     :type code: str
     :return: a 3-letter opensubtitles language code
     :rtype: str
     """
-
     return from_code(code).opensubtitles
 
 
 def download_subtitles(video_path, show_name, season, episode, episode_name, show_indexerid, release_name, status,
                        existing_subtitles):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-    """Downloads missing subtitles for the given episode
+    """Download missing subtitles for the given episode.
 
     Checks whether subtitles are needed or not
 
@@ -276,7 +275,7 @@ def download_subtitles(video_path, show_name, season, episode, episode_name, sho
 
 def download_best_subs(video_path, subtitles_dir, release_name, languages, subtitles=True, embedded_subtitles=True,
                        provider_pool=None):
-    """Downloads the best subtitle for the given video
+    """Download the best subtitle for the given video.
 
     :param video_path: the video path
     :type video_path: str
@@ -358,7 +357,7 @@ def download_best_subs(video_path, subtitles_dir, release_name, languages, subti
 
 @region.cache_on_arguments(expiration_time=PROVIDER_POOL_EXPIRATION_TIME)
 def get_provider_pool():
-    """Returns the subliminal provider pool to be used
+    """Return the subliminal provider pool to be used.
 
     :return: subliminal provider pool to be used
     :rtype: subliminal.ProviderPool
@@ -376,7 +375,7 @@ def get_provider_pool():
 
 
 def compute_subtitle_path(subtitle, video_path, subtitles_dir):
-    """Returns the full subtitle path that's computed by subliminal
+    """Return the full subtitle path that's computed by subliminal.
 
     :param subtitle: the subtitle
     :type subtitle: subliminal.Subtitle
@@ -392,7 +391,7 @@ def compute_subtitle_path(subtitle, video_path, subtitles_dir):
 
 
 def merge_subtitles(existing_subtitles, new_subtitles):
-    """Merges the existing and new subtitles to a single list
+    """Merge the existing and new subtitles to a single list.
 
     Consolidates the existing_subtitles and the new_subtitles into a resulting list without repetitions. If
     SUBTITLES_MULTI is disabled and there's only one new subtitle, an `und` element is added to the returning list
@@ -416,7 +415,7 @@ def merge_subtitles(existing_subtitles, new_subtitles):
 
 
 def get_min_score():
-    """Returns the min score to be used by subliminal
+    """Return the min score to be used by subliminal.
 
     Perfect match = hash - resolution (subtitle for 720p is the same as for 1080p) - video_codec - audio_codec
     Non-perfect match = series + year + season + episode
@@ -433,7 +432,7 @@ def get_min_score():
 
 
 def get_current_subtitles(video_path):
-    """Returns a list of current subtitles for the episode.
+    """Return a list of current subtitles for the episode.
 
     :param video_path: the video path
     :type video_path: str
@@ -452,7 +451,7 @@ def get_current_subtitles(video_path):
 
 
 def encode(value, encoding='utf-8', fallback=None):
-    """Encodes the value using the specified encoding
+    """Encode the value using the specified encoding.
 
     It fallbacks to the specified encoding or SYS_ENCODING if not defined
 
@@ -471,8 +470,28 @@ def encode(value, encoding='utf-8', fallback=None):
         return value.encode(fallback or sickbeard.SYS_ENCODING)
 
 
+def decode(value, encoding='utf-8', fallback=None):
+    """Decode the value using the specified encoding.
+
+    It fallbacks to the specified encoding or SYS_ENCODING if not defined
+
+    :param value: the value to be encoded
+    :type value: str
+    :param encoding: the encoding to be used
+    :type encoding: str
+    :param fallback: the fallback encoding to be used
+    :type fallback: str
+    :return: the decoded value
+    :rtype: unicode
+    """
+    try:
+        return value.decode(encoding)
+    except UnicodeDecodeError:
+        return value.decode(fallback or sickbeard.SYS_ENCODING)
+
+
 def get_subtitle_description(subtitle):
-    """Returns a human readable name/description for the given subtitle (if possible)
+    """Return a human readable name/description for the given subtitle (if possible).
 
     :param subtitle: the given subtitle
     :type subtitle: subliminal.Subtitle
@@ -497,7 +516,7 @@ def get_subtitle_description(subtitle):
 
 
 def invalidate_video_cache(video_path):
-    """Invalidates the cached subliminal.video.Video for the specified path
+    """Invalidate the cached subliminal.video.Video for the specified path.
 
     :param video_path: the video path
     :type video_path: str
@@ -508,7 +527,9 @@ def invalidate_video_cache(video_path):
 
 
 def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles=None, release_name=None):
-    """Returns the subliminal video for the given path. The video_path is used as a key to cache the video to avoid
+    """Return the subliminal video for the given path.
+
+    The video_path is used as a key to cache the video to avoid
     scanning and parsing the video metadata all the time
 
     :param video_path: the video path
@@ -531,8 +552,8 @@ def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles
         return video
 
     try:
-        video_path = unicode(video_path)
-        subtitles_dir = unicode(subtitles_dir or get_subtitles_dir(video_path))
+        video_path = encode(video_path)
+        subtitles_dir = encode(subtitles_dir or get_subtitles_dir(video_path))
 
         logger.debug(u'Scanning video %s...', video_path)
         video = scan_video(video_path)
@@ -556,7 +577,7 @@ def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles
 
 
 def get_subtitles_dir(video_path):
-    """Returns the correct subtitles directory based on the user configuration.
+    """Return the correct subtitles directory based on the user configuration.
 
     If the directory doesn't exist, it will be created
 
@@ -569,7 +590,7 @@ def get_subtitles_dir(video_path):
         return os.path.dirname(video_path)
 
     if os.path.isabs(sickbeard.SUBTITLES_DIR):
-        return sickbeard.SUBTITLES_DIR
+        return decode(sickbeard.SUBTITLES_DIR)
 
     new_subtitles_path = os.path.join(os.path.dirname(video_path), sickbeard.SUBTITLES_DIR)
     if sickbeard.helpers.makeDir(new_subtitles_path):
@@ -581,7 +602,7 @@ def get_subtitles_dir(video_path):
 
 
 def get_subtitles(video):
-    """Returns a sorted list of detected subtitles for the given video file.
+    """Return a sorted list of detected subtitles for the given video file.
 
     :param video: the video to be inspected
     :type video: subliminal.video.Video
@@ -593,7 +614,7 @@ def get_subtitles(video):
 
 
 def unpack_rar_files(dirpath):
-    """Unpacks any existing rar files present in the specified dirpath
+    """Unpack any existing rar files present in the specified dirpath.
 
     :param dirpath: the directory path to be used
     :type dirpath: str
@@ -611,7 +632,7 @@ def unpack_rar_files(dirpath):
 
 
 def delete_unwanted_subtitles(dirpath, filename):
-    """Deletes unwanted subtitles for the given filename in the specified dirpath
+    """Delete unwanted subtitles for the given filename in the specified dirpath.
 
     :param dirpath: the directory path to be used
     :type dirpath: str
@@ -635,7 +656,7 @@ def delete_unwanted_subtitles(dirpath, filename):
 
 
 def clear_non_release_groups(filepath):
-    """Removes non release groups from the name of the given file path.
+    """Remove non release groups from the name of the given file path.
 
     It also renames/moves the file to the path
 
@@ -667,8 +688,7 @@ class SubtitlesFinder(object):
 
     @staticmethod
     def subtitles_download_in_pp():  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-        """Checks for needed subtitles in the post process folder.
-        """
+        """Check for needed subtitles in the post process folder."""
         logger.info(u'Checking for needed subtitles in Post-Process folder')
 
         # Check if PP folder is set
@@ -714,7 +734,7 @@ class SubtitlesFinder(object):
             processTV.processDir(sickbeard.TV_DOWNLOAD_DIR)
 
     def run(self, force=False):  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
-        """Checks for needed subtitles for users' shows
+        """Check for needed subtitles for users' shows.
 
         :param force: True if a force search needs to be executed
         :type force: bool
@@ -853,7 +873,7 @@ class SubtitlesFinder(object):
 
 
 def run_subs_pre_scripts(video_path):
-    """Executes the subtitles pre-scripts for the given video path
+    """Execute the subtitles pre-scripts for the given video path.
 
     :param video_path: the video path
     :type video_path: str
@@ -863,7 +883,7 @@ def run_subs_pre_scripts(video_path):
 
 def run_subs_extra_scripts(video_path, subtitle_path, subtitle_language, show_name, season, episode, episode_name,
                            show_indexerid):
-    """Executes the subtitles extra-scripts for the given video path
+    """Execute the subtitles extra-scripts for the given video path.
 
     :param video_path: the video path
     :type video_path: str
@@ -888,7 +908,7 @@ def run_subs_extra_scripts(video_path, subtitle_path, subtitle_language, show_na
 
 
 def run_subs_scripts(video_path, scripts, *args):
-    """Execute subtitle scripts
+    """Execute subtitle scripts.
 
     :param video_path: the video path
     :type video_path: str
