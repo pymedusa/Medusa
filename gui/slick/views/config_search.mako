@@ -175,6 +175,17 @@
                         </div>
 
                         <div class="field-pair">
+                            <label for="ignore_und_subs">
+                                <span class="component-title">Ignore unknown subbed releases</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="ignore_und_subs" id="ignore_und_subs" ${('', 'checked="checked"')[bool(sickbeard.IGNORE_UND_SUBS)]}/>
+                                    Ignore subbed releases without language names <br>
+                                    Filter words: subbed, subpack, subbed, subs, etc.)
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="field-pair">
                             <label for="allow_high_priority">
                                 <span class="component-title">Allow high priority</span>
                                 <span class="component-desc">
