@@ -80,7 +80,7 @@ class StrikeProvider(TorrentProvider):
                     items.append(item)
 
             # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
+            items.sort(key=lambda d: try_int(d.get('seeders', 1)), reverse=True)
 
             results += items
 
