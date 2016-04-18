@@ -34,7 +34,6 @@ resultFilters = [
     "(dir|sub|nfo)fix",
     "(?<!shomin.)sample",
     "(dvd)?extras",
-    "dub(bed)?"
 ]
 
 if hasattr('General', 'ignore_und_subs') and sickbeard.IGNORE_UND_SUBS:

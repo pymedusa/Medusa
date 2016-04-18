@@ -562,7 +562,7 @@ DELETE_FAILED = False
 
 EXTRA_SCRIPTS = []
 
-IGNORE_WORDS = "german,french,core2hd,dutch,swedish,reenc,MrLss"
+IGNORE_WORDS = "german,french,core2hd,dutch,swedish,reenc,MrLss,dubbed"
 
 PREFERRED_WORDS = ""
 
