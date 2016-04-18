@@ -353,7 +353,9 @@
             <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
                 <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[int(epResult["season"]) > 0]}
                 <!-- @TODO: port the season scene exceptions to angular -->
+                % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
                 <a class="epManualSearch" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="${srRoot}/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                % endif
                 </h3>
                 <div class="season-scene-exception" data-season=${("Specials", str(epResult["season"]))[int(epResult["season"]) > 0]}></div>
                 % if sickbeard.DISPLAY_ALL_SEASONS is False:
@@ -386,7 +388,9 @@
         <tr style="height: 60px;">
             <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
                 <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[bool(int(epResult["season"]))]}
+                % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
                 <a class="epManualSearch" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="${srRoot}/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                % endif
                 </h3>
                 <!-- @TODO: port the season scene exceptions to angular -->
                 <div class="season-scene-exception" data-season=${str(epResult["season"])}></div>
