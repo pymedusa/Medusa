@@ -175,7 +175,7 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     logger.log(u"Failed parsing provider. Traceback: %s" % traceback.format_exc(), logger.ERROR)
 
             # For each search mode sort all the items by seeders
-            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
+            items.sort(key=lambda d: try_int(d.get('seeders', 1)), reverse=True)
             results += items
 
         return results

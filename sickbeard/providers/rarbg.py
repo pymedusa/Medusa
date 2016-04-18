@@ -174,7 +174,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                         continue
 
             # For each search mode sort all the items by seeders
-            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
+            items.sort(key=lambda d: try_int(d.get('seeders', 1)), reverse=True)
             results += items
 
         return results
