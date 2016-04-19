@@ -5,6 +5,7 @@
     import ntpath
     import os.path
     import sickbeard
+    import time
     from sickbeard import subtitles, sbdatetime, network_timezones, helpers, show_name_helpers
     import sickbeard.helpers
 
@@ -12,6 +13,11 @@
     from sickbeard.common import Quality, qualityPresets, statusStrings, Overview
     from sickbeard.helpers import anon_url
     from sickrage.helper.common import pretty_file_size
+    from sickbeard.sbdatetime import sbdatetime
+    from sickrage.show.History import History
+    from sickbeard.failed_history import prepareFailedName
+    from sickrage.providers.GenericProvider import GenericProvider
+    from sickbeard import providers
 
     from sickrage.helper.encoding import ek
 %>
@@ -184,6 +190,60 @@
     <div id="wrapper">
     <div id="container">
 
+    <table id="history" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
+
+            <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
+            <tr style="height: 60px;" role="row">
+                <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader displayShowTable">
+                <h3 style="display: inline;"><a name="history" style="position: absolute; font-size: 1px; visibility: hidden;">.</a>History</h3>
+                 <button id="showhistory" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="#historydata">Show History</button>
+                </th>
+            </tr>
+            </tbody>
+
+        <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
+            <tr>
+                <th width="15%">Date</th>
+                <th width="18%">Status</th>
+                <th width="15%">Provider/Group</th>
+                <th width="52%">Release</th>
+            </tr>
+        </tbody>
+
+        <tbody class="toggle collapse" aria-live="polite" aria-relevant="all" id="historydata">
+        % if episode_history:
+            % for item in episode_history:
+                % if str(item['action'])[2:] == '04':
+                <tr style="background-color:#C3E3C8">
+                % elif str(item['action'])[2:] == '02':
+                <tr style="background-color:#EBC1EA">
+                % endif
+
+                <td align="center" style="width: auto;">
+                    <% action_date = sbdatetime.sbfdatetime(datetime.datetime.strptime(str(item['date']), History.date_format), show_seconds=True) %>
+                    ${action_date}
+                </td>
+                <td  align="center" style="width: auto;">
+                ${statusStrings[Quality.splitCompositeStatus(item['action']).status]} ${renderQualityPill(Quality.splitCompositeStatus(item['action']).quality)}
+                </td>
+                <td align="center" style="width: auto;">
+                    <% provider = providers.getProviderClass(GenericProvider.make_id(item["provider"])) %>
+                    % if provider is not None:
+                        <img src="${srRoot}/images/providers/${provider.image_name()}" width="16" height="16" alt="${provider.name}" title="${provider.name}"/> ${item["provider"]}
+                    % else:
+                        ${item['provider']}
+                    % endif
+                </td>
+                <td style="width: auto;">
+                ${os.path.basename(item['resource'])}
+                </td>
+                </tr>
+                % endfor
+        % endif
+        </tbody>
+    </table>
+
+
     <!-- @TODO: Change this to use the REST API -->
     <!-- add provider meta data -->
     <meta data-last-prov-updates="${provider_results['last_prov_updates']}" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
@@ -211,7 +271,7 @@
                     <th>Size</th>
                     <th>Type</th>
                     <th>Date</th>
-                    <th class="col-search">Download</th>
+                    <th class="col-search">Snatch</th>
                 </tr>
             </tbody>
 
@@ -260,8 +320,13 @@
                     below_minleech = True
 
                 %>
-
-                <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
+                % if any([i for i in episode_history if prepareFailedName(str(hItem["name"])) in i['resource'] and (hItem['release_group'] == i['provider'] or  hItem['provider'] == i['provider']) and str(i['action'])[2:] == '11' ]):
+                    <tr style="text-decoration:line-through" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
+                % elif any([i for i in episode_history if str(i['action'])[2:] == '02' and hItem["name"] in i['resource'] and hItem['provider'] == i['provider']]):
+                    <tr style="background-color:#EBC1EA" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
+                % else:
+                    <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
+                % endif
                     % if name_ignore:
                         <td class="tvShow"><span class="break-word"><font color="red">${hItem["name"]}</font></span></td>
                     % elif name_require:

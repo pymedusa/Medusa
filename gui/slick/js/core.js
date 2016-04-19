@@ -2639,6 +2639,17 @@ var SICKRAGE = {
                     setTimeout(function() {checkCacheUpdates(true);}, 2000);
                 }
             });
+
+            // Moved and rewritten this from displayShow. This changes the button when clicked for collapsing/expanding the
+            // "Show History" button to show or hide the snatch/download/failed history for a manual searched episode or pack.
+            $(function() {
+                $('.collapse.toggle').on('hide.bs.collapse', function () {
+                    $('#showhistory').text('Show History');
+                });
+                $('.collapse.toggle').on('show.bs.collapse', function () {
+                    $('#showhistory').text('Hide History');
+                });
+            });
         },
         postProcess: function() {
             $('#episodeDir').fileBrowser({ title: 'Select Unprocessed Episode Folder', key: 'postprocessPath' });

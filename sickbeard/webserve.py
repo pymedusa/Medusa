@@ -1634,6 +1634,19 @@ class Home(WebRoot):
             'name': showObj.name,
         })
 
+
+        episode_history = []
+        try:
+            main_db_con = db.DBConnection()
+            episode_status_result = main_db_con.action("SELECT date, action, provider, resource from history where showid = ? and \
+                                                        season = ? and episode = ? and (action like '%4' or action like '%2' or action like '%11') \
+                                                        order by date DESC LIMIT 10", [indexerid, season, episode])
+            if episode_status_result:
+                for item in episode_status_result:
+                    episode_history.append(dict(item))
+        except Exception as e:
+            logger.log("Couldn't read latest episode statust. Error: {}".format(e))
+            
         show_words = show_name_helpers.show_words(showObj)
 
         return t.render(
@@ -1651,7 +1664,8 @@ class Home(WebRoot):
             preferred_words=show_words.preferred_words,
             undesired_words=show_words.undesired_words,
             ignore_words=show_words.ignore_words,
-            require_words=show_words.require_words
+            require_words=show_words.require_words,
+            episode_history=episode_history
         )
 
 
