@@ -68,8 +68,7 @@ class SceneTests(test.SickbeardTestDBCase):
         """
         Test filtering of bad releases
         """
-        self._test_filter_bad_releases('Show.S02.SUBBED', False)
-        self._test_filter_bad_releases('Show.S02.DUBBED', False)
+        self._test_filter_bad_releases('Show.S02.SAMPLE', False)
         self._test_filter_bad_releases('Show.S02', True)
         self._test_filter_bad_releases('Show.S02.DVDEXTRAS', False)
 

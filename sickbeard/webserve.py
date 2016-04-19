@@ -4276,7 +4276,7 @@ class ConfigSearch(Config):
                    torrent_dir=None, torrent_username=None, torrent_password=None, torrent_host=None,
                    torrent_label=None, torrent_label_anime=None, torrent_path=None, torrent_verify_cert=None,
                    torrent_seed_time=None, torrent_paused=None, torrent_high_bandwidth=None,
-                   torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, preferred_words=None, undesired_words=None, trackers_list=None, require_words=None, ignored_subs_list=None):
+                   torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, preferred_words=None, undesired_words=None, trackers_list=None, require_words=None, ignored_subs_list=None, ignore_und_subs=None):
 
         results = []
 
@@ -4304,6 +4304,7 @@ class ConfigSearch(Config):
         sickbeard.TRACKERS_LIST = trackers_list if trackers_list else ""
         sickbeard.REQUIRE_WORDS = require_words if require_words else ""
         sickbeard.IGNORED_SUBS_LIST = ignored_subs_list if ignored_subs_list else ""
+        sickbeard.IGNORE_UND_SUBS = config.checkbox_to_value(ignore_und_subs)
 
         sickbeard.RANDOMIZE_PROVIDERS = config.checkbox_to_value(randomize_providers)
 

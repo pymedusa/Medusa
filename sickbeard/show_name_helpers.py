@@ -31,12 +31,13 @@ from sickbeard.name_parser.parser import NameParser, InvalidNameException, Inval
 from collections import namedtuple
 
 resultFilters = [
-    "sub(bed|ed|pack|s)",
     "(dir|sub|nfo)fix",
     "(?<!shomin.)sample",
     "(dvd)?extras",
-    "dub(bed)?"
 ]
+
+if hasattr('General', 'ignore_und_subs') and sickbeard.IGNORE_UND_SUBS:
+    resultFilters.append("sub(bed|ed|pack|s)")
 
 if hasattr('General', 'ignored_subs_list') and sickbeard.IGNORED_SUBS_LIST:
     resultFilters.append("(" + sickbeard.IGNORED_SUBS_LIST.replace(",", "|") + ")sub(bed|ed|s)?")
