@@ -4763,7 +4763,7 @@ class ConfigProviders(Config):
                 cur_name, cur_url, cur_key, cur_cat = curNewznabProviderStr.split('|')
                 cur_url = config.clean_url(cur_url)
 
-                newProvider = newznab.NewznabProvider(cur_name, cur_url, key=cur_key)
+                newProvider = newznab.NewznabProvider(cur_name, cur_url, key=cur_key, catIDs=cur_cat)
 
                 cur_id = newProvider.get_id()
 
