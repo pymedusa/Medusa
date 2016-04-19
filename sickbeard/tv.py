@@ -885,7 +885,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
 
         if not self.imdbid:
             logger.log(u"{0}: Not loading show info from IMDb, "
-                       u"because we don't know its ID".format(self.indexerid), logger.ERROR)
+                       u"because we don't know its ID".format(self.indexerid))
             return
 
         # Make sure we only use one ID
