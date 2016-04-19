@@ -114,20 +114,21 @@ def getEpisodes(search_thread, searchstatus):
 
 def collectEpisodesFromSearchThread(show):
     """
-    Collects all episodes from from the searchQueueScheduler and looks for episodes that are in status queued or searching.
+    Collects all episodes from from the forcedSearchQueueScheduler
+    and looks for episodes that are in status queued or searching.
     If episodes are found in FORCED_SEARCH_HISTORY, these are set to status finished.
     """
     episodes = []
 
     # Queued Searches
     searchstatus = SEARCH_STATUS_QUEUED
-    for search_thread in sickbeard.searchQueueScheduler.action.get_all_ep_from_queue(show):
+    for search_thread in sickbeard.forcedSearchQueueScheduler.action.get_all_ep_from_queue(show):
         episodes += getEpisodes(search_thread, searchstatus)
 
     # Running Searches
     searchstatus = SEARCH_STATUS_SEARCHING
-    if sickbeard.searchQueueScheduler.action.is_manualsearch_in_progress():
-        search_thread = sickbeard.searchQueueScheduler.action.currentItem
+    if sickbeard.forcedSearchQueueScheduler.action.is_forced_search_in_progress():
+        search_thread = sickbeard.forcedSearchQueueScheduler.action.currentItem
 
         if search_thread.success:
             searchstatus = SEARCH_STATUS_FINISHED
@@ -162,7 +163,6 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     manual_search_type = search_show.get('manual_search_type')
     sql_episode = '' if manual_search_type == 'season' else episode
 
-
     down_cur_quality = 0
     show_obj = Show.find(sickbeard.showList, int(show))
 
@@ -195,7 +195,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             if not int(show_all_results):
                 sql_return = main_db_con.select(common_sql + additional_sql,
                                                 (cur_provider.provider_type.title(), cur_provider.image_name(),
-                                                 cur_provider.name, cur_provider.get_id(), 
+                                                 cur_provider.name, cur_provider.get_id(),
                                                  minseed, minleech, show, "%|{0}|%".format(sql_episode), season))
             else:
                 sql_return = main_db_con.select(common_sql,
@@ -224,7 +224,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # make a queue item for it and put it on the queue
         ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
 
-        sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)
+        sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
 
         # give the CPU a break and some time to start the queue
         time.sleep(cpu_presets[sickbeard.CPU_PRESET])
