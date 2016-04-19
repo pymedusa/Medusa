@@ -607,12 +607,11 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
         # Update the cache if a manual search is being runned
         if manual_search:
             # Let's create a list with episodes that we where looking for
-            searched_episode_list = [episode_obj.episode for episode_obj in episodes]
-            # Add the -1 to also match multi epi results
-            searched_episode_list.append(-1)
             if manual_search_type == 'season':
-                # Add the -2 to also match season pack results
-                searched_episode_list.append(-2)
+                # If season search type, we only want season packs
+                searched_episode_list = [SEASON_RESULT]
+            else:
+                searched_episode_list = [episode_obj.episode for episode_obj in episodes] + [MULTI_EP_RESULT]
             for searched_episode in searched_episode_list:
                 if (searched_episode in searchResults and
                         cur_provider.cache.update_cache_manual_search(searchResults[searched_episode])):
