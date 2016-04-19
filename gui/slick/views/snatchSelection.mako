@@ -214,9 +214,9 @@
         % if episode_history:
             % for item in episode_history:
                 % if str(item['action'])[2:] == '04':
-                <tr style="background-color:#C3E3C8">
+                <tr style="background-color:#C3E3C8;!important">
                 % elif str(item['action'])[2:] == '02':
-                <tr style="background-color:#EBC1EA">
+                <tr style="background-color:#EBC1EA;!important">
                 % endif
 
                 <td align="center" style="width: auto;">
@@ -231,7 +231,7 @@
                     % if provider is not None:
                         <img src="${srRoot}/images/providers/${provider.image_name()}" width="16" height="16" alt="${provider.name}" title="${provider.name}"/> ${item["provider"]}
                     % else:
-                        ${item['provider']}
+                        ${item['provider'] if item['provider'] != "-1" else 'Unknown'}
                     % endif
                 </td>
                 <td style="width: auto;">
