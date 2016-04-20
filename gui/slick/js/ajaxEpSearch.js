@@ -79,7 +79,7 @@ function updateImages(data) {
                 imageCompleteEpisodes.prop('alt','queued');
                 imageCompleteEpisodes.prop('src',srRoot+'/images/' + queuedImage );
             } else if (ep.searchstatus.toLowerCase() === 'finished') {
-                imageCompleteEpisodes.prop('title','Manual Search');
+                imageCompleteEpisodes.prop('title','Forced Search');
                 imageCompleteEpisodes.prop('alt','[search]');
                 imageCompleteEpisodes.prop('src',srRoot+'/images/' + searchImage);
                 if (ep.overview.toLowerCase() === 'snatched') {
