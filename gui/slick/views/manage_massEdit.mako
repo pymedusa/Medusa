@@ -18,6 +18,8 @@
 <script type="text/javascript" src="js/mass-edit.js?${sbPID}"></script>
 </%block>
 <%block name="content">
+
+<div id="container">
 <div id="config">
     <div id="config-content">
         <form action="manage/massEditSubmit" method="post">
@@ -227,4 +229,6 @@
         </form>
     </div>
 </div>
+</div> <!-- end of container -->
+
 </%block>
