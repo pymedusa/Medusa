@@ -137,7 +137,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                 # List of errors: https://github.com/rarbg/torrentapi/issues/1#issuecomment-114763312
                 if error:
                     if try_int(error_code) != 20:
-                        logger.log(error)
+                        logger.log(error, logger.WARNING)
                     continue
 
                 torrent_results = data.get("torrent_results")
