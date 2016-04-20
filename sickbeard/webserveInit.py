@@ -16,6 +16,7 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.routes import route
 
+
 class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attributes
     def __init__(self, options=None, io_loop=None):
         threading.Thread.__init__(self)
