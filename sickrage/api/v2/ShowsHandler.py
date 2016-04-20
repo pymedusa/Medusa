@@ -1,9 +1,31 @@
 import sickbeard
 
-from helper import api_auth, api_errors
+from helper import api_auth, api_finish
 
 from tornado.web import RequestHandler
 from tornado.routes import route
+
+from sickbeard import (
+    classes, db, helpers, image_cache, logger, network_timezones,
+    processTV, sbdatetime, search_queue, ui,
+)
+from sickbeard.common import (
+    Overview, Quality, statusStrings,
+    ARCHIVED, DOWNLOADED, FAILED, IGNORED, SKIPPED, SNATCHED, SNATCHED_PROPER,
+    UNAIRED, UNKNOWN, WANTED,
+)
+from sickbeard.versionChecker import CheckVersion
+
+from sickrage.helper.common import (
+    dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
+    timeFormat, try_int,
+)
+from sickrage.helper.encoding import ek
+from sickrage.helper.exceptions import (
+    ex,
+    CantUpdateShowException,
+    ShowDirectoryNotFoundException,
+)
 
 from sickrage.helper.quality import get_quality_string
 from sickrage.media.ShowFanArt import ShowFanArt
@@ -16,6 +38,8 @@ from sickrage.show.Show import Show
 from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
 
+from sickbeard.webapi import CMD_ShowSeasonList, CMD_ShowCache
+
 @route('/api/v2/shows/?(.*)')
 class ShowsHandler(RequestHandler):
     def prepare(self):
@@ -27,7 +51,7 @@ class ShowsHandler(RequestHandler):
             """ Get detailed information about a show """
             show_obj = Show.find(sickbeard.showList, int(self.indexerid))
             if not show_obj:
-                return _responds(RESULT_FAILURE, msg="Show not found")
+                api_finish(1)
 
             show_dict = {
                 "season_list": CMD_ShowSeasonList((), {"indexerid": self.indexerid}).run()["data"],
@@ -96,15 +120,14 @@ class ShowsHandler(RequestHandler):
             else:
                 show_dict['next_ep_airdate'] = ''
 
-            return self.finish({
-                "status": 200,
+            api_finish({
                 "show": show_dict
             })
         else:
             shows = {}
             for show in sickbeard.showList:
-                # If self.paused is None: show all, 0: show un-paused, 1: show paused
-                if self.paused is not None and self.paused != curShow.paused:
+                # If self.get_argument("paused") is None: show all, 0: show un-paused, 1: show paused
+                if self.get_argument("paused", default=None) is not None and self.get_argument("paused", default=None) != curShow.paused:
                     continue
 
                 indexer_show = helpers.mapIndexersToShow(show)
@@ -134,13 +157,12 @@ class ShowsHandler(RequestHandler):
                 show_dict["cache"] = CMD_ShowCache((), {"indexerid": show.indexerid}).run()["data"]
                 if not show_dict["network"]:
                     show_dict["network"] = ""
-                if self.sort == "name":
+                if self.get_argument("sort", default="name") == "name":
                     shows[show.name] = show_dict
                 else:
                     shows[show.indexerid] = show_dict
 
-            return self.finish({
-                "status": 200,
+            api_finish({
                 "shows": shows
             })
 

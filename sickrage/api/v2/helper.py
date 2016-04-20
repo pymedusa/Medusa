@@ -15,19 +15,49 @@ def api_auth(self):
         api_key = api_username
 
     if (web_username != api_username and web_password != api_password) and (sickbeard.API_KEY != api_key):
-        # @TODO: Move the errors into sickrage/api/v2/errors.py
-        self.finish({
-            "status": 403,
+        api_finish(2)
+    pass
+
+def api_finish(error_code=-1, **data):
+    ERRORS = {
+        "-1": {
+            "status": 500,
+            "errors": [{
+                "userMessage": "Unknown Error",
+                "internalMessage": "Unknown Error",
+                "code": -1,
+                "more info": "https://docs.pymedusa.com/api/v2/error/-1"
+            }]
+        },
+        "1": {
+            "status": 404,
+            "errors": [{
+                "userMessage": "Show not found",
+                "internalMessage": "Show not found",
+                "code": 1,
+                "more info": "https://docs.pymedusa.com/api/v2/error/1"
+            }]
+        },
+        "2": {
+            "status": 401,
             "errors": [{
                 "userMessage": "Sorry, your API key is invalid",
                 "internalMessage": "Invalid API key",
-                "code": 34, # @TODO: This should be a error code that we can use for the "more info" section
-                "more info": "https://pymedusa.github.io/sickrage/api/v2/errors/12345" # @TODO: This should goto a documention page
+                "code": 2,
+                "more info": "https://docs.pymedusa.com/api/v2/error/2"
             }]
-        })
-    pass
-
-def api_errors(self):
-    ERRORS = {
-        1: ""
+        }
     }
+
+    if error_code != -1:
+        return self.finish({
+            "status": 200,
+            "data": data
+        })
+
+    if error_code in ERRORS:
+        error = ERRORS[error_code]
+        return self.finish({
+            "status": error.status,
+            "errors": error.errors
+        })
