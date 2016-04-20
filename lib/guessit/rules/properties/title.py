@@ -110,9 +110,11 @@ class TitleBaseRule(Rule):
 
     def is_ignored(self, match):
         """
-        Ignore matches when scanning for title (hole)
+        Ignore matches when scanning for title (hole).
+
+        Full word language and countries won't be ignored if they are uppercase.
         """
-        return match.name in ['language', 'country', 'episode_details']
+        return not (len(match) > 3 and match.raw.isupper()) and match.name in ['language', 'country', 'episode_details']
 
     def should_keep(self, match, to_keep, matches, filepart, hole, starting):
         """
@@ -132,8 +134,12 @@ class TitleBaseRule(Rule):
         :return:
         :rtype:
         """
-        # Keep language if other languages exists in the filepart.
         if match.name in ['language', 'country']:
+            # Keep language if exactly matching the hole.
+            if len(hole.value) == len(match.raw):
+                return True
+
+            # Keep language if other languages exists in the filepart.
             outside_matches = filepart.crop(hole)
             other_languages = []
             for outside in outside_matches:
@@ -220,7 +226,8 @@ class TitleBaseRule(Rule):
                 if self.should_remove(match, matches, filepart, hole, context):
                     to_remove.append(match)
             for keep_match in to_keep:
-                to_remove.remove(keep_match)
+                if keep_match in to_remove:
+                    to_remove.remove(keep_match)
 
             if hole and hole.value:
                 hole.name = self.match_name
@@ -290,7 +297,7 @@ class TitleFromPosition(TitleBaseRule):
     """
     dependency = [FilmTitleRule, SubtitlePrefixLanguageRule, SubtitleSuffixLanguageRule, SubtitleExtensionRule]
 
-    properties = {'title': [None]}
+    properties = {'title': [None], 'alternative_title': [None]}
 
     def __init__(self):
         super(TitleFromPosition, self).__init__('title', ['title'], 'alternative_title')
