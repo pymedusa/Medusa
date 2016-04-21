@@ -45,7 +45,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         # Credentials
         self.public = True
-        self.confirmed = True
+        self.confirmed = False
 
         # Torrent Stats
         self.minseed = None
@@ -65,7 +65,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             for search_string in search_strings[mode]:
                 if mode == "RSS":
                     search_string = ''
-                search_url = (self.urls['rss'], self.urls['search'] + search_string)[mode != 'RSS']
+                search_url = (self.urls['rss'], self.urls['search'] + search_string + '/')[mode != 'RSS']  # Needs a trailing '/' to avoid a triple redirect. 
                 data = self.get_url(search_url, returns='text')
                 if not data:
                         logger.log(u"No data returned from provider", logger.DEBUG)
@@ -79,18 +79,20 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     for result in torrent_rows:
                         cells = result.find_all("td")
                         try:                          
-                            verified = result.find('img', src='/static/images/verified16.png')
-                            if self.ranked and not verified:
+                            verified = result.find_all('img', title='Verified torrent')
+                            if self.confirmed and not verified:
                                 continue
-                            titleinfo = result.find_all("a")[1]
-                            info = titleinfo['href']
-                            torrent_id = re.match(r"(?:.*torrent-)([0-9]*)(?:.html)", info, re.I).group(1)
+                            titleinfo = result.find_all("a")
+                            info = titleinfo[1]['href']
+                            torrent_id = re.match(r"(?:.*torrent-)([0-9]*)(?:.html*)", info, re.I).group(1)
                             url = result.find("a", {"rel":"nofollow"})['href']
                             torrent_hash = re.match(r"(.*)([A-F0-9]{40})(.*)", url, re.I).group(2)
                             infourl = self.urls['index'] + "post/updatestats.php?" + "torrent_id=" + torrent_id + "&infohash=" + torrent_hash
-                            if mode != 'RSS':
-                                updateinfo = self.get_url(infourl, timeout=0.5)
-                            title = titleinfo.get_text(strip=True)
+                            try:
+                                updateinfo = self.session.get(infourl, timeout=0.1)
+                            except Exception:
+                                updateinfo = ''
+                            title = titleinfo[1].get_text(strip=True)
                             seeders = try_int(cells[3].get_text(strip=True))
                             leechers = try_int(cells[4].get_text(strip=True))
                             size = convert_size(cells[2].get_text(strip=True)) or -1
@@ -101,12 +103,15 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                     logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {0} (S:{1} L:{2})".format
                                             (title, seeders, leechers), logger.DEBUG)
                                 continue
+                                
                             item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': ''}
-                            
+                            if mode != "RSS":
+                                logger.log("Found result: {0} with {1} seeders and {2} leechers".format
+                                           (title, seeders, leechers), logger.DEBUG)
                             items.append(item)
+                            
                         except StandardError:
                             continue
-
 
             # For each search mode sort all the items by seeders if available
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
