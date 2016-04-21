@@ -25,7 +25,6 @@ import time
 
 import sickbeard
 from sickbeard import logger, tvcache
-from sickbeard.common import cpu_presets
 from sickbeard.indexers.indexer_config import INDEXER_TVDB
 
 from sickrage.helper.common import convert_size, try_int
@@ -124,7 +123,8 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                     continue
 
                 # Maximum requests allowed are 1req/2sec
-                time.sleep(max(2, cpu_presets[sickbeard.CPU_PRESET]))
+                # Changing to 5 because of server clock desync
+                time.sleep(5)
 
                 data = self.get_url(self.urls["api"], params=search_params, returns="json")
                 if not isinstance(data, dict):
