@@ -1,8 +1,6 @@
 # coding=utf-8
 # Author: Gonçalo M. (aka duramato/supergonkas) <supergonkas@gmail.com>
 #
-
-#
 # This file is part of SickRage.
 #
 # SickRage is free software: you can redistribute it and/or modify
@@ -20,11 +18,10 @@
 
 import re
 import traceback
-from bs4 import BeautifulSoup
 import sickbeard
 
 from sickbeard import logger, tvcache
-from sickbeard.common import USER_AGENT
+from sickbeard.bs4_parser import BS4Parser
 
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
@@ -34,111 +31,85 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
     def __init__(self):
 
+        # Provider Inits
         TorrentProvider.__init__(self, "LimeTorrents")
 
+        # URLs
         self.urls = {
             'index': 'https://www.limetorrents.cc/',
-            'search': 'https://www.limetorrents.cc/searchrss/20/',
-            'rss': 'https://www.limetorrents.cc/rss/20/'
+            'search': 'https://www.limetorrents.cc/search/tv/',
+            'rss': 'https://www.limetorrents.cc/browse-torrents/TV-shows/'
         }
 
         self.url = self.urls['index']
 
+        # Credentials
         self.public = True
+        self.confirmed = True
+
+        # Torrent Stats
         self.minseed = None
         self.minleech = None
-        self.headers.update({'User-Agent': USER_AGENT})
+        
+        # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL']
-
+        
+        # Cache
         self.cache = tvcache.TVCache(self, search_params={'RSS': ['rss']})
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches,too-many-locals
         results = []
         for mode in search_strings:
             items = []
-            logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+            logger.log(u"Search Mode: {0}".format(mode), logger.DEBUG)
             for search_string in search_strings[mode]:
-
-                if mode != 'RSS':
-                    logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
-                               logger.DEBUG)
-
-                try:
-                    search_url = (self.urls['rss'], self.urls['search'] + search_string)[mode != 'RSS']
-
-                    data = self.get_url(search_url, returns='text')
-                    if not data:
+                if mode == "RSS":
+                    search_string = ''
+                search_url = (self.urls['rss'], self.urls['search'] + search_string)[mode != 'RSS']
+                data = self.get_url(search_url, returns='text')
+                if not data:
                         logger.log(u"No data returned from provider", logger.DEBUG)
                         continue
-
-                    if not data.startswith('<?xml'):
-                        logger.log(u'Expected xml but got something else, is your mirror failing?', logger.INFO)
-                        continue
-
-                    data = BeautifulSoup(data, 'html5lib')
-
-                    entries = data('item')
-                    if not entries:
-                        logger.log(u'Returned xml contained no results', logger.INFO)
-                        continue
-
-                    for item in entries:
-                        try:
-                            title = item.title.text
-                            # Use the itorrents link limetorrents provides,
-                            # unless it is not itorrents or we are not using blackhole
-                            # because we want to use magnets if connecting direct to client
-                            # so that proxies work.
-                            download_url = item.enclosure['url']
-                            if sickbeard.TORRENT_METHOD != "blackhole" or 'itorrents' not in download_url:
-                                download_url = item.enclosure['url']
-                                # http://itorrents.org/torrent/C7203982B6F000393B1CE3A013504E5F87A46A7F.torrent?title=The-Night-of-the-Generals-(1967)[BRRip-1080p-x264-by-alE13-DTS-AC3][Lektor-i-Napisy-PL-Eng][Eng]
-                                # Keep the hash a separate string for when its needed for failed
-                                torrent_hash = re.match(r"(.*)([A-F0-9]{40})(.*)", download_url, re.IGNORECASE).group(2)
-                                download_url = "magnet:?xt=urn:btih:" + torrent_hash + "&dn=" + title + self._custom_trackers
-
-                            if not (title and download_url):
+                with BS4Parser(data, "html5lib") as html:
+                    if mode == 'RSS':
+                        torrent_table = html.find("table", {"class":"table2"})
+                    else:
+                        torrent_table = (html.find_all("table", {"class":"table2"}))[1]
+                    torrent_rows = torrent_table("tr")
+                    for result in torrent_rows:
+                        cells = result.find_all("td")
+                        try:                          
+                            verified = result.find('img', src='/static/images/verified16.png')
+                            if self.ranked and not verified:
                                 continue
-                            # seeders and leechers are presented diferently when doing a search and when looking for newly added
-                            if mode == 'RSS':
-                                # <![CDATA[
-                                # Category: <a href="http://www.limetorrents.cc/browse-torrents/TV-shows/">TV shows</a><br /> Seeds: 1<br />Leechers: 0<br />Size: 7.71 GB<br /><br /><a href="http://www.limetorrents.cc/Owen-Hart-of-Gold-Djon91-torrent-7180661.html">More @ limetorrents.cc</a><br />
-                                # ]]>
-                                description = item.find('description')
-                                seeders = try_int(description('br')[0].next_sibling.strip().lstrip('Seeds: '))
-                                leechers = try_int(description('br')[1].next_sibling.strip().lstrip('Leechers: '))
-                            else:
-                                # <description>Seeds: 6982 , Leechers 734</description>
-                                description = item.find('description').text.partition(',')
-                                seeders = try_int(description[0].lstrip('Seeds: ').strip())
-                                leechers = try_int(description[2].lstrip('Leechers ').strip())
-
-                            torrent_size = item.find('size').text
-
-                            size = convert_size(torrent_size) or -1
-
-                        except (AttributeError, TypeError, KeyError, ValueError):
-                            continue
-
-                            # Filter unseeded torrent
-                        if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
+                            titleinfo = result.find_all("a")[1]
+                            info = titleinfo['href']
+                            torrent_id = re.match(r"(?:.*torrent-)([0-9]*)(?:.html)", info, re.I).group(1)
+                            url = result.find("a", {"rel":"nofollow"})['href']
+                            torrent_hash = re.match(r"(.*)([A-F0-9]{40})(.*)", url, re.I).group(2)
+                            infourl = self.urls['index'] + "post/updatestats.php?" + "torrent_id=" + torrent_id + "&infohash=" + torrent_hash
                             if mode != 'RSS':
-                                logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format
-                                           (title, seeders, leechers), logger.DEBUG)
+                                updateinfo = self.get_url(infourl, timeout=0.5)
+                            title = titleinfo.get_text(strip=True)
+                            seeders = try_int(cells[3].get_text(strip=True))
+                            leechers = try_int(cells[4].get_text(strip=True))
+                            size = convert_size(cells[2].get_text(strip=True)) or -1
+                            download_url = "magnet:?xt=urn:btih:" + torrent_hash + "&dn=" + title + self._custom_trackers
+                            
+                            if seeders < self.minseed or leechers < self.minleech:
+                                if mode != 'RSS':
+                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {0} (S:{1} L:{2})".format
+                                            (title, seeders, leechers), logger.DEBUG)
+                                continue
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': ''}
+                            
+                            items.append(item)
+                        except StandardError:
                             continue
 
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
-                        if mode != 'RSS':
-                            logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
-
-                        items.append(item)
-
-                except (AttributeError, TypeError, KeyError, ValueError):
-                    logger.log(u"Failed parsing provider. Traceback: %r" % traceback.format_exc(), logger.ERROR)
 
             # For each search mode sort all the items by seeders if available
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
-
             results += items
 
         return results
