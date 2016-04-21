@@ -6,13 +6,34 @@ MEDUSA.addShows.addExistingShow = function() {
         });
     });
 
+    // jquery extend function
+    $.extend({
+        redirectPost: function(location, args) {
+            var form = '';
+            $.each( args, function( key, value ) {
+                if (typeof(value) === 'object') {
+                    $.each( value, function( key, subValue ) {
+                        form += '<input type="hidden" name="'+key+'" value="'+subValue+'">';
+                    });
+                } else {
+                    form += '<input type="hidden" name="'+key+'" value="'+value+'">';
+                }
+            });
+            $('<form action="'+location+'" method="POST">'+form+'</form>').appendTo('body').submit();
+        }
+    });
+
     $('#submitShowDirs').on('click', function() {
-        var dirArr = [];
+        var dirArr = {'submitListOfShows' : [], 'promptForSettings': ''};
         $('.dirCheck').each(function() {
             if (this.checked === true) {
-                var show = $(this).attr('id');
-                var indexer = $(this).closest('tr').find('select').val();
-                dirArr.push(encodeURIComponent(indexer + '|' + show));
+                var existingIndexerId = $(this).attr('data-existing-indexer-id');
+                var showName = $(this).attr('data-show-name');
+                var existingIndexer = $(this).attr('data-existing-indexer');
+                var selectedIndexer = $(this).closest('tr').find('select').val();
+                var showDir = $(this).attr('data-show-dir');
+                dirArr.submitListOfShows.push({'existingIndexerId': existingIndexerId, 'showDir': showDir,
+                    'showName': showName, 'existingIndexer': existingIndexer, 'selectedIndexer': selectedIndexer});
             }
         });
 
@@ -20,7 +41,17 @@ MEDUSA.addShows.addExistingShow = function() {
             return false;
         }
 
-        window.location.href = 'addShows/addExistingShows?promptForSettings=' + ($('#promptForSettings').prop('checked') ? 'on' : 'off') + '&shows_to_add=' + dirArr.join('&shows_to_add=');
+        dirArr.promptForSettings = $('#promptForSettings').prop('checked') ? 'on' : 'off';
+        $.ajax({
+            type: 'POST',
+            url: 'addShows/addExistingShows',
+            data: JSON.stringify(dirArr),
+          })
+          .success(function(response) {
+              if (response) {
+                  $.redirectPost('/addShows/newShow', JSON.parse(response));
+              }
+          });
     });
 
     function loadContent() {
