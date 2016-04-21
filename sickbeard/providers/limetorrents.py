@@ -26,6 +26,8 @@ from sickbeard.bs4_parser import BS4Parser
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
+id_regex = re.compile(r"(?:torrent-([0-9]*).html)", re.I)
+hash_regex = re.compile(r"(.*)([0-9a-f]{40})(.*)", re.I)
 
 class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
 
@@ -84,9 +86,9 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                 continue
                             titleinfo = result.find_all("a")
                             info = titleinfo[1]['href']
-                            torrent_id = re.match(r"(?:.*torrent-)([0-9]*)(?:.html*)", info, re.I).group(1)
+                            torrent_id = id_regex.search(info).group(1)
                             url = result.find("a", {"rel":"nofollow"})['href']
-                            torrent_hash = re.match(r"(.*)([A-F0-9]{40})(.*)", url, re.I).group(2)
+                            torrent_hash = hash_regex.search(url).group(2)
                             infourl = self.urls['index'] + "post/updatestats.php?" + "torrent_id=" + torrent_id + "&infohash=" + torrent_hash
                             try:
                                 self.session.get(infourl, timeout=0.1)
