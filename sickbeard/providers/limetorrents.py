@@ -89,9 +89,9 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                             torrent_hash = re.match(r"(.*)([A-F0-9]{40})(.*)", url, re.I).group(2)
                             infourl = self.urls['index'] + "post/updatestats.php?" + "torrent_id=" + torrent_id + "&infohash=" + torrent_hash
                             try:
-                                updateinfo = self.session.get(infourl, timeout=0.1)
+                                self.session.get(infourl, timeout=0.1)
                             except Exception:
-                                updateinfo = ''
+                                pass
                             title = titleinfo[1].get_text(strip=True)
                             seeders = try_int(cells[3].get_text(strip=True))
                             leechers = try_int(cells[4].get_text(strip=True))
