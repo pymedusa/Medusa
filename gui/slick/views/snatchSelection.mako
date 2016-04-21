@@ -306,15 +306,15 @@
                 elif release_group and undesired_words and release_group.lower() in undesired_words.lower().split(','):
                     release_group_undesired = True
 
-                if hItem["name"] and require_words and any([i for i in require_words.split(',') if i.lower() in hItem["name"].lower()]):
+                if hItem["name"] and require_words and show_name_helpers.containsAtLeastOneWord(hItem["name"], require_words):
                     name_require = True
-                if hItem["name"] and ignore_words and any([i for i in ignore_words.split(',') if i.lower() in hItem["name"].lower()]):
+                if hItem["name"] and ignore_words and show_name_helpers.containsAtLeastOneWord(hItem["name"], ignore_words):
                     name_ignore = True
                 if hItem["name"] and not show_name_helpers.filterBadReleases(hItem["name"], False):
                     name_ignore = True
-                if hItem["name"] and undesired_words and any([i for i in undesired_words.split(',') if i.lower() in hItem["name"].lower()]):
+                if hItem["name"] and undesired_words and show_name_helpers.containsAtLeastOneWord(hItem["name"], undesired_words):
                     name_undesired = True
-                if hItem["name"] and preferred_words and any([i for i in preferred_words.split(',') if i.lower() in hItem["name"].lower()]):
+                if hItem["name"] and preferred_words and show_name_helpers.containsAtLeastOneWord(hItem["name"], preferred_words):
                     name_preferred = True
 
                 if hItem["provider_minseed"] and hItem["seeders"] and hItem["seeders"] > -1 and int(hItem["seeders"]) < hItem["provider_minseed"]:
