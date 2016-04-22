@@ -88,27 +88,18 @@ def getEpisodes(search_thread, searchstatus):
         logger.log(u'No Show Object found for show with indexerID: {}'.format(search_thread.show.indexerid), logger.ERROR)
         return results
 
-    if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem):
-        results.append({
-            'show': search_thread.show.indexerid,
-            'episode': search_thread.segment.episode,
-            'episodeindexid': search_thread.segment.indexerid,
-            'season': search_thread.segment.season,
-            'searchstatus': searchstatus,
-            'status': statusStrings[search_thread.segment.status],
-            'quality': getQualityClass(search_thread.segment),
-            'overview': Overview.overviewStrings[show_obj.getOverview(search_thread.segment.status)]
-        })
-    else:
-        for ep_obj in search_thread.segment:
-            results.append({'show': ep_obj.show.indexerid,
-                            'episode': ep_obj.episode,
-                            'episodeindexid': ep_obj.indexerid,
-                            'season': ep_obj.season,
-                            'searchstatus': searchstatus,
-                            'status': statusStrings[ep_obj.status],
-                            'quality': getQualityClass(ep_obj),
-                            'overview': Overview.overviewStrings[show_obj.getOverview(ep_obj.status)]})
+    if not isinstance(search_thread.segment, list):
+            search_thread.segment = [search_thread.segment]
+
+    for ep_obj in search_thread.segment:
+        results.append({'show': ep_obj.show.indexerid,
+                        'episode': ep_obj.episode,
+                        'episodeindexid': ep_obj.indexerid,
+                        'season': ep_obj.season,
+                        'searchstatus': searchstatus,
+                        'status': statusStrings[ep_obj.status],
+                        'quality': getQualityClass(ep_obj),
+                        'overview': Overview.overviewStrings[show_obj.getOverview(ep_obj.status)]})
 
     return results
 
@@ -124,12 +115,15 @@ def update_finished_search_queue_item(snatch_queue_item):
         if snatch_queue_item.show and not search_thread.show.indexerid == snatch_queue_item.show.indexerid:
             continue
 
-        if (isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem)):
+        if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem):
+            if not isinstance(search_thread.segment, list):
+                search_thread.segment = [search_thread.segment]
+
             for segment in snatch_queue_item.segment:
-                if all([search_thread.segment.indexerid == segment.indexerid,
-                        search_thread.segment.season == segment.season,
-                        search_thread.segment.episode == segment.episode]):
-                    search_thread.segment.status = segment.status
+                if all([[search for search in search_thread.segment if search.indexerid == segment.indexerid],
+                        [search for search in search_thread.segment if search.season == segment.season],
+                        [search for search in search_thread.segment if search.episode == segment.episode]]):
+                    search_thread.segment = snatch_queue_item.segment
                     return True
     return False
 
@@ -164,7 +158,7 @@ def collectEpisodesFromSearchThread(show):
             continue
 
         if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem):
-            if not [x for x in episodes if x['episodeindexid'] == search_thread.segment.indexerid]:
+            if not [x for x in episodes if x['episodeindexid'] in [search.indexerid for search in search_thread.segment]]:
                 episodes += getEpisodes(search_thread, searchstatus)
         else:
             # These are only Failed Downloads/Retry search thread items.. lets loop through the segment/episodes
