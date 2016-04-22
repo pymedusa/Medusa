@@ -81,6 +81,7 @@ def getEpisodes(search_thread, searchstatus):
     """ Get all episodes located in a search thread with a specific status """
 
     results = []
+    # NOTE!: Show.find called with just indexerid!
     show_obj = Show.find(sickbeard.showList, int(search_thread.show.indexerid))
 
     if not show_obj:
@@ -110,6 +111,27 @@ def getEpisodes(search_thread, searchstatus):
                             'overview': Overview.overviewStrings[show_obj.getOverview(ep_obj.status)]})
 
     return results
+
+
+def update_finished_search_queue_item(snatch_queue_item):
+    """
+    Updates the previous manual searched queue item with the correct status
+    @param snatch_queue_item: A successful snatch queue item, send from pickManualSearch().
+    @return: True if status update was successful, False if not.
+    """
+    # Finished Searches
+    for search_thread in sickbeard.search_queue.FORCED_SEARCH_HISTORY:
+        if snatch_queue_item.show and not search_thread.show.indexerid == snatch_queue_item.show.indexerid:
+            continue
+
+        if (isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem)):
+            for segment in snatch_queue_item.segment:
+                if all([search_thread.segment.indexerid == segment.indexerid,
+                        search_thread.segment.season == segment.season,
+                        search_thread.segment.episode == segment.episode]):
+                    search_thread.segment.status = segment.status
+                    return True
+    return False
 
 
 def collectEpisodesFromSearchThread(show):
