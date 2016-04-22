@@ -19,6 +19,7 @@
 import re
 import traceback
 import sickbeard
+import requests
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -91,7 +92,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                             infourl = self.urls['index'] + "post/updatestats.php?" + "torrent_id=" + torrent_id + "&infohash=" + torrent_hash
                             try:
                                 self.session.get(infourl, timeout=0.1)
-                            except Exception:
+                            except requests.exceptions.Timeout:
                                 pass
                             title = titleinfo[1].get_text(strip=True)
                             seeders = try_int(cells[3].get_text(strip=True))
