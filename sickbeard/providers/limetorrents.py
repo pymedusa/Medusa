@@ -40,7 +40,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.urls = {
             'index': 'https://www.limetorrents.cc/',
             'search': 'https://www.limetorrents.cc/search/tv/',
-            'rss': 'https://www.limetorrents.cc/browse-torrents/TV-shows/'
+            'rss': 'https://www.limetorrents.cc/browse-torrents/TV-shows/date/'
         }
 
         self.url = self.urls['index']
@@ -57,7 +57,8 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.proper_strings = ['PROPER', 'REPACK', 'REAL']
         
         # Cache
-        self.cache = tvcache.TVCache(self, search_params={'RSS': ['rss']})
+        cache_params = {"RSS": ["1/", "2/", "3/"]}
+        self.cache = tvcache.TVCache(self, search_params=cache_params)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches,too-many-locals
         results = []
@@ -65,8 +66,6 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             items = []
             logger.log(u"Search Mode: {0}".format(mode), logger.DEBUG)
             for search_string in search_strings[mode]:
-                if mode == "RSS":
-                    search_string = ''
                 search_url = (self.urls['rss'], self.urls['search'] + search_string + '/')[mode != 'RSS']  # Needs a trailing '/' to avoid a triple redirect. 
                 data = self.get_url(search_url, returns='text')
                 if not data:
