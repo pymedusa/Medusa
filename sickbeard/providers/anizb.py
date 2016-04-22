@@ -32,9 +32,9 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
         # Provider Init
         NZBProvider.__init__(self, "Anizb")
 
-        # Credentials
         self.public = True
-        self.confirmed = True
+        self.supports_absolute_numbering = True
+        self.anime_only = True
 
         self.url = 'https://anizb.org/'
         self.urls = {
@@ -55,6 +55,10 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
         _ = age
         _ = ep_obj
         results = []
+
+        if self.show and not self.show.is_anime:
+            return results
+
         for mode in search_strings:
             logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
             for search_string in search_strings[mode]:
