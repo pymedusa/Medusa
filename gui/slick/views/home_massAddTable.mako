@@ -2,6 +2,7 @@
     import medusa as app
     from medusa.helpers import anon_url
 %>
+<div id="container">
 <table id="addRootDirTable" class="defaultTable tablesorter">
     <thead>
         <tr>
@@ -47,3 +48,4 @@
 % endfor
     </tbody>
 </table>
+</div>

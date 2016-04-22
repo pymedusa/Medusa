@@ -1,5 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
+    from urllib import urlencode, quote_plus
     import medusa as app
     from medusa.helpers import anon_url
 %>
@@ -74,7 +75,7 @@
                     </div>
                 </fieldset>
                 % for curNextDir in other_shows:
-                <input type="hidden" name="other_shows" value="${curNextDir}" />
+                <input type="hidden" name="other_shows" value="${quote_plus(str(curNextDir))}" />
                 % endfor
                 <input type="hidden" name="skipShow" id="skipShow" value="" />
             </form>

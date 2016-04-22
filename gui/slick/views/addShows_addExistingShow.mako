@@ -5,6 +5,7 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
+<script type="text/javascript" src="js/lib/jquery.redirect.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -12,6 +13,8 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
+
+<div id="container">
 <div id="newShowPortal">
     <div id="config-components">
         ## @TODO: Fix this stupid hack
@@ -46,4 +49,5 @@
         </div>
     </div>
 </div>
+</div> <!-- end of container -->
 </%block>
