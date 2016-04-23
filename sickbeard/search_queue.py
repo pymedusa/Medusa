@@ -105,7 +105,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
     def __init__(self):
         """Initialize ForcedSearch Queue"""
         generic_queue.GenericQueue.__init__(self)
-        self.queue_name = "FORCEDSEARCHQUEUE"
+        self.queue_name = "SEARCHQUEUE"
 
     def is_in_queue(self, show, segment):
         """
@@ -276,7 +276,9 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
     def __init__(self, show, segment, downCurQuality=False, manual_search=False, manual_search_type='episode'):
         generic_queue.QueueItem.__init__(self, u'Forced Search', FORCED_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
-        self.name = 'FORCEDSEARCH-' + str(show.indexerid)
+        # SEARCHQUEUE-MANUAL-12345
+        # SEARCHQUEUE-FORCED-12345
+        self.name = '{0}-{1}'.format(('FORCED','MANUAL')[bool(manual_search)], show.indexerid)
 
         self.success = None
         self.started = None
