@@ -5546,6 +5546,7 @@ class ErrorLogs(WebRoot):
             'SEARCHQUEUE-DAILY-SEARCH': u'Search Queue (Daily Searcher)',
             'SEARCHQUEUE-BACKLOG': u'Search Queue (Backlog)',
             'SEARCHQUEUE-MANUAL': u'Search Queue (Manual)',
+            'SEARCHQUEUE-FORCED': u'Search Queue (Forced)',
             'SEARCHQUEUE-RETRY': u'Search Queue (Retry/Failed)',
             'SEARCHQUEUE-RSS': u'Search Queue (RSS)',
             'SHOWQUEUE-FORCE-UPDATE': u'Search Queue (Forced Update)',
