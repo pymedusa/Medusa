@@ -96,8 +96,9 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                             except (SocketTimeout, requests.exceptions.Timeout):
                                 pass
                             title = titleinfo[1].get_text(strip=True)
-                            seeders = try_int(cells[3].get_text(strip=True))
-                            leechers = try_int(cells[4].get_text(strip=True))
+                            # Remove comma from larger number like 2,000 seeders = 2000
+                            seeders = try_int(cells[3].get_text(strip=True).replace(",",""))
+                            leechers = try_int(cells[4].get_text(strip=True).replace(",",""))
                             size = convert_size(cells[2].get_text(strip=True)) or -1
                             download_url = "magnet:?xt=urn:btih:" + torrent_hash + "&dn=" + title + self._custom_trackers
                             
