@@ -1306,6 +1306,23 @@ div.season-scene-exception {
     display: inline;
 }
 
+#showBanner {
+    float:right;
+    height:50px;
+    border:1px solid black; 
+}
+
+.fanart {
+    margin-top: -1px; 
+    vertical-align:middle;
+}
+
+.showOptions {
+    width:180px;
+    float: right;
+    vertical-align: middle;
+}
+
 /* =======================================================================
 schedule.mako
 ========================================================================== */
