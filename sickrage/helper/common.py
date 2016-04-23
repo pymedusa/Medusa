@@ -22,6 +22,10 @@ from __future__ import unicode_literals
 import re
 import sickbeard
 from fnmatch import fnmatch
+import logging
+import traceback
+
+logger = logging.getLogger(__name__)
 
 dateFormat = '%Y-%m-%d'
 dateTimeFormat = '%Y-%m-%d %H:%M:%S'
@@ -298,6 +302,8 @@ def try_int(candidate, default_value=0):
     try:
         return int(candidate)
     except (ValueError, TypeError):
+        if candidate and ("," in candidate or "." in candidate):
+            logger.error(u"Failed parsing provider. Traceback: %r" % traceback.format_exc())
         return default_value
 
 
