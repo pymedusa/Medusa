@@ -19,7 +19,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-import urllib2
+
+from requests.compat import quote
+from six.moves.urllib.request import Request, urlopen
 
 import sickbeard
 from sickbeard import logger
@@ -50,13 +52,13 @@ class Notifier(object):
 
         # build up the URL and parameters
         msg = msg.strip()
-        msg_quoted = urllib2.quote(title.encode('utf-8') + ": " + msg.encode('utf-8'))
+        msg_quoted = quote(title.encode('utf-8') + ": " + msg.encode('utf-8'))
         URL = "https://smsapi.free-mobile.fr/sendmsg?user=" + cust_id + "&pass=" + apiKey + "&msg=" + msg_quoted
 
-        req = urllib2.Request(URL)
+        req = Request(URL)
         # send the request to Free Mobile
         try:
-            urllib2.urlopen(req)
+            urlopen(req)
         except IOError as e:
             if hasattr(e, 'code'):
                 if e.code == 400:

@@ -19,10 +19,12 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-import httplib
+
 import datetime
 from base64 import standard_b64encode
 import xmlrpclib
+
+from six.moves.http_client import socket
 
 import sickbeard
 from sickbeard import logger
@@ -60,7 +62,7 @@ def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-sta
         else:
             logger.log('Successful connected to NZBget, but unable to send a message', logger.WARNING)
 
-    except httplib.socket.error:
+    except socket.error:
         logger.log(
             'Please check your NZBget host and port (if it is running). NZBget is not responding to this combination',
             logger.WARNING)

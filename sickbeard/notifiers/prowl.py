@@ -21,7 +21,7 @@
 ##############################################################################
 
 import socket
-from httplib import HTTPSConnection, HTTPException
+from six.moves.http_client import HTTPSConnection, HTTPException
 from requests.compat import urlencode
 
 try:

@@ -38,8 +38,9 @@ from mako.lookup import TemplateLookup
 from mako.exceptions import RichTraceback
 from mako.runtime import UNDEFINED
 import markdown2
-from requests.compat import unquote_plus, quote_plus
+from requests.compat import unquote_plus, quote_plus, urljoin
 from tornado.concurrent import run_on_executor
+from tornado.escape import utf8
 from tornado.gen import coroutine
 from tornado.ioloop import IOLoop
 from tornado.process import cpu_count
@@ -100,6 +101,7 @@ from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
 from sickbeard.tv import TVEpisode
 from sickbeard.classes import SearchResult
+
 
 # Conditional imports
 try:
@@ -267,8 +269,6 @@ class BaseHandler(RequestHandler):
         (temporary) is chosen based on the ``permanent`` argument.
         The default is 302 (temporary).
         """
-        import urlparse
-        from tornado.escape import utf8
         if not url.startswith(sickbeard.WEB_ROOT):
             url = sickbeard.WEB_ROOT + url
 
@@ -279,7 +279,7 @@ class BaseHandler(RequestHandler):
         else:
             assert isinstance(status, int) and 300 <= status <= 399
         self.set_status(status)
-        self.set_header("Location", urlparse.urljoin(utf8(self.request.uri),
+        self.set_header("Location", urljoin(utf8(self.request.uri),
                                                      utf8(url)))
 
     def get_current_user(self):
@@ -1439,7 +1439,7 @@ class Home(WebRoot):
         if manual_search_type == 'season':
             try:
                 main_db_con = db.DBConnection()
-                season_pack_episodes_result = main_db_con.action("SELECT episode FROM tv_episodes WHERE showid = ? and season = ?",  
+                season_pack_episodes_result = main_db_con.action("SELECT episode FROM tv_episodes WHERE showid = ? and season = ?",
                                                                  [cached_result['indexerid'], cached_result['season']])
             except Exception as e:
                 logger.log("Couldn't read episodes for season pack result. Error: {}".format(e))
@@ -1647,7 +1647,7 @@ class Home(WebRoot):
                     episode_history.append(dict(item))
         except Exception as e:
             logger.log("Couldn't read latest episode statust. Error: {}".format(e))
-            
+
         show_words = show_name_helpers.show_words(showObj)
 
         return t.render(
@@ -4151,7 +4151,7 @@ class ConfigGeneral(Config):
             sickbeard.ENCRYPTION_VERSION = 0
         sickbeard.WEB_USERNAME = web_username
         sickbeard.WEB_PASSWORD = web_password
-        
+
         # Reconfigure the logger only if subliminal setting changed
         if sickbeard.SUBLIMINAL_LOG != config.checkbox_to_value(subliminal_log):
             logger.reconfigure_levels()

@@ -39,7 +39,7 @@ import subliminal
 import tornado
 import traceback
 
-from urllib import quote
+from requests.compat import quote
 from github import Github, InputFileContent  # pylint: disable=import-error
 
 import sickbeard

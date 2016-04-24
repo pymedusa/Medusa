@@ -19,8 +19,9 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import re
-import urllib
 import datetime
+
+from requests.compat import unquote
 
 from sickbeard import db
 from sickbeard import logger
@@ -34,7 +35,7 @@ from sickrage.show.History import History
 def prepareFailedName(release):
     """Standardizes release name for failed DB"""
 
-    fixed = urllib.unquote(release)
+    fixed = unquote(release)
     if fixed.endswith(".nzb"):
         fixed = fixed.rpartition(".")[0]
 
@@ -123,7 +124,7 @@ def revertEpisode(epObj):
     sql_results = failed_db_con.select("SELECT episode, old_status FROM history WHERE showid=? AND season=?",
                                        [epObj.show.indexerid, epObj.season])
 
-    history_eps = {res["episode"]: res for res in sql_results} 
+    history_eps = {res["episode"]: res for res in sql_results}
 
     try:
         logger.log(u"Reverting episode (%s, %s): %s" % (epObj.season, epObj.episode, epObj.name))
