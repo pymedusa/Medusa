@@ -16,11 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import re
-import traceback
-import sickbeard
 import requests
-from socket import timeout as SocketTimeout
+
+from requests.compat import urljoin
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -28,24 +29,25 @@ from sickbeard.bs4_parser import BS4Parser
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
-id_regex = re.compile(r"(?:torrent-([0-9]*).html)", re.I)
-hash_regex = re.compile(r"(.*)([0-9a-f]{40})(.*)", re.I)
+id_regex = re.compile(r'(?:torrent-([0-9]*).html)', re.I)
+hash_regex = re.compile(r'(.*)([0-9a-f]{40})(.*)', re.I)
+
 
 class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
 
     def __init__(self):
 
         # Provider Inits
-        TorrentProvider.__init__(self, "LimeTorrents")
+        TorrentProvider.__init__(self, 'LimeTorrents')
 
         # URLs
+        self.url = 'https://www.limetorrents.cc/'
         self.urls = {
-            'index': 'https://www.limetorrents.cc/',
-            'search': 'https://www.limetorrents.cc/search/tv/',
-            'rss': 'https://www.limetorrents.cc/browse-torrents/TV-shows/date/'
+            'index': self.url,
+            'update': urljoin(self.url, '/post/updatestats.php'),
+            'search': urljoin(self.url, '/search/tv/{query}/'),
+            'rss': urljoin(self.url, '/browse-torrents/TV-shows/date/')
         }
-
-        self.url = self.urls['index']
 
         # Credentials
         self.public = True
@@ -54,66 +56,75 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         # Torrent Stats
         self.minseed = None
         self.minleech = None
-        
+
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL']
-        
+
         # Cache
-        cache_params = {"RSS": ["1/", "2/", "3/"]}
+        cache_params = {'RSS': ['1/', '2/', '3/']}
         self.cache = tvcache.TVCache(self, search_params=cache_params)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches,too-many-locals
         results = []
         for mode in search_strings:
             items = []
-            logger.log(u"Search Mode: {0}".format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
             for search_string in search_strings[mode]:
-                search_url = (self.urls['rss'], self.urls['search'] + search_string + '/')[mode != 'RSS']  # Needs a trailing '/' to avoid a triple redirect. 
+                search_url = self.urls['rss'] if mode == 'RSS' else self.urls['search'].format(query=search_string)
                 data = self.get_url(search_url, returns='text')
                 if not data:
-                        logger.log(u"No data returned from provider", logger.DEBUG)
+                        logger.log('No data returned from provider', logger.DEBUG)
                         continue
-                with BS4Parser(data, "html5lib") as html:
-                    if mode == 'RSS':
-                        torrent_table = html.find("table", {"class":"table2"})
-                    else:
-                        torrent_table = (html.find_all("table", {"class":"table2"}))[1]
-                    torrent_rows = torrent_table("tr")
+                with BS4Parser(data, 'html5lib') as html:
+                    torrent_table = html('table', class_='table2')[0 if mode == 'RSS' else 1]
+                    torrent_rows = torrent_table('tr')
                     for result in torrent_rows:
-                        cells = result.find_all("td")
-                        try:                          
-                            verified = result.find_all('img', title='Verified torrent')
+                        cells = result('td')
+                        try:
+                            verified = result('img', title='Verified torrent')
                             if self.confirmed and not verified:
                                 continue
-                            titleinfo = result.find_all("a")
+                            titleinfo = result('a')
                             info = titleinfo[1]['href']
                             torrent_id = id_regex.search(info).group(1)
-                            url = result.find("a", {"rel":"nofollow"})['href']
-                            torrent_hash = hash_regex.search(url).group(2)
-                            infourl = self.urls['index'] + "post/updatestats.php?" + "torrent_id=" + torrent_id + "&infohash=" + torrent_hash
+                            url = result.find('a', rel='nofollow')
+                            if not url:
+                                continue
+                            torrent_hash = hash_regex.search(url['href']).group(2)
                             try:
-                                self.session.get(infourl, timeout=0.1)
-                            except (SocketTimeout, requests.exceptions.Timeout):
+                                self.session.get(self.urls['update'], timeout=0.1,
+                                                 params={'torrent_id': torrent_id,
+                                                         'infohash': torrent_hash})
+                            except requests.exceptions.Timeout:
                                 pass
                             title = titleinfo[1].get_text(strip=True)
                             # Remove comma from larger number like 2,000 seeders = 2000
-                            seeders = try_int(cells[3].get_text(strip=True).replace(",",""))
-                            leechers = try_int(cells[4].get_text(strip=True).replace(",",""))
+                            seeders = try_int(cells[3].get_text(strip=True).replace(',', ''))
+                            leechers = try_int(cells[4].get_text(strip=True).replace(',', ''))
                             size = convert_size(cells[2].get_text(strip=True)) or -1
-                            download_url = "magnet:?xt=urn:btih:" + torrent_hash + "&dn=" + title + self._custom_trackers
-                            
+                            download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}' .format(
+                                hash=torrent_hash, title=title, trackers=self._custom_trackers)
+
                             if seeders < self.minseed or leechers < self.minleech:
                                 if mode != 'RSS':
-                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {0} (S:{1} L:{2})".format
-                                            (title, seeders, leechers), logger.DEBUG)
+                                    logger.log('Discarding torrent because it doesn\'t meet the minimum '
+                                               'seeders or leechers: {0} (S:{1} L:{2})'.format
+                                               (title, seeders, leechers), logger.DEBUG)
                                 continue
-                                
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': ''}
-                            if mode != "RSS":
-                                logger.log("Found result: {0} with {1} seeders and {2} leechers".format
+
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'hash': torrent_hash or ''
+                            }
+                            if mode != 'RSS':
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
                                            (title, seeders, leechers), logger.DEBUG)
                             items.append(item)
-                            
+
                         except StandardError:
                             continue
 
