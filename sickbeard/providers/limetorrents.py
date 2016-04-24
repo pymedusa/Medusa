@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import re
 import requests
+import traceback
 
 from requests.compat import urljoin
 
@@ -62,7 +63,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         # Cache
         cache_params = {'RSS': ['1/', '2/', '3/']}
-        self.cache = tvcache.TVCache(self, search_params=cache_params)
+        self.cache = tvcache.TVCache(self, min_time=10, search_params=cache_params)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches,too-many-locals
         results = []
@@ -105,7 +106,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                             download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}' .format(
                                 hash=torrent_hash, title=title, trackers=self._custom_trackers)
 
-                            if seeders < self.minseed or leechers < self.minleech:
+                            if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
                                 if mode != 'RSS':
                                     logger.log('Discarding torrent because it doesn\'t meet the minimum '
                                                'seeders or leechers: {0} (S:{1} L:{2})'.format
@@ -126,6 +127,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                             items.append(item)
 
                         except StandardError:
+                            logger.log(u"Failed parsing provider. Traceback: %r" % traceback.format_exc(), logger.ERROR)
                             continue
 
             # For each search mode sort all the items by seeders if available
