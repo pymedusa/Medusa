@@ -323,10 +323,10 @@
                     below_minleech = True
 
                 %>
-                % if any([i for i in episode_history if prepareFailedName(str(hItem["name"])) in i['resource'] and (hItem['release_group'] == i['provider'] or  hItem['provider'] == i['provider']) and str(i['action'])[2:] == '11']):
-                    <tr style="text-decoration:line-through" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
-                % elif any([i for i in episode_history if str(i['action'])[2:] in ('02','09','12') and hItem["name"] in i['resource'] and hItem['provider'] == i['provider']]):
-                    <tr style="background-color:#EBC1EA" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
+                % if any([i for i in episode_history if prepareFailedName(str(hItem["name"])) in i['resource'] and (hItem['release_group'] == i['provider'] or  hItem['provider'] == i['provider']) and Quality.splitCompositeStatus(i['action']).status == FAILED]):
+                    <tr style="text-decoration:line-through;!important" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
+                % elif any([i for i in episode_history if Quality.splitCompositeStatus(i['action']).status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST) and hItem["name"] in i['resource'] and hItem['provider'] == i['provider']]):
+                    <tr style="background-color:#EBC1EA;!important" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
                 % else:
                     <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
                 % endif
