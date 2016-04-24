@@ -19,8 +19,8 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import re
+from requests.compat import quote_plus
 from requests.utils import dict_from_cookiejar
-from urllib import quote_plus
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser

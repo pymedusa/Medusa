@@ -20,7 +20,8 @@
 
 import datetime
 import sys
-import urllib
+
+from six.moves.urllib.request import FancyURLopener
 
 import sickbeard
 from sickbeard.common import USER_AGENT, Quality
@@ -28,7 +29,7 @@ from sickrage.helper.common import dateTimeFormat
 from dateutil import parser
 
 
-class SickBeardURLopener(urllib.FancyURLopener, object):
+class SickBeardURLopener(FancyURLopener, object):
     version = USER_AGENT
 
 

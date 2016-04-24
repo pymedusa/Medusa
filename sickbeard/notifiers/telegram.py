@@ -21,8 +21,8 @@
 
 from __future__ import unicode_literals
 
-import urllib
-import urllib2
+from requests.compat import urlencode
+from six.moves.urllib.request import Request, urlopen
 
 import sickbeard
 from sickbeard import logger
@@ -64,14 +64,14 @@ class Notifier(object):
         logger.log('Telegram in use with API KEY: %s' % api_key, logger.DEBUG)
 
         message = '%s : %s' % (title.encode(), msg.encode())
-        payload = urllib.urlencode({'chat_id': id, 'text': message})
+        payload = urlencode({'chat_id': id, 'text': message})
         telegram_api = 'https://api.telegram.org/bot%s/%s'
 
-        req = urllib2.Request(telegram_api % (api_key, 'sendMessage'), payload)
+        req = Request(telegram_api % (api_key, 'sendMessage'), payload)
 
         success = False
         try:
-            urllib2.urlopen(req)
+            urlopen(req)
             message = 'Telegram message sent successfully.'
             success = True
         except IOError as e:

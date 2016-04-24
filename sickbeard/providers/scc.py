@@ -20,8 +20,8 @@
 
 import re
 import time
-from urllib import quote
-from requests.compat import urljoin
+
+from requests.compat import urljoin, quote
 from requests.utils import dict_from_cookiejar
 
 import sickbeard

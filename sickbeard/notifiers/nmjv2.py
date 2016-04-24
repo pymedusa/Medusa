@@ -19,11 +19,13 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import urllib2
-from xml.dom.minidom import parseString
-import sickbeard
-import time
 
+import time
+from xml.dom.minidom import parseString
+
+from six.moves.urllib.request import Request, urlopen
+
+import sickbeard
 from sickbeard import logger
 
 try:
@@ -65,8 +67,8 @@ class Notifier(object):
         """
         try:
             url_loc = "http://{}:8008/file_operation?arg0=list_user_storage_file&arg1=&arg2={}&arg3=20&arg4=true&arg5=true&arg6=true&arg7=all&arg8=name_asc&arg9=false&arg10=false".format(host, instance)
-            req = urllib2.Request(url_loc)
-            handle1 = urllib2.urlopen(req)
+            req = Request(url_loc)
+            handle1 = urlopen(req)
             response1 = handle1.read()
             xml = parseString(response1)
             time.sleep(300.0 / 1000.0)
@@ -74,8 +76,8 @@ class Notifier(object):
                 xmlTag = node.toxml()
                 xmlData = xmlTag.replace('<path>', '').replace('</path>', '').replace('[=]', '')
                 url_db = "http://" + host + ":8008/metadata_database?arg0=check_database&arg1=" + xmlData
-                reqdb = urllib2.Request(url_db)
-                handledb = urllib2.urlopen(reqdb)
+                reqdb = Request(url_db)
+                handledb = urlopen(reqdb)
                 responsedb = handledb.read()
                 xmldb = parseString(responsedb)
                 returnvalue = xmldb.getElementsByTagName('returnValue')[0].toxml().replace('<returnValue>', '').replace(
@@ -114,12 +116,12 @@ class Notifier(object):
             logger.log(u"NMJ scan update command sent to host: %s" % host, logger.DEBUG)
             url_updatedb = "http://" + host + ":8008/metadata_database?arg0=scanner_start&arg1=" + sickbeard.NMJv2_DATABASE + "&arg2=background&arg3="
             logger.log(u"Try to mount network drive via url: %s" % host, logger.DEBUG)
-            prereq = urllib2.Request(url_scandir)
-            req = urllib2.Request(url_updatedb)
-            handle1 = urllib2.urlopen(prereq)
+            prereq = Request(url_scandir)
+            req = Request(url_updatedb)
+            handle1 = urlopen(prereq)
             response1 = handle1.read()
             time.sleep(300.0 / 1000.0)
-            handle2 = urllib2.urlopen(req)
+            handle2 = urlopen(req)
             response2 = handle2.read()
         except IOError as e:
             logger.log(u"Warning: Couldn't contact popcorn hour on host %s: %s" % (host, e), logger.WARNING)

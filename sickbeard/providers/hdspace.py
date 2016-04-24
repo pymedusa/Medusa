@@ -21,8 +21,9 @@
 
 import re
 from requests.utils import dict_from_cookiejar
-from urllib import quote_plus
 from bs4 import BeautifulSoup
+
+from requests.compat import quote_plus
 
 from sickbeard import logger, tvcache
 

@@ -28,10 +28,6 @@ import stat
 import tempfile
 import time
 import traceback
-import urllib
-import urllib2
-import httplib
-import urlparse
 import uuid
 import base64
 import zipfile
@@ -48,6 +44,9 @@ import hashlib
 import random
 from contextlib import closing
 from socket import timeout as SocketTimeout
+
+from requests.compat import urlparse
+from six.moves import http_client
 
 from sickbeard import logger, classes
 from sickbeard.common import USER_AGENT
@@ -68,9 +67,16 @@ import xml.etree.ElementTree as ET
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
-# pylint: disable=protected-access
-# Access to a protected member of a client class
-urllib._urlopener = classes.SickBeardURLopener()
+try:
+    import urllib
+    urllib._urlopener = classes.SickBeardURLopener()
+except ImportError:
+    logger.log(u'Unable to import _urlopener, not using user_agent for urllib', logger.DEBUG)
+
+try:
+    from urllib.parse import splittype
+except ImportError:
+    from urllib2 import splittype
 
 
 def fixGlob(path):
@@ -967,11 +973,11 @@ def check_url(url):
     """
     # see also http://stackoverflow.com/questions/2924422
     # http://stackoverflow.com/questions/1140661
-    good_codes = [httplib.OK, httplib.FOUND, httplib.MOVED_PERMANENTLY]
+    good_codes = [http_client.OK, http_client.FOUND, http_client.MOVED_PERMANENTLY]
 
-    host, path = urlparse.urlparse(url)[1:3]  # elems [1] and [2]
+    host, path = urlparse(url)[1:3]  # elems [1] and [2]
     try:
-        conn = httplib.HTTPConnection(host)
+        conn = http_client.HTTPConnection(host)
         conn.request('HEAD', path)
         return conn.getresponse().status in good_codes
     except StandardError:
@@ -1382,7 +1388,7 @@ def request_defaults(kwargs):
     # request session proxies
     if sickbeard.PROXY_SETTING:
         logger.log(u"Using global proxy: " + sickbeard.PROXY_SETTING, logger.DEBUG)
-        scheme, address = urllib2.splittype(sickbeard.PROXY_SETTING)
+        scheme, address = splittype(sickbeard.PROXY_SETTING)
         address = sickbeard.PROXY_SETTING if scheme else 'http://' + sickbeard.PROXY_SETTING
         proxies = {
             "http": address,

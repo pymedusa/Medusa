@@ -20,7 +20,7 @@
 
 import re
 import traceback
-from urllib import quote
+from requests.compat import quote
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache

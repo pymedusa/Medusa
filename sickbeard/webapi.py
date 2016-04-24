@@ -28,8 +28,9 @@ import io
 import os
 import re
 import time
-import urllib
 import traceback
+
+from requests.compat import unquote_plus
 
 from tornado.web import RequestHandler  # pylint: disable=import-error
 
@@ -564,7 +565,7 @@ def _get_root_dirs():
         return {}
 
     # clean up the list - replace %xx escapes by their single-character equivalent
-    root_dirs = [urllib.unquote_plus(x) for x in root_dirs]
+    root_dirs = [unquote_plus(x) for x in root_dirs]
 
     default_dir = root_dirs[default_index]
 
@@ -1362,7 +1363,7 @@ class CMD_SickBeardAddRootDir(ApiCall):
     def run(self):
         """ Add a new root (parent) directory to Medusa """
 
-        self.location = urllib.unquote_plus(self.location)
+        self.location = unquote_plus(self.location)
         location_matched = 0
         index = 0
 
@@ -1379,7 +1380,7 @@ class CMD_SickBeardAddRootDir(ApiCall):
             index = int(sickbeard.ROOT_DIRS.split('|')[0])
             root_dirs.pop(0)
             # clean up the list - replace %xx escapes by their single-character equivalent
-            root_dirs = [urllib.unquote_plus(x) for x in root_dirs]
+            root_dirs = [unquote_plus(x) for x in root_dirs]
             for x in root_dirs:
                 if x == self.location:
                     location_matched = 1
@@ -1393,7 +1394,7 @@ class CMD_SickBeardAddRootDir(ApiCall):
             else:
                 root_dirs.append(self.location)
 
-        root_dirs_new = [urllib.unquote_plus(x) for x in root_dirs]
+        root_dirs_new = [unquote_plus(x) for x in root_dirs]
         root_dirs_new.insert(0, index)
         root_dirs_new = '|'.join(unicode(x) for x in root_dirs_new)
 
@@ -1482,7 +1483,7 @@ class CMD_SickBeardDeleteRootDir(ApiCall):
         index = int(root_dirs[0])
         root_dirs.pop(0)
         # clean up the list - replace %xx escapes by their single-character equivalent
-        root_dirs = [urllib.unquote_plus(x) for x in root_dirs]
+        root_dirs = [unquote_plus(x) for x in root_dirs]
         old_root_dir = root_dirs[index]
         for curRootDir in root_dirs:
             if not curRootDir == self.location:
@@ -1495,7 +1496,7 @@ class CMD_SickBeardDeleteRootDir(ApiCall):
                 new_index = curIndex
                 break
 
-        root_dirs_new = [urllib.unquote_plus(x) for x in root_dirs_new]
+        root_dirs_new = [unquote_plus(x) for x in root_dirs_new]
         if root_dirs_new:
             root_dirs_new.insert(0, new_index)
         root_dirs_new = "|".join(unicode(x) for x in root_dirs_new)

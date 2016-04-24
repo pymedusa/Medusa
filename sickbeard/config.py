@@ -21,9 +21,11 @@
 import os.path
 import datetime
 import re
-import urlparse
-import sickbeard
 
+from requests.compat import urlsplit
+from six.moves.urllib.parse import uses_netloc, urlunsplit
+
+import sickbeard
 from sickbeard import helpers
 from sickbeard import logger
 from sickbeard import naming
@@ -35,7 +37,7 @@ from sickrage.helper.encoding import ek
 # Address poor support for scgi over unix domain sockets
 # this is not nicely handled by python currently
 # http://bugs.python.org/issue23636
-urlparse.uses_netloc.append('scgi')
+uses_netloc.append('scgi')
 
 naming_ep_type = ("%(seasonnumber)dx%(episodenumber)02d",
                   "s%(seasonnumber)02de%(episodenumber)02d",
@@ -490,12 +492,12 @@ def clean_url(url):
         if '://' not in url:
             url = '//' + url
 
-        scheme, netloc, path, query, fragment = urlparse.urlsplit(url, 'http')
+        scheme, netloc, path, query, fragment = urlsplit(url, 'http')
 
         if not path:
             path += '/'
 
-        cleaned_url = urlparse.urlunsplit((scheme, netloc, path, query, fragment))
+        cleaned_url = urlunsplit((scheme, netloc, path, query, fragment))
 
     else:
         cleaned_url = ''
