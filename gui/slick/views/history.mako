@@ -112,7 +112,7 @@
     <table id="historyTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
         <thead>
             <tr>
-                <th class="nowrap" width="15%">Time</th>
+                <th class="nowrap" width="18%">Time</th>
                 <th width="25%">Episode</th>
                 <th>Snatched</th>
                 <th>Downloaded</th>
