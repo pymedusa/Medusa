@@ -81,35 +81,51 @@ def getEpisodes(search_thread, searchstatus):
     """ Get all episodes located in a search thread with a specific status """
 
     results = []
+    # NOTE!: Show.find called with just indexerid!
     show_obj = Show.find(sickbeard.showList, int(search_thread.show.indexerid))
 
     if not show_obj:
         logger.log(u'No Show Object found for show with indexerID: {}'.format(search_thread.show.indexerid), logger.ERROR)
         return results
 
-    if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem):
-        results.append({
-            'show': search_thread.show.indexerid,
-            'episode': search_thread.segment.episode,
-            'episodeindexid': search_thread.segment.indexerid,
-            'season': search_thread.segment.season,
-            'searchstatus': searchstatus,
-            'status': statusStrings[search_thread.segment.status],
-            'quality': getQualityClass(search_thread.segment),
-            'overview': Overview.overviewStrings[show_obj.getOverview(search_thread.segment.status)]
-        })
-    else:
-        for ep_obj in search_thread.segment:
-            results.append({'show': ep_obj.show.indexerid,
-                            'episode': ep_obj.episode,
-                            'episodeindexid': ep_obj.indexerid,
-                            'season': ep_obj.season,
-                            'searchstatus': searchstatus,
-                            'status': statusStrings[ep_obj.status],
-                            'quality': getQualityClass(ep_obj),
-                            'overview': Overview.overviewStrings[show_obj.getOverview(ep_obj.status)]})
+    if not isinstance(search_thread.segment, list):
+            search_thread.segment = [search_thread.segment]
+
+    for ep_obj in search_thread.segment:
+        results.append({'show': ep_obj.show.indexerid,
+                        'episode': ep_obj.episode,
+                        'episodeindexid': ep_obj.indexerid,
+                        'season': ep_obj.season,
+                        'searchstatus': searchstatus,
+                        'status': statusStrings[ep_obj.status],
+                        'quality': getQualityClass(ep_obj),
+                        'overview': Overview.overviewStrings[show_obj.getOverview(ep_obj.status)]})
 
     return results
+
+
+def update_finished_search_queue_item(snatch_queue_item):
+    """
+    Updates the previous manual searched queue item with the correct status
+    @param snatch_queue_item: A successful snatch queue item, send from pickManualSearch().
+    @return: True if status update was successful, False if not.
+    """
+    # Finished Searches
+    for search_thread in sickbeard.search_queue.FORCED_SEARCH_HISTORY:
+        if snatch_queue_item.show and not search_thread.show.indexerid == snatch_queue_item.show.indexerid:
+            continue
+
+        if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem):
+            if not isinstance(search_thread.segment, list):
+                search_thread.segment = [search_thread.segment]
+
+            for segment in snatch_queue_item.segment:
+                if all([[search for search in search_thread.segment if search.indexerid == segment.indexerid],
+                        [search for search in search_thread.segment if search.season == segment.season],
+                        [search for search in search_thread.segment if search.episode == segment.episode]]):
+                    search_thread.segment = snatch_queue_item.segment
+                    return True
+    return False
 
 
 def collectEpisodesFromSearchThread(show):
@@ -142,7 +158,7 @@ def collectEpisodesFromSearchThread(show):
             continue
 
         if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem):
-            if not [x for x in episodes if x['episodeindexid'] == search_thread.segment.indexerid]:
+            if not [x for x in episodes if x['episodeindexid'] in [search.indexerid for search in search_thread.segment]]:
                 episodes += getEpisodes(search_thread, searchstatus)
         else:
             # These are only Failed Downloads/Retry search thread items.. lets loop through the segment/episodes
@@ -222,7 +238,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             and episode: {1}x{2}'.format(show_obj.name, season, episode)
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
+        ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
 
         sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
 

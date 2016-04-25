@@ -64,7 +64,7 @@ from sickbeard.helpers import get_showname_from_indexer
 from sickbeard.imdbPopular import imdb_popular
 from sickbeard.indexers.indexer_exceptions import indexer_exception
 from sickbeard.manual_search import (
-    collectEpisodesFromSearchThread, get_provider_cache_results, getEpisode,
+    collectEpisodesFromSearchThread, get_provider_cache_results, getEpisode, update_finished_search_queue_item,
     SEARCH_STATUS_FINISHED, SEARCH_STATUS_SEARCHING, SEARCH_STATUS_QUEUED,
 )
 from sickbeard.providers import newznab, rsstorrent
@@ -1476,6 +1476,9 @@ class Home(WebRoot):
 
         while snatch_queue_item.success is not False:
             if snatch_queue_item.started and snatch_queue_item.success:
+                # If the snatch was successfull we'll need to update the original searched segment,
+                # with the new status: SNATCHED (2)
+                update_finished_search_queue_item(snatch_queue_item)
                 return json.dumps({'result': 'success'})
             time.sleep(1)
 
@@ -1546,7 +1549,8 @@ class Home(WebRoot):
 
         return {'result': searched_item[0]['searchstatus']}
 
-    def snatchSelection(self, show=None, season=None, episode=None, manual_search_type="episode", perform_search=0, down_cur_quality=0, show_all_results=0):
+    def snatchSelection(self, show=None, season=None, episode=None, manual_search_type="episode",
+                        perform_search=0, down_cur_quality=0, show_all_results=0):
         """ The view with results for the manual selected show/episode """
 
         INDEXER_TVDB = 1
@@ -2278,8 +2282,7 @@ class Home(WebRoot):
         return self.redirect("/home/displayShow?show=" + show)
 
     def searchEpisode(self, show=None, season=None, episode=None, manual_search=None):
-        """
-        """
+        """Search a ForcedSearch single episode using providers which are backlog enabled"""
         down_cur_quality = 0
 
         # retrieve the episode object and fail if we can't get one
@@ -2288,7 +2291,7 @@ class Home(WebRoot):
             return json.dumps({'result': 'failure'})
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, ep_obj, bool(int(down_cur_quality)), bool(manual_search))
+        ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), bool(manual_search))
 
         sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
 
