@@ -74,10 +74,15 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                 search_url = self.urls['rss'] if mode == 'RSS' else self.urls['search'].format(query=search_string)
                 data = self.get_url(search_url, returns='text')
                 if not data:
-                        logger.log('No data returned from provider', logger.DEBUG)
-                        continue
+                    logger.log('No data returned from provider', logger.DEBUG)
+                    continue
+
                 with BS4Parser(data, 'html5lib') as html:
                     torrent_table = html('table', class_='table2')[0 if mode == 'RSS' else 1]
+                    if mode != 'RSS' and len(torrent_table) < 2:
+                        logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
+                        continue
+
                     torrent_rows = torrent_table('tr')
                     for result in torrent_rows:
                         cells = result('td')
@@ -121,6 +126,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                 'leechers': leechers,
                                 'hash': torrent_hash or ''
                             }
+
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
                                            (title, seeders, leechers), logger.DEBUG)
