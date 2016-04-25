@@ -140,8 +140,8 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log('Discarding torrent because it doesn\'t meet the'
-                                               ' minimum seeders or leechers: {0} (S:{1} L:{2})'.format
-                                               (title, seeders, leechers), logger.DEBUG)
+                                               ' minimum seeders: {0}. Seeders: {1})'.format
+                                               (title, seeders), logger.DEBUG)
                                 continue
 
                             # Chop off tracker/channel prefix or we cant parse the result!

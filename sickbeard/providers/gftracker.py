@@ -163,8 +163,8 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log(u"Discarding torrent because it doesn't meet the"
-                                               u" minimum seeders or leechers: {0} (S:{1} L:{2})".format
-                                               (title, seeders, leechers), logger.DEBUG)
+                                               u" minimum seeders: {0}. Seeders: {1})".format
+                                               (title, seeders), logger.DEBUG)
                                 continue
 
                             torrent_size = cells[labels.index('Size/Snatched')].get_text(strip=True).split('/', 1)[0]

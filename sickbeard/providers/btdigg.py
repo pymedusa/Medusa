@@ -104,8 +104,8 @@ class BTDiggProvider(TorrentProvider):
                         if seeders < min(self.minseed, 1):
                             if mode != "RSS":
                                 logger.log("Discarding torrent because it doesn't meet the"
-                                           " minimum seeders or leechers: {0} (S:{1} L:{2})".format
-                                           (title, seeders, leechers), logger.DEBUG)
+                                           " minimum seeders: {0}. Seeders: {1})".format
+                                           (title, seeders), logger.DEBUG)
                                 continue                        
                         torrent_size = torrent.pop("size")
                         size = convert_size(torrent_size) or -1

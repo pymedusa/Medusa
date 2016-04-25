@@ -132,7 +132,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                                 # Filter unseeded torrent
                                 if seeders < min(self.minseed, 1):
                                     if mode != 'RSS':
-                                        logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {0} (S:{1} L:{2})".format(title, seeders, leechers), logger.DEBUG)
+                                        logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
                                     continue
 
                                 if self.confirmed and not verified and mode != 'RSS':
