@@ -78,11 +78,12 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     continue
 
                 with BS4Parser(data, 'html5lib') as html:
-                    torrent_table = html('table', class_='table2')[0 if mode == 'RSS' else 1]
+                    torrent_table = html('table', class_='table2')
                     if mode != 'RSS' and len(torrent_table) < 2:
                         logger.log(u'Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
 
+                    torrent_table = torrent_table[0 if mode == 'RSS' else 1]
                     torrent_rows = torrent_table('tr')
                     for result in torrent_rows:
                         cells = result('td')
