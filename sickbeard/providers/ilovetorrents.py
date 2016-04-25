@@ -140,10 +140,10 @@ class ILoveTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instan
                                 continue
 
                             # Filter unseeded torrent
-                            if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
+                            if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {0} (S:{1} L:{2})".format
-                                               (title, seeders, leechers), logger.DEBUG)
+                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                               (title, seeders), logger.DEBUG)
                                 continue
                             #Use same failsafe as Bitsoup
                             if seeders >= 32768 or leechers >= 32768:

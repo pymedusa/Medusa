@@ -156,18 +156,18 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                             leechers = try_int(cells[9].text.strip())
 
                             # Filter unseeded torrent
-                            if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
+                            if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log(u"Discarding torrent because it doesn't meet the"
-                                               u" minimum seeders or leechers: {} (S:{} L:{})".format
-                                               (title, seeders, leechers), logger.DEBUG)
+                                               u" minimum seeders: {0}. Seeders: {1})".format
+                                               (title, seeders), logger.DEBUG)
                                 continue
 
                             size = temp_anchor['data-filesize'] or -1
 
                             item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
                             if mode != 'RSS':
-                                logger.log(u"Found result: {} with {} seeders and {} leechers".format
+                                logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format
                                            (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)

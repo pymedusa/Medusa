@@ -106,11 +106,11 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                             download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}' .format(
                                 hash=torrent_hash, title=title, trackers=self._custom_trackers)
 
-                            if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
+                            if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log('Discarding torrent because it doesn\'t meet the minimum '
-                                               'seeders or leechers: {0} (S:{1} L:{2})'.format
-                                               (title, seeders, leechers), logger.DEBUG)
+                                               'seeders or leechers: {0}. Seeders: {1})'.format
+                                               (title, seeders), logger.DEBUG)
                                 continue
 
                             item = {

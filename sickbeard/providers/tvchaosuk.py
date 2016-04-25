@@ -137,11 +137,11 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             leechers = try_int(torrent.find(title='Leechers').get_text(strip=True))
 
                             # Filter unseeded torrent
-                            if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
+                            if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log('Discarding torrent because it doesn\'t meet the'
-                                               ' minimum seeders or leechers: {} (S:{} L:{})'.format
-                                               (title, seeders, leechers), logger.DEBUG)
+                                               ' minimum seeders: {0}. Seeders: {1})'.format
+                                               (title, seeders), logger.DEBUG)
                                 continue
 
                             # Chop off tracker/channel prefix or we cant parse the result!
@@ -162,7 +162,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             size = convert_size(torrent_size, units=units) or -1
 
                             if mode != 'RSS':
-                                logger.log('Found result: {} with {} seeders and {} leechers'.format
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
                                            (title, seeders, leechers), logger.DEBUG)
 
                             item = {'title': title + '.hdtv.x264', 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers}
