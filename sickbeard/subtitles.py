@@ -553,10 +553,12 @@ def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles
     :rtype: subliminal.video.Video
     """
     key = video_key.format(video_path=video_path)
-    video = region.get(key, expiration_time=VIDEO_EXPIRATION_TIME)
-    if video != NO_VALUE:
+    payload = {'subtitles_dir': subtitles_dir, 'subtitles': subtitles, 'embedded_subtitles': embedded_subtitles,
+               'release_name': release_name}
+    cached_payload = region.get(key, expiration_time=VIDEO_EXPIRATION_TIME)
+    if cached_payload != NO_VALUE and {k: v for k, v in cached_payload.iteritems() if k != 'video'} == payload:
         logger.debug(u'Found cached video information under key %s', key)
-        return video
+        return cached_payload['video']
 
     try:
         video_path = _encode(video_path)
@@ -575,7 +577,8 @@ def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles
         refine(video, episode_refiners=episode_refiners, embedded_subtitles=embedded_subtitles,
                release_name=release_name)
 
-        region.set(key, video)
+        payload['video'] = video
+        region.set(key, payload)
         logger.debug(u'Video information cached under key %s', key)
 
         return video
