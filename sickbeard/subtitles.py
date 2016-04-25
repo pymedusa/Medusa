@@ -751,6 +751,7 @@ class SubtitlesFinder(object):
             return
         
         if not sickbeard.USE_SUBTITLES:
+            logger.log(u"Subtitle search is disabled. Please enabled it", logger.WARNING)
             return
 
         if not sickbeard.subtitles.enabled_service_list():
