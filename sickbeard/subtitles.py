@@ -745,6 +745,11 @@ class SubtitlesFinder(object):
         :param force: True if a force search needs to be executed
         :type force: bool
         """
+        
+        if self.amActive:
+            logger.log(u"Subtitle finder is still running, not starting it again", logger.DEBUG)
+            return
+        
         if not sickbeard.USE_SUBTITLES:
             return
 
