@@ -2505,12 +2505,23 @@ var SICKRAGE = {
                     $(spinner).empty().html(message);
                 }
             };
-            
-            $.fn.loadContainer = function(path, loadingTxt, errorTxt) {
+
+            // Check the previous status of the history table, for hidden or shown, through the data attribute
+            // data-history-toggle-hidden
+            function toggleHistoryTable() {
+                // Get previous state which was saved on the wrapper
+                var showOrHide = $('#wrapper').attr('data-history-toggle');
+                $('#historydata').collapse(showOrHide);
+            }
+
+            $.fn.loadContainer = function(path, loadingTxt, errorTxt, callback) {
                 updateSpinner(spinner, loadingTxt);
                 $(this).load(srRoot + path + ' #container', function(response, status) {
                     if (status === "error") {
                         updateSpinner(spinner, errorTxt, false);
+                    }
+                    if (typeof callback !== 'undefined') {
+                        callback();
                     }
                 });
                 
@@ -2561,7 +2572,8 @@ var SICKRAGE = {
                     $('#wrapper').loadContainer(
                             '/home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&manual_search_type=' + manualSearchType + '&perform_search=0',
                             'Loading new search results...',
-                            'Time out, refresh page to try again'
+                            'Time out, refresh page to try again',
+                            toggleHistoryTable // This is a callback function
                     );
                 };
 
@@ -2643,11 +2655,13 @@ var SICKRAGE = {
             // Moved and rewritten this from displayShow. This changes the button when clicked for collapsing/expanding the
             // "Show History" button to show or hide the snatch/download/failed history for a manual searched episode or pack.
             $(function() {
-                $('.collapse.toggle').on('hide.bs.collapse', function () {
+                $('body').on('hide.bs.collapse', '.collapse.toggle', function () {
                     $('#showhistory').text('Show History');
+                    $('#wrapper').attr('data-history-toggle', 'hide');
                 });
-                $('.collapse.toggle').on('show.bs.collapse', function () {
+                $('body').on('show.bs.collapse', '.collapse.toggle' , function () {
                     $('#showhistory').text('Hide History');
+                    $('#wrapper').attr('data-history-toggle', 'show');
                 });
             });
         },
