@@ -484,7 +484,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
     Walk providers for information on shows
 
     :param show: Show we are looking for
-    :param episodes: Episodes we hope to find
+    :param episodes: List, episodes we hope to find
     :param forced_search: Boolean, is this a forced search?
     :param downCurQuality: Boolean, should we re-download currently available quality file
     :param manual_search: Boolean, should we choose what to download?
