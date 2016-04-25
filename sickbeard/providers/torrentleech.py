@@ -150,10 +150,10 @@ class TorrentLeechProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                             leechers = try_int(result.find("td", class_="leechers").get_text(strip=True))
 
                             # Filter unseeded torrent
-                            if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
+                            if seeders < min(self.minseed, 1):
                                 if mode != "RSS":
                                     logger.log("Discarding torrent because it doesn't meet the"
-                                               " minimum seeders or leechers: {} (S:{} L:{})".format
+                                               " minimum seeders or leechers: {0} (S:{1} L:{2})".format
                                                (title, seeders, leechers), logger.DEBUG)
                                 continue
 
@@ -162,7 +162,7 @@ class TorrentLeechProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
                             item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
                             if mode != "RSS":
-                                logger.log("Found result: {} with {} seeders and {} leechers".format
+                                logger.log("Found result: {0} with {1} seeders and {2} leechers".format
                                            (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)

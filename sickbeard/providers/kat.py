@@ -107,9 +107,9 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                             leechers = try_int(item.find("torrent:peers").get_text(strip=True))
 
                             # Filter unseeded torrent
-                            if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
+                            if seeders < min(self.minseed, 1):
                                 if mode != "RSS":
-                                    logger.log("Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format
+                                    logger.log("Discarding torrent because it doesn't meet the minimum seeders or leechers: {0} (S:{1} L:{2})".format
                                                (title, seeders, leechers), logger.DEBUG)
                                 continue
 

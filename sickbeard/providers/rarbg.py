@@ -154,10 +154,10 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
 
                         seeders = item.pop("seeders")
                         leechers = item.pop("leechers")
-                        if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
+                        if seeders < min(self.minseed, 1):
                             if mode != "RSS":
                                 logger.log("Discarding torrent because it doesn't meet the"
-                                           " minimum seeders or leechers: {} (S:{} L:{})".format
+                                           " minimum seeders or leechers: {0} (S:{1} L:{2})".format
                                            (title, seeders, leechers), logger.DEBUG)
                             continue
 
@@ -165,7 +165,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                         size = convert_size(torrent_size) or -1
 
                         if mode != "RSS":
-                            logger.log("Found result: {} with {} seeders and {} leechers".format
+                            logger.log("Found result: {0} with {1} seeders and {2} leechers".format
                                        (title, seeders, leechers), logger.DEBUG)
 
                         result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers}

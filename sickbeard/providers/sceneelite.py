@@ -126,7 +126,7 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             continue
                         size = try_int(torrent.pop("size", ""), 0)
                         download_url = self.urls["download"] + id
-                        if seeders < min(self.minseed, 1) or leechers < min(self.minleech, 0):
+                        if seeders < min(self.minseed, 1):
                             if mode != 'RSS':
                                 logger.log(u"Torrent doesn't meet minimum seeds & leechers not selecting : {0}".format(title), logger.DEBUG)
                             continue
