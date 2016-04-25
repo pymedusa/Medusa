@@ -67,6 +67,9 @@ class ShowQueue(generic_queue.GenericQueue):
     def isInSubtitleQueue(self, show):
         return self._isInQueue(show, (ShowQueueActions.SUBTITLE,))
 
+    def isInRemoveQueue(self, show):
+        return self._isInQueue(show, (ShowQueueActions.REMOVE,))
+
     def isBeingAdded(self, show):
         return self._isBeingSomethinged(show, (ShowQueueActions.ADD,))
 
@@ -81,6 +84,9 @@ class ShowQueue(generic_queue.GenericQueue):
 
     def isBeingSubtitled(self, show):
         return self._isBeingSomethinged(show, (ShowQueueActions.SUBTITLE,))
+
+    def isBeingRemoved(self, show):
+        return self._isBeingSomethinged(show, (ShowQueueActions.REMOVE,))
 
     def _getLoadingShowList(self):
         return [x for x in self.queue + [self.currentItem] if x is not None and x.isLoading]
@@ -192,7 +198,10 @@ class ShowQueue(generic_queue.GenericQueue):
         if not hasattr(show, u'indexerid'):
             raise CantRemoveShowException(u'Failed removing show: Show does not have an indexer id')
 
-        if self._isInQueue(show, (ShowQueueActions.REMOVE,)):
+        if self.isBeingRemoved(show):
+            raise CantRemoveShowException(u'[{!s}]: Show is already being removed'.format(show.indexerid))
+            
+        if self.isInRemoveQueue(show):
             raise CantRemoveShowException(u'[{!s}]: Show is already queued to be removed'.format(show.indexerid))
 
         # remove other queued actions for this show.
