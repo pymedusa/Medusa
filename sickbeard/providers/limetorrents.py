@@ -71,7 +71,8 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             for search_string in search_strings[mode]:
                 if mode == 'RSS':
                     for page in range(1, 4):
-                        data = self.urls['rss'].format(page=page)
+                        search_url = self.urls['rss'].format(page=page)
+                        data = self.get_url(search_url, returns='text')
                         items = self.parse(data, mode)
                         results += items
                 else:
