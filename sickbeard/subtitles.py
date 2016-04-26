@@ -315,7 +315,7 @@ def download_best_subs(video_path, subtitles_dir, release_name, languages, subti
                 logger.debug(u'Could not search in %s provider. Discarding for now', provider)
 
         if not subtitles_list:
-            logger.info(u'No subtitles found for %s', video_path)
+            logger.info(u'No subtitles found for %s', os.path.basename(video_path))
             return []
 
         min_score = get_min_score()
@@ -330,14 +330,15 @@ def download_best_subs(video_path, subtitles_dir, release_name, languages, subti
                                                        min_score=min_score, only_one=not sickbeard.SUBTITLES_MULTI)
 
         if not found_subtitles:
-            logger.info(u'No subtitles found for %s with min_score %d', video_path, min_score)
+            logger.info(u'No subtitles found for %s with a minimum score of %d',
+                        os.path.basename(video_path), min_score)
             return []
 
         save_subtitles(video, found_subtitles, directory=_encode(subtitles_dir), single=not sickbeard.SUBTITLES_MULTI)
 
         for subtitle in found_subtitles:
-            logger.info(u'Found subtitle for %s in %s provider with language %s', video_path, subtitle.provider_name,
-                        subtitle.language.opensubtitles)
+            logger.info(u'Found subtitle for %s in %s provider with language %s', os.path.basename(video_path),
+                        subtitle.provider_name, subtitle.language.opensubtitles)
             subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
 
             sickbeard.helpers.chmodAsParent(subtitle_path)
@@ -745,11 +746,10 @@ class SubtitlesFinder(object):
         :param force: True if a force search needs to be executed
         :type force: bool
         """
-        
         if self.amActive:
             logger.log(u"Subtitle finder is still running, not starting it again", logger.DEBUG)
             return
-        
+
         if not sickbeard.USE_SUBTITLES:
             logger.log(u"Subtitle search is disabled. Please enabled it", logger.WARNING)
             return
