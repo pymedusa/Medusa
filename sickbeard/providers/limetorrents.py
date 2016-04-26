@@ -62,7 +62,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=0.1)
+        self.cache = tvcache.TVCache(self, min_time=10)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches,too-many-locals
         results = []
