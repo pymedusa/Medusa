@@ -187,7 +187,7 @@
     <div id="searchNotification"></div>
 
     <div class="clearfix"></div>
-    <div id="wrapper">
+    <div id="wrapper" data-history-toggle="hide">
     <div id="container">
 
     <table id="history" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
