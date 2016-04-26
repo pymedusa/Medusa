@@ -39,6 +39,8 @@ class RecommendedShow(object):
         """
         Create a show recommendation
 
+        :param rec_show_prov: Recommended shows provider. Used to keep track of the provider,
+                              which facilitated the recommended shows list.
         :param show_id: as provided by the list provider
         :param title: of the show as displayed in the recommended show page
         :param indexer: used to map the show to
