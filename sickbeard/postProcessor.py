@@ -164,21 +164,18 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             results = []
             for base, _, files in os.walk(treeroot):
                 goodfiles = fnmatch.filter(files, pattern)
-                results.extend(ek(os.path.join, base, f) for f in goodfiles)
+                results.extend(os.path.join(base, f) for f in goodfiles)
             return results
 
-        if not file_path:
-            return []
-
         # don't confuse glob with chars we didn't mean to use
-        globbable_file_path = ek(helpers.fixGlob, file_path)
+        globbable_file_path = helpers.fixGlob(file_path)
 
         file_path_list = []
 
         extensions_to_delete = []
 
         if subfolders:
-            base_name = ek(os.path.basename, globbable_file_path).rpartition('.')[0]
+            base_name = os.path.basename(globbable_file_path).rpartition('.')[0]
         else:
             base_name = globbable_file_path.rpartition('.')[0]
 
@@ -192,13 +189,13 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         # subfolders are only checked in show folder, so names will always be exactly alike
         if subfolders:
             # just create the list of all files starting with the basename
-            filelist = recursive_glob(ek(os.path.dirname, globbable_file_path), base_name + '*')
+            filelist = recursive_glob(os.path.dirname(globbable_file_path), base_name + '*')
         # this is called when PP, so we need to do the filename check case-insensitive
         else:
             filelist = []
 
             # get a list of all the files in the folder
-            checklist = glob.glob(ek(os.path.join, ek(os.path.dirname, globbable_file_path), '*'))
+            checklist = glob.glob(os.path.join(os.path.dirname(globbable_file_path), '*'))
             # loop through all the files in the folder, and check if they are the same name even when the cases don't match
             for filefound in checklist:
 
