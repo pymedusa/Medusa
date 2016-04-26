@@ -47,7 +47,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             'index': self.url,
             'update': urljoin(self.url, '/post/updatestats.php'),
             'search': urljoin(self.url, '/search/tv/{query}/'),
-            'rss': 'https://www.limetorrents.cc/browse-torrents/TV-shows/date/'
+            'rss': urljoin(self.url, '/browse-torrents/TV-shows/date/{page}/')
         }
 
         # Credentials
@@ -71,8 +71,8 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             for search_string in search_strings[mode]:
                 search_url = self.urls['rss'] if mode == 'RSS' else self.urls['search'].format(query=search_string)
                 if mode == 'RSS':
-                    for x in range(1, 4):
-                        data = self.get_url('https://www.limetorrents.cc/browse-torrents/TV-shows/date/{x}/'.format(x=x))
+                    for page in range(1, 4):
+                        data = self.urls['search'].format(page=page)
                         items = self.parse(data, mode)
                         results += items
                 else:
