@@ -68,6 +68,9 @@ class SearchResult(object):  # pylint: disable=too-few-public-methods, too-many-
         # leechers of the release
         self.leechers = -1
 
+        # release publish date
+        self.pubdate = None
+
         # release group
         self.release_group = u''
 
@@ -206,7 +209,7 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
 
 
 class Proper(object):
-    def __init__(self, name, url, date, show, seeders, leechers, size):
+    def __init__(self, name, url, date, show, seeders, leechers, size, pubdate):
         self.name = name
         self.url = url
         self.date = date
@@ -217,6 +220,7 @@ class Proper(object):
         self.seeders = seeders
         self.leechers = leechers
         self.size = size
+        self.pubdate = pubdate
         self.show = show
         self.indexer = None
         self.indexerid = -1

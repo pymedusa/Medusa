@@ -61,3 +61,14 @@ class NZBProvider(GenericProvider):
 
     def _get_storage_dir(self):
         return sickbeard.NZB_DIR
+
+    def _get_pubdate(self, item):
+        try:
+            pubdate = item.get('pubdate')
+        except (AttributeError, IndexError, TypeError):
+            pubdate = None
+
+        if not pubdate:
+            logger.log(u'The pubdate was not found in the provider response', logger.DEBUG)
+
+        return pubdate

@@ -63,8 +63,9 @@ class TorrentProvider(GenericProvider):
                         title, url = self._get_title_and_url(item)
                         seeders, leechers = self._get_result_info(item)
                         size = self._get_size(item)
+                        pubdate = self._get_pubdate(item)
 
-                        results.append(Proper(title, url, datetime.today(), show, seeders, leechers, size))
+                        results.append(Proper(title, url, datetime.today(), show, seeders, leechers, size, pubdate))
 
         return results
 
@@ -162,3 +163,14 @@ class TorrentProvider(GenericProvider):
 
     def seed_ratio(self):
         return self.ratio
+
+    def _get_pubdate(self, item):
+        if isinstance(item, dict):
+            pubdate = item.get('pubdate')
+        elif isinstance(item, (list, tuple)) and len(item) > 2:
+            pubdate = item[5]
+        else:
+            pubdate = None
+
+        return pubdate
+
