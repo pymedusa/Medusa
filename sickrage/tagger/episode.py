@@ -133,6 +133,10 @@ class EpisodeTags(object):
         """
         if 'dlmux' in self.name.lower():
             return 'dlmux'
+            
+        if self.netflix: 
+            return self.netflix
+            
         else:
             attr = 'web'
             match = self._get_match_obj(attr)
