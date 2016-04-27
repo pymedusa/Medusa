@@ -165,7 +165,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
                                            (title, seeders, leechers), logger.DEBUG)
 
-                            item = {'title': title + '.hdtv.x264', 'link': download_url, 'size': size, 'seeders': seeders,  'leechers': leechers, 'pubdate': None, 'hash': None}
+                            item = {'title': title + '.hdtv.x264', 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers}
                             items.append(item)
                         except StandardError:
                             continue

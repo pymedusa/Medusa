@@ -125,7 +125,6 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                 'size': size,
                                 'seeders': seeders,
                                 'leechers': leechers,
-                                'pubdate': None,
                                 'hash': torrent_hash or ''
                             }
 
