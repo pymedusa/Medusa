@@ -371,7 +371,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
                             size = convert_size(item_size) or -1
 
-                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers}
                             items.append(result)
                         except StandardError:
                             continue

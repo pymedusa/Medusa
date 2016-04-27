@@ -109,7 +109,7 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     if not all([title, download_url]):
                         continue
 
-                    item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': t_hash}
+                    item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': t_hash}
 
                     if mode != 'RSS':
                         logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format
