@@ -166,6 +166,10 @@ class TorrentProvider(GenericProvider):
         return self.ratio
 
     def _get_pubdate(self, item):
+        """
+        Return publish date of the item. If provider doesnt
+        have _get_pubdate function this will be used
+        """
         if isinstance(item, dict):
             pubdate = item.get('pubdate')
         elif isinstance(item, (list, tuple)) and len(item) > 2:
@@ -176,6 +180,10 @@ class TorrentProvider(GenericProvider):
         return pubdate
 
     def _get_hash(self, item):
+        """
+        Return hash of the item. If provider doesnt
+        have _get_hash function this will be used
+        """
         if isinstance(item, dict):
             hash = item.get('hash')
         elif isinstance(item, (list, tuple)) and len(item) > 2:

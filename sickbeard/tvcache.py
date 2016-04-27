@@ -135,9 +135,17 @@ class TVCache(object):
         return self.provider._get_size(item)
 
     def _get_pubdate(self, item):
+        """
+        Return publish date of the item. If provider doesnt
+        have _get_pubdate function this will be used
+        """
         return self.provider._get_pubdate(item)
 
     def _get_hash(self, item):
+        """
+        Return hash of the item. If provider doesnt
+        have _get_hash function this will be used
+        """
         return self.provider._get_hash(item)
 
     def _getRSSData(self):

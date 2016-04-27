@@ -450,9 +450,17 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         return -1, -1
 
     def _get_pubdate(self, item):  # pylint: disable=unused-argument,no-self-use
+        """
+        Return publish date of the item. If provider doesnt
+        have _get_pubdate function this will be used
+        """
         return None
 
     def _get_hash(self, item):  # pylint: disable=unused-argument,no-self-use
+        """
+        Return hash of the item. If provider doesnt
+        have _get_hash function this will be used
+        """
         return None
 
     def _get_title_and_url(self, item):  # pylint: disable=no-self-use

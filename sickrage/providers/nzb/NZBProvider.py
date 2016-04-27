@@ -63,6 +63,10 @@ class NZBProvider(GenericProvider):
         return sickbeard.NZB_DIR
 
     def _get_pubdate(self, item):
+        """
+        Return publish date of the item. If provider doesnt
+        have _get_pubdate function this will be used
+        """
         try:
             pubdate = item.get('pubdate')
         except (AttributeError, IndexError, TypeError):
