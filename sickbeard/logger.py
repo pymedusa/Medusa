@@ -149,7 +149,13 @@ class CensoredFormatter(logging.Formatter, object):
 
         :param record: to censor
         """
-        msg = super(CensoredFormatter, self).format(record)
+        privacy_level = sickbeard.common.privacy_levels[sickbeard.PRIVACY_LEVEL]
+        if not privacy_level:
+            return super(CensoredFormatter, self).format(record)
+        elif privacy_level == sickbeard.common.privacy_levels['absurd']:
+            return re.sub(r'[\d\w]', '*', super(CensoredFormatter, self).format(record))
+        else:
+            msg = super(CensoredFormatter, self).format(record)
 
         if not isinstance(msg, unicode):
             msg = msg.decode(self.encoding, 'replace')  # Convert to unicode
