@@ -69,7 +69,7 @@ def set_last_refresh(ex_list):
     )
 
 
-def get_scene_exceptions(indexer_id, season=-1):
+def get_scene_exceptions(indexer_id, indexer=1, season=-1):
     """
     Given a indexer_id, return a list of all the scene exceptions.
     """
@@ -79,8 +79,17 @@ def get_scene_exceptions(indexer_id, season=-1):
 
     if indexer_id not in exceptionsCache or season not in exceptionsCache[indexer_id]:
         cache_db_con = db.DBConnection('cache.db')
-        exceptions = cache_db_con.select(b'SELECT show_name FROM scene_exceptions WHERE indexer_id = ? and season = ?',
-                                         [mapped_indexer_id or indexer_id, season])
+        exceptions = []
+        exceptions = cache_db_con.select(b'SELECT exception_id, show_name FROM scene_exceptions WHERE indexer_id = ? and season = ?',
+                                                [mapped_indexer_id or indexer_id, season])
+
+        exceptions_unmapped = cache_db_con.select(b'SELECT exception_id, show_name FROM scene_exceptions WHERE indexer_id = ? and indexer = ? and season = ?',
+                                                  [indexer_id, indexer, season])
+
+        for exception in exceptions_unmapped:
+            if exception['exception_id'] not in [ex['exception_id'] for ex in exceptions]:
+                exceptions.append(exception)
+
         if exceptions:
             exceptions_list = list({cur_exception[b'show_name'] for cur_exception in exceptions})
 

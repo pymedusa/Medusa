@@ -123,45 +123,6 @@ class Show(dict):
         Each array index is an Episode() instance, so doing
         search_results[0]['episodename'] will retrieve the episode name of the
         first match.
-
-        Search terms are converted to lower case (unicode) strings.
-
-        # Examples
-
-        These examples assume t is an instance of Tvdb():
-
-        >>> t = Tvdb()
-        >>>
-
-        To search for all episodes of Scrubs with a bit of data
-        containing "my first day":
-
-        >>> t['Scrubs'].search("my first day")
-        [<Episode 01x01 - My First Day>]
-        >>>
-
-        Search for "My Name Is Earl" episode named "Faked His Own Death":
-
-        >>> t['My Name Is Earl'].search('Faked His Own Death', key = 'episodename')
-        [<Episode 01x04 - Faked His Own Death>]
-        >>>
-
-        To search Scrubs for all episodes with "mentor" in the episode name:
-
-        >>> t['scrubs'].search('mentor', key = 'episodename')
-        [<Episode 01x02 - My Mentor>, <Episode 03x15 - My Tormented Mentor>]
-        >>>
-
-        # Using search results
-
-        >>> results = t['Scrubs'].search("my first")
-        >>> print results[0]['episodename']
-        My First Day
-        >>> for x in results: print x['episodename']
-        My First Day
-        My First Step
-        My First Kill
-        >>>
         """
         results = []
         for cur_season in self.values():
