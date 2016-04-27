@@ -133,7 +133,7 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                 logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
                             continue
 
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
 
                         if mode != "RSS":
                             logger.log("Found result: {0} with {1} seeders and {2} leechers".format
