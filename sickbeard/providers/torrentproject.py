@@ -1,7 +1,6 @@
 # coding=utf-8
 # Author: Gonçalo M. (aka duramato/supergonkas) <supergonkas@gmail.com>
 #
-#
 # This file is part of SickRage.
 #
 # SickRage is free software: you can redistribute it and/or modify
@@ -58,6 +57,7 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
         search_params = {
             'out': 'json',
             'filter': 2101,
+            'showmagnets': 'on',
             'num': 150
         }
 
@@ -82,43 +82,39 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     search_url = self.url
 
                 torrents = self.get_url(search_url, params=search_params, returns='json')
-                if not (torrents and "total_found" in torrents and int(torrents["total_found"]) > 0):
+                if not (torrents and int(torrents.pop('total_found', 0)) > 0):
                     logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
                     continue
 
-                del torrents["total_found"]
-
-                results = []
                 for i in torrents:
-                    title = torrents[i].get("title")
-                    seeders = try_int(torrents[i].get("seeds"), 1)
-                    leechers = try_int(torrents[i].get("leechs"), 0)
+                    item = {
+                        'title': torrents[i].get('title'),
+                        'link': torrents[i].get('magnet', '') + self._custom_trackers,
+                        'size': convert_size(torrents[i].get('torrent_size')),
+                        'seeders': try_int(torrents[i].get('seeds'), 1),
+                        'leechers': try_int(torrents[i].get('leechs')),
+                        'hash': torrents[i].get('torrent_hash'),
+                        # # Pub date not yet implemented
+                        # 'pub_date': None,
+                    }
+
+                    if not all([item['title'], item['hash'], ]):
+                        continue
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if item['seeders'] < min(self.minseed, 1):
                         if mode != 'RSS':
                             logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
                         continue
 
-                    t_hash = torrents[i].get("torrent_hash")
-                    torrent_size = torrents[i].get("torrent_size")
-                    size = convert_size(torrent_size) or -1
-                    download_url = torrents[i].get("magnet") + self._custom_trackers
-                    pubdate = '' #TBA
-
-                    if not all([title, download_url]):
-                        continue
-
-                    item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': t_hash}
-
                     if mode != 'RSS':
                         logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format
-                                   (title, seeders, leechers), logger.DEBUG)
+                                   (item['title'], item['seeders'], item['leechers']), logger.DEBUG)
 
                     items.append(item)
 
             # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
+            items.sort(key=lambda d: d.get('seeders'), reverse=True)
             results += items
 
         return results
