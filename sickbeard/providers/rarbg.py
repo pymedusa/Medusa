@@ -168,7 +168,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                             logger.log("Found result: {0} with {1} seeders and {2} leechers".format
                                        (title, seeders, leechers), logger.DEBUG)
 
-                        result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers}
+                        result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                         items.append(result)
                     except StandardError:
                         continue
