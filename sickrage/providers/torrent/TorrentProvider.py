@@ -64,8 +64,9 @@ class TorrentProvider(GenericProvider):
                         seeders, leechers = self._get_result_info(item)
                         size = self._get_size(item)
                         pubdate = self._get_pubdate(item)
+                        hash = self._get_hash(item)
 
-                        results.append(Proper(title, url, datetime.today(), show, seeders, leechers, size, pubdate))
+                        results.append(Proper(title, url, datetime.today(), show, seeders, leechers, size, pubdate, hash))
 
         return results
 
@@ -174,3 +175,12 @@ class TorrentProvider(GenericProvider):
 
         return pubdate
 
+    def _get_hash(self, item):
+        if isinstance(item, dict):
+            hash = item.get('hash')
+        elif isinstance(item, (list, tuple)) and len(item) > 2:
+            hash = item[6]
+        else:
+            hash = None
+
+        return hash

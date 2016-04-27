@@ -175,6 +175,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             (seeders, leechers) = self._get_result_info(item)
             size = self._get_size(item)
             pubdate = self._get_pubdate(item)
+            hash = self._get_hash(item)
 
             try:
                 parse_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]).parse(title)
@@ -263,7 +264,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                 logger.log(u'Adding item from search to cache: %s' % title, logger.DEBUG)
                 # pylint: disable=protected-access
                 # Access to a protected member of a client class
-                ci = self.cache._addCacheEntry(title, url, seeders, leechers, size, pubdate, parse_result=parse_result)
+                ci = self.cache._addCacheEntry(title, url, seeders, leechers, size, pubdate, hash, parse_result=parse_result)
 
                 if ci is not None:
                     cl.append(ci)
@@ -301,6 +302,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             result.content = None
             result.size = self._get_size(item)
             result.pubdate = self._get_pubdate(item)
+            result.hash = self._get_hash(item)
 
             if not episode_object:
                 episode_number = SEASON_RESULT
@@ -448,6 +450,9 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         return -1, -1
 
     def _get_pubdate(self, item):  # pylint: disable=unused-argument,no-self-use
+        return None
+
+    def _get_hash(self, item):  # pylint: disable=unused-argument,no-self-use
         return None
 
     def _get_title_and_url(self, item):  # pylint: disable=no-self-use
