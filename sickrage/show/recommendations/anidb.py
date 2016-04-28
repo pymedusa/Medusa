@@ -24,8 +24,8 @@ from sickrage.helper.exceptions import ex
 from sickbeard import helpers
 from sickrage.helper.common import try_int
 from adba.aniDBtvDBmaper import TvDBMap
-from anidbhttp.anidb import AnidbApi, AnimeLists
-from anidbhttp.exceptions import AnidbException
+from simpleanidb import (Anidb, REQUEST_CATEGORY_LIST, REQUEST_HOT, REQUEST_RANDOM_RECOMMENDATION)
+from simpleanidb.exceptions import GeneralError
 from .recommended import RecommendedShow
 
 
@@ -48,23 +48,23 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
             return
 
         rec_show = RecommendedShow(self, show_obj.aid, show_obj.title['x-jat'], 1, tvdb_id,
-                                   rating=show_obj.ratings['permanent']['votes'],
-                                   votes=show_obj.ratings['permanent']['count'],
-                                   image_href=show_obj.url)
+                                   **{'rating': show_obj.ratings['permanent']['votes'],
+                                      'votes': show_obj.ratings['permanent']['count'],
+                                      'image_href': show_obj.url})
 
         # Check cache or get and save image
         rec_show.cache_image("http://img7.anidb.net/pics/anime/{0}".format(show_obj.picture))
 
         return rec_show
 
-    def fetch_popular_shows(self):
+    def fetch_popular_shows(self, list_type=REQUEST_HOT):
         """Get popular show information from IMDB"""
         shows = []
         result = []
 
         try:
-            shows = AnidbApi().query(AnimeLists.HOT)
-        except AnidbException, e:
+            shows = Anidb().get_list(list_type)
+        except GeneralError, e:
             logger.log(u"Could not connect to Anidb service: %s" % ex(e), logger.WARNING)
 
         for show in shows:
