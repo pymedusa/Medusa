@@ -1,3 +1,4 @@
 - [ ] PR is based on the DEVELOP branch
 - [ ] Don't send big changes all at once. Split up big PRs into multiple smaller PRs that are easier to manage and review
+- [ ] Always make sure the PR has a clear description of why,how, and what your trying to fix. The same goes for improvements or new features. Also if you refering to an issue, make sure a summary is available in the PR.
 - [ ] Read [contribution guide](https://github.com/PyMedusa/SickRage/blob/master/.github/CONTRIBUTING.md)
