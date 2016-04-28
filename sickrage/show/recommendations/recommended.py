@@ -34,8 +34,7 @@ class RecommendedShow(object):
     """
     Base class for show recommendations
     """
-    def __init__(self, rec_show_prov, show_id, title, indexer, indexer_id, cache_subfolder=u'recommended',
-                 rating=None, votes=None, image_href=None, image_src=None, default_img_src=None):
+    def __init__(self, rec_show_prov, show_id, title, indexer, indexer_id, **show_attr):
         """
         Create a show recommendation
 
@@ -45,24 +44,25 @@ class RecommendedShow(object):
         :param title: of the show as displayed in the recommended show page
         :param indexer: used to map the show to
         :param indexer_id: a mapped indexer_id for indexer
-        :param cache_subfolder: to store images
         :param rating: of the show in percent
         :param votes: number of votes
         :param image_href: the href when clicked on the show image (poster)
         :param image_src: the url to the "cached" image (poster)
         """
         self.recommender = rec_show_prov.recommender
-        self.cache_subfolder = rec_show_prov.cache_subfolder
+        self.cache_subfolder = rec_show_prov.cache_subfolder or u'recommended'
         self.default_img_src = rec_show_prov.default_img_src
 
         self.show_id = show_id
         self.title = title
         self.indexer = indexer
         self.indexer_id = indexer_id
-        self.rating = rating
-        self.votes = votes
-        self.image_href = image_href
-        self.image_src = image_src
+
+        self.rating = show_attr.get('rating')
+        self.votes = show_attr.get('votes')
+        self.image_href = show_attr.get('image_href')
+        self.image_src = show_attr.get('image_src')
+        self.default_img_srv = show_attr.get('default_image_src')
 
         # Check if the show is currently already in the db
         self.show_in_list = self.indexer_id in {show.indexerid for show in sickbeard.showList if show.indexerid}
