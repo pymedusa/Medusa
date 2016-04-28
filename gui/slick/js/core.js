@@ -3582,11 +3582,15 @@ var SICKRAGE = {
                 'Loading recommended shows...',
                 'Trakt timed out, refresh page to try again'
             );
-            
+            $.initAddShowById();
+            $.initRemoteShowGrid();
+        },
+
+        trendingShows: function(){
             $('#trendingShows').loadRemoteShows(
-                    '/addShows/getTrendingShows/?traktList=' + $('#traktList').val(),
-                    'Loading trending shows...',
-                    'Trakt timed out, refresh page to try again'
+                '/addShows/getTrendingShows/?traktList=' + $('#traktList').val(),
+                'Loading trending shows...',
+                'Trakt timed out, refresh page to try again'
             );
 
             $('#traktlistselection').on('change', function(e) {
@@ -3600,13 +3604,8 @@ var SICKRAGE = {
             });
             
             $.initAddShowById();
-            $.initRemoteShowGrid();
         },
-        trendingShows: function(){
-            
 
-            $.initAddShowById();
-        },
         popularShows: function(){
             $.initRemoteShowGrid();
         }
