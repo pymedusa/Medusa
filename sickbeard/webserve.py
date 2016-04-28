@@ -84,6 +84,8 @@ from unrar2 import RarFile
 import adba
 from libtrakt.trakt import TraktApi
 from libtrakt.exceptions import TraktException
+from simpleanidb import REQUEST_HOT
+from sickrage.show.recommendations.anidb import AnidbPopular
 from sickrage.helper.common import sanitize_filename, try_int, episode_num, enabled_providers
 from sickrage.helper.encoding import ek, ss
 from sickrage.helper.exceptions import (
@@ -1041,7 +1043,7 @@ class Home(WebRoot):
         if access_token:
             sickbeard.TRAKT_ACCESS_TOKEN = access_token
             sickbeard.TRAKT_REFRESH_TOKEN = refresh_token
-        response = trakt_api.get_token(trakt_pin)
+        response = trakt_api.validate_account()
         if response:
             return "Trakt Authorized"
         return "Trakt Not Authorized!"
@@ -2567,6 +2569,16 @@ class HomePostProcess(Home):
             return self._genericMessage("Postprocessing results", result)
 
 
+@route('/addRecommended(/?.*)')
+class HomeAddSRecommended(Home):
+    def __init__(self, *args, **kwargs):
+        super(HomeAddSRecommended, self).__init__(*args, **kwargs)
+
+    def index(self):
+        t = PageTemplate(rh=self, filename="addRecommended.mako")
+        return t.render(title='Add From Recommended', header='Add From Recommended', topmenu='home', controller="addShows", action="index")
+
+
 @route('/addShows(/?.*)')
 class HomeAddShows(Home):
     def __init__(self, *args, **kwargs):
@@ -2794,7 +2806,7 @@ class HomeAddShows(Home):
 
         t = PageTemplate(rh=self, filename="addShows_trendingShows.mako")
         return t.render(title=page_title, header=page_title, enable_anime_options=False,
-                        traktList=traktList, controller="addShows", action="recommendedShows")
+                        traktList=traktList, controller="addShows", action="trendingShows")
 
     def getTrendingShows(self, traktList=None):
         """
@@ -2854,6 +2866,24 @@ class HomeAddShows(Home):
                         popular_shows=popular_shows, imdb_exception=e,
                         topmenu="home",
                         controller="addShows", action="popularShows")
+
+    def popularAnime(self, list_type=REQUEST_HOT):
+        """
+        Fetches list recommeded shows from anidb.info.
+        """
+        t = PageTemplate(rh=self, filename="addShows_recommended.mako")
+        e = None
+
+        try:
+            recommended_shows = AnidbPopular().fetch_popular_shows(list_type)
+        except Exception as e:
+            # print traceback.format_exc()
+            recommended_shows = None
+
+        return t.render(title="Popular Anime Shows", header="Popular Anime Shows",
+                        recommended_shows=recommended_shows, exception=e, groups=[],
+                        topmenu="home", enable_anime_options=True, blacklist=[], whitelist=[],
+                        controller="addShows", action="recommendedShows")
 
     def addShowToBlacklist(self, indexer_id):
         # URL parameters

@@ -38,6 +38,7 @@
                     <ul class="dropdown-menu">
                         <li><a href="${srRoot}/home/"><i class="menu-icon-home"></i>&nbsp;Show List</a></li>
                         <li><a href="${srRoot}/addShows/"><i class="menu-icon-addshow"></i>&nbsp;Add Shows</a></li>
+                        <li><a href="${srRoot}/addRecommended/"><i class="menu-icon-addshow"></i>&nbsp;Add From Recommended</a></li>
                         <li><a href="${srRoot}/home/postprocess/"><i class="menu-icon-postprocess"></i>&nbsp;Manual Post-Processing</a></li>
                         % if sickbeard.SHOWS_RECENT:
                             <li role="separator" class="divider"></li>
