@@ -134,6 +134,8 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     if not url:
                         continue
                     torrent_hash = hash_regex.search(url['href']).group(2)
+                    if not torrent_id or not torrent_hash:
+                        continue
                     with suppress(requests.exceptions.Timeout):
                         # Suppress the timeout since we are not interested in actually getting the results
                         hashdata = self.session.get(self.urls['update'], timeout=0.1,
