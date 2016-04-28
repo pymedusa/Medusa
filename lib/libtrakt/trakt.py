@@ -52,11 +52,8 @@ class TraktApi(object):
         self.headers = headers
         self.trakt_settings = trakt_settings
 
-    def get_token(self, refresh_token=None, trakt_pin=None, count=0, trakt_access_token=None):
+    def get_token(self, refresh_token=None, trakt_pin=None, count=0):
         """function or refreshing a trakt token"""
-
-        if trakt_access_token:
-            self.access_token = trakt_access_token
 
         if count > 3:
             self.access_token = ""
@@ -70,9 +67,9 @@ class TraktApi(object):
             "redirect_uri": "urn:ietf:wg:oauth:2.0:oob"
         }
 
-        if refresh_token:
+        if refresh_token and self.refresh_token and not trakt_pin:
             data["grant_type"] = "refresh_token"
-            data["refresh_token"] = refresh_token
+            data["refresh_token"] = self.refresh_token
         else:
             data["grant_type"] = "authorization_code"
             if trakt_pin is not None:
@@ -94,23 +91,20 @@ class TraktApi(object):
 
     def request(self, path, data=None, headers=None, url=None, method="GET", count=0):  # pylint: disable-msg=too-many-arguments,too-many-branches
         """function for performing the trakt request"""
-        access_token = self.trakt_settings.get("trakt_access_token", self.access_token)
-        if not self.trakt_settings.get("trakt_access_token") and count >= 2:
+
+        if not self.access_token and count >= 2:
             raise TraktMissingTokenException(u"You must get a Trakt TOKEN. Check your Trakt settings")
 
         if headers is None:
             headers = self.headers
 
-        if self.trakt_settings.get("trakt_access_token"):
-            headers["Authorization"] = "Bearer " + access_token
+        if self.access_token:
+            headers["Authorization"] = "Bearer " + self.access_token
 
         if url is None:
             url = self.api_url
 
         count = count + 1
-
-        if headers is None:
-            headers = self.headers
 
         data = json.dumps(data) if data else []
 
@@ -125,7 +119,7 @@ class TraktApi(object):
             resp = resp.json()
         except TraktTimeoutException:
             log.warning(u"Timeout connecting to Trakt. Try to increase timeout value in Trakt settings")
-            raise traktTimeoutException(u"Timeout connecting to Trakt. Try to increase timeout value in Trakt settings")  # @UndefinedVariable
+            raise TraktTimeoutException(u"Timeout connecting to Trakt. Try to increase timeout value in Trakt settings")
         except TraktConnectionException:
             log.error(u"Could not connect to Trakt.")
             raise TraktConnectionException()
