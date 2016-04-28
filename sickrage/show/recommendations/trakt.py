@@ -61,12 +61,7 @@ class TraktPopular(object):
                 sickbeard.TRAKT_ACCESS_TOKEN = trakt_api.access_token
                 sickbeard.TRAKT_REFRESH_TOKEN = trakt_api.refresh_token
         except TraktAuthException:
-            logger.log(u"Refreshing Trakt token", logger.DEBUG)
-            (access_token, refresh_token) = trakt_api.get_token(sickbeard.TRAKT_REFRESH_TOKEN)
-            if access_token:
-                sickbeard.TRAKT_ACCESS_TOKEN = access_token
-                sickbeard.TRAKT_REFRESH_TOKEN = refresh_token
-                library_shows = trakt_api.request(path) or []
+            return []
 
         return library_shows
 
@@ -84,7 +79,7 @@ class TraktPopular(object):
         trakt_settings = {"trakt_api_secret": sickbeard.TRAKT_API_SECRET, "trakt_api_key": sickbeard.TRAKT_API_KEY,
                           "trakt_access_token": sickbeard.TRAKT_ACCESS_TOKEN}
 
-        trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
+        trakt_api = TraktApi(timeout=sickbeard.TRAKT_TIMEOUT, ssl_verify=sickbeard.SSL_VERIFY, **trakt_settings)
 
         try:  # pylint: disable=too-many-nested-blocks
             not_liked_show = ""
