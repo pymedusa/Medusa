@@ -8,15 +8,22 @@ from datetime import date
 import sickbeard
 from sickbeard import helpers
 from sickrage.helper.encoding import ek
+from sickbeard import logger
+from sickrage.helper.exceptions import ex
+from .recommended import RecommendedShow
 
 
-class imdbPopular(object):
+class ImdbPopular(object):
     def __init__(self):
         """Gets a list of most popular TV series from imdb"""
 
+        self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
+        self.session = helpers.make_session()
+        self.recommender = "IMDB Popular"
+        self.default_img_src = ''
+
         # Use akas.imdb.com, just like the imdb lib.
         self.url = 'http://akas.imdb.com/search/title'
-
         self.params = {
             'at': 0,
             'sort': 'moviemeter',
@@ -24,14 +31,30 @@ class imdbPopular(object):
             'year': '%s,%s' % (date.today().year - 1, date.today().year + 1)
         }
 
-        self.session = helpers.make_session()
+    def _create_recommended_show(self, show_obj):
+        """creates the RecommendedShow object from the returned showobj"""
+
+        tvdb_id = helpers.getTVDBFromID(show_obj.get('imdb_tt'), 'IMDB')
+        if not tvdb_id:
+            return None
+
+        rec_show = RecommendedShow(self, show_obj.get('imdb_tt'), show_obj.get('name'), 1, tvdb_id,
+                                   **{'rating': show_obj.get('rating'),
+                                      'votes': show_obj.get('votes'),
+                                      'image_href': show_obj.get('imdb_url')})
+
+        if show_obj.get('image_url_large'):
+            rec_show.cache_image(show_obj.get('image_url_large'))
+
+        return rec_show
 
     def fetch_popular_shows(self):
         """Get popular show information from IMDB"""
 
         popular_shows = []
 
-        data = helpers.getURL(self.url, session=self.session, params=self.params, headers={'Referer': 'http://akas.imdb.com/'}, returns='text')
+        data = helpers.getURL(self.url, session=self.session, params=self.params,
+                              headers={'Referer': 'http://akas.imdb.com/'}, returns='text')
         if not data:
             return None
 
@@ -46,9 +69,6 @@ class imdbPopular(object):
             if image_td:
                 image = image_td.find("img")
                 show['image_url_large'] = self.change_size(image['src'], 3)
-                show['image_path'] = ek(posixpath.join, 'images', 'imdb_popular', ek(os.path.basename, show['image_url_large']))
-
-                self.cache_image(show['image_url_large'])
 
             td = row.find("td", {"class": "title"})
 
@@ -84,7 +104,14 @@ class imdbPopular(object):
 
                 popular_shows.append(show)
 
-        return popular_shows
+        result = []
+        for show in popular_shows:
+            try:
+                result.append(self._create_recommended_show(show))
+            except Exception, e:
+                logger.log(u"Could not parse IMDB show, with exception: %s" % ex(e), logger.WARNING)
+
+        return result
 
     @staticmethod
     def change_size(image_url, factor=3):
@@ -120,4 +147,4 @@ class imdbPopular(object):
         if not ek(os.path.isfile, full_path):
             helpers.download_file(image_url, full_path, session=self.session)
 
-imdb_popular = imdbPopular()
+        return full_path

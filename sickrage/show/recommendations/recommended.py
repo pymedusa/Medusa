@@ -47,7 +47,7 @@ class RecommendedShow(object):
         :param rating: of the show in percent
         :param votes: number of votes
         :param image_href: the href when clicked on the show image (poster)
-        :param image_src: the url to the "cached" image (poster)
+        :param image_src: the local url to the "cached" image (poster)
         """
         self.recommender = rec_show_prov.recommender
         self.cache_subfolder = rec_show_prov.cache_subfolder or u'recommended'
