@@ -68,7 +68,7 @@ class SceneExceptionTestCase(test.AppTestDBCase):
 
     @unittest.expectedFailure
     def test_scene_ex_babylon_5(self):
-        self.assertEqual(sorted(scene_exceptions.get_scene_exceptions(70726)), ['Babylon 5', 'Babylon5'])
+        self.assertEqual(sorted(scene_exceptions.get_scene_exceptions(70726, 1)), ['Babylon 5', 'Babylon5'])
 
     @unittest.expectedFailure
     def test_scene_ex_by_name(self):

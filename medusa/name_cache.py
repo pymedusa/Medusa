@@ -23,7 +23,7 @@ import medusa as app
 from six import iteritems
 from . import db, logger
 from .helpers import full_sanitizeSceneName
-from .scene_exceptions import get_scene_exceptions, get_scene_seasons, retrieve_exceptions
+from .scene_exceptions import get_scene_exceptions, retrieve_exceptions
 
 nameCache = {}
 nameCacheLock = threading.Lock()
@@ -92,8 +92,8 @@ def buildNameCache(show=None):
     else:
         # logger.log(u"Building internal name cache for " + show.name, logger.DEBUG)
         clearCache(show.indexerid)
-        for curSeason in [-1] + get_scene_seasons(show.indexerid):
-            for name in set(get_scene_exceptions(show.indexerid, season=curSeason) + [show.name]):
+        for curSeason in [-1] + sickbeard.scene_exceptions.get_scene_seasons(show.indexerid):
+            for name in set(get_scene_exceptions(show.indexerid, indexer=show.indexer, season=curSeason) + [show.name]):
                 name = full_sanitizeSceneName(name)
                 if name in nameCache:
                     continue
