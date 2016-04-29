@@ -437,8 +437,10 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                 episode_string += str(episode.airdate).replace('-', ' ')
             elif episode.show.sports:
                 episode_string += str(episode.airdate).replace('-', ' ')
-                episode_string += ('|', ' ')[len(self.proper_strings) > 1]
-                episode_string += episode.airdate.strftime('%b')
+                # TODO: This normally adds "|month", forex: "|apr" to it. But I can't find any prov, where that's needed.
+                # oznzb at least won't get any results like this.
+                # episode_string += ('|', ' ')[len(self.proper_strings) > 1]
+                # episode_string += episode.airdate.strftime('%b')
             elif episode.show.anime:
                 episode_string += '%02d' % int(episode.scene_absolute_number)
             else:
