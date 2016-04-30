@@ -14,6 +14,7 @@ bluray = re.compile(r'(blue?-?ray|b[rd](?:rip|mux))', re.IGNORECASE)
 sat = re.compile(r'(dsr|satrip)', re.IGNORECASE)
 itunes = re.compile(r'(itunes)', re.IGNORECASE)
 aussie = re.compile(r'\b(bf1)\b', re.IGNORECASE)  # aussie p2p release group
+netflix = re.compile(r'netflix(hd|uhd)', re.IGNORECASE)
 
 # Codecs
 avc = re.compile(r'([xh].?26[45]|(?:he|a)vc)', re.IGNORECASE)
