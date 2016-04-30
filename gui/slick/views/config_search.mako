@@ -75,7 +75,7 @@
                             <label>
                                 <span class="component-title">Backlog search frequency</span>
                                 <span class="component-desc">
-                                    <input type="number" min="720" step="60" name="backlog_frequency" value="${sickbeard.BACKLOG_FREQUENCY}" class="form-control input-sm input75" autocapitalize="off" />
+                                    <input type="number" min="720" step="1" name="backlog_frequency" value="${sickbeard.BACKLOG_FREQUENCY}" class="form-control input-sm input75" autocapitalize="off" />
                                     <p>time in minutes between searches (min. ${sickbeard.MIN_BACKLOG_FREQUENCY})</p>
                                 </span>
                             </label>
