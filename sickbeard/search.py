@@ -253,12 +253,12 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
         
         if ignore_words and found_ignore_word:
             logger.log(u"Ignoring " + cur_result.name + " based on ignored words filter: " + found_ignore_word,
-                       logger.WARNING)
+                       logger.INFO)
             continue
 
         if require_words and not found_require_word:
             logger.log(u"Ignoring " + cur_result.name + " based on required words filter: " + require_words,
-                       logger.WARNING)
+                       logger.INFO)
             continue
 
         if not show_name_helpers.filterBadReleases(cur_result.name, parse=False):
