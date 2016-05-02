@@ -30,13 +30,14 @@ from requests import exceptions as requests_exceptions
 import sickbeard
 
 from sickbeard import db
-from sickbeard import helpers, logger
+from sickbeard import logger
+from sickbeard.helpers import remove_non_release_groups
 from sickbeard.search import snatchEpisode
 from sickbeard.search import pickBestResult
 from sickbeard.common import DOWNLOADED, SNATCHED, SNATCHED_PROPER, Quality, cpu_presets
 from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.History import History
-from sickrage.helper.common import enabled_providers
+from sickrage.helper.common import enabled_providers, remove_strings
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
 
 
@@ -214,7 +215,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # only keep the proper if we have already retrieved the same quality ep (don't get better/worse ones)
             oldStatus, oldQuality = Quality.splitCompositeStatus(int(sql_results[0]['status']))
             if oldStatus not in (DOWNLOADED, SNATCHED) or oldQuality != bestResult.quality:
-                logger.log(u"Ignoring proper already snatched or downloaded: {name}".format
+                logger.log(u"Ignoring proper because quality is different or episode is already archived: {name}".format
                            (name=bestResult.name))
                 continue
 
@@ -265,34 +266,34 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             historyResults = main_db_con.select(
                 "SELECT resource FROM history " +
                 "WHERE showid = ? AND season = ? AND episode = ? AND quality = ? AND date >= ? " +
-                "AND action IN (" + ",".join([str(x) for x in Quality.SNATCHED + Quality.DOWNLOADED]) + ")",
+                "AND (action LIKE '%2' OR action LIKE '%4')",
                 [curProper.indexerid, curProper.season, curProper.episode, curProper.quality,
                  historyLimit.strftime(History.date_format)])
 
             # make sure that none of the existing history downloads are the same proper we're trying to download
-            clean_proper_name = self._genericName(helpers.remove_non_release_groups(curProper.name))
+            clean_proper_name = self._genericName(remove_strings(remove_non_release_groups(curProper.name), ['.mkv','.avi','.mp4']))
             isSame = False
             for curResult in historyResults:
                 # if the result exists in history already we need to skip it
-                if self._genericName(helpers.remove_non_release_groups(curResult["resource"])) == clean_proper_name:
+                if self._genericName(remove_strings(remove_non_release_groups(curResult["resource"]), ['.mkv','.avi','.mp4'])) == clean_proper_name:
                     isSame = True
                     break
             if isSame:
-                logger.log(u"This proper is already in history, skipping it", logger.DEBUG)
+                logger.log(u"This proper '{result}' is already in history, skipping it".format(result=curProper.name), logger.WARNING)
                 continue
 
             else:
 
                 # make sure that none of the existing history downloads are the same proper we're trying to download
-                clean_proper_name = self._genericName(helpers.remove_non_release_groups(curProper.name))
+                clean_proper_name = self._genericName(remove_non_release_groups(curProper.name))
                 isSame = False
                 for curResult in historyResults:
                     # if the result exists in history already we need to skip it
-                    if self._genericName(helpers.remove_non_release_groups(curResult["resource"])) == clean_proper_name:
+                    if self._genericName(remove_non_release_groups(curResult["resource"])) == clean_proper_name:
                         isSame = True
                         break
                 if isSame:
-                    logger.log(u"This proper is already in history, skipping it", logger.DEBUG)
+                    logger.log(u"This proper '{result}' is already in history, skipping it".format(result=curProper.name), logger.WARNING)
                     continue
 
                 # get the episode object

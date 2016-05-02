@@ -334,3 +334,21 @@ def enabled_providers(search_type):
         if x.is_active() and
         hasattr(x, 'enable_{}'.format(search_type)) and
         getattr(x, 'enable_{}'.format(search_type))]
+
+def remove_strings(old_string, unwanted_strings):
+    """
+    Return string removing all unwanted strings on it
+
+    :param old_string: String that will be cleaned
+    :param unwanted_strings: List of unwanted strings
+
+    :returns: the string without the unwanted strings
+    """
+    if not old_string:
+        return
+
+    for item in unwanted_strings:
+        old_string = old_string.replace(item, '')
+    return old_string
+        
+    
