@@ -418,7 +418,6 @@ def searchForNeededEpisodes():
 
     for curShow in show_list:
         if not curShow.paused:
-            sickbeard.name_cache.buildNameCache(curShow)
             episodes.extend(wantedEpisodes(curShow, fromDate))
 
     if not episodes:
