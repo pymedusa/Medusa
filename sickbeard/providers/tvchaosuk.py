@@ -126,7 +126,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             if self.freeleech and not torrent.find('img', alt=re.compile('Free Torrent')):
                                 continue
 
-                            title = torrent.find(class_='tooltip-content').div.get_text(strip=True).replace('mp4', 'x264')
+                            title = torrent.find(class_='tooltip-content').div.get_text(strip=True)
                             download_url = torrent.find(title='Click to Download this Torrent!').parent['href']
                             if not all([title, download_url]):
                                 continue
