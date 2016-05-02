@@ -104,7 +104,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 logger.log(u"Authentication error: {error}".format
                            (error=ex(e)), logger.DEBUG)
                 continue
-            except (SocketTimeout, TypeError) as e:
+            except (SocketTimeout) as e:
                 logger.log(u"Socket time out while searching for propers in {provider}, skipping: {error}".format
                            (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
                 continue

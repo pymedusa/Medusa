@@ -110,7 +110,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
     def find_propers(self, search_date=None):
         results = self.cache.listPropers(search_date)
 
-        return [Proper(x['name'], x['url'], datetime.fromtimestamp(x['time']), self.show) for x in results]
+        return [Proper(x['name'], x['url'], datetime.fromtimestamp(x['time']), self.show, x['seeders'], x['leechers'], x['size'], x['pubdate'], x['hash']) for x in results]
 
     def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False, manual_search=False, manual_search_type='episode'):  # pylint: disable=too-many-branches,too-many-arguments,too-many-locals,too-many-statements
         self._check_auth()
