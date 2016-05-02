@@ -76,8 +76,8 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="${srRoot}/apibuilder/" title="SickRage">
-                <img alt="SickRage" src="${srRoot}/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" />
+            <a class="navbar-brand" href="${srRoot}/apibuilder/" title="Medusa">
+                <img alt="Medusa" src="${srRoot}/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" />
                 <p class="navbar-text hidden-xs">${title}</p>
             </a>
         </div>

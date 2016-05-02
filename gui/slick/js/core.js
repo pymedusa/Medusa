@@ -69,12 +69,12 @@ var SICKRAGE = {
 
             $("a.shutdown").confirm({
                 title: "Shutdown",
-                text: "Are you sure you want to shutdown SickRage?"
+                text: "Are you sure you want to shutdown Medusa?"
             });
 
             $("a.restart").confirm({
                 title: "Restart",
-                text: "Are you sure you want to restart SickRage?"
+                text: "Are you sure you want to restart Medusa?"
             });
 
             $("a.removeshow").confirm({
@@ -97,7 +97,7 @@ var SICKRAGE = {
 
             $('a.submiterrors').confirm({
                 title: 'Submit Errors',
-                text: 'Are you sure you want to submit these errors ?<br><br><span class="red-text">Make sure SickRage is updated and trigger<br> this error with debug enabled before submitting</span>'
+                text: 'Are you sure you want to submit these errors ?<br><br><span class="red-text">Make sure Medusa is updated and trigger<br> this error with debug enabled before submitting</span>'
             });
 
             $("#config-components").tabs({
