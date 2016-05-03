@@ -1,5 +1,4 @@
 # coding=utf-8
-
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # URL: http://code.google.com/p/sickbeard/
 #
@@ -125,7 +124,7 @@ normal_regexes = [
      # Show Name Season 1 Episode 2 Ep Name
      r'''
      ^(?P<series_name>.+?)[. _-]+                # Show Name and separator
-     season[. _-]+                               # season and separator
+     (season|series)[. _-]+                      # season and separator
      (?P<season_num>\d+)[. _-]+                  # 1
      episode[. _-]+                              # episode and separator
      (?P<ep_num>\d+)[. _-]+                      # 02 and separator
