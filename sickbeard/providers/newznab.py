@@ -44,7 +44,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
     # pylint: disable=too-many-arguments
 
     def __init__(self, name, url, key='0', catIDs='5030,5040', search_mode='eponly',
-                 search_fallback=False, enable_daily=True, enable_backlog=False):
+                 search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
 
         NZBProvider.__init__(self, name)
 
@@ -54,6 +54,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         self.search_mode = search_mode
         self.search_fallback = search_fallback
         self.enable_daily = enable_daily
+        self.enable_manualsearch = enable_manualsearch
         self.enable_backlog = enable_backlog
 
         # 0 in the key spot indicates that no key is needed
@@ -78,7 +79,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         """
         return self.name + '|' + self.url + '|' + self.key + '|' + self.catIDs + '|' + str(
             int(self.enabled)) + '|' + self.search_mode + '|' + str(int(self.search_fallback)) + '|' + str(
-                int(self.enable_daily)) + '|' + str(int(self.enable_backlog))
+                int(self.enable_daily)) + '|' + str(int(self.enable_backlog)) + '|' + str(int(self.enable_manualsearch))
 
     @staticmethod
     def get_providers_list(data):
@@ -121,6 +122,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 providers_dict[default.name].search_fallback = default.search_fallback
                 providers_dict[default.name].enable_daily = default.enable_daily
                 providers_dict[default.name].enable_backlog = default.enable_backlog
+                providers_dict[default.name].enable_manualsearch = default.enable_manualsearch
                 providers_dict[default.name].catIDs = default.catIDs
 
         return [provider for provider in providers_list if provider]
@@ -199,12 +201,12 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
     @staticmethod
     def _get_default_providers():
-        # name|url|key|catIDs|enabled|search_mode|search_fallback|enable_daily|enable_backlog
-        return 'NZB.Cat|https://nzb.cat/||5030,5040,5010|0|eponly|1|1|1!!!' + \
-            'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0!!!' + \
-            'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0!!!' + \
-            'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0!!!' + \
-            'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|1|1'
+        # name|url|key|catIDs|enabled|search_mode|search_fallback|enable_daily|enable_backlog|enable_manualsearch
+        return 'NZB.Cat|https://nzb.cat/||5030,5040,5010|0|eponly|0|0|0|0!!!' + \
+            'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0|0!!!' + \
+            'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0|0!!!' + \
+            'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0|0!!!' + \
+            'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0'
 
     def _check_auth(self):
         """
@@ -243,6 +245,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
         enable_backlog = 0
         enable_daily = 0
+        enable_manualsearch = 0
         search_fallback = 0
         search_mode = 'eponly'
 
@@ -251,6 +254,8 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
             if len(values) == 9:
                 name, url, key, category_ids, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
+            elif len(values) == 10:
+                name, url, key, category_ids, enabled, search_mode, search_fallback, enable_daily, enable_backlog, enable_manualsearch = values
             else:
                 name = values[0]
                 url = values[1]
@@ -263,7 +268,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
         new_provider = NewznabProvider(
             name, url, key=key, catIDs=category_ids, search_mode=search_mode, search_fallback=search_fallback,
-            enable_daily=enable_daily, enable_backlog=enable_backlog
+            enable_daily=enable_daily, enable_backlog=enable_backlog, enable_manualsearch=enable_manualsearch
         )
         new_provider.enabled = enabled == '1'
 
