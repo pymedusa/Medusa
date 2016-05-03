@@ -3467,3 +3467,7 @@ snatchSelection.mako
 div#searchNotification {
 	display: inline-block;
 }
+
+.summaryTable tr td {
+    word-break: break-all;
+}
