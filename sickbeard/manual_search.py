@@ -202,8 +202,12 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
 
             common_sql = "SELECT rowid, ? as 'provider_type', ? as 'provider_image', \
                           ? as 'provider', ? as 'provider_id', ? 'provider_minseed', ? 'provider_minleech', \
-                          name, season, episodes, indexerid, url, time, (select max(time) \
-                          from '{provider_id}') as lastupdate, \
+                          name, season, episodes, indexerid, url, time, \
+                          CASE WHEN LOWER(name) LIKE '%proper%' THEN 1 \
+                               WHEN LOWER(name) LIKE '%real%' THEN 1 \
+                               WHEN LOWER(name) LIKE '%repack%' THEN 1 \
+                                ELSE 0 END AS 'is_proper', \
+                          (select max(time) from '{provider_id}') as lastupdate, \
                           quality, release_group, version, seeders, leechers, size, time \
                           FROM '{provider_id}' WHERE indexerid = ?".format(provider_id=cur_provider.get_id())
             additional_sql = " AND episodes LIKE ? AND season = ?"
@@ -246,7 +250,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         time.sleep(cpu_presets[sickbeard.CPU_PRESET])
     else:
         # Sort the list of found items
-        found_items = sorted(found_items, key=lambda k: (try_int(k['quality']), try_int(k['seeders'])), reverse=True)
+        found_items = sorted(found_items, key=lambda k: (try_int(k['quality']), try_int(k['is_proper']), try_int(k['seeders'])), reverse=True)
         # Make unknown qualities at the botton
         found_items = [d for d in found_items if try_int(d['quality']) < 32768] + [d for d in found_items if try_int(d['quality']) == 32768]
         provider_results['found_items'] = found_items
