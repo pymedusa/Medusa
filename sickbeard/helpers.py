@@ -1,6 +1,5 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
-
 # Git: https://github.com/PyMedusa/SickRage.git
 #
 # This file is part of SickRage.
@@ -123,6 +122,7 @@ def remove_non_release_groups(name):
         r'\[cttv\]$': 'searchre',
         r'\.\[vtv\]$': 'searchre',
         r'\[vtv\]$': 'searchre',
+        r'\.vtv$': 'searchre',
         r'\[EtHD\]$': 'searchre',
         r'\[GloDLS\]$': 'searchre',
         r'\[silv4\]$': 'searchre',
