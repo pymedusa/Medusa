@@ -1,5 +1,4 @@
 # coding=utf-8
-
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # Author: Gordon Turner <gordonturner@gordonturner.ca>
 # URL: http://code.google.com/p/sickbeard/
@@ -184,10 +183,10 @@ class TIVOMetadata(generic.GenericMetadata):
             t = sickbeard.indexerApi(ep_obj.show.indexer).indexer(**lINDEXER_API_PARMS)
             myShow = t[ep_obj.show.indexerid]
         except sickbeard.indexer_shownotfound as e:
-            raise ShowNotFoundException(str(e))
-        except sickbeard.indexer_error as e:
+            raise ShowNotFoundException(e.message)
+        except sickbeard.indexer_error:
             logger.log(u"Unable to connect to " + sickbeard.indexerApi(
-                ep_obj.show.indexer).name + " while creating meta files - skipping - " + str(e), logger.ERROR)
+                ep_obj.show.indexer).name + " while creating meta files - skipping it.", logger.WARNING)
             return False
 
         for curEpToWrite in eps_to_write:
