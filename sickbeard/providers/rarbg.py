@@ -134,7 +134,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                 # Don't log when {"error":"No results found","error_code":20}
                 # List of errors: https://github.com/rarbg/torrentapi/issues/1#issuecomment-114763312
                 if error:
-                    if try_int(error_code) != 20 or try_int(error_code) != 14:
+                    if try_int(error_code) not in (20, 14):
                         logger.log(error, logger.WARNING)
                     continue
 
