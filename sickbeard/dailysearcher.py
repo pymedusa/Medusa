@@ -18,20 +18,38 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
+from __future__ import unicode_literals
+
+from datetime import (
+    date,
+    datetime,
+    timedelta,
+)
 import threading
 
 import sickbeard
-from sickbeard import logger
-from sickbeard import db
-from sickbeard import common
-from sickbeard import network_timezones
+from sickbeard import (
+    common,
+    logger,
+)
+from sickbeard.db import DBConnection
+from sickbeard.network_timezones import (
+    network_dict,
+    update_network_dict,
+    sb_timezone,
+    parse_date_time,
+)
+from sickbeard.search_queue import DailySearchQueueItem
 from sickrage.show.Show import Show
 from sickrage.helper.exceptions import MultipleShowObjectsException
 from sickrage.helper.common import try_int
 
 
 class DailySearcher(object):  # pylint:disable=too-few-public-methods
+    """
+    Daily search thread
+    """
+
     def __init__(self):
         self.lock = threading.Lock()
         self.amActive = False
@@ -43,74 +61,77 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         :param force: Force search
         """
         if self.amActive:
-            logger.log(u"Daily search is still running, not starting it again", logger.DEBUG)
+            logger.log('Daily search is still running, not starting it again', logger.DEBUG)
             return
-
-        if sickbeard.forcedSearchQueueScheduler.action.is_forced_search_in_progress():
-            logger.log(u"Manual search is running. Can't start Daily search", logger.WARNING)
+        elif sickbeard.forcedSearchQueueScheduler.action.is_forced_search_in_progress() and not force:
+            logger.log('Manual search is running. Can\'t start Daily search', logger.WARNING)
             return
 
         self.amActive = True
-        _ = force
-        logger.log(u"Searching for new released episodes ...")
 
-        if not network_timezones.network_dict:
-            network_timezones.update_network_dict()
+        logger.log('Searching for newly released episodes ...')
 
-        if network_timezones.network_dict:
-            curDate = (datetime.date.today() + datetime.timedelta(days=1)).toordinal()
-        else:
-            curDate = (datetime.date.today() + datetime.timedelta(days=2)).toordinal()
+        if not network_dict:
+            update_network_dict()
 
-        curTime = datetime.datetime.now(network_timezones.sb_timezone)
+        cur_time = datetime.now(sb_timezone)
+        cur_date = (
+            date.today() + timedelta(days=1 if network_dict else 2)
+        ).toordinal()
 
-        main_db_con = db.DBConnection()
-        sql_results = main_db_con.select("SELECT showid, airdate, season, episode FROM tv_episodes WHERE status = ? AND (airdate <= ? and airdate > 1)",
-                                         [common.UNAIRED, curDate])
+        main_db_con = DBConnection()
+        episodes_from_db = main_db_con.select(
+            b'SELECT showid, airdate, season, episode '
+            b'FROM tv_episodes '
+            b'WHERE status = ? AND (airdate <= ? and airdate > 1)',
+            [common.UNAIRED, cur_date]
+        )
 
-        sql_l = []
+        new_releases = []
         show = None
 
-        for sqlEp in sql_results:
+        for db_episode in episodes_from_db:
             try:
-                if not show or int(sqlEp["showid"]) != show.indexerid:
-                    show = Show.find(sickbeard.showList, int(sqlEp["showid"]))
+                show_id = int(db_episode[b'showid'])
+                if not show or show_id != show.indexerid:
+                    show = Show.find(sickbeard.showList, show_id)
 
-                # for when there is orphaned series in the database but not loaded into our showlist
+                # for when there is orphaned series in the database but not loaded into our show list
                 if not show or show.paused:
                     continue
 
             except MultipleShowObjectsException:
-                logger.log(u"ERROR: expected to find a single show matching " + str(sqlEp['showid']))
+                logger.log('ERROR: expected to find a single show matching {id}'.format(id=show_id))
                 continue
 
             if show.airs and show.network:
                 # This is how you assure it is always converted to local time
-                end_time = network_timezones.parse_date_time(sqlEp['airdate'], show.airs, show.network).astimezone(network_timezones.sb_timezone) + datetime.timedelta(minutes=try_int(show.runtime, 60))
+                show_air_time = parse_date_time(db_episode[b'airdate'], show.airs, show.network)
+                end_time = show_air_time.astimezone(sb_timezone) + timedelta(minutes=try_int(show.runtime, 60))
 
-                # filter out any episodes that haven't started airing yet,
-                if end_time > curTime:
+                # filter out any episodes that haven't finished airing yet,
+                if end_time > cur_time:
                     continue
 
-            ep = show.getEpisode(sqlEp["season"], sqlEp["episode"])
-            with ep.lock:
-                if ep.season == 0:
-                    logger.log(u"New episode " + ep.prettyName() + " airs today, setting status to SKIPPED because is a special season")
-                    ep.status = common.SKIPPED
-                else:
-                    logger.log(u"New episode %s airs today, setting to default episode status for this show: %s" % (ep.prettyName(), common.statusStrings[ep.show.default_ep_status]))
-                    ep.status = ep.show.default_ep_status
+            cur_ep = show.getEpisode(db_episode[b'season'], db_episode[b'episode'])
+            with cur_ep.lock:
+                cur_ep.status = show.default_ep_status if cur_ep.season else common.SKIPPED
+                logger.log('Setting status ({status}) for show airing today: {name} {special}'.format(
+                    name=cur_ep.prettyName(),
+                    status=common.statusStrings[cur_ep.status],
+                    special='(specials are not supported)' if not cur_ep.season else ''
+                ))
+                new_releases.append(cur_ep.get_sql())
 
-                sql_l.append(ep.get_sql())
-
-        if sql_l:
-            main_db_con = db.DBConnection()
-            main_db_con.mass_action(sql_l)
+        if new_releases:
+            main_db_con = DBConnection()
+            main_db_con.mass_action(new_releases)
         else:
-            logger.log(u"No new released episodes found ...")
+            logger.log('No newly released episodes found ...')
 
         # queue episode for daily search
-        dailysearch_queue_item = sickbeard.search_queue.DailySearchQueueItem()
-        sickbeard.searchQueueScheduler.action.add_item(dailysearch_queue_item)
+        sickbeard.searchQueueScheduler.action.add_item(
+            DailySearchQueueItem()
+        )
 
         self.amActive = False
