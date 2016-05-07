@@ -244,7 +244,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         try:
             values = config.split('|')
             # Pad values with None for each missing value
-            values.extend([None for x in range(len(values), 11)])
+            values.extend([None for x in range(len(values), 10)])
 
             (name, url, key, category_ids, enabled,
              search_mode, search_fallback,
