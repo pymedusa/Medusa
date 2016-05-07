@@ -44,7 +44,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
     # pylint: disable=too-many-arguments
 
     def __init__(self, name, url, key='0', catIDs='5030,5040', search_mode='eponly',
-                 search_fallback=False, enable_daily=True, enable_backlog=False):
+                 search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
 
         NZBProvider.__init__(self, name)
 
@@ -54,6 +54,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         self.search_mode = search_mode
         self.search_fallback = search_fallback
         self.enable_daily = enable_daily
+        self.enable_manualsearch = enable_manualsearch
         self.enable_backlog = enable_backlog
 
         # 0 in the key spot indicates that no key is needed
@@ -76,9 +77,11 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         """
         Generates a '|' delimited string of instance attributes, for saving to config.ini
         """
-        return self.name + '|' + self.url + '|' + self.key + '|' + self.catIDs + '|' + str(
-            int(self.enabled)) + '|' + self.search_mode + '|' + str(int(self.search_fallback)) + '|' + str(
-                int(self.enable_daily)) + '|' + str(int(self.enable_backlog))
+        return '|'.join([
+            self.name, self.url, self.key, self.catIDs, str(int(self.enabled)),
+            self.search_mode, str(int(self.search_fallback)),
+            str(int(self.enable_daily)), str(int(self.enable_backlog)), str(int(self.enable_manualsearch))
+        ])
 
     @staticmethod
     def get_providers_list(data):
@@ -121,6 +124,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 providers_dict[default.name].search_fallback = default.search_fallback
                 providers_dict[default.name].enable_daily = default.enable_daily
                 providers_dict[default.name].enable_backlog = default.enable_backlog
+                providers_dict[default.name].enable_manualsearch = default.enable_manualsearch
                 providers_dict[default.name].catIDs = default.catIDs
 
         return [provider for provider in providers_list if provider]
@@ -193,18 +197,14 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
             return True, return_categories, ''
 
-        error_string = 'Error getting xml for [{}]'.format(self.name)
-        logger.log(error_string, logger.WARNING)
-        return False, return_categories, error_string
-
     @staticmethod
     def _get_default_providers():
-        # name|url|key|catIDs|enabled|search_mode|search_fallback|enable_daily|enable_backlog
-        return 'NZB.Cat|https://nzb.cat/||5030,5040,5010|0|eponly|1|1|1!!!' + \
-            'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0!!!' + \
-            'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0!!!' + \
-            'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0!!!' + \
-            'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|1|1'
+        # name|url|key|catIDs|enabled|search_mode|search_fallback|enable_daily|enable_backlog|enable_manualsearch
+        return 'NZB.Cat|https://nzb.cat/||5030,5040,5010|0|eponly|0|0|0|0!!!' + \
+            'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0|0!!!' + \
+            'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0|0!!!' + \
+            'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0|0!!!' + \
+            'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0'
 
     def _check_auth(self):
         """
@@ -241,30 +241,28 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         if not config:
             return None
 
-        enable_backlog = 0
-        enable_daily = 0
-        search_fallback = 0
-        search_mode = 'eponly'
-
         try:
             values = config.split('|')
+            # Pad values with None for each missing value
+            values.extend([None for x in range(len(values), 10)])
 
-            if len(values) == 9:
-                name, url, key, category_ids, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
-            else:
-                name = values[0]
-                url = values[1]
-                key = values[2]
-                category_ids = values[3]
-                enabled = values[4]
+            (name, url, key, category_ids, enabled,
+             search_mode, search_fallback,
+             enable_daily, enable_backlog, enable_manualsearch
+             ) = values
+
         except ValueError:
-            logger.log('Skipping Newznab provider string: \'{}\', incorrect format'.format(config), logger.ERROR)
+            logger.log('Skipping Newznab provider string: {config!r}, incorrect format'.format
+                       (config=config), logger.ERROR)
             return None
 
         new_provider = NewznabProvider(
-            name, url, key=key, catIDs=category_ids, search_mode=search_mode, search_fallback=search_fallback,
-            enable_daily=enable_daily, enable_backlog=enable_backlog
-        )
+            name, url, key=key, catIDs=category_ids,
+            search_mode=search_mode or 'eponly',
+            search_fallback=search_fallback or 0,
+            enable_daily=enable_daily or 0,
+            enable_backlog=enable_backlog or 0,
+            enable_manualsearch=enable_manualsearch or 0)
         new_provider.enabled = enabled == '1'
 
         return new_provider

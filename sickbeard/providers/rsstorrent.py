@@ -38,7 +38,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
     def __init__(self, name, url, cookies='',  # pylint: disable=too-many-arguments
                  titleTAG='title', search_mode='eponly', search_fallback=False,
-                 enable_daily=False, enable_backlog=False):
+                 enable_daily=False, enable_backlog=False, enable_manualsearch=False):
 
         TorrentProvider.__init__(self, name)
 
@@ -50,6 +50,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.search_mode = search_mode
         self.search_fallback = search_fallback
         self.enable_daily = enable_daily
+        self.enable_manualsearch = enable_manualsearch
         self.enable_backlog = enable_backlog
         self.cookies = cookies
         self.titleTAG = titleTAG
@@ -64,6 +65,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             self.search_mode or '',
             int(self.search_fallback),
             int(self.enable_daily),
+            int(self.enable_manualsearch),
             int(self.enable_backlog)
         )
 
@@ -117,6 +119,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         cookies = None
         enable_backlog = 0
         enable_daily = 0
+        enable_manualsearch = 0
         search_fallback = 0
         search_mode = 'eponly'
         title_tag = 'title'
@@ -126,6 +129,8 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
             if len(values) == 9:
                 name, url, cookies, title_tag, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
+            elif len(values) == 10:
+                name, url, cookies, title_tag, enabled, search_mode, search_fallback, enable_daily, enable_backlog, enable_manualsearch = values
             elif len(values) == 8:
                 name, url, cookies, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
             else:
@@ -137,8 +142,8 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             return None
 
         new_provider = TorrentRssProvider(
-            name, url, cookies=cookies, titleTAG=title_tag, search_mode=search_mode,
-            search_fallback=search_fallback, enable_daily=enable_daily, enable_backlog=enable_backlog
+            name, url, cookies=cookies, titleTAG=title_tag, search_mode=search_mode, search_fallback=search_fallback,
+            enable_daily=enable_daily, enable_backlog=enable_backlog, enable_manualsearch=enable_manualsearch
         )
         new_provider.enabled = enabled == '1'
 
