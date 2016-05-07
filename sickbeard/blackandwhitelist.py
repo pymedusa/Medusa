@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 from adba.aniDBerrors import AniDBCommandTimeoutError
 
 import sickbeard
@@ -38,7 +40,8 @@ class BlackAndWhiteList(object):
         """
         Builds black and whitelist
         """
-        logger.log(u'Building black and white list for {id}'.format(id=self.show_id), logger.DEBUG)
+        logger.log('Building black and white list for {id}'.format
+                   (id=self.show_id), logger.DEBUG)
         self.blacklist = self._load_list(b'blacklist')
         self.whitelist = self._load_list(b'whitelist')
 
@@ -51,7 +54,11 @@ class BlackAndWhiteList(object):
         """
         main_db_con = db.DBConnection()
         for value in values:
-            main_db_con.action('INSERT INTO [' + table + '] (show_id, keyword) VALUES (?,?)', [self.show_id, value])
+            main_db_con.action(
+                b'INSERT INTO [{table}] (show_id, keyword) '
+                b'VALUES (?,?)'.format(table=table),
+                [self.show_id, value]
+            )
 
     def set_black_keywords(self, values):
         """
@@ -62,7 +69,8 @@ class BlackAndWhiteList(object):
         self._del_all_keywords(b'blacklist')
         self._add_keywords(b'blacklist', values)
         self.blacklist = values
-        logger.log(u'Blacklist set to: {blacklist}'.format(blacklist=self.blacklist), logger.DEBUG)
+        logger.log('Blacklist set to: {blacklist}'.format
+                   (blacklist=self.blacklist), logger.DEBUG)
 
     def set_white_keywords(self, values):
         """
@@ -73,7 +81,7 @@ class BlackAndWhiteList(object):
         self._del_all_keywords(b'whitelist')
         self._add_keywords(b'whitelist', values)
         self.whitelist = values
-        logger.log(u'Whitelist set to: {whitelist}'.format(whitelist=self.whitelist), logger.DEBUG)
+        logger.log('Whitelist set to: {whitelist}'.format(whitelist=self.whitelist), logger.DEBUG)
 
     def _del_all_keywords(self, table):
         """
@@ -82,7 +90,11 @@ class BlackAndWhiteList(object):
         :param table: SQL table remove keywords from
         """
         main_db_con = db.DBConnection()
-        main_db_con.action('DELETE FROM [' + table + '] WHERE show_id = ?', [self.show_id])
+        main_db_con.action(
+            b'DELETE FROM [{table}}] '
+            b'WHERE show_id = ?'.format(table=table),
+            [self.show_id]
+        )
 
     def _load_list(self, table):
         """
@@ -93,15 +105,20 @@ class BlackAndWhiteList(object):
         :return: keywords in list
         """
         main_db_con = db.DBConnection()
-        sql_results = main_db_con.select('SELECT keyword FROM [' + table + '] WHERE show_id = ?', [self.show_id])
-        if not sql_results or not len(sql_results):
-            return []
-        groups = []
-        for result in sql_results:
-            groups.append(result[b'keyword'])
+        sql_results = main_db_con.select(
+            b'SELECT keyword '
+            b'FROM [{table}] '
+            b'WHERE show_id = ?'.format(table=table),
+            [self.show_id]
+        )
 
-        logger.log(u'BWL: {id} loaded keywords from {table}: {groups}'.format
-                   (id=self.show_id, table=table, groups=groups), logger.DEBUG)
+        groups = [result[b'keyword']
+                  for result in sql_results
+                  ] if sql_results else []
+
+        if groups:
+            logger.log('BWL: {id} loaded keywords from {table}: {groups}'.format
+                       (id=self.show_id, table=table, groups=groups), logger.DEBUG)
 
         return groups
 
@@ -113,32 +130,24 @@ class BlackAndWhiteList(object):
         :return: False if result is not allowed in white/blacklist, True if it is
         """
 
-        if self.whitelist or self.blacklist:
-            if not result.release_group:
-                logger.log(u'Failed to detect release group, invalid result', logger.DEBUG)
-                return False
-
-            if result.release_group.lower() in [x.lower() for x in self.whitelist]:
-                white_result = True
-            elif not self.whitelist:
-                white_result = True
-            else:
-                white_result = False
-            if result.release_group.lower() in [x.lower() for x in self.blacklist]:
-                black_result = False
-            else:
-                black_result = True
-
-            logger.log(u'Whitelist check passed: {white}. Blacklist check passed: {black}'.format
-                       (white=white_result, black=black_result), logger.DEBUG)
-
-            if white_result and black_result:
-                return True
-            else:
-                return False
-        else:
+        if not (self.whitelist or self.blacklist):
             logger.log(u'No Whitelist and Blacklist defined, check passed.', logger.DEBUG)
             return True
+        elif not result.release_group:
+            logger.log('Invalid result, no release group detected', logger.DEBUG)
+            return False
+
+        whitelist = [x.lower() for x in self.whitelist]
+        white_result = result.release_group.lower() in whitelist if self.whitelist else True
+
+        blacklist = [x.lower() for x in self.blacklist]
+        black_result = result.release_group.lower() not in blacklist if self.blacklist else True
+
+        logger.log('Whitelist check: {white}. Blacklist check: {black}'.format
+                   (white='Passed' if white_result else 'Failed',
+                    black='Passed' if black_result else 'Failed'), logger.DEBUG)
+
+        return white_result and black_result
 
 
 class BlackWhitelistNoShowIDException(Exception):
@@ -155,20 +164,22 @@ def short_group_names(groups):
     groups = groups.split(',')
     short_group_list = []
     if helpers.set_up_anidb_connection():
-        for groupName in groups:
+        for group_name in groups:
             try:
-                group = sickbeard.ADBA_CONNECTION.group(gname=groupName)
+                group = sickbeard.ADBA_CONNECTION.group(gname=group_name)
             except AniDBCommandTimeoutError:
-                logger.log(u'Timeout while loading group from AniDB. Trying next group', logger.DEBUG)
+                logger.log('Timeout while loading group from AniDB. '
+                           'Trying next group', logger.DEBUG)
             except Exception:
-                logger.log(u'Failed while loading group from AniDB. Trying next group', logger.DEBUG)
+                logger.log('Failed while loading group from AniDB. '
+                           'Trying next group', logger.DEBUG)
             else:
                 for line in group.datalines:
                     if line[b'shortname']:
                         short_group_list.append(line[b'shortname'])
                     else:
-                        if groupName not in short_group_list:
-                            short_group_list.append(groupName)
+                        if group_name not in short_group_list:
+                            short_group_list.append(group_name)
     else:
         short_group_list = groups
     return short_group_list
