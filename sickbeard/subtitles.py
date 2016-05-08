@@ -26,11 +26,9 @@ import re
 import sickbeard
 import subprocess
 import traceback
-import time
 
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
-from sickbeard.common import cpu_presets
 from sickrage.helper.common import dateTimeFormat, episode_num, subtitle_extensions
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
@@ -827,10 +825,6 @@ class SubtitlesFinder(object):
             return
 
         for ep_to_sub in sql_results:
-
-            # give the CPU a break
-            time.sleep(cpu_presets[sickbeard.CPU_PRESET])
-
             ep_num = episode_num(ep_to_sub['season'], ep_to_sub['episode']) or \
                      episode_num(ep_to_sub['season'], ep_to_sub['episode'], numbering='absolute')
             subtitle_path = _encode(ep_to_sub['location'], encoding=sickbeard.SYS_ENCODING, fallback='utf-8')
