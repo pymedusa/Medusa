@@ -6,13 +6,15 @@ import re
 import time
 from hashlib import sha1
 from base64 import b16encode, b32decode
+import traceback
+
+from six.moves.http_cookiejar import CookieJar
+import requests
+from bencode import bencode, bdecode
+from bencode.BTL import BTFailure
 
 import sickbeard
 from sickbeard import logger, helpers, db
-from bencode import bencode, bdecode
-import requests
-import cookielib
-from bencode.BTL import BTFailure
 from sickrage.helper.common import http_code_description
 
 
@@ -31,7 +33,7 @@ class GenericClient(object):
         self.last_time = time.time()
         self.session = helpers.make_session()
         self.session.auth = (self.username, self.password)
-        self.session.cookies = cookielib.CookieJar()
+        self.session.cookies = CookieJar()
 
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
 
@@ -192,7 +194,7 @@ class GenericClient(object):
 
             # lazy fix for now, I'm sure we already do this somewhere else too
             result = self._get_torrent_hash(result)
-            
+
             if not result.hash:
                 return False
 

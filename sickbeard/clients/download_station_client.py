@@ -24,10 +24,12 @@
 # http://download.synology.com/download/Document/DeveloperGuide/Synology_Download_Station_Web_API.pdf
 
 from __future__ import unicode_literals
-from requests.compat import urljoin
-from requests.exceptions import RequestException
+
 import os
 import re
+
+from requests.compat import urljoin
+from requests.exceptions import RequestException
 
 import sickbeard
 from sickbeard import logger
