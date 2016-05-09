@@ -109,6 +109,8 @@ class DownloadStationAPI(GenericClient):
 
     def _add_torrent_uri(self, result):
 
+        torrent_path = sickbeard.TORRENT_PATH
+
         data = {
             'api': 'SYNO.DownloadStation.Task',
             'version': '1',
@@ -120,12 +122,14 @@ class DownloadStationAPI(GenericClient):
         if not self._check_destination():
             return False
 
-        if sickbeard.TORRENT_PATH:
-            data['destination'] = sickbeard.TORRENT_PATH
+        if torrent_path:
+            data['destination'] = torrent_path
         self._request(method='post', data=data)
         return self._check_response()
 
     def _add_torrent_file(self, result):
+
+        torrent_path = sickbeard.TORRENT_PATH
 
         data = {
             'api': 'SYNO.DownloadStation.Task',
@@ -137,8 +141,8 @@ class DownloadStationAPI(GenericClient):
         if not self._check_destination():
             return False
 
-        if sickbeard.TORRENT_PATH:
-            data['destination'] = sickbeard.TORRENT_PATH
+        if torrent_path:
+            data['destination'] = torrent_path
 
         files = {'file': ('{name}.torrent'.format(name=result.name), result.content)}
 
@@ -150,10 +154,12 @@ class DownloadStationAPI(GenericClient):
         Validate and set torrent destination
         """
 
+        torrent_path = sickbeard.TORRENT_PATH
+
         if not (self.auth or self._get_auth()):
             return False
 
-        if self.checked_destination and self.destination == sickbeard.TORRENT_PATH:
+        if self.checked_destination and self.destination == torrent_path:
             return True
 
         params = {
@@ -183,8 +189,8 @@ class DownloadStationAPI(GenericClient):
 
             if version_string.startswith('DSM 6'):
                 #  This is DSM6, lets make sure the location is relative
-                if sickbeard.TORRENT_PATH and os.path.isabs(sickbeard.TORRENT_PATH):
-                    sickbeard.TORRENT_PATH = re.sub(r'^/volume\d/', '', sickbeard.TORRENT_PATH).lstrip('/')
+                if torrent_path and os.path.isabs(torrent_path):
+                    torrent_path = re.sub(r'^/volume\d/', '', torrent_path).lstrip('/')
                 else:
                     #  Since they didn't specify the location in the settings,
                     #  lets make sure the default is relative,
@@ -207,18 +213,18 @@ class DownloadStationAPI(GenericClient):
                         jdata = self.response.json()
                         destination = jdata.get('data', {}).get('default_destination')
                         if destination and os.path.isabs(destination):
-                            sickbeard.TORRENT_PATH = re.sub(r'^/volume\d/', '', destination).lstrip('/')
+                            torrent_path = re.sub(r'^/volume\d/', '', destination).lstrip('/')
                         else:
                             logger.log('Default destination could not be determined '
                                        'for DSM6: {response}'.format(response=jdata))
                             return False
 
-        if destination or sickbeard.TORRENT_PATH:
+        if destination or torrent_path:
             logger.log('Destination is now {path}'.format
-                       (path=sickbeard.TORRENT_PATH or destination))
+                       (path=torrent_path or destination))
 
         self.checked_destination = True
-        self.destination = sickbeard.TORRENT_PATH
+        self.destination = torrent_path
         return True
 
 api = DownloadStationAPI()
