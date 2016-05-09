@@ -30,7 +30,7 @@ class DelugeAPI(GenericClient):
 
         super(DelugeAPI, self).__init__('Deluge', host, username, password)
 
-        self.url = self.host + 'json'
+        self.url = '{host}json'.format(host=self.host)
 
     def _get_auth(self):
 
@@ -67,7 +67,7 @@ class DelugeAPI(GenericClient):
 
             hosts = self.response.json()['result']
             if not hosts:
-                logger.log(self.name + u': WebUI does not contain daemons', logger.ERROR)
+                logger.log(u'{name}: WebUI does not contain daemons'.format(name=self.name), logger.ERROR)
                 return None
 
             post_data = json.dumps({'method': 'web.connect',
@@ -90,7 +90,7 @@ class DelugeAPI(GenericClient):
 
             connected = self.response.json()['result']
             if not connected:
-                logger.log(self.name + u': WebUI could not connect to daemon', logger.ERROR)
+                logger.log(u'{name}: WebUI could not connect to daemon'.format(name=self.name), logger.ERROR)
                 return None
 
         return self.auth
@@ -109,9 +109,15 @@ class DelugeAPI(GenericClient):
 
     def _add_torrent_file(self, result):
 
-        post_data = json.dumps({'method': 'core.add_torrent_file',
-                                'params': [result.name + '.torrent', b64encode(result.content), {}],
-                                'id': 2})
+        post_data = json.dumps({
+            'method': 'core.add_torrent_file',
+            'params': [
+                '{name}.torrent'.format(name=result.name),
+                b64encode(result.content),
+                {},
+            ],
+            'id': 2,
+        })
 
         self._request(method='post', data=post_data)
 
@@ -125,7 +131,8 @@ class DelugeAPI(GenericClient):
         if result.show.is_anime:
             label = sickbeard.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
-            logger.log(self.name + u': Invalid label. Label must not contain a space', logger.ERROR)
+            logger.log(u'{name}: Invalid label. Label must not contain a space'.format
+                       (name=self.name), logger.ERROR)
             return False
 
         if label:
@@ -139,14 +146,19 @@ class DelugeAPI(GenericClient):
 
             if labels is not None:
                 if label not in labels:
-                    logger.log(self.name + ': ' + label + u' label does not exist in Deluge we must add it',
-                               logger.DEBUG)
-                    post_data = json.dumps({'method': 'label.add',
-                                            'params': [label],
-                                            'id': 4})
+                    logger.log('{name}: {label} label does not exist in Deluge we must add it'.format
+                               (name=self.name, label=label), logger.DEBUG)
+                    post_data = json.dumps({
+                        'method': 'label.add',
+                        'params': [
+                            label,
+                        ],
+                        'id': 4,
+                    })
 
                     self._request(method='post', data=post_data)
-                    logger.log(self.name + ': ' + label + u' label added to Deluge', logger.DEBUG)
+                    logger.log(u'{name}: {label} label added to Deluge'.format
+                               (name=self.name, label=label), logger.DEBUG)
 
                 # add label to torrent
                 post_data = json.dumps({'method': 'label.set_torrent',
@@ -154,9 +166,11 @@ class DelugeAPI(GenericClient):
                                         'id': 5})
 
                 self._request(method='post', data=post_data)
-                logger.log(self.name + ': ' + label + u' label added to torrent', logger.DEBUG)
+                logger.log(u'{name}: {label} label added to torrent'.format
+                           (name=self.name, label=label), logger.DEBUG)
             else:
-                logger.log(self.name + ': ' + u'label plugin not detected', logger.DEBUG)
+                logger.log(u'{name}: label plugin not detected'.format
+                           (name=self.name), logger.DEBUG)
                 return False
 
         return not self.response.json()['error']

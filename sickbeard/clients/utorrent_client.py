@@ -20,6 +20,8 @@
 
 import re
 
+from requests.compat import urljoin
+
 import sickbeard
 from sickbeard.clients.generic import GenericClient
 
@@ -28,8 +30,7 @@ class UTorrentAPI(GenericClient):
     def __init__(self, host=None, username=None, password=None):
 
         super(UTorrentAPI, self).__init__('uTorrent', host, username, password)
-
-        self.url = self.host + 'gui/'
+        self.url = urljoin(self.host, 'gui/')
 
     def _request(self, method='get', params=None, data=None, files=None):
 
@@ -45,7 +46,7 @@ class UTorrentAPI(GenericClient):
     def _get_auth(self):
 
         try:
-            self.response = self.session.get(self.url + 'token.html', verify=False)
+            self.response = self.session.get(urljoin(self.url, 'token.html'), verify=False)
             self.auth = re.findall('<div.*?>(.*?)</', self.response.text)[0]
         except Exception:
             return None
@@ -58,10 +59,18 @@ class UTorrentAPI(GenericClient):
         return self._request(params=params)
 
     def _add_torrent_file(self, result):
-
-        params = {'action': 'add-file'}
-        files = {'torrent_file': (result.name + '.torrent', result.content)}
-        return self._request(method='post', params=params, files=files)
+        return self._request(
+            method='post',
+            params={
+                'action': 'add-file',
+            },
+            files={
+                'torrent_file': (
+                    '{name}.torrent'.format(name=result.name),
+                    result.content,
+                ),
+            }
+        )
 
     def _set_torrent_label(self, result):
 

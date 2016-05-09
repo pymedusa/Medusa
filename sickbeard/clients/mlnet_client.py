@@ -41,14 +41,14 @@ class MLNetAPI(GenericClient):
 
     def _add_torrent_uri(self, result):
 
-        self.url = self.host + 'submit'
-        params = {'q': 'dllink ' + result.url}
+        self.url = '{host}submit'.format(host=self.host)
+        params = {'q': 'dllink {url}'.format(url=result.url)}
         return self._request(method='get', params=params)
 
     def _add_torrent_file(self, result):
 
-        self.url = self.host + 'submit'
-        params = {'q': 'dllink ' + result.url}
+        self.url = '{host}submit'.format(host=self.host)
+        params = {'q': 'dllink {url}'.format(url=result.url)}
         return self._request(method='get', params=params)
 
 api = MLNetAPI()

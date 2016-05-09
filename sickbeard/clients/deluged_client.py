@@ -65,7 +65,8 @@ class DelugeDAPI(GenericClient):
             'add_paused': sickbeard.TORRENT_PAUSED
         }
 
-        remote_torrent = self.drpc.add_torrent_file(result.name + '.torrent', result.content, options, result.hash)
+        remote_torrent = self.drpc.add_torrent_file('{name}.torrent'.format(name=result.name),
+                                                    result.content, options, result.hash)
 
         if not remote_torrent:
             return None
@@ -80,7 +81,8 @@ class DelugeDAPI(GenericClient):
         if result.show.is_anime:
             label = sickbeard.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
-            logger.log(self.name + u': Invalid label. Label must not contain a space', logger.ERROR)
+            logger.log(u'{name}: Invalid label. Label must not contain a space'.format
+                       (name=self.name), logger.ERROR)
             return False
 
         if label:

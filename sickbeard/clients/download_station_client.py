@@ -74,7 +74,7 @@ class DownloadStationAPI(GenericClient):
         self.auth = jdata.get('success')
         if not self.auth:
             error_code = jdata.get('error', {}).get('code')
-            sickbeard.logger.log('{}'.format(self.error_map.get(error_code, jdata)))
+            sickbeard.logger.log('{error}'.format(error=self.error_map.get(error_code, jdata)))
             self.session.cookies.clear()
 
         return self.auth
@@ -137,7 +137,7 @@ class DownloadStationAPI(GenericClient):
         if sickbeard.TORRENT_PATH:
             data['destination'] = sickbeard.TORRENT_PATH
 
-        files = {'file': (result.name + '.torrent', result.content)}
+        files = {'file': ('{name}.torrent'.format(name=result.name), result.content)}
 
         self._request(method='post', data=data, files=files)
         return self._check_response()
@@ -146,7 +146,7 @@ class DownloadStationAPI(GenericClient):
         """
         Validate and set torrent destination
         """
-        
+
         if not (self.auth or self._get_auth()):
             return False
 
@@ -174,7 +174,8 @@ class DownloadStationAPI(GenericClient):
             jdata = self.response.json()
             version_string = jdata.get('data', {}).get('version_string')
             if not version_string:
-                sickbeard.logger.log('Could not get the version_string from DSM: {0}'.format(jdata))
+                sickbeard.logger.log('Could not get the version_string from DSM: {response}'.format
+                                     (response=jdata))
                 return False
 
             if version_string.startswith('DSM 6'):
@@ -204,11 +205,13 @@ class DownloadStationAPI(GenericClient):
                         if destination and os.path.isabs(destination):
                             sickbeard.TORRENT_PATH = re.sub(r'^/volume\d/', '', destination).lstrip('/')
                         else:
-                            sickbeard.logger.log('default_destination could not be determined for DSM6: {0}'.format(jdata))
+                            sickbeard.logger.log('default_destination could not be determined '
+                                                 'for DSM6: {response}'.format(response=jdata))
                             return False
 
         if destination or sickbeard.TORRENT_PATH:
-            sickbeard.logger.log('Destination is now {0}'.format(sickbeard.TORRENT_PATH or destination))
+            sickbeard.logger.log('Destination is now {path}'.format
+                                 (path=sickbeard.TORRENT_PATH or destination))
 
         self.checked_destination = True
         self.destination = sickbeard.TORRENT_PATH
