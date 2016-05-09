@@ -182,7 +182,7 @@ def remove_non_release_groups(name, clean_proper=False):
             _name = re.sub(r'(?i)' + remove_string, '', _name)
 
     if clean_proper:
-        _name = remove_strings(_name, ['.mkv', '.avi', '.mp4'])
+        _name = remove_strings(_name, ['.mkv', '.avi', '.mp4', '[req] '])
 
     return _name
 
