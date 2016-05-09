@@ -114,6 +114,7 @@ class TraktChecker(object):
         return trakt_show if trakt_show else None
 
     def remove_show_trakt_library(self, show_obj):
+        """Remove Show from trakt collections"""
         if self.find_show(show_obj.indexerid):
             trakt_id = sickbeard.indexerApi(show_obj.indexer).config['trakt_id']
 
@@ -135,10 +136,18 @@ class TraktChecker(object):
 
             logger.log(u"Removing '{0}' from Trakt library".format(show_obj.name), logger.DEBUG)
 
+            # Remove all episodes from the Trakt collection for this show
+            try:
+                self.remove_episode_trakt_collection(filter_show=show_obj)
+            except TraktException as e:
+                logger.log(u"Could not connect to Trakt. Aborting removing episodes for show '{0}' from Trakt library. Error: {1}".
+                           format(show_obj.name, repr(e)), logger.WARNING)
+
             try:
                 self.trakt_api.request("sync/collection/remove", data, method='POST')
             except TraktException as e:
-                logger.log(u"Could not connect to Trakt. Aborting removing show '{0}' from Trakt library. Error: {1}".format(show_obj.name, repr(e)), logger.WARNING)
+                logger.log(u"Could not connect to Trakt. Aborting removing show '{0}' from Trakt library. Error: {1}".
+                           format(show_obj.name, repr(e)), logger.WARNING)
 
     def add_show_trakt_library(self, show_obj):
         """
@@ -184,13 +193,18 @@ class TraktChecker(object):
                 if sickbeard.TRAKT_SYNC_REMOVE:
                     self.remove_episode_trakt_collection()
 
-    def remove_episode_trakt_collection(self):
+    def remove_episode_trakt_collection(self, filter_show=None):
         if sickbeard.TRAKT_SYNC_REMOVE and sickbeard.TRAKT_SYNC and sickbeard.USE_TRAKT:
 
+            params = []
             main_db_con = db.DBConnection()
             sql_selection = 'select tv_shows.indexer, tv_shows.startyear, showid, show_name, season, episode, tv_episodes.status,' \
-                            'tv_episodes.location from tv_episodes,tv_shows where tv_shows.indexer_id = tv_episodes.showid'
-            episodes = main_db_con.select(sql_selection)
+                            'tv_episodes.location from tv_episodes, tv_shows where tv_shows.indexer_id = tv_episodes.showid'
+            if filter_show:
+                sql_selection += ' AND tv_shows.indexer_id = ? AND tv_shows.indexer = ?'
+                params = [filter_show.indexerid, filter_show.indexer]
+
+            episodes = main_db_con.select(sql_selection, params)
 
             if episodes:
                 trakt_data = []
@@ -498,19 +512,19 @@ class TraktChecker(object):
             try:
                 if self.collection_list[trakt_id][showid]['seasons'][season]['episodes'][episode] == episode:
                     return True
-            except Exception:
+            except KeyError:
                 return False
         elif "Show" == List:
             try:
                 if self.show_watchlist[trakt_id][showid]['id'] == showid:
                     return True
-            except Exception:
+            except KeyError:
                 return False
         else:
             try:
                 if self.episode_watchlist[trakt_id][showid]['seasons'][season]['episodes'][episode] == episode:
                     return True
-            except Exception:
+            except KeyError:
                 return False
 
     def _get_show_watchlist(self):

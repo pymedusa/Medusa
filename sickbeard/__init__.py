@@ -1446,7 +1446,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                          threadName="POSTPROCESSOR",
                                                          silent=not PROCESS_AUTOMATICALLY,
                                                          run_delay=update_interval)
-        update_interval = datetime.timedelta(minutes=5)
+        update_interval = datetime.timedelta(minutes=0.1)
         traktCheckerScheduler = scheduler.Scheduler(traktChecker.TraktChecker(),
                                                     cycleTime=datetime.timedelta(hours=1),
                                                     threadName="TRAKTCHECKER",
