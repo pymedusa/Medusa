@@ -1549,34 +1549,7 @@ def handle_requests_exception(requests_exception):  # pylint: disable=too-many-b
         logger.log(default.format(error), logger.DEBUG)
         logger.log(traceback.format_exc(), logger.DEBUG)
 
-    except requests.exceptions.HTTPError as error:
-        logger.log(default.format(error))
-    except requests.exceptions.TooManyRedirects as error:
-        logger.log(default.format(error))
-    except requests.exceptions.ConnectTimeout as error:
-        logger.log(default.format(error))
-    except requests.exceptions.ReadTimeout as error:
-        logger.log(default.format(error))
-    except requests.exceptions.ProxyError as error:
-        logger.log(default.format(error))
-    except requests.exceptions.ConnectionError as error:
-        logger.log(default.format(error))
-    except requests.exceptions.ContentDecodingError as error:
-        logger.log(default.format(error))
-        logger.log(traceback.format_exc(), logger.DEBUG)
-    except requests.exceptions.ChunkedEncodingError as error:
-        logger.log(default.format(error))
-    except requests.exceptions.InvalidURL as error:
-        logger.log(default.format(error))
-    except requests.exceptions.InvalidSchema as error:
-        logger.log(default.format(error))
-    except requests.exceptions.MissingSchema as error:
-        logger.log(default.format(error))
-    except requests.exceptions.RetryError as error:
-        logger.log(default.format(error))
-    except requests.exceptions.StreamConsumedError as error:
-        logger.log(default.format(error))
-    except requests.exceptions.URLRequired as error:
+    except requests.exceptions.RequestException as error:
         logger.log(default.format(error))
     except Exception as error:
         logger.log(default.format(error), logger.ERROR)
