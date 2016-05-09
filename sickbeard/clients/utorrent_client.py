@@ -63,7 +63,10 @@ class UTorrentAPI(GenericClient):
 
     def _add_torrent_uri(self, result):
 
-        params = {'action': 'add-url', 's': result.url}
+        params = {
+            'action': 'add-url',
+            's': result.url,
+        }
         return self._request(params=params)
 
     def _add_torrent_file(self, result):
@@ -86,10 +89,12 @@ class UTorrentAPI(GenericClient):
         if result.show.is_anime and sickbeard.TORRENT_LABEL_ANIME:
             label = sickbeard.TORRENT_LABEL_ANIME
 
-        params = {'action': 'setprops',
-                  'hash': result.hash,
-                  's': 'label',
-                  'v': label}
+        params = {
+            'action': 'setprops',
+            'hash': result.hash,
+            's': 'label',
+            'v': label,
+        }
 
         return self._request(params=params)
 
@@ -100,16 +105,20 @@ class UTorrentAPI(GenericClient):
             ratio = result.ratio
 
         if ratio:
-            params = {'action': 'setprops',
-                      'hash': result.hash,
-                      's': 'seed_override',
-                      'v': '1'}
+            params = {
+                'action': 'setprops',
+                'hash': result.hash,
+                's': 'seed_override',
+                'v': '1',
+            }
 
             if self._request(params=params):
-                params = {'action': 'setprops',
-                          'hash': result.hash,
-                          's': 'seed_ratio',
-                          'v': float(ratio) * 10}
+                params = {
+                    'action': 'setprops',
+                    'hash': result.hash,
+                    's': 'seed_ratio',
+                    'v': float(ratio) * 10,
+                }
 
                 return self._request(params=params)
             else:
@@ -121,16 +130,20 @@ class UTorrentAPI(GenericClient):
 
         if sickbeard.TORRENT_SEED_TIME:
             time = 3600 * float(sickbeard.TORRENT_SEED_TIME)
-            params = {'action': 'setprops',
-                      'hash': result.hash,
-                      's': 'seed_override',
-                      'v': '1'}
+            params = {
+                'action': 'setprops',
+                'hash': result.hash,
+                's': 'seed_override',
+                'v': '1',
+            }
 
             if self._request(params=params):
-                params = {'action': 'setprops',
-                          'hash': result.hash,
-                          's': 'seed_time',
-                          'v': time}
+                params = {
+                    'action': 'setprops',
+                    'hash': result.hash,
+                    's': 'seed_time',
+                    'v': time,
+                }
 
                 return self._request(params=params)
             else:
@@ -141,7 +154,10 @@ class UTorrentAPI(GenericClient):
     def _set_torrent_priority(self, result):
 
         if result.priority == 1:
-            params = {'action': 'queuetop', 'hash': result.hash}
+            params = {
+                'action': 'queuetop',
+                'hash': result.hash,
+            }
             return self._request(params=params)
         else:
             return True
@@ -149,9 +165,15 @@ class UTorrentAPI(GenericClient):
     def _set_torrent_pause(self, result):
 
         if sickbeard.TORRENT_PAUSED:
-            params = {'action': 'pause', 'hash': result.hash}
+            params = {
+                'action': 'pause',
+                'hash': result.hash,
+            }
         else:
-            params = {'action': 'start', 'hash': result.hash}
+            params = {
+                'action': 'start',
+                'hash': result.hash,
+            }
 
         return self._request(params=params)
 

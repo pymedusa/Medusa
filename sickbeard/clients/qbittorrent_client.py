@@ -48,7 +48,10 @@ class qbittorrentAPI(GenericClient):
 
         if self.api > 1:
             self.url = '{host}login'.format(host=self.host)
-            data = {'username': self.username, 'password': self.password}
+            data = {
+                'username': self.username,
+                'password': self.password,
+            }
             try:
                 self.response = self.session.post(self.url, data=data)
             except Exception:
@@ -69,13 +72,20 @@ class qbittorrentAPI(GenericClient):
     def _add_torrent_uri(self, result):
 
         self.url = '{host}command/download'.format(host=self.host)
-        data = {'urls': result.url}
+        data = {
+            'urls': result.url,
+        }
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
     def _add_torrent_file(self, result):
 
         self.url = '{host}command/upload'.format(host=self.host)
-        files = {'torrents': ('{result}.torrent'.format(result=result.name), result.content)}
+        files = {
+            'torrents': (
+                '{result}.torrent'.format(result=result.name),
+                result.content,
+            ),
+        }
         return self._request(method='post', files=files, cookies=self.session.cookies)
 
     def _set_torrent_label(self, result):
@@ -86,7 +96,10 @@ class qbittorrentAPI(GenericClient):
 
         if self.api > 6 and label:
             self.url = '{host}command/setLabel'.format(host=self.host)
-            data = {'hashes': result.hash.lower(), 'label': label.replace(' ', '_')}
+            data = {
+                'hashes': result.hash.lower(),
+                'label': label.replace(' ', '_'),
+            }
             return self._request(method='post', data=data, cookies=self.session.cookies)
         return None
 
@@ -96,7 +109,9 @@ class qbittorrentAPI(GenericClient):
         if result.priority == 1:
             self.url = '{host}command/increasePrio'.format(host=self.host)
 
-        data = {'hashes': result.hash.lower()}
+        data = {
+            'hashes': result.hash.lower(),
+        }
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
     def _set_torrent_pause(self, result):
@@ -105,7 +120,9 @@ class qbittorrentAPI(GenericClient):
         if sickbeard.TORRENT_PAUSED:
             self.url = '{host}command/pause'.format(host=self.host)
 
-        data = {'hash': result.hash}
+        data = {
+            'hash': result.hash,
+        }
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
 api = qbittorrentAPI()

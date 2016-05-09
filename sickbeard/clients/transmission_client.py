@@ -47,7 +47,9 @@ class TransmissionAPI(GenericClient):
 
     def _get_auth(self):
 
-        post_data = json.dumps({'method': 'session-get', })
+        post_data = json.dumps({
+            'method': 'session-get',
+        })
 
         try:
             self.response = self.session.post(self.url, data=post_data.encode('utf-8'), timeout=120,
@@ -59,8 +61,10 @@ class TransmissionAPI(GenericClient):
         self.session.headers.update({'x-transmission-session-id': self.auth})
 
         # Validating Transmission authorization
-        post_data = json.dumps({'arguments': {},
-                                'method': 'session-get'})
+        post_data = json.dumps({
+            'arguments': {},
+            'method': 'session-get',
+        })
 
         self._request(method='post', data=post_data)
 
@@ -75,8 +79,10 @@ class TransmissionAPI(GenericClient):
         if os.path.isabs(sickbeard.TORRENT_PATH):
             arguments['download-dir'] = sickbeard.TORRENT_PATH
 
-        post_data = json.dumps({'arguments': arguments,
-                                'method': 'torrent-add'})
+        post_data = json.dumps({
+            'arguments': arguments,
+            'method': 'torrent-add',
+        })
 
         self._request(method='post', data=post_data)
 
@@ -92,8 +98,10 @@ class TransmissionAPI(GenericClient):
         if os.path.isabs(sickbeard.TORRENT_PATH):
             arguments['download-dir'] = sickbeard.TORRENT_PATH
 
-        post_data = json.dumps({'arguments': arguments,
-                                'method': 'torrent-add'})
+        post_data = json.dumps({
+            'arguments': arguments,
+            'method': 'torrent-add',
+        })
 
         self._request(method='post', data=post_data)
 
@@ -114,12 +122,16 @@ class TransmissionAPI(GenericClient):
                 ratio = float(ratio)
                 mode = 1  # Stop seeding at seedRatioLimit
 
-        arguments = {'ids': [result.hash],
-                     'seedRatioLimit': ratio,
-                     'seedRatioMode': mode}
+        arguments = {
+            'ids': [result.hash],
+            'seedRatioLimit': ratio,
+            'seedRatioMode': mode,
+        }
 
-        post_data = json.dumps({'arguments': arguments,
-                                'method': 'torrent-set'})
+        post_data = json.dumps({
+            'arguments': arguments,
+            'method': 'torrent-set',
+        })
 
         self._request(method='post', data=post_data)
 
@@ -129,12 +141,16 @@ class TransmissionAPI(GenericClient):
 
         if sickbeard.TORRENT_SEED_TIME and sickbeard.TORRENT_SEED_TIME != -1:
             time = int(60 * float(sickbeard.TORRENT_SEED_TIME))
-            arguments = {'ids': [result.hash],
-                         'seedIdleLimit': time,
-                         'seedIdleMode': 1}
+            arguments = {
+                'ids': [result.hash],
+                'seedIdleLimit': time,
+                'seedIdleMode': 1,
+            }
 
-            post_data = json.dumps({'arguments': arguments,
-                                    'method': 'torrent-set'})
+            post_data = json.dumps({
+                'arguments': arguments,
+                'method': 'torrent-set',
+            })
 
             self._request(method='post', data=post_data)
 
@@ -158,8 +174,10 @@ class TransmissionAPI(GenericClient):
         else:
             arguments['priority-normal'] = []
 
-        post_data = json.dumps({'arguments': arguments,
-                                'method': 'torrent-set'})
+        post_data = json.dumps({
+            'arguments': arguments,
+            'method': 'torrent-set',
+        })
 
         self._request(method='post', data=post_data)
 

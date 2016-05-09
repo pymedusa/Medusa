@@ -44,7 +44,7 @@ class DownloadStationAPI(GenericClient):
             'login': urljoin(self.host, 'webapi/auth.cgi'),
             'task': urljoin(self.host, 'webapi/DownloadStation/task.cgi'),
             'info': urljoin(self.host, '/webapi/DownloadStation/info.cgi'),
-            'dsminfo': urljoin(self.host, '/webapi/entry.cgi')
+            'dsminfo': urljoin(self.host, '/webapi/entry.cgi'),
         }
 
         self.url = self.urls['task']
@@ -57,7 +57,7 @@ class DownloadStationAPI(GenericClient):
             104: 'The requested version does not support the functionality',
             105: 'The logged in session does not have permission',
             106: 'Session timeout',
-            107: 'Session interrupted by duplicate login'
+            107: 'Session interrupted by duplicate login',
         }
         self.checked_destination = False
         self.destination = sickbeard.TORRENT_PATH
@@ -93,7 +93,7 @@ class DownloadStationAPI(GenericClient):
             'account': self.username,
             'passwd': self.password,
             'session': 'DownloadStation',
-            'format': 'cookie'
+            'format': 'cookie',
         }
 
         try:
@@ -114,7 +114,7 @@ class DownloadStationAPI(GenericClient):
             'version': '1',
             'method': 'create',
             'session': 'DownloadStation',
-            'uri': result.url
+            'uri': result.url,
         }
 
         if not self._check_destination():
@@ -160,7 +160,7 @@ class DownloadStationAPI(GenericClient):
             'api': 'SYNO.DSM.Info',
             'version': 2,
             'method': 'getinfo',
-            'session': 'DownloadStation'
+            'session': 'DownloadStation',
         }
 
         try:
@@ -191,7 +191,7 @@ class DownloadStationAPI(GenericClient):
                     #  or forcefully set the location setting
                     params.update({
                         'method': 'getconfig',
-                        'version': 2
+                        'version': 2,
                     })
 
                     try:
