@@ -435,7 +435,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_ratio">
                                 <span class="component-title" id="${curTorrentProvider.get_id()}_ratio_desc">Seed ratio:</span>
                                 <span class="component-desc">
-                                    <input type="number" min="-1" step="0.1" name="${curTorrentProvider.get_id()}_ratio" id="${curTorrentProvider.get_id()}_ratio" value="${curTorrentProvider.ratio}" class="form-control input-sm input75" />
+                                    <input type="number" min="-1" step="0.1" name="${curTorrentProvider.get_id()}_ratio" id="${curTorrentProvider.get_id()}_ratio" value="${'' if curTorrentProvider.ratio is None else curTorrentProvider.ratio}" class="form-control input-sm input75" />
                                 </span>
                             </label>
                             <label>
