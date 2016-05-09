@@ -28,6 +28,7 @@ import os
 import re
 
 import sickbeard
+from sickbeard import logger
 from sickbeard.clients.generic import GenericClient
 
 
@@ -74,7 +75,7 @@ class DownloadStationAPI(GenericClient):
         self.auth = jdata.get('success')
         if not self.auth:
             error_code = jdata.get('error', {}).get('code')
-            sickbeard.logger.log('{error}'.format(error=self.error_map.get(error_code, jdata)))
+            logger.log('{error}'.format(error=self.error_map.get(error_code, jdata)))
             self.session.cookies.clear()
 
         return self.auth
@@ -174,8 +175,8 @@ class DownloadStationAPI(GenericClient):
             jdata = self.response.json()
             version_string = jdata.get('data', {}).get('version_string')
             if not version_string:
-                sickbeard.logger.log('Could not get the version_string from DSM: {response}'.format
-                                     (response=jdata))
+                logger.log('Could not get the version string from DSM: {response}'.format
+                           (response=jdata))
                 return False
 
             if version_string.startswith('DSM 6'):
@@ -205,13 +206,13 @@ class DownloadStationAPI(GenericClient):
                         if destination and os.path.isabs(destination):
                             sickbeard.TORRENT_PATH = re.sub(r'^/volume\d/', '', destination).lstrip('/')
                         else:
-                            sickbeard.logger.log('default_destination could not be determined '
-                                                 'for DSM6: {response}'.format(response=jdata))
+                            logger.log('Default destination could not be determined '
+                                       'for DSM6: {response}'.format(response=jdata))
                             return False
 
         if destination or sickbeard.TORRENT_PATH:
-            sickbeard.logger.log('Destination is now {path}'.format
-                                 (path=sickbeard.TORRENT_PATH or destination))
+            logger.log('Destination is now {path}'.format
+                       (path=sickbeard.TORRENT_PATH or destination))
 
         self.checked_destination = True
         self.destination = sickbeard.TORRENT_PATH
