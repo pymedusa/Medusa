@@ -19,7 +19,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 #
-# Uses the Synology Download Station API: http://download.synology.com/download/Document/DeveloperGuide/Synology_Download_Station_Web_API.pdf
+
+# Uses the Synology Download Station API:
+# http://download.synology.com/download/Document/DeveloperGuide/Synology_Download_Station_Web_API.pdf
 
 from __future__ import unicode_literals
 from requests.compat import urljoin
@@ -184,8 +186,9 @@ class DownloadStationAPI(GenericClient):
                 if sickbeard.TORRENT_PATH and os.path.isabs(sickbeard.TORRENT_PATH):
                     sickbeard.TORRENT_PATH = re.sub(r'^/volume\d/', '', sickbeard.TORRENT_PATH).lstrip('/')
                 else:
-                    #  Since they didnt specify the location in the settings, lets make sure the default is relative,
-                    #  Or forcefully set the location setting in SickRage
+                    #  Since they didn't specify the location in the settings,
+                    #  lets make sure the default is relative,
+                    #  or forcefully set the location setting
                     params.update({
                         'method': 'getconfig',
                         'version': 2

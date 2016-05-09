@@ -38,8 +38,13 @@ class UTorrentAPI(GenericClient):
     def _request(self, method='get', params=None, data=None, files=None):
 
         # Workaround for uTorrent 2.2.1
-        # Need a odict but only supported in 2.7+ and sickrage is 2.6+
-        ordered_params = {'token': self.auth}
+        # Need an OrderedDict but only supported in 2.7+
+        # Medusa is no longer 2.6+
+
+        # TOD0: Replace this with an OrderedDict
+        ordered_params = {
+            'token': self.auth,
+        }
 
         for k, v in params.iteritems() or {}:
             ordered_params.update({k: v})
