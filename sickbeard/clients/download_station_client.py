@@ -33,6 +33,7 @@ from requests.exceptions import RequestException
 
 import sickbeard
 from sickbeard import logger
+from sickbeard.helpers import handle_requests_exception
 from sickbeard.clients.generic import GenericClient
 
 
@@ -102,7 +103,7 @@ class DownloadStationAPI(GenericClient):
             self.response = self.session.get(self.urls['login'], params=params, verify=False)
             self.response.raise_for_status()
         except RequestException as error:
-            sickbeard.helpers.handle_requests_exception(error)
+            handle_requests_exception(error)
             self.session.cookies.clear()
             self.auth = False
             return self.auth
@@ -175,7 +176,7 @@ class DownloadStationAPI(GenericClient):
             self.response = self.session.get(self.urls['dsminfo'], params=params, verify=False, timeout=120)
             self.response.raise_for_status()
         except RequestException as error:
-            sickbeard.helpers.handle_requests_exception(error)
+            handle_requests_exception(error)
             self.session.cookies.clear()
             self.auth = False
             return False
@@ -206,7 +207,7 @@ class DownloadStationAPI(GenericClient):
                         self.response = self.session.get(self.urls['info'], params=params, verify=False, timeout=120)
                         self.response.raise_for_status()
                     except RequestException as error:
-                        sickbeard.helpers.handle_requests_exception(error)
+                        handle_requests_exception(error)
                         self.session.cookies.clear()
                         self.auth = False
                         return False

@@ -23,6 +23,7 @@ import io
 import ctypes
 import re
 import socket
+import ssl
 import stat
 import tempfile
 import time
@@ -1532,6 +1533,54 @@ def download_file(url, filename, session=None, headers=None, **kwargs):  # pylin
         return False
 
     return True
+
+
+def handle_requests_exception(requests_exception):  # pylint: disable=too-many-branches, too-many-statements
+    default = "Request failed: {0}"
+    try:
+        raise requests_exception
+    except requests.exceptions.SSLError as error:
+        if ssl.OPENSSL_VERSION_INFO < (1, 0, 1, 5):
+            logger.log("SSL Error requesting url: '{0}' You have {1}, try upgrading OpenSSL to 1.0.1e+".format(
+                error.request.url, ssl.OPENSSL_VERSION))
+        if sickbeard.SSL_VERIFY:
+            logger.log(
+                "SSL Error requesting url: '{0}' Try disabling Cert Verification on the advanced tab of /config/general")
+        logger.log(default.format(error), logger.DEBUG)
+        logger.log(traceback.format_exc(), logger.DEBUG)
+
+    except requests.exceptions.HTTPError as error:
+        logger.log(default.format(error))
+    except requests.exceptions.TooManyRedirects as error:
+        logger.log(default.format(error))
+    except requests.exceptions.ConnectTimeout as error:
+        logger.log(default.format(error))
+    except requests.exceptions.ReadTimeout as error:
+        logger.log(default.format(error))
+    except requests.exceptions.ProxyError as error:
+        logger.log(default.format(error))
+    except requests.exceptions.ConnectionError as error:
+        logger.log(default.format(error))
+    except requests.exceptions.ContentDecodingError as error:
+        logger.log(default.format(error))
+        logger.log(traceback.format_exc(), logger.DEBUG)
+    except requests.exceptions.ChunkedEncodingError as error:
+        logger.log(default.format(error))
+    except requests.exceptions.InvalidURL as error:
+        logger.log(default.format(error))
+    except requests.exceptions.InvalidSchema as error:
+        logger.log(default.format(error))
+    except requests.exceptions.MissingSchema as error:
+        logger.log(default.format(error))
+    except requests.exceptions.RetryError as error:
+        logger.log(default.format(error))
+    except requests.exceptions.StreamConsumedError as error:
+        logger.log(default.format(error))
+    except requests.exceptions.URLRequired as error:
+        logger.log(default.format(error))
+    except Exception as error:
+        logger.log(default.format(error), logger.ERROR)
+        logger.log(traceback.format_exc(), logger.DEBUG)
 
 
 def get_size(start_path='.'):
