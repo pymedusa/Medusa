@@ -22,6 +22,8 @@ from __future__ import unicode_literals
 import json
 from base64 import b64encode
 
+from requests.exceptions import RequestException
+
 import sickbeard
 from sickbeard import logger
 from sickbeard.clients.generic import GenericClient
@@ -47,7 +49,7 @@ class DelugeAPI(GenericClient):
         try:
             self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
                                               verify=sickbeard.TORRENT_VERIFY_CERT)
-        except Exception:
+        except RequestException:
             return None
 
         self.auth = self.response.json()['result']
@@ -61,7 +63,7 @@ class DelugeAPI(GenericClient):
         try:
             self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
                                               verify=sickbeard.TORRENT_VERIFY_CERT)
-        except Exception:
+        except RequestException:
             return None
 
         connected = self.response.json()['result']
@@ -75,7 +77,7 @@ class DelugeAPI(GenericClient):
             try:
                 self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
                                                   verify=sickbeard.TORRENT_VERIFY_CERT)
-            except Exception:
+            except RequestException:
                 return None
 
             hosts = self.response.json()['result']
@@ -94,7 +96,7 @@ class DelugeAPI(GenericClient):
             try:
                 self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
                                                   verify=sickbeard.TORRENT_VERIFY_CERT)
-            except Exception:
+            except RequestException:
                 return None
 
             post_data = json.dumps({
@@ -106,7 +108,7 @@ class DelugeAPI(GenericClient):
             try:
                 self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
                                                   verify=sickbeard.TORRENT_VERIFY_CERT)
-            except Exception:
+            except RequestException:
                 return None
 
             connected = self.response.json()['result']
