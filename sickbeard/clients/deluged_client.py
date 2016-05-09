@@ -27,7 +27,7 @@ class DelugeDAPI(GenericClient):
         return True
 
     def connect(self, reconnect=False):
-        hostname = self.host.replace("/", "").split(':')
+        hostname = self.host.replace('/', '').split(':')
 
         if not self.drpc or reconnect:
             self.drpc = DelugeRPC(hostname[1], port=hostname[2], username=self.username, password=self.password)

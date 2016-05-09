@@ -44,7 +44,7 @@ default_host = {
 
 def get_client_module(name):
     name = name.lower()
-    prefix = "sickbeard.clients."
+    prefix = 'sickbeard.clients.'
 
     return __import__('{prefix}{name}_client'.format
                       (prefix=prefix, name=name), fromlist=_clients)
