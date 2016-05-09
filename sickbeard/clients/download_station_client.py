@@ -73,14 +73,14 @@ class DownloadStationAPI(GenericClient):
             self.session.cookies.clear()
             self.auth = False
             return self.auth
+        else:
+            self.auth = jdata.get('success')
+            if not self.auth:
+                error_code = jdata.get('error', {}).get('code')
+                logger.log('{error}'.format(error=self.error_map.get(error_code, jdata)))
+                self.session.cookies.clear()
 
-        self.auth = jdata.get('success')
-        if not self.auth:
-            error_code = jdata.get('error', {}).get('code')
-            logger.log('{error}'.format(error=self.error_map.get(error_code, jdata)))
-            self.session.cookies.clear()
-
-        return self.auth
+            return self.auth
 
     def _get_auth(self):
         if self.session.cookies and self.auth:
@@ -104,8 +104,8 @@ class DownloadStationAPI(GenericClient):
             self.session.cookies.clear()
             self.auth = False
             return self.auth
-
-        return self._check_response()
+        else:
+            return self._check_response()
 
     def _add_torrent_uri(self, result):
 

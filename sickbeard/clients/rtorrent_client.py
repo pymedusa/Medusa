@@ -63,10 +63,7 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
 
     def _add_torrent_uri(self, result):
 
-        if not self.auth:
-            return False
-
-        if not result:
+        if not (self.auth or result):
             return False
 
         try:
@@ -88,20 +85,16 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
 
             # Start torrent
             torrent.start()
-
-            return True
-
         except Exception as error:  # pylint: disable=broad-except
             logger.log('Error while sending torrent: {error}'.format  # pylint: disable=no-member
                        (error=ex(error)), logger.WARNING)
             return False
+        else:
+            return True
 
     def _add_torrent_file(self, result):
 
-        if not self.auth:
-            return False
-
-        if not result:
+        if not (self.auth or result):
             return False
 
         # Send request to rTorrent
@@ -124,13 +117,12 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
 
             # Start torrent
             torrent.start()
-
-            return True
-
-        except Exception as error:  # pylint: disable=broad-except
+        except Exception as msg:  # pylint: disable=broad-except
             logger.log('Error while sending torrent: {error}'.format  # pylint: disable=no-member
-                       (error=ex(error)), logger.WARNING)
+                       (error=ex(msg)), logger.WARNING)
             return False
+        else:
+            return True
 
     def _set_torrent_ratio(self, name):
         _ = name
@@ -140,13 +132,12 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
     def test_authentication(self):
         try:
             self._get_auth()
-
-            if self.auth is not None:
-                return True, 'Success: Connected and Authenticated'
-            else:
-                return False, 'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
         except Exception:  # pylint: disable=broad-except
             return False, 'Error: Unable to connect to {name}'.format(name=self.name)
-
+        else:
+            if self.auth is None:
+                return False, 'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
+            else:
+                return True, 'Success: Connected and Authenticated'
 
 api = RTorrentAPI()  # pylint: disable=invalid-name

@@ -90,9 +90,7 @@ class qbittorrentAPI(GenericClient):
 
     def _set_torrent_label(self, result):
 
-        label = sickbeard.TORRENT_LABEL
-        if result.show.is_anime:
-            label = sickbeard.TORRENT_LABEL_ANIME
+        label = sickbeard.TORRENT_LABEL_ANIME if result.show.is_anime else sickbeard.TORRENT_LABEL
 
         if self.api > 6 and label:
             self.url = '{host}command/setLabel'.format(host=self.host)
@@ -105,21 +103,16 @@ class qbittorrentAPI(GenericClient):
 
     def _set_torrent_priority(self, result):
 
-        self.url = '{host}command/decreasePrio'.format(host=self.host)
-        if result.priority == 1:
-            self.url = '{host}command/increasePrio'.format(host=self.host)
-
+        self.url = '{host}command/{method}Prio'.format(host=self.host,
+                                                       method='increase' if result.priority == 1 else 'decrease')
         data = {
             'hashes': result.hash.lower(),
         }
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
     def _set_torrent_pause(self, result):
-
-        self.url = '{host}command/resume'.format(host=self.host)
-        if sickbeard.TORRENT_PAUSED:
-            self.url = '{host}command/pause'.format(host=self.host)
-
+        self.url = '{host}command/{state}'.format(host=self.host,
+                                                  state='pause' if sickbeard.TORRENT_PAUSED else 'resume')
         data = {
             'hash': result.hash,
         }

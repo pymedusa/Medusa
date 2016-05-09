@@ -23,10 +23,7 @@ class DelugeDAPI(GenericClient):
         super(DelugeDAPI, self).__init__('DelugeD', host, username, password)
 
     def _get_auth(self):
-        if not self.connect():
-            return None
-
-        return True
+        return True if self.connect() else None
 
     def connect(self, reconnect=False):
         hostname = self.host.replace('/', '').split(':')
@@ -43,12 +40,10 @@ class DelugeDAPI(GenericClient):
 
         remote_torrent = self.drpc.add_torrent_magnet(result.url, options, result.hash)
 
-        if not remote_torrent:
-            return None
+        if remote_torrent:
+            result.hash = remote_torrent
 
-        result.hash = remote_torrent
-
-        return remote_torrent
+        return remote_torrent or None
 
     def _add_torrent_file(self, result):
         if not result.content:
@@ -62,12 +57,10 @@ class DelugeDAPI(GenericClient):
         remote_torrent = self.drpc.add_torrent_file('{name}.torrent'.format(name=result.name),
                                                     result.content, options, result.hash)
 
-        if not remote_torrent:
-            return None
+        if remote_torrent:
+            result.hash = remote_torrent
 
-        result.hash = remote_torrent
-
-        return remote_torrent
+        return remote_torrent or None
 
     def _set_torrent_label(self, result):
 
@@ -79,33 +72,20 @@ class DelugeDAPI(GenericClient):
                        (name=self.name), logger.ERROR)
             return False
 
-        if label:
-            return self.drpc.set_torrent_label(result.hash, label)
-        return True
+        return self.drpc.set_torrent_label(result.hash, label) if label else True
 
     def _set_torrent_ratio(self, result):
-        if result.ratio:
-            ratio = float(result.ratio)
-            return self.drpc.set_torrent_ratio(result.hash, ratio)
-        return True
+        return self.drpc.set_torrent_ratio(result.hash, float(result.ratio)) if result.ratio else True
 
     def _set_torrent_priority(self, result):
-        if result.priority == 1:
-            return self.drpc.set_torrent_priority(result.hash, True)
-        return True
+        return self.drpc.set_torrent_priority(result.hash, True) if result.priority == 1 else True
 
     def _set_torrent_path(self, result):
-
         path = sickbeard.TORRENT_PATH
-        if path:
-            return self.drpc.set_torrent_path(result.hash, path)
-        return True
+        return self.drpc.set_torrent_path(result.hash, path) if path else True
 
     def _set_torrent_pause(self, result):
-
-        if sickbeard.TORRENT_PAUSED:
-            return self.drpc.pause_torrent(result.hash)
-        return True
+        return self.drpc.pause_torrent(result.hash) if sickbeard.TORRENT_PAUSED else True
 
     def test_authentication(self):
         if self.connect(True) and self.drpc.test():
@@ -139,7 +119,8 @@ class DelugeRPC(object):
             self.connect()
         except Exception:
             return False
-        return True
+        else:
+            return True
 
     def add_torrent_magnet(self, torrent, options, torrent_hash):
         try:
@@ -149,11 +130,11 @@ class DelugeRPC(object):
                 torrent_id = self._check_torrent(torrent_hash)
         except Exception:
             return False
+        else:
+            return torrent_id
         finally:
             if self.client:
                 self.disconnect()
-
-        return torrent_id
 
     def add_torrent_file(self, filename, torrent, options, torrent_hash):
         try:
@@ -163,11 +144,11 @@ class DelugeRPC(object):
                 torrent_id = self._check_torrent(torrent_hash)
         except Exception:
             return False
+        else:
+            return torrent_id
         finally:
             if self.client:
                 self.disconnect()
-
-        return torrent_id
 
     def set_torrent_label(self, torrent_id, label):
         try:
@@ -175,10 +156,11 @@ class DelugeRPC(object):
             self.client.label.set_torrent(torrent_id, label).get()  # pylint:disable=no-member
         except Exception:
             return False
+        else:
+            return True
         finally:
             if self.client:
                 self.disconnect()
-        return True
 
     def set_torrent_path(self, torrent_id, path):
         try:
@@ -187,10 +169,11 @@ class DelugeRPC(object):
             self.client.core.set_torrent_move_completed(torrent_id, 1).get()  # pylint:disable=no-member
         except Exception:
             return False
+        else:
+            return True
         finally:
             if self.client:
                 self.disconnect()
-        return True
 
     def set_torrent_priority(self, torrent_ids, priority):
         try:
@@ -199,10 +182,11 @@ class DelugeRPC(object):
                 self.client.core.queue_top([torrent_ids]).get()  # pylint:disable=no-member
         except Exception:
             return False
+        else:
+            return True
         finally:
             if self.client:
                 self.disconnect()
-        return True
 
     def set_torrent_ratio(self, torrent_ids, ratio):
         try:
@@ -211,10 +195,11 @@ class DelugeRPC(object):
             self.client.core.set_torrent_stop_ratio(torrent_ids, ratio).get()  # pylint:disable=no-member
         except Exception:
             return False
+        else:
+            return True
         finally:
             if self.client:
                 self.disconnect()
-        return True
 
     def pause_torrent(self, torrent_ids):
         try:
@@ -222,10 +207,11 @@ class DelugeRPC(object):
             self.client.core.pause_torrent(torrent_ids).get()  # pylint:disable=no-member
         except Exception:
             return False
+        else:
+            return True
         finally:
             if self.client:
                 self.disconnect()
-        return True
 
     def disconnect(self):
         self.client.disconnect()
