@@ -111,7 +111,7 @@ class DelugeDAPI(GenericClient):
             return self.drpc.pause_torrent(result.hash)
         return True
 
-    def testAuthentication(self):
+    def test_authentication(self):
         if self.connect(True) and self.drpc.test():
             return True, 'Success: Connected and Authenticated'
         else:

@@ -32,9 +32,9 @@ from sickbeard import logger, ex
 from sickbeard.clients.generic import GenericClient
 
 
-class rTorrentAPI(GenericClient):  # pylint: disable=invalid-name
+class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
     def __init__(self, host=None, username=None, password=None):
-        super(rTorrentAPI, self).__init__(u'rTorrent', host, username, password)
+        super(RTorrentAPI, self).__init__('rTorrent', host, username, password)
 
     def _get_auth(self):
         self.auth = None
@@ -175,7 +175,7 @@ class rTorrentAPI(GenericClient):  # pylint: disable=invalid-name
 
         return True
 
-    def testAuthentication(self):
+    def test_authentication(self):
         try:
             self._get_auth()
 
@@ -187,4 +187,4 @@ class rTorrentAPI(GenericClient):  # pylint: disable=invalid-name
             return False, u'Error: Unable to connect to {name}'.format(name=self.name)
 
 
-api = rTorrentAPI()  # pylint: disable=invalid-name
+api = RTorrentAPI()  # pylint: disable=invalid-name

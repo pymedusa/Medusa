@@ -42,7 +42,7 @@ default_host = {
 }
 
 
-def getClientModule(name):
+def get_client_module(name):
     name = name.lower()
     prefix = "sickbeard.clients."
 
@@ -50,8 +50,8 @@ def getClientModule(name):
                       (prefix=prefix, name=name), fromlist=_clients)
 
 
-def getClientIstance(name):
-    module = getClientModule(name)
+def get_client_instance(name):
+    module = get_client_module(name)
     class_name = module.api.__class__.__name__
 
     return getattr(module, class_name)

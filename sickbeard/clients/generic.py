@@ -164,7 +164,7 @@ class GenericClient(object):
 
         return result
 
-    def sendTORRENT(self, result):
+    def send_torrent(self, result):
 
         r_code = False
 
@@ -219,7 +219,7 @@ class GenericClient(object):
 
         return r_code
 
-    def testAuthentication(self):
+    def test_authentication(self):
 
         try:
             self.response = self.session.get(self.url, timeout=120, verify=False)

@@ -24,10 +24,10 @@ import sickbeard
 from sickbeard.clients.generic import GenericClient
 
 
-class uTorrentAPI(GenericClient):
+class UTorrentAPI(GenericClient):
     def __init__(self, host=None, username=None, password=None):
 
-        super(uTorrentAPI, self).__init__('uTorrent', host, username, password)
+        super(UTorrentAPI, self).__init__('uTorrent', host, username, password)
 
         self.url = self.host + 'gui/'
 
@@ -40,7 +40,7 @@ class uTorrentAPI(GenericClient):
         for k, v in params.iteritems() or {}:
             ordered_params.update({k: v})
 
-        return super(uTorrentAPI, self)._request(method=method, params=ordered_params, data=data, files=files)
+        return super(UTorrentAPI, self)._request(method=method, params=ordered_params, data=data, files=files)
 
     def _get_auth(self):
 
@@ -139,4 +139,4 @@ class uTorrentAPI(GenericClient):
         return self._request(params=params)
 
 
-api = uTorrentAPI()
+api = UTorrentAPI()

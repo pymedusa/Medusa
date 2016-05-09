@@ -822,9 +822,9 @@ class Home(WebRoot):
 
         host = config.clean_url(host)
 
-        client = clients.getClientIstance(torrent_method)
+        client = clients.get_client_instance(torrent_method)
 
-        _, accesMsg = client(host, username, password).testAuthentication()
+        _, accesMsg = client(host, username, password).test_authentication()
 
         return accesMsg
 
