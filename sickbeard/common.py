@@ -69,7 +69,8 @@ if SPOOF_USER_AGENT:
 cpu_presets = {
     'HIGH': 5,
     'NORMAL': 2,
-    'LOW': 1
+    'LOW': 1,
+    'DISABLED': 0
 }
 
 # Other constants
