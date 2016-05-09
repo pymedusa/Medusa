@@ -51,7 +51,8 @@ from six.moves import http_client
 from sickbeard import logger, classes
 from sickbeard.common import USER_AGENT
 from sickbeard import db
-from sickrage.helper.common import http_code_description, media_extensions, pretty_file_size, subtitle_extensions, episode_num
+from sickrage.helper.common import (http_code_description, media_extensions, pretty_file_size,
+                                    subtitle_extensions, episode_num, remove_strings)
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
@@ -103,7 +104,7 @@ def indentXML(elem, level=0):
             elem.tail = i
 
 
-def remove_non_release_groups(name):
+def remove_non_release_groups(name, clean_proper=False):
     """
     Remove non release groups from name
     """
@@ -181,6 +182,9 @@ def remove_non_release_groups(name):
             _name = _name.replace(remove_string, '')
         elif remove_type == 'searchre':
             _name = re.sub(r'(?i)' + remove_string, '', _name)
+
+    if clean_proper:
+        _name = remove_strings(_name, ['.mkv', '.avi', '.mp4'])
 
     return _name
 
