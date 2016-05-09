@@ -104,10 +104,6 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
         if not result:
             return False
 
-            # group_name = 'sb_test'.lower() ##### Use provider instead of _test
-            # if not self._set_torrent_ratio(group_name):
-            # return False
-
         # Send request to rTorrent
         try:
             # Send torrent to rTorrent
@@ -126,9 +122,6 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
             if sickbeard.TORRENT_PATH:
                 torrent.set_directory(sickbeard.TORRENT_PATH)
 
-            # Set Ratio Group
-            # torrent.set_visible(group_name)
-
             # Start torrent
             torrent.start()
 
@@ -140,39 +133,6 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
             return False
 
     def _set_torrent_ratio(self, name):
-
-        # if not name:
-        # return False
-        #
-        # if not self.auth:
-        # return False
-        #
-        # views = self.auth.get_views()
-        #
-        # if name not in views:
-        # self.auth.create_group(name)
-
-        # group = self.auth.get_group(name)
-
-        # ratio = int(float(sickbeard.TORRENT_RATIO) * 100)
-        #
-        # try:
-        # if ratio > 0:
-        #
-        # # Explicitly set all group options to ensure it is setup correctly
-        # group.set_upload('1M')
-        # group.set_min(ratio)
-        # group.set_max(ratio)
-        # group.set_command('d.stop')
-        # group.enable()
-        # else:
-        # # Reset group action and disable it
-        # group.set_command()
-        # group.disable()
-        #
-        # except:
-        # return False
-
         _ = name
 
         return True

@@ -37,10 +37,6 @@ class DelugeDAPI(GenericClient):
         return self.drpc
 
     def _add_torrent_uri(self, result):
-        # label = sickbeard.TORRENT_LABEL
-        # if result.show.is_anime:
-        #     label = sickbeard.TORRENT_LABEL_ANIME
-
         options = {
             'add_paused': sickbeard.TORRENT_PAUSED
         }
@@ -55,10 +51,6 @@ class DelugeDAPI(GenericClient):
         return remote_torrent
 
     def _add_torrent_file(self, result):
-        # label = sickbeard.TORRENT_LABEL
-        # if result.show.is_anime:
-        #     label = sickbeard.TORRENT_LABEL_ANIME
-
         if not result.content:
             result.content = {}
             return None
@@ -150,7 +142,6 @@ class DelugeRPC(object):
         return True
 
     def add_torrent_magnet(self, torrent, options, torrent_hash):
-        torrent_id = False
         try:
             self.connect()
             torrent_id = self.client.core.add_torrent_magnet(torrent, options).get()  # pylint:disable=no-member
@@ -165,7 +156,6 @@ class DelugeRPC(object):
         return torrent_id
 
     def add_torrent_file(self, filename, torrent, options, torrent_hash):
-        torrent_id = False
         try:
             self.connect()
             torrent_id = self.client.core.add_torrent_file(filename, b64encode(torrent), options).get()  # pylint:disable=no-member
