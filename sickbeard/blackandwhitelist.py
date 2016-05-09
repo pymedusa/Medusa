@@ -91,7 +91,7 @@ class BlackAndWhiteList(object):
         """
         main_db_con = db.DBConnection()
         main_db_con.action(
-            b'DELETE FROM [{table}}] '
+            b'DELETE FROM [{table}] '
             b'WHERE show_id = ?'.format(table=table),
             [self.show_id]
         )
