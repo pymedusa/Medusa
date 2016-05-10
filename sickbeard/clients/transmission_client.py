@@ -25,6 +25,8 @@ import re
 import json
 from base64 import b64encode
 
+from requests.compat import urljoin
+
 import sickbeard
 from sickbeard.clients.generic import GenericClient
 
@@ -34,16 +36,8 @@ class TransmissionAPI(GenericClient):
 
         super(TransmissionAPI, self).__init__('Transmission', host, username, password)
 
-        if not self.host.endswith('/'):
-            self.host += '/'
-
-        if self.rpcurl.startswith('/'):
-            self.rpcurl = self.rpcurl[1:]
-
-        if self.rpcurl.endswith('/'):
-            self.rpcurl = self.rpcurl[:-1]
-
-        self.url = self.host + self.rpcurl + '/rpc'
+        self.rpcurl = self.rpcurl.strip('/')
+        self.url = urljoin(self.host, self.rpcurl + '/rpc')
 
     def _get_auth(self):
 
