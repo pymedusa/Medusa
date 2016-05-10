@@ -5,6 +5,8 @@
 # This client script allows connection to Deluge Daemon directly, completely
 # circumventing the requirement to use the WebUI.
 
+from __future__ import unicode_literals
+
 from base64 import b64encode
 
 import sickbeard
@@ -81,7 +83,7 @@ class DelugeDAPI(GenericClient):
         if result.show.is_anime:
             label = sickbeard.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
-            logger.log(u'{name}: Invalid label. Label must not contain a space'.format
+            logger.log('{name}: Invalid label. Label must not contain a space'.format
                        (name=self.name), logger.ERROR)
             return False
 
@@ -241,7 +243,7 @@ class DelugeRPC(object):
     def _check_torrent(self, torrent_hash):
         torrent_id = self.client.core.get_torrent_status(torrent_hash, {}).get()  # pylint:disable=no-member
         if torrent_id['hash']:
-            logger.log(u'DelugeD: Torrent already exists in Deluge', logger.DEBUG)
+            logger.log('DelugeD: Torrent already exists in Deluge', logger.DEBUG)
             return torrent_hash
         return False
 

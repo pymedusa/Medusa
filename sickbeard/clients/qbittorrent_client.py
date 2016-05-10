@@ -18,9 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
+from requests.auth import HTTPDigestAuth
+
 import sickbeard
 from sickbeard.clients.generic import GenericClient
-from requests.auth import HTTPDigestAuth
 
 
 class qbittorrentAPI(GenericClient):

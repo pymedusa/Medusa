@@ -24,6 +24,8 @@
 # based on fuzemans work
 # https://github.com/RuudBurger/CouchPotatoServer/blob/develop/couchpotato/core/downloaders/rtorrent/main.py
 
+from __future__ import unicode_literals
+
 from rtorrent import RTorrent  # pylint: disable=import-error
 
 import sickbeard
@@ -90,7 +92,7 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
             return True
 
         except Exception as error:  # pylint: disable=broad-except
-            logger.log(u'Error while sending torrent: {error}'.format  # pylint: disable=no-member
+            logger.log('Error while sending torrent: {error}'.format  # pylint: disable=no-member
                        (error=ex(error)), logger.WARNING)
             return False
 
@@ -133,7 +135,7 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
             return True
 
         except Exception as error:  # pylint: disable=broad-except
-            logger.log(u'Error while sending torrent: {error}'.format  # pylint: disable=no-member
+            logger.log('Error while sending torrent: {error}'.format  # pylint: disable=no-member
                        (error=ex(error)), logger.WARNING)
             return False
 
@@ -180,11 +182,11 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
             self._get_auth()
 
             if self.auth is not None:
-                return True, u'Success: Connected and Authenticated'
+                return True, 'Success: Connected and Authenticated'
             else:
-                return False, u'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
+                return False, 'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
         except Exception:  # pylint: disable=broad-except
-            return False, u'Error: Unable to connect to {name}'.format(name=self.name)
+            return False, 'Error: Unable to connect to {name}'.format(name=self.name)
 
 
 api = RTorrentAPI()  # pylint: disable=invalid-name

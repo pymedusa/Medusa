@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import json
 from base64 import b64encode
 
@@ -67,7 +69,7 @@ class DelugeAPI(GenericClient):
 
             hosts = self.response.json()['result']
             if not hosts:
-                logger.log(u'{name}: WebUI does not contain daemons'.format(name=self.name), logger.ERROR)
+                logger.log('{name}: WebUI does not contain daemons'.format(name=self.name), logger.ERROR)
                 return None
 
             post_data = json.dumps({'method': 'web.connect',
@@ -90,7 +92,7 @@ class DelugeAPI(GenericClient):
 
             connected = self.response.json()['result']
             if not connected:
-                logger.log(u'{name}: WebUI could not connect to daemon'.format(name=self.name), logger.ERROR)
+                logger.log('{name}: WebUI could not connect to daemon'.format(name=self.name), logger.ERROR)
                 return None
 
         return self.auth
@@ -131,7 +133,7 @@ class DelugeAPI(GenericClient):
         if result.show.is_anime:
             label = sickbeard.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
-            logger.log(u'{name}: Invalid label. Label must not contain a space'.format
+            logger.log('{name}: Invalid label. Label must not contain a space'.format
                        (name=self.name), logger.ERROR)
             return False
 
@@ -157,7 +159,7 @@ class DelugeAPI(GenericClient):
                     })
 
                     self._request(method='post', data=post_data)
-                    logger.log(u'{name}: {label} label added to Deluge'.format
+                    logger.log('{name}: {label} label added to Deluge'.format
                                (name=self.name, label=label), logger.DEBUG)
 
                 # add label to torrent
@@ -166,10 +168,10 @@ class DelugeAPI(GenericClient):
                                         'id': 5})
 
                 self._request(method='post', data=post_data)
-                logger.log(u'{name}: {label} label added to torrent'.format
+                logger.log('{name}: {label} label added to torrent'.format
                            (name=self.name, label=label), logger.DEBUG)
             else:
-                logger.log(u'{name}: label plugin not detected'.format
+                logger.log('{name}: label plugin not detected'.format
                            (name=self.name), logger.DEBUG)
                 return False
 
