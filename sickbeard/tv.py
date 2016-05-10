@@ -164,6 +164,12 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
     def network_logo_name(self):
         return self.network.replace(u'\u00C9', 'e').replace(u'\u00E9', 'e').lower()
 
+    @property
+    def is_recently_deleted(self):
+        return self.indexerid in [recently_deleted_show.indexerid
+                                  for recently_deleted_show
+                                  in sickbeard.RECENTLY_DELETED]
+
     def _getLocation(self):
         # no dir check needed if missing show dirs are created during post-processing
         if sickbeard.CREATE_MISSING_SHOW_DIRS or ek(os.path.isdir, self._location):

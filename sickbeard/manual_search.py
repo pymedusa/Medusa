@@ -84,11 +84,13 @@ def getEpisodes(search_thread, searchstatus):
     # NOTE!: Show.find called with just indexerid!
     show_obj = Show.find(sickbeard.showList, int(search_thread.show.indexerid))
 
-    if not show_obj:
-        logger.log(u'No Show Object found for show with indexerID: {}'.format(search_thread.show.indexerid), logger.ERROR)
+    if not show_obj and not search_thread.show.is_recently_deleted:
+        logger.log(u'No Show Object found for show with indexerID: {0}'.
+                   format(search_thread.show.indexerid), logger.ERROR)
         return results
 
-    if not isinstance(search_thread.segment, list):
+    if show_obj:
+        if not isinstance(search_thread.segment, list):
             search_thread.segment = [search_thread.segment]
 
     for ep_obj in search_thread.segment:

@@ -200,7 +200,7 @@ class ShowQueue(generic_queue.GenericQueue):
 
         if self.isBeingRemoved(show):
             raise CantRemoveShowException(u'[{!s}]: Show is already being removed'.format(show.indexerid))
-            
+
         if self.isInRemoveQueue(show):
             raise CantRemoveShowException(u'[{!s}]: Show is already queued to be removed'.format(show.indexerid))
 
@@ -211,6 +211,9 @@ class ShowQueue(generic_queue.GenericQueue):
 
         queue_item_obj = QueueItemRemove(show=show, full=full)
         self.add_item(queue_item_obj)
+
+        # Show removal has been queued, let's updaste the sickbeard.RECENTLY_DELETED global, to keep track of it
+        sickbeard.RECENTLY_DELETED.append(show)
 
         return queue_item_obj
 
