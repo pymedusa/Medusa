@@ -50,8 +50,8 @@ class GenericClient(object):
 
             return False
         try:
-            self.response = self.session.__getattribute__(method)(self.url, params=params, data=data, files=files, cookies=cookies,
-                                                                  timeout=120, verify=False)
+            self.response = self.session.__getattribute__(method)(self.url, params=params, data=data, files=files,
+                                                                  cookies=cookies, timeout=120, verify=False)
         except requests.exceptions.ConnectionError as msg:
             logger.log('{name}: Unable to connect {error}'.format
                        (name=self.name, error=msg), logger.ERROR)
@@ -129,7 +129,7 @@ class GenericClient(object):
 
     def _set_torrent_priority(self, result):  # pylint:disable=unused-argument, no-self-use
         """
-        This should be overriden should return the True/False from the client
+        This should be overridden should return the True/False from the client
         when a torrent is set with result.priority (-1 = low, 0 = normal, 1 = high)
         """
         return True
