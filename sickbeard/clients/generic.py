@@ -166,8 +166,8 @@ class GenericClient(object):
                 logger.log('Deleting cached result if exists: {result}'.format(result=result.name), logger.DEBUG)
                 cache_db_con = db.DBConnection('cache.db')
                 cache_db_con.action(
-                    'DELETE FROM [{provider}] '
-                    'WHERE name = ? '.format(provider=result.provider.get_id()),
+                    b'DELETE FROM [{provider}] '
+                    b'WHERE name = ? '.format(provider=result.provider.get_id()),
                     [result.name]
                 )
             except Exception:
