@@ -28,6 +28,9 @@ from requests.compat import urljoin
 import sickbeard
 from sickbeard.clients.generic import GenericClient
 
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
 
 class UTorrentAPI(GenericClient):
     def __init__(self, host=None, username=None, password=None):
@@ -35,7 +38,11 @@ class UTorrentAPI(GenericClient):
         super(UTorrentAPI, self).__init__('uTorrent', host, username, password)
         self.url = urljoin(self.host, 'gui/')
 
-    def _request(self, method='get', params=None, data=None, files=None):
+    def _request(self, method='get', params=None, data=None, files=None, cookies=None):
+
+        if cookies:
+            log.debug('{name}: Received unused argument {arg}: {value}'.format
+                      (name=self.name, arg='cookies', value=cookies))
 
         # Workaround for uTorrent 2.2.1
         # Need an OrderedDict but only supported in 2.7+
