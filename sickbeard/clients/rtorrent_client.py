@@ -39,8 +39,6 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
         super(RTorrentAPI, self).__init__('rTorrent', host, username, password)
 
     def _get_auth(self):
-        self.auth = None
-
         if self.auth is not None:
             return self.auth
 
@@ -131,6 +129,7 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
 
     def test_authentication(self):
         try:
+            self.auth = None
             self._get_auth()
         except Exception:  # pylint: disable=broad-except
             return False, 'Error: Unable to connect to {name}'.format(name=self.name)
