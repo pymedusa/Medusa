@@ -1,8 +1,6 @@
 # coding=utf-8
 # Author: Dustyn Gibson <miigotu@gmail.com>
 #
-
-#
 # This file is part of SickRage.
 #
 # SickRage is free software: you can redistribute it and/or modify
@@ -90,7 +88,7 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                             if item.category and 'tv' not in item.category.get_text(strip=True):
                                 continue
 
-                            title = item.title.text.rsplit(' ', 1)[0].replace(' ', '.')
+                            title = item.title.text.replace('x264 ', 'x264-').replace('h264 ', 'h264-').replace('h 264 ', 'h264-').replace('xvid ', 'xvid-').replace(' ', '.')
                             t_hash = item.guid.text.rsplit('/', 1)[-1]
 
                             if not all([title, t_hash]):
