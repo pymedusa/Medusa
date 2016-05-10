@@ -1466,7 +1466,7 @@ class Home(WebRoot):
         ep_objs = []
         for episode in episodes:
             if episode:
-                ep_objs.append(TVEpisode(show_obj, int(cached_result['season']), int(episode)))
+                ep_objs.append(show_obj.getEpisode(int(cached_result['season']), int(episode)))
 
         # Create the queue item
         snatch_queue_item = search_queue.ManualSnatchQueueItem(show_obj, ep_objs, provider, cached_result)
