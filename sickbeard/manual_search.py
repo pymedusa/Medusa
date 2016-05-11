@@ -159,19 +159,6 @@ def collectEpisodesFromSearchThread(show):
         if show and not search_thread.show.indexerid == int(show):
             continue
 
-        # Let's get the status from db instead from the recent list of completed downloads. We can still use
-        # the list to know which episode's where looking for
-
-#         for ep_obj in search_thread.segment:
-#             ep_obj.loadFromDB(ep_obj.season, ep_obj.episode)
-#             episodes += [{'show': ep_obj.show.indexerid,
-#                           'episode': ep_obj.episode,
-#                           'episodeindexid': ep_obj.indexerid,
-#                           'season': ep_obj.season,
-#                           'searchstatus': searchstatus,
-#                           'status': statusStrings[ep_obj.status],
-#                           'quality': getQualityClass(ep_obj),
-#                           'overview': Overview.overviewStrings[ep_obj.show.getOverview(ep_obj.status)]}]
         if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem):
             if not [x for x in episodes if x['episodeindexid'] in [search.indexerid for search in search_thread.segment]]:
                 episodes += getEpisodes(search_thread, searchstatus)
