@@ -205,6 +205,10 @@ class PageTemplate(MakoTemplate):
             kwargs['title'] = '500'
             kwargs['header'] = 'Mako Error'
             kwargs['backtrace'] = RichTraceback()
+            for (filename, lineno, function, line) in kwargs['backtrace'].traceback:
+                print("File %s, line %s, in %s" % (filename, lineno, function))
+                print(line, "\n")
+            print("%s: %s" % (str(kwargs['backtrace'].error.__class__.__name__), kwargs['backtrace'].error))
             return get_lookup().get_template('500.mako').render_unicode(*args, **kwargs)
 
 
@@ -1393,7 +1397,7 @@ class Home(WebRoot):
             submenu=submenu, showLoc=showLoc, show_message=show_message,
             show=showObj, sql_results=sql_results, seasonResults=seasonResults,
             sortedShowLists=sortedShowLists, bwl=bwl, epCounts=epCounts,
-            epCats=epCats, all_scene_exceptions=showObj.exceptions,
+            epCats=epCats, all_scene_exceptions=' | '.join(showObj.exceptions),
             scene_numbering=get_scene_numbering_for_show(indexerid, indexer),
             xem_numbering=get_xem_numbering_for_show(indexerid, indexer),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexerid, indexer),
