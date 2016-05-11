@@ -205,10 +205,6 @@ class PageTemplate(MakoTemplate):
             kwargs['title'] = '500'
             kwargs['header'] = 'Mako Error'
             kwargs['backtrace'] = RichTraceback()
-            for (filename, lineno, function, line) in kwargs['backtrace'].traceback:
-                print("File %s, line %s, in %s" % (filename, lineno, function))
-                print(line, "\n")
-            print("%s: %s" % (str(kwargs['backtrace'].error.__class__.__name__), kwargs['backtrace'].error))
             return get_lookup().get_template('500.mako').render_unicode(*args, **kwargs)
 
 
