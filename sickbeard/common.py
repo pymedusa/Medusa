@@ -153,7 +153,7 @@ class Quality(object):
 
     # put these bits at the other end of the spectrum,
     # far enough out that they shouldn't interfere
-    UNKNOWN = -1  # 32768
+    UNKNOWN = 1 << 15  # 32768
 
     qualityStrings = NumDict({
         None: "None",
