@@ -193,9 +193,13 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
     original_thread_name = threading.currentThread().name
 
-    combined_sql = []
+    sql_total = []
+    combined_sql_q_known = []
+    combined_sql_q_unknown = []
     combined_sql_params = []
-    sql_return = []
+
+    filter_quality_known = b" AND quality not in ({quality_unknown}, 0 , -1)"
+    filter_quality_unknown = b" AND quality in ({quality_unknown}, 0 , -1)"
 
     for cur_provider in enabled_providers('manualsearch'):
         threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name, provider=cur_provider.name)
@@ -209,40 +213,58 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
         if table_exists and 'seeders' in columns and 'leechers' in columns and 'size' in columns:
-
+            # The default sql, that's executed for each providers cache table
             common_sql = b"SELECT rowid, ? as 'provider_type', ? as 'provider_image', \
                           ? as 'provider', ? as 'provider_id', ? 'provider_minseed', ? 'provider_minleech', \
                           name, season, episodes, indexerid, url, time, (select max(time) \
                           from '{provider_id}') as lastupdate, \
                           (select 'proper' where name like '%PROPER%' or name like '%REAL%' or name like '%REPACK%') as  'isproper', \
-                          REPLACE(quality,'32768','-1') as quality, release_group, version, seeders, leechers, size, time \
-                          FROM '{provider_id}' WHERE indexerid = ?".format(provider_id=cur_provider.get_id())
-            additional_sql = " AND episodes LIKE ? AND season = ?"
+                          quality, release_group, version, seeders, leechers, size, time \
+                          FROM '{provider_id}' WHERE indexerid = ? AND quality > 0 ".format(provider_id=cur_provider.get_id())
+            additional_sql = " AND episodes LIKE ? AND season = ? "
 
+            # Keep a separate list of results with quality UNKNOWN. This because unkown has the value 32768, and can't be sorted
+            sql_q_known = common_sql + filter_quality_known.format(quality_unknown=Quality.UNKNOWN)
+            sql_q_unknown = common_sql + filter_quality_unknown.format(quality_unknown=Quality.UNKNOWN)
+            # The params are always the same for both queries
+            add_params = [cur_provider.provider_type.title(), cur_provider.image_name(),
+                          cur_provider.name, cur_provider.get_id(), minseed, minleech, show]
+
+            # If were not looking for all results, meaning don't do the filter on season + ep, add sql
             if not int(show_all_results):
-                combined_sql.append(common_sql + additional_sql)
-                combined_sql_params += [cur_provider.provider_type.title(), cur_provider.image_name(),
-                                        cur_provider.name, cur_provider.get_id(),
-                                        minseed, minleech, show, "%|{0}|%".format(sql_episode), season]
-            else:
-                combined_sql.append(common_sql)
-                combined_sql_params += [cur_provider.provider_type.title(), cur_provider.image_name(),
-                                        cur_provider.name, cur_provider.get_id(), minseed, minleech, show]
+                sql_q_known += additional_sql
+                sql_q_unknown += additional_sql
+                add_params += ["%|{0}|%".format(sql_episode), season]
 
-    if combined_sql:
+            # Add the created sql, to lists, that are used down below to perform one big UNIONED query
+            combined_sql_q_known.append(sql_q_known)
+            combined_sql_q_unknown.append(sql_q_unknown)
+            combined_sql_params += add_params
+
+    # Check if we have the combined sql strings
+    if combined_sql_q_known and combined_sql_q_unknown:
         sql_prepend = b"SELECT  * FROM ("
         sql_append = b") ORDER BY CAST(quality as DECIMAL) DESC, seeders DESC, isproper DESC"
-        sql_return = main_db_con.select(b'{0} {1} {2}'.format(sql_prepend, ' UNION ALL '.join(combined_sql), sql_append), combined_sql_params)
-        for last_update in set([(x['provider_id'], x['lastupdate']) for x in sql_return]):
-            provider_results['last_prov_updates'][str(last_update[0])] = last_update[1]
 
-#         # Store the last table update, we'll need this to compare later
-#         #provider_results['last_prov_updates'][cur_provider.get_id()] = str(sql_return[0]['lastupdate'])
-#     else:
+        # Add all results not with quality.UNKNOWN
+        sql_total += main_db_con.select(b'{0} {1} {2}'.
+                                        format(sql_prepend, ' UNION ALL '.join(combined_sql_q_known), sql_append),
+                                        combined_sql_params)
+
+        # Add all results with quality.UNKNOWN
+        sql_total += main_db_con.select(b'{0} {1} {2}'.
+                                        format(sql_prepend, ' UNION ALL '.join(combined_sql_q_unknown), sql_append),
+                                        combined_sql_params)
+
+        # Create a list of providers with there last result, used for the page refresh
+        for last_update in set([(x['provider_id'], x['lastupdate']) for x in sql_total]):
+            provider_results['last_prov_updates'][str(last_update[0])] = last_update[1]
+        ## I used to also send the timestamp 0, for all providers, that it did not find results for.. yet. Currently i'm not doing
+        ## This anymore, resulting in it not refreshing in between providers
 #         provider_results['last_prov_updates'][cur_provider.get_id()] = "0"
 
     # Always start a search when no items found in cache
-    if not sql_return or int(perform_search):
+    if not sql_total or int(perform_search):
         # retrieve the episode object and fail if we can't get one
         ep_obj = getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
@@ -263,7 +285,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         #found_items = sorted(found_items, key=lambda k: (try_int(k['quality']), try_int(k['seeders'])), reverse=True)
         # Make unknown qualities at the botton
         #found_items = [d for d in found_items if try_int(d['quality']) < 32768] + [d for d in found_items if try_int(d['quality']) == 32768]
-        provider_results['found_items'] = sql_return
+        provider_results['found_items'] = sql_total
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
