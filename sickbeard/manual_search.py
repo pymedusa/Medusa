@@ -189,15 +189,19 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     show_obj = Show.find(sickbeard.showList, int(show))
 
     main_db_con = db.DBConnection('cache.db')
-    found_items = []
+
     provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
     original_thread_name = threading.currentThread().name
 
+    combined_sql = []
+    combined_sql_params = []
+    sql_return = []
+
     for cur_provider in enabled_providers('manualsearch'):
         threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name, provider=cur_provider.name)
-        sql_return = []
+
         # Let's check if this provider table already exists
-        table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [cur_provider.get_id()])
+        table_exists = main_db_con.select(b"SELECT name FROM sqlite_master WHERE type='table' AND name=?", [cur_provider.get_id()])
         columns = [i[1] for i in main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))] if table_exists else []
         minseed = int(cur_provider.minseed) if hasattr(cur_provider, 'minseed') else -1
         minleech = int(cur_provider.minleech) if hasattr(cur_provider, 'minleech') else -1
@@ -206,35 +210,39 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
         if table_exists and 'seeders' in columns and 'leechers' in columns and 'size' in columns:
 
-            common_sql = "SELECT rowid, ? as 'provider_type', ? as 'provider_image', \
+            common_sql = b"SELECT rowid, ? as 'provider_type', ? as 'provider_image', \
                           ? as 'provider', ? as 'provider_id', ? 'provider_minseed', ? 'provider_minleech', \
                           name, season, episodes, indexerid, url, time, (select max(time) \
                           from '{provider_id}') as lastupdate, \
-                          quality, release_group, version, seeders, leechers, size, time \
+                          (select 'proper' where name like '%PROPER%' or name like '%REAL%' or name like '%REPACK%') as  'isproper', \
+                          REPLACE(quality,'32768','-1') as quality, release_group, version, seeders, leechers, size, time \
                           FROM '{provider_id}' WHERE indexerid = ?".format(provider_id=cur_provider.get_id())
             additional_sql = " AND episodes LIKE ? AND season = ?"
 
             if not int(show_all_results):
-                sql_return = main_db_con.select(common_sql + additional_sql,
-                                                (cur_provider.provider_type.title(), cur_provider.image_name(),
-                                                 cur_provider.name, cur_provider.get_id(),
-                                                 minseed, minleech, show, "%|{0}|%".format(sql_episode), season))
+                combined_sql.append(common_sql + additional_sql)
+                combined_sql_params += [cur_provider.provider_type.title(), cur_provider.image_name(),
+                                        cur_provider.name, cur_provider.get_id(),
+                                        minseed, minleech, show, "%|{0}|%".format(sql_episode), season]
             else:
-                sql_return = main_db_con.select(common_sql,
-                                                (cur_provider.provider_type.title(), cur_provider.image_name(),
-                                                 cur_provider.name, cur_provider.get_id(), minseed, minleech, show))
+                combined_sql.append(common_sql)
+                combined_sql_params += [cur_provider.provider_type.title(), cur_provider.image_name(),
+                                        cur_provider.name, cur_provider.get_id(), minseed, minleech, show]
 
-        if sql_return:
-            for item in sql_return:
-                found_items.append(dict(item))
+    if combined_sql:
+        sql_prepend = b"SELECT  * FROM ("
+        sql_append = b") ORDER BY CAST(quality as DECIMAL) DESC, seeders DESC, isproper DESC"
+        sql_return = main_db_con.select(b'{0} {1} {2}'.format(sql_prepend, ' UNION ALL '.join(combined_sql), sql_append), combined_sql_params)
+        for last_update in set([(x['provider_id'], x['lastupdate']) for x in sql_return]):
+            provider_results['last_prov_updates'][str(last_update[0])] = last_update[1]
 
-            # Store the last table update, we'll need this to compare later
-            provider_results['last_prov_updates'][cur_provider.get_id()] = str(sql_return[0]['lastupdate'])
-        else:
-            provider_results['last_prov_updates'][cur_provider.get_id()] = "0"
+#         # Store the last table update, we'll need this to compare later
+#         #provider_results['last_prov_updates'][cur_provider.get_id()] = str(sql_return[0]['lastupdate'])
+#     else:
+#         provider_results['last_prov_updates'][cur_provider.get_id()] = "0"
 
     # Always start a search when no items found in cache
-    if not found_items or int(perform_search):
+    if not sql_return or int(perform_search):
         # retrieve the episode object and fail if we can't get one
         ep_obj = getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
@@ -252,10 +260,10 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         time.sleep(cpu_presets[sickbeard.CPU_PRESET])
     else:
         # Sort the list of found items
-        found_items = sorted(found_items, key=lambda k: (try_int(k['quality']), try_int(k['seeders'])), reverse=True)
+        #found_items = sorted(found_items, key=lambda k: (try_int(k['quality']), try_int(k['seeders'])), reverse=True)
         # Make unknown qualities at the botton
-        found_items = [d for d in found_items if try_int(d['quality']) < 32768] + [d for d in found_items if try_int(d['quality']) == 32768]
-        provider_results['found_items'] = found_items
+        #found_items = [d for d in found_items if try_int(d['quality']) < 32768] + [d for d in found_items if try_int(d['quality']) == 32768]
+        provider_results['found_items'] = sql_return
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
