@@ -275,7 +275,7 @@ def update_scene_exceptions(indexer_id, scene_exceptions, season=-1):
         exceptionsCache[indexer_id] = {}
         exceptionsCache[indexer_id][season] = [se.decode('utf-8', 'replace') for se in scene_exceptions]
 
-    for cur_exception in [se.decode('utf-8', 'ignore') for se in scene_exceptions]:
+    for cur_exception in [se.decode('utf-8', 'replace') for se in scene_exceptions]:
         cache_db_con.action("INSERT INTO scene_exceptions (indexer_id, show_name, season) VALUES (?,?,?)",
                             [indexer_id, cur_exception, season])
 
