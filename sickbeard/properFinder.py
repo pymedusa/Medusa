@@ -30,7 +30,8 @@ from requests import exceptions as requests_exceptions
 import sickbeard
 
 from sickbeard import db
-from sickbeard import helpers, logger
+from sickbeard import logger
+from sickbeard.helpers import remove_non_release_groups
 from sickbeard.search import snatchEpisode
 from sickbeard.search import pickBestResult
 from sickbeard.common import DOWNLOADED, SNATCHED, SNATCHED_PROPER, Quality, cpu_presets
@@ -99,7 +100,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                        (provider=cur_provider.name))
 
             try:
-                curPropers = cur_provider.find_propers(search_date)
+                cur_propers = cur_provider.find_propers(search_date)
             except AuthException as e:
                 logger.log(u"Authentication error: {error}".format
                            (error=ex(e)), logger.DEBUG)
@@ -135,7 +136,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             # if they haven't been added by a different provider than add the proper to the list
-            for proper in curPropers:
+            for proper in cur_propers:
                 if not re.search(r'(^|[\. _-])(proper|repack|real)([\. _-]|$)', proper.name, re.I):
                     logger.log(u'Skipping non-proper: {name}'.format(name=proper.name))
                     continue
@@ -150,168 +151,169 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         threading.currentThread().name = original_thread_name
 
         # take the list of unique propers and get it sorted by
-        sortedPropers = sorted(propers.values(), key=operator.attrgetter('date'), reverse=True)
-        finalPropers = []
+        sorted_propers = sorted(propers.values(), key=operator.attrgetter('date'), reverse=True)
+        final_propers = []
 
-        for curProper in sortedPropers:
+        for cur_proper in sorted_propers:
             try:
-                parse_result = NameParser(False).parse(curProper.name)
+                parse_result = NameParser(False).parse(cur_proper.name)
             except (InvalidNameException, InvalidShowException) as error:
                 logger.log(u'{}'.format(error), logger.DEBUG)
                 continue
 
             if not parse_result.series_name:
                 logger.log(u"Ignoring invalid show: {name}".format
-                           (name=curProper.name), logger.DEBUG)
+                           (name=cur_proper.name), logger.DEBUG)
                 continue
 
             if not parse_result.episode_numbers:
                 logger.log(u"Ignoring full season instead of episode: {name}".format
-                           (name=curProper.name), logger.DEBUG)
+                           (name=cur_proper.name), logger.DEBUG)
                 continue
 
             logger.log(u'Successful match! Matched {} to show {}'.format
                        (parse_result.original_name, parse_result.show.name), logger.DEBUG)
 
             # set the indexerid in the db to the show's indexerid
-            curProper.indexerid = parse_result.show.indexerid
+            cur_proper.indexerid = parse_result.show.indexerid
 
             # set the indexer in the db to the show's indexer
-            curProper.indexer = parse_result.show.indexer
+            cur_proper.indexer = parse_result.show.indexer
 
             # populate our Proper instance
-            curProper.show = parse_result.show
-            curProper.season = parse_result.season_number if parse_result.season_number is not None else 1
-            curProper.episode = parse_result.episode_numbers[0]
-            curProper.release_group = parse_result.release_group
-            curProper.version = parse_result.version
-            curProper.quality = Quality.nameQuality(curProper.name, parse_result.is_anime)
-            curProper.content = None
+            cur_proper.show = parse_result.show
+            cur_proper.season = parse_result.season_number if parse_result.season_number is not None else 1
+            cur_proper.episode = parse_result.episode_numbers[0]
+            cur_proper.release_group = parse_result.release_group
+            cur_proper.version = parse_result.version
+            cur_proper.quality = Quality.nameQuality(cur_proper.name, parse_result.is_anime)
+            cur_proper.content = None
 
             # filter release
-            bestResult = pickBestResult(curProper, parse_result.show)
-            if not bestResult:
+            best_result = pickBestResult(cur_proper, parse_result.show)
+            if not best_result:
                 logger.log(u'Rejected proper due to release filters: {name}'.format
-                           (name=curProper.name))
+                           (name=cur_proper.name))
                 continue
 
             # only get anime proper if it has release group and version
-            if bestResult.show.is_anime:
-                if not bestResult.release_group and bestResult.version == -1:
+            if best_result.show.is_anime:
+                if not best_result.release_group and best_result.version == -1:
                     logger.log(u"Ignoring proper without release group and version: {name}".format
-                               (name=bestResult.name))
+                               (name=best_result.name))
                     continue
 
             # check if we actually want this proper (if it's the right quality)
             main_db_con = db.DBConnection()
             sql_results = main_db_con.select('SELECT status FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?',
-                                             [bestResult.indexerid, bestResult.season, bestResult.episode])
+                                             [best_result.indexerid, best_result.season, best_result.episode])
             if not sql_results:
                 logger.log(u"Ignoring proper with incorrect quality: {name}".format
-                           (name=bestResult.name))
+                           (name=best_result.name))
                 continue
 
             # only keep the proper if we have already retrieved the same quality ep (don't get better/worse ones)
-            oldStatus, oldQuality = Quality.splitCompositeStatus(int(sql_results[0]['status']))
-            if oldStatus not in (DOWNLOADED, SNATCHED) or oldQuality != bestResult.quality:
-                logger.log(u"Ignoring proper already snatched or downloaded: {name}".format
-                           (name=bestResult.name))
+            old_status, old_quality = Quality.splitCompositeStatus(int(sql_results[0]['status']))
+            if old_status not in (DOWNLOADED, SNATCHED) or old_quality != best_result.quality:
+                logger.log(u"Ignoring proper because quality is different or episode is already archived: {name}".format
+                           (name=best_result.name))
                 continue
 
             # check if we actually want this proper (if it's the right release group and a higher version)
-            if bestResult.show.is_anime:
+            if best_result.show.is_anime:
                 main_db_con = db.DBConnection()
                 sql_results = main_db_con.select(
                     'SELECT release_group, version FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?',
-                    [bestResult.indexerid, bestResult.season, bestResult.episode])
+                    [best_result.indexerid, best_result.season, best_result.episode])
 
                 old_version = int(sql_results[0]['version'])
                 old_release_group = (sql_results[0]['release_group'])
 
-                if -1 < old_version < bestResult.version:
+                if -1 < old_version < best_result.version:
                     logger.log(u'Found new anime version {new} to replace existing version {old}: {name}'.format
-                               (old=old_version, new=bestResult.version, name=bestResult.name))
+                               (old=old_version, new=best_result.version, name=best_result.name))
                 else:
                     logger.log(u'Ignoring proper with the same or lower version: {name}'.format
-                               (name=bestResult.name))
+                               (name=best_result.name))
                     continue
 
-                if old_release_group != bestResult.release_group:
+                if old_release_group != best_result.release_group:
                     logger.log(u"Ignoring proper from release group {new} instead of current group {old}".format
-                               (new=bestResult.release_group, old=old_release_group))
+                               (new=best_result.release_group, old=old_release_group))
                     continue
 
             # if the show is in our list and there hasn't been a proper already added for that particular episode then add it to our list of propers
-            if bestResult.indexerid != -1 and (bestResult.indexerid, bestResult.season, bestResult.episode) not in map(
-                    operator.attrgetter('indexerid', 'season', 'episode'), finalPropers):
-                logger.log(u'Found a desired proper: {name}'.format(name=bestResult.name))
-                finalPropers.append(bestResult)
+            if best_result.indexerid != -1 and (best_result.indexerid, best_result.season, best_result.episode) not in map(
+                    operator.attrgetter('indexerid', 'season', 'episode'), final_propers):
+                logger.log(u'Found a desired proper: {name}'.format(name=best_result.name))
+                final_propers.append(best_result)
 
-        return finalPropers
+        return final_propers
 
-    def _downloadPropers(self, properList):
+    def _downloadPropers(self, proper_list):
         """
         Download proper (snatch it)
 
-        :param properList:
+        :param proper_list:
         """
 
-        for curProper in properList:
+        for cur_proper in proper_list:
 
-            historyLimit = datetime.datetime.today() - datetime.timedelta(days=30)
+            history_limit = datetime.datetime.today() - datetime.timedelta(days=30)
 
             # make sure the episode has been downloaded before
             main_db_con = db.DBConnection()
-            historyResults = main_db_con.select(
+            history_results = main_db_con.select(
                 "SELECT resource FROM history " +
                 "WHERE showid = ? AND season = ? AND episode = ? AND quality = ? AND date >= ? " +
-                "AND action IN (" + ",".join([str(x) for x in Quality.SNATCHED + Quality.DOWNLOADED]) + ")",
-                [curProper.indexerid, curProper.season, curProper.episode, curProper.quality,
-                 historyLimit.strftime(History.date_format)])
+                "AND (action LIKE '%2' OR action LIKE '%4')",
+                [cur_proper.indexerid, cur_proper.season, cur_proper.episode, cur_proper.quality,
+                 history_limit.strftime(History.date_format)])
 
             # make sure that none of the existing history downloads are the same proper we're trying to download
-            clean_proper_name = self._genericName(helpers.remove_non_release_groups(curProper.name))
-            isSame = False
-            for curResult in historyResults:
+            clean_proper_name = self._genericName(remove_non_release_groups(cur_proper.name, clean_proper=True))
+            is_same = False
+
+            for cur_result in history_results:
                 # if the result exists in history already we need to skip it
-                if self._genericName(helpers.remove_non_release_groups(curResult["resource"])) == clean_proper_name:
-                    isSame = True
+                proper_from_history = self._genericName(remove_non_release_groups(cur_result["resource"], clean_proper=True))
+                if proper_from_history == clean_proper_name:
+                    is_same = True
                     break
-            if isSame:
-                logger.log(u"This proper is already in history, skipping it", logger.DEBUG)
+
+            if is_same:
+                logger.log(u"This proper '{result}' is already in history, skipping it".format(result=cur_proper.name), logger.WARNING)
                 continue
-
             else:
-
                 # make sure that none of the existing history downloads are the same proper we're trying to download
-                clean_proper_name = self._genericName(helpers.remove_non_release_groups(curProper.name))
-                isSame = False
-                for curResult in historyResults:
+                clean_proper_name = self._genericName(remove_non_release_groups(cur_proper.name))
+                is_same = False
+                for cur_result in history_results:
                     # if the result exists in history already we need to skip it
-                    if self._genericName(helpers.remove_non_release_groups(curResult["resource"])) == clean_proper_name:
-                        isSame = True
+                    if self._genericName(remove_non_release_groups(cur_result["resource"])) == clean_proper_name:
+                        is_same = True
                         break
-                if isSame:
-                    logger.log(u"This proper is already in history, skipping it", logger.DEBUG)
+                if is_same:
+                    logger.log(u"This proper '{result}' is already in history, skipping it".format(result=cur_proper.name), logger.WARNING)
                     continue
 
                 # get the episode object
-                epObj = curProper.show.getEpisode(curProper.season, curProper.episode)
+                ep_obj = cur_proper.show.getEpisode(cur_proper.season, cur_proper.episode)
 
                 # make the result object
-                result = curProper.provider.get_result([epObj])
-                result.show = curProper.show
-                result.url = curProper.url
-                result.name = curProper.name
-                result.quality = curProper.quality
-                result.release_group = curProper.release_group
-                result.version = curProper.version
-                result.content = curProper.content
-                result.seeders = curProper.seeders
-                result.leechers = curProper.leechers
-                result.size = curProper.size
-                result.pubdate = curProper.pubdate
-                result.hash = curProper.hash
+                result = cur_proper.provider.get_result([ep_obj])
+                result.show = cur_proper.show
+                result.url = cur_proper.url
+                result.name = cur_proper.name
+                result.quality = cur_proper.quality
+                result.release_group = cur_proper.release_group
+                result.version = cur_proper.version
+                result.content = cur_proper.content
+                result.seeders = cur_proper.seeders
+                result.leechers = cur_proper.leechers
+                result.size = cur_proper.size
+                result.pubdate = cur_proper.pubdate
+                result.hash = cur_proper.hash
 
                 # snatch it
                 snatchEpisode(result, SNATCHED_PROPER)
