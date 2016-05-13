@@ -673,9 +673,11 @@ class UI(WebRoot):
         messages = {}
         cur_notification_num = 1
         for cur_notification in ui.notifications.get_notifications(self.request.remote_ip):
-            messages['notification-' + str(cur_notification_num)] = {'title': cur_notification.title,
-                                                                     'message': cur_notification.message,
-                                                                     'type': cur_notification.type}
+            messages[u'notification-{num}'.format(num=cur_notification_num)] = {
+                u'title': u'{title}'.format(title=cur_notification.title),
+                u'message': u'{message}'.format(message=cur_notification.message),
+                u'type': u'{type}'.format(type=cur_notification.type),
+            }
             cur_notification_num += 1
 
         return json.dumps(messages)
