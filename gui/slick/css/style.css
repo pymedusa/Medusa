@@ -3471,3 +3471,32 @@ div#searchNotification {
 .summaryTable tr td {
     word-break: break-all;
 }
+
+
+/* =======================================================================
+viewLog.mako
+========================================================================== */
+
+/* Pull left in mobile resolutions */
+@media (max-width: 767px) {
+    .pull-xs-right {
+        float: right !important;
+    }
+    .pull-xs-left {
+        float: left !important;
+    }
+
+    .radio-inline.pull-xs-left  + .radio-inline.pull-xs-left ,
+    .checkbox-inline.pull-xs-left  + .checkbox-inline.pull-xs-left  {
+        margin-left: 0;
+    }
+    .radio-inline.pull-xs-left, .checkbox-inline.pull-xs-left{
+        margin-right: 10px;
+    }
+}
+
+/* Because the H1 has a margin of 20px withing the column col-sm-2 of 20px we need
+to configure the same for the columns which are used for the filter inputs.*/
+.log-filter {
+    margin-top: 20px;
+}
