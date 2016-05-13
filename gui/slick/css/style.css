@@ -3495,3 +3495,8 @@ viewLog.mako
     }
 }
 
+/* Because the H1 has a margin of 20px withing the column col-sm-2 of 20px we need
+to configure the same for the columns which are used for the filter inputs.*/
+.log-filter {
+    margin-top: 20px;
+}
