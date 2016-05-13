@@ -166,9 +166,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
 
     @property
     def is_recently_deleted(self):
-        return self.indexerid in [recently_deleted_show.indexerid
-                                  for recently_deleted_show
-                                  in sickbeard.RECENTLY_DELETED]
+        return self.indexerid in sickbeard.RECENTLY_DELETED
 
     def _getLocation(self):
         # no dir check needed if missing show dirs are created during post-processing

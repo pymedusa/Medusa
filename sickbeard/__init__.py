@@ -600,7 +600,8 @@ __INITIALIZED__ = False
 
 NEWZNAB_DATA = None
 
-RECENTLY_DELETED = []
+RECENTLY_DELETED = set()
+
 
 def get_backlog_cycle_time():
     cycletime = DAILYSEARCH_FREQUENCY * 2 + 7
