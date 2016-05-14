@@ -1,37 +1,13 @@
 # coding=utf-8
 
 import os
-import time
-from unrar2 import RarFile
-
 import sickbeard
 from sickbeard import (
-    config, helpers, logger, naming, subtitles, ui,
+    config, logger, ui,
 )
-from sickbeard.common import (
-    Quality, WANTED,
-)
-from sickbeard.providers import newznab, rsstorrent
-from sickbeard.versionChecker import CheckVersion
-
-from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import (
-    ex
-)
-from sickrage.providers.GenericProvider import GenericProvider
-
 from tornado.routes import route
-from sickbeard.server.web.core import (
-    WebRoot, PageTemplate
-)
-
-# Conditional imports
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
+from sickbeard.server.web.core import PageTemplate
 from sickbeard.server.web.config.base import Config
 
 
@@ -41,12 +17,10 @@ class ConfigAnime(Config):
         super(ConfigAnime, self).__init__(*args, **kwargs)
 
     def index(self):
-
-        t = PageTemplate(rh=self, filename="config_anime.mako")
-
+        t = PageTemplate(rh=self, filename='config_anime.mako')
         return t.render(submenu=self.ConfigMenu(), title='Config - Anime',
                         header='Anime', topmenu='config',
-                        controller="config", action="anime")
+                        controller='config', action='anime')
 
     def saveAnime(self, use_anidb=None, anidb_username=None, anidb_password=None, anidb_use_mylist=None,
                   split_home=None):
@@ -69,4 +43,4 @@ class ConfigAnime(Config):
         else:
             ui.notifications.message('Configuration Saved', ek(os.path.join, sickbeard.CONFIG_FILE))
 
-        return self.redirect("/config/anime/")
+        return self.redirect('/config/anime/')
