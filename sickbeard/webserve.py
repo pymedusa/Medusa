@@ -1393,7 +1393,7 @@ class Home(WebRoot):
             submenu=submenu, showLoc=showLoc, show_message=show_message,
             show=showObj, sql_results=sql_results, seasonResults=seasonResults,
             sortedShowLists=sortedShowLists, bwl=bwl, epCounts=epCounts,
-            epCats=epCats, all_scene_exceptions=showObj.exceptions,
+            epCats=epCats, all_scene_exceptions=' | '.join(showObj.exceptions),
             scene_numbering=get_scene_numbering_for_show(indexerid, indexer),
             xem_numbering=get_xem_numbering_for_show(indexerid, indexer),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexerid, indexer),

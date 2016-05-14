@@ -190,8 +190,8 @@
                 % else:
                     <tr><td class="showLegend"><span style="color: red;">Location: </span></td><td><span style="color: red;">${showLoc[0]}</span> (Missing)</td></tr>
                 % endif
-                % if show.exceptions:
-                    <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${(show.name, " | ".join(show.exceptions))[show.exceptions != 0]}</td></tr>
+                % if all_scene_exceptions:
+                    <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${all_scene_exceptions}</td></tr>
                 % endif
 
                 % if require_words:

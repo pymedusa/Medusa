@@ -273,9 +273,9 @@ def update_scene_exceptions(indexer_id, scene_exceptions, season=-1):
     # A change has been made to the scene exception list. Let's clear the cache, to make this visible
     if indexer_id in exceptionsCache:
         exceptionsCache[indexer_id] = {}
-        exceptionsCache[indexer_id][season] = scene_exceptions
+        exceptionsCache[indexer_id][season] = [se.decode('utf-8') for se in scene_exceptions]
 
-    for cur_exception in scene_exceptions:
+    for cur_exception in [se.decode('utf-8') for se in scene_exceptions]:
         cache_db_con.action("INSERT INTO scene_exceptions (indexer_id, show_name, season) VALUES (?,?,?)",
                             [indexer_id, cur_exception, season])
 
