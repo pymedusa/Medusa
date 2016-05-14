@@ -1,37 +1,17 @@
 # coding=utf-8
 
-import os
-import time
-from unrar2 import RarFile
+from __future__ import unicode_literals
 
+import os
+from unrar2 import RarFile
 import sickbeard
 from sickbeard import (
-    config, helpers, logger, naming, subtitles, ui,
+    config, logger, naming, ui,
 )
-from sickbeard.common import (
-    Quality, WANTED,
-)
-from sickbeard.providers import newznab, rsstorrent
-from sickbeard.versionChecker import CheckVersion
-
-from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import (
-    ex
-)
-from sickrage.providers.GenericProvider import GenericProvider
-
+from sickrage.helper.exceptions import ex
 from tornado.routes import route
-from sickbeard.server.web.core import (
-    WebRoot, PageTemplate
-)
-
-# Conditional imports
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
+from sickbeard.server.web.core import PageTemplate
 from sickbeard.server.web.config.base import Config
 
 
@@ -41,11 +21,11 @@ class ConfigPostProcessing(Config):
         super(ConfigPostProcessing, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename="config_postProcessing.mako")
+        t = PageTemplate(rh=self, filename='config_postProcessing.mako')
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Post Processing',
                         header='Post Processing', topmenu='config',
-                        controller="config", action="postProcessing")
+                        controller='config', action='postProcessing')
 
     def savePostProcessing(self, kodi_data=None, kodi_12plus_data=None,
                            mediabrowser_data=None, sony_ps3_data=None,
@@ -69,7 +49,7 @@ class ConfigPostProcessing(Config):
         results = []
 
         if not config.change_TV_DOWNLOAD_DIR(tv_download_dir):
-            results += ["Unable to create directory " + ek(os.path.normpath, tv_download_dir) + ", dir not changed."]
+            results += ['Unable to create directory ' + ek(os.path.normpath, tv_download_dir) + ', dir not changed.']
 
         config.change_AUTOPOSTPROCESSER_FREQUENCY(autopostprocesser_frequency)
         config.change_PROCESS_AUTOMATICALLY(process_automatically)
@@ -79,7 +59,7 @@ class ConfigPostProcessing(Config):
                 sickbeard.UNPACK = config.checkbox_to_value(unpack)
             else:
                 sickbeard.UNPACK = 0
-                results.append("Unpacking Not Supported, disabling unpack setting")
+                results.append('Unpacking Not Supported, disabling unpack setting')
         else:
             sickbeard.UNPACK = config.checkbox_to_value(unpack)
         sickbeard.NO_DELETE = config.checkbox_to_value(no_delete)
@@ -124,39 +104,39 @@ class ConfigPostProcessing(Config):
         sickbeard.metadata_provider_dict['TIVO'].set_config(sickbeard.METADATA_TIVO)
         sickbeard.metadata_provider_dict['Mede8er'].set_config(sickbeard.METADATA_MEDE8ER)
 
-        if self.isNamingValid(naming_pattern, naming_multi_ep, anime_type=naming_anime) != "invalid":
+        if self.isNamingValid(naming_pattern, naming_multi_ep, anime_type=naming_anime) != 'invalid':
             sickbeard.NAMING_PATTERN = naming_pattern
             sickbeard.NAMING_MULTI_EP = int(naming_multi_ep)
             sickbeard.NAMING_ANIME = int(naming_anime)
             sickbeard.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()
         else:
             if int(naming_anime) in [1, 2]:
-                results.append("You tried saving an invalid anime naming config, not saving your naming settings")
+                results.append('You tried saving an invalid anime naming config, not saving your naming settings')
             else:
-                results.append("You tried saving an invalid naming config, not saving your naming settings")
+                results.append('You tried saving an invalid naming config, not saving your naming settings')
 
-        if self.isNamingValid(naming_anime_pattern, naming_anime_multi_ep, anime_type=naming_anime) != "invalid":
+        if self.isNamingValid(naming_anime_pattern, naming_anime_multi_ep, anime_type=naming_anime) != 'invalid':
             sickbeard.NAMING_ANIME_PATTERN = naming_anime_pattern
             sickbeard.NAMING_ANIME_MULTI_EP = int(naming_anime_multi_ep)
             sickbeard.NAMING_ANIME = int(naming_anime)
             sickbeard.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()
         else:
             if int(naming_anime) in [1, 2]:
-                results.append("You tried saving an invalid anime naming config, not saving your naming settings")
+                results.append('You tried saving an invalid anime naming config, not saving your naming settings')
             else:
-                results.append("You tried saving an invalid naming config, not saving your naming settings")
+                results.append('You tried saving an invalid naming config, not saving your naming settings')
 
-        if self.isNamingValid(naming_abd_pattern, None, abd=True) != "invalid":
+        if self.isNamingValid(naming_abd_pattern, None, abd=True) != 'invalid':
             sickbeard.NAMING_ABD_PATTERN = naming_abd_pattern
         else:
             results.append(
-                "You tried saving an invalid air-by-date naming config, not saving your air-by-date settings")
+                'You tried saving an invalid air-by-date naming config, not saving your air-by-date settings')
 
-        if self.isNamingValid(naming_sports_pattern, None, sports=True) != "invalid":
+        if self.isNamingValid(naming_sports_pattern, None, sports=True) != 'invalid':
             sickbeard.NAMING_SPORTS_PATTERN = naming_sports_pattern
         else:
             results.append(
-                "You tried saving an invalid sports naming config, not saving your sports settings")
+                'You tried saving an invalid sports naming config, not saving your sports settings')
 
         sickbeard.save_config()
 
@@ -168,7 +148,7 @@ class ConfigPostProcessing(Config):
         else:
             ui.notifications.message('Configuration Saved', ek(os.path.join, sickbeard.CONFIG_FILE))
 
-        return self.redirect("/config/postProcessing/")
+        return self.redirect('/config/postProcessing/')
 
     @staticmethod
     def testNaming(pattern=None, multi=None, abd=False, sports=False, anime_type=None):
@@ -188,7 +168,7 @@ class ConfigPostProcessing(Config):
     @staticmethod
     def isNamingValid(pattern=None, multi=None, abd=False, sports=False, anime_type=None):
         if pattern is None:
-            return "invalid"
+            return 'invalid'
 
         if multi is not None:
             multi = int(multi)
@@ -214,11 +194,11 @@ class ConfigPostProcessing(Config):
             require_season_folders = naming.check_force_season_folders(pattern, multi, anime_type)
 
         if is_valid and not require_season_folders:
-            return "valid"
+            return 'valid'
         elif is_valid and require_season_folders:
-            return "seasonfolders"
+            return 'seasonfolders'
         else:
-            return "invalid"
+            return 'invalid'
 
     @staticmethod
     def isRarSupported():
