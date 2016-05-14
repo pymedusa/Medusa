@@ -26,11 +26,11 @@ class ConfigSubtitles(Config):
         super(ConfigSubtitles, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename="config_subtitles.mako")
+        t = PageTemplate(rh=self, filename='config_subtitles.mako')
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Subtitles',
                         header='Subtitles', topmenu='config',
-                        controller="config", action="subtitles")
+                        controller='config', action='subtitles')
 
     def save_subtitles(self, use_subtitles=None, subtitles_plugins=None, subtitles_languages=None, subtitles_dir=None, subtitles_perfect_match=None,
                        service_order=None, subtitles_history=None, subtitles_finder_frequency=None,
@@ -88,4 +88,4 @@ class ConfigSubtitles(Config):
         else:
             ui.notifications.message('Configuration Saved', ek(os.path.join, sickbeard.CONFIG_FILE))
 
-        return self.redirect("/config/subtitles/")
+        return self.redirect('/config/subtitles/')
