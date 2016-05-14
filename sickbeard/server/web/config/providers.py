@@ -36,49 +36,49 @@ class ConfigProviders(Config):
                         controller="config", action="providers")
 
     @staticmethod
-    def canAddNewznabProvider(name):
+    def can_add_newznab_provider(name):
 
         if not name:
             return json.dumps({'error': 'No Provider Name specified'})
 
-        providerDict = dict(zip([x.get_id() for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
+        provider_dict = dict(zip([x.get_id() for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
 
-        tempProvider = newznab.NewznabProvider(name, '')
+        temp_provider = newznab.NewznabProvider(name, '')
 
-        if tempProvider.get_id() in providerDict:
-            return json.dumps({'error': 'Provider Name already exists as ' + providerDict[tempProvider.get_id()].name})
+        if temp_provider.get_id() in provider_dict:
+            return json.dumps({'error': 'Provider Name already exists as ' + provider_dict[temp_provider.get_id()].name})
         else:
-            return json.dumps({'success': tempProvider.get_id()})
+            return json.dumps({'success': temp_provider.get_id()})
 
     @staticmethod
-    def saveNewznabProvider(name, url, key=''):
+    def save_newznab_provider(name, url, key=''):
 
         if not name or not url:
             return '0'
 
-        providerDict = dict(zip([x.name for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
+        provider_dict = dict(zip([x.name for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
 
-        if name in providerDict:
-            if not providerDict[name].default:
-                providerDict[name].name = name
-                providerDict[name].url = config.clean_url(url)
+        if name in provider_dict:
+            if not provider_dict[name].default:
+                provider_dict[name].name = name
+                provider_dict[name].url = config.clean_url(url)
 
-            providerDict[name].key = key
+            provider_dict[name].key = key
             # a 0 in the key spot indicates that no key is needed
             if key == '0':
-                providerDict[name].needs_auth = False
+                provider_dict[name].needs_auth = False
             else:
-                providerDict[name].needs_auth = True
+                provider_dict[name].needs_auth = True
 
-            return providerDict[name].get_id() + '|' + providerDict[name].configStr()
+            return provider_dict[name].get_id() + '|' + provider_dict[name].configStr()
 
         else:
-            newProvider = newznab.NewznabProvider(name, url, key=key)
-            sickbeard.newznabProviderList.append(newProvider)
-            return newProvider.get_id() + '|' + newProvider.configStr()
+            new_provider = newznab.NewznabProvider(name, url, key=key)
+            sickbeard.newznabProviderList.append(new_provider)
+            return new_provider.get_id() + '|' + new_provider.configStr()
 
     @staticmethod
-    def getNewznabCategories(name, url, key):
+    def get_newznab_categories(name, url, key):
         """
         Retrieves a list of possible categories with category id's
         Using the default url/api?cat
@@ -100,22 +100,22 @@ class ConfigProviders(Config):
         # providerDict = dict(zip([x.get_id() for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
 
         # Get newznabprovider obj with provided name
-        tempProvider = newznab.NewznabProvider(name, url, key)
+        temp_provider = newznab.NewznabProvider(name, url, key)
 
-        success, tv_categories, error = tempProvider.get_newznab_categories()
+        success, tv_categories, error = temp_provider.get_newznab_categories()
 
         return json.dumps({'success': success, 'tv_categories': tv_categories, 'error': error})
 
     @staticmethod
-    def deleteNewznabProvider(nnid):
+    def delete_newznab_provider(nnid):
 
-        providerDict = dict(zip([x.get_id() for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
+        provider_dict = dict(zip([x.get_id() for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
 
-        if nnid not in providerDict or providerDict[nnid].default:
+        if nnid not in provider_dict or provider_dict[nnid].default:
             return '0'
 
         # delete it from the list
-        sickbeard.newznabProviderList.remove(providerDict[nnid])
+        sickbeard.newznabProviderList.remove(provider_dict[nnid])
 
         if nnid in sickbeard.PROVIDER_ORDER:
             sickbeard.PROVIDER_ORDER.remove(nnid)
@@ -123,141 +123,141 @@ class ConfigProviders(Config):
         return '1'
 
     @staticmethod
-    def canAddTorrentRssProvider(name, url, cookies, titleTAG):
+    def can_add_torrent_rss_provider(name, url, cookies, title_tag):
 
         if not name:
             return json.dumps({'error': 'Invalid name specified'})
 
-        providerDict = dict(
+        provider_dict = dict(
             zip([x.get_id() for x in sickbeard.torrentRssProviderList], sickbeard.torrentRssProviderList))
 
-        tempProvider = rsstorrent.TorrentRssProvider(name, url, cookies, titleTAG)
+        temp_provider = rsstorrent.TorrentRssProvider(name, url, cookies, title_tag)
 
-        if tempProvider.get_id() in providerDict:
-            return json.dumps({'error': 'Exists as ' + providerDict[tempProvider.get_id()].name})
+        if temp_provider.get_id() in provider_dict:
+            return json.dumps({'error': 'Exists as ' + provider_dict[temp_provider.get_id()].name})
         else:
-            (succ, errMsg) = tempProvider.validateRSS()
+            (succ, error_message) = temp_provider.validateRSS()
             if succ:
-                return json.dumps({'success': tempProvider.get_id()})
+                return json.dumps({'success': temp_provider.get_id()})
             else:
-                return json.dumps({'error': errMsg})
+                return json.dumps({'error': error_message})
 
     @staticmethod
-    def saveTorrentRssProvider(name, url, cookies, titleTAG):
+    def save_torrent_rss_provider(name, url, cookies, title_tag):
 
         if not name or not url:
             return '0'
 
-        providerDict = dict(zip([x.name for x in sickbeard.torrentRssProviderList], sickbeard.torrentRssProviderList))
+        provider_dict = dict(zip([x.name for x in sickbeard.torrentRssProviderList], sickbeard.torrentRssProviderList))
 
-        if name in providerDict:
-            providerDict[name].name = name
-            providerDict[name].url = config.clean_url(url)
-            providerDict[name].cookies = cookies
-            providerDict[name].titleTAG = titleTAG
+        if name in provider_dict:
+            provider_dict[name].name = name
+            provider_dict[name].url = config.clean_url(url)
+            provider_dict[name].cookies = cookies
+            provider_dict[name].titleTAG = title_tag
 
-            return providerDict[name].get_id() + '|' + providerDict[name].configStr()
+            return provider_dict[name].get_id() + '|' + provider_dict[name].configStr()
 
         else:
-            newProvider = rsstorrent.TorrentRssProvider(name, url, cookies, titleTAG)
-            sickbeard.torrentRssProviderList.append(newProvider)
-            return newProvider.get_id() + '|' + newProvider.configStr()
+            new_provider = rsstorrent.TorrentRssProvider(name, url, cookies, title_tag)
+            sickbeard.torrentRssProviderList.append(new_provider)
+            return new_provider.get_id() + '|' + new_provider.configStr()
 
     @staticmethod
-    def deleteTorrentRssProvider(id):
+    def delete_torrent_rss_provider(id):
 
-        providerDict = dict(
+        provider_dict = dict(
             zip([x.get_id() for x in sickbeard.torrentRssProviderList], sickbeard.torrentRssProviderList))
 
-        if id not in providerDict:
+        if id not in provider_dict:
             return '0'
 
         # delete it from the list
-        sickbeard.torrentRssProviderList.remove(providerDict[id])
+        sickbeard.torrentRssProviderList.remove(provider_dict[id])
 
         if id in sickbeard.PROVIDER_ORDER:
             sickbeard.PROVIDER_ORDER.remove(id)
 
         return '1'
 
-    def saveProviders(self, newznab_string='', torrentrss_string='', provider_order=None, **kwargs):
+    def save_providers(self, newznab_string='', torrentrss_string='', provider_order=None, **kwargs):
         results = []
 
         provider_str_list = provider_order.split()
         provider_list = []
 
-        newznabProviderDict = dict(
+        newznab_provider_dict = dict(
             zip([x.get_id() for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
 
-        finishedNames = []
+        finished_names = []
 
         # add all the newznab info we got into our list
         if newznab_string:
-            for curNewznabProviderStr in newznab_string.split('!!!'):
+            for cur_newznab_provider_string in newznab_string.split('!!!'):
 
-                if not curNewznabProviderStr:
+                if not cur_newznab_provider_string:
                     continue
 
-                cur_name, cur_url, cur_key, cur_cat = curNewznabProviderStr.split('|')
+                cur_name, cur_url, cur_key, cur_cat = cur_newznab_provider_string.split('|')
                 cur_url = config.clean_url(cur_url)
 
-                newProvider = newznab.NewznabProvider(cur_name, cur_url, key=cur_key, catIDs=cur_cat)
+                new_provider = newznab.NewznabProvider(cur_name, cur_url, key=cur_key, catIDs=cur_cat)
 
-                cur_id = newProvider.get_id()
+                cur_id = new_provider.get_id()
 
                 # if it already exists then update it
-                if cur_id in newznabProviderDict:
-                    newznabProviderDict[cur_id].name = cur_name
-                    newznabProviderDict[cur_id].url = cur_url
-                    newznabProviderDict[cur_id].key = cur_key
-                    newznabProviderDict[cur_id].catIDs = cur_cat
+                if cur_id in newznab_provider_dict:
+                    newznab_provider_dict[cur_id].name = cur_name
+                    newznab_provider_dict[cur_id].url = cur_url
+                    newznab_provider_dict[cur_id].key = cur_key
+                    newznab_provider_dict[cur_id].catIDs = cur_cat
                     # a 0 in the key spot indicates that no key is needed
                     if cur_key == '0':
-                        newznabProviderDict[cur_id].needs_auth = False
+                        newznab_provider_dict[cur_id].needs_auth = False
                     else:
-                        newznabProviderDict[cur_id].needs_auth = True
+                        newznab_provider_dict[cur_id].needs_auth = True
 
                     try:
-                        newznabProviderDict[cur_id].search_mode = str(kwargs[cur_id + '_search_mode']).strip()
+                        newznab_provider_dict[cur_id].search_mode = str(kwargs[cur_id + '_search_mode']).strip()
                     except (AttributeError, KeyError):
                         pass  # these exceptions are actually catching unselected checkboxes
 
                     try:
-                        newznabProviderDict[cur_id].search_fallback = config.checkbox_to_value(
+                        newznab_provider_dict[cur_id].search_fallback = config.checkbox_to_value(
                             kwargs[cur_id + '_search_fallback'])
                     except (AttributeError, KeyError):
-                        newznabProviderDict[cur_id].search_fallback = 0  # these exceptions are actually catching unselected checkboxes
+                        newznab_provider_dict[cur_id].search_fallback = 0  # these exceptions are actually catching unselected checkboxes
 
                     try:
-                        newznabProviderDict[cur_id].enable_daily = config.checkbox_to_value(
+                        newznab_provider_dict[cur_id].enable_daily = config.checkbox_to_value(
                             kwargs[cur_id + '_enable_daily'])
                     except (AttributeError, KeyError):
-                        newznabProviderDict[cur_id].enable_daily = 0  # these exceptions are actually catching unselected checkboxes
+                        newznab_provider_dict[cur_id].enable_daily = 0  # these exceptions are actually catching unselected checkboxes
 
                     try:
-                        newznabProviderDict[cur_id].enable_manualsearch = config.checkbox_to_value(
+                        newznab_provider_dict[cur_id].enable_manualsearch = config.checkbox_to_value(
                             kwargs[cur_id + '_enable_manualsearch'])
                     except (AttributeError, KeyError):
-                        newznabProviderDict[cur_id].enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
+                        newznab_provider_dict[cur_id].enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
 
                     try:
-                        newznabProviderDict[cur_id].enable_backlog = config.checkbox_to_value(
+                        newznab_provider_dict[cur_id].enable_backlog = config.checkbox_to_value(
                             kwargs[cur_id + '_enable_backlog'])
                     except (AttributeError, KeyError):
-                        newznabProviderDict[cur_id].enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
+                        newznab_provider_dict[cur_id].enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
                 else:
-                    sickbeard.newznabProviderList.append(newProvider)
+                    sickbeard.newznabProviderList.append(new_provider)
 
-                finishedNames.append(cur_id)
+                finished_names.append(cur_id)
 
         # delete anything that is missing
         for cur_provider in sickbeard.newznabProviderList:
-            if cur_provider.get_id() not in finishedNames:
+            if cur_provider.get_id() not in finished_names:
                 sickbeard.newznabProviderList.remove(cur_provider)
 
-        torrentRssProviderDict = dict(
+        torrent_rss_provider_dict = dict(
             zip([x.get_id() for x in sickbeard.torrentRssProviderList], sickbeard.torrentRssProviderList))
-        finishedNames = []
+        finished_names = []
 
         if torrentrss_string:
             for curTorrentRssProviderStr in torrentrss_string.split('!!!'):
@@ -265,49 +265,49 @@ class ConfigProviders(Config):
                 if not curTorrentRssProviderStr:
                     continue
 
-                curName, curURL, curCookies, curTitleTAG = curTorrentRssProviderStr.split('|')
-                curURL = config.clean_url(curURL)
+                cur_name, cur_url, cur_cookies, cur_title_tag = curTorrentRssProviderStr.split('|')
+                cur_url = config.clean_url(cur_url)
 
-                newProvider = rsstorrent.TorrentRssProvider(curName, curURL, curCookies, curTitleTAG)
+                new_provider = rsstorrent.TorrentRssProvider(cur_name, cur_url, cur_cookies, cur_title_tag)
 
-                curID = newProvider.get_id()
+                cur_id = new_provider.get_id()
 
                 # if it already exists then update it
-                if curID in torrentRssProviderDict:
-                    torrentRssProviderDict[curID].name = curName
-                    torrentRssProviderDict[curID].url = curURL
-                    torrentRssProviderDict[curID].cookies = curCookies
-                    torrentRssProviderDict[curID].curTitleTAG = curTitleTAG
+                if cur_id in torrent_rss_provider_dict:
+                    torrent_rss_provider_dict[cur_id].name = cur_name
+                    torrent_rss_provider_dict[cur_id].url = cur_url
+                    torrent_rss_provider_dict[cur_id].cookies = cur_cookies
+                    torrent_rss_provider_dict[cur_id].curTitleTAG = cur_title_tag
                 else:
-                    sickbeard.torrentRssProviderList.append(newProvider)
+                    sickbeard.torrentRssProviderList.append(new_provider)
 
-                finishedNames.append(curID)
+                finished_names.append(cur_id)
 
         # delete anything that is missing
         for cur_provider in sickbeard.torrentRssProviderList:
-            if cur_provider.get_id() not in finishedNames:
+            if cur_provider.get_id() not in finished_names:
                 sickbeard.torrentRssProviderList.remove(cur_provider)
 
         disabled_list = []
         # do the enable/disable
         for cur_providerStr in provider_str_list:
-            cur_provider, curEnabled = cur_providerStr.split(':')
-            curEnabled = try_int(curEnabled)
+            cur_provider, cur_enabled = cur_providerStr.split(':')
+            cur_enabled = try_int(cur_enabled)
 
-            curProvObj = [x for x in sickbeard.providers.sortedProviderList() if
-                          x.get_id() == cur_provider and hasattr(x, 'enabled')]
-            if curProvObj:
-                curProvObj[0].enabled = bool(curEnabled)
+            cur_prov_obj = [x for x in sickbeard.providers.sortedProviderList() if
+                            x.get_id() == cur_provider and hasattr(x, 'enabled')]
+            if cur_prov_obj:
+                cur_prov_obj[0].enabled = bool(cur_enabled)
 
-            if curEnabled:
+            if cur_enabled:
                 provider_list.append(cur_provider)
             else:
                 disabled_list.append(cur_provider)
 
-            if cur_provider in newznabProviderDict:
-                newznabProviderDict[cur_provider].enabled = bool(curEnabled)
-            elif cur_provider in torrentRssProviderDict:
-                torrentRssProviderDict[cur_provider].enabled = bool(curEnabled)
+            if cur_provider in newznab_provider_dict:
+                newznab_provider_dict[cur_provider].enabled = bool(cur_enabled)
+            elif cur_provider in torrent_rss_provider_dict:
+                torrent_rss_provider_dict[cur_provider].enabled = bool(cur_enabled)
 
         provider_list = provider_list + disabled_list
 
@@ -506,11 +506,11 @@ class ConfigProviders(Config):
                     curNzbProvider.enable_daily = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curNzbProvider, 'enable_manualsearch'):
-               try:
-                   curNzbProvider.enable_manualsearch = config.checkbox_to_value(
-                       kwargs[curNzbProvider.get_id() + '_enable_manualsearch'])
-               except (AttributeError, KeyError):
-                   curNzbProvider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
+                try:
+                    curNzbProvider.enable_manualsearch = config.checkbox_to_value(
+                        kwargs[curNzbProvider.get_id() + '_enable_manualsearch'])
+                except (AttributeError, KeyError):
+                    curNzbProvider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curNzbProvider, 'enable_backlog'):
                 try:
