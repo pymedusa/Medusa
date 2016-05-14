@@ -1,37 +1,14 @@
 # coding=utf-8
 
 import os
-import time
-from unrar2 import RarFile
-
 import sickbeard
 from sickbeard import (
-    config, helpers, logger, naming, subtitles, ui,
+    config, logger, ui,
 )
-from sickbeard.common import (
-    Quality, WANTED,
-)
-from sickbeard.providers import newznab, rsstorrent
-from sickbeard.versionChecker import CheckVersion
-
 from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import (
-    ex
-)
-from sickrage.providers.GenericProvider import GenericProvider
-
 from tornado.routes import route
-from sickbeard.server.web.core import (
-    WebRoot, PageTemplate
-)
-
-# Conditional imports
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
+from sickbeard.server.web.core import PageTemplate
 from sickbeard.server.web.config.base import Config
 
 
