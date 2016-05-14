@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import os
 import time
 import sickbeard
@@ -31,7 +33,7 @@ class ConfigBackupRestore(Config):
             source = [ek(os.path.join, sickbeard.DATA_DIR, 'sickbeard.db'), sickbeard.CONFIG_FILE,
                       ek(os.path.join, sickbeard.DATA_DIR, 'failed.db'),
                       ek(os.path.join, sickbeard.DATA_DIR, 'cache.db')]
-            target = ek(os.path.join, backupDir, 'medusa-' + time.strftime('%Y%m%d%H%M%S') + '.zip')
+            target = ek(os.path.join, backupDir, 'medusa-{date}.zip'.format(date=time.strftime('%Y%m%d%H%M%S')))
 
             for (path, dirs, files) in ek(os.walk, sickbeard.CACHE_DIR, topdown=True):
                 for dirname in dirs:
@@ -41,7 +43,7 @@ class ConfigBackupRestore(Config):
                     source.append(ek(os.path.join, path, filename))
 
             if helpers.backupConfigZip(source, target, sickbeard.DATA_DIR):
-                finalResult += "Successful backup to " + target
+                finalResult += "Successful backup to {location}".format(location=target)
             else:
                 finalResult += "Backup FAILED"
         else:
@@ -61,7 +63,7 @@ class ConfigBackupRestore(Config):
             target_dir = ek(os.path.join, sickbeard.DATA_DIR, 'restore')
 
             if helpers.restoreConfigZip(source, target_dir):
-                finalResult += "Successfully extracted restore files to " + target_dir
+                finalResult += "Successfully extracted restore files to {location}".format(location=target_dir)
                 finalResult += "<br>Restart Medusa to complete the restore."
             else:
                 finalResult += "Restore FAILED"
