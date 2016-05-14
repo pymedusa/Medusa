@@ -1,22 +1,16 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import os
 import sickbeard
 from sickbeard import (
     config, logger, ui,
 )
-
 from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
 from tornado.routes import route
 from sickbeard.server.web.core import PageTemplate
-
-# Conditional imports
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
 from sickbeard.server.web.config.base import Config
 
 
