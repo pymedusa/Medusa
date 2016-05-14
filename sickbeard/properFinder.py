@@ -39,7 +39,7 @@ from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.History import History
 from sickrage.helper.common import enabled_providers
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
-
+from guessit import guessit
 
 class ProperFinder(object):  # pylint: disable=too-few-public-methods
     def __init__(self):
@@ -137,7 +137,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # if they haven't been added by a different provider than add the proper to the list
             for proper in cur_propers:
-                if not re.search(r'(^|[\. _-])(proper|repack|real)([\. _-]|$)', proper.name, re.I):
+                guess = guessit(proper.name)
+                if not guess.get('proper_count'):
                     logger.log(u'Skipping non-proper: {name}'.format(name=proper.name))
                     continue
 
