@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import os
 import sickbeard
 from sickbeard import (
@@ -10,16 +12,8 @@ from sickbeard.common import (
 )
 from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
-
 from tornado.routes import route
 from sickbeard.server.web.core import PageTemplate
-
-# Conditional imports
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
 from sickbeard.server.web.config.base import Config
 
 
@@ -29,11 +23,11 @@ class ConfigGeneral(Config):
         super(ConfigGeneral, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename="config_general.mako")
+        t = PageTemplate(rh=self, filename='config_general.mako')
 
         return t.render(title='Config - General', header='General Configuration',
                         topmenu='config', submenu=self.ConfigMenu(),
-                        controller="config", action="index")
+                        controller='config', action='index')
 
     @staticmethod
     def generateApiKey():
@@ -153,12 +147,12 @@ class ConfigGeneral(Config):
 
         if time_preset:
             sickbeard.TIME_PRESET_W_SECONDS = time_preset
-            sickbeard.TIME_PRESET = sickbeard.TIME_PRESET_W_SECONDS.replace(u":%S", u"")
+            sickbeard.TIME_PRESET = sickbeard.TIME_PRESET_W_SECONDS.replace(u':%S', u'')
 
         sickbeard.TIMEZONE_DISPLAY = timezone_display
 
         if not config.change_LOG_DIR(log_dir, web_log):
-            results += ["Unable to create directory " + ek(os.path.normpath, log_dir) + ", log directory not changed."]
+            results += ['Unable to create directory ' + ek(os.path.normpath, log_dir) + ', log directory not changed.']
 
         sickbeard.API_KEY = api_key
 
@@ -166,11 +160,11 @@ class ConfigGeneral(Config):
 
         if not config.change_HTTPS_CERT(https_cert):
             results += [
-                "Unable to create directory " + ek(os.path.normpath, https_cert) + ", https cert directory not changed."]
+                'Unable to create directory ' + ek(os.path.normpath, https_cert) + ', https cert directory not changed.']
 
         if not config.change_HTTPS_KEY(https_key):
             results += [
-                "Unable to create directory " + ek(os.path.normpath, https_key) + ", https key directory not changed."]
+                'Unable to create directory ' + ek(os.path.normpath, https_key) + ', https key directory not changed.']
 
         sickbeard.HANDLE_REVERSE_PROXY = config.checkbox_to_value(handle_reverse_proxy)
 
@@ -188,4 +182,4 @@ class ConfigGeneral(Config):
         else:
             ui.notifications.message('Configuration Saved', ek(os.path.join, sickbeard.CONFIG_FILE))
 
-        return self.redirect("/config/general/")
+        return self.redirect('/config/general/')
