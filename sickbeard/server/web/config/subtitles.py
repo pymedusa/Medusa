@@ -1,30 +1,15 @@
 # coding=utf-8
 
-import os
-import time
-from unrar2 import RarFile
+from __future__ import unicode_literals
 
+import os
 import sickbeard
 from sickbeard import (
-    config, helpers, logger, naming, subtitles, ui,
+    config, logger, subtitles, ui,
 )
-from sickbeard.common import (
-    Quality, WANTED,
-)
-from sickbeard.providers import newznab, rsstorrent
-from sickbeard.versionChecker import CheckVersion
-
-from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import (
-    ex
-)
-from sickrage.providers.GenericProvider import GenericProvider
-
 from tornado.routes import route
-from sickbeard.server.web.core import (
-    WebRoot, PageTemplate
-)
+from sickbeard.server.web.core import PageTemplate
 
 # Conditional imports
 try:
@@ -47,11 +32,11 @@ class ConfigSubtitles(Config):
                         header='Subtitles', topmenu='config',
                         controller="config", action="subtitles")
 
-    def saveSubtitles(self, use_subtitles=None, subtitles_plugins=None, subtitles_languages=None, subtitles_dir=None, subtitles_perfect_match=None,
-                      service_order=None, subtitles_history=None, subtitles_finder_frequency=None,
-                      subtitles_multi=None, embedded_subtitles_all=None, subtitles_extra_scripts=None, subtitles_pre_scripts=None, subtitles_hearing_impaired=None,
-                      addic7ed_user=None, addic7ed_pass=None, itasa_user=None, itasa_pass=None, legendastv_user=None, legendastv_pass=None, opensubtitles_user=None, opensubtitles_pass=None,
-                      subtitles_download_in_pp=None, subtitles_keep_only_wanted=None):
+    def save_subtitles(self, use_subtitles=None, subtitles_plugins=None, subtitles_languages=None, subtitles_dir=None, subtitles_perfect_match=None,
+                       service_order=None, subtitles_history=None, subtitles_finder_frequency=None,
+                       subtitles_multi=None, embedded_subtitles_all=None, subtitles_extra_scripts=None, subtitles_pre_scripts=None, subtitles_hearing_impaired=None,
+                       addic7ed_user=None, addic7ed_pass=None, itasa_user=None, itasa_pass=None, legendastv_user=None, legendastv_pass=None, opensubtitles_user=None, opensubtitles_pass=None,
+                       subtitles_download_in_pp=None, subtitles_keep_only_wanted=None):
 
         results = []
 
@@ -74,10 +59,10 @@ class ConfigSubtitles(Config):
         services_str_list = service_order.split()
         subtitles_services_list = []
         subtitles_services_enabled = []
-        for curServiceStr in services_str_list:
-            curService, curEnabled = curServiceStr.split(':')
-            subtitles_services_list.append(curService)
-            subtitles_services_enabled.append(int(curEnabled))
+        for cur_service_str in services_str_list:
+            cur_service, cur_enabled = cur_service_str.split(':')
+            subtitles_services_list.append(cur_service)
+            subtitles_services_enabled.append(int(cur_enabled))
 
         sickbeard.SUBTITLES_SERVICES_LIST = subtitles_services_list
         sickbeard.SUBTITLES_SERVICES_ENABLED = subtitles_services_enabled
