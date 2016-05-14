@@ -94,7 +94,7 @@ if os.path.isdir(OLD_TORNADO):
 import sickbeard
 from sickbeard import db, logger, network_timezones, failed_history, name_cache
 from sickbeard.tv import TVShow
-from sickbeard.webserveInit import SRWebServer
+from sickbeard.server.server_init import SRWebServer
 from sickbeard.event_queue import Events
 from configobj import ConfigObj  # pylint: disable=import-error
 
@@ -372,9 +372,9 @@ class SickRage(object):
         # Pre-populate network timezones, it isn't thread safe
         network_timezones.update_network_dict()
 
-        # sure, why not?
-        if sickbeard.USE_FAILED_DOWNLOADS:
-            failed_history.trimHistory()
+        # # sure, why not?
+        # if sickbeard.USE_FAILED_DOWNLOADS:
+        #     failed_history.trimHistory()
 
         # # Check for metadata indexer updates for shows (Disabled until we use api)
         # sickbeard.showUpdateScheduler.forceRun()
@@ -385,7 +385,7 @@ class SickRage(object):
 
         # main loop
         while True:
-            time.sleep(1)
+            time.sleep(3600)
 
     def daemonize(self):
         """
