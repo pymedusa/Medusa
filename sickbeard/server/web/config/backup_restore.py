@@ -18,11 +18,11 @@ class ConfigBackupRestore(Config):
         super(ConfigBackupRestore, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename="config_backuprestore.mako")
+        t = PageTemplate(rh=self, filename='config_backuprestore.mako')
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Backup/Restore',
                         header='Backup/Restore', topmenu='config',
-                        controller="config", action="backupRestore")
+                        controller='config', action='backupRestore')
 
     @staticmethod
     def backup(backupDir=None):
@@ -43,13 +43,13 @@ class ConfigBackupRestore(Config):
                     source.append(ek(os.path.join, path, filename))
 
             if helpers.backupConfigZip(source, target, sickbeard.DATA_DIR):
-                finalResult += "Successful backup to {location}".format(location=target)
+                finalResult += 'Successful backup to {location}'.format(location=target)
             else:
-                finalResult += "Backup FAILED"
+                finalResult += 'Backup FAILED'
         else:
-            finalResult += "You need to choose a folder to save your backup to!"
+            finalResult += 'You need to choose a folder to save your backup to!'
 
-        finalResult += "<br>\n"
+        finalResult += '<br>\n'
 
         return finalResult
 
@@ -63,13 +63,13 @@ class ConfigBackupRestore(Config):
             target_dir = ek(os.path.join, sickbeard.DATA_DIR, 'restore')
 
             if helpers.restoreConfigZip(source, target_dir):
-                finalResult += "Successfully extracted restore files to {location}".format(location=target_dir)
-                finalResult += "<br>Restart Medusa to complete the restore."
+                finalResult += 'Successfully extracted restore files to {location}'.format(location=target_dir)
+                finalResult += '<br>Restart Medusa to complete the restore.'
             else:
-                finalResult += "Restore FAILED"
+                finalResult += 'Restore FAILED'
         else:
-            finalResult += "You need to select a backup file to restore!"
+            finalResult += 'You need to select a backup file to restore!'
 
-        finalResult += "<br>\n"
+        finalResult += '<br>\n'
 
         return finalResult
