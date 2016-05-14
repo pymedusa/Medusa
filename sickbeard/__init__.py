@@ -600,6 +600,8 @@ __INITIALIZED__ = False
 
 NEWZNAB_DATA = None
 
+RECENTLY_DELETED = set()
+
 
 def get_backlog_cycle_time():
     cycletime = DAILYSEARCH_FREQUENCY * 2 + 7
@@ -653,7 +655,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             AUTOPOSTPROCESSER_FREQUENCY, SHOWUPDATE_HOUR, \
             ANIME_DEFAULT, NAMING_ANIME, ANIMESUPPORT, USE_ANIDB, ANIDB_USERNAME, ANIDB_PASSWORD, ANIDB_USE_MYLIST, \
             ANIME_SPLIT_HOME, SCENE_DEFAULT, DOWNLOAD_URL, BACKLOG_DAYS, GIT_USERNAME, GIT_PASSWORD, \
-            DEVELOPER, gh, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, SOCKET_TIMEOUT
+            DEVELOPER, gh, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, SOCKET_TIMEOUT, RECENTLY_DELETED
 
         if __INITIALIZED__:
             return False
@@ -776,8 +778,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
                     try:
                         if ek(os.path.isdir, dstDir):
-                            bakFilename = '{0}-{1}'.format(path_leaf(dstDir), datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d_%H%M%S'))
-                            shutil.move(dstDir, ek(os.path.join, ek(os.path.dirname, dstDir), bakFilename))
+                            bak_filename = '{0}-{1}'.format(path_leaf(dstDir), datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d_%H%M%S'))
+                            shutil.move(dstDir, ek(os.path.join, ek(os.path.dirname, dstDir), bak_filename))
 
                         shutil.move(srcDir, dstDir)
                         logger.log(u"Restore: restoring cache successful", logger.INFO)
