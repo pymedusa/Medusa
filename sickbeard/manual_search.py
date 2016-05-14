@@ -91,7 +91,7 @@ def getEpisodes(search_thread, searchstatus):
 
     if show_obj:
         if not isinstance(search_thread.segment, list):
-            search_thread.segment = [search_thread.segment]
+        search_thread.segment = [search_thread.segment]
 
     for ep_obj in search_thread.segment:
         ep = show_obj.getEpisode(ep_obj.season, ep_obj.episode)
