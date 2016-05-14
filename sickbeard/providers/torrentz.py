@@ -90,7 +90,7 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
                             title_raw = item.title.text
                             # Add "-" after codec and add missing "."
-                            title = re.sub(r'([xh][ .]?264|xvid)', r'\1-', title_raw).replace(' ','.') if title_raw else ''
+                            title = re.sub(r'([xh][ .]?264|xvid)( )', r'\1-', title_raw).replace(' ','.') if title_raw else ''
                             t_hash = item.guid.text.rsplit('/', 1)[-1]
 
                             if not all([title, t_hash]):
