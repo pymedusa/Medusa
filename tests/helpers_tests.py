@@ -73,7 +73,7 @@ Public Methods:
     getURL
     download_file
     get_size
-    generateApiKey
+    generate_api_key
     remove_article
     generateCookieSecret
     verify_freespace
@@ -597,7 +597,7 @@ class HelpersConnectionTests(unittest.TestCase):
     @unittest.skip('Not yet implemented')
     def test_generate_api_key(self):
         """
-        Test generateApiKey
+        Test generate_api_key
         """
         pass
 

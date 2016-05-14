@@ -30,34 +30,35 @@ class ConfigGeneral(Config):
                         controller='config', action='index')
 
     @staticmethod
-    def generateApiKey():
+    def generate_api_key():
         return helpers.generateApiKey()
 
     @staticmethod
-    def saveRootDirs(rootDirString=None):
-        sickbeard.ROOT_DIRS = rootDirString
+    def save_root_directories(root_directories=None):
+        sickbeard.ROOT_DIRS = root_directories
 
     @staticmethod
-    def saveAddShowDefaults(defaultStatus, anyQualities, bestQualities, defaultFlattenFolders, subtitles=False,
-                            anime=False, scene=False, defaultStatusAfter=WANTED):
+    def save_add_show_defaults(default_status, allowed_qualities, preferred_qualities,
+                               default_flatten_folders, subtitles=False, anime=False,
+                               scene=False, default_status_after=WANTED):
 
-        if anyQualities:
-            anyQualities = anyQualities.split(',')
+        if allowed_qualities:
+            allowed_qualities = allowed_qualities.split(',')
         else:
-            anyQualities = []
+            allowed_qualities = []
 
-        if bestQualities:
-            bestQualities = bestQualities.split(',')
+        if preferred_qualities:
+            preferred_qualities = preferred_qualities.split(',')
         else:
-            bestQualities = []
+            preferred_qualities = []
 
-        newQuality = Quality.combineQualities([int(quality) for quality in anyQualities], [int(quality) for quality in bestQualities])
+        new_quality = Quality.combineQualities([int(quality) for quality in allowed_qualities], [int(quality) for quality in preferred_qualities])
 
-        sickbeard.STATUS_DEFAULT = int(defaultStatus)
-        sickbeard.STATUS_DEFAULT_AFTER = int(defaultStatusAfter)
-        sickbeard.QUALITY_DEFAULT = int(newQuality)
+        sickbeard.STATUS_DEFAULT = int(default_status)
+        sickbeard.STATUS_DEFAULT_AFTER = int(default_status_after)
+        sickbeard.QUALITY_DEFAULT = int(new_quality)
 
-        sickbeard.FLATTEN_FOLDERS_DEFAULT = config.checkbox_to_value(defaultFlattenFolders)
+        sickbeard.FLATTEN_FOLDERS_DEFAULT = config.checkbox_to_value(default_flatten_folders)
         sickbeard.SUBTITLES_DEFAULT = config.checkbox_to_value(subtitles)
 
         sickbeard.ANIME_DEFAULT = config.checkbox_to_value(anime)
@@ -65,23 +66,23 @@ class ConfigGeneral(Config):
         sickbeard.SCENE_DEFAULT = config.checkbox_to_value(scene)
         sickbeard.save_config()
 
-    def saveGeneral(self, log_dir=None, log_nr=5, log_size=1, web_port=None, notify_on_login=None, web_log=None, encryption_version=None, web_ipv6=None,
-                    trash_remove_show=None, trash_rotate_logs=None, update_frequency=None, skip_removed_files=None,
-                    indexerDefaultLang='en', ep_default_deleted_status=None, launch_browser=None, showupdate_hour=3, web_username=None,
-                    api_key=None, indexer_default=None, timezone_display=None, cpu_preset='NORMAL',
-                    web_password=None, version_notify=None, enable_https=None, https_cert=None, https_key=None,
-                    handle_reverse_proxy=None, sort_article=None, auto_update=None, notify_on_update=None,
-                    proxy_setting=None, proxy_indexers=None, anon_redirect=None, git_path=None, git_remote=None,
-                    calendar_unprotected=None, calendar_icons=None, debug=None, ssl_verify=None, no_restart=None, coming_eps_missed_range=None,
-                    fuzzy_dating=None, trim_zero=None, date_preset=None, date_preset_na=None, time_preset=None,
-                    indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
-                    git_reset=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None):
+    def save_general(self, log_dir=None, log_nr=5, log_size=1, web_port=None, notify_on_login=None, web_log=None, encryption_version=None, web_ipv6=None,
+                     trash_remove_show=None, trash_rotate_logs=None, update_frequency=None, skip_removed_files=None,
+                     indexer_default_lang='en', ep_default_deleted_status=None, launch_browser=None, showupdate_hour=3, web_username=None,
+                     api_key=None, indexer_default=None, timezone_display=None, cpu_preset='NORMAL',
+                     web_password=None, version_notify=None, enable_https=None, https_cert=None, https_key=None,
+                     handle_reverse_proxy=None, sort_article=None, auto_update=None, notify_on_update=None,
+                     proxy_setting=None, proxy_indexers=None, anon_redirect=None, git_path=None, git_remote=None,
+                     calendar_unprotected=None, calendar_icons=None, debug=None, ssl_verify=None, no_restart=None, coming_eps_missed_range=None,
+                     fuzzy_dating=None, trim_zero=None, date_preset=None, date_preset_na=None, time_preset=None,
+                     indexer_timeout=None, download_url=None, root_directory=None, theme_name=None, default_page=None,
+                     git_reset=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None):
 
         results = []
 
         # Misc
         sickbeard.DOWNLOAD_URL = download_url
-        sickbeard.INDEXER_DEFAULT_LANGUAGE = indexerDefaultLang
+        sickbeard.INDEXER_DEFAULT_LANGUAGE = indexer_default_lang
         sickbeard.EP_DEFAULT_DELETED_STATUS = ep_default_deleted_status
         sickbeard.SKIP_REMOVED_FILES = config.checkbox_to_value(skip_removed_files)
         sickbeard.LAUNCH_BROWSER = config.checkbox_to_value(launch_browser)
