@@ -166,6 +166,10 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
 
     @property
     def is_recently_deleted(self):
+        """
+        A property that checks if this show has been recently deleted, or was attempted to be deleted.
+        Can be used to suppress some error messages, when the TVobject was used, just after a removal.
+        """
         return self.indexerid in sickbeard.RECENTLY_DELETED
 
     def _getLocation(self):
@@ -733,7 +737,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
 
                 if newStatus is not None:
                     with curEp.lock:
-                        logger.log(u"{}: We have an associated file, so setting the status from {} to DOWNLOADED/{}".format
+                        logger.log(u"{0}: We have an associated file, so setting the status from {1} to DOWNLOADED/{2}".format
                                    (self.indexerid, curEp.status, Quality.statusFromName(filepath, anime=self.is_anime)), logger.DEBUG)
                         curEp.status = Quality.compositeStatus(newStatus, newQuality)
 

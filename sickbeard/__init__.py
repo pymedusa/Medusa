@@ -778,8 +778,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
                     try:
                         if ek(os.path.isdir, dstDir):
-                            bakFilename = '{0}-{1}'.format(path_leaf(dstDir), datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d_%H%M%S'))
-                            shutil.move(dstDir, ek(os.path.join, ek(os.path.dirname, dstDir), bakFilename))
+                            bak_filename = '{0}-{1}'.format(path_leaf(dstDir), datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d_%H%M%S'))
+                            shutil.move(dstDir, ek(os.path.join, ek(os.path.dirname, dstDir), bak_filename))
 
                         shutil.move(srcDir, dstDir)
                         logger.log(u"Restore: restoring cache successful", logger.INFO)
