@@ -93,14 +93,16 @@ def getEpisodes(search_thread, searchstatus):
 
     for ep_obj in search_thread.segment:
         ep = show_obj.getEpisode(ep_obj.season, ep_obj.episode)
-        results.append({'show': show_obj.indexerid,
-                        'episode': ep.episode,
-                        'episodeindexid': ep.indexerid,
-                        'season': ep.season,
-                        'searchstatus': searchstatus,
-                        'status': statusStrings[ep.status],
-                        'quality': getQualityClass(ep),
-                        'overview': Overview.overviewStrings[show_obj.getOverview(ep.status)]})
+        results.append({
+            'show': show_obj.indexerid,
+            'episode': ep.episode,
+            'episodeindexid': ep.indexerid,
+            'season': ep.season,
+            'searchstatus': searchstatus,
+            'status': statusStrings[ep.status],
+            'quality': getQualityClass(ep),
+            'overview': Overview.overviewStrings[show_obj.getOverview(ep.status)],
+        })
 
     return results
 
