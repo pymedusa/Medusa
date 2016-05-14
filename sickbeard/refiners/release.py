@@ -3,6 +3,7 @@ import logging
 import os
 
 from guessit import guessit
+from sickbeard.helpers import remove_non_release_groups
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
     dirpath = dirpath or '.'
     fileroot, fileext = os.path.splitext(filename)
     release_file = get_release_file(dirpath, fileroot, extension) or release_file
-    release_name = get_release_name(release_file) or release_name
+    release_name = remove_non_release_groups(get_release_name(release_file) or release_name)
 
     if not release_name:
         logger.debug(u'No release name for %s', video.name)
