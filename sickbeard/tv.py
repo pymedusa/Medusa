@@ -1154,48 +1154,48 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
             main_db_con.upsert("imdb_info", newValueDict, controlValueDict)
 
     def __str__(self):
-        toReturn = ""
-        toReturn += "indexerid: " + str(self.indexerid) + "\n"
-        toReturn += "indexer: " + str(self.indexer) + "\n"
-        toReturn += "name: " + self.name + "\n"
-        toReturn += "location: " + self._location + "\n"
+        to_return = ""
+        to_return += "indexerid: " + str(self.indexerid) + "\n"
+        to_return += "indexer: " + str(self.indexer) + "\n"
+        to_return += "name: " + self.name + "\n"
+        to_return += "location: " + self._location + "\n"
         if self.network:
-            toReturn += "network: " + self.network + "\n"
+            to_return += "network: " + self.network + "\n"
         if self.airs:
-            toReturn += "airs: " + self.airs + "\n"
-        toReturn += "status: " + self.status + "\n"
-        toReturn += "startyear: " + str(self.startyear) + "\n"
+            to_return += "airs: " + self.airs + "\n"
+        to_return += "status: " + self.status + "\n"
+        to_return += "startyear: " + str(self.startyear) + "\n"
         if self.genre:
-            toReturn += "genre: " + self.genre + "\n"
-        toReturn += "classification: " + self.classification + "\n"
-        toReturn += "runtime: " + str(self.runtime) + "\n"
-        toReturn += "quality: " + str(self.quality) + "\n"
-        toReturn += "scene: " + str(self.is_scene) + "\n"
-        toReturn += "sports: " + str(self.is_sports) + "\n"
-        toReturn += "anime: " + str(self.is_anime) + "\n"
-        return toReturn
+            to_return += "genre: " + self.genre + "\n"
+        to_return += "classification: " + self.classification + "\n"
+        to_return += "runtime: " + str(self.runtime) + "\n"
+        to_return += "quality: " + str(self.quality) + "\n"
+        to_return += "scene: " + str(self.is_scene) + "\n"
+        to_return += "sports: " + str(self.is_sports) + "\n"
+        to_return += "anime: " + str(self.is_anime) + "\n"
+        return to_return
 
     def __unicode__(self):
-        toReturn = u""
-        toReturn += u"indexerid: {0}\n".format(self.indexerid)
-        toReturn += u"indexer: {0}\n".format(self.indexer)
-        toReturn += u"name: {0}\n".format(self.name)
-        toReturn += u"location: {0}\n".format(self._location)
+        to_return = u""
+        to_return += u"indexerid: {0}\n".format(self.indexerid)
+        to_return += u"indexer: {0}\n".format(self.indexer)
+        to_return += u"name: {0}\n".format(self.name)
+        to_return += u"location: {0}\n".format(self._location)
         if self.network:
-            toReturn += u"network: {0}\n".format(self.network)
+            to_return += u"network: {0}\n".format(self.network)
         if self.airs:
-            toReturn += u"airs: {0}\n".format(self.airs)
-        toReturn += u"status: {0}\n".format(self.status)
-        toReturn += u"startyear: {0}\n".format(self.startyear)
+            to_return += u"airs: {0}\n".format(self.airs)
+        to_return += u"status: {0}\n".format(self.status)
+        to_return += u"startyear: {0}\n".format(self.startyear)
         if self.genre:
-            toReturn += u"genre: {0}\n".format(self.genre)
-        toReturn += u"classification: {0}\n".format(self.classification)
-        toReturn += u"runtime: {0}\n".format(self.runtime)
-        toReturn += u"quality: {0}\n".format(self.quality)
-        toReturn += u"scene: {0}\n".format(self.is_scene)
-        toReturn += u"sports: {0}\n".format(self.is_sports)
-        toReturn += u"anime: {0}\n".format(self.is_anime)
-        return toReturn
+            to_return += u"genre: {0}\n".format(self.genre)
+        to_return += u"classification: {0}\n".format(self.classification)
+        to_return += u"runtime: {0}\n".format(self.runtime)
+        to_return += u"quality: {0}\n".format(self.quality)
+        to_return += u"scene: {0}\n".format(self.is_scene)
+        to_return += u"sports: {0}\n".format(self.is_sports)
+        to_return += u"anime: {0}\n".format(self.is_anime)
+        return to_return
 
     @staticmethod
     def qualitiesToString(qualities=None):
