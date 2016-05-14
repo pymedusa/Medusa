@@ -385,7 +385,7 @@ class SickRage(object):
 
         # main loop
         while True:
-            time.sleep(3600)
+            time.sleep(1)
 
     def daemonize(self):
         """
