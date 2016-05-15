@@ -897,7 +897,7 @@ def run_subs_pre_scripts(video_path):
     :param video_path: the video path
     :type video_path: str
     """
-    run_subs_scripts(video_path, sickbeard.SUBTITLES_PRE_SCRIPTS, [video_path])
+    run_subs_scripts(video_path, sickbeard.SUBTITLES_PRE_SCRIPTS, video_path)
 
 
 def run_subs_extra_scripts(video_path, subtitle_path, subtitle_language, show_name, season, episode, episode_name,
@@ -921,9 +921,8 @@ def run_subs_extra_scripts(video_path, subtitle_path, subtitle_language, show_na
     :param show_indexerid: the show indexer id
     :type show_indexerid: int
     """
-    run_subs_scripts(video_path, sickbeard.SUBTITLES_EXTRA_SCRIPTS,
-                     [video_path, subtitle_path, subtitle_language.opensubtitles, show_name, season, episode,
-                      episode_name, show_indexerid])
+    run_subs_scripts(video_path, sickbeard.SUBTITLES_EXTRA_SCRIPTS, video_path, subtitle_path,
+                     subtitle_language.opensubtitles, show_name, season, episode, episode_name, show_indexerid)
 
 
 def run_subs_scripts(video_path, scripts, *args):
