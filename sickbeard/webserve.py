@@ -1487,7 +1487,7 @@ class Home(WebRoot):
 
         return json.dumps({'result': 'failure'})
 
-    def manualSearchCheckCache(self, show, season, episode, manual_search_type, **kwargs):
+    def manualSearchCheckCache(self, show, season, episode, manual_search_type, **last_prov_updates):
         """ Periodic check if the searchthread is still running for the selected show/season/ep
         and if there are new results in the cache.db
         """
@@ -1497,14 +1497,6 @@ class Home(WebRoot):
         # To prevent it from keeping searching when no providers have been enabled
         if not enabled_providers('manualsearch'):
             return {'result': SEARCH_STATUS_FINISHED}
-
-        # Let's try to get the timestamps for the last search per provider
-        if kwargs:
-            # Only need the first provided dict
-            last_prov_updates = kwargs.iteritems().next()[0]
-            last_prov_updates = json.loads(last_prov_updates.replace("'", '"'))
-        else:
-            last_prov_updates = {}
 
         main_db_con = db.DBConnection('cache.db')
 
