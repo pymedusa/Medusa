@@ -22,6 +22,7 @@
 import time
 import sickbeard
 import threading
+import json
 from sickbeard import search_queue
 from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
 from sickbeard import logger, db
@@ -233,7 +234,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
 
             # Get the last updated cache items timestamp
             last_update = main_db_con.select(b"select max(time) as lastupdate from '{provider_id}'".format(provider_id=cur_provider.get_id()))
-            provider_results['last_prov_updates'][cur_provider.get_id()] = last_update[0]['lastupdate']
+            provider_results['last_prov_updates'][cur_provider.get_id()] = str(last_update[0]['lastupdate'])
 
     # Check if we have the combined sql strings
     if combined_sql_q:
@@ -269,4 +270,6 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
 
+    # Sanitize the last_prov_updates key
+    provider_results['last_prov_updates'] = json.dumps(provider_results['last_prov_updates'])
     return provider_results
