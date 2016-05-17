@@ -1,18 +1,18 @@
 # coding=utf-8
 import os
 import threading
-import sickbeard
 
-from sickbeard.webserve import LoginHandler, LogoutHandler, KeyHandler, CalendarHandler
-from sickbeard.webapi import ApiHandler
-from sickbeard import logger
-from sickbeard.helpers import create_https_certificates, generateApiKey
-from sickrage.helper.encoding import ek
-
-from tornado.web import Application, StaticFileHandler, RedirectHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.routes import route
+from tornado.web import Application, StaticFileHandler, RedirectHandler
+
+import sickbeard
+from sickbeard import logger
+from sickbeard.helpers import create_https_certificates, generateApiKey
+import sickbeard.server.web.core
+from sickbeard.server.api.core import ApiHandler
+from sickrage.helper.encoding import ek
 
 
 class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attributes
@@ -87,17 +87,17 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
             (r'%s(/?.*)' % self.options['api_root'], ApiHandler),
 
             # webapi key retrieval
-            (r'%s/getkey(/?.*)' % self.options['web_root'], KeyHandler),
+            (r'%s/getkey(/?.*)' % self.options['web_root'], sickbeard.server.web.core.KeyHandler),
 
             # webapi builder redirect
             (r'%s/api/builder' % self.options['web_root'], RedirectHandler, {"url": self.options['web_root'] + '/apibuilder/'}),
 
             # webui login/logout handlers
-            (r'%s/login(/?)' % self.options['web_root'], LoginHandler),
-            (r'%s/logout(/?)' % self.options['web_root'], LogoutHandler),
+            (r'%s/login(/?)' % self.options['web_root'], sickbeard.server.web.core.LoginHandler),
+            (r'%s/logout(/?)' % self.options['web_root'], sickbeard.server.web.core.LogoutHandler),
 
             # Web calendar handler (Needed because option Unprotected calendar)
-            (r'%s/calendar' % self.options['web_root'], CalendarHandler),
+            (r'%s/calendar' % self.options['web_root'], sickbeard.server.web.core.CalendarHandler),
 
             # webui handlers
         ] + route.get_routes(self.options['web_root']))

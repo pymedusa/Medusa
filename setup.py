@@ -15,7 +15,7 @@ setup(
     description="Automatic Video Library Manager for TV Shows",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=[],
+    install_requires=['tornado', 'mako', 'markdown2', 'simplejson', ],
     test_suite="tests",
     tests_require=[
         'coveralls',
