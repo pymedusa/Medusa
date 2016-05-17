@@ -117,7 +117,7 @@ def remove_non_release_groups(name, clean_proper=False):
     # select release_name from tv_episodes WHERE LENGTH(release_name);
     # [eSc], [SSG], [GWC] are valid release groups for non-anime
     
-    remove_groups = "P2PDL|SiMPLE\@BluRG|MovietaM|Monster|Rick|rartv|rarbg|eztv|cttv|vtv|ettv|ipt|oldeztv|TJET|Pawulon|utr|mp4remuxer|KskS|PublicHD|NO\.RAR|EtHD|GloDLS|silv4|Seedbox|AndroidTwoU|brassetv|Talamasca32|BT|1044|RiPSaLoT|GiuseppeTnT|Renc|gz|English|German|Italian|NLSUB|musicbolt\.com|SpastikusTV|RP$|\-20\-40|BUYMORE|Obfuscated|Chamele0n\$|NZBGEEK|Siklopentan|SPARROW|SPARR|www\.usabit\.com|www\.Cpasbien\.pe|www\.Cpasbien\.com|www\.Cpasbien\.pw|www\.newpct1\.com|www\.SceneTime\.com|www\.tensiontorrent\.com|www\.torrentday\.com"
+    remove_groups = "AgusiQ|youtubetomp3\.uno|P2PDL|SiMPLE\@BluRG|MovietaM|Monster|Rick|rartv|rarbg|eztv|cttv|vtv|ettv|ipt|oldeztv|TJET|Pawulon|utr|mp4remuxer|KskS|PublicHD|NO\.RAR|EtHD|GloDLS|silv4|Seedbox|AndroidTwoU|brassetv|Talamasca32|BT|1044|RiPSaLoT|GiuseppeTnT|Renc|gz|English|German|Italian|NLSUB|musicbolt\.com|SpastikusTV|RP$|\-20\-40|BUYMORE|Obfuscated|Chamele0n\$|NZBGEEK|Siklopentan|SPARROW|SPARR|www\.usabit\.com|www\.Cpasbien\.pe|www\.Cpasbien\.com|www\.Cpasbien\.pw|www\.newpct1\.com|www\.SceneTime\.com|www\.tensiontorrent\.com|www\.torrentday\.com"
     removeWordsList = {
         r'\.$': 'searchre',
         r'[._\- ]?\W*?({0})\W*?$'.format(remove_groups): 'searchre',
