@@ -240,7 +240,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     if combined_sql_q:
         sql_prepend = b"SELECT * FROM ("
         sql_append = b") ORDER BY CASE quality WHEN '{quality_unknown}' THEN -1 ELSE CAST(quality as DECIMAL) END DESC, " \
-                     b" seeders DESC, isproper DESC".format(quality_unknown=Quality.UNKNOWN)
+                     b" isproper DESC, seeders DESC".format(quality_unknown=Quality.UNKNOWN)
 
         # Add all results
         sql_total += main_db_con.select(b'{0} {1} {2}'.
