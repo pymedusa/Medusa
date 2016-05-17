@@ -234,7 +234,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
 
             # Get the last updated cache items timestamp
             last_update = main_db_con.select(b"select max(time) as lastupdate from '{provider_id}'".format(provider_id=cur_provider.get_id()))
-            provider_results['last_prov_updates'][cur_provider.get_id()] = str(last_update[0]['lastupdate'])
+            provider_results['last_prov_updates'][cur_provider.get_id()] = str(last_update[0]['lastupdate']) if last_update[0]['lastupdate'] else '0'
 
     # Check if we have the combined sql strings
     if combined_sql_q:

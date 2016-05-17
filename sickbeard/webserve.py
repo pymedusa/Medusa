@@ -1537,11 +1537,6 @@ class Home(WebRoot):
                 # If the ep not anymore in the QUEUED or SEARCHING Thread, and it has the status finished, return it as finished
                 return {'result': SEARCH_STATUS_FINISHED}
 
-        # Force a refresh when the last_prov_updates is empty due to the tables not existing yet.
-        # This can be removed if we make sure the provider cache tables always exist prior to the start of the first search
-        if not last_prov_updates and SEARCH_STATUS_FINISHED in search_status:
-            return {'result': REFRESH_RESULTS}
-
         return {'result': searched_item[0]['searchstatus']}
 
     def snatchSelection(self, show=None, season=None, episode=None, manual_search_type="episode",
