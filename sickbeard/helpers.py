@@ -116,11 +116,75 @@ def remove_non_release_groups(name, clean_proper=False):
     # Check your database for funky release_names and add them here, to improve failed handling, archiving, and history.
     # select release_name from tv_episodes WHERE LENGTH(release_name);
     # [eSc], [SSG], [GWC] are valid release groups for non-anime
-    
-    remove_groups = "AgusiQ|youtubetomp3\.uno|P2PDL|SiMPLE\@BluRG|MovietaM|Monster|Rick|rartv|rarbg|eztv|cttv|vtv|ettv|ipt|oldeztv|TJET|Pawulon|utr|mp4remuxer|KskS|PublicHD|NO\.RAR|EtHD|GloDLS|silv4|Seedbox|AndroidTwoU|brassetv|Talamasca32|BT|1044|RiPSaLoT|GiuseppeTnT|Renc|gz|English|German|Italian|NLSUB|musicbolt\.com|SpastikusTV|RP$|\-20\-40|BUYMORE|Obfuscated|Chamele0n\$|NZBGEEK|Siklopentan|SPARROW|SPARR|www\.usabit\.com|www\.Cpasbien\.pe|www\.Cpasbien\.com|www\.Cpasbien\.pw|www\.newpct1\.com|www\.SceneTime\.com|www\.tensiontorrent\.com|www\.torrentday\.com"
+
+    # All lowercase and alphabetically sorted
+    groups = {
+        '-20-40',
+        '1044',
+        'agusiq',
+        'androidtwou',
+        'brassetv',
+        'bt',
+        'buymore',
+        'chamele0n$',
+        'cttv',
+        'english',
+        'ethd',
+        'ettv',
+        'eztv',
+        'german',
+        'giuseppetnt',
+        'glodls',
+        'gz',
+        'ipt',
+        'italian',
+        'ksks',
+        'monster',
+        'movietam',
+        'mp4remuxer',
+        'musicbolt.com',
+        'nlsub',
+        'no.rar',
+        'nzbgeek',
+        'obfuscated',
+        'oldeztv',
+        'p2pdl',
+        'pawulon',
+        'publichd',
+        'rarbg',
+        'rartv',
+        'renc',
+        'rick',
+        'ripsalot',
+        'rp',
+        'seedbox',
+        'siklopentan',
+        'silv4',
+        'simple@blurg',
+        'sparr',
+        'sparrow',
+        'spastikustv',
+        'talamasca32',
+        'tjet',
+        'utr',
+        'vtv',
+        'www.cpasbien.com',
+        'www.cpasbien.pe',
+        'www.cpasbien.pw',
+        'www.newpct1.com',
+        'www.scenetime.com',
+        'www.tensiontorrent.com',
+        'www.torrentday.com',
+        'www.usabit.com',
+        'youtubetomp3.uno'
+    }
+
+    non_groups_re = r'(({delimiter}+)({groups})({delimiter}*)$)|(^({delimiter}*)({groups})({delimiter}+))'.format(
+        groups='|'.join(re.escape(name) for name in groups), delimiter='([._\-\s]|\W)')
+
     removeWordsList = {
+        non_groups_re: 'searchre',
         r'\.$': 'searchre',
-        r'[._\- ]?\W*?({0})\W*?$'.format(remove_groups): 'searchre',
         r'\.?\[\d*(P|p)\]\[HEVC\]$': 'searchre',
         r'(?<![57])\.1$': 'searchre',
         r'^\[PRiVATE\][._ ]?': 'searchre',
