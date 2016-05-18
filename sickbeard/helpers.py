@@ -126,7 +126,7 @@ def remove_non_release_groups(name, clean_proper=False):
         'brassetv',
         'bt',
         'buymore',
-        'chamele0n$',
+        'chamele0n',
         'cttv',
         'english',
         'ethd',
