@@ -25,19 +25,19 @@ import datetime
 import io
 import os
 import re
-import traceback
 import time
+import traceback
 
 import adba
+import markdown2
 from concurrent.futures import ThreadPoolExecutor
 from dateutil import tz
 from libtrakt import TraktAPI
 from libtrakt.exceptions import traktException
-from mako.template import Template as MakoTemplate
-from mako.lookup import TemplateLookup
 from mako.exceptions import RichTraceback
+from mako.lookup import TemplateLookup
 from mako.runtime import UNDEFINED
-import markdown2
+from mako.template import Template as MakoTemplate
 from requests.compat import unquote_plus, quote_plus, urljoin
 from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
@@ -74,9 +74,8 @@ from sickbeard.scene_numbering import (
     get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
     set_scene_numbering,
 )
+from sickbeard.server.api import function_mapper
 from sickbeard.versionChecker import CheckVersion
-from sickbeard.webapi import function_mapper
-
 from sickrage.helper.common import (
     episode_num, sanitize_filename, try_int, enabled_providers,
 )
@@ -99,9 +98,6 @@ from sickrage.show.History import History as HistoryTool
 from sickrage.show.Show import Show
 from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
-from sickbeard.tv import TVEpisode
-from sickbeard.classes import SearchResult
-
 
 # Conditional imports
 try:
