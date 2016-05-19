@@ -1685,7 +1685,7 @@ def saveAll():
 
 
 def save_config():  # pylint: disable=too-many-statements, too-many-branches
-    new_config = ConfigObj()
+    new_config = ConfigObj(encoding='UTF-8', default_encoding='UTF-8')
     new_config.filename = CONFIG_FILE
 
     # For passwords you must include the word `password` in the item_name and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
