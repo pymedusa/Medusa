@@ -59,6 +59,7 @@ from cachecontrol import CacheControl
 # from httpcache import CachingHTTPAdapter
 
 from itertools import izip, cycle
+from contextlib2 import suppress
 
 import shutil
 import shutil_custom
@@ -884,7 +885,10 @@ def backupVersionedFile(old_file, version):
 
     numTries = 0
 
-    new_file = old_file + '.' + 'v' + str(version)
+    with suppress(TypeError):
+        version = '.'.join([str(x) for x in version])
+
+    new_file = '{file}.v{version}.db'.format(file=old_file.replace('.db', ''), version=version)
 
     while not ek(os.path.isfile, new_file):
         if not ek(os.path.isfile, old_file):

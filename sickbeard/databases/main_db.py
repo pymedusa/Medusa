@@ -1149,4 +1149,30 @@ class AddMinorVersion(AlterTVShowsFieldTypes):
 
         self.inc_minor_version()
 
-        logger.log('Updated to: %d.%d' % self.connection.version)
+        logger.log(u'Updated to: %d.%d' % self.connection.version)
+
+
+class TestIncreaseMajorVersion(AddMinorVersion):
+    """
+    This tests the inc_major_version function
+
+    This is done both to test the new update functionality
+    and to maintain version parity with other forks.
+    """
+    def test(self):
+        """
+        Test if the version is at least 43.1
+        """
+        return self.connection.version >= (43, 1)
+
+    def execute(self):
+        """
+        Updates the version to 43.1
+        """
+        backupDatabase(self.connection.version)
+
+        logger.log(u"Test major and minor version updates database")
+        self.inc_major_version()
+        self.inc_minor_version()
+
+        logger.log(u'Updated to: %d.%d' % self.connection.version)
