@@ -205,6 +205,9 @@ class PageTemplate(MakoTemplate):
             kwargs['title'] = '500'
             kwargs['header'] = 'Mako Error'
             kwargs['backtrace'] = RichTraceback()
+            for (filename, lineno, function, line) in kwargs['backtrace'].traceback:
+                logger.log(u'File %s, line %s, in %s' % (filename, lineno, function), logger.DEBUG)
+            logger.log(u'%s: %s' % (str(kwargs['backtrace'].error.__class__.__name__), kwargs['backtrace'].error))
             return get_lookup().get_template('500.mako').render_unicode(*args, **kwargs)
 
 
@@ -1484,7 +1487,7 @@ class Home(WebRoot):
 
         return json.dumps({'result': 'failure'})
 
-    def manualSearchCheckCache(self, show, season, episode, manual_search_type, **kwargs):
+    def manualSearchCheckCache(self, show, season, episode, manual_search_type, **last_prov_updates):
         """ Periodic check if the searchthread is still running for the selected show/season/ep
         and if there are new results in the cache.db
         """
@@ -1494,14 +1497,6 @@ class Home(WebRoot):
         # To prevent it from keeping searching when no providers have been enabled
         if not enabled_providers('manualsearch'):
             return {'result': SEARCH_STATUS_FINISHED}
-
-        # Let's try to get the timestamps for the last search per provider
-        if kwargs:
-            # Only need the first provided dict
-            last_prov_updates = kwargs.iteritems().next()[0]
-            last_prov_updates = json.loads(last_prov_updates.replace("'", '"'))
-        else:
-            last_prov_updates = {}
 
         main_db_con = db.DBConnection('cache.db')
 
@@ -1546,6 +1541,7 @@ class Home(WebRoot):
         # This can be removed if we make sure the provider cache tables always exist prior to the start of the first search
         if not last_prov_updates and SEARCH_STATUS_FINISHED in search_status:
             return {'result': REFRESH_RESULTS}
+
 
         return {'result': searched_item[0]['searchstatus']}
 
@@ -1637,7 +1633,6 @@ class Home(WebRoot):
             'indexerid': indexerid,
             'name': showObj.name,
         })
-
 
         episode_history = []
         try:

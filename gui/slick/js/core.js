@@ -2565,9 +2565,9 @@ var SICKRAGE = {
                 if (!$.isNumeric(show) || !$.isNumeric(season) || !$.isNumeric(episode)) {
                     setTimeout(function() { checkCacheUpdates(true); }, 200);
                 }
-                
+
                 var url = srRoot + '/home/manualSearchCheckCache?show='+show+'&season='+season+'&episode='+episode+'&manual_search_type='+manualSearchType;
-                
+
                 self.refreshResults = function() {
                     $('#wrapper').loadContainer(
                             '/home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&manual_search_type=' + manualSearchType + '&perform_search=0',

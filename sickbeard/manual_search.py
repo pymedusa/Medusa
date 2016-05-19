@@ -22,6 +22,7 @@
 import time
 import sickbeard
 import threading
+import json
 from sickbeard import search_queue
 from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
 from sickbeard import logger, db
@@ -84,14 +85,14 @@ def getEpisodes(search_thread, searchstatus):
     # NOTE!: Show.find called with just indexerid!
     show_obj = Show.find(sickbeard.showList, int(search_thread.show.indexerid))
 
-    if not show_obj and not search_thread.show.is_recently_deleted:
-        logger.log(u'No Show Object found for show with indexerID: {0}'.
-                   format(search_thread.show.indexerid), logger.ERROR)
+    if not show_obj:
+        if not search_thread.show.is_recently_deleted:
+            logger.log(u'No Show Object found for show with indexerID: {0}'.
+                       format(search_thread.show.indexerid), logger.ERROR)
         return results
 
-    if show_obj:
-        if not isinstance(search_thread.segment, list):
-            search_thread.segment = [search_thread.segment]
+    if not isinstance(search_thread.segment, list):
+        search_thread.segment = [search_thread.segment]
 
     for ep_obj in search_thread.segment:
         ep = show_obj.getEpisode(ep_obj.season, ep_obj.episode)
@@ -189,15 +190,19 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     show_obj = Show.find(sickbeard.showList, int(show))
 
     main_db_con = db.DBConnection('cache.db')
-    found_items = []
+
     provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
     original_thread_name = threading.currentThread().name
 
+    sql_total = []
+    combined_sql_q = []
+    combined_sql_params = []
+
     for cur_provider in enabled_providers('manualsearch'):
         threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name, provider=cur_provider.name)
-        sql_return = []
+
         # Let's check if this provider table already exists
-        table_exists = main_db_con.select("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [cur_provider.get_id()])
+        table_exists = main_db_con.select(b"SELECT name FROM sqlite_master WHERE type='table' AND name=?", [cur_provider.get_id()])
         columns = [i[1] for i in main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))] if table_exists else []
         minseed = int(cur_provider.minseed) if hasattr(cur_provider, 'minseed') else -1
         minleech = int(cur_provider.minleech) if hasattr(cur_provider, 'minleech') else -1
@@ -205,36 +210,45 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
         if table_exists and 'seeders' in columns and 'leechers' in columns and 'size' in columns:
-
-            common_sql = "SELECT rowid, ? as 'provider_type', ? as 'provider_image', \
+            # The default sql, that's executed for each providers cache table
+            common_sql = b"SELECT rowid, ? as 'provider_type', ? as 'provider_image', \
                           ? as 'provider', ? as 'provider_id', ? 'provider_minseed', ? 'provider_minleech', \
-                          name, season, episodes, indexerid, url, time, (select max(time) \
-                          from '{provider_id}') as lastupdate, \
+                          name, season, episodes, indexerid, url, time, \
+                          (select 'proper' where name like '%PROPER%' or name like '%REAL%' or name like '%REPACK%') as  'isproper', \
                           quality, release_group, version, seeders, leechers, size, time \
-                          FROM '{provider_id}' WHERE indexerid = ?".format(provider_id=cur_provider.get_id())
-            additional_sql = " AND episodes LIKE ? AND season = ?"
+                          FROM '{provider_id}' WHERE indexerid = ? AND quality > 0 ".format(provider_id=cur_provider.get_id())
+            additional_sql = " AND episodes LIKE ? AND season = ? "
 
+            # The params are always the same for both queries
+            add_params = [cur_provider.provider_type.title(), cur_provider.image_name(),
+                          cur_provider.name, cur_provider.get_id(), minseed, minleech, show]
+
+            # If were not looking for all results, meaning don't do the filter on season + ep, add sql
             if not int(show_all_results):
-                sql_return = main_db_con.select(common_sql + additional_sql,
-                                                (cur_provider.provider_type.title(), cur_provider.image_name(),
-                                                 cur_provider.name, cur_provider.get_id(),
-                                                 minseed, minleech, show, "%|{0}|%".format(sql_episode), season))
-            else:
-                sql_return = main_db_con.select(common_sql,
-                                                (cur_provider.provider_type.title(), cur_provider.image_name(),
-                                                 cur_provider.name, cur_provider.get_id(), minseed, minleech, show))
+                common_sql += additional_sql
+                add_params += ["%|{0}|%".format(sql_episode), season]
 
-        if sql_return:
-            for item in sql_return:
-                found_items.append(dict(item))
+            # Add the created sql, to lists, that are used down below to perform one big UNIONED query
+            combined_sql_q.append(common_sql)
+            combined_sql_params += add_params
 
-            # Store the last table update, we'll need this to compare later
-            provider_results['last_prov_updates'][cur_provider.get_id()] = str(sql_return[0]['lastupdate'])
-        else:
-            provider_results['last_prov_updates'][cur_provider.get_id()] = "0"
+            # Get the last updated cache items timestamp
+            last_update = main_db_con.select(b"select max(time) as lastupdate from '{provider_id}'".format(provider_id=cur_provider.get_id()))
+            provider_results['last_prov_updates'][cur_provider.get_id()] = last_update[0]['lastupdate'] if last_update[0]['lastupdate'] else 0
+
+    # Check if we have the combined sql strings
+    if combined_sql_q:
+        sql_prepend = b"SELECT * FROM ("
+        sql_append = b") ORDER BY CASE quality WHEN '{quality_unknown}' THEN -1 ELSE CAST(quality as DECIMAL) END DESC, " \
+                     b" isproper DESC, seeders DESC".format(quality_unknown=Quality.UNKNOWN)
+
+        # Add all results
+        sql_total += main_db_con.select(b'{0} {1} {2}'.
+                                        format(sql_prepend, ' UNION ALL '.join(combined_sql_q), sql_append),
+                                        combined_sql_params)
 
     # Always start a search when no items found in cache
-    if not found_items or int(perform_search):
+    if not sql_total or int(perform_search):
         # retrieve the episode object and fail if we can't get one
         ep_obj = getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
@@ -251,13 +265,11 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # give the CPU a break and some time to start the queue
         time.sleep(cpu_presets[sickbeard.CPU_PRESET])
     else:
-        # Sort the list of found items
-        found_items = sorted(found_items, key=lambda k: (try_int(k['quality']), try_int(k['seeders'])), reverse=True)
-        # Make unknown qualities at the botton
-        found_items = [d for d in found_items if try_int(d['quality']) < 32768] + [d for d in found_items if try_int(d['quality']) == 32768]
-        provider_results['found_items'] = found_items
+        provider_results['found_items'] = sql_total
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
 
+    # Sanitize the last_prov_updates key
+    provider_results['last_prov_updates'] = json.dumps(provider_results['last_prov_updates'])
     return provider_results
