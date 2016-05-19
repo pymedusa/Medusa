@@ -162,7 +162,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         """
         def recursive_glob(treeroot, pattern):
             results = []
-            for base, _, files in os.walk(treeroot):
+            for base, _, files in ek(os.walk, treeroot):
                 goodfiles = fnmatch.filter(files, pattern)
                 results.extend(ek(os.path.join, base, f) for f in goodfiles)
             return results
