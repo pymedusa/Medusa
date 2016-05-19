@@ -74,7 +74,7 @@ from sickbeard.scene_numbering import (
     get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
     set_scene_numbering,
 )
-from sickbeard.server.api import function_mapper
+from sickbeard.server.api.core import function_mapper
 from sickbeard.versionChecker import CheckVersion
 from sickrage.helper.common import (
     episode_num, sanitize_filename, try_int, enabled_providers,

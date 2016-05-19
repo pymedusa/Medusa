@@ -1004,8 +1004,8 @@ By Pedro Jose Pereira Vieito <pvieito@gmail.com> (@pvieito)
 
 To add a new encryption_version:
   1) Code your new encryption_version
-  2) Update the last encryption_version available in web.py
-  3) Remember to maintain old encryption versions and key generators for retrocompatibility
+  2) Update the last encryption_version available in sickbeard.server.web.core
+  3) Remember to maintain old encryption versions and key generators for retro-compatibility
 """
 
 # Key Generators

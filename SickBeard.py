@@ -94,7 +94,7 @@ if os.path.isdir(OLD_TORNADO):
 import sickbeard
 from sickbeard import db, logger, network_timezones, failed_history, name_cache
 from sickbeard.tv import TVShow
-from sickbeard.server.server_init import SRWebServer
+from sickbeard.server.core import SRWebServer
 from sickbeard.event_queue import Events
 from configobj import ConfigObj  # pylint: disable=import-error
 
