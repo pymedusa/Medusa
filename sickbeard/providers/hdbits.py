@@ -18,17 +18,14 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import json
+
 from requests.compat import urlencode, urljoin
 
 from sickbeard import classes, logger, tvcache
 
 from sickrage.helper.exceptions import AuthException
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
 
 class HDBitsProvider(TorrentProvider):

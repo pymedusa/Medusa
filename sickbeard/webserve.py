@@ -23,6 +23,7 @@
 import ast
 import datetime
 import io
+import json
 import os
 import re
 import traceback
@@ -101,13 +102,6 @@ from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
 from sickbeard.tv import TVEpisode
 from sickbeard.classes import SearchResult
-
-
-# Conditional imports
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
 
 mako_lookup = None

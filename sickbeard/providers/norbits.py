@@ -19,6 +19,9 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+
+import json
+
 from requests.compat import urlencode
 
 from sickbeard import logger, tvcache
@@ -26,11 +29,6 @@ from sickbeard import logger, tvcache
 from sickrage.helper.exceptions import AuthException
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
 
 class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes

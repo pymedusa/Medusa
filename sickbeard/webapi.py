@@ -25,6 +25,7 @@
 
 from datetime import datetime, date
 import io
+import json
 import os
 import re
 import time
@@ -66,13 +67,6 @@ from sickrage.show.History import History
 from sickrage.show.Show import Show
 from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
-
-# Conditional imports
-try:
-    import json
-except ImportError:
-    # pylint: disable=import-error
-    import simplejson as json
 
 
 indexer_ids = ["indexerid", "tvdbid"]
