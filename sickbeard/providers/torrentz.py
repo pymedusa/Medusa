@@ -31,6 +31,9 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+    """
+    Provider class
+    """
 
     def __init__(self):
 
@@ -61,10 +64,25 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
     @staticmethod
     def _split_description(description):
+        """
+        Converts a html text into: torrent_size, seeders, leechers
+        """
         match = re.findall(r'[0-9]+', description)
         return int(match[0]) * 1024 ** 2, int(match[1]), int(match[2])
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
+        """
+        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
+        :param search_strings: Search to perform
+        :param age: Not used for this provider
+        :param ep_obj: Not used for this provider
+
+        :return: A list of items found
+        """
+
+        _ = ep_obj
+        _ = age
+
         results = []
 
         for mode in search_strings:
@@ -125,7 +143,8 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                             result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': t_hash}
                             items.append(result)
                 except StandardError:
-                    logger.log(u"Failed parsing provider. Traceback: %r" % traceback.format_exc(), logger.ERROR)
+                    logger.log(u"Failed parsing provider. Traceback: {0!r}".format(traceback.format_exc()), logger.ERROR)
+                    continue
 
             # For each search mode sort all the items by seeders if available
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)

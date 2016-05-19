@@ -26,6 +26,7 @@ import time
 import validators
 import sickbeard
 import datetime
+import traceback
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -272,8 +273,13 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
         """
         Searches indexer using the params in search_strings, either for latest releases, or a string/id search
-        Returns: list of results in dict form
+        :param search_strings: Search to perform
+        :param age: Not used for this provider
+        :param ep_obj: episode object
+
+        :return: A list of items found
         """
+
         results = []
         if not self._check_auth():
             return results
@@ -385,7 +391,8 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                             result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
                             items.append(result)
                         except StandardError:
-                            raise
+                            logger.log(u"Failed parsing provider. Traceback: {0!r}".format(traceback.format_exc()), logger.ERROR)
+                            continue
 
                 # Since we arent using the search string,
                 # break out of the search string loop

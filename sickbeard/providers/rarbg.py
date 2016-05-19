@@ -19,6 +19,7 @@
 from __future__ import unicode_literals
 
 import datetime
+import traceback
 import time
 import sickbeard
 
@@ -72,6 +73,15 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         return self.token is not None
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals, too-many-statements
+        """
+        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
+        :param search_strings: Search to perform
+        :param age: Not used for this provider
+        :param ep_obj: episode object
+
+        :return: A list of items found
+        """
+
         results = []
         if not self.login():
             return results
@@ -179,6 +189,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                         result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
                         items.append(result)
                     except StandardError:
+                        logger.log(u"Failed parsing provider. Traceback: {0!r}".format(traceback.format_exc()), logger.ERROR)
                         continue
 
             # For each search mode sort all the items by seeders

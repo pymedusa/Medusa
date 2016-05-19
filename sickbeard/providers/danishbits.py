@@ -19,6 +19,7 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import traceback
 
 from requests.utils import dict_from_cookiejar
 from dateutil import parser
@@ -84,6 +85,15 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return True
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
+        :param search_strings: Search to perform
+        :param age: Not used for this provider
+        :param ep_obj: Not used for this provider
+
+        :return: A list of items found
+        """
+
         results = []
         if not self.login():
             return results
@@ -183,6 +193,7 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                             items.append(item)
                         except StandardError:
+                            logger.log(u"Failed parsing provider. Traceback: {0!r}".format(traceback.format_exc()), logger.ERROR)
                             continue
 
             # For each search mode sort all the items by seeders if available

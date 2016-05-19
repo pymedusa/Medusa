@@ -22,6 +22,7 @@
 import re
 import sickbeard
 import datetime
+import traceback
 
 from dateutil import parser
 
@@ -56,6 +57,15 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.search_params = {'cid': 8}
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
+        :param search_strings: Search to perform
+        :param age: Not used for this provider
+        :param ep_obj: Not used for this provider
+
+        :return: A list of items found
+        """
+
         results = []
 
         for mode in search_strings:
@@ -107,7 +117,8 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                 info_hash = item.find('info_hash').get_text(strip=True)
                                 download_url = "magnet:?xt=urn:btih:" + info_hash + "&dn=" + title + self._custom_trackers
 
-                        except (AttributeError, TypeError, KeyError, ValueError):
+                        except StandardError:
+                            logger.log(u"Failed parsing provider. Traceback: {0!r}".format(traceback.format_exc()), logger.ERROR)
                             continue
 
                         if not all([title, download_url]):

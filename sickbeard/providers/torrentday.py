@@ -102,12 +102,21 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             logger.log(u"Unable to obtain cookie", logger.WARNING)
             return False
 
-    def search(self, search_params, age=0, ep_obj=None):  # pylint: disable=too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
+        """
+        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
+        :param search_strings: Search to perform
+        :param age: Not used for this provider
+        :param ep_obj: Not used for this provider
+
+        :return: A list of items found
+        """
+
         results = []
         if not self.login():
             return results
 
-        for mode in search_params:
+        for mode in search_strings:
             items = []
 
             if mode == 'RSS':
@@ -115,7 +124,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 logger.log("Provider last RSS pubdate: {}".format(last_pubdate), logger.DEBUG)
 
             logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
-            for search_string in search_params[mode]:
+            for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
                     logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
