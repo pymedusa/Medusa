@@ -23,7 +23,7 @@ import time
 import datetime
 import requests
 import threading
-
+import traceback
 import sickbeard
 from sickbeard import db, helpers, logger
 from sickbeard.indexers.indexer_config import INDEXER_TVDB
@@ -200,11 +200,12 @@ def retrieve_exceptions():  # pylint:disable=too-many-locals, too-many-branches
         try:
             jdata = helpers.getURL(loc, session=sickbeard.indexerApi(INDEXER_TVDB).session, returns='json')
         except Exception:
+            logger.log(traceback.format_exc(), logger.ERROR)
             jdata = None
 
         if not jdata:
             # When jdata is None, trouble connecting to github, or reading file failed
-            logger.log(u"Check scene exceptions update failed. Unable to update from {}".format(loc), logger.DEBUG)
+            logger.log(u"Check scene exceptions update failed. Unable to update from {}".format(loc), logger.WARNING)
         else:
             for indexer in sickbeard.indexerApi().indexers:
                 try:
@@ -272,9 +273,9 @@ def update_scene_exceptions(indexer_id, scene_exceptions, season=-1):
     # A change has been made to the scene exception list. Let's clear the cache, to make this visible
     if indexer_id in exceptionsCache:
         exceptionsCache[indexer_id] = {}
-        exceptionsCache[indexer_id][season] = scene_exceptions
+        exceptionsCache[indexer_id][season] = [se.decode('utf-8') for se in scene_exceptions]
 
-    for cur_exception in scene_exceptions:
+    for cur_exception in [se.decode('utf-8') for se in scene_exceptions]:
         cache_db_con.action("INSERT INTO scene_exceptions (indexer_id, show_name, season) VALUES (?,?,?)",
                             [indexer_id, cur_exception, season])
 

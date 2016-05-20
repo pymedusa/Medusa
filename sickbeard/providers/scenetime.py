@@ -19,7 +19,8 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import re
-from urllib import quote
+
+from requests.compat import quote
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
@@ -104,11 +105,11 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                     # Scenetime apparently uses different number of cells in #torrenttable based
                     # on who you are. This works around that by extracting labels from the first
                     # <tr> and using their index to find the correct download/seeders/leechers td.
-                    labels = [label.get_text(strip=True) for label in torrent_rows[0].find_all('td')]
+                    labels = [label.get_text(strip=True) for label in torrent_rows[0]('td')]
 
                     for result in torrent_rows[1:]:
                         try:
-                            cells = result.find_all('td')
+                            cells = result('td')
 
                             link = cells[labels.index('Name')].find('a')
                             torrent_id = link['href'].replace('details.php?id=', '').split("&")[0]
@@ -129,13 +130,13 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             continue
 
                         # Filter unseeded torrent
-                        if seeders < self.minseed or leechers < self.minleech:
+                        if seeders < min(self.minseed, 1):
                             if mode != 'RSS':
-                                logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format
-                                           (title, seeders, leechers), logger.DEBUG)
+                                logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                           (title, seeders), logger.DEBUG)
                             continue
 
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                         if mode != 'RSS':
                             logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 

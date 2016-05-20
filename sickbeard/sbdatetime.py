@@ -119,7 +119,7 @@ class sbdatetime(datetime.datetime):
     @static_or_instance
     def sbftime(self, dt=None, show_seconds=False, t_preset=None):
         """
-        Display time in SR format
+        Display time in Medusa format
         TODO: Rename this to srftime
 
         :param dt: datetime object
@@ -173,7 +173,7 @@ class sbdatetime(datetime.datetime):
     @static_or_instance
     def sbfdate(self, dt=None, d_preset=None):
         """
-        Display date in SR format
+        Display date in Medusa format
         TODO: Rename this to srfdate
 
         :param dt: datetime object
@@ -212,7 +212,7 @@ class sbdatetime(datetime.datetime):
     @static_or_instance
     def sbfdatetime(self, dt=None, show_seconds=False, d_preset=None, t_preset=None):
         """
-        Show datetime in SR format
+        Show datetime in Medusa format
         TODO: Rename this to srfdatetime
 
         :param dt: datetime object

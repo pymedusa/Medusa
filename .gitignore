@@ -1,4 +1,4 @@
-#  SR User Related   #
+#  Medusa User Related   #
 ######################
 /cache/
 /Logs/
@@ -9,11 +9,12 @@ cache.db*
 config.ini*
 sickbeard.db*
 failed.db*
+*.db
 autoProcessTV.cfg
 server.crt
 server.key
 
-#  SR Test Related   #
+#  Medusa Test Related   #
 ######################
 /tests/Logs/
 /tests/cache/
@@ -71,3 +72,7 @@ lib/unrar2/UnRAR.exe
 .tox/
 .coverage
 htmlcov
+
+# Contrib #
+######################
+contrib/

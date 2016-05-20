@@ -50,12 +50,13 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         self.bt_cache_urls = [
             'http://torcache.net/torrent/{torrent_hash}.torrent',
             'http://thetorrent.org/torrent/{torrent_hash}.torrent',
-            'http://btdig.com/torrent/{torrent_hash}.torrent',
+            'http://itorrents.org/torrent/{torrent_hash}.torrent',
+            # 'http://btdig.com/torrent/{torrent_hash}.torrent',
             # 'http://torrage.com/torrent/{torrent_hash}.torrent',
-            # 'http://itorrents.org/torrent/{torrent_hash}.torrent',
         ]
         self.cache = TVCache(self)
         self.enable_backlog = False
+        self.enable_manualsearch = False
         self.enable_daily = False
         self.enabled = False
         self.headers = {'User-Agent': UA_POOL.random}
@@ -101,7 +102,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                 logger.log(u'Could not download %s' % url, logger.WARNING)
                 remove_file_failed(filename)
 
-        if len(urls):
+        if urls:
             logger.log(u'Failed to download any results', logger.WARNING)
 
         return False
@@ -109,10 +110,9 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
     def find_propers(self, search_date=None):
         results = self.cache.listPropers(search_date)
 
-        return [Proper(x['name'], x['url'], datetime.fromtimestamp(x['time']), self.show) for x in results]
+        return [Proper(x['name'], x['url'], datetime.fromtimestamp(x['time']), self.show, x['seeders'], x['leechers'], x['size'], x['pubdate'], x['hash']) for x in results]
 
-    def find_search_results(self, show, episodes, search_mode,  # pylint: disable=too-many-branches,too-many-arguments,too-many-locals,too-many-statements
-                            manual_search=False, download_current_quality=False):
+    def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False, manual_search=False, manual_search_type='episode'):  # pylint: disable=too-many-branches,too-many-arguments,too-many-locals,too-many-statements
         self._check_auth()
         self.show = show
 
@@ -121,28 +121,31 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         searched_scene_season = None
 
         for episode in episodes:
-            cache_result = self.cache.searchCache(episode, manualSearch=manual_search,
-                                                  downCurQuality=download_current_quality)
-            if cache_result:
-                if episode.episode not in results:
-                    results[episode.episode] = cache_result
-                else:
-                    results[episode.episode].extend(cache_result)
+            if not manual_search:
+                cache_result = self.cache.searchCache(episode, forced_search=forced_search,
+                                                      downCurQuality=download_current_quality)
+                if cache_result:
+                    if episode.episode not in results:
+                        results[episode.episode] = cache_result
+                    else:
+                        results[episode.episode].extend(cache_result)
 
-                continue
+                    continue
 
-            if len(episodes) > 1 and search_mode == 'sponly' and searched_scene_season == episode.scene_season:
+            # NOTE: searched_scene_season is always None?
+            if (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly' and searched_scene_season == episode.scene_season:
                 continue
 
             search_strings = []
             searched_scene_season = episode.scene_season
 
-            if len(episodes) > 1 and search_mode == 'sponly':
+            if (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly':
                 search_strings = self._get_season_search_strings(episode)
             elif search_mode == 'eponly':
                 search_strings = self._get_episode_search_strings(episode)
 
             for search_string in search_strings:
+                # Find results from the provider
                 items_list += self.search(search_string, ep_obj=episode)
 
         if len(results) == len(episodes):
@@ -169,6 +172,10 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         for item in items_list:
             (title, url) = self._get_title_and_url(item)
+            (seeders, leechers) = self._get_result_info(item)
+            size = self._get_size(item)
+            pubdate = self._get_pubdate(item)
+            hash = self._get_hash(item)
 
             try:
                 parse_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]).parse(title)
@@ -182,78 +189,82 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             version = parse_result.version
             add_cache_entry = False
 
-            if not (show_object.air_by_date or show_object.sports):
-                if search_mode == 'sponly':
-                    if parse_result.episode_numbers:
-                        logger.log(
-                            u'This is supposed to be a season pack search but the result %s is not a valid season pack, skipping it' % title,
-                            logger.DEBUG
-                        )
-                        add_cache_entry = True
-                    elif not [ep for ep in episodes if parse_result.season_number == (ep.season, ep.scene_season)[ep.show.is_scene]]:
-                        logger.log(
-                            u'This season result %s is for a season we are not searching for, skipping it' % title,
-                            logger.DEBUG
-                        )
-                        add_cache_entry = True
+            if not manual_search:
+                if not (show_object.air_by_date or show_object.sports):
+                    if search_mode == 'sponly':
+                        if parse_result.episode_numbers:
+                            logger.log(
+                                u'This is supposed to be a season pack search but the result %s is not a valid season pack, skipping it' % title,
+                                logger.DEBUG
+                            )
+                            add_cache_entry = True
+                        elif not [ep for ep in episodes if parse_result.season_number == (ep.season, ep.scene_season)[ep.show.is_scene]]:
+                            logger.log(
+                                u'This season result %s is for a season we are not searching for, skipping it' % title,
+                                logger.DEBUG
+                            )
+                            add_cache_entry = True
 
+                    else:
+                        if not all([
+                            # pylint: disable=bad-continuation
+                            parse_result.season_number is not None,
+                            parse_result.episode_numbers,
+                            [ep for ep in episodes if (ep.season, ep.scene_season)[ep.show.is_scene] ==
+                            parse_result.season_number and (ep.episode, ep.scene_episode)[ep.show.is_scene] in parse_result.episode_numbers]
+                        ]):
+
+                            logger.log(
+                                u'The result %s doesn\'t seem to match an episode that we are currently trying to snatch, skipping it' % title,
+                                logger.DEBUG)
+                            add_cache_entry = True
+
+                    if not add_cache_entry:
+                        actual_season = parse_result.season_number
+                        actual_episodes = parse_result.episode_numbers
                 else:
-                    if not all([
-                        # pylint: disable=bad-continuation
-                        parse_result.season_number is not None,
-                        parse_result.episode_numbers,
-                        [ep for ep in episodes if (ep.season, ep.scene_season)[ep.show.is_scene] ==
-                         parse_result.season_number and (ep.episode, ep.scene_episode)[ep.show.is_scene] in parse_result.episode_numbers]
-                    ]):
+                    same_day_special = False
 
+                    if not parse_result.is_air_by_date:
                         logger.log(
-                            u'The result %s doesn\'t seem to match an episode that we are currently trying to snatch, skipping it' % title,
+                            u'This is supposed to be a date search but the result %s didn\'t parse as one, skipping it' % title,
                             logger.DEBUG)
                         add_cache_entry = True
+                    else:
+                        air_date = parse_result.air_date.toordinal()
+                        db = DBConnection()
+                        sql_results = db.select(
+                            'SELECT season, episode FROM tv_episodes WHERE showid = ? AND airdate = ?',
+                            [show_object.indexerid, air_date]
+                        )
 
-                if not add_cache_entry:
-                    actual_season = parse_result.season_number
-                    actual_episodes = parse_result.episode_numbers
+                        if len(sql_results) == 2:
+                            if int(sql_results[0]['season']) == 0 and int(sql_results[1]['season']) != 0:
+                                actual_season = int(sql_results[1]['season'])
+                                actual_episodes = [int(sql_results[1]['episode'])]
+                                same_day_special = True
+                            elif int(sql_results[1]['season']) == 0 and int(sql_results[0]['season']) != 0:
+                                actual_season = int(sql_results[0]['season'])
+                                actual_episodes = [int(sql_results[0]['episode'])]
+                                same_day_special = True
+                        elif len(sql_results) != 1:
+                            logger.log(
+                                u'Tried to look up the date for the episode %s but the database didn\'t give proper results, skipping it' % title,
+                                logger.WARNING)
+                            add_cache_entry = True
+
+                    if not add_cache_entry and not same_day_special:
+                        actual_season = int(sql_results[0]['season'])
+                        actual_episodes = [int(sql_results[0]['episode'])]
             else:
-                same_day_special = False
-
-                if not parse_result.is_air_by_date:
-                    logger.log(
-                        u'This is supposed to be a date search but the result %s didn\'t parse as one, skipping it' % title,
-                        logger.DEBUG)
-                    add_cache_entry = True
-                else:
-                    air_date = parse_result.air_date.toordinal()
-                    db = DBConnection()
-                    sql_results = db.select(
-                        'SELECT season, episode FROM tv_episodes WHERE showid = ? AND airdate = ?',
-                        [show_object.indexerid, air_date]
-                    )
-
-                    if len(sql_results) == 2:
-                        if int(sql_results[0]['season']) == 0 and int(sql_results[1]['season']) != 0:
-                            actual_season = int(sql_results[1]['season'])
-                            actual_episodes = [int(sql_results[1]['episode'])]
-                            same_day_special = True
-                        elif int(sql_results[1]['season']) == 0 and int(sql_results[0]['season']) != 0:
-                            actual_season = int(sql_results[0]['season'])
-                            actual_episodes = [int(sql_results[0]['episode'])]
-                            same_day_special = True
-                    elif len(sql_results) != 1:
-                        logger.log(
-                            u'Tried to look up the date for the episode %s but the database didn\'t give proper results, skipping it' % title,
-                            logger.WARNING)
-                        add_cache_entry = True
-
-                if not add_cache_entry and not same_day_special:
-                    actual_season = int(sql_results[0]['season'])
-                    actual_episodes = [int(sql_results[0]['episode'])]
+                actual_season = parse_result.season_number
+                actual_episodes = parse_result.episode_numbers
 
             if add_cache_entry:
                 logger.log(u'Adding item from search to cache: %s' % title, logger.DEBUG)
                 # pylint: disable=protected-access
                 # Access to a protected member of a client class
-                ci = self.cache._addCacheEntry(title, url, parse_result=parse_result)
+                ci = self.cache._addCacheEntry(title, url, seeders, leechers, size, pubdate, hash, parse_result=parse_result)
 
                 if ci is not None:
                     cl.append(ci)
@@ -262,15 +273,16 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
             episode_wanted = True
 
-            for episode_number in actual_episodes:
-                if not show_object.wantEpisode(actual_season, episode_number, quality, manual_search,
-                                               download_current_quality):
-                    episode_wanted = False
-                    break
+            if not manual_search:
+                for episode_number in actual_episodes:
+                    if not show_object.wantEpisode(actual_season, episode_number, quality, forced_search,
+                                                   download_current_quality):
+                        episode_wanted = False
+                        break
 
-            if not episode_wanted:
-                logger.log(u'Ignoring result %s.' % (title), logger.DEBUG)
-                continue
+                if not episode_wanted:
+                    logger.log(u'Ignoring result %s.' % (title), logger.DEBUG)
+                    continue
 
             logger.log(u'Found result %s at %s' % (title, url), logger.DEBUG)
 
@@ -281,30 +293,34 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             result = self.get_result(episode_object)
             result.show = show_object
             result.url = url
+            result.seeders = seeders
+            result.leechers = leechers
             result.name = title
             result.quality = quality
             result.release_group = release_group
             result.version = version
             result.content = None
             result.size = self._get_size(item)
+            result.pubdate = self._get_pubdate(item)
+            result.hash = self._get_hash(item)
 
-            if len(episode_object) == 1:
+            if not episode_object:
+                episode_number = SEASON_RESULT
+                logger.log(u'Separating full season result to check for later', logger.DEBUG)
+            elif len(episode_object) == 1:
                 episode_number = episode_object[0].episode
                 logger.log(u'Single episode result.', logger.DEBUG)
-            elif len(episode_object) > 1:
+            else:
                 episode_number = MULTI_EP_RESULT
                 logger.log(u'Separating multi-episode result to check for later - result contains episodes: %s' % str(
                     parse_result.episode_numbers), logger.DEBUG)
-            elif len(episode_object) == 0:
-                episode_number = SEASON_RESULT
-                logger.log(u'Separating full season result to check for later', logger.DEBUG)
 
             if episode_number not in results:
                 results[episode_number] = [result]
             else:
                 results[episode_number].append(result)
 
-        if len(cl) > 0:
+        if cl:
             # pylint: disable=protected-access
             # Access to a protected member of a client class
             db = self.cache._getDB()
@@ -429,6 +445,23 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
     def _get_storage_dir(self):  # pylint: disable=no-self-use
         return ''
+
+    def _get_result_info(self, item):  # pylint: disable=no-self-use
+        return -1, -1
+
+    def _get_pubdate(self, item):  # pylint: disable=unused-argument,no-self-use
+        """
+        Return publish date of the item. If provider doesnt
+        have _get_pubdate function this will be used
+        """
+        return None
+
+    def _get_hash(self, item):  # pylint: disable=unused-argument,no-self-use
+        """
+        Return hash of the item. If provider doesnt
+        have _get_hash function this will be used
+        """
+        return None
 
     def _get_title_and_url(self, item):  # pylint: disable=no-self-use
         if not item:

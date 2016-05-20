@@ -19,10 +19,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import httplib
-import urllib
-import urllib2
 import time
+
+from requests.compat import urlencode
+from six.moves.urllib.error import HTTPError
+from six.moves.http_client import HTTPSConnection
 
 import sickbeard
 from sickbeard import logger
@@ -93,11 +94,11 @@ class Notifier(object):
             if sickbeard.PUSHOVER_DEVICE:
                 args["device"] = sickbeard.PUSHOVER_DEVICE
 
-            conn = httplib.HTTPSConnection("api.pushover.net:443")
+            conn = HTTPSConnection("api.pushover.net:443")
             conn.request("POST", "/1/messages.json",
-                         urllib.urlencode(args), {"Content-type": "application/x-www-form-urlencoded"})
+                         urlencode(args), {"Content-type": "application/x-www-form-urlencoded"})
 
-        except urllib2.HTTPError as e:
+        except HTTPError as e:
             # if we get an error back that doesn't have an error code then who knows what's really happening
             if not hasattr(e, 'code'):
                 logger.log(u"Pushover notification failed." + ex(e), logger.ERROR)
@@ -161,7 +162,7 @@ class Notifier(object):
 
     def _notifyPushover(self, title, message, sound=None, userKey=None, apiKey=None, force=False):
         """
-        Sends a pushover notification based on the provided info or SR config
+        Sends a pushover notification based on the provided info or Medusa config
 
         title: The title of the notification to send
         message: The message string to send

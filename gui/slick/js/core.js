@@ -69,12 +69,12 @@ var SICKRAGE = {
 
             $("a.shutdown").confirm({
                 title: "Shutdown",
-                text: "Are you sure you want to shutdown SickRage?"
+                text: "Are you sure you want to shutdown Medusa?"
             });
 
             $("a.restart").confirm({
                 title: "Restart",
-                text: "Are you sure you want to restart SickRage?"
+                text: "Are you sure you want to restart Medusa?"
             });
 
             $("a.removeshow").confirm({
@@ -97,7 +97,7 @@ var SICKRAGE = {
 
             $('a.submiterrors').confirm({
                 title: 'Submit Errors',
-                text: 'Are you sure you want to submit these errors ?<br><br><span class="red-text">Make sure SickRage is updated and trigger<br> this error with debug enabled before submitting</span>'
+                text: 'Are you sure you want to submit these errors ?<br><br><span class="red-text">Make sure Medusa is updated and trigger<br> this error with debug enabled before submitting</span>'
             });
 
             $("#config-components").tabs({
@@ -2453,37 +2453,38 @@ var SICKRAGE = {
             function setSeasonSceneException(data) {
                 var xemImg;
 
-                for (var season in data.seasonExceptions) {
-                    if (data.seasonExceptions.hasOwnProperty(season)) {
-                        // Check if it is a season name exception, we don't handle the show name exceptions here
-                        if (season >= 1 && Object.keys(data.xemNumbering).length > 0) {
-                            // Let's handle this as a xem season numbered exception
-                            for (var indexerSeason in data.xemNumbering) {
-                                if (data.xemNumbering.hasOwnProperty(indexerSeason) &&
-                                        data.seasonExceptions[data.xemNumbering[indexerSeason]]) {
-                                    xemImg = $('<img>', {
-                                        'id': 'xem-exception-season-' + indexerSeason,
-                                        'alt': '[xem]',
-                                        'height': '16',
-                                        'width': '16',
-                                        'src': srRoot + '/images/xem.png',
-                                        'title': data.seasonExceptions[data.xemNumbering[indexerSeason]].join(', '),
-                                    }).appendTo('[data-season=' + indexerSeason + ']');
-                                }
+                $.each(data.seasonExceptions, function(season, nameExceptions) {
+                var foundInXem = false;
+                // Check if it is a season name exception, we don't handle the show name exceptions here
+                    if (season >= 0) {
+                        // Loop through the xem mapping, and check if there is a xem_season, that needs to show the season name exception
+                        $.each(data.xemNumbering, function(indexerSeason, xemSeason) {
+                            if (xemSeason === parseInt(season)) {
+                                foundInXem = true;
+                                xemImg = $('<img>', {
+                                    'id': 'xem-exception-season-' + xemSeason,
+                                    'alt': '[xem]',
+                                    'height': '16',
+                                    'width': '16',
+                                    'src': srRoot + '/images/xem.png',
+                                    'title': nameExceptions.join(', '),
+                                }).appendTo('[data-season=' + indexerSeason + ']');
                             }
-                        } else {
-                            // This is not a xem season exception, let's set the exceptions as a medusa exception
+                        });
+
+                        if (!foundInXem) {
+                        // This is not a xem season exception, let's set the exceptions as a medusa exception
                             xemImg = $('<img>', {
                                 'id': 'xem-exception-season-' + season,
                                 'alt': '[medusa]',
                                 'height': '16',
                                 'width': '16',
                                 'src': srRoot + '/images/ico/favicon-16.png',
-                                'title': data.seasonExceptions[season].join(', '),
+                                'title': nameExceptions.join(', '),
                             }).appendTo('[data-season=' + season + ']');
                         }
                     }
-                }
+                });
             }
 
             // TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
@@ -2493,6 +2494,175 @@ var SICKRAGE = {
                 'indexer_id': $('input#showID').val()
             }, function(data) {
                 setSeasonSceneException(data);
+            });
+        },
+        snatchSelection: function() {
+            var spinner = $('#searchNotification');
+            var updateSpinner = function(spinner, message, showSpinner) {
+                if (showSpinner) {
+                    $(spinner).html('<img id="searchingAnim" src="' + srRoot + '/images/loading32' + themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message);
+                } else {
+                    $(spinner).empty().html(message);
+                }
+            };
+
+            // Check the previous status of the history table, for hidden or shown, through the data attribute
+            // data-history-toggle-hidden
+            function toggleHistoryTable() {
+                // Get previous state which was saved on the wrapper
+                var showOrHide = $('#wrapper').attr('data-history-toggle');
+                $('#historydata').collapse(showOrHide);
+            }
+
+            $.fn.loadContainer = function(path, loadingTxt, errorTxt, callback) {
+                updateSpinner(spinner, loadingTxt);
+                $(this).load(srRoot + path + ' #container', function(response, status) {
+                    if (status === "error") {
+                        updateSpinner(spinner, errorTxt, false);
+                    }
+                    if (typeof callback !== 'undefined') {
+                        callback();
+                    }
+                });
+                
+            };
+
+            // Click event for the download button for snatching a result
+            $('body').on('click', '.epManualSearch', function(event){
+                event.preventDefault();
+                var link = this;
+                $(link).children('img').attr('src', srRoot + '/images/loading16.gif');
+                $.getJSON(this.href,
+                    function (data) {
+                    if (data.result === "success") {
+                        $(link).children('img').attr('src', srRoot + '/images/save.png');
+                    } else {
+                        $(link).children('img').attr('src', srRoot + '/images/no16.png');
+                    }
+                });
+            });
+
+            // TODO: OMG need to migrate the imdb stars generating to a directive for the snatchSelection page
+            $.fn.generateStars = function() {
+                return this.each(function(i,e){
+                    $(e).html($('<span/>').width($(e).text()*12));
+                });
+            };
+
+            $('.imdbstars').generateStars();
+
+            function checkCacheUpdates(repeat) {
+                var self = this;
+                var pollInterval = 5000;
+                repeat = repeat || true;
+                
+                var show = $('meta[data-last-prov-updates]').attr('data-show');
+                var season = $('meta[data-last-prov-updates]').attr('data-season');
+                var episode = $('meta[data-last-prov-updates]').attr('data-episode');
+                var data = $('meta[data-last-prov-updates]').data('last-prov-updates');
+                var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
+
+                if (!$.isNumeric(show) || !$.isNumeric(season) || !$.isNumeric(episode)) {
+                    setTimeout(function() { checkCacheUpdates(true); }, 200);
+                }
+
+                var url = srRoot + '/home/manualSearchCheckCache?show='+show+'&season='+season+'&episode='+episode+'&manual_search_type='+manualSearchType;
+
+                self.refreshResults = function() {
+                    $('#wrapper').loadContainer(
+                            '/home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&manual_search_type=' + manualSearchType + '&perform_search=0',
+                            'Loading new search results...',
+                            'Time out, refresh page to try again',
+                            toggleHistoryTable // This is a callback function
+                    );
+                };
+
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    data: data,
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.result === 'refresh') {
+                            self.refreshResults();
+                            updateSpinner(spinner, 'Refreshed results...', true);
+                        }
+                        if (data.result === 'searching') {
+                            // ep is searched, you will get a results any minute now
+                            pollInterval = 5000;
+                            $('.manualSearchButton').attr("disabled", true);
+                            updateSpinner(spinner, 'The episode is being searched, please wait......', true);
+                        }
+                        if (data.result === 'queued') {
+                            // ep is queued, this might take some time to get results
+                            pollInterval = 7000;
+                            $('.manualSearchButton').attr("disabled", true);
+                            updateSpinner(spinner, 'The episode has been queued, because another search is taking place. please wait..', true);
+                        }
+                        if (data.result === 'finished') {
+                            // ep search is finished
+                            updateSpinner(spinner, 'Search finished', false);
+                            $('.manualSearchButton').removeAttr("disabled");
+                            repeat = false;
+                        }
+                        if (data.result === 'error') {
+                            // ep search is finished
+                            console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
+                            $('.manualSearchButton').removeAttr("disabled");
+                            repeat = true;
+                        }
+                    },
+                    error: function () {
+                        //repeat = false;
+                        console.log('Error occurred!!');
+                        $('.manualSearchButton').removeAttr("disabled");
+                    },
+                    complete: function () {
+                        if (repeat) {
+                            setTimeout(checkCacheUpdates, pollInterval);
+                        }
+                    },
+                    timeout: 15000 // timeout after 15s
+                });
+            }
+
+            setTimeout(checkCacheUpdates, 2000);
+
+            // Click event for the reload results and force search buttons
+            $('body').on('click', '.manualSearchButton', function(event){
+                event.preventDefault();
+                $('.manualSearchButton').attr("disabled", true);
+                var show = $('meta[data-last-prov-updates]').attr('data-show');
+                var season = $('meta[data-last-prov-updates]').attr('data-season');
+                var episode = $('meta[data-last-prov-updates]').attr('data-episode');
+                var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
+                var forceSearch = $(this).attr('data-force-search');
+
+                if ($.isNumeric(show) && $.isNumeric(season) && $.isNumeric(episode)) {
+                    updateSpinner(spinner, 'Started a forced manual search...', true);
+                    $.getJSON(srRoot + '/home/snatchSelection',{
+                          'show': show,
+                          'season': season,
+                          'episode': episode,
+                          'manual_search_type' : manualSearchType,
+                          'perform_search': forceSearch,
+                    });
+                    // Force the search, but give the checkCacheUpdates the time to start up a search thread
+                    setTimeout(function() {checkCacheUpdates(true);}, 2000);
+                }
+            });
+
+            // Moved and rewritten this from displayShow. This changes the button when clicked for collapsing/expanding the
+            // "Show History" button to show or hide the snatch/download/failed history for a manual searched episode or pack.
+            $(function() {
+                $('body').on('hide.bs.collapse', '.collapse.toggle', function () {
+                    $('#showhistory').text('Show History');
+                    $('#wrapper').attr('data-history-toggle', 'hide');
+                });
+                $('body').on('show.bs.collapse', '.collapse.toggle' , function () {
+                    $('#showhistory').text('Hide History');
+                    $('#wrapper').attr('data-history-toggle', 'show');
+                });
             });
         },
         postProcess: function() {

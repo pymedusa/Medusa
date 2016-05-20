@@ -1,7 +1,6 @@
 # coding=utf-8
 # Author: Gonçalo M. (aka duramato/supergonkas) <supergonkas@gmail.com>
 #
-
 #
 # This file is part of SickRage.
 #
@@ -91,47 +90,29 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
 
                 results = []
                 for i in torrents:
-                    title = torrents[i]["title"]
-                    seeders = try_int(torrents[i]["seeds"], 1)
-                    leechers = try_int(torrents[i]["leechs"], 0)
-                    if seeders < self.minseed or leechers < self.minleech:
+                    title = torrents[i].get("title")
+                    seeders = try_int(torrents[i].get("seeds"), 1)
+                    leechers = try_int(torrents[i].get("leechs"), 0)
+
+                    # Filter unseeded torrent
+                    if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
-                            logger.log(u"Torrent doesn't meet minimum seeds & leechers not selecting : %s" % title, logger.DEBUG)
+                            logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
                         continue
 
-                    t_hash = torrents[i]["torrent_hash"]
-                    torrent_size = torrents[i]["torrent_size"]
+                    t_hash = torrents[i].get("torrent_hash")
+                    torrent_size = torrents[i].get("torrent_size")
                     size = convert_size(torrent_size) or -1
-
-                    try:
-                        assert seeders < 10
-                        assert mode != 'RSS'
-                        logger.log(u"Torrent has less than 10 seeds getting dyn trackers: " + title, logger.DEBUG)
-
-                        if self.custom_url:
-                            if not validators.url(self.custom_url):
-                                logger.log("Invalid custom url set, please check your settings", logger.WARNING)
-                                return results
-                            trackers_url = self.custom_url
-                        else:
-                            trackers_url = self.url
-
-                        trackers_url = urljoin(trackers_url, t_hash)
-                        trackers_url = urljoin(trackers_url, "/trackers_json")
-                        jdata = self.get_url(trackers_url, returns='json')
-
-                        assert jdata != "maintenance"
-                        download_url = "magnet:?xt=urn:btih:" + t_hash + "&dn=" + title + "".join(["&tr=" + s for s in jdata])
-                    except (Exception, AssertionError):
-                        download_url = "magnet:?xt=urn:btih:" + t_hash + "&dn=" + title + self._custom_trackers
+                    download_url = torrents[i].get("magnet") + self._custom_trackers
+                    pubdate = '' #TBA
 
                     if not all([title, download_url]):
                         continue
 
-                    item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': t_hash}
+                    item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': t_hash}
 
                     if mode != 'RSS':
-                        logger.log(u"Found result: {} with {} seeders and {} leechers".format
+                        logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format
                                    (title, seeders, leechers), logger.DEBUG)
 
                     items.append(item)

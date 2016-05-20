@@ -1103,7 +1103,7 @@
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-nma" alt="" title="NMA"></span>
-                        <h3><a href="${anon_url('http://nma.usk.bz')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Notify My Android</a></h3>
+                        <h3><a href="${anon_url('http://www.notifymyandroid.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Notify My Android</a></h3>
                         <p>Notify My Android is a Prowl-like Android App and API that offers an easy way to send notifications from your application directly to your Android device.</p>
                     </div>
                     <fieldset class="component-group-list">
@@ -1604,7 +1604,7 @@
                                     <span class="component-desc">PIN code to authorize Medusa to access Trakt on your behalf.</span>
                                 </p>
                             </div>
-                            <input type="button" class="btn hide" value="Authorize SickRage" id="authTrakt" />
+                            <input type="button" class="btn hide" value="Authorize Medusa" id="authTrakt" />
                             <div class="field-pair">
                                 <label for="trakt_timeout">
                                     <span class="component-title">API Timeout</span>

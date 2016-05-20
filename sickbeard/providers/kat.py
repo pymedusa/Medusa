@@ -89,7 +89,7 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                     continue
 
                 with BS4Parser(data, "html5lib") as html:
-                    for item in html.find_all("item"):
+                    for item in html("item"):
                         try:
                             title = item.title.get_text(strip=True)
                             # Use the torcache link kat provides,
@@ -107,10 +107,10 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                             leechers = try_int(item.find("torrent:peers").get_text(strip=True))
 
                             # Filter unseeded torrent
-                            if seeders < self.minseed or leechers < self.minleech:
+                            if seeders < min(self.minseed, 1):
                                 if mode != "RSS":
-                                    logger.log("Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format
-                                               (title, seeders, leechers), logger.DEBUG)
+                                    logger.log("Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                               (title, seeders), logger.DEBUG)
                                 continue
 
                             verified = bool(try_int(item.find("torrent:verified").get_text(strip=True)))
@@ -123,7 +123,7 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                             size = convert_size(torrent_size) or -1
                             info_hash = item.find("torrent:infohash").get_text(strip=True)
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': info_hash}
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': info_hash}
                             if mode != "RSS":
                                 logger.log("Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 

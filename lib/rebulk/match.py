@@ -773,9 +773,9 @@ class Match(object):
         if self.private:
             flags += '+private'
         if self.name:
-            name = "+name=" + self.name
+            name = "+name=%s" % (self.name,)
         if self.tags:
-            tags = "+tags=" + six.text_type(self.tags)
+            tags = "+tags=%s" % (self.tags,)
         if self.defined_at:
-            defined += "@" + six.text_type(self.defined_at)
+            defined += "@%s" % (self.defined_at,)
         return "<%s:%s%s%s%s%s>" % (self.value, self.span, flags, name, tags, defined)

@@ -82,7 +82,7 @@ class GenericQueue(object):
                     self.currentItem = None
 
                 # if there's something in the queue then run it in a thread and take it out of the queue
-                if len(self.queue) > 0:
+                if self.queue:
 
                     # sort by priority
                     def sorter(x, y):

@@ -6,7 +6,7 @@ from hashlib import sha1
 from base64 import b16encode, b32decode
 
 import sickbeard
-from sickbeard import logger, helpers
+from sickbeard import logger, helpers, db
 from bencode import bencode, bdecode
 import requests
 import cookielib
@@ -149,22 +149,18 @@ class GenericClient(object):
             if len(result.hash) == 32:
                 result.hash = b16encode(b32decode(result.hash)).lower()
         else:
-            if not result.content:
-                logger.log(u'Torrent without content', logger.ERROR)
-                raise Exception('Torrent without content')
 
             try:
                 torrent_bdecode = bdecode(result.content)
-            except BTFailure:
-                logger.log(u'Unable to bdecode torrent', logger.ERROR)
-                logger.log(u'Torrent bencoded data: %r' % result.content, logger.DEBUG)
-                raise
-            try:
                 info = torrent_bdecode["info"]
+                result.hash = sha1(bencode(info)).hexdigest()
+            except (BTFailure, KeyError):
+                logger.log(u'Unable to bdecode torrent. Invalid torrent', logger.WARNING)
+                logger.log(u'Deleting cached result if exists: {0}'.format(result.name), logger.DEBUG)
+                cache_db_con = db.DBConnection('cache.db')
+                cache_db_con.action("DELETE FROM [" + result.provider.get_id() + "] WHERE name = ? ", [result.name])
             except Exception:
-                logger.log(u'Unable to find info field in torrent', logger.ERROR)
-                raise
-            result.hash = sha1(bencode(info)).hexdigest()
+                logger.log(traceback.format_exc(), logger.ERROR)
 
         return result
 
@@ -185,6 +181,9 @@ class GenericClient(object):
 
             # lazy fix for now, I'm sure we already do this somewhere else too
             result = self._get_torrent_hash(result)
+            
+            if not result.hash:
+                return False
 
             if result.url.startswith('magnet'):
                 r_code = self._add_torrent_uri(result)

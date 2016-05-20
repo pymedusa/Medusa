@@ -49,7 +49,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from configobj import ConfigObj
 from sickbeard import db, providers
-from sickbeard.databases import cache_db, failed_db, mainDB
+from sickbeard.databases import cache_db, failed_db, main_db
 from sickbeard.providers.newznab import NewznabProvider
 from sickbeard.tv import TVEpisode
 import shutil_custom  # pylint: disable=import-error
@@ -149,7 +149,7 @@ def _dummy_save_config():
 
 # this overrides the SickBeard save_config which gets called during a db upgrade
 # this might be considered a hack
-mainDB.sickbeard.save_config = _dummy_save_config
+main_db.sickbeard.save_config = _dummy_save_config
 
 
 def _fake_specify_ep(self, season, episode):
@@ -249,10 +249,10 @@ def setup_test_db():
     """
     # Upgrade the db to the latest version.
     # upgrading the db
-    db.upgradeDatabase(db.DBConnection(), mainDB.InitialSchema)
+    db.upgradeDatabase(db.DBConnection(), main_db.InitialSchema)
 
     # fix up any db problems
-    db.sanityCheckDatabase(db.DBConnection(), mainDB.MainSanityCheck)
+    db.sanityCheckDatabase(db.DBConnection(), main_db.MainSanityCheck)
 
     # and for cache.db too
     db.upgradeDatabase(db.DBConnection('cache.db'), cache_db.InitialSchema)

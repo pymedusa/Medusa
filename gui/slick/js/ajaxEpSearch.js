@@ -4,7 +4,7 @@ var qualityDownload = false;
 var selectedEpisode = '';
 PNotify.prototype.options.maxonscreen = 5;
 
-$.fn.manualSearches = [];
+$.fn.forcedSearches = [];
 
 function enableLink(el) {
     el.on('click.disabled', false);
@@ -27,7 +27,7 @@ function updateImages(data) {
         var htmlContent = '';
         //Try to get the <a> Element
         var el = $('a[id=' + ep.show + 'x' + ep.season + 'x' + ep.episode+']');
-        var img = el.children('img');
+        var img = el.children('img[data-ep-search]');
         var parent = el.parent();
         if (el) {
             var rSearchTerm = '';
@@ -48,6 +48,7 @@ function updateImages(data) {
                 img.prop('src',srRoot+'/images/' + queuedImage );
                 disableLink(el);
                 htmlContent = ep.searchstatus;
+
             } else if (ep.searchstatus.toLowerCase() === 'finished') {
                 //el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title','Searching');
@@ -78,7 +79,7 @@ function updateImages(data) {
                 imageCompleteEpisodes.prop('alt','queued');
                 imageCompleteEpisodes.prop('src',srRoot+'/images/' + queuedImage );
             } else if (ep.searchstatus.toLowerCase() === 'finished') {
-                imageCompleteEpisodes.prop('title','Manual Search');
+                imageCompleteEpisodes.prop('title','Forced Search');
                 imageCompleteEpisodes.prop('alt','[search]');
                 imageCompleteEpisodes.prop('src',srRoot+'/images/' + searchImage);
                 if (ep.overview.toLowerCase() === 'snatched') {
@@ -126,12 +127,12 @@ $(document).ready(function () {
 (function(){
     $.ajaxEpSearch = {
         defaults: {
-            size:				16,
-            colorRow:         	false,
-            loadingImage:		'loading16.gif',
-            queuedImage:		'queued.png',
-            noImage:			'no16.png',
-            yesImage:			'yes16.png'
+            size: 16,
+            colorRow: false,
+            loadingImage: 'loading16.gif',
+            queuedImage: 'queued.png',
+            noImage: 'no16.png',
+            yesImage: 'yes16.png'
         }
     };
 
@@ -146,10 +147,10 @@ $(document).ready(function () {
 
             selectedEpisode = $(this);
 
-            $("#manualSearchModalFailed").modal('show');
+            $("#forcedSearchModalFailed").modal('show');
         });
 
-        function manualSearch(){
+        function forcedSearch(){
             var imageName, imageResult, htmlContent;
 
             var parent = selectedEpisode.parent();
@@ -165,11 +166,14 @@ $(document).ready(function () {
 
             var url = selectedEpisode.prop('href');
 
-            if (failedDownload === false) {
+            if (!failedDownload) {
                 url = url.replace("retryEpisode", "searchEpisode");
-            }
+            } 
 
-            url = url + "&downCurQuality=" + (qualityDownload ? '1' : '0');
+            // Only pass the down_cur_quality flag when retryEpisode() is called
+            if (qualityDownload && url.indexOf('retryEpisode') >= 0) {
+                url = url + "&down_cur_quality=1";
+            }
 
             $.getJSON(url, function(data){
 
@@ -177,9 +181,9 @@ $(document).ready(function () {
                 if (data.result.toLowerCase() === 'failure') {
                     imageName = options.noImage;
                     imageResult = 'failed';
-
-                // if the snatch was successful then apply the corresponding class and fill in the row appropriately
-                } else {
+                } else { 
+                    // if the snatch was successful then apply the 
+                    // corresponding class and fill in the row appropriately
                     imageName = options.loadingImage;
                     imageResult = 'success';
                     // color the row
@@ -215,20 +219,41 @@ $(document).ready(function () {
             selectedEpisode = $(this);
 
             if ($(this).parent().parent().children(".col-status").children(".quality").length) {
-                $("#manualSearchModalQuality").modal('show');
+                $("#forcedSearchModalQuality").modal('show');
             } else {
-                manualSearch();
+                forcedSearch();
             }
         });
 
-        $('#manualSearchModalFailed .btn').click(function(){
-            failedDownload = ($(this).text().toLowerCase() === 'yes');
-            $("#manualSearchModalQuality").modal('show');
+         $('.epManualSearch').click(function(event){
+            event.preventDefault();
+            var performSearch = '0';
+            var showAllResults = '0';
+            
+            //TODO: Omg this disables all the manual snatch icons, when one is clicked
+            if ($(this).hasClass('disabled')) {
+                return false;
+            }
+
+            $('.epManualSearch').addClass('disabled');
+            $('.epManualSearch').fadeTo(1, 0.1);
+ 
+            var url = this.href + '&perform_search=' + performSearch + '&show_all_results=' + showAllResults;
+            if (event.shiftKey || event.ctrlKey || event.which === 2){
+                window.open(url, '_blank');
+            } else {
+                window.location = url;
+            }
         });
 
-        $('#manualSearchModalQuality .btn').click(function(){
+        $('#forcedSearchModalFailed .btn').click(function(){
+            failedDownload = ($(this).text().toLowerCase() === 'yes');
+            $("#forcedSearchModalQuality").modal('show');
+        });
+
+        $('#forcedSearchModalQuality .btn').click(function(){
             qualityDownload = ($(this).text().toLowerCase() === 'yes');
-            manualSearch();
+            forcedSearch();
         });
     };
 })();

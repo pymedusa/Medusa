@@ -23,11 +23,7 @@ import sickbeard
 from sickbeard import logger, common
 from sickrage.helper.exceptions import ex
 
-# parse_qsl moved to urlparse module in v2.6
-try:
-    from urlparse import parse_qsl  # @UnusedImport
-except ImportError:
-    from cgi import parse_qsl  # @Reimport
+from six.moves.urllib.parse import parse_qsl
 
 import oauth2 as oauth
 import pythontwitter as twitter
