@@ -929,7 +929,7 @@ def restoreVersionedFile(backup_file, version):
     with suppress(TypeError):
         version = '.'.join([str(i) for i in version]) if not isinstance(version, str) else version
 
-    new_file, _ = backup_file[0:ek(backup_file.find, u'v{}'.format(version))]
+    new_file, _ = backup_file[0:ek(backup_file.find, u'v{version}'.format(version=version))]
     restore_file = backup_file
 
     if not ek(os.path.isfile, new_file):
