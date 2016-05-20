@@ -1,8 +1,6 @@
 ﻿# coding=utf-8
 # Author: Idan Gutman
 #
-
-#
 # This file is part of SickRage.
 #
 # SickRage is free software: you can redistribute it and/or modify
@@ -21,6 +19,9 @@
 from __future__ import unicode_literals
 
 import re
+import datetime
+
+from dateutil import parser
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
@@ -91,6 +92,11 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         for mode in search_strings:
             items = []
             logger.log("Search Mode: {}".format(mode), logger.DEBUG)
+
+            if mode == 'RSS':
+                last_pubdate = self.cache.get_last_pubdate()
+                logger.log("Provider last RSS pubdate: {}".format(last_pubdate), logger.DEBUG)
+
             for search_string in search_strings[mode]:
 
                 if mode != "RSS":
@@ -133,6 +139,14 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
                             seeders = try_int(cells[labels.index("Seeders")].get_text(strip=True))
                             leechers = try_int(cells[labels.index("Leechers")].get_text(strip=True))
+                            time = str(cells[labels.index("Added")])
+                            pubdate_raw = re.sub(r'<.*?>', ' ', time)
+                            pubdate = parser.parse(pubdate_raw, fuzzy=True)
+    
+                            # Here we discard item if is not a new item
+                            if mode == "RSS" and pubdate and last_pubdate and pubdate < last_pubdate:
+                                logger.log("Discarded {0} because it was already processed. Pubdate: {1}".format(title, pubdate))
+                                continue
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
@@ -144,7 +158,7 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                             # Need size for failed downloads handling
                             torrent_size = cells[labels.index("Size")].get_text(strip=True)
                             size = convert_size(torrent_size) or -1
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
 
                             if mode != "RSS":
                                 logger.log("Found result: {0} with {1} seeders and {2} leechers".format
@@ -157,6 +171,13 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             # For each search mode sort all the items by seeders if available
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
+
+            # Set last pubdate for provider
+            if mode == 'RSS' and results:
+                last_pubdate = max([result['pubdate'] for result in results])
+                if isinstance(last_pubdate, datetime.datetime):
+                    logger.log("Setting provider last RSS pubdate to: {}".format(last_pubdate), logger.DEBUG)
+                    self.cache.set_last_pubdate(last_pubdate)
 
         return results
 

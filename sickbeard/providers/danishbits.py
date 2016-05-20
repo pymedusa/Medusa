@@ -18,7 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+
 from requests.utils import dict_from_cookiejar
+from dateutil import parser
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -107,6 +110,10 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             items = []
             logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
 
+            if mode == 'RSS':
+                last_pubdate = self.cache.get_last_pubdate()
+                logger.log("Provider last RSS pubdate: {}".format(last_pubdate), logger.DEBUG)
+
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
@@ -146,6 +153,13 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                             seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
                             leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
+                            pubdate = cells[labels.index('Tilføjet')].find('span')['title']
+                            pubdate = parser.parse(pubdate, fuzzy=True)
+
+                            # Here we discard item if is not a new item
+                            if mode == "RSS" and pubdate and last_pubdate and pubdate < last_pubdate:
+                                # logger.log("Discarded {0} because it was already processed. Pubdate: {1}".format(title, pubdate))
+                                continue
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
@@ -162,7 +176,7 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             torrent_size = cells[labels.index('Størrelse')].contents[0]
                             size = convert_size(torrent_size, units=units) or -1
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
                             if mode != 'RSS':
                                 logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format
                                            (title, seeders, leechers), logger.DEBUG)
@@ -174,6 +188,13 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             # For each search mode sort all the items by seeders if available
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
+
+            # Set last pubdate for provider
+            if mode == 'RSS' and results:
+                last_pubdate = max([result['pubdate'] for result in results])
+                if isinstance(last_pubdate, datetime.datetime):
+                    logger.log("Setting provider last RSS pubdate to: {}".format(last_pubdate), logger.DEBUG)
+                    self.cache.set_last_pubdate(last_pubdate)
 
         return results
 

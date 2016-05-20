@@ -22,10 +22,15 @@ import re
 import requests
 import traceback
 
+import datetime
+import pytimeparse
+
 from requests.compat import urljoin
 from contextlib2 import suppress
+from dateutil import parser
 
 from sickbeard import logger, tvcache
+from sickrage.helper.common import remove_strings
 from sickbeard.bs4_parser import BS4Parser
 
 from sickrage.helper.common import convert_size, try_int
@@ -78,27 +83,39 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         :return: A list of items found
         """
+
         results = []
         for mode in search_strings:
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+
+            if mode == 'RSS':
+                last_pubdate = self.cache.get_last_pubdate()
+                logger.log("Provider last RSS pubdate: {}".format(last_pubdate), logger.DEBUG)
+
             for search_string in search_strings[mode]:
                 if mode == 'RSS':
-                    for page in range(1, 4):
+                    for page in range(1, 2):
                         search_url = self.urls['rss'].format(page=page)
                         data = self.get_url(search_url, returns='text')
-                        items = self.parse(data, mode)
-                        results += items
+                        if not data:
+                            logger.log('No data returned from provider', logger.DEBUG)
+                            break
+                        items = self.parse(data, mode, last_pubdate)
+                        if items:
+                            results += items
                 else:
+                    logger.log("Search string: {0}".format(search_string), logger.DEBUG)
                     search_url = self.urls['search'].format(query=search_string)
                     data = self.get_url(search_url, returns='text')
-                    items = self.parse(data, mode)
-                    results += items
-                if not data:
-                    logger.log('No data returned from provider', logger.DEBUG)
-                    continue
+                    if not data:
+                        logger.log('No data returned from provider', logger.DEBUG)
+                        continue
+                    items = self.parse(data, mode, None)
+                    if items:
+                        results += items
         return results
 
-    def parse(self, data, mode):
+    def parse(self, data, mode, last_pubdate):
         """
         Parse search results for items
 
@@ -110,7 +127,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         items = []
         with BS4Parser(data, 'html5lib') as html:
             torrent_table = html('table', class_='table2')
-            if mode != 'RSS' and len(torrent_table) < 2:
+            if mode != 'RSS' and torrent_table and len(torrent_table) < 2:
                 logger.log(u'Data returned from provider does not contain any torrents', logger.DEBUG)
                 return
 
@@ -149,6 +166,15 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}'.format(
                         hash=torrent_hash, title=title, trackers=self._custom_trackers)
 
+                    time_raw = remove_strings(cells[1].get_text(), ["+", " - in TV shows", " ago"]).replace("Last", "1").replace("Yesterday", "1 day")
+                    time = 0 if time_raw == 'right now' else pytimeparse.parse(time_raw)
+                    pubdate = (datetime.datetime.now() - datetime.timedelta(seconds=time)).replace(second=0, microsecond=0)
+ 
+                    # Here we discard item if is not a new item
+                    if mode == "RSS" and pubdate and last_pubdate and pubdate < last_pubdate:
+                        # logger.log("Discarded {0} because it was already processed. Pubdate: {1}".format(title, pubdate))
+                        continue
+
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             logger.log('Discarding torrent because it doesn\'t meet the minimum '
@@ -162,6 +188,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
+                        'pubdate': pubdate,
                         'hash': torrent_hash or ''
                     }
 
@@ -177,6 +204,14 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     # For each search mode sort all the items by seeders if available
 
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
+
+            # Set last pubdate for provider
+            if items and mode == 'RSS':
+                last_pubdate = max([item['pubdate'] for item in items])
+                if isinstance(last_pubdate, datetime.datetime):
+                    logger.log("Setting provider last RSS pubdate to: {}".format(last_pubdate), logger.DEBUG)
+                    self.cache.set_last_pubdate(last_pubdate)
+
         return items
 
 

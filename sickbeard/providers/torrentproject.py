@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+
+from dateutil import parser
 from requests.compat import urljoin
 import validators
 
@@ -58,12 +61,17 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
         search_params = {
             'out': 'json',
             'filter': 2101,
+            'showmagnets': 'on',
             'num': 150
         }
 
         for mode in search_strings:  # Mode = RSS, Season, Episode
             items = []
             logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+
+            if mode == 'RSS':
+                last_pubdate = self.cache.get_last_pubdate()
+                logger.log("Provider last RSS pubdate: {}".format(last_pubdate), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
@@ -82,17 +90,21 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     search_url = self.url
 
                 torrents = self.get_url(search_url, params=search_params, returns='json')
-                if not (torrents and "total_found" in torrents and int(torrents["total_found"]) > 0):
+                if not (torrents and int(torrents.pop('total_found', 0)) > 0):
                     logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
                     continue
 
-                del torrents["total_found"]
-
-                results = []
                 for i in torrents:
                     title = torrents[i].get("title")
                     seeders = try_int(torrents[i].get("seeds"), 1)
                     leechers = try_int(torrents[i].get("leechs"), 0)
+                    #pubdate_raw = torrents[i].get("pubdate")
+                    #pubdate = parser.parse(pubdate_raw, fuzzy=True)
+    
+                    # Here we discard item if is not a new item
+                    #if mode == "RSS" and pubdate and last_pubdate and pubdate < last_pubdate:
+                    #    logger.log("Discarded {0} because it was already processed. Pubdate: {1}".format(title, pubdate))
+                    #    continue
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -103,8 +115,7 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     t_hash = torrents[i].get("torrent_hash")
                     torrent_size = torrents[i].get("torrent_size")
                     size = convert_size(torrent_size) or -1
-                    download_url = torrents[i].get("magnet") + self._custom_trackers
-                    pubdate = '' #TBA
+                    download_url = torrents[i].get('magnet') + self._custom_trackers
 
                     if not all([title, download_url]):
                         continue
@@ -120,6 +131,13 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
             # For each search mode sort all the items by seeders if available
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
+
+            # Set last pubdate for provider
+            #if mode == 'RSS' and results:
+            #    last_pubdate = max([result['pubdate'] for result in results])
+            #    if isinstance(last_pubdate, datetime.datetime):
+            #        logger.log("Setting provider last RSS pubdate to: {}".format(last_pubdate), logger.DEBUG)
+            #        self.cache.set_last_pubdate(last_pubdate)
 
         return results
 

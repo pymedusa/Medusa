@@ -18,6 +18,9 @@
 
 import re
 import traceback
+import datetime
+
+from dateutil import parser
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -54,7 +57,7 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         # Proper Strings
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=15)  # only poll Torrentz every 15 minutes max
+        self.cache = tvcache.TVCache(self, min_time=10)  # only poll Torrentz every 15 minutes max
 
     @staticmethod
     def _split_description(description):
@@ -67,6 +70,11 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         for mode in search_strings:
             items = []
             logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+
+            if mode == 'RSS':
+                last_pubdate = self.cache.get_last_pubdate()
+                logger.log("Provider last RSS pubdate: {}".format(last_pubdate), logger.DEBUG)
+
             for search_string in search_strings[mode]:
                 search_url = self.urls['verified'] if self.confirmed else self.urls['feed']
                 if mode != 'RSS':
@@ -83,8 +91,8 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                     continue
 
                 try:
-                    with BS4Parser(data, 'html5lib') as parser:
-                        for item in parser('item'):
+                    with BS4Parser(data, 'html5lib') as html:
+                        for item in html('item'):
                             if item.category and 'tv' not in item.category.get_text(strip=True):
                                 continue
 
@@ -99,6 +107,13 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                             download_url = "magnet:?xt=urn:btih:" + t_hash + "&dn=" + title + self._custom_trackers
                             torrent_size, seeders, leechers = self._split_description(item.find('description').text)
                             size = convert_size(torrent_size) or -1
+                            pubdate_raw = item.pubdate.text
+                            pubdate = parser.parse(pubdate_raw)
+    
+                            # Here we discard item if is not a new item
+                            if mode == "RSS" and pubdate and last_pubdate and pubdate < last_pubdate:
+                                # logger.log("Discarded {0} because it was already processed. Pubdate: {1}".format(title, pubdate))
+                                continue
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
@@ -107,7 +122,7 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                                                (title, seeders), logger.DEBUG)
                                 continue
 
-                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': t_hash}
+                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': t_hash}
                             items.append(result)
                 except StandardError:
                     logger.log(u"Failed parsing provider. Traceback: %r" % traceback.format_exc(), logger.ERROR)
@@ -115,6 +130,13 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
             # For each search mode sort all the items by seeders if available
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
+
+            # Set last pubdate for provider
+            if mode == 'RSS' and results:
+                last_pubdate = max([result['pubdate'] for result in results])
+                if isinstance(last_pubdate, datetime.datetime):
+                    logger.log("Setting provider last RSS pubdate to: {}".format(last_pubdate), logger.DEBUG)
+                    self.cache.set_last_pubdate(last_pubdate)
 
         return results
 

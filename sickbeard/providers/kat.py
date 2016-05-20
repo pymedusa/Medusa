@@ -19,10 +19,13 @@
 from __future__ import unicode_literals
 
 import validators
-from requests.compat import urljoin
-from sickbeard.bs4_parser import BS4Parser
-
+import datetime
 import sickbeard
+
+from requests.compat import urljoin
+from dateutil import parser
+
+from sickbeard.bs4_parser import BS4Parser
 from sickbeard import logger, tvcache
 
 from sickrage.helper.common import convert_size, try_int
@@ -63,6 +66,11 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
         for mode in search_strings:
             items = []
             logger.log("Search Mode: {}".format(mode), logger.DEBUG)
+
+            if mode == 'RSS':
+                last_pubdate = self.cache.get_last_pubdate()
+                logger.log("Provider last RSS pubdate: {}".format(last_pubdate), logger.DEBUG)
+
             for search_string in search_strings[mode]:
 
                 search_params["q"] = search_string if mode != "RSS" else ""
@@ -103,9 +111,16 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                             if not (title and download_url):
                                 continue
 
-                            seeders = try_int(item.find("torrent:seeds").get_text(strip=True))
-                            leechers = try_int(item.find("torrent:peers").get_text(strip=True))
-
+                            seeders = try_int(item.find("torrent:seeds").get_text(strip=True)) if item.find("torrent:seeds") else 1
+                            leechers = try_int(item.find("torrent:peers").get_text(strip=True)) if item.find("torrent:peers") else 0
+                            pubdate_raw = item.find("pubDate").get_text(strip=True) if item.find("pubDate") else None
+                            pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
+    
+                            # Here we discard item if is not a new item
+                            if mode == "RSS" and pubdate and last_pubdate and pubdate < last_pubdate:
+                                # logger.log("Discarded {0} because it was already processed. Pubdate: {1}".format(title, pubdate))
+                                continue
+  
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != "RSS":
@@ -136,6 +151,13 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
 
             results += items
+
+            # Set last pubdate for provider
+            if mode == 'RSS' and results:
+                last_pubdate = max([result['pubdate'] for result in results])
+                if isinstance(last_pubdate, datetime.datetime):
+                    logger.log("Setting provider last RSS pubdate to: {}".format(last_pubdate), logger.DEBUG)
+                    self.cache.set_last_pubdate(last_pubdate)
 
         return results
 

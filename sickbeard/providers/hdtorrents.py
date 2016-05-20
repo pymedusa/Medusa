@@ -19,6 +19,9 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import re
+import datetime
+
+from dateutil import parser
 from requests.compat import quote_plus
 from requests.utils import dict_from_cookiejar
 
@@ -88,6 +91,11 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         for mode in search_strings:
             items = []
             logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+
+            if mode == 'RSS':
+                last_pubdate = self.cache.get_last_pubdate()
+                logger.log("Provider last RSS pubdate: {}".format(last_pubdate), logger.DEBUG)
+
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
@@ -148,6 +156,13 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             seeders = try_int(cells[labels.index(u'S')].get_text(strip=True))
                             leechers = try_int(cells[labels.index(u'L')].get_text(strip=True))
                             torrent_size = cells[labels.index(u'Size')].get_text()
+                            pubdate_raw = cells[labels.index(u'Added')].get_text()
+                            pubdate = parser.parse(pubdate_raw)
+    
+                            # Here we discard item if is not a new item
+                            if mode == "RSS" and pubdate and last_pubdate and pubdate < last_pubdate:
+                                # logger.log("Discarded {0} because it was already processed. Pubdate: {1}".format(title, pubdate))
+                                continue
 
                             size = convert_size(torrent_size) or -1
                             download_url = self.url + '/' + cells[labels.index(u'Dl')].a['href']
@@ -164,7 +179,7 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                            (title, seeders), logger.DEBUG)
                             continue
 
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
                         if mode != 'RSS':
                             logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 
@@ -174,6 +189,13 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
 
             results += items
+
+            # Set last pubdate for provider
+            if mode == 'RSS' and results:
+                last_pubdate = max([result['pubdate'] for result in results])
+                if isinstance(last_pubdate, datetime.datetime):
+                    logger.log("Setting provider last RSS pubdate to: {}".format(last_pubdate), logger.DEBUG)
+                    self.cache.set_last_pubdate(last_pubdate)
 
         return results
 

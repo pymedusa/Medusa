@@ -18,7 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+
+from dateutil import parser
 from requests.compat import urljoin
+
 from sickbeard import logger, tvcache
 
 from sickrage.helper.common import convert_size, try_int
@@ -63,6 +67,11 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         for mode in search_strings:
             items = []
             logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+
+            if mode == 'RSS':
+                last_pubdate = self.cache.get_last_pubdate()
+                logger.log("Provider last RSS pubdate: {}".format(last_pubdate), logger.DEBUG)
+
             for search_string in search_strings[mode]:
                 if self.freeleech:
                     search_params['fl'] = 'true'
@@ -100,11 +109,20 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     try:
                         title = jdata[i]["release_name"]
                         download_url = jdata[i]["download_url"]
+
                         if not all([title, download_url]):
                             continue
 
                         seeders = jdata[i]["seeders"]
                         leechers = jdata[i]["leechers"]
+                        pubdate_raw = jdata[i]["added"]
+                        pubdate = parser.parse(pubdate_raw)
+
+                        # Here we discard item if is not a new item
+                        if mode == "RSS" and pubdate and last_pubdate and pubdate < last_pubdate:
+                            # logger.log("Discarded {0} because it was already processed. Pubdate: {1}".format(title, pubdate))
+                            continue
+
                         if seeders < min(self.minseed, 1):
                             if mode != 'RSS':
                                 logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
@@ -113,7 +131,7 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                         torrent_size = str(jdata[i]["size"]) + ' MB'
                         size = convert_size(torrent_size) or -1
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
 
                         if mode != 'RSS':
                             logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
@@ -126,6 +144,13 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
 
             results += items
+
+            # Set last pubdate for provider
+            if mode == 'RSS' and results:
+                last_pubdate = max([result['pubdate'] for result in results])
+                if isinstance(last_pubdate, datetime.datetime):
+                    logger.log("Setting provider last RSS pubdate to: {}".format(last_pubdate), logger.DEBUG)
+                    self.cache.set_last_pubdate(last_pubdate)
 
         return results
 

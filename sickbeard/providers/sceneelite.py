@@ -20,9 +20,11 @@
 
 from __future__ import unicode_literals
 import re
+import datetime
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+from dateutil import parser
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -99,6 +101,10 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             items = []
             logger.log("Search Mode: {0}".format(mode), logger.DEBUG)
 
+            if mode == 'RSS':
+                last_pubdate = self.cache.get_last_pubdate()
+                logger.log("Provider last RSS pubdate: {}".format(last_pubdate), logger.DEBUG)
+
             for search_string in search_strings[mode]:
                 if mode != "RSS":
                     logger.log("Search string: {0}".format
@@ -126,6 +132,13 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             continue
                         size = try_int(torrent.pop("size", ""), 0)
                         download_url = self.urls["download"] + id
+                        pubdate = torrent.pop("added", "")
+                        pubdate = parser.parse(pubdate, fuzzy=True)
+
+                        # Here we discard item if is not a new item
+                        if mode == "RSS" and pubdate and last_pubdate and pubdate < last_pubdate:
+                            # logger.log("Discarded {0} because it was already processed. Pubdate: {1}".format(title, pubdate))
+                            continue
 
                         # Filter unseeded torrent
                         if seeders < min(self.minseed, 1):
@@ -133,7 +146,7 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                 logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
                             continue
 
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
 
                         if mode != "RSS":
                             logger.log("Found result: {0} with {1} seeders and {2} leechers".format
@@ -147,6 +160,13 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             # For each search mode sort all the items by seeders if available
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
+
+            # Set last pubdate for provider
+            if mode == 'RSS' and results:
+                last_pubdate = max([result['pubdate'] for result in results])
+                if isinstance(last_pubdate, datetime.datetime):
+                    logger.log("Setting provider last RSS pubdate to: {}".format(last_pubdate), logger.DEBUG)
+                    self.cache.set_last_pubdate(last_pubdate)
 
         return results
 

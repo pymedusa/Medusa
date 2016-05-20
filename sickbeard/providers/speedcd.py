@@ -19,6 +19,9 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import re
+import datetime
+
+from dateutil import parser
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
@@ -117,6 +120,10 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
             items = []
             logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
 
+            if mode == 'RSS':
+                last_pubdate = self.cache.get_last_pubdate()
+                logger.log("Provider last RSS pubdate: {}".format(last_pubdate), logger.DEBUG)
+
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
@@ -147,11 +154,19 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                             title = cells[labels.index('Title')].find('a', class_='torrent').get_text()
                             download_url = urljoin(self.url, cells[labels.index('Download')].find(title='Download').parent['href'])
+
                             if not all([title, download_url]):
                                 continue
 
                             seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
                             leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
+                            pubdate_raw =  cells[labels.index('Title')].find('span', class_='date').find('span')['title']
+                            pubdate = parser.parse(pubdate_raw)
+    
+                            # Here we discard item if is not a new item
+                            if mode == "RSS" and pubdate and last_pubdate and pubdate < last_pubdate:
+                                # logger.log("Discarded {0} because it was already processed. Pubdate: {1}".format(title, pubdate))
+                                continue
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
@@ -163,7 +178,7 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                             torrent_size = torrent_size[:-2] + ' ' + torrent_size[-2:]
                             size = convert_size(torrent_size, units=units) or -1
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
                             if mode != 'RSS':
                                 logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 
@@ -175,6 +190,13 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
 
+            # Set last pubdate for provider
+            if mode == 'RSS' and results:
+                last_pubdate = max([result['pubdate'] for result in results])
+                if isinstance(last_pubdate, datetime.datetime):
+                    logger.log("Setting provider last RSS pubdate to: {}".format(last_pubdate), logger.DEBUG)
+                    self.cache.set_last_pubdate(last_pubdate)
+                    
         return results
 
 

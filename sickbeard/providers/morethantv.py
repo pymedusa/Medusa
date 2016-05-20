@@ -19,7 +19,9 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import re
+import datetime
 
+from dateutil import parser
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
@@ -29,6 +31,8 @@ from sickbeard.bs4_parser import BS4Parser
 from sickrage.helper.exceptions import AuthException
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+
+
 
 
 class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
@@ -60,7 +64,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.proper_strings = ['PROPER', 'REPACK']
 
         # Cache
-        self.cache = tvcache.TVCache(self)
+        self.cache = tvcache.TVCache(self, min_time=10)
 
     def _check_auth(self):
 
@@ -120,6 +124,10 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         for mode in search_strings:
             items = []
             logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+            
+            if mode == 'RSS':
+                last_pubdate = self.cache.get_last_pubdate()
+                logger.log("Provider last RSS pubdate: {}".format(last_pubdate), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
@@ -160,6 +168,13 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             cells = result('td')
                             seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
                             leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
+                            pubdate = cells[labels.index('Time')].find('span')['title']
+                            pubdate = parser.parse(pubdate, fuzzy=True)
+
+                            # Here we discard item if is not a new item
+                            if mode == "RSS" and pubdate and last_pubdate and pubdate < last_pubdate:
+                                # logger.log("Discarded {0} because it was already processed. Pubdate: {1}".format(title, pubdate))
+                                continue
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
@@ -172,7 +187,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             torrent_size = cells[labels.index('Size')].get_text(strip=True)
                             size = convert_size(torrent_size, units=units) or -1
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
                             if mode != 'RSS':
                                 logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format
                                            (title, seeders, leechers), logger.DEBUG)
@@ -184,6 +199,13 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             # For each search mode sort all the items by seeders if available
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
+
+            # Set last pubdate for provider
+            if mode == 'RSS' and results:
+                last_pubdate = max([result['pubdate'] for result in results])
+                if isinstance(last_pubdate, datetime.datetime):
+                    logger.log("Setting provider last RSS pubdate to: {}".format(last_pubdate), logger.DEBUG)
+                    self.cache.set_last_pubdate(last_pubdate)
 
         return results
 
