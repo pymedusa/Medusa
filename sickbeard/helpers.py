@@ -887,7 +887,7 @@ def backupVersionedFile(old_file, version):
 
     with suppress(TypeError):
         version = u'.'.join([str(i) for i in version]) if not isinstance(version, str) else version
-    
+
     new_file = u'{old_file}.v{version}'.format(old_file=old_file, version=version)
 
     while not ek(os.path.isfile, new_file):
@@ -926,7 +926,8 @@ def restoreVersionedFile(backup_file, version):
 
     numTries = 0
 
-    version = '.'.join([str(i) for i in version]) if isinstance(version, tuple) else version
+    with suppress(TypeError):
+        version = '.'.join([str(i) for i in version]) if not isinstance(version, str) else version
 
     new_file, _ = backup_file[0:ek(backup_file.find, u'v{}'.format(version))]
     restore_file = backup_file
