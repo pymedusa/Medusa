@@ -885,7 +885,7 @@ def backupVersionedFile(old_file, version):
 
     numTries = 0
 
-    new_file = old_file + '.' + 'v' + str(version)
+    new_file = old_file + '.' + 'v' + (u'.'.join([str(i) for i in version]) if isinstance(version, tuple) else str(version))
 
     while not ek(os.path.isfile, new_file):
         if not ek(os.path.isfile, old_file):
@@ -912,7 +912,9 @@ def backupVersionedFile(old_file, version):
 
 def restoreVersionedFile(backup_file, version):
     """
-    Restore a file version to original state
+    Restore a file version to original state.
+    For example sickbeard.db.v41 passed with version int(41), will translate back to sickbeard.db.
+    sickbeard.db.v41. passed with version tuple(41,2), will translate back to sickbeard.db.
 
     :param backup_file: File to restore
     :param version: Version of file to restore
@@ -921,8 +923,10 @@ def restoreVersionedFile(backup_file, version):
 
     numTries = 0
 
-    new_file, _ = ek(os.path.splitext, backup_file)
-    restore_file = new_file + '.' + 'v' + str(version)
+    version = '.'.join([str(i) for i in version]) if isinstance(version, tuple) else version
+
+    new_file, _ = backup_file[0:ek(backup_file.find, 'v' + version)]
+    restore_file = backup_file
 
     if not ek(os.path.isfile, new_file):
         logger.log(u"Not restoring, %s doesn't exist" % new_file, logger.DEBUG)
