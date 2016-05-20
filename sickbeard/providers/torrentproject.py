@@ -17,6 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+import traceback
+
+from dateutil import parser
 from requests.compat import urljoin
 import validators
 
@@ -53,11 +57,21 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
         self.cache = tvcache.TVCache(self, search_params={'RSS': ['0day']})
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+        """
+        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
+        :param search_strings: Search to perform
+        :param age: Not used for this provider
+        :param ep_obj: Not used for this provider
+
+        :return: A list of items found
+        """
+
         results = []
 
         search_params = {
             'out': 'json',
             'filter': 2101,
+            'showmagnets': 'on',
             'num': 150
         }
 
@@ -82,17 +96,16 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     search_url = self.url
 
                 torrents = self.get_url(search_url, params=search_params, returns='json')
-                if not (torrents and "total_found" in torrents and int(torrents["total_found"]) > 0):
+                if not (torrents and int(torrents.pop('total_found', 0)) > 0):
                     logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
                     continue
 
-                del torrents["total_found"]
-
-                results = []
                 for i in torrents:
                     title = torrents[i].get("title")
                     seeders = try_int(torrents[i].get("seeds"), 1)
                     leechers = try_int(torrents[i].get("leechs"), 0)
+                    #pubdate_raw = torrents[i].get("pubdate")
+                    #pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -103,8 +116,7 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     t_hash = torrents[i].get("torrent_hash")
                     torrent_size = torrents[i].get("torrent_size")
                     size = convert_size(torrent_size) or -1
-                    download_url = torrents[i].get("magnet") + self._custom_trackers
-                    pubdate = '' #TBA
+                    download_url = torrents[i].get('magnet') + self._custom_trackers
 
                     if not all([title, download_url]):
                         continue

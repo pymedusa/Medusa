@@ -19,6 +19,10 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import re
+import datetime
+
+from dateutil import parser
+
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
@@ -99,15 +103,25 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             logger.log(u"Unable to obtain cookie", logger.WARNING)
             return False
 
-    def search(self, search_params, age=0, ep_obj=None):  # pylint: disable=too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
+        """
+        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
+        :param search_strings: Search to perform
+        :param age: Not used for this provider
+        :param ep_obj: Not used for this provider
+
+        :return: A list of items found
+        """
+
         results = []
         if not self.login():
             return results
 
-        for mode in search_params:
+        for mode in search_strings:
             items = []
+
             logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
-            for search_string in search_params[mode]:
+            for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
                     logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
@@ -148,6 +162,8 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                     seeders = int(torrent['seed']) if torrent['seed'] else 1
                     leechers = int(torrent['leech']) if torrent['leech'] else 0
+                    pubdate_raw = torrent['added']
+                    pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -158,7 +174,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     torrent_size = torrent['size']
                     size = convert_size(torrent_size) or -1
 
-                    item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                    item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
 
                     if mode != 'RSS':
                         logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format

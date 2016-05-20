@@ -20,9 +20,12 @@
 
 from __future__ import unicode_literals
 import re
+import datetime
+import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+from dateutil import parser
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -77,6 +80,15 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return True
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
+        :param search_strings: Search to perform
+        :param age: Not used for this provider
+        :param ep_obj: Not used for this provider
+
+        :return: A list of items found
+        """
+
         results = []
         if not self.login():
             return results
@@ -126,6 +138,8 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             continue
                         size = try_int(torrent.pop("size", ""), 0)
                         download_url = self.urls["download"] + id
+                        pubdate_raw = torrent.pop("added", "")
+                        pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                         # Filter unseeded torrent
                         if seeders < min(self.minseed, 1):
@@ -133,7 +147,7 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                 logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
                             continue
 
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
 
                         if mode != "RSS":
                             logger.log("Found result: {0} with {1} seeders and {2} leechers".format
@@ -142,6 +156,7 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         items.append(item)
 
                     except StandardError:
+                        logger.log(u"Failed parsing provider. Traceback: {0!r}".format(traceback.format_exc()), logger.ERROR)
                         continue
                         
             # For each search mode sort all the items by seeders if available

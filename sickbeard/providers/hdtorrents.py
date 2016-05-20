@@ -19,6 +19,10 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import re
+import datetime
+import traceback
+
+from dateutil import parser
 from requests.compat import quote_plus
 from requests.utils import dict_from_cookiejar
 
@@ -81,6 +85,15 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return True
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+        """
+        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
+        :param search_strings: Search to perform
+        :param age: Not used for this provider
+        :param ep_obj: Not used for this provider
+
+        :return: A list of items found
+        """
+
         results = []
         if not self.login():
             return results
@@ -88,6 +101,7 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         for mode in search_strings:
             items = []
             logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
@@ -148,10 +162,12 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             seeders = try_int(cells[labels.index(u'S')].get_text(strip=True))
                             leechers = try_int(cells[labels.index(u'L')].get_text(strip=True))
                             torrent_size = cells[labels.index(u'Size')].get_text()
-
+                            pubdate_raw = cells[labels.index(u'Added')].get_text() if cells[labels.index(u'Added')] else None
+                            pubdate = parser.parse(pubdate_raw) if pubdate_raw else None
                             size = convert_size(torrent_size) or -1
                             download_url = self.url + '/' + cells[labels.index(u'Dl')].a['href']
-                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                        except StandardError:
+                            logger.log(u"Failed parsing provider. Traceback: {0!r}".format(traceback.format_exc()), logger.ERROR)
                             continue
 
                         if not all([title, download_url]):
@@ -164,7 +180,7 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                            (title, seeders), logger.DEBUG)
                             continue
 
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
                         if mode != 'RSS':
                             logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 
