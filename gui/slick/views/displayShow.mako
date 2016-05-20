@@ -15,7 +15,6 @@
 <%block name="scripts">
 <script type="text/javascript" src="${srRoot}/js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
 <script type="text/javascript" src="${srRoot}/js/plotTooltip.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/sceneExceptionsTooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="${srRoot}/js/ratingTooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="${srRoot}/js/ajaxEpSearch.js?${sbPID}"></script>
 <script type="text/javascript" src="${srRoot}/js/ajaxEpSubtitles.js?${sbPID}"></script>
@@ -117,7 +116,6 @@
     <span class="imdbstars" qtip-content="${rating_tip}">${show.imdb_info['rating']}</span>
 % endif
 
-<% _show = show %>
 % if not show.imdbid:
     <span>(${show.startyear}) - ${show.runtime} minutes - </span>
 % else:
@@ -126,29 +124,38 @@
                 <img src="${srRoot}/images/blank.png" class="country-flag flag-${country}" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
         % endfor
     % endif
-    <span>
-    % if 'year' in show.imdb_info and show.imdb_info['year']:
-                (${show.imdb_info['year']}) -
+                <span>
+    % if show.imdb_info.get('year'):
+                    (${show.imdb_info['year']}) -
     % endif
-                ${show.imdb_info['runtimes']} minutes</span>
+                    ${show.imdb_info.get('runtimes') or show.runtime} minutes
+                </span>
 
-                <a href="${anon_url('http://www.imdb.com/title/', _show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdbid}"><img alt="[imdb]" height="16" width="16" src="${srRoot}/images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/></a>
+                <a href="${anon_url('http://www.imdb.com/title/', show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdbid}">
+                    <img alt="[imdb]" height="16" width="16" src="${srRoot}/images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
+                </a>
 % endif
-                <a href="${anon_url(sickbeard.indexerApi(_show.indexer).config['show_url'], _show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${sickbeard.indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}"><img alt="${sickbeard.indexerApi(show.indexer).name}" height="16" width="16" src="${srRoot}/images/${sickbeard.indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/></a>
+
+                <a href="${anon_url(sickbeard.indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${sickbeard.indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
+                    <img alt="${sickbeard.indexerApi(show.indexer).name}" height="16" width="16" src="${srRoot}/images/${sickbeard.indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
+                </a>
+
 % if xem_numbering or xem_absolute_numbering:
-                <a href="${anon_url('http://thexem.de/search?q=', _show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}"><img alt="[xem]" height="16" width="16" src="${srRoot}/images/xem.png" style="margin-top: -1px; vertical-align:middle;"/></a>
+                <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
+                    <img alt="[xem]" height="16" width="16" src="${srRoot}/images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
+                </a>
 % endif
             </div>
 
             <div id="tags">
                 <ul class="tags">
-                    % if ('genres' not in show.imdb_info or not show.imdb_info['genres']) and show.genre:
-                        % for genre in show.genre[1:-1].split('|'):
-                            <a href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></a>
-                        % endfor
-                    % elif 'genres' in show.imdb_info and show.imdb_info['genres']:
+                    % if show.imdb_info.get('genres'):
                         % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi','Science-Fiction').split('|'):
                             <a href="${anon_url('http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=', imdbgenre.lower())}" target="_blank" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></a>
+                        % endfor
+                    % elif show.genre:
+                        % for genre in show.genre[1:-1].split('|'):
+                            <a href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></a>
                         % endfor
                     % endif
                 </ul>
@@ -183,13 +190,21 @@
                 % else:
                     <tr><td class="showLegend"><span style="color: red;">Location: </span></td><td><span style="color: red;">${showLoc[0]}</span> (Missing)</td></tr>
                 % endif
-                    <tr><td class="showLegend">Scene Name:</td><td>${(show.name, " | ".join(show.exceptions))[show.exceptions != 0]}</td></tr>
-
-                % if show.rls_require_words:
-                    <tr><td class="showLegend">Required Words: </td><td>${show.rls_require_words}</td></tr>
+                % if all_scene_exceptions:
+                    <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${all_scene_exceptions}</td></tr>
                 % endif
-                % if show.rls_ignore_words:
-                    <tr><td class="showLegend">Ignored Words: </td><td>${show.rls_ignore_words}</td></tr>
+
+                % if require_words:
+                    <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">${require_words}</span></td></tr>
+                % endif
+                % if ignore_words:
+                    <tr><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word">${ignore_words}</span></td></tr>
+                % endif
+                % if preferred_words:
+                    <tr><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word">${preferred_words}</span></td></tr>
+                % endif
+                % if undesired_words:
+                    <tr><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word">${undesired_words}</span></td></tr>
                 % endif
                 % if bwl and bwl.whitelist:
                     <tr>
@@ -214,7 +229,7 @@
                     % if sickbeard.USE_SUBTITLES:
                     <tr><td class="showLegend">Subtitles: </td><td><img src="${srRoot}/images/${("no16.png", "yes16.png")[bool(show.subtitles)]}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
                     % endif
-                    <tr><td class="showLegend">Season Folders: </td><td><img src="${srRoot}/images/${("no16.png", "yes16.png")[bool(not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS)]}" alt=="${("N", "Y")[bool(not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
+                    <tr><td class="showLegend">Season Folders: </td><td><img src="${srRoot}/images/${("no16.png", "yes16.png")[bool(not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS)]}" alt="${("N", "Y")[bool(not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
                     <tr><td class="showLegend">Paused: </td><td><img src="${srRoot}/images/${("no16.png", "yes16.png")[bool(show.paused)]}" alt="${("N", "Y")[bool(show.paused)]}" width="16" height="16" /></td></tr>
                     <tr><td class="showLegend">Air-by-Date: </td><td><img src="${srRoot}/images/${("no16.png", "yes16.png")[bool(show.air_by_date)]}" alt="${("N", "Y")[bool(show.air_by_date)]}" width="16" height="16" /></td></tr>
                     <tr><td class="showLegend">Sports: </td><td><img src="${srRoot}/images/${("no16.png", "yes16.png")[bool(show.is_sports)]}" alt="${("N", "Y")[bool(show.is_sports)]}" width="16" height="16" /></td></tr>
@@ -336,8 +351,12 @@
     <tbody class="tablesorter-no-sort">
         <tr style="height: 60px;">
             <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
-                <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[int(epResult["season"]) > 0]}</h3>
+                <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[int(epResult["season"]) > 0]}
                 <!-- @TODO: port the season scene exceptions to angular -->
+                % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
+                <a class="epManualSearch" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="${srRoot}/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                % endif
+                </h3>
                 <div class="season-scene-exception" data-season=${("Specials", str(epResult["season"]))[int(epResult["season"]) > 0]}></div>
                 % if sickbeard.DISPLAY_ALL_SEASONS is False:
                     <button id="showseason-${epResult['season']}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
@@ -368,9 +387,13 @@
     <tbody class="tablesorter-no-sort">
         <tr style="height: 60px;">
             <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
-                <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[bool(int(epResult["season"]))]}</h3>
+                <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[bool(int(epResult["season"]))]}
+                % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
+                <a class="epManualSearch" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="${srRoot}/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                % endif
+                </h3>
                 <!-- @TODO: port the season scene exceptions to angular -->
-                <div class="season-scene-exception" data-season=${("Specials", str(epResult["season"]))[int(epResult["season"]) > 0]}></div>
+                <div class="season-scene-exception" data-season=${str(epResult["season"])}></div>
                 % if sickbeard.DISPLAY_ALL_SEASONS is False:
                     <button id="showseason-${epResult['season']}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
                 % endif
@@ -500,10 +523,13 @@
             <td class="col-search">
                 % if int(epResult["season"]) != 0:
                     % if (int(epResult["status"]) in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST + Quality.DOWNLOADED ) and sickbeard.USE_FAILED_DOWNLOADS:
-                        <a class="epRetry" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="retryEpisode?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="${srRoot}/images/search16.png" height="16" alt="retry" title="Retry Download" /></a>
+                        <a class="epRetry" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="retryEpisode?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-search src="${srRoot}/images/search16.png" height="16" alt="retry" title="Retry Download" /></a>
                     % else:
-                        <a class="epSearch" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="searchEpisode?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="${srRoot}/images/search16.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                        <a class="epSearch" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="searchEpisode?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-search src="${srRoot}/images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
                     % endif
+                    <a class="epManualSearch" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}&amp;manual_search_type=episode"><img data-ep-manual-search src="${srRoot}/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                % else:
+                    <a class="epManualSearch" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}&amp;manual_search_type=episode"><img data-ep-manual-search src="${srRoot}/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                 % endif
                 % if int(epResult["status"]) not in Quality.SNATCHED + Quality.SNATCHED_PROPER and sickbeard.USE_SUBTITLES and show.subtitles and epResult["location"] and subtitles.needs_subtitles(epResult['subtitles']):
                     <a class="epSubtitlesSearch" href="searchEpisodeSubtitles?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img src="${srRoot}/images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></a>
@@ -516,12 +542,12 @@
 
 <!--Begin - Bootstrap Modal-->
 
-<div id="manualSearchModalFailed" class="modal fade">
+<div id="forcedSearchModalFailed" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title">Manual Search</h4>
+                <h4 class="modal-title">Forced Search</h4>
             </div>
             <div class="modal-body">
                 <p>Do you want to mark this episode as failed?</p>
@@ -535,12 +561,12 @@
     </div>
 </div>
 
-<div id="manualSearchModalQuality" class="modal fade">
+<div id="forcedSearchModalQuality" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title">Manual Search</h4>
+                <h4 class="modal-title">Forced Search</h4>
             </div>
             <div class="modal-body">
                 <p>Do you want to include the current episode quality in the search?</p>

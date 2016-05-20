@@ -61,8 +61,12 @@ class TorrentProvider(GenericProvider):
 
                     for item in self.search(search_strings[0]):
                         title, url = self._get_title_and_url(item)
+                        seeders, leechers = self._get_result_info(item)
+                        size = self._get_size(item)
+                        pubdate = self._get_pubdate(item)
+                        hash = self._get_hash(item)
 
-                        results.append(Proper(title, url, datetime.today(), show))
+                        results.append(Proper(title, url, datetime.today(), show, seeders, leechers, size, pubdate, hash))
 
         return results
 
@@ -95,6 +99,20 @@ class TorrentProvider(GenericProvider):
 
     def _get_storage_dir(self):
         return sickbeard.TORRENT_DIR
+
+    def _get_result_info(self, item):
+        if isinstance(item, (dict, FeedParserDict)):
+            seeders = item.get('seeders', '-1')
+            leechers = item.get('leechers', '-1')
+
+        elif isinstance(item, (list, tuple)) and len(item) > 1:
+            seeders = item[3]
+            leechers = item[4]
+        else:
+            seeders = -1
+            leechers = -1
+
+        return seeders, leechers
 
     def _get_title_and_url(self, item):
         if isinstance(item, (dict, FeedParserDict)):
@@ -146,3 +164,31 @@ class TorrentProvider(GenericProvider):
 
     def seed_ratio(self):
         return self.ratio
+
+    def _get_pubdate(self, item):
+        """
+        Return publish date of the item. If provider doesnt
+        have _get_pubdate function this will be used
+        """
+        if isinstance(item, dict):
+            pubdate = item.get('pubdate')
+        elif isinstance(item, (list, tuple)) and len(item) > 2:
+            pubdate = item[5]
+        else:
+            pubdate = None
+
+        return pubdate
+
+    def _get_hash(self, item):
+        """
+        Return hash of the item. If provider doesnt
+        have _get_hash function this will be used
+        """
+        if isinstance(item, dict):
+            hash = item.get('hash')
+        elif isinstance(item, (list, tuple)) and len(item) > 2:
+            hash = item[6]
+        else:
+            hash = None
+
+        return hash

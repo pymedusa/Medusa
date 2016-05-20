@@ -1,8 +1,6 @@
 # coding=utf-8
 # Author: Idan Gutman
 #
-
-#
 # This file is part of SickRage.
 #
 # SickRage is free software: you can redistribute it and/or modify
@@ -134,11 +132,11 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                         for result in entries[1:]:
 
-                            torrent = result.find_all('td')
+                            torrent = result('td')
                             if len(torrent) <= 1:
                                 break
 
-                            allAs = (torrent[1]).find_all('a')
+                            allAs = (torrent[1])('a')
 
                             try:
                                 notinternal = result.find('img', src='/static//common/user_upload.png')
@@ -153,8 +151,8 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                 torrent_size = result.find("td", class_="nobr").find_next_sibling("td").string
                                 if torrent_size:
                                     size = convert_size(torrent_size) or -1
-                                seeders = try_int((result.findAll('td')[6]).text)
-                                leechers = try_int((result.findAll('td')[7]).text)
+                                seeders = try_int((result('td')[6]).text.replace(',', ''))
+                                leechers = try_int((result('td')[7]).text.replace(',', ''))
 
                             except (AttributeError, TypeError):
                                 continue
@@ -163,13 +161,13 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                 continue
 
                             # Filter unseeded torrent
-                            if seeders < self.minseed or leechers < self.minleech:
+                            if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format
-                                               (title, seeders, leechers), logger.DEBUG)
+                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                               (title, seeders), logger.DEBUG)
                                 continue
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                             if mode != 'RSS':
                                 logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 

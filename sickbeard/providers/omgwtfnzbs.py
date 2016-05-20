@@ -1,29 +1,29 @@
 # coding=utf-8
 # Author: Jordon Smith <smith@jordon.me.uk>
 #
-
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+import re
 
 import sickbeard
 from sickbeard import logger, tvcache
 
-from sickrage.helper.common import try_int
+from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.nzb.NZBProvider import NZBProvider
 
 
@@ -60,27 +60,33 @@ class OmgwtfnzbsProvider(NZBProvider):
         if is_XML:
             # provider doesn't return xml on error
             return True
-        else:
-            if 'notice' in parsed_data:
-                description_text = parsed_data.get('notice')
 
-                if 'information is incorrect' in parsed_data.get('notice'):
-                    logger.log('Invalid api key. Check your settings', logger.WARNING)
+        if 'notice' in parsed_data:
+            description_text = parsed_data.get('notice')
+            if 'information is incorrect' in description_text:
+                logger.log('Invalid api key. Check your settings', logger.WARNING)
+            elif '0 results matched your terms' not in description_text:
+                logger.log('Unknown error: {0}'.format(description_text), logger.DEBUG)
+            return False
 
-                elif '0 results matched your terms' in parsed_data.get('notice'):
-                    return True
-
-                else:
-                    logger.log('Unknown error: %s' % description_text, logger.DEBUG)
-                    return False
-
-            return True
+        return True
 
     def _get_title_and_url(self, item):
         return item['release'], item['getnzb']
 
     def _get_size(self, item):
-        return try_int(item['sizebytes'], -1)
+        size = item.get('sizebytes', -1)
+
+        # Try to get the size from the summary tag
+        if size == -1:
+            # Units
+            units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+            summary = item.get('summary')
+            if summary:
+                size_match = re.search(ur'Size[^\d]*([0-9.]*.[A-Z]*)', summary)
+                size = convert_size(size_match.group(1), units=units) or -1 if size_match else -1
+
+        return try_int(size)
 
     def search(self, search_strings, age=0, ep_obj=None):
         results = []

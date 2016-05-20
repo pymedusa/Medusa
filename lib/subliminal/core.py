@@ -9,15 +9,15 @@ import operator
 import os.path
 import socket
 
-from babelfish import Language
+from babelfish import Language, LanguageReverseError
 from guessit import guessit
-from rarfile import NotRarFile, RarFile
+from rarfile import NotRarFile, RarCannotExec, RarFile
 import requests
 
 from .extensions import provider_manager, refiner_manager
 from .score import compute_score as default_compute_score
 from .subtitle import SUBTITLE_EXTENSIONS, get_subtitle_path
-from .utils import hash_napiprojekt, hash_opensubtitles, hash_thesubdb
+from .utils import hash_itasa, hash_napiprojekt, hash_opensubtitles, hash_shooter, hash_thesubdb
 from .video import VIDEO_EXTENSIONS, Episode, Movie, Video
 
 #: Supported archive extensions
@@ -347,7 +347,7 @@ def search_external_subtitles(path, directory=None):
         if language_code:
             try:
                 language = Language.fromietf(language_code)
-            except ValueError:
+            except (ValueError, LanguageReverseError):
                 logger.error('Cannot parse language code %r', language_code)
 
         subtitles[p] = language
@@ -383,7 +383,9 @@ def scan_video(path):
     video.size = os.path.getsize(path)
     if video.size > 10485760:
         logger.debug('Size is %d', video.size)
+        video.hashes['itasa'] = hash_itasa(path)
         video.hashes['opensubtitles'] = hash_opensubtitles(path)
+        video.hashes['shooter'] = hash_shooter(path)
         video.hashes['thesubdb'] = hash_thesubdb(path)
         video.hashes['napiprojekt'] = hash_napiprojekt(path)
         logger.debug('Computed hashes %r', video.hashes)
@@ -440,7 +442,7 @@ def scan_archive(path):
     return video
 
 
-def scan_videos(path, age=None, archives=True, **kwargs):
+def scan_videos(path, age=None, archives=True):
     """Scan `path` for videos and their subtitles.
 
     See :func:`refine` to find additional information for the video.
@@ -505,7 +507,7 @@ def scan_videos(path, age=None, archives=True, **kwargs):
             elif archives and filename.endswith(ARCHIVE_EXTENSIONS):  # archive
                 try:
                     video = scan_archive(filepath)
-                except (NotRarFile, ValueError):  # pragma: no cover
+                except (NotRarFile, RarCannotExec, ValueError):  # pragma: no cover
                     logger.exception('Error scanning archive')
                     continue
             else:  # pragma: no cover
@@ -516,7 +518,7 @@ def scan_videos(path, age=None, archives=True, **kwargs):
     return videos
 
 
-def refine(video, episode_refiners=('metadata', 'tvdb', 'omdb'), movie_refiners=('metadata', 'omdb'), **kwargs):
+def refine(video, episode_refiners=None, movie_refiners=None, **kwargs):
     """Refine a video using :ref:`refiners`.
 
     .. note::
@@ -527,14 +529,14 @@ def refine(video, episode_refiners=('metadata', 'tvdb', 'omdb'), movie_refiners=
     :type video: :class:`~subliminal.video.Video`
     :param tuple episode_refiners: refiners to use for episodes.
     :param tuple movie_refiners: refiners to use for movies.
-    :param \*\*kwargs: parameters for refiners.
+    :param \*\*kwargs: additional parameters for the :func:`~subliminal.refiners.refine` functions.
 
     """
     refiners = ()
     if isinstance(video, Episode):
-        refiners = episode_refiners or ()
+        refiners = episode_refiners or ('metadata', 'tvdb', 'omdb')
     elif isinstance(video, Movie):
-        refiners = movie_refiners or ()
+        refiners = movie_refiners or ('metadata', 'omdb')
     for refiner in refiners:
         logger.info('Refining video with %s', refiner)
         try:
@@ -548,14 +550,13 @@ def list_subtitles(videos, languages, pool_class=ProviderPool, **kwargs):
 
     The `videos` must pass the `languages` check of :func:`check_video`.
 
-    All other parameters are passed onwards to the provided `pool_class` constructor.
-
     :param videos: videos to list subtitles for.
     :type videos: set of :class:`~subliminal.video.Video`
     :param languages: languages to search for.
     :type languages: set of :class:`~babelfish.language.Language`
     :param pool_class: class to use as provider pool.
-    :type: :class:`ProviderPool`, :class:`AsyncProviderPool` or similar
+    :type pool_class: :class:`ProviderPool`, :class:`AsyncProviderPool` or similar
+    :param \*\*kwargs: additional parameters for the provided `pool_class` constructor.
     :return: found subtitles per video.
     :rtype: dict of :class:`~subliminal.video.Video` to list of :class:`~subliminal.subtitle.Subtitle`
 
@@ -588,12 +589,11 @@ def list_subtitles(videos, languages, pool_class=ProviderPool, **kwargs):
 def download_subtitles(subtitles, pool_class=ProviderPool, **kwargs):
     """Download :attr:`~subliminal.subtitle.Subtitle.content` of `subtitles`.
 
-    All other parameters are passed onwards to the `pool_class` constructor.
-
     :param subtitles: subtitles to download.
     :type subtitles: list of :class:`~subliminal.subtitle.Subtitle`
     :param pool_class: class to use as provider pool.
-    :type: :class:`ProviderPool`, :class:`AsyncProviderPool` or similar
+    :type pool_class: :class:`ProviderPool`, :class:`AsyncProviderPool` or similar
+    :param \*\*kwargs: additional parameters for the provided `pool_class` constructor.
 
     """
     with pool_class(**kwargs) as pool:
@@ -608,8 +608,6 @@ def download_best_subtitles(videos, languages, min_score=0, hearing_impaired=Fal
 
     The `videos` must pass the `languages` and `undefined` (`only_one`) checks of :func:`check_video`.
 
-    All other parameters are passed onwards to the `pool_class` constructor.
-
     :param videos: videos to download subtitles for.
     :type videos: set of :class:`~subliminal.video.Video`
     :param languages: languages to download.
@@ -620,7 +618,8 @@ def download_best_subtitles(videos, languages, min_score=0, hearing_impaired=Fal
     :param compute_score: function that takes `subtitle` and `video` as positional arguments,
         `hearing_impaired` as keyword argument and returns the score.
     :param pool_class: class to use as provider pool.
-    :type: :class:`ProviderPool`, :class:`AsyncProviderPool` or similar
+    :type pool_class: :class:`ProviderPool`, :class:`AsyncProviderPool` or similar
+    :param \*\*kwargs: additional parameters for the provided `pool_class` constructor.
     :return: downloaded subtitles per video.
     :rtype: dict of :class:`~subliminal.video.Video` to list of :class:`~subliminal.subtitle.Subtitle`
 

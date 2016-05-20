@@ -68,11 +68,9 @@ class SceneTests(test.SickbeardTestDBCase):
         """
         Test filtering of bad releases
         """
-        self._test_filter_bad_releases('Show.S02.German.Stuff-Grp', False)
-        self._test_filter_bad_releases('Show.S02.Some.Stuff-Core2HD', False)
-        self._test_filter_bad_releases('Show.S02.Some.German.Stuff-Grp', False)
-        # self._test_filter_bad_releases('German.Show.S02.Some.Stuff-Grp', True)
-        self._test_filter_bad_releases('Show.S02.This.Is.German', False)
+        self._test_filter_bad_releases('Show.S02.SAMPLE', False)
+        self._test_filter_bad_releases('Show.S02', True)
+        self._test_filter_bad_releases('Show.S02.DVDEXTRAS', False)
 
 
 class SceneExceptionTestCase(test.SickbeardTestDBCase):

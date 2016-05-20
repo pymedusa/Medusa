@@ -254,7 +254,7 @@ class Pattern(object):
     def __repr__(self):
         defined = ""
         if self.defined_at:
-            defined = "@" + six.text_type(self.defined_at)
+            defined = "@%s" % (self.defined_at,)
         return "<%s%s:%s>" % (self.__class__.__name__, defined, self.patterns)
 
 

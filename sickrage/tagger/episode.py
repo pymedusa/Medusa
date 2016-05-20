@@ -18,16 +18,19 @@ class EpisodeTags(object):
     def __init__(self, name):
         self.name = name
         self.rex = {
-            u'res': tags.resolution,
-            u'bluray': tags.bluray,
-            u'web': tags.web,
-            u'itunes': tags.itunes,
-            u'dvd': tags.dvd,
-            u'sat': tags.sat,
-            u'tv': tags.tv,
-            u'avc': tags.avc,
-            u'mpeg': tags.mpeg,
-            u'xvid': tags.xvid,
+            'res': tags.resolution,
+            'bluray': tags.bluray,
+            'web': tags.web,
+            'itunes': tags.itunes,
+            'dvd': tags.dvd,
+            'sat': tags.sat,
+            'tv': tags.tv,
+            'avc': tags.avc,
+            'mpeg': tags.mpeg,
+            'xvid': tags.xvid,
+            'wide': tags.widescreen,
+            'aussie': tags.aussie,
+            'netflix': tags.netflix,
         }
 
     def _get_match_obj(self, attr, regex=None, flags=0):
@@ -76,6 +79,17 @@ class EpisodeTags(object):
         match = self._get_match_obj(attr)
         return '' if not match else match.group('scan').lower()
 
+    @property
+    def widescreen(self):
+        """
+        The wide screen tag found in the name
+
+        :return: an empty string if not found
+        """
+        attr = 'wide'
+        match = self._get_match_obj(attr)
+        return '' if not match else match.group()
+
     # SOURCES
     @property
     def bluray(self):
@@ -119,6 +133,10 @@ class EpisodeTags(object):
         """
         if 'dlmux' in self.name.lower():
             return 'dlmux'
+            
+        if self.netflix: 
+            return self.netflix
+            
         else:
             attr = 'web'
             match = self._get_match_obj(attr)
@@ -192,7 +210,7 @@ class EpisodeTags(object):
 
         :returns: an empty string if not found
         """
-        return u'' if self.avc_non_free else self.avc
+        return '' if self.avc_non_free else self.avc
 
     @property
     def avc_non_free(self):
@@ -202,7 +220,7 @@ class EpisodeTags(object):
 
         :returns: an empty string if not found
         """
-        return u'' if not self.avc.lower().startswith('h') else self.avc
+        return '' if not self.avc.lower().startswith('h') else self.avc
 
     @property
     def mpeg(self):
@@ -241,7 +259,7 @@ class EpisodeTags(object):
         attr = 'hrws'
         match = None
         if self.avc and self.tv == 'pd':
-            regex = re.compile(ur'(hr.ws.pdtv).%s' % self.avc, re.IGNORECASE)
+            regex = re.compile(r'(hr.ws.pdtv).%s' % self.avc, re.IGNORECASE)
             match = self._get_match_obj(attr, regex)
         return '' if not match else match.group()
 
@@ -255,6 +273,28 @@ class EpisodeTags(object):
         attr = 'raw'
         match = None
         if self.res and self.tv == 'hd':
-            regex = re.compile(ur'(%s.hdtv)' % self.res, re.IGNORECASE)
+            regex = re.compile(r'(%s.hdtv)' % self.res, re.IGNORECASE)
             match = self._get_match_obj(attr, regex)
+        return '' if not match else match.group()
+
+    @property
+    def aussie(self):
+        """
+        Aussie p2p release groups
+
+        :return: the aussie p2p release group
+        """
+        attr = 'aussie'
+        match = self._get_match_obj(attr)
+        return '' if not match else match.group()
+
+    @property
+    def netflix(self):
+        """
+        Netflix tag found in name
+
+        :return: an empty string if not found
+        """
+        attr = 'netflix'
+        match = self._get_match_obj(attr)
         return '' if not match else match.group()

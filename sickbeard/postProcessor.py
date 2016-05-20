@@ -162,7 +162,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         """
         def recursive_glob(treeroot, pattern):
             results = []
-            for base, _, files in ek(os.walk, treeroot.encode(sickbeard.SYS_ENCODING)):
+            for base, _, files in ek(os.walk, treeroot):
                 goodfiles = fnmatch.filter(files, pattern)
                 results.extend(ek(os.path.join, base, f) for f in goodfiles)
             return results
@@ -501,7 +501,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             search_name = re.sub(r"[\.\- ]", "_", curName)
             sql_results = main_db_con.select("SELECT showid, season, quality, version, resource FROM history WHERE resource LIKE ? AND (action % 100 = 4 OR action % 100 = 6)", [search_name])
 
-            if len(sql_results) == 0:
+            if not sql_results:
                 continue
 
             indexer_id = int(sql_results[0]["showid"])
@@ -550,11 +550,11 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         else:
             logger.log(u"Parse result not sufficient (all following have to be set). will not save release name",
                        logger.DEBUG)
-            logger.log(u"Parse result(series_name): " + str(parse_result.series_name), logger.DEBUG)
-            logger.log(u"Parse result(season_number): " + str(parse_result.season_number), logger.DEBUG)
-            logger.log(u"Parse result(episode_numbers): " + str(parse_result.episode_numbers), logger.DEBUG)
-            logger.log(u" or Parse result(air_date): " + str(parse_result.air_date), logger.DEBUG)
-            logger.log(u"Parse result(release_group): " + str(parse_result.release_group), logger.DEBUG)
+            logger.log(u"Parse result(series_name): {}".format(parse_result.series_name), logger.DEBUG)
+            logger.log(u"Parse result(season_number): {}".format(parse_result.season_number), logger.DEBUG)
+            logger.log(u"Parse result(episode_numbers): {}".format(parse_result.episode_numbers), logger.DEBUG)
+            logger.log(u" or Parse result(air_date): {}".format(parse_result.air_date), logger.DEBUG)
+            logger.log(u"Parse result(release_group): {}".format(parse_result.release_group), logger.DEBUG)
 
     def _analyze_name(self, name):
         """
@@ -842,17 +842,32 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         :param ep_obj: The object to use when calling the extra script
         """
 
-        filepath = self.file_path
-        if isinstance(filepath, unicode):
-            filepath = filepath.encode(sickbeard.SYS_ENCODING)
+        if not sickbeard.EXTRA_SCRIPTS:
+            return
+
+        file_path = self.file_path
+        if isinstance(file_path, unicode):
+            try:
+                file_path = file_path.encode(sickbeard.SYS_ENCODING)
+            except UnicodeEncodeError:
+                # ignore it
+                pass
 
         ep_location = ep_obj.location
         if isinstance(ep_location, unicode):
-            ep_location = ep_location.encode(sickbeard.SYS_ENCODING)
+            try:
+                ep_location = ep_location.encode(sickbeard.SYS_ENCODING)
+            except UnicodeEncodeError:
+                # ignore it
+                pass
 
         for curScriptName in sickbeard.EXTRA_SCRIPTS:
             if isinstance(curScriptName, unicode):
-                curScriptName = curScriptName.encode(sickbeard.SYS_ENCODING)
+                try:
+                    curScriptName = curScriptName.encode(sickbeard.SYS_ENCODING)
+                except UnicodeEncodeError:
+                    # ignore it
+                    pass
 
             # generate a safe command line string to execute the script and provide all the parameters
             script_cmd = [piece for piece in re.split(r'(\'.*?\'|".*?"| )', curScriptName) if piece.strip()]
@@ -860,7 +875,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             self._log(u"Absolute path to script: {}".format(script_cmd[0]), logger.DEBUG)
 
             script_cmd += [
-                str(ep_location), str(filepath), str(ep_obj.show.indexerid),
+                ep_location, file_path, str(ep_obj.show.indexerid),
                 str(ep_obj.season), str(ep_obj.episode), str(ep_obj.airdate)
             ]
 
@@ -893,20 +908,20 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
         _, old_ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)
 
-        # if SR downloaded this on purpose we likely have a priority download
+        # if Medusa downloaded this on purpose we likely have a priority download
         if self.in_history or ep_obj.status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
             # if the episode is still in a snatched status, then we can assume we want this
             if not self.in_history:
-                self._log(u"SR snatched this episode and it is not processed before", logger.DEBUG)
+                self._log(u"Medusa snatched this episode and it is not processed before", logger.DEBUG)
                 return True
 
             # if it's in history, we only want it if the new quality is higher or if it's a proper of equal or higher quality
             if new_ep_quality > old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-                self._log(u"SR snatched this episode and it is a higher quality so I'm marking it as priority", logger.DEBUG)
+                self._log(u"Medusa snatched this episode and it is a higher quality so I'm marking it as priority", logger.DEBUG)
                 return True
 
             if self.is_proper and new_ep_quality >= old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-                self._log(u"SR snatched this episode and it is a proper of equal or higher quality so I'm marking it as priority", logger.DEBUG)
+                self._log(u"Medusa snatched this episode and it is a proper of equal or higher quality so I'm marking it as priority", logger.DEBUG)
                 return True
 
             return False
@@ -954,7 +969,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         # try to find the file info
         (show, season, episodes, quality, version) = self._find_info()
         if not show:
-            self._log(u"This show isn't in your list, you need to add it to SR before post-processing an episode")
+            self._log(u"This show isn't in your list, you need to add it to Medusa before post-processing an episode")
             raise EpisodePostProcessingFailedException()
         elif season is None or not episodes:
             self._log(u"Not enough information to determine what episode this is. Quitting post-processing")
@@ -994,7 +1009,9 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 self._log(u"File exists and new file is same size, pretending we did something")
                 return True
 
-            if new_ep_quality <= old_ep_quality != common.Quality.UNKNOWN and existing_file_status != PostProcessor.DOESNT_EXIST:
+            if all([new_ep_quality <= old_ep_quality,
+                    old_ep_quality != common.Quality.UNKNOWN,
+                    existing_file_status != PostProcessor.DOESNT_EXIST]):
                 if self.is_proper and new_ep_quality == old_ep_quality:
                     self._log(u"New file is a proper/repack, marking it safe to replace")
                 else:
@@ -1166,7 +1183,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                     cur_ep.download_subtitles(force=True)
 
         # now that processing has finished, we can put the info in the DB. If we do it earlier, then when processing fails, it won't try again.
-        if len(sql_l) > 0:
+        if sql_l:
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 
@@ -1177,7 +1194,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 cur_ep.location = ek(os.path.join, dest_path, new_file_name)
                 sql_l.append(cur_ep.get_sql())
 
-        if len(sql_l) > 0:
+        if sql_l:
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 

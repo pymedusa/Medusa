@@ -67,6 +67,9 @@ class ShowQueue(generic_queue.GenericQueue):
     def isInSubtitleQueue(self, show):
         return self._isInQueue(show, (ShowQueueActions.SUBTITLE,))
 
+    def isInRemoveQueue(self, show):
+        return self._isInQueue(show, (ShowQueueActions.REMOVE,))
+
     def isBeingAdded(self, show):
         return self._isBeingSomethinged(show, (ShowQueueActions.ADD,))
 
@@ -82,8 +85,37 @@ class ShowQueue(generic_queue.GenericQueue):
     def isBeingSubtitled(self, show):
         return self._isBeingSomethinged(show, (ShowQueueActions.SUBTITLE,))
 
+    def isBeingRemoved(self, show):
+        return self._isBeingSomethinged(show, (ShowQueueActions.REMOVE,))
+
     def _getLoadingShowList(self):
         return [x for x in self.queue + [self.currentItem] if x is not None and x.isLoading]
+
+    def getQueueActionMessage(self, show):
+        show_message = None
+
+        if self.isBeingAdded(show):
+            show_message = 'This show is in the process of being downloaded - the info below is incomplete.'
+
+        elif self.isBeingUpdated(show):
+            show_message = 'The information on this page is in the process of being updated.'
+
+        elif self.isBeingRefreshed(show):
+            show_message = 'The episodes below are currently being refreshed from disk'
+
+        elif self.isBeingSubtitled(show):
+            show_message = 'Currently downloading subtitles for this show'
+
+        elif self.isInRefreshQueue(show):
+            show_message = 'This show is queued to be refreshed.'
+
+        elif self.isInUpdateQueue(show):
+            show_message = 'This show is queued and awaiting an update.'
+
+        elif self.isInSubtitleQueue(show):
+            show_message = 'This show is queued and awaiting subtitles download.'
+
+        return show_message
 
     loadingShowList = property(_getLoadingShowList)
 
@@ -166,7 +198,10 @@ class ShowQueue(generic_queue.GenericQueue):
         if not hasattr(show, u'indexerid'):
             raise CantRemoveShowException(u'Failed removing show: Show does not have an indexer id')
 
-        if self._isInQueue(show, (ShowQueueActions.REMOVE,)):
+        if self.isBeingRemoved(show):
+            raise CantRemoveShowException(u'[{!s}]: Show is already being removed'.format(show.indexerid))
+
+        if self.isInRemoveQueue(show):
             raise CantRemoveShowException(u'[{!s}]: Show is already queued to be removed'.format(show.indexerid))
 
         # remove other queued actions for this show.
@@ -176,6 +211,9 @@ class ShowQueue(generic_queue.GenericQueue):
 
         queue_item_obj = QueueItemRemove(show=show, full=full)
         self.add_item(queue_item_obj)
+
+        # Show removal has been queued, let's updaste the sickbeard.RECENTLY_DELETED global, to keep track of it
+        sickbeard.RECENTLY_DELETED.update([show.indexerid])
 
         return queue_item_obj
 
@@ -239,9 +277,13 @@ class QueueItemAdd(ShowQueueItem):
     def __init__(self, indexer, indexer_id, showDir, default_status, quality, flatten_folders, lang, subtitles, anime,
                  scene, paused, blacklist, whitelist, default_status_after, root_dir):
 
+        if isinstance(showDir, str):
+            self.showDir = showDir.decode('utf-8')
+        else:
+            self.showDir = showDir
+
         self.indexer = indexer
         self.indexer_id = indexer_id
-        self.showDir = showDir
         self.default_status = default_status
         self.quality = quality
         self.flatten_folders = flatten_folders
@@ -434,9 +476,9 @@ class QueueItemAdd(ShowQueueItem):
 
         logger.log(u"Retrieving show info from IMDb", logger.DEBUG)
         try:
-            self.show.loadIMDbInfo()
+            self.show.load_imdb_info()
         except imdb_exceptions.IMDbError as e:
-            logger.log(u" Something wrong on IMDb api: " + ex(e), logger.WARNING)
+            logger.log(u"Something wrong on IMDb api: " + ex(e), logger.WARNING)
         except Exception as e:
             logger.log(u"Error loading IMDb info: " + ex(e), logger.ERROR)
 
@@ -486,7 +528,7 @@ class QueueItemAdd(ShowQueueItem):
 
             # add show to trakt.tv library
             if sickbeard.TRAKT_SYNC:
-                sickbeard.traktCheckerScheduler.action.add_show_watchlist(self.show)
+                sickbeard.traktCheckerScheduler.action.add_show_trakt_library(self.show)
 
             if sickbeard.TRAKT_SYNC_WATCHLIST:
                 logger.log(u"update watchlist")
@@ -619,9 +661,9 @@ class QueueItemUpdate(ShowQueueItem):
 
         logger.log(u"Retrieving show info from IMDb", logger.DEBUG)
         try:
-            self.show.loadIMDbInfo()
+            self.show.load_imdb_info()
         except imdb_exceptions.IMDbError as e:
-            logger.log(u" Something wrong on IMDb api: " + ex(e), logger.WARNING)
+            logger.log(u"Something wrong on IMDb api: " + ex(e), logger.WARNING)
         except Exception as e:
             logger.log(u"Error loading IMDb info: " + ex(e), logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)

@@ -18,12 +18,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import httplib
-import urllib
-import urllib2
 import socket
 import base64
 import time
+
+from requests.compat import urlencode, unquote, unquote_plus, quote
+from six.moves.urllib.request import Request, urlopen
+from six.moves.urllib.error import URLError
+from six.moves.http_client import BadStatusLine
 
 import sickbeard
 from sickbeard import logger, common
@@ -221,13 +223,13 @@ class Notifier(object):
             if isinstance(command[key], unicode):
                 command[key] = command[key].encode('utf-8')
 
-        enc_command = urllib.urlencode(command)
+        enc_command = urlencode(command)
         logger.log(u"%s encoded API command: %r" % (dest_app, enc_command), logger.DEBUG)
 
         # url = 'http://%s/xbmcCmds/xbmcHttp/?%s' % (host, enc_command)  # maybe need for old plex?
         url = 'http://%s/kodiCmds/kodiHttp/?%s' % (host, enc_command)
         try:
-            req = urllib2.Request(url)
+            req = Request(url)
             # if we have a password, use authentication
             if password:
                 base64string = base64.encodestring('%s:%s' % (username, password))[:-1]
@@ -238,8 +240,8 @@ class Notifier(object):
                 logger.log(u"Contacting %s via url: %s" % (dest_app, ss(url)), logger.DEBUG)
 
             try:
-                response = urllib2.urlopen(req)
-            except (httplib.BadStatusLine, urllib2.URLError) as e:
+                response = urlopen(req)
+            except (BadStatusLine, URLError) as e:
                 logger.log(u"Couldn't contact %s HTTP at %r : %r" % (dest_app, url, ex(e)), logger.DEBUG)
                 return False
 
@@ -302,7 +304,7 @@ class Notifier(object):
                 logger.log(u"Invalid response for " + showName + " on " + host, logger.DEBUG)
                 return False
 
-            encSqlXML = urllib.quote(sqlXML, ':\\/<>')
+            encSqlXML = quote(sqlXML, ':\\/<>')
             try:
                 et = etree.fromstring(encSqlXML)
             except SyntaxError as e:
@@ -317,7 +319,7 @@ class Notifier(object):
 
             for path in paths:
                 # we do not need it double-encoded, gawd this is dumb
-                unEncPath = urllib.unquote(path.text).decode(sickbeard.SYS_ENCODING)
+                unEncPath = unquote(path.text).decode(sickbeard.SYS_ENCODING)
                 logger.log(u"KODI Updating " + showName + " on " + host + " at " + unEncPath, logger.DEBUG)
                 updateCommand = {'command': 'ExecBuiltIn', 'parameter': 'KODI.updatelibrary(video, %s)' % unEncPath}
                 request = self._send_to_kodi(updateCommand, host)
@@ -373,7 +375,7 @@ class Notifier(object):
 
         url = 'http://%s/jsonrpc' % host
         try:
-            req = urllib2.Request(url, command)
+            req = Request(url, command)
             req.add_header("Content-type", "application/json")
             # if we have a password, use authentication
             if password:
@@ -385,8 +387,8 @@ class Notifier(object):
                 logger.log(u"Contacting %s via url: %s" % (dest_app, ss(url)), logger.DEBUG)
 
             try:
-                response = urllib2.urlopen(req)
-            except (httplib.BadStatusLine, urllib2.URLError) as e:
+                response = urlopen(req)
+            except (BadStatusLine, URLError) as e:
                 if sickbeard.KODI_ALWAYS_ON:
                     logger.log(u"Error while trying to retrieve %s API version for %s: %r" % (dest_app, host, ex(e)), logger.WARNING)
                 return False
@@ -429,7 +431,7 @@ class Notifier(object):
 
         # if we're doing per-show
         if showName:
-            showName = urllib.unquote_plus(showName)
+            showName = unquote_plus(showName)
             tvshowid = -1
             path = ''
 

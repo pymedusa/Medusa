@@ -75,7 +75,7 @@
                             <label>
                                 <span class="component-title">Backlog search frequency</span>
                                 <span class="component-desc">
-                                    <input type="number" min="720" step="60" name="backlog_frequency" value="${sickbeard.BACKLOG_FREQUENCY}" class="form-control input-sm input75" autocapitalize="off" />
+                                    <input type="number" min="720" step="1" name="backlog_frequency" value="${sickbeard.BACKLOG_FREQUENCY}" class="form-control input-sm input75" autocapitalize="off" />
                                     <p>time in minutes between searches (min. ${sickbeard.MIN_BACKLOG_FREQUENCY})</p>
                                 </span>
                             </label>
@@ -170,6 +170,17 @@
                                     Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br>
                                     separate languages with a comma, e.g. "lang1,lang2,lang3
                                     </div>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="field-pair">
+                            <label for="ignore_und_subs">
+                                <span class="component-title">Ignore unknown subbed releases</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="ignore_und_subs" id="ignore_und_subs" ${('', 'checked="checked"')[bool(sickbeard.IGNORE_UND_SUBS)]}/>
+                                    Ignore subbed releases without language names <br>
+                                    Filter words: subbed, subpack, subbed, subs, etc.)
                                 </span>
                             </label>
                         </div>
@@ -507,7 +518,6 @@
                                         </label>
                                     </div>
 
-                                    <div></div>
                                     <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                                 </div>
                             </div>

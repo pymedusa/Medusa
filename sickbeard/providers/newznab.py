@@ -44,7 +44,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
     # pylint: disable=too-many-arguments
 
     def __init__(self, name, url, key='0', catIDs='5030,5040', search_mode='eponly',
-                 search_fallback=False, enable_daily=True, enable_backlog=False):
+                 search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
 
         NZBProvider.__init__(self, name)
 
@@ -54,6 +54,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         self.search_mode = search_mode
         self.search_fallback = search_fallback
         self.enable_daily = enable_daily
+        self.enable_manualsearch = enable_manualsearch
         self.enable_backlog = enable_backlog
 
         # 0 in the key spot indicates that no key is needed
@@ -76,14 +77,24 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         """
         Generates a '|' delimited string of instance attributes, for saving to config.ini
         """
-        return self.name + '|' + self.url + '|' + self.key + '|' + self.catIDs + '|' + str(
-            int(self.enabled)) + '|' + self.search_mode + '|' + str(int(self.search_fallback)) + '|' + str(
-                int(self.enable_daily)) + '|' + str(int(self.enable_backlog))
+        return '|'.join([
+            self.name, self.url, self.key, self.catIDs, str(int(self.enabled)),
+            self.search_mode, str(int(self.search_fallback)),
+            str(int(self.enable_daily)), str(int(self.enable_backlog)), str(int(self.enable_manualsearch))
+        ])
 
     @staticmethod
     def get_providers_list(data):
-        default_list = [x for x in [NewznabProvider._make_provider(x) for x in NewznabProvider._get_default_providers().split('!!!')] if x]
-        providers_list = [x for x in [NewznabProvider._make_provider(x) for x in data.split('!!!')] if x]
+        default_list = [
+            provider for provider in
+            (NewznabProvider._make_provider(x) for x in NewznabProvider._get_default_providers().split('!!!'))
+            if provider]
+
+        providers_list = [
+            provider for provider in
+            (NewznabProvider._make_provider(x) for x in data.split('!!!'))
+            if provider]
+
         seen_values = set()
         providers_set = []
 
@@ -95,7 +106,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 seen_values.add(value)
 
         providers_list = providers_set
-        providers_dict = dict(zip([x.name for x in providers_list], providers_list))
+        providers_dict = dict(zip([provider.name for provider in providers_list], providers_list))
 
         for default in default_list:
             if not default:
@@ -113,9 +124,10 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 providers_dict[default.name].search_fallback = default.search_fallback
                 providers_dict[default.name].enable_daily = default.enable_daily
                 providers_dict[default.name].enable_backlog = default.enable_backlog
+                providers_dict[default.name].enable_manualsearch = default.enable_manualsearch
                 providers_dict[default.name].catIDs = default.catIDs
 
-        return [x for x in providers_list if x]
+        return [provider for provider in providers_list if provider]
 
     def image_name(self):
         """
@@ -176,27 +188,23 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
             if just_caps:
                 return
 
-            for category in html.find_all('category'):
+            for category in html('category'):
                 if 'TV' in category.get('name', '') and category.get('id', ''):
                     return_categories.append({'id': category['id'], 'name': category['name']})
-                    for subcat in category.find_all('subcat'):
+                    for subcat in category('subcat'):
                         if subcat.get('name', '') and subcat.get('id', ''):
                             return_categories.append({'id': subcat['id'], 'name': subcat['name']})
 
             return True, return_categories, ''
 
-        error_string = 'Error getting xml for [{}]'.format(self.name)
-        logger.log(error_string, logger.WARNING)
-        return False, return_categories, error_string
-
     @staticmethod
     def _get_default_providers():
-        # name|url|key|catIDs|enabled|search_mode|search_fallback|enable_daily|enable_backlog
-        return 'NZB.Cat|https://nzb.cat/||5030,5040,5010|0|eponly|1|1|1!!!' + \
-            'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0!!!' + \
-            'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0!!!' + \
-            'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0!!!' + \
-            'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|1|1'
+        # name|url|key|catIDs|enabled|search_mode|search_fallback|enable_daily|enable_backlog|enable_manualsearch
+        return 'NZB.Cat|https://nzb.cat/||5030,5040,5010|0|eponly|0|0|0|0!!!' + \
+            'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0|0!!!' + \
+            'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0|0!!!' + \
+            'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0|0!!!' + \
+            'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0'
 
     def _check_auth(self):
         """
@@ -214,7 +222,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         Checks that the returned data is valid
         Returns: _check_auth if valid otherwise False if there is an error
         """
-        if data.find_all('categories') + data.find_all('item'):
+        if data('categories') + data('item'):
             return self._check_auth()
 
         try:
@@ -233,30 +241,28 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         if not config:
             return None
 
-        enable_backlog = 0
-        enable_daily = 0
-        search_fallback = 0
-        search_mode = 'eponly'
-
         try:
             values = config.split('|')
+            # Pad values with None for each missing value
+            values.extend([None for x in range(len(values), 10)])
 
-            if len(values) == 9:
-                name, url, key, category_ids, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
-            else:
-                name = values[0]
-                url = values[1]
-                key = values[2]
-                category_ids = values[3]
-                enabled = values[4]
+            (name, url, key, category_ids, enabled,
+             search_mode, search_fallback,
+             enable_daily, enable_backlog, enable_manualsearch
+             ) = values
+
         except ValueError:
-            logger.log('Skipping Newznab provider string: \'{}\', incorrect format'.format(config), logger.ERROR)
+            logger.log('Skipping Newznab provider string: {config!r}, incorrect format'.format
+                       (config=config), logger.ERROR)
             return None
 
         new_provider = NewznabProvider(
-            name, url, key=key, catIDs=category_ids, search_mode=search_mode, search_fallback=search_fallback,
-            enable_daily=enable_daily, enable_backlog=enable_backlog
-        )
+            name, url, key=key, catIDs=category_ids,
+            search_mode=search_mode or 'eponly',
+            search_fallback=search_fallback or 0,
+            enable_daily=enable_daily or 0,
+            enable_backlog=enable_backlog or 0,
+            enable_manualsearch=enable_manualsearch or 0)
         new_provider.enabled = enabled == '1'
 
         return new_provider
@@ -329,7 +335,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                     except AttributeError:
                         torznab = False
 
-                    for item in html.find_all('item'):
+                    for item in html('item'):
                         try:
                             title = item.title.get_text(strip=True)
                             download_url = None
@@ -346,23 +352,24 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                             if not (title and download_url):
                                 continue
 
-                            seeders = leechers = None
+                            seeders = leechers = -1
                             if 'gingadaddy' in self.url:
                                 size_regex = re.search(r'\d*.?\d* [KMGT]B', str(item.description))
                                 item_size = size_regex.group() if size_regex else -1
                             else:
                                 item_size = item.size.get_text(strip=True) if item.size else -1
-                                for attr in item.find_all('newznab:attr') + item.find_all('torznab:attr'):
+                                for attr in item('newznab:attr') + item('torznab:attr'):
                                     item_size = attr['value'] if attr['name'] == 'size' else item_size
                                     seeders = try_int(attr['value']) if attr['name'] == 'seeders' else seeders
-                                    leechers = try_int(attr['value']) if attr['name'] == 'peers' else leechers
+                                    peers = try_int(attr['value']) if attr['name'] == 'peers' else None
+                                    leechers = peers - seeders if peers else leechers
 
-                            if not item_size or (torznab and (seeders is None or leechers is None)):
+                            if not item_size or (torznab and (seeders is -1 or leechers is -1)):
                                 continue
 
                             size = convert_size(item_size) or -1
 
-                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers}
+                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                             items.append(result)
                         except StandardError:
                             continue

@@ -447,8 +447,17 @@
   video_codec: h264
   release_group: IMMERSE
 
+? Marvels.Agents.of.S.H.I.E.L.D-S01E06.720p.HDTV.X264-DIMENSION.mkv
+: title: Marvels Agents of S.H.I.E.L.D
+  season: 1
+  episode: 6
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: DIMENSION
+
 ? Marvels.Agents.of.S.H.I.E.L.D.S01E06.720p.HDTV.X264-DIMENSION.mkv
-: title: Marvels Agents of S H I E L D
+: title: Marvels Agents of S.H.I.E.L.D.
   season: 1
   episode: 6
   screen_size: 720p
@@ -457,7 +466,7 @@
   release_group: DIMENSION
 
 ? Marvels.Agents.of.S.H.I.E.L.D..S01E06.720p.HDTV.X264-DIMENSION.mkv
-: title: Marvels Agents of S H I E L D
+: title: Marvels Agents of S.H.I.E.L.D.
   season: 1
   episode: 6
   screen_size: 720p
@@ -1755,4 +1764,16 @@
   release_group: W4F
   season: 2
   title: Running Wild With Bear Grylls
+  video_codec: h264
+
+? Homeland.S05E11.Our.Man.in.Damascus.German.Sub.720p.HDTV.x264.iNTERNAL-BaCKToRG
+: episode: 11
+  episode_title: Our Man in Damascus
+  format: HDTV
+  release_group: iNTERNAL-BaCKToRG
+  screen_size: 720p
+  season: 5
+  subtitle_language: de
+  title: Homeland
+  type: episode
   video_codec: h264

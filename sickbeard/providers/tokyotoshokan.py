@@ -71,14 +71,14 @@ class TokyoToshokanProvider(TorrentProvider):  # pylint: disable=too-many-instan
 
                 with BS4Parser(data, 'html5lib') as soup:
                     torrent_table = soup.find('table', class_='listing')
-                    torrent_rows = torrent_table.find_all('tr') if torrent_table else []
+                    torrent_rows = torrent_table('tr') if torrent_table else []
 
                     # Continue only if one Release is found
                     if len(torrent_rows) < 2:
                         logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
                         continue
 
-                    a = 1 if len(torrent_rows[0].find_all('td')) < 2 else 0
+                    a = 1 if len(torrent_rows[0]('td')) < 2 else 0
 
                     for top, bot in zip(torrent_rows[a::2], torrent_rows[a + 1::2]):
                         try:
@@ -100,13 +100,13 @@ class TokyoToshokanProvider(TorrentProvider):  # pylint: disable=too-many-instan
                             continue
 
                         # Filter unseeded torrent
-                        if seeders < self.minseed or leechers < self.minleech:
+                        if seeders < min(self.minseed, 1):
                             if mode != 'RSS':
-                                logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format
-                                           (title, seeders, leechers), logger.DEBUG)
+                                logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                           (title, seeders), logger.DEBUG)
                             continue
 
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                         if mode != 'RSS':
                             logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 

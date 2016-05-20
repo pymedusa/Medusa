@@ -1,5 +1,4 @@
 # coding=utf-8
-
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # Author: Gordon Turner <gordonturner@gordonturner.ca>
 # URL: http://code.google.com/p/sickbeard/
@@ -27,6 +26,7 @@ import datetime
 import sickbeard
 from sickbeard import logger, helpers
 from sickbeard.metadata import generic
+from sickrage.helper.common import episode_num
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex, ShowNotFoundException
 
@@ -69,19 +69,19 @@ class TIVOMetadata(generic.GenericMetadata):
 
         self.name = 'TIVO'
 
-        self._ep_nfo_extension = "txt"
+        self._ep_nfo_extension = 'txt'
 
         # web-ui metadata template
-        self.eg_show_metadata = "<i>not supported</i>"
-        self.eg_episode_metadata = "Season##\\.meta\\<i>filename</i>.ext.txt"
-        self.eg_fanart = "<i>not supported</i>"
-        self.eg_poster = "<i>not supported</i>"
-        self.eg_banner = "<i>not supported</i>"
-        self.eg_episode_thumbnails = "<i>not supported</i>"
-        self.eg_season_posters = "<i>not supported</i>"
-        self.eg_season_banners = "<i>not supported</i>"
-        self.eg_season_all_poster = "<i>not supported</i>"
-        self.eg_season_all_banner = "<i>not supported</i>"
+        self.eg_show_metadata = '<i>not supported</i>'
+        self.eg_episode_metadata = 'Season##\\.meta\\<i>filename</i>.ext.txt'
+        self.eg_fanart = '<i>not supported</i>'
+        self.eg_poster = '<i>not supported</i>'
+        self.eg_banner = '<i>not supported</i>'
+        self.eg_episode_thumbnails = '<i>not supported</i>'
+        self.eg_season_posters = '<i>not supported</i>'
+        self.eg_season_banners = '<i>not supported</i>'
+        self.eg_season_all_poster = '<i>not supported</i>'
+        self.eg_season_all_banner = '<i>not supported</i>'
 
     # Override with empty methods for unsupported features
     def retrieveShowMetadata(self, folder):
@@ -138,12 +138,16 @@ class TIVOMetadata(generic.GenericMetadata):
         ep_obj: a TVEpisode object to get the path for
         """
         if ek(os.path.isfile, ep_obj.location):
-            metadata_file_name = ek(os.path.basename, ep_obj.location) + "." + self._ep_nfo_extension
+            metadata_file_name = '{file}.{extension}'.format(
+                file=ek(os.path.basename, ep_obj.location),
+                extension=self._ep_nfo_extension
+            )
             metadata_dir_name = ek(os.path.join, ek(os.path.dirname, ep_obj.location), '.meta')
             metadata_file_path = ek(os.path.join, metadata_dir_name, metadata_file_name)
         else:
-            logger.log(u"Episode location doesn't exist: " + str(ep_obj.location), logger.DEBUG)
-            return ''
+            logger.log(u'Episode location does not exist: {path}'.format
+                       (path=ep_obj.location), logger.DEBUG)
+            return u''
         return metadata_file_path
 
     def _ep_data(self, ep_obj):
@@ -164,52 +168,54 @@ class TIVOMetadata(generic.GenericMetadata):
         http://pytivo.sourceforge.net/wiki/index.php/Metadata
         """
 
-        data = ""
+        data = ''
 
         eps_to_write = [ep_obj] + ep_obj.relatedEps
 
         indexer_lang = ep_obj.show.lang
 
         try:
-            lINDEXER_API_PARMS = sickbeard.indexerApi(ep_obj.show.indexer).api_params.copy()
+            l_indexer_api_params = sickbeard.indexerApi(ep_obj.show.indexer).api_params.copy()
 
-            lINDEXER_API_PARMS['actors'] = True
+            l_indexer_api_params['actors'] = True
 
             if indexer_lang and not indexer_lang == sickbeard.INDEXER_DEFAULT_LANGUAGE:
-                lINDEXER_API_PARMS['language'] = indexer_lang
+                l_indexer_api_params['language'] = indexer_lang
 
             if ep_obj.show.dvdorder != 0:
-                lINDEXER_API_PARMS['dvdorder'] = True
+                l_indexer_api_params['dvdorder'] = True
 
-            t = sickbeard.indexerApi(ep_obj.show.indexer).indexer(**lINDEXER_API_PARMS)
-            myShow = t[ep_obj.show.indexerid]
+            t = sickbeard.indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
+            my_show = t[ep_obj.show.indexerid]
         except sickbeard.indexer_shownotfound as e:
-            raise ShowNotFoundException(str(e))
-        except sickbeard.indexer_error as e:
-            logger.log(u"Unable to connect to " + sickbeard.indexerApi(
-                ep_obj.show.indexer).name + " while creating meta files - skipping - " + str(e), logger.ERROR)
+            raise ShowNotFoundException(e.message)
+        except sickbeard.indexer_error:
+            logger.log(u'Unable to connect to {indexer} while creating meta files - skipping it.'.format
+                       (indexer=sickbeard.indexerApi(ep_obj.show.indexer).name), logger.WARNING)
             return False
 
-        for curEpToWrite in eps_to_write:
+        for ep_to_write in eps_to_write:
 
             try:
-                myEp = myShow[curEpToWrite.season][curEpToWrite.episode]
+                my_ep = my_show[ep_to_write.season][ep_to_write.episode]
             except (sickbeard.indexer_episodenotfound, sickbeard.indexer_seasonnotfound):
-                logger.log(u"Unable to find episode %dx%d on %s... has it been removed? Should I delete from db?" %
-                           (curEpToWrite.season, curEpToWrite.episode, sickbeard.indexerApi(ep_obj.show.indexer).name))
+                logger.log(u'Unable to find episode {ep_num} on {indexer}... '
+                           u'has it been removed? Should I delete from db?'.format
+                           (ep_num=episode_num(ep_to_write.season, ep_to_write.episode),
+                            indexer=sickbeard.indexerApi(ep_obj.show.indexer).name))
                 return None
 
-            if ep_obj.season == 0 and not getattr(myEp, 'firstaired', None):
-                myEp["firstaired"] = str(datetime.date.fromordinal(1))
+            if ep_obj.season == 0 and not getattr(my_ep, 'firstaired', None):
+                my_ep['firstaired'] = str(datetime.date.fromordinal(1))
 
-            if not (getattr(myEp, 'episodename', None) and getattr(myEp, 'firstaired', None)):
+            if not (getattr(my_ep, 'episodename', None) and getattr(my_ep, 'firstaired', None)):
                 return None
 
-            if getattr(myShow, 'seriesname', None):
-                data += ("title : " + myShow["seriesname"] + "\n")
-                data += ("seriesTitle : " + myShow["seriesname"] + "\n")
+            if getattr(my_show, 'seriesname', None):
+                data += ('title : {title}\n'.format(title=my_show['seriesname']))
+                data += ('seriesTitle : {title}\n'.format(title=my_show['seriesname']))
 
-            data += ("episodeTitle : " + curEpToWrite._format_pattern('%Sx%0E %EN') + "\n")
+            data += ('episodeTitle : {title}\n'.format(title=ep_to_write._format_pattern('%Sx%0E %EN')))
 
             # This should be entered for episodic shows and omitted for movies. The standard tivo format is to enter
             # the season number followed by the episode number for that season. For example, enter 201 for season 2
@@ -220,66 +226,66 @@ class TIVOMetadata(generic.GenericMetadata):
             # This seems to disappear once the video is transferred to TiVo.
 
             # NOTE: May not be correct format, missing season, but based on description from wiki leaving as is.
-            data += ("episodeNumber : " + str(curEpToWrite.episode) + "\n")
+            data += ('episodeNumber : {ep_num}\n'.format(ep_to_write.episode))
 
             # Must be entered as true or false. If true, the year from originalAirDate will be shown in parentheses
             # after the episode's title and before the description on the Program screen.
 
             # FIXME: Hardcode isEpisode to true for now, not sure how to handle movies
-            data += "isEpisode : true\n"
+            data += 'isEpisode : true\n'
 
             # Write the synopsis of the video here
             # Micrsoft Word's smartquotes can die in a fire.
-            sanitizedDescription = curEpToWrite.description
+            sanitized_description = ep_to_write.description
             # Replace double curly quotes
-            sanitizedDescription = sanitizedDescription.replace(u"\u201c", "\"").replace(u"\u201d", "\"")
+            sanitized_description = sanitized_description.replace(u'\u201c', '\'').replace(u'\u201d', '\'')
             # Replace single curly quotes
-            sanitizedDescription = sanitizedDescription.replace(u"\u2018", "'").replace(u"\u2019", "'").replace(u"\u02BC", "'")
+            sanitized_description = sanitized_description.replace(u'\u2018', '\'').replace(u'\u2019', '\'').replace(u'\u02BC', '\'')
 
-            data += ("description : " + sanitizedDescription + "\n")
+            data += ('description : {desc}\n'.format(desc=sanitized_description))
 
-            # Usually starts with "SH" and followed by 6-8 digits.
-            # Tivo uses zap2it for thier data, so the series id is the zap2it_id.
-            if getattr(myShow, 'zap2it_id', None):
-                data += ("seriesId : " + myShow["zap2it_id"] + "\n")
+            # Usually starts with 'SH' and followed by 6-8 digits.
+            # TiVo uses zap2it for their data, so the series id is the zap2it_id.
+            if getattr(my_show, 'zap2it_id', None):
+                data += ('seriesId : {zap2it}\n'.format(zap2it=my_show['zap2it_id']))
 
             # This is the call sign of the channel the episode was recorded from.
-            if getattr(myShow, 'network', None):
-                data += ("callsign : " + myShow["network"] + "\n")
+            if getattr(my_show, 'network', None):
+                data += ('callsign : {network}\n'.format(network=my_show['network']))
 
             # This must be entered as yyyy-mm-ddThh:mm:ssZ (the t is capitalized and never changes, the Z is also
             # capitalized and never changes). This is the original air date of the episode.
             # NOTE: Hard coded the time to T00:00:00Z as we really don't know when during the day the first run happened.
-            if curEpToWrite.airdate != datetime.date.fromordinal(1):
-                data += ("originalAirDate : " + str(curEpToWrite.airdate) + "T00:00:00Z\n")
+            if ep_to_write.airdate != datetime.date.fromordinal(1):
+                data += ('originalAirDate : {airdate}T00:00:00Z\n'.format(airdate=ep_to_write.airdate))
 
             # This shows up at the beginning of the description on the Program screen and on the Details screen.
-            if getattr(myShow, '_actors', None):
-                for actor in myShow["_actors"]:
+            if getattr(my_show, '_actors', None):
+                for actor in my_show['_actors']:
                     if 'name' in actor and actor['name'].strip():
-                        data += ("vActor : " + actor['name'].strip() + "\n")
+                        data += ('vActor : {actor}\n'.format(actor=actor['name'].strip()))
 
             # This is shown on both the Program screen and the Details screen.
-            if getattr(myEp, 'rating', None):
+            if getattr(my_ep, 'rating', None):
                 try:
-                    rating = float(myEp['rating'])
+                    rating = float(my_ep['rating'])
                 except ValueError:
                     rating = 0.0
                 # convert 10 to 4 star rating. 4 * rating / 10
                 # only whole numbers or half numbers work. multiply by 2, round, divide by 2.0
                 rating = round(8 * rating / 10) / 2.0
-                data += ("starRating : " + str(rating) + "\n")
+                data += ('starRating : {rating}\n'.format(rating=rating))
 
             # This is shown on both the Program screen and the Details screen.
             # It uses the standard TV rating system of: TV-Y7, TV-Y, TV-G, TV-PG, TV-14, TV-MA and TV-NR.
-            if getattr(myShow, 'contentrating', None):
-                data += ("tvRating : " + str(myShow["contentrating"]) + "\n")
+            if getattr(my_show, 'contentrating', None):
+                data += ('tvRating : {rating}\n'.format(rating=my_show['contentrating']))
 
             # This field can be repeated as many times as necessary or omitted completely.
             if ep_obj.show.genre:
                 for genre in ep_obj.show.genre.split('|'):
                     if genre:
-                        data += ("vProgramGenre : " + str(genre) + "\n")
+                        data += ('vProgramGenre : {genre}\n'.format(genre=genre))
 
                         # NOTE: The following are metadata keywords are not used
                         # displayMajorNumber
@@ -305,6 +311,7 @@ class TIVOMetadata(generic.GenericMetadata):
                 will be automatically added based on _ep_nfo_extension. This should
                 include an absolute path.
         """
+
         data = self._ep_data(ep_obj)
 
         if not data:
@@ -315,25 +322,28 @@ class TIVOMetadata(generic.GenericMetadata):
 
         try:
             if not ek(os.path.isdir, nfo_file_dir):
-                logger.log(u"Metadata dir didn't exist, creating it at " + nfo_file_dir, logger.DEBUG)
+                logger.log(u'Metadata directory did not exist, creating it at {path}'.format
+                           (path=nfo_file_dir), logger.DEBUG)
                 ek(os.makedirs, nfo_file_dir)
                 helpers.chmodAsParent(nfo_file_dir)
 
-            logger.log(u"Writing episode nfo file to " + nfo_file_path, logger.DEBUG)
+            logger.log(u'Writing episode nfo file to {path}'.format
+                       (path=nfo_file_path), logger.DEBUG)
 
             with io.open(nfo_file_path, 'wb') as nfo_file:
                 # Calling encode directly, b/c often descriptions have wonky characters.
-                nfo_file.write(data.encode("utf-8"))
+                nfo_file.write(data.encode('utf-8'))
 
             helpers.chmodAsParent(nfo_file_path)
 
         except EnvironmentError as e:
-            logger.log(u"Unable to write file to " + nfo_file_path + " - are you sure the folder is writable? " + ex(e),
-                       logger.ERROR)
+            logger.log(u'Unable to write file to {path} - '
+                       u'are you sure the folder is writable? {exception}'.format
+                       (path=nfo_file_path, exception=ex(e)), logger.ERROR)
             return False
 
         return True
 
 
-# present a standard "interface" from the module
+# present a standard 'interface' from the module
 metadata_class = TIVOMetadata

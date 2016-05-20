@@ -25,7 +25,7 @@ def audio_codec():
     rebulk.regex("DolbyDigital", "Dolby-Digital", "DD", value="DolbyDigital")
     rebulk.regex("DolbyAtmos", "Dolby-Atmos", "Atmos", value="DolbyAtmos")
     rebulk.regex("AAC", value="AAC")
-    rebulk.regex("AC3", value="AC3")
+    rebulk.regex("AC3D?", value="AC3")
     rebulk.regex("Flac", value="FLAC")
     rebulk.regex("DTS", value="DTS")
     rebulk.regex("True-?HD", value="TrueHD")

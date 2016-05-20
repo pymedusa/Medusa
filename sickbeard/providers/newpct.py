@@ -91,7 +91,7 @@ class newpctProvider(TorrentProvider):
 
                 with BS4Parser(data, 'html5lib') as html:
                     torrent_table = html.find('table', id='categoryTable')
-                    torrent_rows = torrent_table.find_all('tr') if torrent_table else []
+                    torrent_rows = torrent_table('tr') if torrent_table else []
 
                     # Continue only if at least one Release is found
                     if len(torrent_rows) < 3:  # Headers + 1 Torrent + Pagination
@@ -100,10 +100,10 @@ class newpctProvider(TorrentProvider):
 
                     # 'Fecha', 'Título', 'Tamaño', ''
                     # Date, Title, Size
-                    labels = [label.get_text(strip=True) for label in torrent_rows[0].find_all('th')]
+                    labels = [label.get_text(strip=True) for label in torrent_rows[0]('th')]
                     for row in torrent_rows[1:-1]:
                         try:
-                            cells = row.find_all('td')
+                            cells = row('td')
 
                             torrent_row = row.find('a')
                             title = self._processTitle(torrent_row.get('title', ''))
@@ -117,7 +117,7 @@ class newpctProvider(TorrentProvider):
                             torrent_size = cells[labels.index('Tamaño')].get_text(strip=True)
 
                             size = convert_size(torrent_size) or -1
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                             if mode != 'RSS':
                                 logger.log('Found result: {}'.format(title), logger.DEBUG)
 
@@ -137,12 +137,12 @@ class newpctProvider(TorrentProvider):
         trickery = kwargs.pop('returns', '')
         if trickery == 'content':
             kwargs['returns'] = 'text'
-            data = super(newpctProvider, self).get_url(url, post_data=post_data, params=params, timeout=timeout, kwargs=kwargs)
+            data = super(newpctProvider, self).get_url(url, post_data=post_data, params=params, timeout=timeout, **kwargs)
             url = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', data, re.DOTALL).group()
 
         kwargs['returns'] = trickery
         return super(newpctProvider, self).get_url(url, post_data=post_data, params=params,
-                                                   timeout=timeout, kwargs=kwargs)
+                                                   timeout=timeout, **kwargs)
 
     def download_result(self, result):
         """
@@ -173,7 +173,7 @@ class newpctProvider(TorrentProvider):
                     logger.log('Could not download {}'.format(url), logger.WARNING)
                     helpers.remove_file_failed(filename)
 
-        if len(urls):
+        if urls:
             logger.log('Failed to download any results', logger.WARNING)
 
         return False

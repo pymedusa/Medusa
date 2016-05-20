@@ -66,7 +66,7 @@ class DelugeAPI(GenericClient):
                 return None
 
             hosts = self.response.json()['result']
-            if len(hosts) == 0:
+            if not hosts:
                 logger.log(self.name + u': WebUI does not contain daemons', logger.ERROR)
                 return None
 
@@ -121,9 +121,9 @@ class DelugeAPI(GenericClient):
 
     def _set_torrent_label(self, result):
 
-        label = sickbeard.TORRENT_LABEL
+        label = sickbeard.TORRENT_LABEL.lower()
         if result.show.is_anime:
-            label = sickbeard.TORRENT_LABEL_ANIME
+            label = sickbeard.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
             logger.log(self.name + u': Invalid label. Label must not contain a space', logger.ERROR)
             return False
@@ -167,12 +167,17 @@ class DelugeAPI(GenericClient):
         if result.ratio:
             ratio = result.ratio
 
-        if ratio:
+        # blank is default client ratio, so we also shouldn't set ratio
+        if ratio and float(ratio) >= 0:
             post_data = json.dumps({"method": "core.set_torrent_stop_at_ratio",
                                     "params": [result.hash, True],
                                     "id": 5})
 
             self._request(method='post', data=post_data)
+            
+            # Return false if we couldn't enable setting set_torrent_stop_at_ratio. No reason to set ratio.
+            if self.response.json()['error']:
+                return False
 
             post_data = json.dumps({"method": "core.set_torrent_stop_ratio",
                                     "params": [result.hash, float(ratio)],
@@ -181,6 +186,17 @@ class DelugeAPI(GenericClient):
             self._request(method='post', data=post_data)
 
             return not self.response.json()['error']
+
+        elif ratio and float(ratio) == -1:
+            # Disable stop at ratio to seed forever
+            post_data = json.dumps({"method": "core.set_torrent_stop_at_ratio",
+                                    "params": [result.hash, False],
+                                    "id": 5})
+
+            self._request(method='post', data=post_data)
+            
+            return not self.response.json()['error']
+            
 
         return True
 

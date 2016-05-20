@@ -101,7 +101,7 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                 try:
                     with BS4Parser(data, 'html5lib') as html:
-                        result_linkz = html.findAll('a', href=re.compile("torrents-details"))
+                        result_linkz = html('a', href=re.compile("torrents-details"))
 
                         if not result_linkz:
                             logger.log(u"Data returned from provider do not contains any torrent", logger.DEBUG)
@@ -121,13 +121,13 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                     continue
 
                                 # Filter unseeded torrent
-                                # if seeders < self.minseed or leechers < self.minleech:
+                                # if seeders < min(self.minseed, 1):
                                 #    if mode != 'RSS':
-                                #        logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format
-                                #                   (title, seeders, leechers), logger.DEBUG)
+                                #        logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                #                   (title, seeders), logger.DEBUG)
                                 #    continue
 
-                                item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
+                                item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                                 if mode != 'RSS':
                                     logger.log(u"Found result: %s " % title, logger.DEBUG)
 

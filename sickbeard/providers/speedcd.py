@@ -131,19 +131,19 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                 with BS4Parser(data, 'html5lib') as html:
                     torrent_table = html.find('div', class_='boxContent').find('table')
-                    torrent_rows = torrent_table.find_all('tr') if torrent_table else []
+                    torrent_rows = torrent_table('tr') if torrent_table else []
 
                     # Continue only if at least one Release is found
                     if len(torrent_rows) < 2:
                         logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
                         continue
 
-                    labels = [process_column_header(label) for label in torrent_rows[0].find_all('th')]
+                    labels = [process_column_header(label) for label in torrent_rows[0]('th')]
 
                     # Skip column headers
                     for result in torrent_rows[1:]:
                         try:
-                            cells = result.find_all('td')
+                            cells = result('td')
 
                             title = cells[labels.index('Title')].find('a', class_='torrent').get_text()
                             download_url = urljoin(self.url, cells[labels.index('Download')].find(title='Download').parent['href'])
@@ -154,16 +154,16 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                             leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
 
                             # Filter unseeded torrent
-                            if seeders < self.minseed or leechers < self.minleech:
+                            if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format(title, seeders, leechers), logger.DEBUG)
+                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
                                 continue
 
                             torrent_size = cells[labels.index('Size')].get_text()
                             torrent_size = torrent_size[:-2] + ' ' + torrent_size[-2:]
                             size = convert_size(torrent_size, units=units) or -1
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                             if mode != 'RSS':
                                 logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 

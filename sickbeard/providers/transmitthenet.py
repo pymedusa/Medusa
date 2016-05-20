@@ -122,7 +122,7 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                             logger.log(u"Data returned from %s does not contain any torrents" % self.name, logger.DEBUG)
                             continue
 
-                        torrent_rows = torrent_table.findAll('tr', {'class': 'torrent'})
+                        torrent_rows = torrent_table('tr', {'class': 'torrent'})
 
                         # Continue only if one Release is found
                         if not torrent_rows:
@@ -134,7 +134,13 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                             if self.freeleech and not freeleech:
                                 continue
 
-                            download_item = torrent_row.find('a', {'title': 'Download Torrent'})
+                            download_item = torrent_row.find('a', {'title': [
+                                'Download Torrent',  # Download link
+                                'Previously Grabbed Torrent File',  # Already Downloaded
+                                'Currently Seeding Torrent',  # Seeding
+                                'Currently Leeching Torrent',  # Leeching
+                            ]})
+
                             if not download_item:
                                 continue
 
@@ -142,32 +148,26 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
 
                             temp_anchor = torrent_row.find('a', {"data-src": True})
                             title = temp_anchor['data-src'].rsplit('.', 1)[0]
-                            if not title:
-                                title = torrent_row.find('a', onmouseout='return nd();').string
-                                title = title.replace("[", "").replace("]", "").replace("/ ", "") if title else ''
-
-                            temp_anchor = torrent_row.find('span', class_='time').parent.find_next_sibling()
                             if not all([title, download_url]):
                                 continue
 
-                            seeders = try_int(temp_anchor.text.strip())
-                            leechers = try_int(temp_anchor.find_next_sibling().text.strip())
+                            cells = torrent_row('td')
+                            seeders = try_int(cells[8].text.strip())
+                            leechers = try_int(cells[9].text.strip())
 
                             # Filter unseeded torrent
-                            if seeders < self.minseed or leechers < self.minleech:
+                            if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log(u"Discarding torrent because it doesn't meet the"
-                                               u" minimum seeders or leechers: {} (S:{} L:{})".format
-                                               (title, seeders, leechers), logger.DEBUG)
+                                               u" minimum seeders: {0}. Seeders: {1})".format
+                                               (title, seeders), logger.DEBUG)
                                 continue
 
-                            cells = torrent_row.find_all('td')
-                            torrent_size = cells[5].text.strip()
-                            size = convert_size(torrent_size) or -1
+                            size = temp_anchor['data-filesize'] or -1
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                             if mode != 'RSS':
-                                logger.log(u"Found result: {} with {} seeders and {} leechers".format
+                                logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format
                                            (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
