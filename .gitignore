@@ -9,6 +9,7 @@ cache.db*
 config.ini*
 sickbeard.db*
 failed.db*
+*.db
 autoProcessTV.cfg
 server.crt
 server.key

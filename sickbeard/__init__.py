@@ -54,7 +54,7 @@ from sickbeard.common import SD
 from sickbeard.common import SKIPPED
 from sickbeard.common import WANTED
 from sickbeard.providers.rsstorrent import TorrentRssProvider
-from sickbeard.databases import mainDB, cache_db, failed_db
+from sickbeard.databases import main_db, cache_db, failed_db
 from sickbeard.providers.newznab import NewznabProvider
 
 from sickrage.helper.encoding import ek
@@ -1425,7 +1425,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # initialize the main SB database
         main_db_con = db.DBConnection()
-        db.upgradeDatabase(main_db_con, mainDB.InitialSchema)
+        db.upgradeDatabase(main_db_con, main_db.InitialSchema)
 
         # initialize the cache database
         cache_db_con = db.DBConnection('cache.db')
@@ -1437,7 +1437,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # fix up any db problems
         main_db_con = db.DBConnection()
-        db.sanityCheckDatabase(main_db_con, mainDB.MainSanityCheck)
+        db.sanityCheckDatabase(main_db_con, main_db.MainSanityCheck)
 
         # migrate the config if it needs it
         migrator = ConfigMigrator(CFG)
