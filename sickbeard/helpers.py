@@ -885,10 +885,7 @@ def backupVersionedFile(old_file, version):
 
     numTries = 0
 
-    with suppress(TypeError):
-        version = '.'.join([str(x) for x in version])
-
-    new_file = '{file}.v{version}.db'.format(file=old_file.replace('.db', ''), version=version)
+    new_file = old_file + '.' + 'v' + str(version)
 
     while not ek(os.path.isfile, new_file):
         if not ek(os.path.isfile, old_file):
