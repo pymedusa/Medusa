@@ -29,6 +29,7 @@ from sickbeard import show_name_helpers
 from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.Show import Show
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
+from dateutil import parser
 
 
 class CacheDBConnection(db.DBConnection):
@@ -94,6 +95,16 @@ class CacheDBConnection(db.DBConnection):
             logger.log(u"Error while searching " + self.provider.name + ", skipping: " + repr(e), logger.DEBUG)
             logger.log(traceback.format_exc(), logger.DEBUG)
             if str(e) != "table lastUpdate already exists":
+                raise
+
+        # Create the table if it's not already there
+        try:
+            if not self.hasTable('lastPubdate'):
+                self.action("CREATE TABLE lastPubdate (provider TEXT, pubdate NUMERIC)")
+        except Exception as e:
+            logger.log(u"Error while searching " + self.provider.name + ", skipping: " + repr(e), logger.DEBUG)
+            logger.log(traceback.format_exc(), logger.DEBUG)
+            if str(e) != "table lastPubdate already exists":
                 raise
 
 
@@ -268,6 +279,26 @@ class TVCache(object):
 
         return datetime.datetime.fromtimestamp(lastTime)
 
+    def get_last_pubdate(self):
+        """
+        Get last publish date (newest item) for provider to discard old items
+        """
+        cache_db_con = self._getDB()
+        sql_results = cache_db_con.select("SELECT pubdate FROM lastPubdate WHERE provider = ?", [self.providerID])
+        last_pubdate = str(sql_results[0]["pubdate"]) if sql_results else False
+        return parser.parse(last_pubdate) if last_pubdate and isinstance(parser.parse(last_pubdate), datetime.datetime) else False
+       
+    def set_last_pubdate(self, pubdate=None):
+        """
+        Set last publish date (newest item) for provider
+        """
+        cache_db_con = self._getDB()
+        cache_db_con.upsert(
+            "lastPubdate",
+            {'pubdate': pubdate},
+            {'provider': self.providerID}
+        )
+
     def setLastUpdate(self, toDate=None):
         if not toDate:
             toDate = datetime.datetime.today()
@@ -295,7 +326,9 @@ class TVCache(object):
 
     def shouldUpdate(self):
         # if we've updated recently then skip the update
-        if datetime.datetime.today() - self.lastUpdate < datetime.timedelta(minutes=self.minTime):
+        # Remove seconds and milliseconds because mintime = "10:00" so we compare only minutes
+        update_diff = datetime.datetime.today().replace(second=0, microsecond=0) - self.lastUpdate.replace(second=0, microsecond=0)
+        if update_diff < datetime.timedelta(minutes=self.minTime):
             logger.log(u"Last update was too soon, using old cache: " + str(self.lastUpdate) + ". Updated less then " + str(self.minTime) + " minutes ago", logger.DEBUG)
             return False
 
