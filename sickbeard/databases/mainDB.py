@@ -33,7 +33,7 @@ from sickrage.helper.encoding import ek
 from sickbeard import subtitles
 
 MIN_DB_VERSION = 9  # oldest db version we support migrating from
-MAX_DB_VERSION = 42
+MAX_DB_VERSION = 43
 
 
 class MainSanityCheck(db.DBSanityCheck):
