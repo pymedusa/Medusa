@@ -207,22 +207,32 @@ class CheckVersion(object):
             return False
 
     def getDBcompare(self):
+        """
+        Compare the current DB version with the new branch version.
+
+        :return: 'upgrade', 'equal', or 'downgrade'
+        """
         try:
             self.updater.need_update()
             cur_hash = str(self.updater.get_newest_commit_hash())
-            assert len(cur_hash) == 40, "Commit hash wrong length: %s hash: %s" % (len(cur_hash), cur_hash)
+            assert len(cur_hash) == 40, 'Commit hash wrong length: {length} hash: {hash}'.format(
+                length=len(cur_hash), hash=cur_hash)
 
-            check_url = "http://cdn.rawgit.com/%s/%s/%s/sickbeard/databases/main_db.py" % (sickbeard.GIT_ORG, sickbeard.GIT_REPO, cur_hash)
-            response = helpers.getURL(check_url, session=self.session, returns='text')
-            assert response, "Empty response from %s" % check_url
+            check_url = 'http://cdn.rawgit.com/{org}/{repo}/{commit}/sickbeard/databases/main_db.py'.format(
+                org=sickbeard.GIT_ORG, repo=sickbeard.GIT_REPO, commit=cur_hash)
+            response = helpers.getURL(check_url, session=self.session)
 
-            match = re.search(r"MAX_DB_VERSION\s=\s(?P<version>\d{2,3})", response)
-            branchDestDBversion = int(match.group('version'))
+            if response.status_code == 404:
+                check_url.replace('main_db.py', 'mainDB.py')
+                response = helpers.getURL(check_url, session=self.session)
+
+            match = re.search(r'MAX_DB_VERSION\s=\s(?P<version>\d{2,3})', response.text)
+            new_branch_db_version = int(match.group('version'))
             main_db_con = db.DBConnection()
-            branchCurrDBversion = main_db_con.checkDBVersion()
-            if branchDestDBversion > branchCurrDBversion:
+            cur_branch_db_version = main_db_con.checkDBVersion()
+            if new_branch_db_version > cur_branch_db_version:
                 return 'upgrade'
-            elif branchDestDBversion == branchCurrDBversion:
+            elif new_branch_db_version == cur_branch_db_version:
                 return 'equal'
             else:
                 return 'downgrade'
