@@ -5,6 +5,8 @@
 # This client script allows connection to Deluge Daemon directly, completely
 # circumventing the requirement to use the WebUI.
 
+from __future__ import unicode_literals
+
 from base64 import b64encode
 
 import sickbeard
@@ -21,13 +23,10 @@ class DelugeDAPI(GenericClient):
         super(DelugeDAPI, self).__init__('DelugeD', host, username, password)
 
     def _get_auth(self):
-        if not self.connect():
-            return None
-
-        return True
+        return True if self.connect() else None
 
     def connect(self, reconnect=False):
-        hostname = self.host.replace("/", "").split(':')
+        hostname = self.host.replace('/', '').split(':')
 
         if not self.drpc or reconnect:
             self.drpc = DelugeRPC(hostname[1], port=hostname[2], username=self.username, password=self.password)
@@ -35,28 +34,18 @@ class DelugeDAPI(GenericClient):
         return self.drpc
 
     def _add_torrent_uri(self, result):
-        # label = sickbeard.TORRENT_LABEL
-        # if result.show.is_anime:
-        #     label = sickbeard.TORRENT_LABEL_ANIME
-
         options = {
             'add_paused': sickbeard.TORRENT_PAUSED
         }
 
         remote_torrent = self.drpc.add_torrent_magnet(result.url, options, result.hash)
 
-        if not remote_torrent:
-            return None
+        if remote_torrent:
+            result.hash = remote_torrent
 
-        result.hash = remote_torrent
-
-        return remote_torrent
+        return remote_torrent or None
 
     def _add_torrent_file(self, result):
-        # label = sickbeard.TORRENT_LABEL
-        # if result.show.is_anime:
-        #     label = sickbeard.TORRENT_LABEL_ANIME
-
         if not result.content:
             result.content = {}
             return None
@@ -65,14 +54,13 @@ class DelugeDAPI(GenericClient):
             'add_paused': sickbeard.TORRENT_PAUSED
         }
 
-        remote_torrent = self.drpc.add_torrent_file(result.name + '.torrent', result.content, options, result.hash)
+        remote_torrent = self.drpc.add_torrent_file('{name}.torrent'.format(name=result.name),
+                                                    result.content, options, result.hash)
 
-        if not remote_torrent:
-            return None
+        if remote_torrent:
+            result.hash = remote_torrent
 
-        result.hash = remote_torrent
-
-        return remote_torrent
+        return remote_torrent or None
 
     def _set_torrent_label(self, result):
 
@@ -80,38 +68,26 @@ class DelugeDAPI(GenericClient):
         if result.show.is_anime:
             label = sickbeard.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
-            logger.log(self.name + u': Invalid label. Label must not contain a space', logger.ERROR)
+            logger.log('{name}: Invalid label. Label must not contain a space'.format
+                       (name=self.name), logger.ERROR)
             return False
 
-        if label:
-            return self.drpc.set_torrent_label(result.hash, label)
-        return True
+        return self.drpc.set_torrent_label(result.hash, label) if label else True
 
     def _set_torrent_ratio(self, result):
-        if result.ratio:
-            ratio = float(result.ratio)
-            return self.drpc.set_torrent_ratio(result.hash, ratio)
-        return True
+        return self.drpc.set_torrent_ratio(result.hash, float(result.ratio)) if result.ratio else True
 
     def _set_torrent_priority(self, result):
-        if result.priority == 1:
-            return self.drpc.set_torrent_priority(result.hash, True)
-        return True
+        return self.drpc.set_torrent_priority(result.hash, True) if result.priority == 1 else True
 
     def _set_torrent_path(self, result):
-
         path = sickbeard.TORRENT_PATH
-        if path:
-            return self.drpc.set_torrent_path(result.hash, path)
-        return True
+        return self.drpc.set_torrent_path(result.hash, path) if path else True
 
     def _set_torrent_pause(self, result):
+        return self.drpc.pause_torrent(result.hash) if sickbeard.TORRENT_PAUSED else True
 
-        if sickbeard.TORRENT_PAUSED:
-            return self.drpc.pause_torrent(result.hash)
-        return True
-
-    def testAuthentication(self):
+    def test_authentication(self):
         if self.connect(True) and self.drpc.test():
             return True, 'Success: Connected and Authenticated'
         else:
@@ -143,10 +119,10 @@ class DelugeRPC(object):
             self.connect()
         except Exception:
             return False
-        return True
+        else:
+            return True
 
     def add_torrent_magnet(self, torrent, options, torrent_hash):
-        torrent_id = False
         try:
             self.connect()
             torrent_id = self.client.core.add_torrent_magnet(torrent, options).get()  # pylint:disable=no-member
@@ -154,14 +130,13 @@ class DelugeRPC(object):
                 torrent_id = self._check_torrent(torrent_hash)
         except Exception:
             return False
+        else:
+            return torrent_id
         finally:
             if self.client:
                 self.disconnect()
 
-        return torrent_id
-
     def add_torrent_file(self, filename, torrent, options, torrent_hash):
-        torrent_id = False
         try:
             self.connect()
             torrent_id = self.client.core.add_torrent_file(filename, b64encode(torrent), options).get()  # pylint:disable=no-member
@@ -169,11 +144,11 @@ class DelugeRPC(object):
                 torrent_id = self._check_torrent(torrent_hash)
         except Exception:
             return False
+        else:
+            return torrent_id
         finally:
             if self.client:
                 self.disconnect()
-
-        return torrent_id
 
     def set_torrent_label(self, torrent_id, label):
         try:
@@ -181,10 +156,11 @@ class DelugeRPC(object):
             self.client.label.set_torrent(torrent_id, label).get()  # pylint:disable=no-member
         except Exception:
             return False
+        else:
+            return True
         finally:
             if self.client:
                 self.disconnect()
-        return True
 
     def set_torrent_path(self, torrent_id, path):
         try:
@@ -193,10 +169,11 @@ class DelugeRPC(object):
             self.client.core.set_torrent_move_completed(torrent_id, 1).get()  # pylint:disable=no-member
         except Exception:
             return False
+        else:
+            return True
         finally:
             if self.client:
                 self.disconnect()
-        return True
 
     def set_torrent_priority(self, torrent_ids, priority):
         try:
@@ -205,10 +182,11 @@ class DelugeRPC(object):
                 self.client.core.queue_top([torrent_ids]).get()  # pylint:disable=no-member
         except Exception:
             return False
+        else:
+            return True
         finally:
             if self.client:
                 self.disconnect()
-        return True
 
     def set_torrent_ratio(self, torrent_ids, ratio):
         try:
@@ -217,10 +195,11 @@ class DelugeRPC(object):
             self.client.core.set_torrent_stop_ratio(torrent_ids, ratio).get()  # pylint:disable=no-member
         except Exception:
             return False
+        else:
+            return True
         finally:
             if self.client:
                 self.disconnect()
-        return True
 
     def pause_torrent(self, torrent_ids):
         try:
@@ -228,10 +207,11 @@ class DelugeRPC(object):
             self.client.core.pause_torrent(torrent_ids).get()  # pylint:disable=no-member
         except Exception:
             return False
+        else:
+            return True
         finally:
             if self.client:
                 self.disconnect()
-        return True
 
     def disconnect(self):
         self.client.disconnect()
@@ -239,7 +219,7 @@ class DelugeRPC(object):
     def _check_torrent(self, torrent_hash):
         torrent_id = self.client.core.get_torrent_status(torrent_hash, {}).get()  # pylint:disable=no-member
         if torrent_id['hash']:
-            logger.log(u'DelugeD: Torrent already exists in Deluge', logger.DEBUG)
+            logger.log('DelugeD: Torrent already exists in Deluge', logger.DEBUG)
             return torrent_hash
         return False
 
