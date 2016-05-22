@@ -308,24 +308,16 @@ class TVCache(object):
 
         return False
 
-    def _addCacheEntry(self, name, url, seeders, leechers, size, pubdate, hash, parse_result=None, indexer_id=0):
+    def _addCacheEntry(self, name, url, seeders, leechers, size, pubdate, hash):
 
-        # check if we passed in a parsed result or should we try and create one
-        if not parse_result:
+        try:
+            parse_result = NameParser().parse(name)
+        except (InvalidNameException, InvalidShowException) as error:
+            logger.log(u"{}".format(error), logger.DEBUG)
+            return None
 
-            # create showObj from indexer_id if available
-            showObj = None
-            if indexer_id:
-                showObj = Show.find(sickbeard.showList, indexer_id)
-
-            try:
-                parse_result = NameParser(showObj=showObj).parse(name)
-            except (InvalidNameException, InvalidShowException) as error:
-                logger.log(u"{}".format(error), logger.DEBUG)
-                return None
-
-            if not parse_result or not parse_result.series_name:
-                return None
+        if not parse_result or not parse_result.series_name:
+            return None
 
         # if we made it this far then lets add the parsed result to cache for usager later on
         season = parse_result.season_number if parse_result.season_number is not None else 1
