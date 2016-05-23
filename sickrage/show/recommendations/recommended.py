@@ -48,10 +48,11 @@ class RecommendedShow(object):
         :param votes: number of votes
         :param image_href: the href when clicked on the show image (poster)
         :param image_src: the local url to the "cached" image (poster)
+        :param default_img_src: a default image when no poster available
         """
         self.recommender = rec_show_prov.recommender
         self.cache_subfolder = rec_show_prov.cache_subfolder or u'recommended'
-        self.default_img_src = rec_show_prov.default_img_src
+        self.default_img_src = getattr(rec_show_prov, 'default_img_src', '')
 
         self.show_id = show_id
         self.title = title
@@ -62,7 +63,6 @@ class RecommendedShow(object):
         self.votes = show_attr.get('votes')
         self.image_href = show_attr.get('image_href')
         self.image_src = show_attr.get('image_src')
-        self.default_img_srv = show_attr.get('default_image_src')
 
         # Check if the show is currently already in the db
         self.show_in_list = self.indexer_id in {show.indexerid for show in sickbeard.showList if show.indexerid}
