@@ -16,7 +16,9 @@ class Anime(object):  # pylint: disable=too-many-instance-attributes
         self.episodes = {}
         self.picture = None
         self.rating_permanent = None
+        self.count_permanent = None
         self.rating_temporary = None
+        self.count_temporary = None
         self.rating_review = None
         self.categories = []
         self.tags = []
@@ -24,7 +26,7 @@ class Anime(object):  # pylint: disable=too-many-instance-attributes
         self.end_date = None
         self.description = None
 
-        if xml:
+        if len(xml):
             self.fill_from_xml(xml)
 
         self._loaded = False
@@ -72,8 +74,10 @@ class Anime(object):  # pylint: disable=too-many-instance-attributes
         if xml.find("ratings") is not None:
             if xml.find("ratings").find("permanent") is not None:
                 self.rating_permanent = xml.find("ratings").find("permanent").text
+                self.count_permanent = xml.find("ratings").find("permanent").get('count', 0)
             if xml.find("ratings").find("temporary") is not None:
                 self.rating_temporary = xml.find("ratings").find("temporary").text
+                self.count_temporary = xml.find("ratings").find("temporary").get('count', 0)
             if xml.find("ratings").find("review") is not None:
                 self.rating_review = xml.find("ratings").find("review").text
         if xml.find("categories") is not None:
