@@ -9,6 +9,8 @@ from sickbeard import logger
 from sickbeard.helpers import create_https_certificates, generateApiKey
 from sickrage.helper.encoding import ek
 
+from sickrage.api.v2 import ShowsHandler
+
 from tornado.web import Application, StaticFileHandler, RedirectHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
@@ -51,6 +53,9 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
             sickbeard.API_KEY = generateApiKey()
         self.options['api_root'] = r'%s/api/%s' % (sickbeard.WEB_ROOT, sickbeard.API_KEY)
 
+        # api v2 root
+        self.options['api_v2_root'] = r'%s/api/v2/' % (sickbeard.WEB_ROOT)
+
         # tornado setup
         self.enable_https = self.options['enable_https']
         self.https_cert = self.options['https_cert']
@@ -83,7 +88,7 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
 
         # Main Handlers
         self.app.add_handlers('.*$', [
-            # webapi handler
+            # webapi v1 handler
             (r'%s(/?.*)' % self.options['api_root'], ApiHandler),
 
             # webapi key retrieval
@@ -101,6 +106,11 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
 
             # webui handlers
         ] + route.get_routes(self.options['web_root']))
+
+        # Api v2 Handlers
+        self.app.add_handlers(".*$", [
+            (r'%s/shows(/?.*)' % self.options['api_v2_root'], ShowsHandler),
+        ])
 
         # Static File Handlers
         self.app.add_handlers(".*$", [
