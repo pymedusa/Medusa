@@ -12,5 +12,5 @@ class HomeIRC(Home):
 
     def index(self):
 
-        t = PageTemplate(rh=self, filename="IRC.mako")
-        return t.render(topmenu="system", header="IRC", title="IRC", controller="IRC", action="index")
+        t = PageTemplate(rh=self, filename='IRC.mako')
+        return t.render(topmenu='system', header='IRC', title='IRC', controller='IRC', action='index')

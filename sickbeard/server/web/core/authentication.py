@@ -36,8 +36,8 @@ class LoginHandler(BaseHandler):
         if self.get_current_user():
             self.redirect('/' + sickbeard.DEFAULT_PAGE + '/')
         else:
-            t = PageTemplate(rh=self, filename="login.mako")
-            self.finish(t.render(title="Login", header="Login", topmenu="login"))
+            t = PageTemplate(rh=self, filename='login.mako')
+            self.finish(t.render(title='Login', header='Login', topmenu='login'))
 
     def post(self, *args, **kwargs):
 
@@ -65,5 +65,5 @@ class LoginHandler(BaseHandler):
 
 class LogoutHandler(BaseHandler):
     def get(self, *args, **kwargs):
-        self.clear_cookie("sickrage_user")
+        self.clear_cookie('sickrage_user')
         self.redirect('/login/')

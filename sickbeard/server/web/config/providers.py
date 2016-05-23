@@ -21,11 +21,11 @@ class ConfigProviders(Config):
         super(ConfigProviders, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename="config_providers.mako")
+        t = PageTemplate(rh=self, filename='config_providers.mako')
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Providers',
                         header='Search Providers', topmenu='config',
-                        controller="config", action="providers")
+                        controller='config', action='providers')
 
     @staticmethod
     def canAddNewznabProvider(name):
@@ -76,16 +76,16 @@ class ConfigProviders(Config):
         Using the default url/api?cat
         http://yournewznaburl.com/api?t=caps&apikey=yourapikey
         """
-        error = ""
+        error = ''
 
         if not name:
-            error += "\nNo Provider Name specified"
+            error += '\nNo Provider Name specified'
         if not url:
-            error += "\nNo Provider Url specified"
+            error += '\nNo Provider Url specified'
         if not key:
-            error += "\nNo Provider Api key specified"
+            error += '\nNo Provider Api key specified'
 
-        if error != "":
+        if error != '':
             return json.dumps({'success': False, 'error': error})
 
         # Get list with Newznabproviders
@@ -524,4 +524,4 @@ class ConfigProviders(Config):
         else:
             ui.notifications.message('Configuration Saved', ek(os.path.join, sickbeard.CONFIG_FILE))
 
-        return self.redirect("/config/providers/")
+        return self.redirect('/config/providers/')

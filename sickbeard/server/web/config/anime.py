@@ -18,11 +18,11 @@ class ConfigAnime(Config):
 
     def index(self):
 
-        t = PageTemplate(rh=self, filename="config_anime.mako")
+        t = PageTemplate(rh=self, filename='config_anime.mako')
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Anime',
                         header='Anime', topmenu='config',
-                        controller="config", action="anime")
+                        controller='config', action='anime')
 
     def saveAnime(self, use_anidb=None, anidb_username=None, anidb_password=None, anidb_use_mylist=None,
                   split_home=None):
@@ -45,4 +45,4 @@ class ConfigAnime(Config):
         else:
             ui.notifications.message('Configuration Saved', ek(os.path.join, sickbeard.CONFIG_FILE))
 
-        return self.redirect("/config/anime/")
+        return self.redirect('/config/anime/')

@@ -36,8 +36,8 @@ class HomeAddShows(Home):
         super(HomeAddShows, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename="addShows.mako")
-        return t.render(title='Add Shows', header='Add Shows', topmenu='home', controller="addShows", action="index")
+        t = PageTemplate(rh=self, filename='addShows.mako')
+        return t.render(title='Add Shows', header='Add Shows', topmenu='home', controller='addShows', action='index')
 
     @staticmethod
     def getIndexerLanguages():
@@ -61,7 +61,7 @@ class HomeAddShows(Home):
         # If search term ends with what looks like a year, enclose it in ()
         matches = re.match(r'^(.+ |)([12][0-9]{3})$', search_term)
         if matches:
-            searchTerms.append("%s(%s)" % (matches.group(1), matches.group(2)))
+            searchTerms.append('%s(%s)' % (matches.group(1), matches.group(2)))
 
         for searchTerm in searchTerms:
             # If search term begins with an article, let's also search for it without
@@ -79,7 +79,7 @@ class HomeAddShows(Home):
             lINDEXER_API_PARMS['custom_ui'] = classes.AllShowsListUI
             t = sickbeard.indexerApi(indexer).indexer(**lINDEXER_API_PARMS)
 
-            logger.log(u"Searching for Show with searchterm(s): %s on Indexer: %s" % (
+            logger.log(u'Searching for Show with searchterm(s): %s on Indexer: %s' % (
                 searchTerms, sickbeard.indexerApi(indexer).name), logger.DEBUG)
             for searchTerm in searchTerms:
                 try:
@@ -90,17 +90,17 @@ class HomeAddShows(Home):
                     logger.log(u'Error searching for show: {}'.format(ex(error)))
 
         for i, shows in results.iteritems():
-            final_results.extend({(sickbeard.indexerApi(i).name, i, sickbeard.indexerApi(i).config["show_url"], int(show['id']),
+            final_results.extend({(sickbeard.indexerApi(i).name, i, sickbeard.indexerApi(i).config['show_url'], int(show['id']),
                                    show['seriesname'], show['firstaired']) for show in shows})
 
         lang_id = sickbeard.indexerApi().config['langabbv_to_id'][lang]
         return json.dumps({'results': final_results, 'langid': lang_id})
 
     def massAddTable(self, rootDir=None):
-        t = PageTemplate(rh=self, filename="home_massAddTable.mako")
+        t = PageTemplate(rh=self, filename='home_massAddTable.mako')
 
         if not rootDir:
-            return "No folders selected."
+            return 'No folders selected.'
         elif not isinstance(rootDir, list):
             root_dirs = [rootDir]
         else:
@@ -145,7 +145,7 @@ class HomeAddShows(Home):
                 }
 
                 # see if the folder is in KODI already
-                dirResults = main_db_con.select("SELECT indexer_id FROM tv_shows WHERE location = ? LIMIT 1", [cur_path])
+                dirResults = main_db_con.select('SELECT indexer_id FROM tv_shows WHERE location = ? LIMIT 1', [cur_path])
 
                 if dirResults:
                     cur_dir['added_already'] = True
@@ -181,7 +181,7 @@ class HomeAddShows(Home):
         Display the new show page which collects a tvdb id, folder, and extra options and
         posts them to addNewShow
         """
-        t = PageTemplate(rh=self, filename="addShows_newShow.mako")
+        t = PageTemplate(rh=self, filename='addShows_newShow.mako')
 
         indexer, show_dir, indexer_id, show_name = self.split_extra_show(show_to_add)
 
@@ -221,7 +221,7 @@ class HomeAddShows(Home):
             provided_indexer_name=provided_indexer_name, provided_indexer=provided_indexer,
             indexers=sickbeard.indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
             title='New Show', header='New Show', topmenu='home',
-            controller="addShows", action="newShow"
+            controller='addShows', action='newShow'
         )
 
     def trendingShows(self, traktList=None):
@@ -230,89 +230,89 @@ class HomeAddShows(Home):
         posts them to addNewShow
         """
         if traktList is None:
-            traktList = ""
+            traktList = ''
 
         traktList = traktList.lower()
 
-        if traktList == "trending":
-            page_title = "Trending Shows"
-        elif traktList == "popular":
-            page_title = "Popular Shows"
-        elif traktList == "anticipated":
-            page_title = "Most Anticipated Shows"
-        elif traktList == "collected":
-            page_title = "Most Collected Shows"
-        elif traktList == "watched":
-            page_title = "Most Watched Shows"
-        elif traktList == "played":
-            page_title = "Most Played Shows"
-        elif traktList == "recommended":
-            page_title = "Recommended Shows"
-        elif traktList == "newshow":
-            page_title = "New Shows"
-        elif traktList == "newseason":
-            page_title = "Season Premieres"
+        if traktList == 'trending':
+            page_title = 'Trending Shows'
+        elif traktList == 'popular':
+            page_title = 'Popular Shows'
+        elif traktList == 'anticipated':
+            page_title = 'Most Anticipated Shows'
+        elif traktList == 'collected':
+            page_title = 'Most Collected Shows'
+        elif traktList == 'watched':
+            page_title = 'Most Watched Shows'
+        elif traktList == 'played':
+            page_title = 'Most Played Shows'
+        elif traktList == 'recommended':
+            page_title = 'Recommended Shows'
+        elif traktList == 'newshow':
+            page_title = 'New Shows'
+        elif traktList == 'newseason':
+            page_title = 'Season Premieres'
         else:
-            page_title = "Most Anticipated Shows"
+            page_title = 'Most Anticipated Shows'
 
-        t = PageTemplate(rh=self, filename="addShows_trendingShows.mako")
+        t = PageTemplate(rh=self, filename='addShows_trendingShows.mako')
         return t.render(title=page_title, header=page_title, enable_anime_options=False,
-                        traktList=traktList, controller="addShows", action="trendingShows")
+                        traktList=traktList, controller='addShows', action='trendingShows')
 
     def getTrendingShows(self, traktList=None):
         """
         Display the new show page which collects a tvdb id, folder, and extra options and
         posts them to addNewShow
         """
-        t = PageTemplate(rh=self, filename="trendingShows.mako")
+        t = PageTemplate(rh=self, filename='trendingShows.mako')
         if traktList is None:
-            traktList = ""
+            traktList = ''
 
         traktList = traktList.lower()
 
-        if traktList == "trending":
-            page_url = "shows/trending"
-        elif traktList == "popular":
-            page_url = "shows/popular"
-        elif traktList == "anticipated":
-            page_url = "shows/anticipated"
-        elif traktList == "collected":
-            page_url = "shows/collected"
-        elif traktList == "watched":
-            page_url = "shows/watched"
-        elif traktList == "played":
-            page_url = "shows/played"
-        elif traktList == "recommended":
-            page_url = "recommendations/shows"
-        elif traktList == "newshow":
-            page_url = 'calendars/all/shows/new/%s/30' % datetime.date.today().strftime("%Y-%m-%d")
-        elif traktList == "newseason":
-            page_url = 'calendars/all/shows/premieres/%s/30' % datetime.date.today().strftime("%Y-%m-%d")
+        if traktList == 'trending':
+            page_url = 'shows/trending'
+        elif traktList == 'popular':
+            page_url = 'shows/popular'
+        elif traktList == 'anticipated':
+            page_url = 'shows/anticipated'
+        elif traktList == 'collected':
+            page_url = 'shows/collected'
+        elif traktList == 'watched':
+            page_url = 'shows/watched'
+        elif traktList == 'played':
+            page_url = 'shows/played'
+        elif traktList == 'recommended':
+            page_url = 'recommendations/shows'
+        elif traktList == 'newshow':
+            page_url = 'calendars/all/shows/new/%s/30' % datetime.date.today().strftime('%Y-%m-%d')
+        elif traktList == 'newseason':
+            page_url = 'calendars/all/shows/premieres/%s/30' % datetime.date.today().strftime('%Y-%m-%d')
         else:
-            page_url = "shows/anticipated"
+            page_url = 'shows/anticipated'
 
         trending_shows = []
 
         trakt_api = TraktAPI(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
 
         try:
-            not_liked_show = ""
+            not_liked_show = ''
             if sickbeard.TRAKT_ACCESS_TOKEN != '':
-                library_shows = trakt_api.traktRequest("sync/collection/shows?extended=full") or []
+                library_shows = trakt_api.traktRequest('sync/collection/shows?extended=full') or []
                 if sickbeard.TRAKT_BLACKLIST_NAME is not None and sickbeard.TRAKT_BLACKLIST_NAME:
-                    not_liked_show = trakt_api.traktRequest("users/" + sickbeard.TRAKT_USERNAME + "/lists/" + sickbeard.TRAKT_BLACKLIST_NAME + "/items") or []
+                    not_liked_show = trakt_api.traktRequest('users/' + sickbeard.TRAKT_USERNAME + '/lists/' + sickbeard.TRAKT_BLACKLIST_NAME + '/items') or []
                 else:
-                    logger.log(u"Trakt blacklist name is empty", logger.DEBUG)
+                    logger.log(u'Trakt blacklist name is empty', logger.DEBUG)
 
-            if traktList not in ["recommended", "newshow", "newseason"]:
-                limit_show = "?limit=" + str(100 + len(not_liked_show)) + "&"
+            if traktList not in ['recommended', 'newshow', 'newseason']:
+                limit_show = '?limit=' + str(100 + len(not_liked_show)) + '&'
             else:
-                limit_show = "?"
+                limit_show = '?'
 
-            shows = trakt_api.traktRequest(page_url + limit_show + "extended=full,images") or []
+            shows = trakt_api.traktRequest(page_url + limit_show + 'extended=full,images') or []
 
             if sickbeard.TRAKT_ACCESS_TOKEN != '':
-                library_shows = trakt_api.traktRequest("sync/collection/shows?extended=full") or []
+                library_shows = trakt_api.traktRequest('sync/collection/shows?extended=full') or []
 
             for show in shows:
                 try:
@@ -343,7 +343,7 @@ class HomeAddShows(Home):
                 blacklist = False
 
         except traktException as e:
-            logger.log(u"Could not connect to Trakt service: %s" % ex(e), logger.WARNING)
+            logger.log(u'Could not connect to Trakt service: %s' % ex(e), logger.WARNING)
 
         return t.render(blacklist=blacklist, trending_shows=trending_shows)
 
@@ -351,7 +351,7 @@ class HomeAddShows(Home):
         """
         Fetches data from IMDB to show a list of popular shows.
         """
-        t = PageTemplate(rh=self, filename="addShows_popularShows.mako")
+        t = PageTemplate(rh=self, filename='addShows_popularShows.mako')
         e = None
 
         try:
@@ -360,10 +360,10 @@ class HomeAddShows(Home):
             # print traceback.format_exc()
             popular_shows = None
 
-        return t.render(title="Popular Shows", header="Popular Shows",
+        return t.render(title='Popular Shows', header='Popular Shows',
                         popular_shows=popular_shows, imdb_exception=e,
-                        topmenu="home",
-                        controller="addShows", action="popularShows")
+                        topmenu='home',
+                        controller='addShows', action='popularShows')
 
     def addShowToBlacklist(self, indexer_id):
         # URL parameters
@@ -371,7 +371,7 @@ class HomeAddShows(Home):
 
         trakt_api = TraktAPI(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
 
-        trakt_api.traktRequest("users/" + sickbeard.TRAKT_USERNAME + "/lists/" + sickbeard.TRAKT_BLACKLIST_NAME + "/items", data, method='POST')
+        trakt_api.traktRequest('users/' + sickbeard.TRAKT_USERNAME + '/lists/' + sickbeard.TRAKT_BLACKLIST_NAME + '/items', data, method='POST')
 
         return self.redirect('/addShows/trendingShows/')
 
@@ -379,12 +379,12 @@ class HomeAddShows(Home):
         """
         Prints out the page to add existing shows from a root dir
         """
-        t = PageTemplate(rh=self, filename="addShows_addExistingShow.mako")
+        t = PageTemplate(rh=self, filename='addShows_addExistingShow.mako')
         return t.render(enable_anime_options=False, title='Existing Show',
-                        header='Existing Show', topmenu="home",
-                        controller="addShows", action="addExistingShow")
+                        header='Existing Show', topmenu='home',
+                        controller='addShows', action='addExistingShow')
 
-    def addShowByID(self, indexer_id, show_name, indexer="TVDB", which_series=None,
+    def addShowByID(self, indexer_id, show_name, indexer='TVDB', which_series=None,
                     indexer_lang=None, root_dir=None, default_status=None,
                     quality_preset=None, any_qualities=None, best_qualities=None,
                     flatten_folders=None, subtitles=None, full_show_path=None,
@@ -393,13 +393,13 @@ class HomeAddShows(Home):
                     default_status_after=None, default_flatten_folders=None,
                     configure_show_options=None):
 
-        if indexer != "TVDB":
+        if indexer != 'TVDB':
             tvdb_id = helpers.getTVDBFromID(indexer_id, indexer.upper())
             if not tvdb_id:
-                logger.log(u"Unable to to find tvdb ID to add %s" % show_name)
+                logger.log(u'Unable to to find tvdb ID to add %s' % show_name)
                 ui.notifications.error(
-                    "Unable to add %s" % show_name,
-                    "Could not add %s.  We were unable to locate the tvdb id at this time." % show_name
+                    'Unable to add %s' % show_name,
+                    'Could not add %s.  We were unable to locate the tvdb id at this time.' % show_name
                 )
                 return
 
@@ -466,9 +466,9 @@ class HomeAddShows(Home):
                 location = None
 
         if not location:
-            logger.log(u"There was an error creating the show, "
-                       u"no root directory setting found", logger.WARNING)
-            return "No root directories setup, please go back and add one."
+            logger.log(u'There was an error creating the show, '
+                       u'no root directory setting found', logger.WARNING)
+            return 'No root directories setup, please go back and add one.'
 
         show_name = get_showname_from_indexer(1, indexer_id)
         show_dir = None
@@ -519,16 +519,16 @@ class HomeAddShows(Home):
 
         # sanity check on our inputs
         if (not rootDir and not fullShowPath) or not whichSeries:
-            return "Missing params, no Indexer ID or folder:" + repr(whichSeries) + " and " + repr(
-                rootDir) + "/" + repr(fullShowPath)
+            return 'Missing params, no Indexer ID or folder:' + repr(whichSeries) + ' and ' + repr(
+                rootDir) + '/' + repr(fullShowPath)
 
         # figure out what show we're adding and where
         series_pieces = whichSeries.split('|')
         if (whichSeries and rootDir) or (whichSeries and fullShowPath and len(series_pieces) > 1):
             if len(series_pieces) < 6:
-                logger.log(u"Unable to add show due to show selection. Not anough arguments: %s" % (repr(series_pieces)),
+                logger.log(u'Unable to add show due to show selection. Not anough arguments: %s' % (repr(series_pieces)),
                            logger.ERROR)
-                ui.notifications.error("Unknown error. Unable to add show due to problem with show selection.")
+                ui.notifications.error('Unknown error. Unable to add show due to problem with show selection.')
                 return self.redirect('/addShows/existingShows/')
 
             indexer = int(series_pieces[1])
@@ -550,22 +550,22 @@ class HomeAddShows(Home):
         else:
             show_dir = ek(os.path.join, rootDir, sanitize_filename(show_name))
 
-        # blanket policy - if the dir exists you should have used "add existing show" numbnuts
+        # blanket policy - if the dir exists you should have used 'add existing show' numbnuts
         if ek(os.path.isdir, show_dir) and not fullShowPath:
-            ui.notifications.error("Unable to add show", "Folder " + show_dir + " exists already")
+            ui.notifications.error('Unable to add show', 'Folder ' + show_dir + ' exists already')
             return self.redirect('/addShows/existingShows/')
 
         # don't create show dir if config says not to
         if sickbeard.ADD_SHOWS_WO_DIR:
-            logger.log(u"Skipping initial creation of " + show_dir + " due to config.ini setting")
+            logger.log(u'Skipping initial creation of ' + show_dir + ' due to config.ini setting')
         else:
             dir_exists = helpers.makeDir(show_dir)
             if not dir_exists:
-                logger.log(u"Unable to create the folder " + show_dir + ", can't add the show", logger.ERROR)
-                ui.notifications.error("Unable to add show",
-                                       "Unable to create the folder " + show_dir + ", can't add the show")
+                logger.log(u'Unable to create the folder ' + show_dir + ', can\'t add the show', logger.ERROR)
+                ui.notifications.error('Unable to add show',
+                                       'Unable to create the folder ' + show_dir + ', can\'t add the show')
                 # Don't redirect to default page because user wants to see the new show
-                return self.redirect("/home/")
+                return self.redirect('/home/')
             else:
                 helpers.chmodAsParent(show_dir)
 
@@ -671,8 +671,8 @@ class HomeAddShows(Home):
                 num_added += 1
 
         if num_added:
-            ui.notifications.message("Shows Added",
-                                     "Automatically added " + str(num_added) + " from their existing metadata files")
+            ui.notifications.message('Shows Added',
+                                     'Automatically added ' + str(num_added) + ' from their existing metadata files')
 
         # if we're done then go home
         if not dirs_only:

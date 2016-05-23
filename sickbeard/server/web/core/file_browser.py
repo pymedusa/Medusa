@@ -15,12 +15,12 @@ class WebFileBrowser(WebRoot):
 
     def index(self, path='', includeFiles=False, *args, **kwargs):
         self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
-        self.set_header("Content-Type", "application/json")
+        self.set_header('Content-Type', 'application/json')
         return json.dumps(foldersAtPath(path, True, bool(int(includeFiles))))
 
     def complete(self, term, includeFiles=0, *args, **kwargs):
         self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
-        self.set_header("Content-Type", "application/json")
+        self.set_header('Content-Type', 'application/json')
         paths = [entry['path'] for entry in foldersAtPath(ek(os.path.dirname, term), includeFiles=bool(int(includeFiles)))
                  if 'path' in entry]
 

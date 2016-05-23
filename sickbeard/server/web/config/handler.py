@@ -28,7 +28,7 @@ class Config(WebRoot):
         return menu
 
     def index(self):
-        t = PageTemplate(rh=self, filename="config.mako")
+        t = PageTemplate(rh=self, filename='config.mako')
 
         try:
             import pwd
@@ -60,7 +60,7 @@ class Config(WebRoot):
 
         return t.render(
             submenu=self.ConfigMenu(), title='Medusa Configuration',
-            header='Medusa Configuration', topmenu="config",
+            header='Medusa Configuration', topmenu='config',
             sr_user=sr_user, sr_locale=sr_locale, ssl_version=ssl_version,
             sr_version=sr_version
         )

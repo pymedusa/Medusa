@@ -18,11 +18,11 @@ class ConfigSearch(Config):
         super(ConfigSearch, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename="config_search.mako")
+        t = PageTemplate(rh=self, filename='config_search.mako')
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Episode Search',
                         header='Search Settings', topmenu='config',
-                        controller="config", action="search")
+                        controller='config', action='search')
 
     def saveSearch(self, use_nzbs=None, use_torrents=None, nzb_dir=None, sab_username=None, sab_password=None,
                    sab_apikey=None, sab_category=None, sab_category_anime=None, sab_category_backlog=None, sab_category_anime_backlog=None, sab_host=None, nzbget_username=None,
@@ -40,10 +40,10 @@ class ConfigSearch(Config):
         results = []
 
         if not config.change_NZB_DIR(nzb_dir):
-            results += ["Unable to create directory " + ek(os.path.normpath, nzb_dir) + ", dir not changed."]
+            results += ['Unable to create directory ' + ek(os.path.normpath, nzb_dir) + ', dir not changed.']
 
         if not config.change_TORRENT_DIR(torrent_dir):
-            results += ["Unable to create directory " + ek(os.path.normpath, torrent_dir) + ", dir not changed."]
+            results += ['Unable to create directory ' + ek(os.path.normpath, torrent_dir) + ', dir not changed.']
 
         config.change_DAILYSEARCH_FREQUENCY(dailysearch_frequency)
 
@@ -60,12 +60,12 @@ class ConfigSearch(Config):
         sickbeard.TORRENT_METHOD = torrent_method
         sickbeard.USENET_RETENTION = try_int(usenet_retention, 500)
 
-        sickbeard.IGNORE_WORDS = ignore_words if ignore_words else ""
-        sickbeard.PREFERRED_WORDS = preferred_words if preferred_words else ""
-        sickbeard.UNDESIRED_WORDS = undesired_words if undesired_words else ""
-        sickbeard.TRACKERS_LIST = trackers_list if trackers_list else ""
-        sickbeard.REQUIRE_WORDS = require_words if require_words else ""
-        sickbeard.IGNORED_SUBS_LIST = ignored_subs_list if ignored_subs_list else ""
+        sickbeard.IGNORE_WORDS = ignore_words if ignore_words else ''
+        sickbeard.PREFERRED_WORDS = preferred_words if preferred_words else ''
+        sickbeard.UNDESIRED_WORDS = undesired_words if undesired_words else ''
+        sickbeard.TRACKERS_LIST = trackers_list if trackers_list else ''
+        sickbeard.REQUIRE_WORDS = require_words if require_words else ''
+        sickbeard.IGNORED_SUBS_LIST = ignored_subs_list if ignored_subs_list else ''
         sickbeard.IGNORE_UND_SUBS = config.checkbox_to_value(ignore_und_subs)
 
         sickbeard.RANDOMIZE_PROVIDERS = config.checkbox_to_value(randomize_providers)
@@ -122,4 +122,4 @@ class ConfigSearch(Config):
         else:
             ui.notifications.message('Configuration Saved', ek(os.path.join, sickbeard.CONFIG_FILE))
 
-        return self.redirect("/config/search/")
+        return self.redirect('/config/search/')

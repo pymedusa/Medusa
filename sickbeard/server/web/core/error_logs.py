@@ -32,10 +32,10 @@ class ErrorLogs(WebRoot):
         except Exception:
             level = logger.ERROR
 
-        t = PageTemplate(rh=self, filename="errorlogs.mako")
-        return t.render(header="Logs &amp; Errors", title="Logs &amp; Errors",
-                        topmenu="system", submenu=self.ErrorLogsMenu(level),
-                        logLevel=level, controller="errorlogs", action="index")
+        t = PageTemplate(rh=self, filename='errorlogs.mako')
+        return t.render(header='Logs &amp; Errors', title='Logs &amp; Errors',
+                        topmenu='system', submenu=self.ErrorLogsMenu(level),
+                        logLevel=level, controller='errorlogs', action='index')
 
     @staticmethod
     def haveErrors():
@@ -53,9 +53,9 @@ class ErrorLogs(WebRoot):
         else:
             classes.ErrorViewer.clear()
 
-        return self.redirect("/errorlogs/viewlog/")
+        return self.redirect('/errorlogs/viewlog/')
 
-    def viewlog(self, minLevel=logger.INFO, logFilter="<NONE>", logSearch=None, maxLines=1000):
+    def viewlog(self, minLevel=logger.INFO, logFilter='<NONE>', logSearch=None, maxLines=1000):
 
         def Get_Data(Levelmin, data_in, lines_in, regex, Filter, Search, mlines):
 
@@ -88,7 +88,7 @@ class ErrorLogs(WebRoot):
                         continue
 
                 elif lastLine:
-                    finalData.append("AA" + x)
+                    finalData.append('AA' + x)
                     numLines += 1
 
                 if numLines >= numToShow:
@@ -96,7 +96,7 @@ class ErrorLogs(WebRoot):
 
             return finalData
 
-        t = PageTemplate(rh=self, filename="viewlogs.mako")
+        t = PageTemplate(rh=self, filename='viewlogs.mako')
 
         minLevel = int(minLevel)
 
@@ -132,7 +132,7 @@ class ErrorLogs(WebRoot):
         if logFilter not in logNameFilters:
             logFilter = '<NONE>'
 
-        regex = r"^(\d\d\d\d)\-(\d\d)\-(\d\d)\s*(\d\d)\:(\d\d):(\d\d)\s*([A-Z]+)\s*(.+?)\s*\:\:\s*(.*)$"
+        regex = r'^(\d\d\d\d)\-(\d\d)\-(\d\d)\s*(\d\d)\:(\d\d):(\d\d)\s*([A-Z]+)\s*(.+?)\s*\:\:\s*(.*)$'
 
         data = []
 
@@ -141,15 +141,15 @@ class ErrorLogs(WebRoot):
                 data = Get_Data(minLevel, f.readlines(), 0, regex, logFilter, logSearch, maxLines)
 
         for i in range(1, int(sickbeard.LOG_NR)):
-            if ek(os.path.isfile, logger.log_file + "." + str(i)) and (len(data) <= maxLines):
-                with io.open(logger.log_file + "." + str(i), 'r', encoding='utf-8') as f:
+            if ek(os.path.isfile, logger.log_file + '.' + str(i)) and (len(data) <= maxLines):
+                with io.open(logger.log_file + '.' + str(i), 'r', encoding='utf-8') as f:
                     data += Get_Data(minLevel, f.readlines(), len(data), regex, logFilter, logSearch, maxLines)
 
         return t.render(
-            header="Log File", title="Logs", topmenu="system",
-            logLines=u"".join(data), minLevel=minLevel, logNameFilters=logNameFilters,
+            header='Log File', title='Logs', topmenu='system',
+            logLines=u''.join(data), minLevel=minLevel, logNameFilters=logNameFilters,
             logFilter=logFilter, logSearch=logSearch,
-            controller="errorlogs", action="viewlogs")
+            controller='errorlogs', action='viewlogs')
 
     def submit_errors(self):
         submitter_result, issue_id = logger.submit_errors()
@@ -157,4 +157,4 @@ class ErrorLogs(WebRoot):
         submitter_notification = ui.notifications.error if issue_id is None else ui.notifications.message
         submitter_notification(submitter_result)
 
-        return self.redirect("/errorlogs/")
+        return self.redirect('/errorlogs/')

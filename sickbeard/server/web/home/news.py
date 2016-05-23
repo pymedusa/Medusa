@@ -24,7 +24,7 @@ class HomeNews(Home):
         sickbeard.NEWS_UNREAD = 0
         sickbeard.save_config()
 
-        t = PageTemplate(rh=self, filename="markdown.mako")
-        data = markdown2.markdown(news if news else "The was a problem connecting to github, please refresh and try again", extras=['header-ids'])
+        t = PageTemplate(rh=self, filename='markdown.mako')
+        data = markdown2.markdown(news if news else 'The was a problem connecting to github, please refresh and try again', extras=['header-ids'])
 
-        return t.render(title="News", header="News", topmenu="system", data=data, controller="news", action="index")
+        return t.render(title='News', header='News', topmenu='system', data=data, controller='news', action='index')

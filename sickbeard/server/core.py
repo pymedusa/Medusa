@@ -20,7 +20,7 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         threading.Thread.__init__(self)
         self.daemon = True
         self.alive = True
-        self.name = "TORNADO"
+        self.name = 'TORNADO'
         self.io_loop = io_loop or IOLoop.current()
 
         self.options = options or {}
@@ -61,12 +61,12 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
             if not (self.https_cert and ek(os.path.exists, self.https_cert)) or not (
                     self.https_key and ek(os.path.exists, self.https_key)):
                 if not create_https_certificates(self.https_cert, self.https_key):
-                    logger.log(u"Unable to create CERT/KEY files, disabling HTTPS")
+                    logger.log(u'Unable to create CERT/KEY files, disabling HTTPS')
                     sickbeard.ENABLE_HTTPS = False
                     self.enable_https = False
 
             if not (ek(os.path.exists, self.https_cert) and ek(os.path.exists, self.https_key)):
-                logger.log(u"Disabled HTTPS because of missing CERT and KEY files", logger.WARNING)
+                logger.log(u'Disabled HTTPS because of missing CERT and KEY files', logger.WARNING)
                 sickbeard.ENABLE_HTTPS = False
                 self.enable_https = False
 
@@ -90,7 +90,7 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
             (r'%s/getkey(/?.*)' % self.options['web_root'], KeyHandler),
 
             # webapi builder redirect
-            (r'%s/api/builder' % self.options['web_root'], RedirectHandler, {"url": self.options['web_root'] + '/apibuilder/'}),
+            (r'%s/api/builder' % self.options['web_root'], RedirectHandler, {'url': self.options['web_root'] + '/apibuilder/'}),
 
             # webui login/logout handlers
             (r'%s/login(/?)' % self.options['web_root'], LoginHandler),
@@ -103,61 +103,61 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         ] + route.get_routes(self.options['web_root']))
 
         # Static File Handlers
-        self.app.add_handlers(".*$", [
+        self.app.add_handlers('.*$', [
             # favicon
             (r'%s/(favicon\.ico)' % self.options['web_root'], StaticFileHandler,
-             {"path": ek(os.path.join, self.options['data_root'], 'images/ico/favicon.ico')}),
+             {'path': ek(os.path.join, self.options['data_root'], 'images/ico/favicon.ico')}),
 
             # images
             (r'%s/images/(.*)' % self.options['web_root'], StaticFileHandler,
-             {"path": ek(os.path.join, self.options['data_root'], 'images')}),
+             {'path': ek(os.path.join, self.options['data_root'], 'images')}),
 
             # cached images
             (r'%s/cache/images/(.*)' % self.options['web_root'], StaticFileHandler,
-             {"path": ek(os.path.join, sickbeard.CACHE_DIR, 'images')}),
+             {'path': ek(os.path.join, sickbeard.CACHE_DIR, 'images')}),
 
             # css
             (r'%s/css/(.*)' % self.options['web_root'], StaticFileHandler,
-             {"path": ek(os.path.join, self.options['data_root'], 'css')}),
+             {'path': ek(os.path.join, self.options['data_root'], 'css')}),
 
             # javascript
             (r'%s/js/(.*)' % self.options['web_root'], StaticFileHandler,
-             {"path": ek(os.path.join, self.options['data_root'], 'js')}),
+             {'path': ek(os.path.join, self.options['data_root'], 'js')}),
 
             # fonts
             (r'%s/fonts/(.*)' % self.options['web_root'], StaticFileHandler,
-             {"path": ek(os.path.join, self.options['data_root'], 'fonts')}),
+             {'path': ek(os.path.join, self.options['data_root'], 'fonts')}),
 
             # videos
             (r'%s/videos/(.*)' % self.options['web_root'], StaticFileHandler,
-             {"path": self.video_root})
+             {'path': self.video_root})
         ])
 
     def run(self):
         if self.enable_https:
-            protocol = "https"
-            self.server = HTTPServer(self.app, ssl_options={"certfile": self.https_cert, "keyfile": self.https_key})
+            protocol = 'https'
+            self.server = HTTPServer(self.app, ssl_options={'certfile': self.https_cert, 'keyfile': self.https_key})
         else:
-            protocol = "http"
+            protocol = 'http'
             self.server = HTTPServer(self.app)
 
-        logger.log(u"Starting Medusa on " + protocol + "://" + str(self.options['host']) + ":" + str(
-            self.options['port']) + "/")
+        logger.log(u'Starting Medusa on ' + protocol + '://' + str(self.options['host']) + ':' + str(
+            self.options['port']) + '/')
 
         try:
             self.server.listen(self.options['port'], self.options['host'])
         except Exception:
             if sickbeard.LAUNCH_BROWSER and not self.daemon:
                 sickbeard.launchBrowser('https' if sickbeard.ENABLE_HTTPS else 'http', self.options['port'], sickbeard.WEB_ROOT)
-                logger.log(u"Launching browser and exiting")
-            logger.log(u"Could not start webserver on port %s, already in use!" % self.options['port'])
+                logger.log(u'Launching browser and exiting')
+            logger.log(u'Could not start webserver on port %s, already in use!' % self.options['port'])
             os._exit(1)  # pylint: disable=protected-access
 
         try:
             self.io_loop.start()
             self.io_loop.close(True)
         except (IOError, ValueError):
-            # Ignore errors like "ValueError: I/O operation on closed kqueue fd". These might be thrown during a reload.
+            # Ignore errors like 'ValueError: I/O operation on closed kqueue fd'. These might be thrown during a reload.
             pass
 
     def shutDown(self):

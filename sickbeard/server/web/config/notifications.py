@@ -18,11 +18,11 @@ class ConfigNotifications(Config):
         super(ConfigNotifications, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename="config_notifications.mako")
+        t = PageTemplate(rh=self, filename='config_notifications.mako')
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Notifications',
                         header='Notifications', topmenu='config',
-                        controller="config", action="notifications")
+                        controller='config', action='notifications')
 
     def saveNotifications(self, use_kodi=None, kodi_always_on=None, kodi_notify_onsnatch=None,
                           kodi_notify_ondownload=None,
@@ -251,4 +251,4 @@ class ConfigNotifications(Config):
         else:
             ui.notifications.message('Configuration Saved', ek(os.path.join, sickbeard.CONFIG_FILE))
 
-        return self.redirect("/config/notifications/")
+        return self.redirect('/config/notifications/')
