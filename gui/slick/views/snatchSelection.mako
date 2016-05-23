@@ -190,62 +190,61 @@
     <div id="wrapper" data-history-toggle="hide">
     <div id="container">
 
-    <table id="history" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
+    % if episode_history:
+        <table id="history" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
+
+                <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
+                <tr style="height: 60px;" role="row">
+                    <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader displayShowTable">
+                    <h3 style="display: inline;"><a name="history" style="position: absolute; font-size: 1px; visibility: hidden;">.</a>History</h3>
+                     <button id="showhistory" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="#historydata">Show History</button>
+                    </th>
+                </tr>
+                </tbody>
 
             <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
-            <tr style="height: 60px;" role="row">
-                <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader displayShowTable">
-                <h3 style="display: inline;"><a name="history" style="position: absolute; font-size: 1px; visibility: hidden;">.</a>History</h3>
-                 <button id="showhistory" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="#historydata">Show History</button>
-                </th>
-            </tr>
+                <tr>
+                    <th width="15%">Date</th>
+                    <th width="18%">Status</th>
+                    <th width="15%">Provider/Group</th>
+                    <th width="52%">Release</th>
+                </tr>
             </tbody>
 
-        <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
-            <tr>
-                <th width="15%">Date</th>
-                <th width="18%">Status</th>
-                <th width="15%">Provider/Group</th>
-                <th width="52%">Release</th>
-            </tr>
-        </tbody>
-
-        <tbody class="toggle collapse" aria-live="polite" aria-relevant="all" id="historydata">
-        % if episode_history:
-            % for item in episode_history:
-                <% status, quality = Quality.splitCompositeStatus(item['action']) %>
-                % if status == DOWNLOADED:
-                <tr style="background-color:#C3E3C8;!important">
-                % elif status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
-                <tr style="background-color:#EBC1EA;!important">
-                % elif status == FAILED:
-                <tr style="background-color:#FF9999;!important">
-                % endif
-
-                <td align="center" style="width: auto;">
-                    <% action_date = sbdatetime.sbfdatetime(datetime.datetime.strptime(str(item['date']), History.date_format), show_seconds=True) %>
-                    ${action_date}
-                </td>
-                <td  align="center" style="width: auto;">
-                ${statusStrings[status]} ${renderQualityPill(quality)}
-                </td>
-                <td align="center" style="width: auto;">
-                    <% provider = providers.getProviderClass(GenericProvider.make_id(item["provider"])) %>
-                    % if provider is not None:
-                        <img src="${srRoot}/images/providers/${provider.image_name()}" width="16" height="16" alt="${provider.name}" title="${provider.name}"/> ${item["provider"]}
-                    % else:
-                        ${item['provider'] if item['provider'] != "-1" else 'Unknown'}
+            <tbody class="toggle collapse" aria-live="polite" aria-relevant="all" id="historydata">
+                % for item in episode_history:
+                    <% status, quality = Quality.splitCompositeStatus(item['action']) %>
+                    % if status == DOWNLOADED:
+                        <tr style="background-color:#C3E3C8;!important">
+                    % elif status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
+                        <tr style="background-color:#EBC1EA;!important">
+                    % elif status == FAILED:
+                        <tr style="background-color:#FF9999;!important">
                     % endif
-                </td>
-                <td style="width: auto;">
-                ${os.path.basename(item['resource'])}
-                </td>
-                </tr>
-                % endfor
-        % endif
-        </tbody>
-    </table>
 
+                    <td align="center" style="width: auto;">
+                        <% action_date = sbdatetime.sbfdatetime(datetime.datetime.strptime(str(item['date']), History.date_format), show_seconds=True) %>
+                        ${action_date}
+                    </td>
+                    <td  align="center" style="width: auto;">
+                    ${statusStrings[status]} ${renderQualityPill(quality)}
+                    </td>
+                    <td align="center" style="width: auto;">
+                        <% provider = providers.getProviderClass(GenericProvider.make_id(item["provider"])) %>
+                        % if provider is not None:
+                            <img src="${srRoot}/images/providers/${provider.image_name()}" width="16" height="16" alt="${provider.name}" title="${provider.name}"/> ${item["provider"]}
+                        % else:
+                            ${item['provider'] if item['provider'] != "-1" else 'Unknown'}
+                        % endif
+                    </td>
+                    <td style="width: auto;">
+                    ${os.path.basename(item['resource'])}
+                    </td>
+                    </tr>
+                % endfor
+            </tbody>
+        </table>
+    % endif
 
     <!-- @TODO: Change this to use the REST API -->
     <!-- add provider meta data -->
