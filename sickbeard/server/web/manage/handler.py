@@ -525,7 +525,7 @@ class Manage(Home, WebRoot):
                                          for error in curErrors])
                     )
                 )
-        if len(errors) > 0:
+        if errors:
             ui.notifications.error(
                 '{num} error{s} while saving changes:'.format(
                     num=len(errors),

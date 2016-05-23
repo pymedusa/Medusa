@@ -408,7 +408,7 @@ class Home(WebRoot):
                 'emails': '',
                 'prowlAPIs': '',
             }
-            if r[b'notify_list'] and len(r[b'notify_list']) > 0:
+            if r[b'notify_list']:
                 # First, handle legacy format (emails only)
                 if not r[b'notify_list'][0] == '{':
                     NotifyList['emails'] = r[b'notify_list']
@@ -433,7 +433,7 @@ class Home(WebRoot):
 
         # Get current data
         for subs in main_db_con.select(b'SELECT notify_list FROM tv_shows WHERE show_id = ?', [show]):
-            if subs[b'notify_list'] and len(subs[b'notify_list']) > 0:
+            if subs[b'notify_list']:
                 # First, handle legacy format (emails only)
                 if not subs[b'notify_list'][0] == '{':
                     entries['emails'] = subs[b'notify_list']
@@ -507,7 +507,7 @@ class Home(WebRoot):
         else:
             backend_dirs = []
 
-        if len(backend_dirs):
+        if backend_dirs:
             for subject in backend_dirs:
                 rootDir[subject] = helpers.getDiskSpaceUsage(subject)
 
@@ -940,10 +940,10 @@ class Home(WebRoot):
         # Move on and show results
         # Return a list of queues the episode has been found in
         search_status = [item.get('searchstatus') for item in searched_item]
-        if (not len(searched_item) or (last_prov_updates and
-                                       SEARCH_STATUS_QUEUED not in search_status and
-                                       SEARCH_STATUS_SEARCHING not in search_status and
-                                       SEARCH_STATUS_FINISHED in search_status)):
+        if not searched_item or (last_prov_updates and
+                                 SEARCH_STATUS_QUEUED not in search_status and
+                                 SEARCH_STATUS_SEARCHING not in search_status and
+                                 SEARCH_STATUS_FINISHED in search_status):
             # If the ep not anymore in the QUEUED or SEARCHING Thread, and it has the status finished,
             # return it as finished
             return {'result': SEARCH_STATUS_FINISHED}
@@ -1336,7 +1336,7 @@ class Home(WebRoot):
         if directCall:
             return errors
 
-        if len(errors) > 0:
+        if errors:
             ui.notifications.error(
                 '{num} error{s} while saving changes:'.format(num=len(errors), s='s' if len(errors) > 1 else ''),
                 '<ul>\n{list}\n</ul>'.format(list='\n'.join(['<li>{items}</li>'.format(items=error)
@@ -1610,7 +1610,7 @@ class Home(WebRoot):
                 if data:
                     notifiers.trakt_notifier.update_watchlist(showObj, data_episode=data, update=upd.lower())
 
-            if len(sql_l) > 0:
+            if sql_l:
                 main_db_con = db.DBConnection()
                 main_db_con.mass_action(sql_l)
 

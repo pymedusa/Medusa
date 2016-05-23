@@ -85,7 +85,7 @@ class ConfigSubtitles(Config):
         # Reset provider pool so next time we use the newest settings
         subtitles.get_provider_pool.invalidate()
 
-        if len(results) > 0:
+        if results:
             for x in results:
                 logger.log(x, logger.ERROR)
             ui.notifications.error('Error(s) Saving Configuration',

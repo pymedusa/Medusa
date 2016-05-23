@@ -177,7 +177,7 @@ class ConfigGeneral(Config):
 
         sickbeard.save_config()
 
-        if len(results) > 0:
+        if results:
             for x in results:
                 logger.log(x, logger.ERROR)
             ui.notifications.error('Error(s) Saving Configuration',

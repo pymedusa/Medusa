@@ -51,12 +51,12 @@ class ErrorLogs(WebRoot):
 
     @staticmethod
     def haveErrors():
-        if len(classes.ErrorViewer.errors) > 0:
+        if classes.ErrorViewer.errors:
             return True
 
     @staticmethod
     def haveWarnings():
-        if len(classes.WarningViewer.errors) > 0:
+        if classes.WarningViewer.errors:
             return True
 
     def clearerrors(self, level=logger.ERROR):
