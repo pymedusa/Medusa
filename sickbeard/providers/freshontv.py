@@ -134,11 +134,11 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                         # Check to see if there is more than 1 page of results
                         pager = init_soup.find('div', {'class': 'pager'})
                         if pager:
-                            page_links = pager.find_all('a', href=True)
+                            page_links = pager('a', href=True)
                         else:
                             page_links = []
 
-                        if len(page_links) > 0:
+                        if page_links:
                             for lnk in page_links:
                                 link_text = lnk.text.strip()
                                 if link_text.isdigit():
@@ -178,10 +178,10 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
                         with BS4Parser(data_response, 'html5lib') as html:
 
-                            torrent_rows = html.findAll("tr", {"class": re.compile('torrent_[0-9]*')})
+                            torrent_rows = html("tr", {"class": re.compile('torrent_[0-9]*')})
 
                             # Continue only if a Release is found
-                            if len(torrent_rows) == 0:
+                            if not torrent_rows:
                                 logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
                                 continue
 
@@ -212,13 +212,13 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                     continue
 
                                 # Filter unseeded torrent
-                                if seeders < self.minseed or leechers < self.minleech:
+                                if seeders < min(self.minseed, 1):
                                     if mode != 'RSS':
-                                        logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format
-                                                   (title, seeders, leechers), logger.DEBUG)
+                                        logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                                   (title, seeders), logger.DEBUG)
                                     continue
 
-                                item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
+                                item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                                 if mode != 'RSS':
                                     logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 

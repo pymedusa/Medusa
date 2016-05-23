@@ -29,6 +29,7 @@ from sickbeard import logger, helpers, scene_numbering, common, scene_exceptions
 from sickrage.helper.common import remove_extension
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
+from sickbeard.helpers import remove_non_release_groups
 import dateutil
 
 
@@ -105,6 +106,9 @@ class NameParser(object):
 
         matches = []
         bestResult = None
+        
+        # Remove non release groups from filename
+        name = remove_non_release_groups(name)
 
         for (cur_regex_num, cur_regex_name, cur_regex) in self.compiled_regexes:
             match = cur_regex.match(name)
@@ -459,13 +463,13 @@ class NameParser(object):
         final_result.quality = self._combine_results(file_name_result, dir_name_result, 'quality')
 
         if not final_result.show:
-            raise InvalidShowException("Unable to match {} to a show in your database".format
-                                       (name.encode(sickbeard.SYS_ENCODING, 'xmlcharrefreplace')))
+            raise InvalidShowException(u"Unable to match {0} to a show in your database. Parser result: {1}".format(
+                                         name, file_name_result or dir_name_result))
 
         # if there's no useful info in it then raise an exception
         if final_result.season_number is None and not final_result.episode_numbers and final_result.air_date is None and not final_result.ab_episode_numbers and not final_result.series_name:
-            raise InvalidNameException("Unable to parse {} to a valid episode".format
-                                       (name.encode(sickbeard.SYS_ENCODING, 'xmlcharrefreplace')))
+            raise InvalidNameException(u"Unable to parse {0} to a valid episode. Parser result: {1}".format(
+                                         name, file_name_result or dir_name_result))
 
         if cache_result:
             name_parser_cache.add(name, final_result)

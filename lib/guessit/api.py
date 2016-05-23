@@ -124,6 +124,8 @@ class GuessItApi(object):
         ordered = OrderedDict()
         for k in sorted(unordered.keys(), key=six.text_type):
             ordered[k] = list(sorted(unordered[k], key=six.text_type))
+        if hasattr(self.rebulk, 'customize_properties'):
+            ordered = self.rebulk.customize_properties(ordered)
         return ordered
 
 

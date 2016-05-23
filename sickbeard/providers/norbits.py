@@ -116,18 +116,18 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                         seeders = try_int(item.pop('seeders', 0))
                         leechers = try_int(item.pop('leechers', 0))
 
-                        if seeders < self.minseed or leechers < self.minleech:
+                        if seeders < min(self.minseed, 1):
                             logger.log('Discarding torrent because it does not meet '
-                                       'the minimum seeders or leechers: {} (S:{} L:{})'.format
-                                       (title, seeders, leechers), logger.DEBUG)
+                                       'the minimum seeders: {0}. Seeders: {1})'.format
+                                       (title, seeders), logger.DEBUG)
                             continue
 
                         info_hash = item.pop('info_hash', '')
                         size = convert_size(item.pop('size', -1), -1)
 
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': info_hash}
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': info_hash}
                         if mode != 'RSS':
-                            logger.log('Found result: {} with {} seeders and {} leechers'.format(
+                            logger.log('Found result: {0} with {1} seeders and {2} leechers'.format(
                                 title, seeders, leechers), logger.DEBUG)
 
                         items.append(item)

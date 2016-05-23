@@ -87,11 +87,6 @@ module.exports = function(grunt) {
                 files: {
                     '../gui/slick/js/vender.min.js': ['./dist/bower.js']
                 }
-            },
-            core: {
-                files: {
-                    '../gui/slick/js/core.min.js': ['../gui/slick/js/core.js']
-                }
             }
         },
         sass: {

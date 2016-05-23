@@ -60,7 +60,7 @@ class CpasbienProvider(TorrentProvider):
                     continue
 
                 with BS4Parser(data, 'html5lib') as html:
-                    torrent_rows = html.find_all(class_=re.compile('ligne[01]'))
+                    torrent_rows = html(class_=re.compile('ligne[01]'))
                     for result in torrent_rows:
                         try:
                             title = result.find(class_="titre").get_text(strip=True).replace("HDTV", "HDTV x264-CPasBien")
@@ -72,10 +72,10 @@ class CpasbienProvider(TorrentProvider):
 
                             seeders = try_int(result.find(class_="up").get_text(strip=True))
                             leechers = try_int(result.find(class_="down").get_text(strip=True))
-                            if seeders < self.minseed or leechers < self.minleech:
+                            if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format
-                                               (title, seeders, leechers), logger.DEBUG)
+                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                               (title, seeders), logger.DEBUG)
                                 continue
 
                             torrent_size = result.find(class_="poid").get_text(strip=True)
@@ -83,7 +83,7 @@ class CpasbienProvider(TorrentProvider):
                             units = ['o', 'Ko', 'Mo', 'Go', 'To', 'Po']
                             size = convert_size(torrent_size, units=units) or -1
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                             if mode != 'RSS':
                                 logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 

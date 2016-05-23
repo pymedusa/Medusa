@@ -7,11 +7,15 @@ from sickrage.helper.exceptions import ex
 
 
 class Event(object):
-    def __init__(self, type):
-        self._type = type
+    def __init__(self, event_type):
+        self._type = event_type
 
     @property
-    def type(self):
+    def event_type(self):
+        """
+        Returns the type of the event
+        """
+        
         return self._type
 
 
@@ -24,8 +28,8 @@ class Events(threading.Thread):
         self.name = "EVENT-QUEUE"
         self.stop = threading.Event()
 
-    def put(self, type):
-        self.queue.put(type)
+    def put(self, event_type):
+        self.queue.put(event_type)
 
     def run(self):
         """
@@ -35,15 +39,15 @@ class Events(threading.Thread):
             while not self.stop.is_set():
                 try:
                     # get event type
-                    type = self.queue.get(True, 1)
+                    event_type = self.queue.get(True, 1)
 
                     # perform callback if we got a event type
-                    self.callback(type)
+                    self.callback(event_type)
 
                     # event completed
                     self.queue.task_done()
                 except Empty:
-                    type = None
+                    event_type = None
 
             # exiting thread
             self.stop.clear()

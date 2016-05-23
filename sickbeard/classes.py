@@ -20,7 +20,8 @@
 
 import datetime
 import sys
-import urllib
+
+from six.moves.urllib.request import FancyURLopener
 
 import sickbeard
 from sickbeard.common import USER_AGENT, Quality
@@ -28,7 +29,7 @@ from sickrage.helper.common import dateTimeFormat
 from dateutil import parser
 
 
-class SickBeardURLopener(urllib.FancyURLopener, object):
+class SickBeardURLopener(FancyURLopener, object):
     version = USER_AGENT
 
 
@@ -60,6 +61,15 @@ class SearchResult(object):  # pylint: disable=too-few-public-methods, too-many-
 
         # size of the release (-1 = n/a)
         self.size = -1
+
+        # seeders of the release
+        self.seeders = -1
+
+        # leechers of the release
+        self.leechers = -1
+
+        # release publish date
+        self.pubdate = None
 
         # release group
         self.release_group = u''
@@ -198,8 +208,8 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
         return allSeries[0]
 
 
-class Proper(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
-    def __init__(self, name, url, date, show):
+class Proper(object):
+    def __init__(self, name, url, date, show, seeders, leechers, size, pubdate, hash):
         self.name = name
         self.url = url
         self.date = date
@@ -207,7 +217,11 @@ class Proper(object):  # pylint: disable=too-few-public-methods, too-many-instan
         self.quality = Quality.UNKNOWN
         self.release_group = None
         self.version = -1
-
+        self.seeders = seeders
+        self.leechers = leechers
+        self.size = size
+        self.pubdate = pubdate
+        self.hash = hash
         self.show = show
         self.indexer = None
         self.indexerid = -1

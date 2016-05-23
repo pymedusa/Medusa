@@ -22,6 +22,10 @@ from __future__ import unicode_literals
 import re
 import sickbeard
 from fnmatch import fnmatch
+import logging
+import traceback
+
+logger = logging.getLogger(__name__)
 
 dateFormat = '%Y-%m-%d'
 dateTimeFormat = '%Y-%m-%d %H:%M:%S'
@@ -118,7 +122,7 @@ def http_code_description(http_code):
     :return: The description of the provided ``http_code``
     """
 
-    description = http_status_code.get(try_int(http_code), None)
+    description = http_status_code.get(try_int(http_code))
 
     if isinstance(description, list):
         return '(%s)' % ', '.join(description)
@@ -298,6 +302,8 @@ def try_int(candidate, default_value=0):
     try:
         return int(candidate)
     except (ValueError, TypeError):
+        if candidate and ("," in candidate or "." in candidate):
+            logger.error(u"Failed parsing provider. Traceback: %r" % traceback.format_exc())
         return default_value
 
 
@@ -319,3 +325,30 @@ def episode_num(season=None, episode=None, **kwargs):
     elif numbering == 'absolute':
         if not (season and episode) and (season or episode):
             return '{0:0>3}'.format(season or episode)
+
+def enabled_providers(search_type):
+    """ 
+    Return providers based on search type: daily, backlog and manualsearch
+    """
+    return [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
+        if x.is_active() and
+        hasattr(x, 'enable_{}'.format(search_type)) and
+        getattr(x, 'enable_{}'.format(search_type))]
+
+def remove_strings(old_string, unwanted_strings):
+    """
+    Return string removing all unwanted strings on it
+
+    :param old_string: String that will be cleaned
+    :param unwanted_strings: List of unwanted strings
+
+    :returns: the string without the unwanted strings
+    """
+    if not old_string:
+        return
+
+    for item in unwanted_strings:
+        old_string = old_string.replace(item, '')
+    return old_string
+        
+    

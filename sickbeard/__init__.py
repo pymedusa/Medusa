@@ -54,7 +54,7 @@ from sickbeard.common import SD
 from sickbeard.common import SKIPPED
 from sickbeard.common import WANTED
 from sickbeard.providers.rsstorrent import TorrentRssProvider
-from sickbeard.databases import mainDB, cache_db, failed_db
+from sickbeard.databases import main_db, cache_db, failed_db
 from sickbeard.providers.newznab import NewznabProvider
 
 from sickrage.helper.encoding import ek
@@ -75,7 +75,7 @@ CFG = None
 CONFIG_FILE = None
 
 # This is the version of the config we EXPECT to find
-CONFIG_VERSION = 8
+CONFIG_VERSION = 9
 
 # Default encryption version (0 for None)
 ENCRYPTION_VERSION = 0
@@ -106,10 +106,13 @@ showUpdateScheduler = None
 versionCheckScheduler = None
 showQueueScheduler = None
 searchQueueScheduler = None
+forcedSearchQueueScheduler = None
+manualSnatchScheduler = None
 properFinderScheduler = None
 autoPostProcesserScheduler = None
 subtitlesFinderScheduler = None
 traktCheckerScheduler = None
+
 
 showList = []
 
@@ -164,6 +167,8 @@ WEB_IPV6 = None
 WEB_COOKIE_SECRET = None
 WEB_USE_GZIP = True
 
+SUBLIMINAL_LOG = False
+
 DOWNLOAD_URL = None
 
 HANDLE_REVERSE_PROXY = False
@@ -199,6 +204,7 @@ DEBUG = False
 DBDEBUG = False
 DISPLAY_ALL_SEASONS = True
 DEFAULT_PAGE = 'home'
+SEEDERS_LEECHERS_IN_NOTIFY = True
 
 
 USE_LISTVIEW = False
@@ -557,7 +563,7 @@ DELETE_FAILED = False
 
 EXTRA_SCRIPTS = []
 
-IGNORE_WORDS = "german,french,core2hd,dutch,swedish,reenc,MrLss"
+IGNORE_WORDS = "german,french,core2hd,dutch,swedish,reenc,MrLss,dubbed"
 
 PREFERRED_WORDS = ""
 
@@ -570,6 +576,7 @@ TRACKERS_LIST += "udp://9.rarbg.to:2710/announce"
 
 REQUIRE_WORDS = ""
 IGNORED_SUBS_LIST = "dk,fin,heb,kor,nor,nordic,pl,swe"
+IGNORE_UND_SUBS = False
 SYNC_FILES = "!sync,lftp-pget-status,part,bts,!qb,!qB"
 
 CALENDAR_UNPROTECTED = False
@@ -593,6 +600,8 @@ __INITIALIZED__ = False
 
 NEWZNAB_DATA = None
 
+RECENTLY_DELETED = set()
+
 
 def get_backlog_cycle_time():
     cycletime = DAILYSEARCH_FREQUENCY * 2 + 7
@@ -603,7 +612,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
     with INIT_LOCK:
         # pylint: disable=global-statement
         global BRANCH, GIT_RESET, GIT_REMOTE, GIT_REMOTE_URL, CUR_COMMIT_HASH, CUR_COMMIT_BRANCH, ACTUAL_LOG_DIR, LOG_DIR, LOG_NR, LOG_SIZE, WEB_PORT, WEB_LOG, ENCRYPTION_VERSION, ENCRYPTION_SECRET, WEB_ROOT, WEB_USERNAME, WEB_PASSWORD, WEB_HOST, WEB_IPV6, WEB_COOKIE_SECRET, WEB_USE_GZIP, API_KEY, ENABLE_HTTPS, HTTPS_CERT, HTTPS_KEY, \
-            HANDLE_REVERSE_PROXY, USE_NZBS, USE_TORRENTS, NZB_METHOD, NZB_DIR, DOWNLOAD_PROPERS, RANDOMIZE_PROVIDERS, CHECK_PROPERS_INTERVAL, ALLOW_HIGH_PRIORITY, SAB_FORCED, TORRENT_METHOD, NOTIFY_ON_LOGIN, \
+            HANDLE_REVERSE_PROXY, USE_NZBS, USE_TORRENTS, NZB_METHOD, NZB_DIR, DOWNLOAD_PROPERS, RANDOMIZE_PROVIDERS, CHECK_PROPERS_INTERVAL, ALLOW_HIGH_PRIORITY, SAB_FORCED, TORRENT_METHOD, NOTIFY_ON_LOGIN, SUBLIMINAL_LOG, \
             SAB_USERNAME, SAB_PASSWORD, SAB_APIKEY, SAB_CATEGORY, SAB_CATEGORY_BACKLOG, SAB_CATEGORY_ANIME, SAB_CATEGORY_ANIME_BACKLOG, SAB_HOST, \
             NZBGET_USERNAME, NZBGET_PASSWORD, NZBGET_CATEGORY, NZBGET_CATEGORY_BACKLOG, NZBGET_CATEGORY_ANIME, NZBGET_CATEGORY_ANIME_BACKLOG, NZBGET_PRIORITY, NZBGET_HOST, NZBGET_USE_HTTPS, backlogSearchScheduler, \
             TORRENT_USERNAME, TORRENT_PASSWORD, TORRENT_HOST, TORRENT_PATH, TORRENT_SEED_TIME, TORRENT_PAUSED, TORRENT_HIGH_BANDWIDTH, TORRENT_LABEL, TORRENT_LABEL_ANIME, TORRENT_VERIFY_CERT, TORRENT_RPCURL, TORRENT_AUTH_TYPE, \
@@ -625,7 +634,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             USE_PUSHBULLET, PUSHBULLET_NOTIFY_ONSNATCH, PUSHBULLET_NOTIFY_ONDOWNLOAD, PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD, PUSHBULLET_API, PUSHBULLET_DEVICE, \
             versionCheckScheduler, VERSION_NOTIFY, AUTO_UPDATE, NOTIFY_ON_UPDATE, PROCESS_AUTOMATICALLY, NO_DELETE, UNPACK, CPU_PRESET, \
             KEEP_PROCESSED_DIR, PROCESS_METHOD, DELRARCONTENTS, TV_DOWNLOAD_DIR, UPDATE_FREQUENCY, \
-            showQueueScheduler, searchQueueScheduler, ROOT_DIRS, CACHE_DIR, ACTUAL_CACHE_DIR, TIMEZONE_DISPLAY, \
+            showQueueScheduler, searchQueueScheduler, forcedSearchQueueScheduler, manualSnatchScheduler, ROOT_DIRS, CACHE_DIR, ACTUAL_CACHE_DIR, TIMEZONE_DISPLAY, \
             NAMING_PATTERN, NAMING_MULTI_EP, NAMING_ANIME_MULTI_EP, NAMING_FORCE_FOLDERS, NAMING_ABD_PATTERN, NAMING_CUSTOM_ABD, NAMING_SPORTS_PATTERN, NAMING_CUSTOM_SPORTS, NAMING_ANIME_PATTERN, NAMING_CUSTOM_ANIME, NAMING_STRIP_YEAR, \
             RENAME_EPISODES, AIRDATE_EPISODES, FILE_TIMESTAMP_TIMEZONE, properFinderScheduler, PROVIDER_ORDER, autoPostProcesserScheduler, \
             providerList, newznabProviderList, torrentRssProviderList, \
@@ -639,14 +648,14 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             NEWZBIN, NEWZBIN_USERNAME, NEWZBIN_PASSWORD, GIT_PATH, MOVE_ASSOCIATED_FILES, SYNC_FILES, POSTPONE_IF_SYNC_FILES, POSTPONE_IF_NO_SUBS, dailySearchScheduler, NFO_RENAME, \
             GUI_NAME, HOME_LAYOUT, HISTORY_LAYOUT, DISPLAY_SHOW_SPECIALS, COMING_EPS_LAYOUT, COMING_EPS_SORT, COMING_EPS_DISPLAY_PAUSED, COMING_EPS_MISSED_RANGE, FUZZY_DATING, TRIM_ZERO, DATE_PRESET, TIME_PRESET, TIME_PRESET_W_SECONDS, THEME_NAME, \
             POSTER_SORTBY, POSTER_SORTDIR, HISTORY_LIMIT, CREATE_MISSING_SHOW_DIRS, ADD_SHOWS_WO_DIR, \
-            METADATA_WDTV, METADATA_TIVO, METADATA_MEDE8ER, IGNORE_WORDS, PREFERRED_WORDS, UNDESIRED_WORDS, TRACKERS_LIST, IGNORED_SUBS_LIST, REQUIRE_WORDS, CALENDAR_UNPROTECTED, CALENDAR_ICONS, NO_RESTART, \
+            METADATA_WDTV, METADATA_TIVO, METADATA_MEDE8ER, IGNORE_WORDS, PREFERRED_WORDS, UNDESIRED_WORDS, TRACKERS_LIST, IGNORED_SUBS_LIST, REQUIRE_WORDS, CALENDAR_UNPROTECTED, CALENDAR_ICONS, NO_RESTART, IGNORE_UND_SUBS, \
             USE_SUBTITLES, SUBTITLES_LANGUAGES, SUBTITLES_DIR, SUBTITLES_SERVICES_LIST, SUBTITLES_SERVICES_ENABLED, SUBTITLES_HISTORY, SUBTITLES_FINDER_FREQUENCY, SUBTITLES_MULTI, SUBTITLES_DOWNLOAD_IN_PP, SUBTITLES_KEEP_ONLY_WANTED, EMBEDDED_SUBTITLES_ALL, SUBTITLES_EXTRA_SCRIPTS, SUBTITLES_PRE_SCRIPTS, SUBTITLES_PERFECT_MATCH, subtitlesFinderScheduler, \
             SUBTITLES_HEARING_IMPAIRED, ADDIC7ED_USER, ADDIC7ED_PASS, ITASA_USER, ITASA_PASS, LEGENDASTV_USER, LEGENDASTV_PASS, OPENSUBTITLES_USER, OPENSUBTITLES_PASS, \
-            USE_FAILED_DOWNLOADS, DELETE_FAILED, ANON_REDIRECT, LOCALHOST_IP, DEBUG, DBDEBUG, DEFAULT_PAGE, PROXY_SETTING, PROXY_INDEXERS, \
+            USE_FAILED_DOWNLOADS, DELETE_FAILED, ANON_REDIRECT, LOCALHOST_IP, DEBUG, DBDEBUG, DEFAULT_PAGE, SEEDERS_LEECHERS_IN_NOTIFY, PROXY_SETTING, PROXY_INDEXERS, \
             AUTOPOSTPROCESSER_FREQUENCY, SHOWUPDATE_HOUR, \
             ANIME_DEFAULT, NAMING_ANIME, ANIMESUPPORT, USE_ANIDB, ANIDB_USERNAME, ANIDB_PASSWORD, ANIDB_USE_MYLIST, \
             ANIME_SPLIT_HOME, SCENE_DEFAULT, DOWNLOAD_URL, BACKLOG_DAYS, GIT_USERNAME, GIT_PASSWORD, \
-            DEVELOPER, gh, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, SOCKET_TIMEOUT
+            DEVELOPER, gh, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, SOCKET_TIMEOUT, RECENTLY_DELETED
 
         if __INITIALIZED__:
             return False
@@ -691,6 +700,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         if DEFAULT_PAGE not in ('home', 'schedule', 'history', 'news', 'IRC'):
             DEFAULT_PAGE = 'home'
 
+        SEEDERS_LEECHERS_IN_NOTIFY = check_setting_int(CFG, 'General', 'seeders_leechers_in_notify', 1)
         ACTUAL_LOG_DIR = check_setting_str(CFG, 'General', 'log_dir', 'Logs')
         LOG_DIR = ek(os.path.normpath, ek(os.path.join, DATA_DIR, ACTUAL_LOG_DIR))
         LOG_NR = check_setting_int(CFG, 'General', 'log_nr', 5)  # Default to 5 backup file (sickrage.log.x)
@@ -768,8 +778,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
                     try:
                         if ek(os.path.isdir, dstDir):
-                            bakFilename = '{0}-{1}'.format(path_leaf(dstDir), datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d_%H%M%S'))
-                            shutil.move(dstDir, ek(os.path.join, ek(os.path.dirname, dstDir), bakFilename))
+                            bak_filename = '{0}-{1}'.format(path_leaf(dstDir), datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d_%H%M%S'))
+                            shutil.move(dstDir, ek(os.path.join, ek(os.path.dirname, dstDir), bak_filename))
 
                         shutil.move(srcDir, dstDir)
                         logger.log(u"Restore: restoring cache successful", logger.INFO)
@@ -805,7 +815,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         except Exception:
             WEB_PORT = 8081
 
-        if WEB_PORT < 21 or WEB_PORT > 65535:
+        if not (21 < WEB_PORT < 65535):
             WEB_PORT = 8081
 
         WEB_HOST = check_setting_str(CFG, 'General', 'web_host', '0.0.0.0')
@@ -819,6 +829,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             WEB_COOKIE_SECRET = helpers.generateCookieSecret()
 
         WEB_USE_GZIP = bool(check_setting_int(CFG, 'General', 'web_use_gzip', 1))
+        SUBLIMINAL_LOG = bool(check_setting_int(CFG, 'General', 'subliminal_log', 0))
 
         SSL_VERIFY = bool(check_setting_int(CFG, 'General', 'ssl_verify', 1))
 
@@ -1223,6 +1234,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         TRACKERS_LIST = check_setting_str(CFG, 'General', 'trackers_list', TRACKERS_LIST)
         REQUIRE_WORDS = check_setting_str(CFG, 'General', 'require_words', REQUIRE_WORDS)
         IGNORED_SUBS_LIST = check_setting_str(CFG, 'General', 'ignored_subs_list', IGNORED_SUBS_LIST)
+        IGNORE_UND_SUBS = bool(check_setting_int(CFG, 'General', 'ignore_und_subs', IGNORE_UND_SUBS))
 
         CALENDAR_UNPROTECTED = bool(check_setting_int(CFG, 'General', 'calendar_unprotected', 0))
         CALENDAR_ICONS = bool(check_setting_int(CFG, 'General', 'calendar_icons', 0))
@@ -1267,6 +1279,9 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         POSTER_SORTBY = check_setting_str(CFG, 'GUI', 'poster_sortby', 'name')
         POSTER_SORTDIR = check_setting_int(CFG, 'GUI', 'poster_sortdir', 1)
         DISPLAY_ALL_SEASONS = bool(check_setting_int(CFG, 'General', 'display_all_seasons', 1))
+
+        # reconfigure the logger
+        logger.reconfigure_levels()
 
         # initialize NZB and TORRENT providers
         providerList = providers.makeProviderList()
@@ -1359,6 +1374,11 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                                            curTorrentProvider.get_id() + '_enable_backlog',
                                                                            curTorrentProvider.supports_backlog))
 
+            if hasattr(curTorrentProvider, 'enable_manualsearch'):
+                curTorrentProvider.enable_manualsearch = bool(check_setting_int(CFG, curTorrentProvider.get_id().upper(),
+                                                                           curTorrentProvider.get_id() + '_enable_manualsearch',
+                                                                           1))
+
             if hasattr(curTorrentProvider, 'cat'):
                 curTorrentProvider.cat = check_setting_int(CFG, curTorrentProvider.get_id().upper(),
                                                            curTorrentProvider.get_id() + '_cat', 0)
@@ -1394,13 +1414,18 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                                        curNzbProvider.get_id() + '_enable_backlog',
                                                                        curNzbProvider.supports_backlog))
 
+            if hasattr(curNzbProvider, 'enable_manualsearch'):
+                curNzbProvider.enable_manualsearch = bool(check_setting_int(CFG, curNzbProvider.get_id().upper(),
+                                                                     curNzbProvider.get_id() + '_enable_manualsearch',
+                                                                     1))
+
         if not ek(os.path.isfile, CONFIG_FILE):
             logger.log(u"Unable to find '" + CONFIG_FILE + "', all settings will be default!", logger.DEBUG)
             save_config()
 
         # initialize the main SB database
         main_db_con = db.DBConnection()
-        db.upgradeDatabase(main_db_con, mainDB.InitialSchema)
+        db.upgradeDatabase(main_db_con, main_db.InitialSchema)
 
         # initialize the cache database
         cache_db_con = db.DBConnection('cache.db')
@@ -1412,7 +1437,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # fix up any db problems
         main_db_con = db.DBConnection()
-        db.sanityCheckDatabase(main_db_con, mainDB.MainSanityCheck)
+        db.sanityCheckDatabase(main_db_con, main_db.MainSanityCheck)
 
         # migrate the config if it needs it
         migrator = ConfigMigrator(CFG)
@@ -1449,10 +1474,18 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                   threadName="SHOWUPDATER",
                                                   start_time=datetime.time(hour=SHOWUPDATE_HOUR, minute=random.randint(0, 59)))
 
+        # snatcher used for manual search, manual picked results
+        manualSnatchScheduler = scheduler.Scheduler(search_queue.SnatchQueue(),
+                                                    cycleTime=datetime.timedelta(seconds=3),
+                                                    threadName="MANUALSNATCHQUEUE")
         # searchers
         searchQueueScheduler = scheduler.Scheduler(search_queue.SearchQueue(),
                                                    cycleTime=datetime.timedelta(seconds=3),
                                                    threadName="SEARCHQUEUE")
+
+        forcedSearchQueueScheduler = scheduler.Scheduler(search_queue.ForcedSearchQueue(),
+                                                         cycleTime=datetime.timedelta(seconds=3),
+                                                         threadName="FORCEDSEARCHQUEUE")
 
         # TODO: update_interval should take last daily/backlog times into account!
         update_interval = datetime.timedelta(minutes=DAILYSEARCH_FREQUENCY)
@@ -1538,6 +1571,14 @@ def start():
             searchQueueScheduler.enable = True
             searchQueueScheduler.start()
 
+            # start the forced search queue checker
+            forcedSearchQueueScheduler.enable = True
+            forcedSearchQueueScheduler.start()
+
+            # start the search queue checker
+            manualSnatchScheduler.enable = True
+            manualSnatchScheduler.start()
+
             # start the proper finder
             if DOWNLOAD_PROPERS:
                 properFinderScheduler.silent = False
@@ -1593,6 +1634,8 @@ def halt():
                 versionCheckScheduler,
                 showQueueScheduler,
                 searchQueueScheduler,
+                forcedSearchQueueScheduler,
+                manualSnatchScheduler,
                 autoPostProcesserScheduler,
                 traktCheckerScheduler,
                 properFinderScheduler,
@@ -1642,7 +1685,7 @@ def saveAll():
 
 
 def save_config():  # pylint: disable=too-many-statements, too-many-branches
-    new_config = ConfigObj()
+    new_config = ConfigObj(encoding='UTF-8', default_encoding='UTF-8')
     new_config.filename = CONFIG_FILE
 
     # For passwords you must include the word `password` in the item_name and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
@@ -1671,6 +1714,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['web_password'] = helpers.encrypt(WEB_PASSWORD, ENCRYPTION_VERSION)
     new_config['General']['web_cookie_secret'] = WEB_COOKIE_SECRET
     new_config['General']['web_use_gzip'] = int(WEB_USE_GZIP)
+    new_config['General']['subliminal_log'] = int(SUBLIMINAL_LOG)
     new_config['General']['ssl_verify'] = int(SSL_VERIFY)
     new_config['General']['download_url'] = DOWNLOAD_URL
     new_config['General']['localhost_ip'] = LOCALHOST_IP
@@ -1680,6 +1724,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['debug'] = int(DEBUG)
     new_config['General']['dbdebug'] = int(DBDEBUG)
     new_config['General']['default_page'] = DEFAULT_PAGE
+    new_config['General']['seeders_leechers_in_notify'] = int(SEEDERS_LEECHERS_IN_NOTIFY)
     new_config['General']['enable_https'] = int(ENABLE_HTTPS)
     new_config['General']['notify_on_login'] = int(NOTIFY_ON_LOGIN)
     new_config['General']['https_cert'] = HTTPS_CERT
@@ -1772,6 +1817,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['trackers_list'] = TRACKERS_LIST
     new_config['General']['require_words'] = REQUIRE_WORDS
     new_config['General']['ignored_subs_list'] = IGNORED_SUBS_LIST
+    new_config['General']['ignore_und_subs'] = IGNORE_UND_SUBS
     new_config['General']['calendar_unprotected'] = int(CALENDAR_UNPROTECTED)
     new_config['General']['calendar_icons'] = int(CALENDAR_ICONS)
     new_config['General']['no_restart'] = int(NO_RESTART)
@@ -1853,6 +1899,9 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
         if hasattr(curTorrentProvider, 'enable_backlog'):
             new_config[curTorrentProvider.get_id().upper()][curTorrentProvider.get_id() + '_enable_backlog'] = int(
                 curTorrentProvider.enable_backlog)
+        if hasattr(curTorrentProvider, 'enable_manualsearch'):
+            new_config[curTorrentProvider.get_id().upper()][curTorrentProvider.get_id() + '_enable_manualsearch'] = int(
+                curTorrentProvider.enable_manualsearch)
         if hasattr(curTorrentProvider, 'cat'):
             new_config[curTorrentProvider.get_id().upper()][curTorrentProvider.get_id() + '_cat'] = int(
                 curTorrentProvider.cat)
@@ -1883,6 +1932,9 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
         if hasattr(curNzbProvider, 'enable_backlog'):
             new_config[curNzbProvider.get_id().upper()][curNzbProvider.get_id() + '_enable_backlog'] = int(
                 curNzbProvider.enable_backlog)
+        if hasattr(curNzbProvider, 'enable_manualsearch'):
+            new_config[curNzbProvider.get_id().upper()][curNzbProvider.get_id() + '_enable_manualsearch'] = int(
+                curNzbProvider.enable_manualsearch)
 
     new_config['NZBs'] = {}
     new_config['NZBs']['nzbs'] = int(NZBS)

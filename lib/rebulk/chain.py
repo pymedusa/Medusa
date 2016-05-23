@@ -4,8 +4,6 @@
 Chain patterns and handle repetiting capture group
 """
 # pylint: disable=super-init-not-called
-import six
-
 from .loose import call, set_defaults
 from .match import Match
 from .pattern import Pattern, filter_match_kwargs
@@ -265,7 +263,7 @@ class Chain(Pattern):
     def __repr__(self):
         defined = ""
         if self.defined_at:
-            defined = "@" + six.text_type(self.defined_at)
+            defined = "@%s" % (self.defined_at,)
         return "<%s%s:%s>" % (self.__class__.__name__, defined, self.parts)
 
 

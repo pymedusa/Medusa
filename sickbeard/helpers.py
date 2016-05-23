@@ -1,6 +1,5 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
-
 # Git: https://github.com/PyMedusa/SickRage.git
 #
 # This file is part of SickRage.
@@ -22,18 +21,12 @@
 import os
 import io
 import ctypes
-import random
 import re
 import socket
 import stat
 import tempfile
 import time
 import traceback
-import urllib
-import urllib2
-import hashlib
-import httplib
-import urlparse
 import uuid
 import base64
 import zipfile
@@ -46,13 +39,19 @@ import sickbeard
 import adba
 import requests
 import certifi
+import hashlib
+import random
 from contextlib import closing
 from socket import timeout as SocketTimeout
+
+from requests.compat import urlparse
+from six.moves import http_client
 
 from sickbeard import logger, classes
 from sickbeard.common import USER_AGENT
 from sickbeard import db
-from sickrage.helper.common import http_code_description, media_extensions, pretty_file_size, subtitle_extensions, episode_num
+from sickrage.helper.common import (http_code_description, media_extensions, pretty_file_size,
+                                    subtitle_extensions, episode_num, remove_strings)
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
@@ -60,6 +59,7 @@ from cachecontrol import CacheControl
 # from httpcache import CachingHTTPAdapter
 
 from itertools import izip, cycle
+from contextlib2 import suppress
 
 import shutil
 import shutil_custom
@@ -68,9 +68,16 @@ import xml.etree.ElementTree as ET
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
-# pylint: disable=protected-access
-# Access to a protected member of a client class
-urllib._urlopener = classes.SickBeardURLopener()
+try:
+    import urllib
+    urllib._urlopener = classes.SickBeardURLopener()
+except ImportError:
+    logger.log(u'Unable to import _urlopener, not using user_agent for urllib', logger.DEBUG)
+
+try:
+    from urllib.parse import splittype
+except ImportError:
+    from urllib2 import splittype
 
 
 def fixGlob(path):
@@ -83,7 +90,7 @@ def indentXML(elem, level=0):
     Does our pretty printing, makes Matt very happy
     """
     i = "\n" + level * "  "
-    if len(elem):
+    if elem:
         if not elem.text or not elem.text.strip():
             elem.text = i + "  "
         if not elem.tail or not elem.tail.strip():
@@ -97,7 +104,7 @@ def indentXML(elem, level=0):
             elem.tail = i
 
 
-def remove_non_release_groups(name):
+def remove_non_release_groups(name, clean_proper=False):
     """
     Remove non release groups from name
     """
@@ -111,23 +118,29 @@ def remove_non_release_groups(name):
     removeWordsList = {
         r'\[rartv\]$': 'searchre',
         r'\[rarbg\]$': 'searchre',
+        r'\.\[eztv\]$': 'searchre',
         r'\[eztv\]$': 'searchre',
         r'\[ettv\]$': 'searchre',
         r'\[cttv\]$': 'searchre',
-        r'\.\[vtv\]$': 'searchre',
-        r'\[vtv\]$': 'searchre',
+        r'\.?[[.]vtv\]?$': 'searchre',
         r'\[EtHD\]$': 'searchre',
         r'\[GloDLS\]$': 'searchre',
         r'\[silv4\]$': 'searchre',
         r'\[Seedbox\]$': 'searchre',
         r'\[PublicHD\]$': 'searchre',
+        r'\[REQ\]\s$': 'searchre',
+        r'\.\[PublicHD\]$': 'searchre',
+        r'\.\[NO.RAR\]$': 'searchre',
+        r'\[NO.RAR\]$': 'searchre',
         r'-\=\{SPARROW\}\=-$': 'searchre',
         r'\=\{SPARR$': 'searchre',
-        r'\.\[720P\]\[HEVC\]$': 'searchre',
+        r'\.\[\d*(P|p)\]\[HEVC\]$': 'searchre',
         r'\[AndroidTwoU\]$': 'searchre',
-        r'\[brassetv\]]$': 'searchre',
-        r'\[Talamasca32\]]$': 'searchre',
+        r'\[brassetv\]$': 'searchre',
+        r'\[Talamasca32\]$': 'searchre',
         r'\(musicbolt\.com\)$': 'searchre',
+        r'\.\(NLsub\)$': 'searchre',
+        r'\(NLsub\)$': 'searchre',
         r'\.\[BT\]$': 'searchre',
         r' \[1044\]$': 'searchre',
         r'\.RiPSaLoT$': 'searchre',
@@ -136,6 +149,8 @@ def remove_non_release_groups(name):
         r'\.gz$': 'searchre',
         r'\.English$': 'searchre',
         r'\.German$': 'searchre',
+        r'\.\.Italian$': 'searchre',
+        r'\.Italian$': 'searchre',
         r'(?<![57])\.1$': 'searchre',
         r'-NZBGEEK$': 'searchre',
         r'-Siklopentan$': 'searchre',
@@ -167,6 +182,9 @@ def remove_non_release_groups(name):
             _name = _name.replace(remove_string, '')
         elif remove_type == 'searchre':
             _name = re.sub(r'(?i)' + remove_string, '', _name)
+
+    if clean_proper:
+        _name = remove_strings(_name, ['.mkv', '.avi', '.mp4'])
 
     return _name
 
@@ -632,7 +650,7 @@ def chmodAsParent(childPath):
     childPath_owner = childPathStat.st_uid  # pylint: disable=no-member
     user_id = os.geteuid()  # @UndefinedVariable - only available on UNIX
 
-    if user_id != 0 and user_id != childPath_owner:
+    if user_id not in (0, childPath_owner):
         logger.log(u"Not running as root or owner of " + childPath + ", not trying to set permissions", logger.DEBUG)
         return
 
@@ -672,7 +690,7 @@ def fixSetGroupID(childPath):
         childPath_owner = childStat.st_uid  # pylint: disable=no-member
         user_id = os.geteuid()  # @UndefinedVariable - only available on UNIX
 
-        if user_id != 0 and user_id != childPath_owner:
+        if user_id not in (0, childPath_owner):
             logger.log(u"Not running as root or owner of " + childPath + ", not trying to set the set-group-ID",
                        logger.DEBUG)
             return
@@ -738,7 +756,7 @@ def get_all_episodes_from_absolute_number(show, absolute_numbers, indexer_id=Non
     episodes = []
     season = None
 
-    if len(absolute_numbers):
+    if absolute_numbers:
         if not show and indexer_id:
             show = Show.find(sickbeard.showList, indexer_id)
 
@@ -867,7 +885,10 @@ def backupVersionedFile(old_file, version):
 
     numTries = 0
 
-    new_file = old_file + '.' + 'v' + str(version)
+    with suppress(TypeError):
+        version = u'.'.join([str(i) for i in version]) if not isinstance(version, str) else version
+
+    new_file = u'{old_file}.v{version}'.format(old_file=old_file, version=version)
 
     while not ek(os.path.isfile, new_file):
         if not ek(os.path.isfile, old_file):
@@ -894,7 +915,9 @@ def backupVersionedFile(old_file, version):
 
 def restoreVersionedFile(backup_file, version):
     """
-    Restore a file version to original state
+    Restore a file version to original state.
+    For example sickbeard.db.v41 passed with version int(41), will translate back to sickbeard.db.
+    sickbeard.db.v41. passed with version tuple(41,2), will translate back to sickbeard.db.
 
     :param backup_file: File to restore
     :param version: Version of file to restore
@@ -903,8 +926,11 @@ def restoreVersionedFile(backup_file, version):
 
     numTries = 0
 
-    new_file, _ = ek(os.path.splitext, backup_file)
-    restore_file = new_file + '.' + 'v' + str(version)
+    with suppress(TypeError):
+        version = '.'.join([str(i) for i in version]) if not isinstance(version, str) else version
+
+    new_file, _ = backup_file[0:ek(backup_file.find, u'v{version}'.format(version=version))]
+    restore_file = backup_file
 
     if not ek(os.path.isfile, new_file):
         logger.log(u"Not restoring, %s doesn't exist" % new_file, logger.DEBUG)
@@ -943,31 +969,6 @@ def restoreVersionedFile(backup_file, version):
     return True
 
 
-# generates a md5 hash of a file
-def md5_for_file(filename, block_size=2 ** 16):
-    """
-    Generate an md5 hash for a file
-    :param filename: File to generate md5 hash for
-    :param block_size: Block size to use (defaults to 2^16)
-    :return MD5 hexdigest on success, or None on failure
-    """
-
-    # assert isinstance(filename, unicode)
-
-    try:
-        with io.open(filename, 'rb') as f:
-            md5 = hashlib.md5()
-            while True:
-                data = f.read(block_size)
-                if not data:
-                    break
-                md5.update(data)
-            f.close()
-            return md5.hexdigest()
-    except Exception:
-        return None
-
-
 def get_lan_ip():
     """Returns IP of system"""
 
@@ -984,11 +985,11 @@ def check_url(url):
     """
     # see also http://stackoverflow.com/questions/2924422
     # http://stackoverflow.com/questions/1140661
-    good_codes = [httplib.OK, httplib.FOUND, httplib.MOVED_PERMANENTLY]
+    good_codes = [http_client.OK, http_client.FOUND, http_client.MOVED_PERMANENTLY]
 
-    host, path = urlparse.urlparse(url)[1:3]  # elems [1] and [2]
+    host, path = urlparse(url)[1:3]  # elems [1] and [2]
     try:
-        conn = httplib.HTTPConnection(host)
+        conn = http_client.HTTPConnection(host)
         conn.request('HEAD', path)
         return conn.getresponse().status in good_codes
     except StandardError:
@@ -1340,7 +1341,7 @@ def mapIndexersToShow(showObj):
                     "INSERT OR IGNORE INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) VALUES (?,?,?,?)",
                     [showObj.indexerid, showObj.indexer, int(mapped_show[0]['id']), indexer]])
 
-        if len(sql_l) > 0:
+        if sql_l:
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 
@@ -1399,7 +1400,7 @@ def request_defaults(kwargs):
     # request session proxies
     if sickbeard.PROXY_SETTING:
         logger.log(u"Using global proxy: " + sickbeard.PROXY_SETTING, logger.DEBUG)
-        scheme, address = urllib2.splittype(sickbeard.PROXY_SETTING)
+        scheme, address = splittype(sickbeard.PROXY_SETTING)
         address = sickbeard.PROXY_SETTING if scheme else 'http://' + sickbeard.PROXY_SETTING
         proxies = {
             "http": address,
@@ -1558,25 +1559,10 @@ def get_size(start_path='.'):
 
 def generateApiKey():
     """ Return a new randomized API_KEY"""
-
-    try:
-        from hashlib import md5
-    except ImportError:
-        from md5 import md5
-
-    # Create some values to seed md5
-    t = str(time.time())
-    r = str(random.random())
-
-    # Create the md5 instance and give it the current time
-    m = md5(t)
-
-    # Update the md5 instance with the random variable
-    m.update(r)
-
-    # Return a hex digest of the md5, eg 49f68a5c8493ec2c0bf489821c21fc3b
-    logger.log(u"New API generated")
-    return m.hexdigest()
+    logger.log(u"Generating New API key")
+    secure_hash = hashlib.sha512(str(time.time()))
+    secure_hash.update(str(random.SystemRandom().getrandbits(4096)))
+    return secure_hash.hexdigest()[:32]
 
 
 def remove_article(text=''):
@@ -1606,36 +1592,15 @@ def verify_freespace(src, dest, oldfile=None):
 
     logger.log(u"Trying to determine free space on destination drive", logger.DEBUG)
 
-    if hasattr(os, 'statvfs'):  # POSIX
-        def disk_usage(path):
-            st = ek(os.statvfs, path)
-            free = st.f_bavail * st.f_frsize  # pylint: disable=no-member
-            return free
-
-    elif os.name == 'nt':       # Windows
-        import sys
-
-        def disk_usage(path):
-            _, total, free = ctypes.c_ulonglong(), ctypes.c_ulonglong(), ctypes.c_ulonglong()
-            if sys.version_info >= (3,) or isinstance(path, unicode):
-                fun = ctypes.windll.kernel32.GetDiskFreeSpaceExW
-            else:
-                fun = ctypes.windll.kernel32.GetDiskFreeSpaceExA
-            ret = fun(path, ctypes.byref(_), ctypes.byref(total), ctypes.byref(free))
-            if ret == 0:
-                logger.log(u"Unable to determine free space, something went wrong", logger.WARNING)
-                raise ctypes.WinError()
-            return free.value
-    else:
-        logger.log(u"Unable to determine free space on your OS")
-        return True
-
     if not ek(os.path.isfile, src):
-        logger.log(u"A path to a file is required for the source. " + src + " is not a file.", logger.WARNING)
+        logger.log("A path to a file is required for the source. {0} is not a file.".format(src), logger.WARNING)
         return True
 
     try:
-        diskfree = disk_usage(dest)
+        diskfree = getDiskSpaceUsage(dest, None)
+        if not diskfree:
+            logger.log(u"Unable to determine the free space on your OS.", logger.WARNING)
+            return True
     except Exception:
         logger.log(u"Unable to determine free space, so I will assume there is enough.", logger.WARNING)
         return True
@@ -1650,8 +1615,8 @@ def verify_freespace(src, dest, oldfile=None):
     if diskfree > neededspace:
         return True
     else:
-        logger.log(u"Not enough free space: Needed: %s bytes ( %s ), found: %s bytes ( %s )"
-                   % (neededspace, pretty_file_size(neededspace), diskfree, pretty_file_size(diskfree)), logger.WARNING)
+        logger.log(u"Not enough free space. Needed: {0} bytes ({1}), found: {2} bytes ({3})".format
+                   (neededspace, pretty_file_size(neededspace), diskfree, pretty_file_size(diskfree)), logger.WARNING)
         return False
 
 
@@ -1713,19 +1678,22 @@ def isFileLocked(checkfile, writeLockCheck=False):
     return False
 
 
-def getDiskSpaceUsage(diskPath=None):
+def getDiskSpaceUsage(diskPath=None, pretty=True):
     """
     returns the free space in human readable bytes for a given path or False if no path given
     :param diskPath: the filesystem path being checked
+    :param pretty: return as bytes if None
     """
+
     if diskPath and ek(os.path.exists, diskPath):
         if platform.system() == 'Windows':
             free_bytes = ctypes.c_ulonglong(0)
             ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(diskPath), None, None, ctypes.pointer(free_bytes))
-            return pretty_file_size(free_bytes.value)
+            return pretty_file_size(free_bytes.value) if pretty else free_bytes.value
         else:
             st = ek(os.statvfs, diskPath)
-            return pretty_file_size(st.f_bavail * st.f_frsize)  # pylint: disable=no-member
+            file_size = st.f_bavail * st.f_frsize
+            return pretty_file_size(file_size) if pretty else file_size  # pylint: disable=no-member
     else:
         return False
 

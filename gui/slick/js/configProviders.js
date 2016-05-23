@@ -73,7 +73,6 @@ $(document).ready(function(){
         newznabProviders[id] = newData;
 
         $('#editANewznabProvider').addOption(id, name);
-        $(this).populateNewznabSection();
 
         if ($('#provider_order_list > #'+id).length === 0 && showProvider !== false) {
             var toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="provider_enabler" CHECKED> <a href="' + anonURL + url + '" class="imgLink" target="_new"><img src="' + srRoot + '/images/providers/newznab.png" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>';

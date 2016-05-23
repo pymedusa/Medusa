@@ -3,6 +3,7 @@
 # Author: Jonathon Saine <thezoggy@gmail.com>
 # URL: http://code.google.com/p/sickbeard/
 #
+# Git: https://github.com/PyMedusa/SickRage.git
 # This file is part of Medusa.
 #
 # Medusa is free software: you can redistribute it and/or modify
@@ -22,18 +23,39 @@
 # pylint: disable=line-too-long,too-many-lines,abstract-method
 # pylint: disable=no-member,method-hidden,missing-docstring,invalid-name
 
+from datetime import datetime, date
 import io
 import os
 import re
 import time
-import urllib
-import datetime
 import traceback
 
+from requests.compat import unquote_plus
+
+from tornado.web import RequestHandler  # pylint: disable=import-error
+
 import sickbeard
-from sickrage.helper.common import dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename, timeFormat, try_int
+from sickbeard import (
+    classes, db, helpers, image_cache, logger, network_timezones,
+    processTV, sbdatetime, search_queue, ui,
+)
+from sickbeard.common import (
+    Overview, Quality, statusStrings,
+    ARCHIVED, DOWNLOADED, FAILED, IGNORED, SKIPPED, SNATCHED, SNATCHED_PROPER,
+    UNAIRED, UNKNOWN, WANTED,
+)
+from sickbeard.versionChecker import CheckVersion
+
+from sickrage.helper.common import (
+    dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
+    timeFormat, try_int,
+)
 from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import CantUpdateShowException, ex, ShowDirectoryNotFoundException
+from sickrage.helper.exceptions import (
+    ex,
+    CantUpdateShowException,
+    ShowDirectoryNotFoundException,
+)
 from sickrage.helper.quality import get_quality_string
 from sickrage.media.ShowFanArt import ShowFanArt
 from sickrage.media.ShowNetworkLogo import ShowNetworkLogo
@@ -44,55 +66,33 @@ from sickrage.show.History import History
 from sickrage.show.Show import Show
 from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
-from sickbeard.versionChecker import CheckVersion
-from sickbeard import db, logger, ui, helpers
-from sickbeard import search_queue
-from sickbeard import image_cache
-from sickbeard import classes
-from sickbeard import processTV
-from sickbeard import network_timezones, sbdatetime
-from sickbeard.common import DOWNLOADED
-from sickbeard.common import FAILED
-from sickbeard.common import IGNORED
-from sickbeard.common import Overview
-from sickbeard.common import Quality
-from sickbeard.common import SKIPPED
-from sickbeard.common import SNATCHED
-from sickbeard.common import SNATCHED_PROPER
-from sickbeard.common import UNAIRED
-from sickbeard.common import UNKNOWN
-from sickbeard.common import WANTED
-from sickbeard.common import ARCHIVED
-from sickbeard.common import statusStrings
 
+# Conditional imports
 try:
     import json
 except ImportError:
     # pylint: disable=import-error
     import simplejson as json
 
-# pylint: disable=import-error
-from tornado.web import RequestHandler
 
 indexer_ids = ["indexerid", "tvdbid"]
 
+# basically everything except RESULT_SUCCESS / success is bad
 RESULT_SUCCESS = 10  # only use inside the run methods
 RESULT_FAILURE = 20  # only use inside the run methods
 RESULT_TIMEOUT = 30  # not used yet :(
 RESULT_ERROR = 40  # only use outside of the run methods !
 RESULT_FATAL = 50  # only use in Api.default() ! this is the "we encountered an internal error" error
 RESULT_DENIED = 60  # only use in Api.default() ! this is the access denied error
+
 result_type_map = {
-    RESULT_SUCCESS: "success",
-    RESULT_FAILURE: "failure",
-    RESULT_TIMEOUT: "timeout",
+    RESULT_DENIED: "denied",
     RESULT_ERROR: "error",
     RESULT_FATAL: "fatal",
-    RESULT_DENIED: "denied",
+    RESULT_FAILURE: "failure",
+    RESULT_SUCCESS: "success",
+    RESULT_TIMEOUT: "timeout",
 }
-
-
-# basically everything except RESULT_SUCCESS / success is bad
 
 
 class ApiHandler(RequestHandler):
@@ -381,8 +381,6 @@ class ApiCall(ApiHandler):
 
         if default:
             default = self._check_param_type(default, key, arg_type)
-            if arg_type == "bool":
-                arg_type = []
             self._check_param_value(default, key, allowed_values)
 
         return default, args
@@ -508,30 +506,18 @@ def _responds(result_type, data=None, msg=""):
             "data": {} if not data else data}
 
 
-def _get_status_strings(s):
-    return statusStrings[s]
+def _ordinal_to_date(ordinal, date_format):
+    x = int(ordinal)
+    return date.fromordinal(x).strftime(date_format) if x >= 1 else ''
+
+
+def _ordinal_to_date_form(ordinal):
+    return _ordinal_to_date(ordinal, dateFormat)
 
 
 def _ordinal_to_datetime_form(ordinal):
     # workaround for episodes with no air date
-    if int(ordinal) != 1:
-        date = datetime.date.fromordinal(ordinal)
-    else:
-        return ""
-    return date.strftime(dateTimeFormat)
-
-
-def _ordinal_to_date_form(ordinal):
-    if int(ordinal) != 1:
-        date = datetime.date.fromordinal(ordinal)
-    else:
-        return ""
-    return date.strftime(dateFormat)
-
-
-def _history_date_to_datetime_form(time_string):
-    date = datetime.datetime.strptime(time_string, History.date_format)
-    return date.strftime(dateTimeFormat)
+    return _ordinal_to_date(ordinal, dateTimeFormat)
 
 
 def _map_quality(show_obj):
@@ -579,7 +565,7 @@ def _get_root_dirs():
         return {}
 
     # clean up the list - replace %xx escapes by their single-character equivalent
-    root_dirs = [urllib.unquote_plus(x) for x in root_dirs]
+    root_dirs = [unquote_plus(x) for x in root_dirs]
 
     default_dir = root_dirs[default_index]
 
@@ -754,7 +740,7 @@ class CMD_Episode(ApiCall):
             episode['airdate'] = 'Never'
 
         status, quality = Quality.splitCompositeStatus(int(episode["status"]))
-        episode["status"] = _get_status_strings(status)
+        episode["status"] = statusStrings[status]
         episode["quality"] = get_quality_string(quality)
         episode["file_size_human"] = pretty_file_size(episode["file_size"])
 
@@ -795,8 +781,8 @@ class CMD_EpisodeSearch(ApiCall):
             return _responds(RESULT_FAILURE, msg="Episode not found")
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ManualSearchQueueItem(show_obj, ep_obj)
-        sickbeard.searchQueueScheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
+        ep_queue_item = search_queue.ForcedSearchQueueItem(show_obj, [ep_obj])
+        sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
 
         # wait until the queue item tells us whether it worked or not
         while ep_queue_item.success is None:  # @UndefinedVariable
@@ -854,7 +840,6 @@ class CMD_EpisodeSetStatus(ApiCall):
             # the allowed values has at least one item that could not be matched against the internal status strings
             raise ApiError("The status string could not be matched to a status. Report to Devs!")
 
-        ep_list = []
         if self.e:
             ep_obj = show_obj.getEpisode(self.s, self.e)
             if not ep_obj:
@@ -865,7 +850,7 @@ class CMD_EpisodeSetStatus(ApiCall):
             ep_list = show_obj.getAllEpisodes(season=self.s)
 
         def _ep_result(result_code, ep, msg=""):
-            return {'season': ep.season, 'episode': ep.episode, 'status': _get_status_strings(ep.status),
+            return {'season': ep.season, 'episode': ep.episode, 'status': statusStrings[ep.status],
                     'result': result_type_map[result_code], 'message': msg}
 
         ep_results = []
@@ -909,7 +894,7 @@ class CMD_EpisodeSetStatus(ApiCall):
                     start_backlog = True
                 ep_results.append(_ep_result(RESULT_SUCCESS, ep_obj))
 
-        if len(sql_l) > 0:
+        if sql_l:
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 
@@ -1040,37 +1025,54 @@ class CMD_History(ApiCall):
         # optional
         self.limit, args = self.check_params(args, kwargs, "limit", 100, False, "int", [])
         self.type, args = self.check_params(args, kwargs, "type", None, False, "string", ["downloaded", "snatched"])
-        self.type = self.type.lower() if isinstance(self.type, str) else ''
+        self.type = self.type.lower() if isinstance(self.type, str) else None
 
         # super, missing, help
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
         """ Get the downloaded and/or snatched history """
-        data = History().get(self.limit, self.type)
-        results = []
+        history = History().get(self.limit, self.type).detailed
 
-        for row in data:
-            status, quality = Quality.splitCompositeStatus(int(row["action"]))
-            status = _get_status_strings(status)
+        def make_result(cur_item, cur_type):
+            """
+            Make an API result from a history item
 
-            if self.type and not status.lower() == self.type:
-                continue
+            :param cur_item: to convert to API item
+            :param cur_type: the type of action to return
 
-            row["status"] = status
-            row["quality"] = get_quality_string(quality)
-            row["date"] = _history_date_to_datetime_form(str(row["date"]))
+            :returns: an API result
+            """
+            def convert_date(history_date):
+                """
+                Convert date from a history date to datetime format
+                :param history_date: a date from the history
+                :return: a formatted date string
+                """
+                return datetime.strptime(
+                    str(history_date),
+                    History.date_format
+                ).strftime(dateTimeFormat)
 
-            del row["action"]
+            composite = Quality.splitCompositeStatus(cur_item.action)
+            if cur_type in (statusStrings[composite.status].lower(), None):
+                return {
+                    'date': convert_date(cur_item.date),
+                    'episode': cur_item.episode,
+                    'indexerid': cur_item.show_id,
+                    'provider': cur_item.provider,
+                    'quality': get_quality_string(composite.quality),
+                    'resource': ek(os.path.basename, cur_item.resource),
+                    'resource_path': ek(os.path.dirname, cur_item.resource),
+                    'season': cur_item.season,
+                    'show_name': cur_item.show_name,
+                    'status': statusStrings[composite.status],
+                    # Add tvdbid for backward compatibility
+                    # TODO: Make this actual tvdb id for other indexers
+                    'tvdbid': cur_item.show_id,
+                }
 
-            _rename_element(row, "show_id", "indexerid")
-            row["resource_path"] = ek(os.path.dirname, row["resource"])
-            row["resource"] = ek(os.path.basename, row["resource"])
-
-            # Add tvdbid for backward compatibility
-            row['tvdbid'] = row['indexerid']
-            results.append(row)
-
+        results = [make_result(x, self.type) for x in history if x]
         return _responds(RESULT_SUCCESS, results)
 
 
@@ -1155,7 +1157,10 @@ class CMD_Backlog(ApiCall):
             show_eps = []
 
             sql_results = main_db_con.select(
-                "SELECT tv_episodes.*, tv_shows.paused FROM tv_episodes INNER JOIN tv_shows ON tv_episodes.showid = tv_shows.indexer_id WHERE showid = ? and paused = 0 ORDER BY season DESC, episode DESC",
+                "SELECT tv_episodes.*, tv_shows.paused "
+                "FROM tv_episodes "
+                "INNER JOIN tv_shows ON tv_episodes.showid = tv_shows.indexer_id "
+                "WHERE showid = ? and paused = 0 ORDER BY season DESC, episode DESC",
                 [curShow.indexerid])
 
             for curResult in sql_results:
@@ -1309,7 +1314,7 @@ class CMD_PostProcess(ApiCall):
             self.path = sickbeard.TV_DOWNLOAD_DIR
 
         if not self.type:
-            self.type = 'manual'
+            self.type = "manual"
 
         data = processTV.processDir(self.path, process_method=self.process_method, force=self.force_replace,
                                     is_priority=self.is_priority, failed=self.failed, proc_type=self.type)
@@ -1358,7 +1363,7 @@ class CMD_SickBeardAddRootDir(ApiCall):
     def run(self):
         """ Add a new root (parent) directory to Medusa """
 
-        self.location = urllib.unquote_plus(self.location)
+        self.location = unquote_plus(self.location)
         location_matched = 0
         index = 0
 
@@ -1375,7 +1380,7 @@ class CMD_SickBeardAddRootDir(ApiCall):
             index = int(sickbeard.ROOT_DIRS.split('|')[0])
             root_dirs.pop(0)
             # clean up the list - replace %xx escapes by their single-character equivalent
-            root_dirs = [urllib.unquote_plus(x) for x in root_dirs]
+            root_dirs = [unquote_plus(x) for x in root_dirs]
             for x in root_dirs:
                 if x == self.location:
                     location_matched = 1
@@ -1389,7 +1394,7 @@ class CMD_SickBeardAddRootDir(ApiCall):
             else:
                 root_dirs.append(self.location)
 
-        root_dirs_new = [urllib.unquote_plus(x) for x in root_dirs]
+        root_dirs_new = [unquote_plus(x) for x in root_dirs]
         root_dirs_new.insert(0, index)
         root_dirs_new = '|'.join(unicode(x) for x in root_dirs_new)
 
@@ -1478,7 +1483,7 @@ class CMD_SickBeardDeleteRootDir(ApiCall):
         index = int(root_dirs[0])
         root_dirs.pop(0)
         # clean up the list - replace %xx escapes by their single-character equivalent
-        root_dirs = [urllib.unquote_plus(x) for x in root_dirs]
+        root_dirs = [unquote_plus(x) for x in root_dirs]
         old_root_dir = root_dirs[index]
         for curRootDir in root_dirs:
             if not curRootDir == self.location:
@@ -1491,8 +1496,8 @@ class CMD_SickBeardDeleteRootDir(ApiCall):
                 new_index = curIndex
                 break
 
-        root_dirs_new = [urllib.unquote_plus(x) for x in root_dirs_new]
-        if len(root_dirs_new) > 0:
+        root_dirs_new = [unquote_plus(x) for x in root_dirs_new]
+        if root_dirs_new:
             root_dirs_new.insert(0, new_index)
         root_dirs_new = "|".join(unicode(x) for x in root_dirs_new)
 
@@ -2557,7 +2562,7 @@ class CMD_ShowSeasons(ApiCall):
             seasons = {}
             for row in sql_results:
                 status, quality = Quality.splitCompositeStatus(int(row["status"]))
-                row["status"] = _get_status_strings(status)
+                row["status"] = statusStrings[status]
                 row["quality"] = get_quality_string(quality)
                 if try_int(row['airdate'], 1) > 693595:  # 1900
                     dt_episode_airs = sbdatetime.sbdatetime.convert_to_setting(
@@ -2577,14 +2582,14 @@ class CMD_ShowSeasons(ApiCall):
             sql_results = main_db_con.select(
                 "SELECT name, episode, airdate, status, location, file_size, release_name, subtitles FROM tv_episodes WHERE showid = ? AND season = ?",
                 [self.indexerid, self.season])
-            if len(sql_results) == 0:
+            if not sql_results:
                 return _responds(RESULT_FAILURE, msg="Season not found")
             seasons = {}
             for row in sql_results:
                 cur_episode = int(row["episode"])
                 del row["episode"]
                 status, quality = Quality.splitCompositeStatus(int(row["status"]))
-                row["status"] = _get_status_strings(status)
+                row["status"] = statusStrings[status]
                 row["quality"] = get_quality_string(quality)
                 if try_int(row['airdate'], 1) > 693595:  # 1900
                     dt_episode_airs = sbdatetime.sbdatetime.convert_to_setting(
@@ -2762,7 +2767,6 @@ class CMD_ShowStats(ApiCall):
             if statusCode == "total":
                 episodes_stats["total"] = episode_status_counts_total[statusCode]
                 continue
-            status, quality = Quality.splitCompositeStatus(int(statusCode))
             status_string = statusStrings[statusCode].lower().replace(" ", "_").replace("(", "").replace(
                 ")", "")
             episodes_stats[status_string] = episode_status_counts_total[statusCode]

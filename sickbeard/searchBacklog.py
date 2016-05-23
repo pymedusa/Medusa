@@ -74,6 +74,10 @@ class BacklogSearcher(object):
             logger.log(u"Backlog is still running, not starting it again", logger.DEBUG)
             return
 
+        if sickbeard.forcedSearchQueueScheduler.action.is_forced_search_in_progress():
+            logger.log(u"Manual search is running. Can't start Backlog Search", logger.WARNING)
+            return
+
         self.amActive = True
         self.amPaused = False
 
@@ -123,7 +127,7 @@ class BacklogSearcher(object):
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select("SELECT last_backlog FROM info")
 
-        if len(sql_results) == 0:
+        if not sql_results:
             lastBacklog = 1
         elif sql_results[0]["last_backlog"] is None or sql_results[0]["last_backlog"] == "":
             lastBacklog = 1
@@ -181,7 +185,7 @@ class BacklogSearcher(object):
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select("SELECT last_backlog FROM info")
 
-        if len(sql_results) == 0:
+        if not sql_results:
             main_db_con.action("INSERT INTO info (last_backlog, last_indexer) VALUES (?,?)", [str(when), 0])
         else:
             main_db_con.action("UPDATE info SET last_backlog=" + str(when))

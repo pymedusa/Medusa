@@ -23,32 +23,45 @@ Common interface for Quality and Status
 
 # pylint: disable=line-too-long
 
+from collections import namedtuple
 import operator
 from os import path
 import platform
 import re
 import uuid
 
+from fake_useragent import (
+    settings as UA_SETTINGS,
+    UserAgent,
+)
 from hachoir_parser import createParser  # pylint: disable=import-error
 from hachoir_metadata import extractMetadata  # pylint: disable=import-error
-from hachoir_core.log import log as hachoir_log # pylint: disable=import-error
+from hachoir_core.log import log as hachoir_log  # pylint: disable=import-error
 
-from fake_useragent import settings as UA_SETTINGS, UserAgent
 from sickbeard.numdict import NumDict
 from sickrage.helper.encoding import ek
-from sickrage.helper.common import try_int  # pylint: disable=unused-import
 from sickrage.tagger.episode import EpisodeTags
 from sickrage.recompiled import tags
 
-
-# If some provider has an issue with functionality of SR, other than user agents, it's best to come talk to us rather than block.
-# It is no different than us going to a provider if we have questions or issues. Be a team player here.
-# This is disabled, was only added for testing, and has no config.ini or web ui setting. To enable, set SPOOF_USER_AGENT = True
+# If some provider has an issue with functionality of SR, other than user
+# agents, it's best to come talk to us rather than block.  It is no different
+# than us going to a provider if we have questions or issues.
+# Be a team player here. This is disabled, and was only added for testing,
+# it has no config.ini or web ui setting.
+# To enable, set SPOOF_USER_AGENT = True
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
 USER_AGENT = u'Medusa-Rage/{version}({system}; {release}; {instance})'.format(
-    version=u'0.01', system=platform.system(), release=platform.release(), instance=INSTANCE_ID)
-UA_SETTINGS.DB = ek(path.abspath, ek(path.join, ek(path.dirname, __file__), '../lib/fake_useragent/ua.json'))
+    version=u'0.0.1', system=platform.system(), release=platform.release(),
+    instance=INSTANCE_ID)
+UA_SETTINGS.DB = ek(
+    path.abspath, ek(
+        path.join, ek(
+            path.dirname, __file__
+        ),
+        '../lib/fake_useragent/ua.json'
+    )
+)
 UA_POOL = UserAgent()
 if SPOOF_USER_AGENT:
     USER_AGENT = UA_POOL.random
@@ -56,7 +69,8 @@ if SPOOF_USER_AGENT:
 cpu_presets = {
     'HIGH': 5,
     'NORMAL': 2,
-    'LOW': 1
+    'LOW': 1,
+    'DISABLED': 0
 }
 
 # Other constants
@@ -89,7 +103,7 @@ SNATCHED = 2  # qualified with quality
 WANTED = 3  # episodes we don't have but want to get
 DOWNLOADED = 4  # qualified with quality
 SKIPPED = 5  # episodes we don't want
-ARCHIVED = 6  # episodes that you don't have locally (counts toward download completion stats)
+ARCHIVED = 6  # non-local episodes (counts toward download completion stats)
 IGNORED = 7  # episodes that you don't want included in your download stats
 SNATCHED_PROPER = 9  # qualified with quality
 SUBTITLED = 10  # qualified with quality
@@ -137,7 +151,8 @@ class Quality(object):
     ANYWEBDL = HDWEBDL | FULLHDWEBDL  # 96
     ANYBLURAY = HDBLURAY | FULLHDBLURAY  # 384
 
-    # put these bits at the other end of the spectrum, far enough out that they shouldn't interfere
+    # put these bits at the other end of the spectrum,
+    # far enough out that they shouldn't interfere
     UNKNOWN = 1 << 15  # 32768
 
     qualityStrings = NumDict({
@@ -361,8 +376,11 @@ class Quality(object):
 
         # Is it SD?
         elif ep.xvid or ep.avc:
+            # Is it aussie p2p?  If so its 720p
+            if all([ep.tv == u'hd', ep.widescreen, ep.aussie]):
+                result = Quality.HDTV
             # SD DVD
-            if ep.dvd or ep.bluray:
+            elif ep.dvd or ep.bluray:
                 result = Quality.SDDVD
             # SDTV
             elif ep.res == u'480p' or any([ep.tv, ep.sat, ep.web]):
@@ -450,6 +468,8 @@ class Quality(object):
 
         return ret
 
+    CompositeStatus = namedtuple('CompositeStatus', ['status', 'quality'])
+
     @staticmethod
     def compositeStatus(status, quality):
         if quality is None:
@@ -466,17 +486,17 @@ class Quality(object):
         Split a composite status code into a status and quality.
 
         :param status: to split
-        :returns: a tuple containing (status, quality)
+        :returns: a namedtuple containing (status, quality)
         """
         status = long(status)
         if status == UNKNOWN:
-            return UNKNOWN, Quality.UNKNOWN
+            return Quality.CompositeStatus(UNKNOWN, Quality.UNKNOWN)
 
         for q in sorted(Quality.qualityStrings.keys(), reverse=True):
             if status > q * 100:
-                return status - q * 100, q
+                return Quality.CompositeStatus(status - q * 100, q)
 
-        return status, Quality.NONE
+        return Quality.CompositeStatus(status, Quality.NONE)
 
     @staticmethod
     def sceneQualityFromName(name, quality):  # pylint: disable=too-many-branches
@@ -583,7 +603,7 @@ HD = Quality.combineQualities([HD720p, HD1080p], [])
 UHD = Quality.combineQualities([UHD_4K, UHD_8K], [])
 ANY = Quality.combineQualities([SD, HD, UHD], [])
 
-# legacy template, cant remove due to reference in mainDB upgrade?
+# legacy template, cant remove due to reference in main_db upgrade?
 BEST = Quality.combineQualities([Quality.SDTV, Quality.HDTV, Quality.HDWEBDL], [Quality.HDTV])
 
 qualityPresets = (
@@ -620,10 +640,14 @@ class StatusStrings(NumDict):
         :param key: A numeric key or None
         :raise KeyError: if the key is invalid and can't be determined from Quality
         """
-        key = self.numeric(key)  # try to convert the key to a number which will raise KeyError if it can't
-        if key in self.qualities:  # the key wasn't found locally so check in qualities
-            status, quality = Quality.splitCompositeStatus(key)
-            return self[status] if not quality else self[status] + " (" + Quality.qualityStrings[quality] + ")"
+        # convert key to number
+        key = self.numeric(key)  # raises KeyError if it can't
+        if key in self.qualities:  # if key isn't found check in qualities
+            current = Quality.splitCompositeStatus(key)
+            return '{status} ({quality})'.format(
+                status=self[current.status],
+                quality=Quality.qualityStrings[current.quality]
+            ) if current.quality else self[current.status]
         else:  # the key wasn't found in qualities either
             raise KeyError(key)  # ... so the key is invalid
 

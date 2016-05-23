@@ -1,8 +1,6 @@
 # coding=utf-8
 # Author: Dustyn Gibson <miigotu@gmail.com>
 #
-
-#
 # This file is part of SickRage.
 #
 # SickRage is free software: you can redistribute it and/or modify
@@ -86,11 +84,13 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
                 try:
                     with BS4Parser(data, 'html5lib') as parser:
-                        for item in parser.findAll('item'):
+                        for item in parser('item'):
                             if item.category and 'tv' not in item.category.get_text(strip=True):
                                 continue
 
-                            title = item.title.text.rsplit(' ', 1)[0].replace(' ', '.')
+                            title_raw = item.title.text
+                            # Add "-" after codec and add missing "."
+                            title = re.sub(r'([xh][ .]?264|xvid)( )', r'\1-', title_raw).replace(' ','.') if title_raw else ''
                             t_hash = item.guid.text.rsplit('/', 1)[-1]
 
                             if not all([title, t_hash]):
@@ -101,13 +101,13 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                             size = convert_size(torrent_size) or -1
 
                             # Filter unseeded torrent
-                            if seeders < self.minseed or leechers < self.minleech:
+                            if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format
-                                               (title, seeders, leechers), logger.DEBUG)
+                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                               (title, seeders), logger.DEBUG)
                                 continue
 
-                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': t_hash}
+                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': t_hash}
                             items.append(result)
                 except StandardError:
                     logger.log(u"Failed parsing provider. Traceback: %r" % traceback.format_exc(), logger.ERROR)

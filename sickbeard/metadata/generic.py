@@ -325,7 +325,7 @@ class GenericMetadata(object):
                 if not self._has_season_poster(show_obj, season):
                     logger.log(u"Metadata provider " + self.name + " creating season posters for " + show_obj.name,
                                logger.DEBUG)
-                    result = result + [self.save_season_posters(show_obj, season)]
+                    result.append(self.save_season_posters(show_obj, season))
             return all(result)
         return False
 
@@ -578,7 +578,7 @@ class GenericMetadata(object):
 
             cur_season_art = season_dict[cur_season]
 
-            if len(cur_season_art) == 0:
+            if not cur_season_art:
                 continue
 
             # Just grab whatever's there for now
@@ -625,7 +625,7 @@ class GenericMetadata(object):
 
             cur_season_art = season_dict[cur_season]
 
-            if len(cur_season_art) == 0:
+            if not cur_season_art:
                 continue
 
             # Just grab whatever's there for now

@@ -9,7 +9,7 @@ pages would be:
     plot summary:       http://akas.imdb.com/title/tt0094226/plotsummary
     ...and so on...
 
-Copyright 2004-2013 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2016 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -207,6 +207,11 @@ class DOMHTMLMovieParser(DOMParserBase):
                             multi=True,
                             path="./text()")),
 
+                Extractor(label='myrating',
+                        path="//span[@id='voteuser']",
+                        attrs=Attribute(key='myrating',
+                                        path=".//text()")),
+
                 Extractor(label='h5sections',
                         path="//div[@class='info']/h5/..",
                         attrs=[
@@ -226,7 +231,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                             Attribute(key="countries",
                                 path="./h5[starts-with(text(), " \
                             "'Countr')]/../div[@class='info-content']//text()",
-                            postprocess=makeSplitter('|')),
+                                postprocess=makeSplitter('|')),
                             Attribute(key="language",
                                 path="./h5[starts-with(text(), " \
                                         "'Language')]/..//text()",
@@ -234,7 +239,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                             Attribute(key='color info',
                                 path="./h5[starts-with(text(), " \
                                         "'Color')]/..//text()",
-                                postprocess=makeSplitter('Color:')),
+                                postprocess=makeSplitter('|')),
                             Attribute(key='sound mix',
                                 path="./h5[starts-with(text(), " \
                                         "'Sound Mix')]/..//text()",
@@ -462,6 +467,8 @@ class DOMHTMLMovieParser(DOMParserBase):
                 del data['other akas']
             if nakas:
                 data['akas'] = nakas
+        if 'color info' in data:
+            data['color info'] = [x.replace('Color:', '', 1) for x in data['color info']]
         if 'runtimes' in data:
             data['runtimes'] = [x.replace(' min', u'')
                                 for x in data['runtimes']]
@@ -1177,7 +1184,7 @@ class DOMHTMLCriticReviewsParser(DOMParserBase):
                 path="//div[@class='article']/div[@class='see-more']/a",
                 attrs=Attribute(key='metacritic url',
                                 path="./@href")) ]
-    
+
 class DOMHTMLOfficialsitesParser(DOMParserBase):
     """Parser for the "official sites", "external reviews", "newsgroup
     reviews", "miscellaneous links", "sound clips", "video clips" and

@@ -1,8 +1,6 @@
 # coding=utf-8
 # Author: Dustyn Gibson <miigotu@gmail.com>
 #
-
-#
 # This file is part of SickRage.
 #
 # SickRage is free software: you can redistribute it and/or modify
@@ -25,7 +23,6 @@ import time
 
 import sickbeard
 from sickbeard import logger, tvcache
-from sickbeard.common import cpu_presets
 from sickbeard.indexers.indexer_config import INDEXER_TVDB
 
 from sickrage.helper.common import convert_size, try_int
@@ -69,7 +66,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
             logger.log("Unable to connect to provider", logger.WARNING)
             return False
 
-        self.token = response.get("token", None)
+        self.token = response.get("token")
         self.token_expires = datetime.datetime.now() + datetime.timedelta(minutes=14) if self.token else None
         return self.token is not None
 
@@ -124,7 +121,8 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                     continue
 
                 # Maximum requests allowed are 1req/2sec
-                time.sleep(max(2, cpu_presets[sickbeard.CPU_PRESET]))
+                # Changing to 5 because of server clock desync
+                time.sleep(5)
 
                 data = self.get_url(self.urls["api"], params=search_params, returns="json")
                 if not isinstance(data, dict):
@@ -136,8 +134,8 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                 # Don't log when {"error":"No results found","error_code":20}
                 # List of errors: https://github.com/rarbg/torrentapi/issues/1#issuecomment-114763312
                 if error:
-                    if try_int(error_code) != 20:
-                        logger.log(error)
+                    if try_int(error_code) not in (20, 14):
+                        logger.log(error, logger.WARNING)
                     continue
 
                 torrent_results = data.get("torrent_results")
@@ -154,21 +152,21 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
 
                         seeders = item.pop("seeders")
                         leechers = item.pop("leechers")
-                        if seeders < self.minseed or leechers < self.minleech:
+                        if seeders < min(self.minseed, 1):
                             if mode != "RSS":
                                 logger.log("Discarding torrent because it doesn't meet the"
-                                           " minimum seeders or leechers: {} (S:{} L:{})".format
-                                           (title, seeders, leechers), logger.DEBUG)
+                                           " minimum seeders: {0}. Seeders: {1})".format
+                                           (title, seeders), logger.DEBUG)
                             continue
 
                         torrent_size = item.pop("size", -1)
                         size = convert_size(torrent_size) or -1
 
                         if mode != "RSS":
-                            logger.log("Found result: {} with {} seeders and {} leechers".format
+                            logger.log("Found result: {0} with {1} seeders and {2} leechers".format
                                        (title, seeders, leechers), logger.DEBUG)
 
-                        result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers}
+                        result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                         items.append(result)
                     except StandardError:
                         continue

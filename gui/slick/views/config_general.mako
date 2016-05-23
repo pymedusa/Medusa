@@ -11,9 +11,6 @@
     from sickbeard.metadata.generic import GenericMetadata
     from sickbeard.helpers import anon_url
 %>
-<%block name="scripts">
-<script type="text/javascript" src="${srRoot}/js/rootDirs.js?${sbPID}"></script>
-</%block>
 <%block name="content">
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
@@ -28,10 +25,8 @@
 
 <div id="config">
     <div id="config-content">
-
         <form id="configForm" action="saveGeneral" method="post">
             <div id="config-components">
-
                 <ul>
                     <li><a href="#misc">Misc</a></li>
                     <li><a href="#interface">Interface</a></li>
@@ -39,196 +34,193 @@
                 </ul>
 
                 <div id="misc">
-                <div class="component-group">
-
-                    <div class="component-group-desc">
-                        <h3>Misc</h3>
-                        <p>Startup options. Indexer options. Log and show file locations.</p>
-                        <p><b>Some options may require a manual restart to take effect.</b></p>
-                    </div>
-
-                    <fieldset class="component-group-list">
-
-                        <div class="field-pair">
-                            <label for="indexerDefaultLang">
-                                <span class="component-title">Default Indexer Language</span>
-                                <span class="component-desc">
-                                    <select name="indexerDefaultLang" id="indexerDefaultLang" class="form-control form-control-inline input-sm bfh-languages" data-language=${sickbeard.INDEXER_DEFAULT_LANGUAGE} data-available="${','.join(sickbeard.indexerApi().config['valid_languages'])}"></select>
-                                    <span>for adding shows and metadata providers</span>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="field-pair">
-                            <label for="launch_browser">
-                                <span class="component-title">Launch browser</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="launch_browser" id="launch_browser" ${('', 'checked="checked"')[bool(sickbeard.LAUNCH_BROWSER)]}/>
-                                    <p>open the Medusa home page on startup</p>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="field-pair">
-                            <label for="default_page">
-                                <span class="component-title">Initial page</span>
-                                <span class="component-desc">
-                                    <select id="default_page" name="default_page" class="form-control input-sm">
-                                        <option value="home" ${('', 'selected="selected"')[sickbeard.DEFAULT_PAGE == 'home']}>Shows</option>
-                                        <option value="schedule" ${('', 'selected="selected"')[sickbeard.DEFAULT_PAGE == 'schedule']}>Schedule</option>
-                                        <option value="history" ${('', 'selected="selected"')[sickbeard.DEFAULT_PAGE == 'history']}>History</option>
-                                        <option value="news" ${('', 'selected="selected"')[sickbeard.DEFAULT_PAGE == 'news']}>News</option>
-                                        <option value="IRC" ${('', 'selected="selected"')[sickbeard.DEFAULT_PAGE == 'IRC']}>IRC</option>
-                                    </select>
-                                    <span>when launching Medusa interface</span>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="field-pair">
-                            <label for="showupdate_hour">
-                                <span class="component-title">Choose hour to update shows</span>
-                                <span class="component-desc">
-                                    <input type="number" min="0" max="23" step="1" name="showupdate_hour" id="showupdate_hour" value="${sickbeard.SHOWUPDATE_HOUR}" class="form-control input-sm input75" autocapitalize="off" />
-                                    <p>with information such as next air dates, show ended, etc. Use 15 for 3pm, 4 for 4am etc.</p>
-                                    <p>Note: minutes are randomized each time Medusa is started</p>
-                                </span>
-                            </label>
+                    <div class="component-group">
+                        <div class="component-group-desc">
+                            <h3>Misc</h3>
+                            <p>Startup options. Indexer options. Log and show file locations.</p>
+                            <p><b>Some options may require a manual restart to take effect.</b></p>
                         </div>
 
-                        <div class="field-pair">
-                            <span class="component-title">Send to trash for actions</span>
-                            <span class="component-desc">
-                                <label for="trash_remove_show" class="nextline-block">
-                                    <input type="checkbox" name="trash_remove_show" id="trash_remove_show" ${('', 'checked="checked"')[bool(sickbeard.TRASH_REMOVE_SHOW)]}/>
-                                    <p>when using show "Remove" and delete files</p>
+                        <fieldset class="component-group-list">
+
+                            <div class="field-pair">
+                                <label for="indexerDefaultLang">
+                                    <span class="component-title">Default Indexer Language</span>
+                                    <span class="component-desc">
+                                        <select name="indexerDefaultLang" id="indexerDefaultLang" class="form-control form-control-inline input-sm bfh-languages" data-language=${sickbeard.INDEXER_DEFAULT_LANGUAGE} data-available="${','.join(sickbeard.indexerApi().config['valid_languages'])}"></select>
+                                        <span>for adding shows and metadata providers</span>
+                                    </span>
                                 </label>
-                                <label for="trash_rotate_logs" class="nextline-block">
-                                    <input type="checkbox" name="trash_rotate_logs" id="trash_rotate_logs" ${('', 'checked="checked"')[bool(sickbeard.TRASH_ROTATE_LOGS)]}/>
-                                    <p>on scheduled deletes of the oldest log files</p>
+                            </div>
+                            <div class="field-pair">
+                                <label for="launch_browser">
+                                    <span class="component-title">Launch browser</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="launch_browser" id="launch_browser" ${('', 'checked="checked"')[bool(sickbeard.LAUNCH_BROWSER)]}/>
+                                        <p>open the Medusa home page on startup</p>
+                                    </span>
                                 </label>
-                                <div class="clear-left"><p>selected actions use trash (recycle bin) instead of the default permanent delete</p></div>
-                            </span>
-                        </div>
+                            </div>
+                            <div class="field-pair">
+                                <label for="default_page">
+                                    <span class="component-title">Initial page</span>
+                                    <span class="component-desc">
+                                        <select id="default_page" name="default_page" class="form-control input-sm">
+                                            <option value="home" ${('', 'selected="selected"')[sickbeard.DEFAULT_PAGE == 'home']}>Shows</option>
+                                            <option value="schedule" ${('', 'selected="selected"')[sickbeard.DEFAULT_PAGE == 'schedule']}>Schedule</option>
+                                            <option value="history" ${('', 'selected="selected"')[sickbeard.DEFAULT_PAGE == 'history']}>History</option>
+                                            <option value="news" ${('', 'selected="selected"')[sickbeard.DEFAULT_PAGE == 'news']}>News</option>
+                                            <option value="IRC" ${('', 'selected="selected"')[sickbeard.DEFAULT_PAGE == 'IRC']}>IRC</option>
+                                        </select>
+                                        <span>when launching Medusa interface</span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="showupdate_hour">
+                                    <span class="component-title">Choose hour to update shows</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="0" max="23" step="1" name="showupdate_hour" id="showupdate_hour" value="${sickbeard.SHOWUPDATE_HOUR}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <p>with information such as next air dates, show ended, etc. Use 15 for 3pm, 4 for 4am etc.</p>
+                                        <p>Note: minutes are randomized each time Medusa is started</p>
+                                    </span>
+                                </label>
+                            </div>
 
-                        <div class="field-pair">
-                            <label for="log_dir">
-                                <span class="component-title">Log file folder location</span>
+                            <div class="field-pair">
+                                <span class="component-title">Send to trash for actions</span>
                                 <span class="component-desc">
-                                    <input type="text" name="log_dir" id="log_dir" value="${sickbeard.ACTUAL_LOG_DIR}" class="form-control input-sm input350" autocapitalize="off" />
+                                    <label for="trash_remove_show" class="nextline-block">
+                                        <input type="checkbox" name="trash_remove_show" id="trash_remove_show" ${('', 'checked="checked"')[bool(sickbeard.TRASH_REMOVE_SHOW)]}/>
+                                        <p>when using show "Remove" and delete files</p>
+                                    </label>
+                                    <label for="trash_rotate_logs" class="nextline-block">
+                                        <input type="checkbox" name="trash_rotate_logs" id="trash_rotate_logs" ${('', 'checked="checked"')[bool(sickbeard.TRASH_ROTATE_LOGS)]}/>
+                                        <p>on scheduled deletes of the oldest log files</p>
+                                    </label>
+                                    <div class="clear-left"><p>selected actions use trash (recycle bin) instead of the default permanent delete</p></div>
                                 </span>
-                            </label>
-                        </div>
+                            </div>
 
-                        <div class="field-pair">
-                            <label for="log_nr">
-                                <span class="component-title">Number of Log files saved</span>
-                                <span class="component-desc">
-                                    <input type="number" min="1" step="1" name="log_nr" id="log_nr" value="${sickbeard.LOG_NR}" class="form-control input-sm input75" autocapitalize="off" />
-                                    <p>number of log files saved when rotating logs (default: 5) (REQUIRES RESTART)</p>
-                                </span>
-                            </label>
-                        </div>
+                            <div class="field-pair">
+                                <label for="log_dir">
+                                    <span class="component-title">Log file folder location</span>
+                                    <span class="component-desc">
+                                        <input type="text" name="log_dir" id="log_dir" value="${sickbeard.ACTUAL_LOG_DIR}" class="form-control input-sm input350" autocapitalize="off" />
+                                    </span>
+                                </label>
+                            </div>
 
-                        <div class="field-pair">
-                            <label for="log_size">
-                                <span class="component-title">Size of Log files saved</span>
-                                <span class="component-desc">
-                                    <input type="number" min="0.5" step="0.1" name="log_size" id="log_size" value="${sickbeard.LOG_SIZE}" class="form-control input-sm input75" autocapitalize="off" />
-                                    <p>maximum size in MB of the log file (default: 1MB) (REQUIRES RESTART)</p>
-                                </span>
-                            </label>
-                        </div>
+                            <div class="field-pair">
+                                <label for="log_nr">
+                                    <span class="component-title">Number of Log files saved</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="1" step="1" name="log_nr" id="log_nr" value="${sickbeard.LOG_NR}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <p>number of log files saved when rotating logs (default: 5) (REQUIRES RESTART)</p>
+                                    </span>
+                                </label>
+                            </div>
 
-                        <div class="field-pair">
-                            <label for="indexer_default">
-                                <span class="component-title">Use initial indexer set to</span>
-                                <span class="component-desc">
-                                    <select id="indexer_default" name="indexer_default" class="form-control input-sm">
-                                        <option value="0" ${('', 'selected="selected"')[indexer == 0]}>All Indexers</option>
-                                        % for indexer in sickbeard.indexerApi().indexers:
-                                        <option value="${indexer}" ${('', 'selected="selected"')[sickbeard.INDEXER_DEFAULT == indexer]}>${sickbeard.indexerApi().indexers[indexer]}</option>
-                                        % endfor
-                                    </select>
-                                    <span>as the default selection when adding new shows</span>
-                                </span>
-                            </label>
-                        </div>
+                            <div class="field-pair">
+                                <label for="log_size">
+                                    <span class="component-title">Size of Log files saved</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="0.5" step="0.1" name="log_size" id="log_size" value="${sickbeard.LOG_SIZE}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <p>maximum size in MB of the log file (default: 1MB) (REQUIRES RESTART)</p>
+                                    </span>
+                                </label>
+                            </div>
 
-                        <div class="field-pair">
-                            <label for="indexer_timeout">
-                                <span class="component-title">Timeout show indexer at</span>
-                                <span class="component-desc">
-                                    <input type="number" min="10" step="1" name="indexer_timeout" id="indexer_timeout" value="${sickbeard.INDEXER_TIMEOUT}" class="form-control input-sm input75" autocapitalize="off" />
-                                    <p>seconds of inactivity when finding new shows (default:20)</p>
-                                </span>
-                            </label>
-                        </div>
+                            <div class="field-pair">
+                                <label for="indexer_default">
+                                    <span class="component-title">Use initial indexer set to</span>
+                                    <span class="component-desc">
+                                        <select id="indexer_default" name="indexer_default" class="form-control input-sm">
+                                            <option value="0" ${('', 'selected="selected"')[indexer == 0]}>All Indexers</option>
+                                            % for indexer in sickbeard.indexerApi().indexers:
+                                            <option value="${indexer}" ${('', 'selected="selected"')[sickbeard.INDEXER_DEFAULT == indexer]}>${sickbeard.indexerApi().indexers[indexer]}</option>
+                                            % endfor
+                                        </select>
+                                        <span>as the default selection when adding new shows</span>
+                                    </span>
+                                </label>
+                            </div>
 
-                        <div class="field-pair">
-                            <label>
-                                <span class="component-title">Show root directories</span>
-                                <span class="component-desc">
-                                    <p>where the files of shows are located</p>
-                                    <%include file="/inc_rootDirs.mako"/>
-                                </span>
-                            </label>
-                        </div>
+                            <div class="field-pair">
+                                <label for="indexer_timeout">
+                                    <span class="component-title">Timeout show indexer at</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="10" step="1" name="indexer_timeout" id="indexer_timeout" value="${sickbeard.INDEXER_TIMEOUT}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <p>seconds of inactivity when finding new shows (default:20)</p>
+                                    </span>
+                                </label>
+                            </div>
 
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
-                    </fieldset>
-                </div>
-                <div class="component-group">
+                            <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Show root directories</span>
+                                    <span class="component-desc">
+                                        <p>where the files of shows are located</p>
+                                        <%include file="/inc_rootDirs.mako"/>
+                                    </span>
+                                </label>
+                            </div>
 
-                    <div class="component-group-desc">
-                        <h3>Updates</h3>
-                        <p>Options for software updates.</p>
+                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        </fieldset>
                     </div>
-                    <fieldset class="component-group-list">
-
-                        <div class="field-pair">
-                            <label for="version_notify">
-                                <span class="component-title">Check software updates</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="version_notify" id="version_notify" ${('', 'checked="checked"')[bool(sickbeard.VERSION_NOTIFY)]}/>
-                                    <p>and display notifications when updates are available.
-                                    Checks are run on startup and at the frequency set below*</p>
-                                </span>
-                            </label>
+                    <div class="component-group">
+                        <div class="component-group-desc">
+                            <h3>Updates</h3>
+                            <p>Options for software updates.</p>
                         </div>
+                        <fieldset class="component-group-list">
+                            <div class="field-pair">
+                                <label for="version_notify">
+                                    <span class="component-title">Check software updates</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="version_notify" id="version_notify" ${('', 'checked="checked"')[bool(sickbeard.VERSION_NOTIFY)]}/>
+                                        <p>and display notifications when updates are available.
+                                        Checks are run on startup and at the frequency set below*</p>
+                                    </span>
+                                </label>
+                            </div>
 
-                        <div class="field-pair">
-                            <label for="auto_update">
-                                <span class="component-title">Automatically update</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="auto_update" id="auto_update" ${('', 'checked="checked"')[bool(sickbeard.AUTO_UPDATE)]}/>
-                                    <p>fetch and install software updates.
-                                    Updates are run on startup and in the background at the frequency set below*</p>
-                                </span>
-                            </label>
-                        </div>
+                            <div class="field-pair">
+                                <label for="auto_update">
+                                    <span class="component-title">Automatically update</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="auto_update" id="auto_update" ${('', 'checked="checked"')[bool(sickbeard.AUTO_UPDATE)]}/>
+                                        <p>fetch and install software updates.
+                                        Updates are run on startup and in the background at the frequency set below*</p>
+                                    </span>
+                                </label>
+                            </div>
 
-                        <div class="field-pair">
-                            <label>
-                                <span class="component-title">Check the server every*</span>
-                                <span class="component-desc">
-                                    <input type="number" min="1" step="1" name="update_frequency" id="update_frequency" value="${sickbeard.UPDATE_FREQUENCY}" class="form-control input-sm input75" autocapitalize="off" />
-                                    <p>hours for software updates (default:1)</p>
-                                </span>
-                            </label>
-                        </div>
+                            <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Check the server every*</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="1" step="1" name="update_frequency" id="update_frequency" value="${sickbeard.UPDATE_FREQUENCY}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <p>hours for software updates (default:1)</p>
+                                    </span>
+                                </label>
+                            </div>
 
-                        <div class="field-pair">
-                            <label for="notify_on_update">
-                                <span class="component-title">Notify on software update</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="notify_on_update" id="notify_on_update" ${('', 'checked="checked"')[bool(sickbeard.NOTIFY_ON_UPDATE)]}/>
-                                    <p>send a message to all enabled notifiers when Medusa has been updated</p>
-                                </span>
-                            </label>
-                        </div>
+                            <div class="field-pair">
+                                <label for="notify_on_update">
+                                    <span class="component-title">Notify on software update</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="notify_on_update" id="notify_on_update" ${('', 'checked="checked"')[bool(sickbeard.NOTIFY_ON_UPDATE)]}/>
+                                        <p>send a message to all enabled notifiers when Medusa has been updated</p>
+                                    </span>
+                                </label>
+                            </div>
 
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
-                    </fieldset>
+                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        </fieldset>
 
-                </div>
+                    </div>
                 </div><!-- /component-group1 //-->
 
 
@@ -545,6 +537,16 @@
                         </div>
 
                         <div class="field-pair">
+                            <label for="subliminal_log">
+                                <span class="component-title">Subliminal logs</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="subliminal_log" id="subliminal_log" ${('', 'checked="checked"')[bool(sickbeard.SUBLIMINAL_LOG)]}/>
+                                    <p>enable logs from subliminal library (subtitles)</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="field-pair">
                             <label for="ssl_verify">
                                 <span class="component-title">Verify SSL Certs</span>
                                     <span class="component-desc">
@@ -663,13 +665,11 @@
                 </div>
 
                 <div class="component-group">
-
                     <div class="component-group-desc">
                         <h3>GitHub</h3>
                         <p>Options for github related features.</p>
                     </div>
                     <fieldset class="component-group-list">
-
                         <div class="field-pair">
                             <label>
                                 <span class="component-title">Branch version:</span>
@@ -761,12 +761,8 @@
                 <br>
                 <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${sickbeard.DATA_DIR}</span></b> </h6>
                 <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
-
             </div><!-- /config-components -->
-
         </form>
     </div>
 </div>
-
-<div></div>
 </%block>

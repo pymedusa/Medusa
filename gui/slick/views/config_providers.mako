@@ -90,6 +90,9 @@ $('#config-components').tabs();
                                 ${('<span class="red-text">!</span>', '')[bool(curProvider.get_id() not in broken_providers)]}
                                 <span class="ui-icon ui-icon-arrowthick-2-n-s pull-right" style="vertical-align:middle;"></span>
                                 <span class="ui-icon ${('ui-icon-locked','ui-icon-unlocked')[bool(curProvider.public)]} pull-right" style="vertical-align:middle;"></span>
+                                <span class="${('','ui-icon enable-manual-search-icon pull-right')[bool(curProvider.enable_manualsearch)]}" style="vertical-align:middle;"></span>
+                                <span class="${('','ui-icon enable-backlog-search-icon pull-right')[bool(curProvider.enable_backlog)]}" style="vertical-align:middle;"></span>
+                                <span class="${('','ui-icon enable-daily-search-icon pull-right')[bool(curProvider.enable_daily)]}" style="vertical-align:middle;"></span>
                             </li>
                         % endfor
                         </ul>
@@ -163,6 +166,18 @@ $('#config-components').tabs();
                                 <span class="component-desc">
                                     <input type="checkbox" name="${curNewznabProvider.get_id()}_enable_daily" id="${curNewznabProvider.get_id()}_enable_daily" ${('', 'checked="checked"')[bool(curNewznabProvider.enable_daily)]}/>
                                     <p>enable provider to perform daily searches.</p>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
+
+                        % if hasattr(curNewznabProvider, 'enable_manualsearch'):
+                        <div class="field-pair${(' hidden', '')[curNewznabProvider.supports_backlog]}">
+                            <label for="${curNewznabProvider.get_id()}_enable_manualsearch">
+                                <span class="component-title">Enable manual searches</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="${curNewznabProvider.get_id()}_enable_manualsearch" id="${curNewznabProvider.get_id()}_enable_manualsearch" ${('', 'checked="checked"')[bool(curNewznabProvider.enable_manualsearch  and curNewznabProvider.supports_backlog)]}/>
+                                    <p>enable provider to perform manual searches.</p>
                                 </span>
                             </label>
                         </div>
@@ -254,6 +269,19 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
+
+                        % if hasattr(curNzbProvider, 'enable_manualsearch'):
+                        <div class="field-pair${(' hidden', '')[curNzbProvider.supports_backlog]}">
+                            <label for="${curNzbProvider.get_id()}_enable_manualsearch">
+                                <span class="component-title">Enable manual searches</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="${curNzbProvider.get_id()}_enable_manualsearch" id="${curNzbProvider.get_id()}_enable_manualsearch" ${('', 'checked="checked"')[bool(curNzbProvider.enable_manualsearch and curNzbProvider.supports_backlog)]}/>
+                                    <p>enable provider to perform manual searches.</p>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
+
 
                         % if hasattr(curNzbProvider, 'enable_backlog'):
                         <div class="field-pair${(' hidden', '')[curNzbProvider.supports_backlog]}">
@@ -407,7 +435,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_ratio">
                                 <span class="component-title" id="${curTorrentProvider.get_id()}_ratio_desc">Seed ratio:</span>
                                 <span class="component-desc">
-                                    <input type="number" min="-1" step="0.1" name="${curTorrentProvider.get_id()}_ratio" id="${curTorrentProvider.get_id()}_ratio" value="${curTorrentProvider.ratio}" class="form-control input-sm input75" />
+                                    <input type="number" min="-1" step="0.1" name="${curTorrentProvider.get_id()}_ratio" id="${curTorrentProvider.get_id()}_ratio" value="${'' if curTorrentProvider.ratio is None else curTorrentProvider.ratio}" class="form-control input-sm input75" />
                                 </span>
                             </label>
                             <label>
@@ -523,6 +551,18 @@ $('#config-components').tabs();
                                 <span class="component-desc">
                                     <input type="checkbox" name="${curTorrentProvider.get_id()}_enable_daily" id="${curTorrentProvider.get_id()}_enable_daily" ${('', 'checked="checked"')[bool(curTorrentProvider.enable_daily)]}/>
                                     <p>enable provider to perform daily searches.</p>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
+
+                        % if hasattr(curTorrentProvider, 'enable_manualsearch'):
+                        <div class="field-pair${(' hidden', '')[curTorrentProvider.supports_backlog]}">
+                            <label for="${curTorrentProvider.get_id()}_enable_manualsearch">
+                                <span class="component-title">Enable manual searches</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_enable_manualsearch" id="${curTorrentProvider.get_id()}_enable_manualsearch" ${('', 'checked="checked"')[bool(curTorrentProvider.enable_manualsearch and curTorrentProvider.supports_backlog)]}/>
+                                    <p>enable provider to perform manual searches.</p>
                                 </span>
                             </label>
                         </div>

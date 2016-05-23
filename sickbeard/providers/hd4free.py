@@ -74,11 +74,20 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     search_params['search'] = search_string
                 else:
                     search_params.pop('search', '')
-
-                jdata = self.get_url(self.urls['search'], params=search_params, returns='json')
+                try:
+                    jdata = self.get_url(self.urls['search'], params=search_params, returns='json')
+                except ValueError:
+                    logger.log("No data returned from provider", logger.DEBUG)
+                    continue
+                
                 if not jdata:
                     logger.log(u"No data returned from provider", logger.DEBUG)
                     continue
+                
+                error = jdata.get('error')
+                if error:
+                    logger.log(u"{}".format(error), logger.DEBUG)
+                    return results
 
                 try:
                     if jdata['0']['total_results'] == 0:
@@ -96,15 +105,15 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                         seeders = jdata[i]["seeders"]
                         leechers = jdata[i]["leechers"]
-                        if seeders < self.minseed or leechers < self.minleech:
+                        if seeders < min(self.minseed, 1):
                             if mode != 'RSS':
-                                logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {} (S:{} L:{})".format
-                                           (title, seeders, leechers), logger.DEBUG)
+                                logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                           (title, seeders), logger.DEBUG)
                             continue
 
                         torrent_size = str(jdata[i]["size"]) + ' MB'
                         size = convert_size(torrent_size) or -1
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
 
                         if mode != 'RSS':
                             logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)

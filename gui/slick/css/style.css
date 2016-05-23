@@ -362,6 +362,31 @@ inc_top.mako
     background-position: -742px 0px;
 }
 
+.enable-daily-search-icon {
+    background-image: url("../images/search_daily_8x8.png")!important;
+    width: 8px;
+    height: 8px;
+    margin-top: 5px;
+    margin-right: 3px;
+}
+
+.enable-backlog-search-icon {
+    background-image: url("../images/search_backlog_8x8.png")!important;
+    width: 8px;
+    height: 8px;
+    margin-top: 5px;
+    margin-right: 3px;
+}
+
+.enable-manual-search-icon {
+    background-image: url("../images/search_manual_8x8.png")!important;
+    width: 8px;
+    height: 8px;
+    margin-top: 5px;
+    margin-right: 3px;
+}
+
+
 /* =======================================================================
 inc_bottom.mako
 ========================================================================== */
@@ -922,6 +947,10 @@ h1.title {
     border-bottom: 1px solid #888;
 }
 
+h1.title a {
+    text-decoration: none;
+}
+
 .displayspecials {
     position: relative;
     top: -24px;
@@ -1226,7 +1255,30 @@ td.col-legend {
 
 th.col-search,
 td.col-search {
-  width: 46px;
+	width: 65px;
+}
+
+td.col-date {
+	min-width: 104px;
+	text-align: center;
+	white-space: nowrap;
+}
+
+td.col-size {
+	min-width: 79px;
+	text-align: center;
+	white-space: nowrap;
+}
+
+td.col-provider {
+	min-width: 133px;
+	text-align: center;
+	white-space: nowrap;
+}
+
+td.col-group {
+	min-width: 90px;
+	text-align: center;
 }
 
 .showLegend {
@@ -2116,6 +2168,10 @@ span.false {
 span.true {
     color: #669966;
     /* green */
+}
+
+span.break-word {
+	word-break: break-all;
 }
 
 option.flag {
@@ -3402,4 +3458,45 @@ input.tablesorter-filter.disabled {
 /* @TODO replace this with proper CSS overrides */
 .ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header {
     font-weight: normal !important;
+}
+
+/* =======================================================================
+snatchSelection.mako
+========================================================================== */
+
+div#searchNotification {
+	display: inline-block;
+}
+
+.summaryTable tr td {
+    word-break: break-all;
+}
+
+
+/* =======================================================================
+viewLog.mako
+========================================================================== */
+
+/* Pull left in mobile resolutions */
+@media (max-width: 767px) {
+    .pull-xs-right {
+        float: right !important;
+    }
+    .pull-xs-left {
+        float: left !important;
+    }
+
+    .radio-inline.pull-xs-left  + .radio-inline.pull-xs-left ,
+    .checkbox-inline.pull-xs-left  + .checkbox-inline.pull-xs-left  {
+        margin-left: 0;
+    }
+    .radio-inline.pull-xs-left, .checkbox-inline.pull-xs-left{
+        margin-right: 10px;
+    }
+}
+
+/* Because the H1 has a margin of 20px withing the column col-sm-2 of 20px we need
+to configure the same for the columns which are used for the filter inputs.*/
+.log-filter {
+    margin-top: 20px;
 }
