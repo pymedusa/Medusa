@@ -1,4 +1,7 @@
 # coding=utf-8
+
+from __future__ import unicode_literals
+
 import os
 import threading
 
@@ -61,12 +64,12 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
             if not (self.https_cert and ek(os.path.exists, self.https_cert)) or not (
                     self.https_key and ek(os.path.exists, self.https_key)):
                 if not create_https_certificates(self.https_cert, self.https_key):
-                    logger.log(u'Unable to create CERT/KEY files, disabling HTTPS')
+                    logger.log('Unable to create CERT/KEY files, disabling HTTPS')
                     sickbeard.ENABLE_HTTPS = False
                     self.enable_https = False
 
             if not (ek(os.path.exists, self.https_cert) and ek(os.path.exists, self.https_key)):
-                logger.log(u'Disabled HTTPS because of missing CERT and KEY files', logger.WARNING)
+                logger.log('Disabled HTTPS because of missing CERT and KEY files', logger.WARNING)
                 sickbeard.ENABLE_HTTPS = False
                 self.enable_https = False
 
@@ -141,7 +144,7 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
             protocol = 'http'
             self.server = HTTPServer(self.app)
 
-        logger.log(u'Starting Medusa on ' + protocol + '://' + str(self.options['host']) + ':' + str(
+        logger.log('Starting Medusa on ' + protocol + '://' + str(self.options['host']) + ':' + str(
             self.options['port']) + '/')
 
         try:
@@ -149,8 +152,8 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         except Exception:
             if sickbeard.LAUNCH_BROWSER and not self.daemon:
                 sickbeard.launchBrowser('https' if sickbeard.ENABLE_HTTPS else 'http', self.options['port'], sickbeard.WEB_ROOT)
-                logger.log(u'Launching browser and exiting')
-            logger.log(u'Could not start webserver on port %s, already in use!' % self.options['port'])
+                logger.log('Launching browser and exiting')
+            logger.log('Could not start webserver on port %s, already in use!' % self.options['port'])
             os._exit(1)  # pylint: disable=protected-access
 
         try:

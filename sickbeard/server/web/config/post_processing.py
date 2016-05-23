@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import os
 from tornado.routes import route
 from unrar2 import RarFile
@@ -212,8 +214,8 @@ class ConfigPostProcessing(Config):
             testing = RarFile(rar_path).read_files('*test.txt')
             if testing[0][1] == 'This is only a test.':
                 return 'supported'
-            logger.log(u'Rar Not Supported: Can not read the content of test file', logger.ERROR)
+            logger.log('Rar Not Supported: Can not read the content of test file', logger.ERROR)
             return 'not supported'
         except Exception as e:
-            logger.log(u'Rar Not Supported: ' + ex(e), logger.ERROR)
+            logger.log('Rar Not Supported: ' + ex(e), logger.ERROR)
             return 'not supported'

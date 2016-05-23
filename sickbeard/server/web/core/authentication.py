@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import traceback
 from tornado.web import RequestHandler
 import sickbeard
@@ -26,7 +28,7 @@ class KeyHandler(RequestHandler):
 
             self.finish({'success': api_key is not None, 'api_key': api_key})
         except Exception:
-            logger.log(u'Failed doing key request: %s' % (traceback.format_exc()), logger.ERROR)
+            logger.log('Failed doing key request: %s' % (traceback.format_exc()), logger.ERROR)
             self.finish({'success': False, 'error': 'Failed returning results'})
 
 
@@ -56,9 +58,9 @@ class LoginHandler(BaseHandler):
         if api_key:
             remember_me = int(self.get_argument('remember_me', default=0) or 0)
             self.set_secure_cookie('sickrage_user', api_key, expires_days=30 if remember_me > 0 else None)
-            logger.log(u'User logged into the Medusa web interface', logger.INFO)
+            logger.log('User logged into the Medusa web interface', logger.INFO)
         else:
-            logger.log(u'User attempted a failed login to the Medusa web interface from IP: ' + self.request.remote_ip, logger.WARNING)
+            logger.log('User attempted a failed login to the Medusa web interface from IP: ' + self.request.remote_ip, logger.WARNING)
 
         self.redirect('/' + sickbeard.DEFAULT_PAGE + '/')
 

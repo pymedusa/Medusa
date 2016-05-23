@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 from tornado.routes import route
 import sickbeard
 from sickbeard import ui

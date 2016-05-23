@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import markdown2
 from tornado.routes import route
 from sickbeard import (
@@ -18,7 +20,7 @@ class HomeChangeLog(Home):
         try:
             changes = helpers.getURL('https://cdn.pymedusa.com/sickrage-news/CHANGES.md', session=helpers.make_session(), returns='text')
         except Exception:
-            logger.log(u'Could not load changes from repo, giving a link!', logger.DEBUG)
+            logger.log('Could not load changes from repo, giving a link!', logger.DEBUG)
             changes = 'Could not load changes from the repo. [Click here for CHANGES.md](https://cdn.pymedusa.com/sickrage-news/CHANGES.md)'
 
         t = PageTemplate(rh=self, filename='markdown.mako')

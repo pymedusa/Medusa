@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import datetime
 from dateutil import tz
 from tornado.web import authenticated
@@ -30,7 +32,7 @@ class CalendarHandler(BaseHandler):
         """ Provides a subscribeable URL for iCal subscriptions
         """
 
-        logger.log(u'Receiving iCal request from %s' % self.request.remote_ip)
+        logger.log('Receiving iCal request from %s' % self.request.remote_ip)
 
         # Create a iCal string
         ical = 'BEGIN:VCALENDAR\r\n'
@@ -75,14 +77,14 @@ class CalendarHandler(BaseHandler):
                 if sickbeard.CALENDAR_ICONS:
                     ical += 'X-GOOGLE-CALENDAR-CONTENT-ICON:https://lh3.googleusercontent.com/-Vp_3ZosvTgg/VjiFu5BzQqI/AAAAAAAA_TY/3ZL_1bC0Pgw/s16-Ic42/medusa.png\r\n'
                     ical += 'X-GOOGLE-CALENDAR-CONTENT-DISPLAY:CHIP\r\n'
-                ical += u'SUMMARY: {0} - {1}x{2} - {3}\r\n'.format(
+                ical += 'SUMMARY: {0} - {1}x{2} - {3}\r\n'.format(
                     show['show_name'], episode['season'], episode['episode'], episode['name']
                 )
                 ical += 'UID:Medusa-' + str(datetime.date.today().isoformat()) + '-' + \
                     show['show_name'].replace(' ', '-') + '-E' + str(episode['episode']) + \
                     'S' + str(episode['season']) + '\r\n'
                 if episode['description']:
-                    ical += u'DESCRIPTION: {0} on {1} \\n\\n {2}\r\n'.format(
+                    ical += 'DESCRIPTION: {0} on {1} \\n\\n {2}\r\n'.format(
                         (show['airs'] or '(Unknown airs)'),
                         (show['network'] or 'Unknown network'),
                         episode['description'].splitlines()[0])

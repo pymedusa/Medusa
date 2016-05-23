@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import markdown2
 from tornado.routes import route
 import sickbeard
@@ -17,7 +19,7 @@ class HomeNews(Home):
         try:
             news = sickbeard.versionCheckScheduler.action.check_for_new_news(force=True)
         except Exception:
-            logger.log(u'Could not load news from repo, giving a link!', logger.DEBUG)
+            logger.log('Could not load news from repo, giving a link!', logger.DEBUG)
             news = 'Could not load news from the repo. [Click here for news.md](' + sickbeard.NEWS_URL + ')'
 
         sickbeard.NEWS_LAST_READ = sickbeard.NEWS_LATEST

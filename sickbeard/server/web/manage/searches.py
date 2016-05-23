@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 from tornado.routes import route
 import sickbeard
 from sickbeard import (
@@ -32,7 +34,7 @@ class ManageSearches(Manage):
         # force it to run the next time it looks
         result = sickbeard.backlogSearchScheduler.forceRun()
         if result:
-            logger.log(u'Backlog search forced')
+            logger.log('Backlog search forced')
             ui.notifications.message('Backlog search started')
 
         return self.redirect('/manage/manageSearches/')
@@ -42,7 +44,7 @@ class ManageSearches(Manage):
         # force it to run the next time it looks
         result = sickbeard.dailySearchScheduler.forceRun()
         if result:
-            logger.log(u'Daily search forced')
+            logger.log('Daily search forced')
             ui.notifications.message('Daily search started')
 
         return self.redirect('/manage/manageSearches/')
@@ -51,7 +53,7 @@ class ManageSearches(Manage):
         # force it to run the next time it looks
         result = sickbeard.properFinderScheduler.forceRun()
         if result:
-            logger.log(u'Find propers search forced')
+            logger.log('Find propers search forced')
             ui.notifications.message('Find propers search started')
 
         return self.redirect('/manage/manageSearches/')
@@ -60,7 +62,7 @@ class ManageSearches(Manage):
         # force it to run the next time it looks
         result = sickbeard.subtitlesFinderScheduler.forceRun()
         if result:
-            logger.log(u'Subtitle search forced')
+            logger.log('Subtitle search forced')
             ui.notifications.message('Subtitle search started')
 
         return self.redirect('/manage/manageSearches/')

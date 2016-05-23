@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import io
 import os
 import re
@@ -101,32 +103,32 @@ class ErrorLogs(WebRoot):
         minLevel = int(minLevel)
 
         logNameFilters = {
-            '<NONE>': u'&lt;No Filter&gt;',
-            'DAILYSEARCHER': u'Daily Searcher',
-            'BACKLOG': u'Backlog',
-            'SHOWUPDATER': u'Show Updater',
-            'CHECKVERSION': u'Check Version',
-            'SHOWQUEUE': u'Show Queue',
-            'SEARCHQUEUE': u'Search Queue (All)',
-            'SEARCHQUEUE-DAILY-SEARCH': u'Search Queue (Daily Searcher)',
-            'SEARCHQUEUE-BACKLOG': u'Search Queue (Backlog)',
-            'SEARCHQUEUE-MANUAL': u'Search Queue (Manual)',
-            'SEARCHQUEUE-FORCED': u'Search Queue (Forced)',
-            'SEARCHQUEUE-RETRY': u'Search Queue (Retry/Failed)',
-            'SEARCHQUEUE-RSS': u'Search Queue (RSS)',
-            'SHOWQUEUE-FORCE-UPDATE': u'Search Queue (Forced Update)',
-            'SHOWQUEUE-UPDATE': u'Search Queue (Update)',
-            'SHOWQUEUE-REFRESH': u'Search Queue (Refresh)',
-            'SHOWQUEUE-FORCE-REFRESH': u'Search Queue (Forced Refresh)',
-            'FINDPROPERS': u'Find Propers',
-            'POSTPROCESSOR': u'Post Processor',
-            'FINDSUBTITLES': u'Find Subtitles',
-            'TRAKTCHECKER': u'Trakt Checker',
-            'EVENT': u'Event',
-            'ERROR': u'Error',
-            'TORNADO': u'Tornado',
-            'Thread': u'Thread',
-            'MAIN': u'Main',
+            '<NONE>': '&lt;No Filter&gt;',
+            'DAILYSEARCHER': 'Daily Searcher',
+            'BACKLOG': 'Backlog',
+            'SHOWUPDATER': 'Show Updater',
+            'CHECKVERSION': 'Check Version',
+            'SHOWQUEUE': 'Show Queue',
+            'SEARCHQUEUE': 'Search Queue (All)',
+            'SEARCHQUEUE-DAILY-SEARCH': 'Search Queue (Daily Searcher)',
+            'SEARCHQUEUE-BACKLOG': 'Search Queue (Backlog)',
+            'SEARCHQUEUE-MANUAL': 'Search Queue (Manual)',
+            'SEARCHQUEUE-FORCED': 'Search Queue (Forced)',
+            'SEARCHQUEUE-RETRY': 'Search Queue (Retry/Failed)',
+            'SEARCHQUEUE-RSS': 'Search Queue (RSS)',
+            'SHOWQUEUE-FORCE-UPDATE': 'Search Queue (Forced Update)',
+            'SHOWQUEUE-UPDATE': 'Search Queue (Update)',
+            'SHOWQUEUE-REFRESH': 'Search Queue (Refresh)',
+            'SHOWQUEUE-FORCE-REFRESH': 'Search Queue (Forced Refresh)',
+            'FINDPROPERS': 'Find Propers',
+            'POSTPROCESSOR': 'Post Processor',
+            'FINDSUBTITLES': 'Find Subtitles',
+            'TRAKTCHECKER': 'Trakt Checker',
+            'EVENT': 'Event',
+            'ERROR': 'Error',
+            'TORNADO': 'Tornado',
+            'Thread': 'Thread',
+            'MAIN': 'Main',
         }
 
         if logFilter not in logNameFilters:
@@ -147,7 +149,7 @@ class ErrorLogs(WebRoot):
 
         return t.render(
             header='Log File', title='Logs', topmenu='system',
-            logLines=u''.join(data), minLevel=minLevel, logNameFilters=logNameFilters,
+            logLines=''.join(data), minLevel=minLevel, logNameFilters=logNameFilters,
             logFilter=logFilter, logSearch=logSearch,
             controller='errorlogs', action='viewlogs')
 
