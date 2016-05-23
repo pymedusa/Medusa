@@ -36,7 +36,6 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
         self.session = helpers.make_session()
         self.recommender = "Anidb Popular"
-        self.default_img_src = ''
         self.base_url = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
 
     def _create_recommended_show(self, show_obj):
@@ -48,10 +47,16 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
             logger.log("Couldn't map aid [{0}] to tvdbid ".format(show_obj.aid), logger.WARNING)
             return
 
-        rec_show = RecommendedShow(self, show_obj.aid, show_obj.title, 1, tvdb_id,
+        rec_show = RecommendedShow(self,
+                                   show_obj.aid,
+                                   show_obj.title,
+                                   1,
+                                   tvdb_id,
                                    **{'rating': show_obj.rating_permanent,
-                                      'votes': 'No',
-                                      'image_href': self.base_url.format(aid=show_obj.aid)})
+                                      'votes': show_obj.count_permanent,
+                                      'image_href': self.base_url.format(aid=show_obj.aid),
+                                      }
+                                   )
 
         # Check cache or get and save image
         rec_show.cache_image(show_obj.picture.url)
