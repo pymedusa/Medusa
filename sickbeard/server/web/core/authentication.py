@@ -1,5 +1,10 @@
 # coding=utf-8
 
+"""
+Authentication Handlers:
+Login, Logout and API key
+"""
+
 from __future__ import unicode_literals
 
 import traceback
@@ -12,10 +17,16 @@ from sickbeard.server.web.core.base import BaseHandler, PageTemplate
 
 
 class KeyHandler(RequestHandler):
+    """
+    Handler for API Keys
+    """
     def __init__(self, *args, **kwargs):
         super(KeyHandler, self).__init__(*args, **kwargs)
 
     def get(self, *args, **kwargs):
+        """
+        Get api key as json response.
+        """
         api_key = None
 
         try:
@@ -33,8 +44,13 @@ class KeyHandler(RequestHandler):
 
 
 class LoginHandler(BaseHandler):
+    """
+    Handler for Login
+    """
     def get(self, *args, **kwargs):
-
+        """
+        Render the Login page
+        """
         if self.get_current_user():
             self.redirect('/' + sickbeard.DEFAULT_PAGE + '/')
         else:
@@ -42,6 +58,9 @@ class LoginHandler(BaseHandler):
             self.finish(t.render(title='Login', header='Login', topmenu='login'))
 
     def post(self, *args, **kwargs):
+        """
+        Submit Login
+        """
 
         api_key = None
 
@@ -66,6 +85,12 @@ class LoginHandler(BaseHandler):
 
 
 class LogoutHandler(BaseHandler):
+    """
+    Handler for Logout
+    """
     def get(self, *args, **kwargs):
+        """
+        Logout and redirect to the Login page
+        """
         self.clear_cookie('sickrage_user')
         self.redirect('/login/')

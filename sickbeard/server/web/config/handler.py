@@ -1,5 +1,9 @@
 # coding=utf-8
 
+"""
+Base handler for Config pages
+"""
+
 from __future__ import unicode_literals
 
 import os
@@ -11,11 +15,17 @@ from sickbeard.server.web.core import WebRoot, PageTemplate
 
 @route('/config(/?.*)')
 class Config(WebRoot):
+    """
+    Base handler for Config pages
+    """
     def __init__(self, *args, **kwargs):
         super(Config, self).__init__(*args, **kwargs)
 
     @staticmethod
     def ConfigMenu():
+        """
+        Config menu
+        """
         menu = [
             {'title': 'General', 'path': 'config/general/', 'icon': 'menu-icon-config'},
             {'title': 'Backup/Restore', 'path': 'config/backuprestore/', 'icon': 'menu-icon-backup'},
@@ -30,6 +40,9 @@ class Config(WebRoot):
         return menu
 
     def index(self):
+        """
+        Render the Help & Info page
+        """
         t = PageTemplate(rh=self, filename='config.mako')
 
         try:

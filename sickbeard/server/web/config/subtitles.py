@@ -1,5 +1,9 @@
 # coding=utf-8
 
+"""
+Configure Subtitle searching
+"""
+
 from __future__ import unicode_literals
 
 import os
@@ -15,10 +19,16 @@ from sickbeard.server.web.config.handler import Config
 
 @route('/config/subtitles(/?.*)')
 class ConfigSubtitles(Config):
+    """
+    Handler for Subtitle Search configuration
+    """
     def __init__(self, *args, **kwargs):
         super(ConfigSubtitles, self).__init__(*args, **kwargs)
 
     def index(self):
+        """
+        Render the Subtitle Search configuration page
+        """
         t = PageTemplate(rh=self, filename='config_subtitles.mako')
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Subtitles',
@@ -30,7 +40,9 @@ class ConfigSubtitles(Config):
                       subtitles_multi=None, embedded_subtitles_all=None, subtitles_extra_scripts=None, subtitles_pre_scripts=None, subtitles_hearing_impaired=None,
                       addic7ed_user=None, addic7ed_pass=None, itasa_user=None, itasa_pass=None, legendastv_user=None, legendastv_pass=None, opensubtitles_user=None, opensubtitles_pass=None,
                       subtitles_download_in_pp=None, subtitles_keep_only_wanted=None):
-
+        """
+        Save Subtitle Search related settings
+        """
         results = []
 
         config.change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency)

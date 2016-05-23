@@ -1,5 +1,9 @@
 # coding=utf-8
 
+"""
+Configure Post Processing
+"""
+
 from __future__ import unicode_literals
 
 import os
@@ -19,10 +23,16 @@ from sickbeard.server.web.config.handler import Config
 
 @route('/config/postProcessing(/?.*)')
 class ConfigPostProcessing(Config):
+    """
+    Handler for Post Processor configuration
+    """
     def __init__(self, *args, **kwargs):
         super(ConfigPostProcessing, self).__init__(*args, **kwargs)
 
     def index(self):
+        """
+        Render the Post Processor configuration page
+        """
         t = PageTemplate(rh=self, filename='config_postProcessing.mako')
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Post Processing',
@@ -154,6 +164,9 @@ class ConfigPostProcessing(Config):
 
     @staticmethod
     def testNaming(pattern=None, multi=None, abd=False, sports=False, anime_type=None):
+        """
+        Test episode naming pattern
+        """
 
         if multi is not None:
             multi = int(multi)
@@ -169,6 +182,9 @@ class ConfigPostProcessing(Config):
 
     @staticmethod
     def isNamingValid(pattern=None, multi=None, abd=False, sports=False, anime_type=None):
+        """
+        Validate episode naming pattern
+        """
         if pattern is None:
             return 'invalid'
 

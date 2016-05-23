@@ -1,5 +1,9 @@
 # coding=utf-8
 
+"""
+Configure notifications
+"""
+
 from __future__ import unicode_literals
 
 import os
@@ -16,10 +20,16 @@ from sickbeard.server.web.config.handler import Config
 
 @route('/config/notifications(/?.*)')
 class ConfigNotifications(Config):
+    """
+    Handler for notification configuration
+    """
     def __init__(self, *args, **kwargs):
         super(ConfigNotifications, self).__init__(*args, **kwargs)
 
     def index(self):
+        """
+        Render the notification configuration page
+        """
         t = PageTemplate(rh=self, filename='config_notifications.mako')
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Notifications',
@@ -75,6 +85,9 @@ class ConfigNotifications(Config):
                           email_notify_onsubtitledownload=None, email_host=None, email_port=25, email_from=None,
                           email_tls=None, email_user=None, email_password=None, email_list=None, email_subject=None, email_show_list=None,
                           email_show=None):
+        """
+        Save notification related settings
+        """
 
         results = []
 

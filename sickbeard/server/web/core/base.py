@@ -58,6 +58,9 @@ def get_lookup():
 
 
 class PageTemplate(MakoTemplate):
+    """
+    Mako page template
+    """
     def __init__(self, rh, filename):
         self.arguments = {}
 
@@ -117,6 +120,9 @@ class PageTemplate(MakoTemplate):
             self.arguments['toolsBadge'] = ' <span class="badge' + self.arguments['toolsBadgeClass'] + '">' + str(numCombined) + '</span>'
 
     def render(self, *args, **kwargs):
+        """
+        Render the Page template
+        """
         for key in self.arguments:
             if key not in kwargs:
                 kwargs[key] = self.arguments[key]
@@ -135,6 +141,9 @@ class PageTemplate(MakoTemplate):
 
 
 class BaseHandler(RequestHandler):
+    """
+    Base Handler for the server
+    """
     startTime = 0.
 
     def __init__(self, *args, **kwargs):
@@ -148,6 +157,9 @@ class BaseHandler(RequestHandler):
     #     )
 
     def write_error(self, status_code, **kwargs):
+        """
+        Base error Handler for 404's
+        """
         # handle 404 http errors
         if status_code == 404:
             url = self.request.uri
@@ -186,7 +198,8 @@ class BaseHandler(RequestHandler):
             )
 
     def redirect(self, url, permanent=False, status=None):
-        """Sends a redirect to the given (optionally relative) URL.
+        """
+        Sends a redirect to the given (optionally relative) URL.
 
         ----->>>>> NOTE: Removed self.finish <<<<<-----
 
@@ -216,6 +229,9 @@ class BaseHandler(RequestHandler):
 
 
 class WebHandler(BaseHandler):
+    """
+    Base Handler for the web server
+    """
     def __init__(self, *args, **kwargs):
         super(WebHandler, self).__init__(*args, **kwargs)
         self.io_loop = IOLoop.current()
@@ -257,6 +273,9 @@ class WebHandler(BaseHandler):
 
 @route('(.*)(/?)')
 class WebRoot(WebHandler):
+    """
+    Base Handler for the web server
+    """
     def __init__(self, *args, **kwargs):
         super(WebRoot, self).__init__(*args, **kwargs)
 

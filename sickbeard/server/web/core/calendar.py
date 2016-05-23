@@ -1,5 +1,10 @@
 # coding=utf-8
 
+"""
+iCalendar (iCal) - Standard RFC 5545 <http://tools.ietf.org/html/rfc5546>
+Works with iCloud, Google Calendar and Outlook.
+"""
+
 from __future__ import unicode_literals
 
 import datetime
@@ -14,7 +19,13 @@ from sickbeard.server.web.core.base import BaseHandler
 
 
 class CalendarHandler(BaseHandler):
+    """
+    Handler for iCalendar
+    """
     def get(self):
+        """
+        Render the iCalendar
+        """
         if sickbeard.CALENDAR_UNPROTECTED:
             self.write(self.calendar())
         else:
@@ -22,16 +33,16 @@ class CalendarHandler(BaseHandler):
 
     @authenticated
     def calendar_auth(self):
+        """
+        Render the iCalendar with authentication
+        """
         self.write(self.calendar())
 
     # Raw iCalendar implementation by Pedro Jose Pereira Vieito (@pvieito).
-    #
-    # iCalendar (iCal) - Standard RFC 5545 <http://tools.ietf.org/html/rfc5546>
-    # Works with iCloud, Google Calendar and Outlook.
     def calendar(self):
-        """ Provides a subscribable URL for iCal subscriptions
         """
-
+        Provides a subscribable URL for iCal subscriptions
+        """
         logger.log('Receiving iCal request from %s' % self.request.remote_ip)
 
         # Create a iCal string

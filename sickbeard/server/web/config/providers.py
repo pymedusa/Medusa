@@ -1,5 +1,9 @@
 # coding=utf-8
 
+"""
+Configure Providers
+"""
+
 from __future__ import unicode_literals
 
 import json
@@ -19,11 +23,17 @@ from sickbeard.server.web.config.handler import Config
 
 @route('/config/providers(/?.*)')
 class ConfigProviders(Config):
+    """
+    Handler for Provider configuration
+    """
 
     def __init__(self, *args, **kwargs):
         super(ConfigProviders, self).__init__(*args, **kwargs)
 
     def index(self):
+        """
+        Render the Provider configuration page
+        """
         t = PageTemplate(rh=self, filename='config_providers.mako')
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Providers',
@@ -32,6 +42,9 @@ class ConfigProviders(Config):
 
     @staticmethod
     def canAddNewznabProvider(name):
+        """
+        See if a Newznab provider can be added
+        """
 
         if not name:
             return json.dumps({'error': 'No Provider Name specified'})
@@ -47,6 +60,9 @@ class ConfigProviders(Config):
 
     @staticmethod
     def saveNewznabProvider(name, url, key=''):
+        """
+        Save a Newznab Provider
+        """
 
         if not name or not url:
             return '0'
@@ -103,6 +119,9 @@ class ConfigProviders(Config):
 
     @staticmethod
     def deleteNewznabProvider(nnid):
+        """
+        Delete a Newznab Provider
+        """
 
         providerDict = dict(zip([x.get_id() for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
 
@@ -119,7 +138,9 @@ class ConfigProviders(Config):
 
     @staticmethod
     def canAddTorrentRssProvider(name, url, cookies, titleTAG):
-
+        """
+        See if a Torrent provider can be added
+        """
         if not name:
             return json.dumps({'error': 'Invalid name specified'})
 
@@ -139,6 +160,9 @@ class ConfigProviders(Config):
 
     @staticmethod
     def saveTorrentRssProvider(name, url, cookies, titleTAG):
+        """
+        Save a Torrent Provider
+        """
 
         if not name or not url:
             return '0'
@@ -160,7 +184,9 @@ class ConfigProviders(Config):
 
     @staticmethod
     def deleteTorrentRssProvider(id):
-
+        """
+        Delete a Torrent Provider
+        """
         providerDict = dict(
             zip([x.get_id() for x in sickbeard.torrentRssProviderList], sickbeard.torrentRssProviderList))
 
@@ -176,6 +202,9 @@ class ConfigProviders(Config):
         return '1'
 
     def saveProviders(self, newznab_string='', torrentrss_string='', provider_order=None, **kwargs):
+        """
+        Save Provider related settings
+        """
         results = []
 
         provider_str_list = provider_order.split()

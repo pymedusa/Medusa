@@ -1,5 +1,9 @@
 # coding=utf-8
 
+"""
+Configure Anime Look & Feel and AniDB authentication.
+"""
+
 from __future__ import unicode_literals
 
 import os
@@ -15,10 +19,16 @@ from sickbeard.server.web.config.handler import Config
 
 @route('/config/anime(/?.*)')
 class ConfigAnime(Config):
+    """
+    Handler for Anime configuration
+    """
     def __init__(self, *args, **kwargs):
         super(ConfigAnime, self).__init__(*args, **kwargs)
 
     def index(self):
+        """
+        Render the Anime configuration page
+        """
 
         t = PageTemplate(rh=self, filename='config_anime.mako')
 
@@ -28,6 +38,9 @@ class ConfigAnime(Config):
 
     def saveAnime(self, use_anidb=None, anidb_username=None, anidb_password=None, anidb_use_mylist=None,
                   split_home=None):
+        """
+        Save anime related settings
+        """
 
         results = []
 

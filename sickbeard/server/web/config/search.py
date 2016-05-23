@@ -1,5 +1,9 @@
 # coding=utf-8
 
+"""
+Configure Searches
+"""
+
 from __future__ import unicode_literals
 
 import os
@@ -16,10 +20,16 @@ from sickbeard.server.web.config.handler import Config
 
 @route('/config/search(/?.*)')
 class ConfigSearch(Config):
+    """
+    Handler for Search configuration
+    """
     def __init__(self, *args, **kwargs):
         super(ConfigSearch, self).__init__(*args, **kwargs)
 
     def index(self):
+        """
+        Render the Search configuration page
+        """
         t = PageTemplate(rh=self, filename='config_search.mako')
 
         return t.render(submenu=self.ConfigMenu(), title='Config - Episode Search',
@@ -41,6 +51,9 @@ class ConfigSearch(Config):
                    torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None,
                    preferred_words=None, undesired_words=None, trackers_list=None, require_words=None,
                    ignored_subs_list=None, ignore_und_subs=None, cache_trimming=None, max_cache_age=None):
+        """
+        Save Search related settings
+        """
 
         results = []
 
