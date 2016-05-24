@@ -78,8 +78,8 @@
     % else:
         % for cur_result in recommended_shows:
             
-            <% cur_rating = None %>
-            <% cur_votes = None %>
+            <% cur_rating = 0 %>
+            <% cur_votes = 0 %>
              
             % if cur_result.rating:
                 <% cur_rating = cur_result.rating %>

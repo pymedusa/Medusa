@@ -17,16 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import requests
-from sickbeard import logger
-from sickrage.helper.exceptions import ex
-
-from sickbeard import helpers
-from sickrage.helper.common import try_int
-from adba.aniDBtvDBmaper import TvDBMap
 from simpleanidb import (Anidb, REQUEST_CATEGORY_LIST, REQUEST_HOT, REQUEST_RANDOM_RECOMMENDATION)
 from simpleanidb.exceptions import GeneralError
+from sickbeard import logger, helpers
+from sickrage.helper.exceptions import ex
 from .recommended import RecommendedShow
+from adba.aniDBtvDBmaper import TvDBMap
 
 
 class AnidbPopular(object):  # pylint: disable=too-few-public-methods
@@ -71,13 +67,13 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         try:
             shows = Anidb().get_list(list_type)
         except GeneralError, e:
-            logger.log(u"Could not connect to Anidb service: %s" % ex(e), logger.WARNING)
+            logger.log(u'Could not connect to Anidb service: %s' % ex(e), logger.WARNING)
 
         for show in shows:
             try:
                 result.append(self._create_recommended_show(show))
             except Exception, e:
-                logger.log(u"Could not parse Anidb show, with exception: %s" % ex(e), logger.WARNING)
+                logger.log(u'Could not parse Anidb show, with exception: %s' % ex(e), logger.WARNING)
 
         return result
 

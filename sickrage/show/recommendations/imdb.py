@@ -1,7 +1,6 @@
 # coding=utf-8
 import re
 import os
-import posixpath
 from bs4 import BeautifulSoup
 from datetime import date
 
@@ -19,7 +18,7 @@ class ImdbPopular(object):
 
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
         self.session = helpers.make_session()
-        self.recommender = "IMDB Popular"
+        self.recommender = 'IMDB Popular'
         self.default_img_src = ''
 
         # Use akas.imdb.com, just like the imdb lib.
@@ -38,10 +37,15 @@ class ImdbPopular(object):
         if not tvdb_id:
             return None
 
-        rec_show = RecommendedShow(self, show_obj.get('imdb_tt'), show_obj.get('name'), 1, tvdb_id,
+        rec_show = RecommendedShow(self,
+                                   show_obj.get('imdb_tt'),
+                                   show_obj.get('name'),
+                                   1,
+                                   tvdb_id,
                                    **{'rating': show_obj.get('rating'),
                                       'votes': show_obj.get('votes'),
-                                      'image_href': show_obj.get('imdb_url')})
+                                      'image_href': show_obj.get('imdb_url')}
+                                   )
 
         if show_obj.get('image_url_large'):
             rec_show.cache_image(show_obj.get('image_url_large'))
@@ -59,32 +63,32 @@ class ImdbPopular(object):
             return None
 
         soup = BeautifulSoup(data, 'html5lib')
-        results = soup.find("table", {"class": "results"})
-        rows = results.find_all("tr")
+        results = soup.find('table', {'class': 'results'})
+        rows = results.find_all('tr')
 
         for row in rows:
             show = {}
-            image_td = row.find("td", {"class": "image"})
+            image_td = row.find('td', {'class': 'image'})
 
             if image_td:
-                image = image_td.find("img")
+                image = image_td.find('img')
                 show['image_url_large'] = self.change_size(image['src'], 3)
 
-            td = row.find("td", {"class": "title"})
+            td = row.find('td', {'class': 'title'})
 
             if td:
-                show['name'] = td.find("a").contents[0]
-                show['imdb_url'] = "http://akas.imdb.com" + td.find("a")["href"]
+                show['name'] = td.find('a').contents[0]
+                show['imdb_url'] = 'http://akas.imdb.com{0}'.format(td.find('a')['href'])
                 show['imdb_tt'] = show['imdb_url'][-10:][0:9]
-                show['year'] = td.find("span", {"class": "year_type"}).contents[0].split(" ")[0][1:]
+                show['year'] = td.find('span', {'class': 'year_type'}).contents[0].split(' ')[0][1:]
 
-                rating_all = td.find("div", {"class": "user_rating"})
+                rating_all = td.find('div', {'class': 'user_rating'})
                 if rating_all:
-                    rating_string = rating_all.find("div", {"class": "rating rating-list"})
+                    rating_string = rating_all.find('div', {'class': 'rating rating-list'})
                     if rating_string:
                         rating_string = rating_string['title']
 
-                        match = re.search(r".* (.*)\/10.*\((.*)\).*", rating_string)
+                        match = re.search(r'.* (.*)\/10.*\((.*)\).*', rating_string)
                         if match:
                             matches = match.groups()
                             show['rating'] = matches[0]
@@ -96,7 +100,7 @@ class ImdbPopular(object):
                     show['rating'] = None
                     show['votes'] = None
 
-                outline = td.find("span", {"class": "outline"})
+                outline = td.find('span', {'class': 'outline'})
                 if outline:
                     show['outline'] = outline.contents[0]
                 else:
@@ -109,13 +113,13 @@ class ImdbPopular(object):
             try:
                 result.append(self._create_recommended_show(show))
             except Exception, e:
-                logger.log(u"Could not parse IMDB show, with exception: %s" % ex(e), logger.WARNING)
+                logger.log(u'Could not parse IMDB show, with exception: %s' % ex(e), logger.WARNING)
 
         return result
 
     @staticmethod
     def change_size(image_url, factor=3):
-        match = re.search(r"^(.*)V1._(.{2})(.*?)_(.{2})(.*?),(.*?),(.*?),(.*?)_.jpg$", image_url)
+        match = re.search(r'^(.*)V1._(.{2})(.*?)_(.{2})(.*?),(.*?),(.*?),(.*?)_.jpg$', image_url)
 
         if match:
             matches = match.groups()
@@ -127,7 +131,7 @@ class ImdbPopular(object):
             matches[6] = int(matches[6]) * factor
             matches[7] = int(matches[7]) * factor
 
-            return "%sV1._%s%s_%s%s,%s,%s,%s_.jpg" % (matches[0], matches[1], matches[2], matches[3], matches[4],
+            return '%sV1._%s%s_%s%s,%s,%s,%s_.jpg' % (matches[0], matches[1], matches[2], matches[3], matches[4],
                                                       matches[5], matches[6], matches[7])
         else:
             return image_url

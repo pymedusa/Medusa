@@ -59,8 +59,8 @@ class RecommendedShow(object):
         self.indexer = indexer
         self.indexer_id = indexer_id
 
-        self.rating = show_attr.get('rating')
-        self.votes = show_attr.get('votes')
+        self.rating = show_attr.get('rating') or 0
+        self.votes = show_attr.get('votes') or 0
         self.image_href = show_attr.get('image_href')
         self.image_src = show_attr.get('image_src')
 
