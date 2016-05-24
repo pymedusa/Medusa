@@ -333,7 +333,7 @@ class ConfigProviders(Config):
             elif cur_provider in torrentRssProviderDict:
                 torrentRssProviderDict[cur_provider].enabled = bool(curEnabled)
 
-        provider_list = provider_list + disabled_list
+        provider_list.extend(disabled_list)
 
         # dynamically load provider settings
         for curTorrentProvider in [prov for prov in sickbeard.providers.sortedProviderList() if
