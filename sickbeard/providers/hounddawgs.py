@@ -18,10 +18,13 @@
 
 import re
 import traceback
+import datetime
+
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
+from dateutil import parser
 
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
@@ -92,6 +95,15 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return True
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+        """
+        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
+        :param search_strings: Search to perform
+        :param age: Not used for this provider
+        :param ep_obj: Not used for this provider
+
+        :return: A list of items found
+        """
+
         results = []
         if not self.login():
             return results
@@ -99,6 +111,11 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         for mode in search_strings:
             items = []
             logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+
+            if mode == 'RSS':
+                last_pubdate = self.cache.get_last_pubdate()
+                logger.log("Provider last RSS pubdate: {}".format(last_pubdate), logger.DEBUG)
+
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
@@ -149,12 +166,22 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                 title = allAs[2].string
                                 download_url = self.urls['base_url'] + allAs[0].attrs['href']
                                 torrent_size = result.find("td", class_="nobr").find_next_sibling("td").string
+
                                 if torrent_size:
                                     size = convert_size(torrent_size) or -1
+
                                 seeders = try_int((result('td')[6]).text.replace(',', ''))
                                 leechers = try_int((result('td')[7]).text.replace(',', ''))
+                                pubdate = pubdate = result.find("span", class_="time")['title']
+                                pubdate = parser.parse(pubdate, fuzzy=True)
+       
+                                # Here we discard item if is not a new item
+                                if mode == "RSS" and pubdate and last_pubdate and pubdate < last_pubdate:
+                                    # logger.log("Discarded {0} because it was already processed. Pubdate: {1}".format(title, pubdate))
+                                    continue
 
-                            except (AttributeError, TypeError):
+                            except StandardError:
+                                logger.log(u"Failed parsing provider. Traceback: {0!r}".format(traceback.format_exc()), logger.ERROR)
                                 continue
 
                             if not title or not download_url:
@@ -167,7 +194,7 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                                (title, seeders), logger.DEBUG)
                                 continue
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
                             if mode != 'RSS':
                                 logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 
@@ -180,6 +207,13 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
 
             results += items
+
+            # Set last pubdate for provider
+            if mode == 'RSS' and results:
+                last_pubdate = max([result['pubdate'] for result in results])
+                if isinstance(last_pubdate, datetime.datetime):
+                    logger.log("Setting provider last RSS pubdate to: {}".format(last_pubdate), logger.DEBUG)
+                    self.cache.set_last_pubdate(last_pubdate)
 
         return results
 
