@@ -44,7 +44,7 @@ def get_lookup():
     global mako_path  # pylint: disable=global-statement
 
     if mako_path is None:
-        mako_path = ek(os.path.join, sickbeard.PROG_DIR, 'gui/' + sickbeard.GUI_NAME + '/views/')
+        mako_path = ek(os.path.join, sickbeard.PROG_DIR, 'gui/{gui_name}/views/'.format(gui_name=sickbeard.GUI_NAME))
     if mako_cache is None:
         mako_cache = ek(os.path.join, sickbeard.CACHE_DIR, 'mako')
     if mako_lookup is None:
@@ -109,7 +109,7 @@ class PageTemplate(MakoTemplate):
         warning_count = len(classes.WarningViewer.errors)
 
         if sickbeard.NEWS_UNREAD:
-            self.arguments['newsBadge'] = ' <span class="badge">' + str(sickbeard.NEWS_UNREAD) + '</span>'
+            self.arguments['newsBadge'] = ' <span class="badge">{news}</span>'.format(news=sickbeard.NEWS_UNREAD)
 
         numCombined = error_count + warning_count + sickbeard.NEWS_UNREAD
         if numCombined:
@@ -117,7 +117,8 @@ class PageTemplate(MakoTemplate):
                 self.arguments['toolsBadgeClass'] = ' btn-danger'
             elif warning_count:
                 self.arguments['toolsBadgeClass'] = ' btn-warning'
-            self.arguments['toolsBadge'] = ' <span class="badge' + self.arguments['toolsBadgeClass'] + '">' + str(numCombined) + '</span>'
+            self.arguments['toolsBadge'] = ' <span class="badge{type}">{number}</span>'.format(
+                type=self.arguments['toolsBadgeClass'], number=numCombined)
 
     def render(self, *args, **kwargs):
         """
@@ -135,8 +136,10 @@ class PageTemplate(MakoTemplate):
             kwargs['header'] = 'Mako Error'
             kwargs['backtrace'] = RichTraceback()
             for (filename, lineno, function, line) in kwargs['backtrace'].traceback:
-                logger.log(u'File %s, line %s, in %s' % (filename, lineno, function), logger.DEBUG)
-            logger.log(u'%s: %s' % (str(kwargs['backtrace'].error.__class__.__name__), kwargs['backtrace'].error))
+                logger.log(u'File {name}, line {line}, in {func}'.format
+                           (name=filename, line=lineno, func=function), logger.DEBUG)
+            logger.log(u'{name}: {error}'.format
+                       (name=kwargs['backtrace'].error.__class__.__name__, error=kwargs['backtrace'].error))
             return get_lookup().get_template('500.mako').render_unicode(*args, **kwargs)
 
 
@@ -174,27 +177,27 @@ class BaseHandler(RequestHandler):
 
         elif self.settings.get('debug') and 'exc_info' in kwargs:
             exc_info = kwargs['exc_info']
-            trace_info = ''.join(['%s<br>' % line for line in traceback.format_exception(*exc_info)])
-            request_info = ''.join(['<strong>%s</strong>: %s<br>' % (k, self.request.__dict__[k]) for k in
-                                    self.request.__dict__.keys()])
+            trace_info = ''.join(['{line}<br>'.format(line=line) for line in traceback.format_exception(*exc_info)])
+            request_info = ''.join(['<strong>{key}</strong>: {value}<br>'.format(key=k, value=v)
+                                    for k, v in self.request.__dict__.items()])
             error = exc_info[1]
 
             self.set_header('Content-Type', 'text/html')
             self.finish(
                 """
                 <html>
-                    <title>%s</title>
+                    <title>{title}</title>
                     <body>
                         <h2>Error</h2>
-                        <p>%s</p>
+                        <p>{error}</p>
                         <h2>Traceback</h2>
-                        <p>%s</p>
+                        <p>{trace}</p>
                         <h2>Request Info</h2>
-                        <p>%s</p>
-                        <button onclick="window.location='%s/errorlogs/';">View Log(Errors)</button>
+                        <p>{request}</p>
+                        <button onclick="window.location='{root}/errorlogs/';">View Log(Errors)</button>
                      </body>
                 </html>
-                """ % (error, error, trace_info, request_info, sickbeard.WEB_ROOT)
+                """.format(title=error, error=error, trace=trace_info, request=request_info, root=sickbeard.WEB_ROOT)
             )
 
     def redirect(self, url, permanent=False, status=None):
@@ -250,7 +253,8 @@ class WebHandler(BaseHandler):
             self.finish(results)
 
         except Exception:
-            logger.log(u'Failed doing webui request "%s": %s' % (route, traceback.format_exc()), logger.DEBUG)
+            logger.log(u'Failed doing web ui request {route!r}: {error}'.format
+                       (route=route, error=traceback.format_exc()), logger.DEBUG)
             raise HTTPError(404)
 
     @run_on_executor
@@ -264,7 +268,7 @@ class WebHandler(BaseHandler):
             result = function(**kwargs)
             return result
         except Exception:
-            logger.log(u'Failed doing webui callback: %s' % (traceback.format_exc()), logger.ERROR)
+            logger.log(u'Failed doing web ui callback: {error}'.format(error=traceback.format_exc()), logger.ERROR)
             raise
 
     # post uses get method
@@ -280,7 +284,7 @@ class WebRoot(WebHandler):
         super(WebRoot, self).__init__(*args, **kwargs)
 
     def index(self):
-        return self.redirect('/' + sickbeard.DEFAULT_PAGE + '/')
+        return self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
 
     def robots_txt(self):
         """ Keep web crawlers out """
@@ -350,7 +354,6 @@ class WebRoot(WebHandler):
 
     @staticmethod
     def setPosterSortBy(sort):
-
         if sort not in ('name', 'date', 'network', 'progress'):
             sort = 'name'
 
@@ -376,7 +379,7 @@ class WebRoot(WebHandler):
 
         sickbeard.DISPLAY_SHOW_SPECIALS = not sickbeard.DISPLAY_SHOW_SPECIALS
 
-        return self.redirect('/home/displayShow?show=' + show)
+        return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
     def setScheduleLayout(self, layout):
         if layout not in ('poster', 'banner', 'list', 'calendar'):
@@ -471,9 +474,11 @@ class UI(WebRoot):
         messages = {}
         cur_notification_num = 1
         for cur_notification in ui.notifications.get_notifications(self.request.remote_ip):
-            messages['notification-' + str(cur_notification_num)] = {'title': cur_notification.title,
-                                                                     'message': cur_notification.message,
-                                                                     'type': cur_notification.type}
+            messages['notification-{number}'.format(number=cur_notification_num)] = {
+                'title': cur_notification.title,
+                'message': cur_notification.message,
+                'type': cur_notification.type,
+            }
             cur_notification_num += 1
 
         return json.dumps(messages)

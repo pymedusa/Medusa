@@ -26,7 +26,7 @@ class ErrorLogs(WebRoot):
              'requires': self.haveErrors() and level == logger.ERROR,
              'icon': 'ui-icon ui-icon-trash'},
             {'title': 'Clear Warnings',
-             'path': 'errorlogs/clearerrors/?level=' + str(logger.WARNING),
+             'path': 'errorlogs/clearerrors/?level={level}'.format(level=logger.WARNING),
              'requires': self.haveWarnings() and level == logger.WARNING,
              'icon': 'ui-icon ui-icon-trash'},
             {'title': 'Submit Errors',
@@ -153,8 +153,8 @@ class ErrorLogs(WebRoot):
                 data = Get_Data(minLevel, f.readlines(), 0, regex, logFilter, logSearch, maxLines)
 
         for i in range(1, int(sickbeard.LOG_NR)):
-            if ek(os.path.isfile, logger.log_file + '.' + str(i)) and (len(data) <= maxLines):
-                with io.open(logger.log_file + '.' + str(i), 'r', encoding='utf-8') as f:
+            if ek(os.path.isfile, '{file}.{number}'.format(file=logger.log_file, number=i)) and (len(data) <= maxLines):
+                with io.open('{file}.{number}'.format(file=logger.log_file, number=i), 'r', encoding='utf-8') as f:
                     data += Get_Data(minLevel, f.readlines(), len(data), regex, logFilter, logSearch, maxLines)
 
         return t.render(

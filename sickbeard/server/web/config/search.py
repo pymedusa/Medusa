@@ -58,10 +58,10 @@ class ConfigSearch(Config):
         results = []
 
         if not config.change_NZB_DIR(nzb_dir):
-            results += ['Unable to create directory ' + ek(os.path.normpath, nzb_dir) + ', dir not changed.']
+            results += ['Unable to create directory {dir}, dir not changed.'.format(dir=ek(os.path.normpath, nzb_dir))]
 
         if not config.change_TORRENT_DIR(torrent_dir):
-            results += ['Unable to create directory ' + ek(os.path.normpath, torrent_dir) + ', dir not changed.']
+            results += ['Unable to create directory {dir}, dir not changed.'.format(dir=ek(os.path.normpath, torrent_dir))]
 
         config.change_DAILYSEARCH_FREQUENCY(dailysearch_frequency)
 

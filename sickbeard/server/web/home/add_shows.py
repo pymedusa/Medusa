@@ -88,8 +88,8 @@ class HomeAddShows(Home):
                     indexerResults = t[searchTerm]
                     # add search results
                     results.setdefault(indexer, []).extend(indexerResults)
-                except indexer_exception as error:
-                    logger.log(u'Error searching for show: {}'.format(ex(error)))
+                except indexer_exception as msg:
+                    logger.log(u'Error searching for show: {error}'.format(error=msg))
 
         for i, shows in results.iteritems():
             final_results.extend({(sickbeard.indexerApi(i).name, i, sickbeard.indexerApi(i).config['show_url'], int(show['id']),
@@ -141,9 +141,8 @@ class HomeAddShows(Home):
 
                 cur_dir = {
                     'dir': cur_path,
-                    'display_dir': '<b>' + ek(os.path.dirname, cur_path) + os.sep + '</b>' + ek(
-                        os.path.basename,
-                        cur_path),
+                    'display_dir': '<b>{dir}{sep}</b>{base}'.format(
+                        dir=ek(os.path.dirname, cur_path), sep=os.sep, base=ek(os.path.basename, cur_path)),
                 }
 
                 # see if the folder is in KODI already
@@ -302,16 +301,16 @@ class HomeAddShows(Home):
             if sickbeard.TRAKT_ACCESS_TOKEN != '':
                 library_shows = trakt_api.traktRequest('sync/collection/shows?extended=full') or []
                 if sickbeard.TRAKT_BLACKLIST_NAME is not None and sickbeard.TRAKT_BLACKLIST_NAME:
-                    not_liked_show = trakt_api.traktRequest('users/' + sickbeard.TRAKT_USERNAME + '/lists/' + sickbeard.TRAKT_BLACKLIST_NAME + '/items') or []
+                    not_liked_show = trakt_api.traktRequest('users/{user}/lists/{blacklist}/items'.format(
+                        user=sickbeard.TRAKT_USERNAME, blacklist=sickbeard.TRAKT_BLACKLIST_NAME)) or []
                 else:
                     logger.log(u'Trakt blacklist name is empty', logger.DEBUG)
 
+            limit_show = ''
             if traktList not in ['recommended', 'newshow', 'newseason']:
-                limit_show = '?limit=' + str(100 + len(not_liked_show)) + '&'
-            else:
-                limit_show = '?'
+                limit_show = 'limit={number}&'.format(number=100 + len(not_liked_show))
 
-            shows = trakt_api.traktRequest(page_url + limit_show + 'extended=full,images') or []
+            shows = trakt_api.traktRequest('{url}?{limit}extended=full,images'.format(url=page_url, limit=limit_show)) or []
 
             if sickbeard.TRAKT_ACCESS_TOKEN != '':
                 library_shows = trakt_api.traktRequest('sync/collection/shows?extended=full') or []
@@ -373,7 +372,9 @@ class HomeAddShows(Home):
 
         trakt_api = TraktAPI(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
 
-        trakt_api.traktRequest('users/' + sickbeard.TRAKT_USERNAME + '/lists/' + sickbeard.TRAKT_BLACKLIST_NAME + '/items', data, method='POST')
+        trakt_api.traktRequest('users/{user}/lists/{blacklist}/items'.format
+                               (user=sickbeard.TRAKT_USERNAME, blacklist=sickbeard.TRAKT_BLACKLIST_NAME),
+                               data, method='POST')
 
         return self.redirect('/addShows/trendingShows/')
 
@@ -521,8 +522,8 @@ class HomeAddShows(Home):
 
         # sanity check on our inputs
         if (not rootDir and not fullShowPath) or not whichSeries:
-            return 'Missing params, no Indexer ID or folder:' + repr(whichSeries) + ' and ' + repr(
-                rootDir) + '/' + repr(fullShowPath)
+            return 'Missing params, no Indexer ID or folder:{series!r} and {root!r}/{path!r}'.format(
+                series=whichSeries, root=rootDir, path=fullShowPath)
 
         # figure out what show we're adding and where
         series_pieces = whichSeries.split('|')
@@ -554,18 +555,20 @@ class HomeAddShows(Home):
 
         # blanket policy - if the dir exists you should have used 'add existing show' numbnuts
         if ek(os.path.isdir, show_dir) and not fullShowPath:
-            ui.notifications.error('Unable to add show', 'Folder ' + show_dir + ' exists already')
+            ui.notifications.error('Unable to add show', 'Folder {path} exists already'.format(path=show_dir))
             return self.redirect('/addShows/existingShows/')
 
         # don't create show dir if config says not to
         if sickbeard.ADD_SHOWS_WO_DIR:
-            logger.log(u'Skipping initial creation of ' + show_dir + ' due to config.ini setting')
+            logger.log(u'Skipping initial creation of {path} due to config.ini setting'.format
+                       (path=show_dir))
         else:
             dir_exists = helpers.makeDir(show_dir)
             if not dir_exists:
-                logger.log(u'Unable to create the folder ' + show_dir + ', can\'t add the show', logger.ERROR)
+                logger.log(u'Unable to create the folder {path}, can\'t add the show'.format
+                           (path=show_dir), logger.ERROR)
                 ui.notifications.error('Unable to add show',
-                                       'Unable to create the folder ' + show_dir + ', can\'t add the show')
+                                       'Unable to create the folder {path}, can\'t add the show'.format(path=show_dir))
                 # Don't redirect to default page because user wants to see the new show
                 return self.redirect('/home/')
             else:
@@ -596,7 +599,7 @@ class HomeAddShows(Home):
         sickbeard.showQueueScheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), newQuality,
                                                     flatten_folders, indexerLang, subtitles, anime,
                                                     scene, None, blacklist, whitelist, int(defaultStatusAfter))
-        ui.notifications.message('Show added', 'Adding the specified show into ' + show_dir)
+        ui.notifications.message('Show added', 'Adding the specified show into {path}'.format(path=show_dir))
 
         return finishAddShow()
 
@@ -674,7 +677,7 @@ class HomeAddShows(Home):
 
         if num_added:
             ui.notifications.message('Shows Added',
-                                     'Automatically added ' + str(num_added) + ' from their existing metadata files')
+                                     'Automatically added {quantity} from their existing metadata files'.format(quantity=num_added))
 
         # if we're done then go home
         if not dirs_only:

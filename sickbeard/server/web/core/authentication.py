@@ -39,7 +39,7 @@ class KeyHandler(RequestHandler):
 
             self.finish({'success': api_key is not None, 'api_key': api_key})
         except Exception:
-            logger.log('Failed doing key request: %s' % (traceback.format_exc()), logger.ERROR)
+            logger.log('Failed doing key request: {error}'.format(error=traceback.format_exc()), logger.ERROR)
             self.finish({'success': False, 'error': 'Failed returning results'})
 
 
@@ -52,7 +52,7 @@ class LoginHandler(BaseHandler):
         Render the Login page
         """
         if self.get_current_user():
-            self.redirect('/' + sickbeard.DEFAULT_PAGE + '/')
+            self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
         else:
             t = PageTemplate(rh=self, filename='login.mako')
             self.finish(t.render(title='Login', header='Login', topmenu='login'))
@@ -79,9 +79,10 @@ class LoginHandler(BaseHandler):
             self.set_secure_cookie('sickrage_user', api_key, expires_days=30 if remember_me > 0 else None)
             logger.log('User logged into the Medusa web interface', logger.INFO)
         else:
-            logger.log('User attempted a failed login to the Medusa web interface from IP: ' + self.request.remote_ip, logger.WARNING)
+            logger.log('User attempted a failed login to the Medusa web interface from IP: {ip}'.format
+                       (ip=self.request.remote_ip), logger.WARNING)
 
-        self.redirect('/' + sickbeard.DEFAULT_PAGE + '/')
+        self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
 
 
 class LogoutHandler(BaseHandler):

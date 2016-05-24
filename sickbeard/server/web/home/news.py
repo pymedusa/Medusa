@@ -20,7 +20,7 @@ class HomeNews(Home):
             news = sickbeard.versionCheckScheduler.action.check_for_new_news(force=True)
         except Exception:
             logger.log('Could not load news from repo, giving a link!', logger.DEBUG)
-            news = 'Could not load news from the repo. [Click here for news.md](' + sickbeard.NEWS_URL + ')'
+            news = 'Could not load news from the repo. [Click here for news.md]({url})'.format(url=sickbeard.NEWS_URL)
 
         sickbeard.NEWS_LAST_READ = sickbeard.NEWS_LATEST
         sickbeard.NEWS_UNREAD = 0

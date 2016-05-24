@@ -52,7 +52,7 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         # api root
         if not sickbeard.API_KEY:
             sickbeard.API_KEY = generateApiKey()
-        self.options['api_root'] = r'%s/api/%s' % (sickbeard.WEB_ROOT, sickbeard.API_KEY)
+        self.options['api_root'] = r'{root}/api/{key}'.format(root=sickbeard.WEB_ROOT, key=sickbeard.API_KEY)
 
         # tornado setup
         self.enable_https = self.options['enable_https']
@@ -81,26 +81,27 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
             gzip=sickbeard.WEB_USE_GZIP,
             xheaders=sickbeard.HANDLE_REVERSE_PROXY,
             cookie_secret=sickbeard.WEB_COOKIE_SECRET,
-            login_url='%s/login/' % self.options['web_root'],
+            login_url=r'{root}/login/'.format(root=self.options['web_root']),
         )
 
         # Main Handlers
         self.app.add_handlers('.*$', [
             # webapi handler
-            (r'%s(/?.*)' % self.options['api_root'], ApiHandler),
+            (r'{base}(/?.*)'.format(base=self.options['api_root']), ApiHandler),
 
             # webapi key retrieval
-            (r'%s/getkey(/?.*)' % self.options['web_root'], KeyHandler),
+            (r'{base}/getkey(/?.*)'.format(base=self.options['web_root']), KeyHandler),
 
             # webapi builder redirect
-            (r'%s/api/builder' % self.options['web_root'], RedirectHandler, {'url': self.options['web_root'] + '/apibuilder/'}),
+            (r'{base}/api/builder'.format(base=self.options['web_root']),
+             RedirectHandler, {'url': '{base}/apibuilder/'.format(base=self.options['web_root'])}),
 
             # webui login/logout handlers
-            (r'%s/login(/?)' % self.options['web_root'], LoginHandler),
-            (r'%s/logout(/?)' % self.options['web_root'], LogoutHandler),
+            (r'{base}/login(/?)'.format(base=self.options['web_root']), LoginHandler),
+            (r'{base}/logout(/?)'.format(base=self.options['web_root']), LogoutHandler),
 
             # Web calendar handler (Needed because option Unprotected calendar)
-            (r'%s/calendar' % self.options['web_root'], CalendarHandler),
+            (r'{base}/calendar'.format(base=self.options['web_root']), CalendarHandler),
 
             # webui handlers
         ] + route.get_routes(self.options['web_root']))
@@ -108,31 +109,31 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         # Static File Handlers
         self.app.add_handlers('.*$', [
             # favicon
-            (r'%s/(favicon\.ico)' % self.options['web_root'], StaticFileHandler,
+            (r'{base}/(favicon\.ico)'.format(base=self.options['web_root']), StaticFileHandler,
              {'path': ek(os.path.join, self.options['data_root'], 'images/ico/favicon.ico')}),
 
             # images
-            (r'%s/images/(.*)' % self.options['web_root'], StaticFileHandler,
+            (r'{base}/images/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
              {'path': ek(os.path.join, self.options['data_root'], 'images')}),
 
             # cached images
-            (r'%s/cache/images/(.*)' % self.options['web_root'], StaticFileHandler,
+            (r'{base}/cache/images/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
              {'path': ek(os.path.join, sickbeard.CACHE_DIR, 'images')}),
 
             # css
-            (r'%s/css/(.*)' % self.options['web_root'], StaticFileHandler,
+            (r'{base}/css/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
              {'path': ek(os.path.join, self.options['data_root'], 'css')}),
 
             # javascript
-            (r'%s/js/(.*)' % self.options['web_root'], StaticFileHandler,
+            (r'{base}/js/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
              {'path': ek(os.path.join, self.options['data_root'], 'js')}),
 
             # fonts
-            (r'%s/fonts/(.*)' % self.options['web_root'], StaticFileHandler,
+            (r'{base}/fonts/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
              {'path': ek(os.path.join, self.options['data_root'], 'fonts')}),
 
             # videos
-            (r'%s/videos/(.*)' % self.options['web_root'], StaticFileHandler,
+            (r'{base}/videos/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
              {'path': self.video_root})
         ])
 
@@ -144,8 +145,8 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
             protocol = 'http'
             self.server = HTTPServer(self.app)
 
-        logger.log('Starting Medusa on ' + protocol + '://' + str(self.options['host']) + ':' + str(
-            self.options['port']) + '/')
+        logger.log('Starting Medusa on {scheme}://{host}:{port}/'.format
+                   (scheme=protocol, host=self.options['host'], port=self.options['port']))
 
         try:
             self.server.listen(self.options['port'], self.options['host'])
@@ -153,7 +154,7 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
             if sickbeard.LAUNCH_BROWSER and not self.daemon:
                 sickbeard.launchBrowser('https' if sickbeard.ENABLE_HTTPS else 'http', self.options['port'], sickbeard.WEB_ROOT)
                 logger.log('Launching browser and exiting')
-            logger.log('Could not start webserver on port %s, already in use!' % self.options['port'])
+            logger.log('Could not start the web server on port {port}, already in use!'.format(port=self.options['port']))
             os._exit(1)  # pylint: disable=protected-access
 
         try:

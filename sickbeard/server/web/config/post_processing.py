@@ -61,7 +61,8 @@ class ConfigPostProcessing(Config):
         results = []
 
         if not config.change_TV_DOWNLOAD_DIR(tv_download_dir):
-            results += ['Unable to create directory ' + ek(os.path.normpath, tv_download_dir) + ', dir not changed.']
+            results += ['Unable to create directory {dir}, '
+                        'dir not changed.'.format(dir=ek(os.path.normpath, tv_download_dir))]
 
         config.change_AUTOPOSTPROCESSOR_FREQUENCY(autopostprocessor_frequency)
         config.change_PROCESS_AUTOMATICALLY(process_automatically)
@@ -232,6 +233,6 @@ class ConfigPostProcessing(Config):
                 return 'supported'
             logger.log('Rar Not Supported: Can not read the content of test file', logger.ERROR)
             return 'not supported'
-        except Exception as e:
-            logger.log('Rar Not Supported: ' + ex(e), logger.ERROR)
+        except Exception as msg:
+            logger.log('Rar Not Supported: {error}'.format(error=ex(msg)), logger.ERROR)
             return 'not supported'

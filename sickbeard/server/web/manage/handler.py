@@ -432,7 +432,7 @@ class Manage(Home, WebRoot):
             if not cur_arg.startswith('orig_root_dir_'):
                 continue
             which_index = cur_arg.replace('orig_root_dir_', '')
-            end_dir = kwargs['new_root_dir_' + which_index]
+            end_dir = kwargs['new_root_dir_{index}'.format(index=which_index)]
             dir_map[kwargs[cur_arg]] = end_dir
 
         showIDs = toEdit.split('|')
@@ -447,8 +447,8 @@ class Manage(Home, WebRoot):
             cur_show_dir = ek(os.path.basename, showObj._location)  # pylint: disable=protected-access
             if cur_root_dir in dir_map and cur_root_dir != dir_map[cur_root_dir]:
                 new_show_dir = ek(os.path.join, dir_map[cur_root_dir], cur_show_dir)
-                logger.log(
-                    u'For show ' + showObj.name + ' changing dir from ' + showObj._location + ' to ' + new_show_dir)  # pylint: disable=protected-access
+                logger.log(u'For show {show.name} changing dir from {show.location} to {location}'.format
+                           (show=showObj, location=new_show_dir))  # pylint: disable=protected-access
             else:
                 new_show_dir = showObj._location  # pylint: disable=protected-access
 
@@ -517,13 +517,21 @@ class Manage(Home, WebRoot):
                                        directCall=True)
 
             if curErrors:
-                logger.log(u'Errors: ' + str(curErrors), logger.ERROR)
-                errors.append('<b>%s:</b>\n<ul>' % showObj.name + ' '.join(
-                    ['<li>%s</li>' % error for error in curErrors]) + '</ul>')
-
+                logger.log(u'Errors: {errors}'.format(errors=curErrors), logger.ERROR)
+                errors.append(
+                    '<b>{show}:</b>\n<ul>{errors}</ul>'.format(
+                        show=showObj.name,
+                        errors=' '.join(['<li>{error}</li>'.format(error=error)
+                                         for error in curErrors])
+                    )
+                )
         if len(errors) > 0:
-            ui.notifications.error('%d error%s while saving changes:' % (len(errors), '' if len(errors) == 1 else 's'),
-                                   ' '.join(errors))
+            ui.notifications.error(
+                '{num} error{s} while saving changes:'.format(
+                    num=len(errors),
+                    s='s' if len(errors) > 1 else ''),
+                ' '.join(errors)
+            )
 
         return self.redirect('/manage/')
 
@@ -603,7 +611,8 @@ class Manage(Home, WebRoot):
                     sickbeard.showQueueScheduler.action.refreshShow(showObj)
                     refreshes.append(showObj.name)
                 except CantRefreshShowException as e:
-                    errors.append('Unable to refresh show ' + showObj.name + ': ' + ex(e))
+                    errors.append('Unable to refresh show {show.name}: {error}'.format
+                                  (show=showObj, error=ex(e)))
 
             if curShowID in toRename:
                 sickbeard.showQueueScheduler.action.renameShowEpisodes(showObj)
@@ -661,7 +670,7 @@ class Manage(Home, WebRoot):
         if sickbeard.TORRENT_METHOD == 'utorrent':
             webui_url = '/'.join(s.strip('/') for s in (webui_url, 'gui/'))
         if sickbeard.TORRENT_METHOD == 'download_station':
-            if helpers.check_url(webui_url + 'download/'):
+            if helpers.check_url('{url}download/'.format(url=webui_url)):
                 webui_url += 'download/'
             else:
                 info_download_station = """
@@ -678,7 +687,8 @@ class Manage(Home, WebRoot):
                 """
 
         if not sickbeard.TORRENT_PASSWORD == '' and not sickbeard.TORRENT_USERNAME == '':
-            webui_url = re.sub('://', '://' + str(sickbeard.TORRENT_USERNAME) + ':' + str(sickbeard.TORRENT_PASSWORD) + '@', webui_url)
+            webui_url = re.sub('://', '://{username}:{password}@'.format(username=sickbeard.TORRENT_USERNAME,
+                                                                         password=sickbeard.TORRENT_PASSWORD), webui_url)
 
         return t.render(
             webui_url=webui_url, info_download_station=info_download_station,
