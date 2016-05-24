@@ -283,13 +283,13 @@ class WebRoot(WebHandler):
         )
 
         for result in results:
-            if result['showid'] not in episodes:
-                episodes[result['showid']] = {}
+            if result[b'showid'] not in episodes:
+                episodes[result[b'showid']] = {}
 
-            if result['season'] not in episodes[result['showid']]:
-                episodes[result['showid']][result['season']] = []
+            if result[b'season'] not in episodes[result[b'showid']]:
+                episodes[result[b'showid']][result[b'season']] = []
 
-            episodes[result['showid']][result['season']].append(result['episode'])
+            episodes[result[b'showid']][result[b'season']].append(result[b'episode'])
 
         if len(sickbeard.API_KEY) == 32:
             apikey = sickbeard.API_KEY

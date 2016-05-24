@@ -102,9 +102,9 @@ class Home(WebRoot):
         show_stat = {}
         max_download_count = 1000
         for cur_result in sql_result:
-            show_stat[cur_result['showid']] = cur_result
-            if cur_result['ep_total'] > max_download_count:
-                max_download_count = cur_result['ep_total']
+            show_stat[cur_result[b'showid']] = cur_result
+            if cur_result[b'ep_total'] > max_download_count:
+                max_download_count = cur_result[b'ep_total']
 
         max_download_count *= 100
 
@@ -399,16 +399,16 @@ class Home(WebRoot):
         size = 0
         for r in rows:
             NotifyList = {'emails': '', 'prowlAPIs': ''}
-            if r['notify_list'] and len(r['notify_list']) > 0:
+            if r[b'notify_list'] and len(r['notify_list']) > 0:
                 # First, handle legacy format (emails only)
-                if not r['notify_list'][0] == '{':
-                    NotifyList['emails'] = r['notify_list']
+                if not r[b'notify_list'][0] == '{':
+                    NotifyList['emails'] = r[b'notify_list']
                 else:
-                    NotifyList = dict(ast.literal_eval(r['notify_list']))
+                    NotifyList = dict(ast.literal_eval(r[b'notify_list']))
 
-            data[r['show_id']] = {
-                'id': r['show_id'],
-                'name': r['show_name'],
+            data[r[b'show_id']] = {
+                'id': r[b'show_id'],
+                'name': r[b'show_name'],
                 'list': NotifyList['emails'],
                 'prowl_notify_list': NotifyList['prowlAPIs']
             }
@@ -423,13 +423,13 @@ class Home(WebRoot):
         main_db_con = db.DBConnection()
 
         # Get current data
-        for subs in main_db_con.select('SELECT notify_list FROM tv_shows WHERE show_id = ?', [show]):
-            if subs['notify_list'] and len(subs['notify_list']) > 0:
+        for subs in main_db_con.select(b'SELECT notify_list FROM tv_shows WHERE show_id = ?', [show]):
+            if subs[b'notify_list'] and len(subs[b'notify_list']) > 0:
                 # First, handle legacy format (emails only)
-                if not subs['notify_list'][0] == '{':
-                    entries['emails'] = subs['notify_list']
+                if not subs[b'notify_list'][0] == '{':
+                    entries['emails'] = subs[b'notify_list']
                 else:
-                    entries = dict(ast.literal_eval(subs['notify_list']))
+                    entries = dict(ast.literal_eval(subs[b'notify_list']))
 
         if emails is not None:
             entries['emails'] = emails
@@ -692,9 +692,9 @@ class Home(WebRoot):
         epCats = {}
 
         for curResult in sql_results:
-            curEpCat = showObj.getOverview(curResult['status'])
+            curEpCat = showObj.getOverview(curResult[b'status'])
             if curEpCat:
-                epCats[str(curResult['season']) + 'x' + str(curResult['episode'])] = curEpCat
+                epCats[str(curResult[b'season']) + 'x' + str(curResult[b'episode'])] = curEpCat
                 epCounts[curEpCat] += 1
 
         def titler(x):
@@ -778,11 +778,11 @@ class Home(WebRoot):
             logger.log('Couldn\'t read cached results. Error: {}'.format(e))
             return self._genericMessage('Error', 'Couldn\'t read cached results. Error: {}'.format(e))
 
-        if not cached_result or not all([cached_result['url'],
-                                         cached_result['quality'],
-                                         cached_result['name'],
-                                         cached_result['indexerid'],
-                                         cached_result['season'],
+        if not cached_result or not all([cached_result[b'url'],
+                                         cached_result[b'quality'],
+                                         cached_result[b'name'],
+                                         cached_result[b'indexerid'],
+                                         cached_result[b'season'],
                                          provider]):
             return self._genericMessage('Error', 'Cached result doesn\'t have all needed info to snatch episode')
 
@@ -797,10 +797,10 @@ class Home(WebRoot):
 
             season_pack_episodes = []
             for item in season_pack_episodes_result:
-                season_pack_episodes.append(int(item['episode']))
+                season_pack_episodes.append(int(item[b'episode']))
 
         try:
-            show = int(cached_result['indexerid'])  # fails if show id ends in a period SickRage/sickrage-issues#65
+            show = int(cached_result[b'indexerid'])  # fails if show id ends in a period SickRage/sickrage-issues#65
             show_obj = Show.find(sickbeard.showList, show)
         except (ValueError, TypeError):
             return self._genericMessage('Error', 'Invalid show ID: {0}'.format(show))
@@ -812,11 +812,11 @@ class Home(WebRoot):
         # if multi-episode: |1|2|
         # if single-episode: |1|
         # TODO:  Handle Season Packs: || (no episode)
-        episodes = season_pack_episodes if manual_search_type == 'season' else cached_result['episodes'].strip('|').split('|')
+        episodes = season_pack_episodes if manual_search_type == 'season' else cached_result[b'episodes'].strip('|').split('|')
         ep_objs = []
         for episode in episodes:
             if episode:
-                ep_objs.append(show_obj.getEpisode(int(cached_result['season']), int(episode)))
+                ep_objs.append(show_obj.getEpisode(int(cached_result[b'season']), int(episode)))
 
         # Create the queue item
         snatch_queue_item = search_queue.ManualSnatchQueueItem(show_obj, ep_objs, provider, cached_result)
@@ -1020,9 +1020,9 @@ class Home(WebRoot):
     def plotDetails(show, season, episode):
         main_db_con = db.DBConnection()
         result = main_db_con.selectOne(
-            'SELECT description FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?',
+            b'SELECT description FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?',
             (int(show), int(season), int(episode)))
-        return result['description'] if result else 'Episode not found.'
+        return result[b'description'] if result else 'Episode not found.'
 
     @staticmethod
     def sceneExceptions(show):
@@ -1607,15 +1607,15 @@ class Home(WebRoot):
                 logger.log(u'Unable to find an episode for ' + curEp + ', skipping', logger.WARNING)
                 continue
             related_eps_result = main_db_con.select(
-                'SELECT season, episode FROM tv_episodes WHERE location = ? AND episode != ?',
-                [ep_result[0]['location'], epInfo[1]]
+                b'SELECT season, episode FROM tv_episodes WHERE location = ? AND episode != ?',
+                [ep_result[0][b'location'], epInfo[1]]
             )
 
             root_ep_obj = show_obj.getEpisode(epInfo[0], epInfo[1])
             root_ep_obj.relatedEps = []
 
             for cur_related_ep in related_eps_result:
-                related_ep_obj = show_obj.getEpisode(cur_related_ep['season'], cur_related_ep['episode'])
+                related_ep_obj = show_obj.getEpisode(cur_related_ep[b'season'], cur_related_ep[b'episode'])
                 if related_ep_obj not in root_ep_obj.relatedEps:
                     root_ep_obj.relatedEps.append(related_ep_obj)
 

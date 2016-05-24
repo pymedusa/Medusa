@@ -50,13 +50,13 @@ class Manage(Home, WebRoot):
 
         result = {}
         for cur_result in cur_show_results:
-            cur_season = int(cur_result['season'])
-            cur_episode = int(cur_result['episode'])
+            cur_season = int(cur_result[b'season'])
+            cur_episode = int(cur_result[b'episode'])
 
             if cur_season not in result:
                 result[cur_season] = {}
 
-            result[cur_season][cur_episode] = cur_result['name']
+            result[cur_season][cur_episode] = cur_result[b'name']
 
         return json.dumps(result)
 
@@ -89,13 +89,13 @@ class Manage(Home, WebRoot):
         show_names = {}
         sorted_show_ids = []
         for cur_status_result in status_results:
-            cur_indexer_id = int(cur_status_result['indexer_id'])
+            cur_indexer_id = int(cur_status_result[b'indexer_id'])
             if cur_indexer_id not in ep_counts:
                 ep_counts[cur_indexer_id] = 1
             else:
                 ep_counts[cur_indexer_id] += 1
 
-            show_names[cur_indexer_id] = cur_status_result['show_name']
+            show_names[cur_indexer_id] = cur_status_result[b'show_name']
             if cur_indexer_id not in sorted_show_ids:
                 sorted_show_ids.append(cur_indexer_id)
 
@@ -131,7 +131,7 @@ class Manage(Home, WebRoot):
             # get a list of all the eps we want to change if they just said 'all'
             if 'all' in to_change[cur_indexer_id]:
                 all_eps_results = main_db_con.select(
-                    'SELECT season, episode FROM tv_episodes WHERE status IN (' + ','.join(
+                    b'SELECT season, episode FROM tv_episodes WHERE status IN (' + ','.join(
                         ['?'] * len(status_list)) + ') AND season != 0 AND showid = ?',
                     status_list + [cur_indexer_id])
                 all_eps = [str(x['season']) + 'x' + str(x['episode']) for x in all_eps_results]
@@ -151,13 +151,13 @@ class Manage(Home, WebRoot):
         result = {}
         for cur_result in cur_show_results:
             if whichSubs == 'all':
-                if not frozenset(subtitles.wanted_languages()).difference(cur_result['subtitles'].split(',')):
+                if not frozenset(subtitles.wanted_languages()).difference(cur_result[b'subtitles'].split(',')):
                     continue
-            elif whichSubs in cur_result['subtitles']:
+            elif whichSubs in cur_result[b'subtitles']:
                 continue
 
-            cur_season = int(cur_result['season'])
-            cur_episode = int(cur_result['episode'])
+            cur_season = int(cur_result[b'season'])
+            cur_episode = int(cur_result[b'episode'])
 
             if cur_season not in result:
                 result[cur_season] = {}
@@ -165,9 +165,8 @@ class Manage(Home, WebRoot):
             if cur_episode not in result[cur_season]:
                 result[cur_season][cur_episode] = {}
 
-            result[cur_season][cur_episode]['name'] = cur_result['name']
-
-            result[cur_season][cur_episode]['subtitles'] = cur_result['subtitles']
+            result[cur_season][cur_episode]['name'] = cur_result[b'name']
+            result[cur_season][cur_episode]['subtitles'] = cur_result[b'subtitles']
 
         return json.dumps(result)
 
@@ -192,18 +191,18 @@ class Manage(Home, WebRoot):
         sorted_show_ids = []
         for cur_status_result in status_results:
             if whichSubs == 'all':
-                if not frozenset(subtitles.wanted_languages()).difference(cur_status_result['subtitles'].split(',')):
+                if not frozenset(subtitles.wanted_languages()).difference(cur_status_result[b'subtitles'].split(',')):
                     continue
-            elif whichSubs in cur_status_result['subtitles']:
+            elif whichSubs in cur_status_result[b'subtitles']:
                 continue
 
-            cur_indexer_id = int(cur_status_result['indexer_id'])
+            cur_indexer_id = int(cur_status_result[b'indexer_id'])
             if cur_indexer_id not in ep_counts:
                 ep_counts[cur_indexer_id] = 1
             else:
                 ep_counts[cur_indexer_id] += 1
 
-            show_names[cur_indexer_id] = cur_status_result['show_name']
+            show_names[cur_indexer_id] = cur_status_result[b'show_name']
             if cur_indexer_id not in sorted_show_ids:
                 sorted_show_ids.append(cur_indexer_id)
 
@@ -232,8 +231,14 @@ class Manage(Home, WebRoot):
             if 'all' in to_download[cur_indexer_id]:
                 main_db_con = db.DBConnection()
                 all_eps_results = main_db_con.select(
-                    'SELECT season, episode FROM tv_episodes WHERE (status LIKE \'%4\' OR status LIKE \'%6\') AND season != 0 AND showid = ? AND location != \'\'',
-                    [cur_indexer_id])
+                    b'SELECT season, episode '
+                    b'FROM tv_episodes '
+                    b'WHERE (status LIKE \'%4\' OR status LIKE \'%6\') '
+                    b'AND season != 0 '
+                    b'AND showid = ? '
+                    b'AND location != \'\'',
+                    [cur_indexer_id]
+                )
                 to_download[cur_indexer_id] = [str(x['season']) + 'x' + str(x['episode']) for x in all_eps_results]
 
             for epResult in to_download[cur_indexer_id]:
@@ -279,9 +284,9 @@ class Manage(Home, WebRoot):
                 [curShow.indexerid])
 
             for curResult in sql_results:
-                curEpCat = curShow.getOverview(curResult['status'])
+                curEpCat = curShow.getOverview(curResult[b'status'])
                 if curEpCat:
-                    epCats[u'{ep}'.format(ep=episode_num(curResult['season'], curResult['episode']))] = curEpCat
+                    epCats[u'{ep}'.format(ep=episode_num(curResult[b'season'], curResult[b'episode']))] = curEpCat
                     epCounts[curEpCat] += 1
 
             showCounts[curShow.indexerid] = epCounts
