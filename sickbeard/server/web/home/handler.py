@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import ast
 import datetime
+from datetime import date
 import json
 import os
 import time
@@ -79,25 +80,62 @@ class Home(WebRoot):
     @staticmethod
     def show_statistics():
         main_db_con = db.DBConnection()
-        today = str(datetime.date.today().toordinal())
 
-        status_quality = '(' + ','.join([str(x) for x in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST]) + ')'
-        status_download = '(' + ','.join([str(x) for x in Quality.DOWNLOADED + Quality.ARCHIVED]) + ')'
+        snatched = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
+        downloaded = Quality.DOWNLOADED + Quality.ARCHIVED
 
-        sql_statement = 'SELECT showid, '
-
-        sql_statement += '(SELECT COUNT(*) FROM tv_episodes WHERE showid=tv_eps.showid AND season > 0 AND episode > 0 AND airdate > 1 AND status IN ' + status_quality + ') AS ep_snatched, '
-        sql_statement += '(SELECT COUNT(*) FROM tv_episodes WHERE showid=tv_eps.showid AND season > 0 AND episode > 0 AND airdate > 1 AND status IN ' + status_download + ') AS ep_downloaded, '
-        sql_statement += '(SELECT COUNT(*) FROM tv_episodes WHERE showid=tv_eps.showid AND season > 0 AND episode > 0 AND airdate > 1 '
-        sql_statement += ' AND ((airdate <= ' + today + ' AND (status = ' + str(SKIPPED) + ' OR status = ' + str(WANTED) + ' OR status = ' + str(FAILED) + ')) '
-        sql_statement += ' OR (status IN ' + status_quality + ') OR (status IN ' + status_download + '))) AS ep_total, '
-
-        sql_statement += ' (SELECT airdate FROM tv_episodes WHERE showid=tv_eps.showid AND airdate >= ' + today + ' AND (status = ' + str(UNAIRED) + ' OR status = ' + str(WANTED) + ') ORDER BY airdate ASC LIMIT 1) AS ep_airs_next, '
-        sql_statement += ' (SELECT airdate FROM tv_episodes WHERE showid=tv_eps.showid AND airdate > 1 AND status <> ' + str(UNAIRED) + ' ORDER BY airdate DESC LIMIT 1) AS ep_airs_prev, '
-        sql_statement += ' (SELECT SUM(file_size) FROM tv_episodes WHERE showid=tv_eps.showid) AS show_size'
-        sql_statement += ' FROM tv_episodes tv_eps GROUP BY showid'
-
-        sql_result = main_db_con.select(sql_statement)
+        sql_result = main_db_con.select(
+            b"""
+            SELECT showid,
+              (SELECT COUNT(*) FROM tv_episodes
+               WHERE showid=tv_eps.showid AND
+                     season > 0 AND
+                     episode > 0 AND
+                     airdate > 1 AND
+                     status IN {status_quality}
+              ) AS ep_snatched,
+              (SELECT COUNT(*) FROM tv_episodes
+               WHERE showid=tv_eps.showid AND
+                     season > 0 AND
+                     episode > 0 AND
+                     airdate > 1 AND
+                     status IN {status_download}
+              ) AS ep_downloaded,
+              (SELECT COUNT(*) FROM tv_episodes
+               WHERE showid=tv_eps.showid AND
+                     season > 0 AND
+                     episode > 0 AND
+                     airdate > 1 AND
+                     ((airdate <= {today} AND (status = {skipped} OR
+                                               status = {wanted} OR
+                                               status = {failed})) OR
+                      (status IN {status_quality}) OR
+                      (status IN {status_download}))
+              ) AS ep_total,
+              (SELECT airdate FROM tv_episodes
+               WHERE showid=tv_eps.showid AND
+                     airdate >= {today} AND
+                     (status = {unaired} OR status = {wanted})
+               ORDER BY airdate ASC
+               LIMIT 1
+              ) AS ep_airs_next,
+              (SELECT airdate FROM tv_episodes
+               WHERE showid=tv_eps.showid AND
+                     airdate > 1 AND
+                     status <> {unaired}
+               ORDER BY airdate DESC
+               LIMIT 1
+              ) AS ep_airs_prev,
+              (SELECT SUM(file_size) FROM tv_episodes
+               WHERE showid=tv_eps.showid
+              ) AS show_size
+            FROM tv_episodes tv_eps
+            GROUP BY showid
+            """.format(status_quality='({statuses})'.format(statuses=','.join([str(x) for x in snatched])),
+                       status_download='({statuses})'.format(statuses=','.join([str(x) for x in downloaded])),
+                       skipped=SKIPPED, wanted=WANTED, unaired=UNAIRED, failed=FAILED,
+                       today=date.today().toordinal())
+        )
 
         show_stat = {}
         max_download_count = 1000
@@ -399,7 +437,11 @@ class Home(WebRoot):
     def loadShowNotifyLists():
 
         main_db_con = db.DBConnection()
-        rows = main_db_con.select('SELECT show_id, show_name, notify_list FROM tv_shows ORDER BY show_name ASC')
+        rows = main_db_con.select(
+            b'SELECT show_id, show_name, notify_list '
+            b'FROM tv_shows '
+            b'ORDER BY show_name ASC'
+        )
 
         data = {}
         size = 0
@@ -432,7 +474,13 @@ class Home(WebRoot):
         main_db_con = db.DBConnection()
 
         # Get current data
-        for subs in main_db_con.select(b'SELECT notify_list FROM tv_shows WHERE show_id = ?', [show]):
+        sql_results = main_db_con.select(
+            b'SELECT notify_list '
+            b'FROM tv_shows '
+            b'WHERE show_id = ?',
+            [show]
+        )
+        for subs in sql_results:
             if subs[b'notify_list']:
                 # First, handle legacy format (emails only)
                 if not subs[b'notify_list'][0] == '{':
@@ -442,12 +490,22 @@ class Home(WebRoot):
 
         if emails is not None:
             entries['emails'] = emails
-            if not main_db_con.action('UPDATE tv_shows SET notify_list = ? WHERE show_id = ?', [str(entries), show]):
+            if not main_db_con.action(
+                    b'UPDATE tv_shows '
+                    b'SET notify_list = ? '
+                    b'WHERE show_id = ?',
+                    [str(entries), show]
+            ):
                 return 'ERROR'
 
         if prowlAPIs is not None:
             entries['prowlAPIs'] = prowlAPIs
-            if not main_db_con.action('UPDATE tv_shows SET notify_list = ? WHERE show_id = ?', [str(entries), show]):
+            if not main_db_con.action(
+                    b'UPDATE tv_shows '
+                    b'SET notify_list = ? '
+                    b'WHERE show_id = ?',
+                    [str(entries), show]
+            ):
                 return 'ERROR'
 
         return 'OK'
@@ -640,14 +698,20 @@ class Home(WebRoot):
 
         main_db_con = db.DBConnection()
         seasonResults = main_db_con.select(
-            'SELECT DISTINCT season FROM tv_episodes WHERE showid = ? AND season IS NOT NULL ORDER BY season DESC',
+            b'SELECT DISTINCT season '
+            b'FROM tv_episodes '
+            b'WHERE showid = ? AND  season IS NOT NULL '
+            b'ORDER BY season DESC',
             [showObj.indexerid]
         )
 
         min_season = 0 if sickbeard.DISPLAY_SHOW_SPECIALS else 1
 
         sql_results = main_db_con.select(
-            'SELECT * FROM tv_episodes WHERE showid = ? and season >= ? ORDER BY season DESC, episode DESC',
+            b'SELECT * '
+            b'FROM tv_episodes '
+            b'WHERE showid = ? AND season >= ? '
+            b'ORDER BY season DESC, episode DESC',
             [showObj.indexerid, min_season]
         )
 
@@ -829,8 +893,13 @@ class Home(WebRoot):
 
         try:
             main_db_con = db.DBConnection('cache.db')
-            cached_result = main_db_con.action('SELECT * FROM \'%s\' WHERE rowid = ?' %
-                                               provider, [rowid], fetchone=True)
+            cached_result = main_db_con.action(
+                b'SELECT * '
+                b'FROM \'{provider}\' '
+                b'WHERE rowid = ?'.format(provider=provider),
+                [rowid],
+                fetchone=True
+            )
         except Exception as msg:
             error_message = 'Couldn\'t read cached results. Error: {error}'.format(error=msg)
             logger.log(error_message)
@@ -847,8 +916,12 @@ class Home(WebRoot):
         if manual_search_type == 'season':
             try:
                 main_db_con = db.DBConnection()
-                season_pack_episodes_result = main_db_con.action('SELECT episode FROM tv_episodes WHERE showid = ? and season = ?',
-                                                                 [cached_result['indexerid'], cached_result['season']])
+                season_pack_episodes_result = main_db_con.action(
+                    b'SELECT episode '
+                    b'FROM tv_episodes '
+                    b'WHERE showid = ? AND season = ?',
+                    [cached_result['indexerid'], cached_result['season']]
+                )
             except Exception as msg:
                 error_message = 'Couldn\'t read episodes for season pack result. Error: {error}'.format(error=msg)
                 logger.log(error_message)
@@ -924,13 +997,21 @@ class Home(WebRoot):
         sql_episode = '' if manual_search_type == 'season' else episode
 
         for provider, last_update in last_prov_updates.iteritems():
-            table_exists = main_db_con.select('SELECT name FROM sqlite_master WHERE type=\'table\' AND name=?', [provider])
+            table_exists = main_db_con.select(
+                b'SELECT name '
+                b'FROM sqlite_master '
+                b'WHERE type=\'table\' AND name=?',
+                [provider]
+            )
             if not table_exists:
                 continue
             # Check if the cache table has a result for this show + season + ep wich has a later timestamp, then last_update
-            needs_update = main_db_con.select('SELECT * FROM \'%s\' WHERE episodes LIKE ? AND season = ? AND indexerid = ? \
-                                              AND time > ?'
-                                              % provider, ['%|' + sql_episode + '|%', season, show, int(last_update)])
+            needs_update = main_db_con.select(
+                b'SELECT * '
+                b'FROM \'{provider}\' '
+                b'WHERE episodes LIKE ? AND season = ? AND indexerid = ?  AND time > ?'.format(provider=provider),
+                ['%|{episodes}|%'.format(episodes=sql_episode), season, show, int(last_update)]
+            )
 
             if needs_update:
                 return {'result': REFRESH_RESULTS}
@@ -1084,10 +1165,16 @@ class Home(WebRoot):
         episode_history = []
         try:
             main_db_con = db.DBConnection()
-            episode_status_result = main_db_con.action('SELECT date, action, provider, resource FROM history WHERE showid = ? AND \
-                                                        season = ? AND episode = ? AND (action LIKE \'%02\' OR action LIKE \'%04\'\
-                                                        OR action LIKE \'%09\' OR action LIKE \'%11\' OR action LIKE \'%12\') \
-                                                        ORDER BY date DESC', [indexerid, season, episode])
+            episode_status_result = main_db_con.action(
+                b'SELECT date, action, provider, resource '
+                b'FROM history '
+                b'WHERE showid = ? '
+                b'AND season = ? '
+                b'AND episode = ? '
+                b'AND (action LIKE \'%02\' OR action LIKE \'%04\' OR action LIKE \'%09\' OR action LIKE \'%11\' OR action LIKE \'%12\') '
+                b'ORDER BY date DESC',
+                [indexerid, season, episode]
+            )
             if episode_status_result:
                 for item in episode_status_result:
                     episode_history.append(dict(item))
@@ -1119,8 +1206,11 @@ class Home(WebRoot):
     def plotDetails(show, season, episode):
         main_db_con = db.DBConnection()
         result = main_db_con.selectOne(
-            b'SELECT description FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?',
-            (int(show), int(season), int(episode)))
+            b'SELECT description '
+            b'FROM tv_episodes '
+            b'WHERE showid = ? AND season = ? AND episode = ?',
+            (int(show), int(season), int(episode))
+        )
         return result[b'description'] if result else 'Episode not found.'
 
     @staticmethod
@@ -1350,11 +1440,20 @@ class Home(WebRoot):
             main_db_con = db.DBConnection('cache.db')
             for cur_provider in sickbeard.providers.sortedProviderList():
                 # Let's check if this provider table already exists
-                table_exists = main_db_con.select('SELECT name FROM sqlite_master WHERE type=\'table\' AND name=?', [cur_provider.get_id()])
+                table_exists = main_db_con.select(
+                    b'SELECT name '
+                    b'FROM sqlite_master '
+                    b'WHERE type=\'table\' AND name=?',
+                    [cur_provider.get_id()]
+                )
                 if not table_exists:
                     continue
                 try:
-                    main_db_con.action('DELETE FROM \'%s\' WHERE indexerid = ?' % cur_provider.get_id(), [showObj.indexerid])
+                    main_db_con.action(
+                        b'DELETE FROM \'{provider}\' '
+                        b'WHERE indexerid = ?'.format(provider=cur_provider.get_id()),
+                        [showObj.indexerid]
+                    )
                 except Exception:
                     logger.log(u'Unable to delete cached results for provider {provider} for show: {show}'.format
                                (provider=cur_provider, show=showObj.name), logger.DEBUG)
@@ -1729,14 +1828,18 @@ class Home(WebRoot):
 
             # this is probably the worst possible way to deal with double eps but I've kinda painted myself into a corner here with this stupid database
             ep_result = main_db_con.select(
-                'SELECT location FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ? AND 5=5',
+                b'SELECT location '
+                b'FROM tv_episodes '
+                b'WHERE showid = ? AND season = ? AND episode = ? AND 5=5',
                 [show, epInfo[0], epInfo[1]])
             if not ep_result:
                 logger.log(u'Unable to find an episode for {episode}, skipping'.format
                            (episode=curEp), logger.WARNING)
                 continue
             related_eps_result = main_db_con.select(
-                b'SELECT season, episode FROM tv_episodes WHERE location = ? AND episode != ?',
+                b'SELECT season, episode '
+                b'FROM tv_episodes '
+                b'WHERE location = ? AND episode != ?',
                 [ep_result[0][b'location'], epInfo[1]]
             )
 

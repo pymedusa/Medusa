@@ -45,8 +45,12 @@ class Manage(Home, WebRoot):
 
         main_db_con = db.DBConnection()
         cur_show_results = main_db_con.select(
-            'SELECT season, episode, name FROM tv_episodes WHERE showid = ? AND season != 0 AND status IN (' + ','.join(
-                ['?'] * len(status_list)) + ')', [int(indexer_id)] + status_list)
+            b'SELECT season, episode, name '
+            b'FROM tv_episodes '
+            b'WHERE showid = ? AND season != 0 AND status IN ({statuses})'.format(
+                statuses=','.join(['?'] * len(status_list))),
+            [int(indexer_id)] + status_list
+        )
 
         result = {}
         for cur_result in cur_show_results:
@@ -80,10 +84,14 @@ class Manage(Home, WebRoot):
 
         main_db_con = db.DBConnection()
         status_results = main_db_con.select(
-            'SELECT show_name, tv_shows.indexer_id AS indexer_id FROM tv_episodes, tv_shows WHERE tv_episodes.status IN (' + ','.join(
-                ['?'] * len(
-                    status_list)) + ') AND season != 0 AND tv_episodes.showid = tv_shows.indexer_id ORDER BY show_name',
-            status_list)
+            b'SELECT show_name, tv_shows.indexer_id AS indexer_id '
+            b'FROM tv_episodes, tv_shows '
+            b'WHERE season != 0 '
+            b'AND tv_episodes.showid = tv_shows.indexer_id '
+            b'AND tv_episodes.status IN ({statuses}) '
+            b'ORDER BY show_name'.format(statuses=','.join(['?'] * len(status_list))),
+            status_list
+        )
 
         ep_counts = {}
         show_names = {}
@@ -131,9 +139,13 @@ class Manage(Home, WebRoot):
             # get a list of all the eps we want to change if they just said 'all'
             if 'all' in to_change[cur_indexer_id]:
                 all_eps_results = main_db_con.select(
-                    b'SELECT season, episode FROM tv_episodes WHERE status IN (' + ','.join(
-                        ['?'] * len(status_list)) + ') AND season != 0 AND showid = ?',
-                    status_list + [cur_indexer_id])
+                    b'SELECT season, episode '
+                    b'FROM tv_episodes '
+                    b'WHERE status IN ({statuses}) '
+                    b'AND season != 0 '
+                    b'AND showid = ?'.format(statuses=','.join(['?'] * len(status_list))),
+                    status_list + [cur_indexer_id]
+                )
                 all_eps = [str(x['season']) + 'x' + str(x['episode']) for x in all_eps_results]
                 to_change[cur_indexer_id] = all_eps
 
@@ -145,8 +157,14 @@ class Manage(Home, WebRoot):
     def showSubtitleMissed(indexer_id, whichSubs):
         main_db_con = db.DBConnection()
         cur_show_results = main_db_con.select(
-            'SELECT season, episode, name, subtitles FROM tv_episodes WHERE showid = ? AND season != 0 AND (status LIKE \'%4\' OR status LIKE \'%6\') and location != \'\'',
-            [int(indexer_id)])
+            b'SELECT season, episode, name, subtitles '
+            b'FROM tv_episodes '
+            b'WHERE showid = ? '
+            b'AND season != 0 '
+            b'AND (status LIKE \'%4\' OR status LIKE \'%6\') '
+            b'AND location != \'\'',
+            [int(indexer_id)]
+        )
 
         result = {}
         for cur_result in cur_show_results:
@@ -181,10 +199,15 @@ class Manage(Home, WebRoot):
 
         main_db_con = db.DBConnection()
         status_results = main_db_con.select(
-            'SELECT show_name, tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles ' +
-            'FROM tv_episodes, tv_shows ' +
-            'WHERE tv_shows.subtitles = 1 AND (tv_episodes.status LIKE \'%4\' OR tv_episodes.status LIKE \'%6\') AND tv_episodes.season != 0 ' +
-            'AND tv_episodes.location != \'\' AND tv_episodes.showid = tv_shows.indexer_id ORDER BY show_name')
+            b'SELECT show_name, tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles '
+            b'FROM tv_episodes, tv_shows '
+            b'WHERE tv_shows.subtitles = 1 '
+            b'AND (tv_episodes.status LIKE \'%4\' OR tv_episodes.status LIKE \'%6\') '
+            b'AND tv_episodes.season != 0 '
+            b'AND tv_episodes.location != \'\' '
+            b'AND tv_episodes.showid = tv_shows.indexer_id '
+            b'ORDER BY show_name'
+        )
 
         ep_counts = {}
         show_names = {}
@@ -280,8 +303,18 @@ class Manage(Home, WebRoot):
             epCats = {}
 
             sql_results = main_db_con.select(
-                'SELECT status, season, episode, name, airdate FROM tv_episodes WHERE tv_episodes.season IS NOT NULL AND tv_episodes.showid IN (SELECT tv_shows.indexer_id FROM tv_shows WHERE tv_shows.indexer_id = ? AND paused = 0) ORDER BY tv_episodes.season DESC, tv_episodes.episode DESC',
-                [curShow.indexerid])
+                """
+                SELECT status, season, episode, name, airdate
+                FROM tv_episodes
+                WHERE tv_episodes.season IS NOT NULL AND
+                      tv_episodes.showid IN (SELECT tv_shows.indexer_id
+                                             FROM tv_shows
+                                             WHERE tv_shows.indexer_id = ? AND
+                                                   paused = 0)
+                ORDER BY tv_episodes.season DESC, tv_episodes.episode DESC
+                """,
+                [curShow.indexerid]
+            )
 
             for curResult in sql_results:
                 curEpCat = curShow.getOverview(curResult[b'status'])
@@ -697,15 +730,26 @@ class Manage(Home, WebRoot):
     def failedDownloads(self, limit=100, toRemove=None):
         failed_db_con = db.DBConnection('failed.db')
 
-        if limit == '0':
-            sql_results = failed_db_con.select('SELECT * FROM failed')
+        if limit:
+            sql_results = failed_db_con.select(
+                b'SELECT * '
+                b'FROM failed '
+                b'LIMIT ?', [limit]
+            )
         else:
-            sql_results = failed_db_con.select('SELECT * FROM failed LIMIT ?', [limit])
+            sql_results = failed_db_con.select(
+                b'SELECT * '
+                b'FROM failed'
+            )
 
         toRemove = toRemove.split('|') if toRemove is not None else []
 
         for release in toRemove:
-            failed_db_con.action('DELETE FROM failed WHERE failed.release = ?', [release])
+            failed_db_con.action(
+                b'DELETE FROM failed '
+                b'WHERE failed.release = ?',
+                [release]
+            )
 
         if toRemove:
             return self.redirect('/manage/failedDownloads/')

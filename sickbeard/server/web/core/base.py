@@ -300,9 +300,9 @@ class WebRoot(WebHandler):
         episodes = {}
 
         results = main_db_con.select(
-            'SELECT episode, season, showid '
-            'FROM tv_episodes '
-            'ORDER BY season ASC, episode ASC'
+            b'SELECT episode, season, showid '
+            b'FROM tv_episodes '
+            b'ORDER BY season ASC, episode ASC'
         )
 
         for result in results:

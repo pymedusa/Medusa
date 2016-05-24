@@ -146,7 +146,12 @@ class HomeAddShows(Home):
                 }
 
                 # see if the folder is in KODI already
-                dirResults = main_db_con.select('SELECT indexer_id FROM tv_shows WHERE location = ? LIMIT 1', [cur_path])
+                dirResults = main_db_con.select(
+                    b'SELECT indexer_id '
+                    b'FROM tv_shows '
+                    b'WHERE location = ? LIMIT 1', 
+                    [cur_path]
+                )
 
                 if dirResults:
                     cur_dir['added_already'] = True

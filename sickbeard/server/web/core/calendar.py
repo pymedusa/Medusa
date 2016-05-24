@@ -64,7 +64,8 @@ class CalendarHandler(BaseHandler):
         calendar_shows = main_db_con.select(
             b'SELECT show_name, indexer_id, network, airs, runtime '
             b'FROM tv_shows '
-            b'WHERE ( status = \'Continuing\' OR status = \'Returning Series\' ) AND paused != \'1\''
+            b'WHERE ( status = ? OR status = ? ) AND paused != 1',
+            ('Continuing', 'Returning Series')
         )
         for show in calendar_shows:
             # Get all episodes of this show airing between today and next month
