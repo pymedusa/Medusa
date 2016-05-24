@@ -102,17 +102,17 @@ class CacheDBConnection(db.DBConnection):
 class TVCache(object):
     def __init__(self, provider, **kwargs):
         self.provider = provider
-        self.providerID = self.provider.get_id()
-        self.providerDB = None
+        self.provider_id = self.provider.get_id()
+        self.provider_db = None
         self.minTime = kwargs.pop(u'min_time', 10)
         self.search_params = kwargs.pop(u'search_params', dict(RSS=['']))
 
-    def _getDB(self):
+    def _get_db(self):
         # init provider database if not done already
-        if not self.providerDB:
-            self.providerDB = CacheDBConnection(self.providerID)
+        if not self.provider_db:
+            self.provider_db = CacheDBConnection(self.provider_id)
 
-        return self.providerDB
+        return self.provider_db
 
     def _clearCache(self):
         """
@@ -193,7 +193,7 @@ class TVCache(object):
                     if ci is not None:
                         cl.append(ci)
 
-                cache_db_con = self._getDB()
+                cache_db_con = self._get_db()
                 if cl:
                     cache_db_con.mass_action(cl)
 
@@ -216,7 +216,7 @@ class TVCache(object):
                        (self.provider.name, e), logger.WARNING)
 
         results = []
-        cache_db_con = self._getDB()
+        cache_db_con = self._get_db()
         if cl:
             logger.log(u'Mass updating cache table with manual results for provider: {0}'.format(self.provider.name), logger.DEBUG)
             results = cache_db_con.mass_action(cl)
@@ -241,7 +241,6 @@ class TVCache(object):
         seeders, leechers = self._get_result_info(item)
         size = self._get_size(item)
         pubdate = self._get_pubdate(item)
-        hash = self._get_hash(item)
 
         self._checkItemAuth(title, url)
 
@@ -249,8 +248,8 @@ class TVCache(object):
             title = self._translateTitle(title)
             url = self._translateLinkURL(url)
 
-            # logger.log(u"Attempting to add item to cache: " + title, logger.DEBUG)
-            return self._addCacheEntry(title, url, seeders, leechers, size, pubdate, hash)
+            # Placed the self._get_hash(item) inline, because hash is a buildin. Could cause issues.
+            return self._addCacheEntry(title, url, seeders, leechers, size, pubdate, self._get_hash(item))
 
         else:
             logger.log(u'The data returned from the {0} feed is incomplete, this result is unusable'.format
@@ -259,8 +258,8 @@ class TVCache(object):
         return False
 
     def _getLastUpdate(self):
-        cache_db_con = self._getDB()
-        sql_results = cache_db_con.select('SELECT time FROM lastUpdate WHERE provider = ?', [self.providerID])
+        cache_db_con = self._get_db()
+        sql_results = cache_db_con.select('SELECT time FROM lastUpdate WHERE provider = ?', [self.provider_id])
 
         if sql_results:
             lastTime = int(sql_results[0]['time'])
@@ -272,8 +271,8 @@ class TVCache(object):
         return datetime.datetime.fromtimestamp(lastTime)
 
     def _getLastSearch(self):
-        cache_db_con = self._getDB()
-        sql_results = cache_db_con.select('SELECT time FROM lastSearch WHERE provider = ?', [self.providerID])
+        cache_db_con = self._get_db()
+        sql_results = cache_db_con.select('SELECT time FROM lastSearch WHERE provider = ?', [self.provider_id])
 
         if sql_results:
             lastTime = int(sql_results[0]['time'])
@@ -288,22 +287,22 @@ class TVCache(object):
         if not toDate:
             toDate = datetime.datetime.today()
 
-        cache_db_con = self._getDB()
+        cache_db_con = self._get_db()
         cache_db_con.upsert(
             'lastUpdate',
             {'time': int(time.mktime(toDate.timetuple()))},
-            {'provider': self.providerID}
+            {'provider': self.provider_id}
         )
 
     def setLastSearch(self, toDate=None):
         if not toDate:
             toDate = datetime.datetime.today()
 
-        cache_db_con = self._getDB()
+        cache_db_con = self._get_db()
         cache_db_con.upsert(
             'lastSearch',
             {'time': int(time.mktime(toDate.timetuple()))},
-            {'provider': self.providerID}
+            {'provider': self.provider_id}
         )
 
     lastUpdate = property(_getLastUpdate)
@@ -358,11 +357,11 @@ class TVCache(object):
             # get version
             version = parse_result.version
 
-            logger.log(u'Added RSS item: [{0}] to cache: [{1}]'.format(name, self.providerID), logger.DEBUG)
+            logger.log(u'Added RSS item: [{0}] to cache: [{1}]'.format(name, self.provider_id), logger.DEBUG)
 
             return [
                 'INSERT OR REPLACE INTO [{0}]  (name, season, episodes, indexerid, url, time, quality, release_group, '
-                'version, seeders, leechers, size, pubdate, hash) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(self.providerID),
+                'version, seeders, leechers, size, pubdate, hash) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(self.provider_id),
                 [name, season, episodeText, parse_result.show.indexerid, url, curTimestamp, quality,
                  release_group, version, seeders, leechers, size, pubdate, hash]]
 
@@ -371,8 +370,8 @@ class TVCache(object):
         return neededEps[episode] if episode in neededEps else []
 
     def listPropers(self, date=None):
-        cache_db_con = self._getDB()
-        sql = "SELECT * FROM [{0}] WHERE name LIKE '%.PROPER.%' OR name LIKE '%.REPACK.%'".format(self.providerID)
+        cache_db_con = self._get_db()
+        sql = "SELECT * FROM [{0}] WHERE name LIKE '%.PROPER.%' OR name LIKE '%.REPACK.%'".format(self.provider_id)
 
         if date is not None:
             sql += ' AND time >= {0}'.format(int(time.mktime(date.timetuple())))
@@ -384,18 +383,18 @@ class TVCache(object):
         neededEps = {}
         cl = []
 
-        cache_db_con = self._getDB()
+        cache_db_con = self._get_db()
         if not episode:
-            sql_results = cache_db_con.select('SELECT * FROM [{0}]'.format(self.providerID))
+            sql_results = cache_db_con.select('SELECT * FROM [{0}]'.format(self.provider_id))
         elif not isinstance(episode, list):
             sql_results = cache_db_con.select(
-                'SELECT * FROM [{0}] WHERE indexerid = ? AND season = ? AND episodes LIKE ?'.format(self.providerID),
+                'SELECT * FROM [{0}] WHERE indexerid = ? AND season = ? AND episodes LIKE ?'.format(self.provider_id),
                 [episode.show.indexerid, episode.season, '%|{0}|%'.format(episode.episode)])
         else:
             for epObj in episode:
                 cl.append([
                     'SELECT * FROM [{0}]  WHERE indexerid = ? AND season = ? AND episodes LIKE ? AND quality IN ({1})'.format
-                    (self.providerID, ','.join(
+                    (self.provider_id, ','.join(
                         [str(x) for x in epObj.wantedQuality])),
                     [epObj.show.indexerid, epObj.season, '%|{0}|%'.format(epObj.episode)]])
 
