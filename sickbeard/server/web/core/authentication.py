@@ -67,8 +67,8 @@ class LoginHandler(BaseHandler):
         username = sickbeard.WEB_USERNAME
         password = sickbeard.WEB_PASSWORD
 
-        if (self.get_argument('username') == username or not username) \
-                and (self.get_argument('password') == password or not password):
+        if all([(self.get_argument('username') == username or not username),
+                (self.get_argument('password') == password or not password)]):
             api_key = sickbeard.API_KEY
 
         if sickbeard.NOTIFY_ON_LOGIN and not helpers.is_ip_private(self.request.remote_ip):
