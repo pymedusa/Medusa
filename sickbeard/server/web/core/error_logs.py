@@ -153,8 +153,9 @@ class ErrorLogs(WebRoot):
                 data = Get_Data(minLevel, f.readlines(), 0, regex, logFilter, logSearch, maxLines)
 
         for i in range(1, int(sickbeard.LOG_NR)):
-            if ek(os.path.isfile, '{file}.{number}'.format(file=logger.log_file, number=i)) and (len(data) <= maxLines):
-                with io.open('{file}.{number}'.format(file=logger.log_file, number=i), 'r', encoding='utf-8') as f:
+            log_file = '{file}.{number}'.format(file=logger.log_file, number=i)
+            if ek(os.path.isfile, log_file) and (len(data) <= maxLines):
+                with io.open(log_file, 'r', encoding='utf-8') as f:
                     data += Get_Data(minLevel, f.readlines(), len(data), regex, logFilter, logSearch, maxLines)
 
         return t.render(
