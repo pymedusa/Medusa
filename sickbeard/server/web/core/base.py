@@ -62,26 +62,38 @@ class PageTemplate(MakoTemplate):
     Mako page template
     """
     def __init__(self, rh, filename):
-        self.arguments = {}
-
         lookup = get_lookup()
         self.template = lookup.get_template(filename)
 
-        self.arguments['srRoot'] = sickbeard.WEB_ROOT
-        self.arguments['sbHttpPort'] = sickbeard.WEB_PORT
-        self.arguments['sbHttpsPort'] = sickbeard.WEB_PORT
-        self.arguments['sbHttpsEnabled'] = sickbeard.ENABLE_HTTPS
-        self.arguments['sbHandleReverseProxy'] = sickbeard.HANDLE_REVERSE_PROXY
-        self.arguments['sbThemeName'] = sickbeard.THEME_NAME
-        self.arguments['sbDefaultPage'] = sickbeard.DEFAULT_PAGE
-        self.arguments['loggedIn'] = rh.get_current_user()
-        self.arguments['sbStartTime'] = rh.startTime
+        self.arguments = {
+            'srRoot': sickbeard.WEB_ROOT,
+            'sbHttpPort': sickbeard.WEB_PORT,
+            'sbHttpsPort': sickbeard.WEB_PORT,
+            'sbHttpsEnabled': sickbeard.ENABLE_HTTPS,
+            'sbHandleReverseProxy': sickbeard.HANDLE_REVERSE_PROXY,
+            'sbThemeName': sickbeard.THEME_NAME,
+            'sbDefaultPage': sickbeard.DEFAULT_PAGE,
+            'loggedIn': rh.get_current_user(),
+            'sbStartTime': rh.startTime,
+            'numErrors': len(classes.ErrorViewer.errors),
+            'numWarnings': len(classes.WarningViewer.errors),
+            'sbPID': str(sickbeard.PID),
+            'title': 'FixME',
+            'header': 'FixME',
+            'topmenu': 'FixME',
+            'submenu': [],
+            'controller': 'FixME',
+            'action': 'FixME',
+            'show': UNDEFINED,
+            'newsBadge': '',
+            'toolsBadge': '',
+            'toolsBadgeClass': '',
+        }
 
         if rh.request.headers['Host'][0] == '[':
             self.arguments['sbHost'] = re.match(r'^\[.*\]', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
         else:
             self.arguments['sbHost'] = re.match(r'^[^:]+', rh.request.headers['Host'], re.X | re.M | re.S).group(0)
-
         if 'X-Forwarded-Host' in rh.request.headers:
             self.arguments['sbHost'] = rh.request.headers['X-Forwarded-Host']
         if 'X-Forwarded-Port' in rh.request.headers:
@@ -89,21 +101,6 @@ class PageTemplate(MakoTemplate):
             self.arguments['sbHttpsPort'] = sbHttpPort
         if 'X-Forwarded-Proto' in rh.request.headers:
             self.arguments['sbHttpsEnabled'] = True if rh.request.headers['X-Forwarded-Proto'] == 'https' else False
-
-        self.arguments['numErrors'] = len(classes.ErrorViewer.errors)
-        self.arguments['numWarnings'] = len(classes.WarningViewer.errors)
-        self.arguments['sbPID'] = str(sickbeard.PID)
-
-        self.arguments['title'] = 'FixME'
-        self.arguments['header'] = 'FixME'
-        self.arguments['topmenu'] = 'FixME'
-        self.arguments['submenu'] = []
-        self.arguments['controller'] = 'FixME'
-        self.arguments['action'] = 'FixME'
-        self.arguments['show'] = UNDEFINED
-        self.arguments['newsBadge'] = ''
-        self.arguments['toolsBadge'] = ''
-        self.arguments['toolsBadgeClass'] = ''
 
         error_count = len(classes.ErrorViewer.errors)
         warning_count = len(classes.WarningViewer.errors)

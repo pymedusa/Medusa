@@ -673,17 +673,12 @@ class Home(WebRoot):
         :param indexer_id: The shows indexer_id
         :return: A json with the scene exceptions per season.
         """
-
-        exceptions_list = {}
-
-        exceptions_list['seasonExceptions'] = sickbeard.scene_exceptions.get_all_scene_exceptions(indexer_id)
-
-        xem_numbering_season = {tvdb_season_ep[0]: anidb_season_ep[0]
-                                for (tvdb_season_ep, anidb_season_ep)
-                                in get_xem_numbering_for_show(indexer_id, indexer).iteritems()}
-
-        exceptions_list['xemNumbering'] = xem_numbering_season
-        return json.dumps(exceptions_list)
+        return json.dumps({
+            'seasonExceptions': sickbeard.scene_exceptions.get_all_scene_exceptions(indexer_id),
+            'xemNumbering': {tvdb_season_ep[0]: anidb_season_ep[0]
+                             for (tvdb_season_ep, anidb_season_ep)
+                             in get_xem_numbering_for_show(indexer_id, indexer).iteritems()}
+        })
 
     def displayShow(self, show=None):
         # TODO: add more comprehensive show validation
