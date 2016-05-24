@@ -717,13 +717,13 @@ class SubtitlesFinder(object):
         run_post_process = False
         for root, _, files in os.walk(sickbeard.TV_DOWNLOAD_DIR, topdown=False):
             for filename in sorted(files):
-                filename = clear_non_release_groups(filename)
-
                 # Delete unwanted subtitles before downloading new ones
                 delete_unwanted_subtitles(root, filename)
 
                 if not isMediaFile(filename):
                     continue
+                
+                filename = clear_non_release_groups(os.path.join(root, filename))
 
                 if processTV.subtitles_enabled(filename) is False:
                     logger.debug(u'Subtitle disabled for show: %s', filename)
