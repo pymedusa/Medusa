@@ -872,20 +872,22 @@ class Home(WebRoot):
             if needs_update:
                 return {'result': REFRESH_RESULTS}
 
-        # If the item is queued multiple times (don't know if this is posible), but then check if as soon as a search has finished
+        # If the item is queued multiple times (don't know if this is possible),
+        # but then check if as soon as a search has finished
         # Move on and show results
         # Return a list of queues the episode has been found in
         search_status = [item.get('searchstatus') for item in searched_item]
-        if (not len(searched_item) or
-            (last_prov_updates and
-             SEARCH_STATUS_QUEUED not in search_status and
-             SEARCH_STATUS_SEARCHING not in search_status and
-             SEARCH_STATUS_FINISHED in search_status)):
-                # If the ep not anymore in the QUEUED or SEARCHING Thread, and it has the status finished, return it as finished
-                return {'result': SEARCH_STATUS_FINISHED}
+        if (not len(searched_item) or (last_prov_updates and
+                                       SEARCH_STATUS_QUEUED not in search_status and
+                                       SEARCH_STATUS_SEARCHING not in search_status and
+                                       SEARCH_STATUS_FINISHED in search_status)):
+            # If the ep not anymore in the QUEUED or SEARCHING Thread, and it has the status finished,
+            # return it as finished
+            return {'result': SEARCH_STATUS_FINISHED}
 
         # Force a refresh when the last_prov_updates is empty due to the tables not existing yet.
-        # This can be removed if we make sure the provider cache tables always exist prior to the start of the first search
+        # This can be removed if we make sure the provider cache tables always exist prior to the
+        # start of the first search
         if not last_prov_updates and SEARCH_STATUS_FINISHED in search_status:
             return {'result': REFRESH_RESULTS}
 
@@ -992,7 +994,7 @@ class Home(WebRoot):
                 for item in episode_status_result:
                     episode_history.append(dict(item))
         except Exception as e:
-            logger.log('Couldn\'t read latest episode statust. Error: {}'.format(e))
+            logger.log('Couldn\'t read latest episode status. Error: {}'.format(e))
 
         show_words = show_name_helpers.show_words(showObj)
 

@@ -29,7 +29,7 @@ class CalendarHandler(BaseHandler):
     # iCalendar (iCal) - Standard RFC 5545 <http://tools.ietf.org/html/rfc5546>
     # Works with iCloud, Google Calendar and Outlook.
     def calendar(self):
-        """ Provides a subscribeable URL for iCal subscriptions
+        """ Provides a subscribable URL for iCal subscriptions
         """
 
         logger.log('Receiving iCal request from %s' % self.request.remote_ip)
