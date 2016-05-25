@@ -114,7 +114,7 @@ class TVCache(object):
 
         return self.provider_db
 
-    def _clearProviderRssCache(self):
+    def _clear_provider_rss_cache(self):
         cache_db_con = self._get_db()
         today = int(time.mktime(datetime.datetime.today().timetuple()))
         # Keep item in cache for 7 days
@@ -128,7 +128,7 @@ class TVCache(object):
         if sickbeard.CACHE_TRIMMING:
             # trim items older than MAX_CACHE_AGE days
             self.trim_cache(days=sickbeard.MAX_CACHE_AGE)
-        self._clearProviderRssCache()
+        self._clear_provider_rss_cache()
 
     def trim_cache(self, days=None):
         """
