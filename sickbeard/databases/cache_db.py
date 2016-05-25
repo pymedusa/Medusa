@@ -124,3 +124,13 @@ class ConvertSceneNamesToIndexerScheme(AddSceneExceptionsRefresh):  # pylint:dis
         self.connection.action("CREATE TABLE scene_names (indexer_id INTEGER, name TEXT);")
         self.connection.action("INSERT INTO scene_names SELECT * FROM tmp_scene_names;")
         self.connection.action("DROP TABLE tmp_scene_names;")
+
+
+class AddProviderRssCache(ConvertSceneNamesToIndexerScheme):  # pylint:disable=too-many-ancestors
+    """A provider cache table thats used to keep track of the last parsed search results"""
+    def test(self):
+        return self.hasTable("provider_rss_cache")
+
+    def execute(self):
+        self.connection.action(
+            "CREATE TABLE provider_rss_cache (rss_cache_id INTEGER PRIMARY KEY, name TEXT, url TEXT, time NUMERIC DEFAULT 0, provider_id TEXT NOT NULL);")

@@ -114,6 +114,12 @@ class TVCache(object):
 
         return self.provider_db
 
+    def _clearProviderRssCache(self):
+        cache_db_con = self._get_db()
+        today = int(time.mktime(datetime.datetime.today().timetuple()))
+        # Keep item in cache for 7 days
+        cache_db_con.action('DELETE FROM provider_rss_cache WHERE provider_id = ? AND time < ? ', [self.provider_id, today - 7 * 86400])  # 86400 POSIX day (exact value)
+
     def _clearCache(self):
         """
         Performs requalar cache cleaning as required
@@ -122,6 +128,7 @@ class TVCache(object):
         if sickbeard.CACHE_TRIMMING:
             # trim items older than MAX_CACHE_AGE days
             self.trim_cache(days=sickbeard.MAX_CACHE_AGE)
+        self._clearProviderRssCache()
 
     def trim_cache(self, days=None):
         """
@@ -187,15 +194,34 @@ class TVCache(object):
                 # set updated
                 self.setLastUpdate()
 
+                # get last 5 provider_rss_cache results
+                recent_results = self.get_last_cached_items(5)
+                found_recent_results = 0
+                stop_at = 1
+
                 cl = []
-                for item in data['entries'] or []:
-                    ci = self._parseItem(item)
-                    if ci is not None:
-                        cl.append(ci)
+                index = 0
+                for index, item in enumerate(data['entries'] or []):
+                    if recent_results and item.get('link').strip() in [cache_item['url'].strip() for cache_item in recent_results]:
+                        found_recent_results += 1
+
+                    if found_recent_results >= stop_at:
+                        logger.log(u'Hit the old cached items, not parsing any more for: {0}'.format
+                                   (self.provider_id), logger.ERROR)
+                        break
+                    try:
+                        ci = self._parseItem(item)
+                        if ci is not None:
+                            cl.append(ci)
+                    except UnicodeDecodeError, e:
+                        continue
 
                 cache_db_con = self._get_db()
                 if cl:
                     cache_db_con.mass_action(cl)
+
+                # finished processing, let's save the newest x (index) items and store these in cache with a max of 5
+                self._update_provider_rss_cache(data['entries'][0:min(index, 5)])
 
         except AuthException as e:
             logger.log(u'Authentication error: {0!r}'.format(e), logger.ERROR)
@@ -222,6 +248,28 @@ class TVCache(object):
             results = cache_db_con.mass_action(cl)
 
         return any(results)
+
+    def _update_provider_rss_cache(self, items):
+        """Updates the table provider_rss_cache with a limited amount of the latest search result url's"""
+
+        cache_db_con = self._get_db()
+        new_items = []
+        sql_results = []
+
+        for item in items:
+            # get the current timestamp
+            cur_time = int(time.mktime(datetime.datetime.today().timetuple()))
+
+            logger.log(u"Added provider_rss_cache item: {0}".format(item.get('link'), self.provider_id), logger.DEBUG)
+
+            new_items.append(["INSERT OR REPLACE INTO provider_rss_cache (name, url, time, provider_id) VALUES (?,?,?,?)",
+                             [item.get('title'), item.get('link'), cur_time, self.provider_id]])
+
+        if new_items:
+            logger.log(u'Mass updating provider_rss_cache table with results for provider: {0}'.format(self.provider.name), logger.DEBUG)
+            sql_results = cache_db_con.mass_action(new_items)
+
+        return any(sql_results)
 
     def getRSSFeed(self, url, params=None):
         if self.provider.login():
