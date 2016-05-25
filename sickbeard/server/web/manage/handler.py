@@ -570,40 +570,13 @@ class Manage(Home, WebRoot):
 
     def massUpdate(self, toUpdate=None, toRefresh=None, toRename=None, toDelete=None, toRemove=None, toMetadata=None,
                    toSubtitle=None):
-        if toUpdate is not None:
-            toUpdate = toUpdate.split('|')
-        else:
-            toUpdate = []
-
-        if toRefresh is not None:
-            toRefresh = toRefresh.split('|')
-        else:
-            toRefresh = []
-
-        if toRename is not None:
-            toRename = toRename.split('|')
-        else:
-            toRename = []
-
-        if toSubtitle is not None:
-            toSubtitle = toSubtitle.split('|')
-        else:
-            toSubtitle = []
-
-        if toDelete is not None:
-            toDelete = toDelete.split('|')
-        else:
-            toDelete = []
-
-        if toRemove is not None:
-            toRemove = toRemove.split('|')
-        else:
-            toRemove = []
-
-        if toMetadata is not None:
-            toMetadata = toMetadata.split('|')
-        else:
-            toMetadata = []
+        toUpdate = toUpdate.split('|') if toUpdate else []
+        toRefresh = toRefresh.split('|') if toRefresh else []
+        toRename = toRename.split('|') if toRename else []
+        toSubtitle = toSubtitle.split('|') if toSubtitle else []
+        toDelete = toDelete.split('|') if toDelete else []
+        toRemove = toRemove.split('|') if toRemove else []
+        toMetadata = toMetadata.split('|') if toMetadata else []
 
         errors = []
         refreshes = []
@@ -612,40 +585,29 @@ class Manage(Home, WebRoot):
         subtitles = []
 
         for curShowID in set(toUpdate + toRefresh + toRename + toSubtitle + toDelete + toRemove + toMetadata):
+            showObj = Show.find(sickbeard.showList, int(curShowID)) if curShowID else None
 
-            if curShowID == '':
+            if not showObj:
                 continue
 
-            showObj = Show.find(sickbeard.showList, int(curShowID))
-
-            if showObj is None:
-                continue
-
-            if curShowID in toDelete:
-                sickbeard.showQueueScheduler.action.removeShow(showObj, True)
-                # don't do anything else if it's being deleted
-                continue
-
-            if curShowID in toRemove:
-                sickbeard.showQueueScheduler.action.removeShow(showObj)
-                # don't do anything else if it's being remove
-                continue
+            if curShowID in toDelete + toRemove:
+                sickbeard.showQueueScheduler.action.removeShow(showObj, curShowID in toDelete)
+                continue  # don't do anything else if it's being deleted or removed
 
             if curShowID in toUpdate:
                 try:
                     sickbeard.showQueueScheduler.action.updateShow(showObj, True)
                     updates.append(showObj.name)
-                except CantUpdateShowException as e:
-                    errors.append('Unable to update show: {0}'.format(str(e)))
+                except CantUpdateShowException as msg:
+                    errors.append('Unable to update show: {error}'.format(error=msg))
 
-            # don't bother refreshing shows that were updated anyway
-            if curShowID in toRefresh and curShowID not in toUpdate:
+            elif curShowID in toRefresh:  # don't bother refreshing shows that were updated
                 try:
                     sickbeard.showQueueScheduler.action.refreshShow(showObj)
                     refreshes.append(showObj.name)
-                except CantRefreshShowException as e:
+                except CantRefreshShowException as msg:
                     errors.append('Unable to refresh show {show.name}: {error}'.format
-                                  (show=showObj, error=ex(e)))
+                                  (show=showObj, error=msg))
 
             if curShowID in toRename:
                 sickbeard.showQueueScheduler.action.renameShowEpisodes(showObj)
@@ -657,33 +619,33 @@ class Manage(Home, WebRoot):
 
         if errors:
             ui.notifications.error('Errors encountered',
-                                   '<br >\n'.join(errors))
+                                   '<br />\n'.join(errors))
 
-        messageDetail = ''
+        def message_detail(title, items):
+            """
+            Create an unordered list of items with a title.
+            :return: The message if items else ''
+            """
+            return '' if not items else """
+                <br />
+                <b>{title}</b>
+                <br />
+                <ul>
+                  {list}
+                </ul>
+                """.format(
+                    title=title,
+                    list='\n'.join(['  <li>{item}</li>'.format(item=cur_item)
+                                    for cur_item in items]))
 
-        if updates:
-            messageDetail += '<br><b>Updates</b><br><ul><li>'
-            messageDetail += '</li><li>'.join(updates)
-            messageDetail += '</li></ul>'
+        message = ''
+        message += message_detail('Updates', updates)
+        message += message_detail('Refreshes', refreshes)
+        message += message_detail('Renames', renames)
+        message += message_detail('Subtitles', subtitles)
 
-        if refreshes:
-            messageDetail += '<br><b>Refreshes</b><br><ul><li>'
-            messageDetail += '</li><li>'.join(refreshes)
-            messageDetail += '</li></ul>'
-
-        if renames:
-            messageDetail += '<br><b>Renames</b><br><ul><li>'
-            messageDetail += '</li><li>'.join(renames)
-            messageDetail += '</li></ul>'
-
-        if subtitles:
-            messageDetail += '<br><b>Subtitles</b><br><ul><li>'
-            messageDetail += '</li><li>'.join(subtitles)
-            messageDetail += '</li></ul>'
-
-        if updates + refreshes + renames + subtitles:
-            ui.notifications.message('The following actions were queued:',
-                                     messageDetail)
+        if message:
+            ui.notifications.message('The following actions were queued:', message)
 
         return self.redirect('/manage/')
 
