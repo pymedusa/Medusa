@@ -664,7 +664,18 @@ class Manage(Home, WebRoot):
             if helpers.check_url(webui_url + 'download/'):
                 webui_url += 'download/'
             else:
-                info_download_station = '<p>To have a better experience please set the Download Station alias as <code>download</code>, you can check this setting in the Synology DSM <b>Control Panel</b> > <b>Application Portal</b>. Make sure you allow DSM to be embedded with iFrames too in <b>Control Panel</b> > <b>DSM Settings</b> > <b>Security</b>.</p><br><p>There is more information about this available <a href="https://github.com/midgetspy/Sick-Beard/pull/338">here</a>.</p><br>'
+                info_download_station = """
+                <p>
+                    To have a better experience please set the Download Station alias as <code>download</code>, you can check
+                    this setting in the Synology DSM <b>Control Panel</b> > <b>Application Portal</b>.  Make sure you allow
+                    DSM to be embedded with iFrames too in <b>Control Panel</b> > <b>DSM Settings</b> > <b>Security</b>.
+                </p>
+                <br />
+                <p>
+                    There is more information about this available <a href="https://github.com/midgetspy/Sick-Beard/pull/338">here</a>.
+                </p>
+                <br />
+                """
 
         if not sickbeard.TORRENT_PASSWORD == '' and not sickbeard.TORRENT_USERNAME == '':
             webui_url = re.sub('://', '://' + str(sickbeard.TORRENT_USERNAME) + ':' + str(sickbeard.TORRENT_PASSWORD) + '@', webui_url)
