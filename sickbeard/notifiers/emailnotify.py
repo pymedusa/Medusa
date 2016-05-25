@@ -56,12 +56,12 @@ class Notifier(object):
         return self._sendmail(host, port, smtp_from, use_tls, user, pwd, [to], msg, True)
 
     def notify_snatch(self, ep_name, title='Snatched:'):  # pylint: disable=unused-argument
-        '''
+        """
         Send a notification that an episode was snatched
 
         ep_name: The name of the episode that was snatched
         title: The title of the notification (optional)
-        '''
+        """
         ep_name = ss(ep_name)
 
         if sickbeard.USE_EMAIL and sickbeard.EMAIL_NOTIFY_ONSNATCH:
@@ -102,12 +102,12 @@ class Notifier(object):
                     logger.log('Snatch notification error: {}'.format(self.last_err), logger.WARNING)
 
     def notify_download(self, ep_name, title='Completed:'):  # pylint: disable=unused-argument
-        '''
+        """
         Send a notification that an episode was downloaded
 
         ep_name: The name of the episode that was downloaded
         title: The title of the notification (optional)
-        '''
+        """
         ep_name = ss(ep_name)
 
         if sickbeard.USE_EMAIL and sickbeard.EMAIL_NOTIFY_ONDOWNLOAD:
@@ -148,12 +148,12 @@ class Notifier(object):
                     logger.log('Download notification error: {}'.format(self.last_err), logger.WARNING)
 
     def notify_subtitle_download(self, ep_name, lang, title='Downloaded subtitle:'):  # pylint: disable=unused-argument
-        '''
+        """
         Send a notification that an subtitle was downloaded
 
         ep_name: The name of the episode that was downloaded
         lang: Subtitle language wanted
-        '''
+        """
         ep_name = ss(ep_name)
 
         if sickbeard.USE_EMAIL and sickbeard.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD:
@@ -193,10 +193,10 @@ class Notifier(object):
                     logger.log('Download notification error: {}'.format(self.last_err), logger.WARNING)
 
     def notify_git_update(self, new_version='??'):
-        '''
+        """
         Send a notification that Medusa was updated
         new_version: The commit Medusa was updated to
-        '''
+        """
         if sickbeard.USE_EMAIL:
             to = self._generate_recipients(None)
             if not to:
@@ -230,10 +230,10 @@ class Notifier(object):
                     logger.log('Update notification error: {}'.format(self.last_err), logger.WARNING)
 
     def notify_login(self, ipaddress=''):
-        '''
+        """
         Send a notification that Medusa was logged into remotely
         ipaddress: The ip Medusa was logged into from
-        '''
+        """
         if sickbeard.USE_EMAIL:
             to = self._generate_recipients(None)
             if not to:

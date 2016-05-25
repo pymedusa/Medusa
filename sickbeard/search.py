@@ -141,8 +141,8 @@ def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branc
                     result.content = result.provider.get_url(result.url, returns='content')
 
             if result.content or result.url.startswith('magnet'):
-                client = clients.getClientIstance(sickbeard.TORRENT_METHOD)()
-                dlResult = client.sendTORRENT(result)
+                client = clients.get_client_instance(sickbeard.TORRENT_METHOD)()
+                dlResult = client.send_torrent(result)
             else:
                 logger.log(u"Torrent file content is empty", logger.WARNING)
                 dlResult = False
@@ -238,19 +238,19 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
         # If doesnt have min seeders OR min leechers then discard it
         if cur_result.seeders not in (-1, None) and cur_result.leechers not in (-1, None) \
             and hasattr(cur_result.provider, 'minseed') and hasattr(cur_result.provider, 'minleech') \
-            and (int(cur_result.seeders) < int(cur_result.provider.minseed) or 
+            and (int(cur_result.seeders) < int(cur_result.provider.minseed) or
                  int(cur_result.leechers) < int(cur_result.provider.minleech)):
             logger.log(u"Discarding torrent because it doesn't meet the minimum provider setting \
                         S:{0} L:{1}. Result has S:{2} L:{3}".format(cur_result.provider.minseed,
                         cur_result.provider.minleech, cur_result.seeders, cur_result.leechers))
             continue
-        
+
         show_words = show_name_helpers.show_words(cur_result.show)
         ignore_words = show_words.ignore_words
         require_words = show_words.require_words
         found_ignore_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, ignore_words)
-        found_require_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, require_words)        
-        
+        found_require_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, require_words)
+
         if ignore_words and found_ignore_word:
             logger.log(u"Ignoring " + cur_result.name + " based on ignored words filter: " + found_ignore_word,
                        logger.INFO)

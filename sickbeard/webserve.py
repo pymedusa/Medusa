@@ -23,6 +23,7 @@
 import ast
 import datetime
 import io
+import json
 import os
 import re
 import traceback
@@ -101,13 +102,6 @@ from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
 from sickbeard.tv import TVEpisode
 from sickbeard.classes import SearchResult
-
-
-# Conditional imports
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
 
 mako_lookup = None
@@ -822,9 +816,9 @@ class Home(WebRoot):
 
         host = config.clean_url(host)
 
-        client = clients.getClientIstance(torrent_method)
+        client = clients.get_client_instance(torrent_method)
 
-        _, accesMsg = client(host, username, password).testAuthentication()
+        _, accesMsg = client(host, username, password).test_authentication()
 
         return accesMsg
 
@@ -4097,7 +4091,7 @@ class ConfigGeneral(Config):
                     calendar_unprotected=None, calendar_icons=None, debug=None, ssl_verify=None, no_restart=None, coming_eps_missed_range=None,
                     fuzzy_dating=None, trim_zero=None, date_preset=None, date_preset_na=None, time_preset=None,
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
-                    git_reset=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None):
+                    git_reset=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None, privacy_level='normal'):
 
         results = []
 
@@ -4154,6 +4148,8 @@ class ConfigGeneral(Config):
         if sickbeard.SUBLIMINAL_LOG != config.checkbox_to_value(subliminal_log):
             logger.reconfigure_levels()
         sickbeard.SUBLIMINAL_LOG = config.checkbox_to_value(subliminal_log)
+
+        sickbeard.PRIVACY_LEVEL = privacy_level.lower()
 
         sickbeard.FUZZY_DATING = config.checkbox_to_value(fuzzy_dating)
         sickbeard.TRIM_ZERO = config.checkbox_to_value(trim_zero)

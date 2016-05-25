@@ -283,7 +283,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     break
 
             if is_same:
-                logger.log(u"This proper '{result}' is already in history, skipping it".format(result=cur_proper.name), logger.WARNING)
+                logger.log(u"This proper '{result}' is already in history, skipping it".format(result=cur_proper.name), logger.DEBUG)
                 continue
             else:
                 # make sure that none of the existing history downloads are the same proper we're trying to download
@@ -295,7 +295,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                         is_same = True
                         break
                 if is_same:
-                    logger.log(u"This proper '{result}' is already in history, skipping it".format(result=cur_proper.name), logger.WARNING)
+                    logger.log(u"This proper '{result}' is already in history, skipping it".format(result=cur_proper.name), logger.DEBUG)
                     continue
 
                 # get the episode object

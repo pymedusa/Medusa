@@ -577,6 +577,11 @@ def check_setting_float(config, cfg_name, item_name, def_val, silent=True):
 ################################################################################
 def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_log=False):
     # For passwords you must include the word `password` in the item_name and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
+    if not censor_log:
+        censor_level = sickbeard.common.privacy_levels['stupid']
+    else:
+        censor_level = sickbeard.common.privacy_levels[censor_log]
+    privacy_level = sickbeard.common.privacy_levels[sickbeard.PRIVACY_LEVEL]
     if bool(item_name.find('password') + 1):
         encryption_version = sickbeard.ENCRYPTION_VERSION
     else:
@@ -594,7 +599,7 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
             config[cfg_name] = {}
             config[cfg_name][item_name] = helpers.encrypt(my_val, encryption_version)
 
-    if censor_log or (cfg_name, item_name) in logger.censored_items.iteritems():
+    if privacy_level >= censor_level or (cfg_name, item_name) in logger.censored_items.iteritems():
         if not item_name.endswith('custom_url'):
             logger.censored_items[cfg_name, item_name] = my_val
 

@@ -18,13 +18,15 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 from sickbeard.clients.generic import GenericClient
 
 
-class mlnetAPI(GenericClient):
+class MLNetAPI(GenericClient):
     def __init__(self, host=None, username=None, password=None):
 
-        super(mlnetAPI, self).__init__('mlnet', host, username, password)
+        super(MLNetAPI, self).__init__('mlnet', host, username, password)
 
         self.url = self.host
         # self.session.auth = HTTPDigestAuth(self.username, self.password);
@@ -41,14 +43,18 @@ class mlnetAPI(GenericClient):
 
     def _add_torrent_uri(self, result):
 
-        self.url = self.host + 'submit'
-        params = {'q': 'dllink ' + result.url}
+        self.url = '{host}submit'.format(host=self.host)
+        params = {
+            'q': 'dllink {url}'.format(url=result.url),
+        }
         return self._request(method='get', params=params)
 
     def _add_torrent_file(self, result):
 
-        self.url = self.host + 'submit'
-        params = {'q': 'dllink ' + result.url}
+        self.url = '{host}submit'.format(host=self.host)
+        params = {
+            'q': 'dllink {url}'.format(url=result.url),
+        }
         return self._request(method='get', params=params)
 
-api = mlnetAPI()
+api = MLNetAPI()
