@@ -4408,14 +4408,14 @@ class ConfigPostProcessing(Config):
                            naming_abd_pattern=None, naming_strip_year=None,
                            naming_custom_sports=None, naming_sports_pattern=None,
                            naming_custom_anime=None, naming_anime_pattern=None,
-                           naming_anime_multi_ep=None, autopostprocesser_frequency=None):
+                           naming_anime_multi_ep=None, autopostprocessor_frequency=None):
 
         results = []
 
         if not config.change_TV_DOWNLOAD_DIR(tv_download_dir):
             results += ["Unable to create directory " + ek(os.path.normpath, tv_download_dir) + ", dir not changed."]
 
-        config.change_AUTOPOSTPROCESSER_FREQUENCY(autopostprocesser_frequency)
+        config.change_AUTOPOSTPROCESSOR_FREQUENCY(autopostprocessor_frequency)
         config.change_PROCESS_AUTOMATICALLY(process_automatically)
 
         if unpack:
@@ -5552,7 +5552,7 @@ class ErrorLogs(WebRoot):
             'SHOWQUEUE-REFRESH': u'Search Queue (Refresh)',
             'SHOWQUEUE-FORCE-REFRESH': u'Search Queue (Forced Refresh)',
             'FINDPROPERS': u'Find Propers',
-            'POSTPROCESSER': u'Postprocesser',
+            'POSTPROCESSOR': u'Post Processor',
             'FINDSUBTITLES': u'Find Subtitles',
             'TRAKTCHECKER': u'Trakt Checker',
             'EVENT': u'Event',
