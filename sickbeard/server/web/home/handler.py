@@ -854,9 +854,9 @@ class Home(WebRoot):
                                                                    str(search.get('season')) == season and
                                                                    str(search.get('episode')) == episode)]
 
-        # No last_prov_updates available, let's assume we need to refresh until we get some
-#         if not last_prov_updates:
-#             return {'result': REFRESH_RESULTS}
+        # # No last_prov_updates available, let's assume we need to refresh until we get some
+        # if not last_prov_updates:
+        #     return {'result': REFRESH_RESULTS}
 
         sql_episode = '' if manual_search_type == 'season' else episode
 
@@ -890,7 +890,6 @@ class Home(WebRoot):
         # start of the first search
         if not last_prov_updates and SEARCH_STATUS_FINISHED in search_status:
             return {'result': REFRESH_RESULTS}
-
 
         return {'result': searched_item[0]['searchstatus']}
 
@@ -1016,7 +1015,6 @@ class Home(WebRoot):
             require_words=show_words.require_words,
             episode_history=episode_history
         )
-
 
     @staticmethod
     def plotDetails(show, season, episode):
@@ -1276,14 +1274,11 @@ class Home(WebRoot):
             if error is not None:
                 return self._genericMessage('Error', error)
 
-            ui.notifications.message(
-                '%s has been %s %s' %
-                (
-                    show.name,
-                    ('deleted', 'trashed')[bool(sickbeard.TRASH_REMOVE_SHOW)],
-                    ('(media untouched)', '(with all related media)')[bool(full)]
-                )
-            )
+            ui.notifications.message('{show} has been {state} {details}'.format(
+                show=show.name,
+                state='trashed' if sickbeard.TRASH_REMOVE_SHOW else 'deleted',
+                details='(with all related media)' if full else '(media untouched)',
+            ))
 
             time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 

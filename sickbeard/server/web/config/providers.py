@@ -19,6 +19,7 @@ from sickbeard.server.web.config.handler import Config
 
 @route('/config/providers(/?.*)')
 class ConfigProviders(Config):
+
     def __init__(self, *args, **kwargs):
         super(ConfigProviders, self).__init__(*args, **kwargs)
 
@@ -500,11 +501,11 @@ class ConfigProviders(Config):
                     curNzbProvider.enable_daily = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curNzbProvider, 'enable_manualsearch'):
-               try:
-                   curNzbProvider.enable_manualsearch = config.checkbox_to_value(
-                       kwargs[curNzbProvider.get_id() + '_enable_manualsearch'])
-               except (AttributeError, KeyError):
-                   curNzbProvider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
+                try:
+                    curNzbProvider.enable_manualsearch = config.checkbox_to_value(
+                        kwargs['{id}_enable_manualsearch'.format(id=curNzbProvider.get_id())])
+                except (AttributeError, KeyError):
+                    curNzbProvider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
 
             if hasattr(curNzbProvider, 'enable_backlog'):
                 try:
