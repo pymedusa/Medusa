@@ -23,6 +23,7 @@ class HomePostProcess(Home):
     # pylint: disable=redefined-builtin
     def processEpisode(self, dir=None, nzbName=None, jobName=None, quiet=None, process_method=None, force=None,
                        is_priority=None, delete_on='0', failed='0', type='auto', *args, **kwargs):
+        nzb_name = nzbName
 
         def argToBool(argument):
             if isinstance(argument, basestring):
@@ -40,10 +41,10 @@ class HomePostProcess(Home):
         if not dir:
             return self.redirect('/home/postprocess/')
         else:
-            nzbName = ss(nzbName) if nzbName else nzbName
+            nzb_name = ss(nzb_name) if nzb_name else nzb_name
 
             result = processTV.processDir(
-                ss(dir), nzbName, process_method=process_method, force=argToBool(force),
+                ss(dir), nzb_name, process_method=process_method, force=argToBool(force),
                 is_priority=argToBool(is_priority), delete_on=argToBool(delete_on), failed=argToBool(failed), proc_type=type
             )
 

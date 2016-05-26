@@ -97,8 +97,7 @@ class PageTemplate(MakoTemplate):
         if 'X-Forwarded-Host' in rh.request.headers:
             self.arguments['sbHost'] = rh.request.headers['X-Forwarded-Host']
         if 'X-Forwarded-Port' in rh.request.headers:
-            sbHttpPort = rh.request.headers['X-Forwarded-Port']
-            self.arguments['sbHttpsPort'] = sbHttpPort
+            self.arguments['sbHttpsPort'] = rh.request.headers['X-Forwarded-Port']
         if 'X-Forwarded-Proto' in rh.request.headers:
             self.arguments['sbHttpsEnabled'] = True if rh.request.headers['X-Forwarded-Proto'] == 'https' else False
 
@@ -108,14 +107,14 @@ class PageTemplate(MakoTemplate):
         if sickbeard.NEWS_UNREAD:
             self.arguments['newsBadge'] = ' <span class="badge">{news}</span>'.format(news=sickbeard.NEWS_UNREAD)
 
-        numCombined = error_count + warning_count + sickbeard.NEWS_UNREAD
-        if numCombined:
+        num_combined = error_count + warning_count + sickbeard.NEWS_UNREAD
+        if num_combined:
             if error_count:
                 self.arguments['toolsBadgeClass'] = ' btn-danger'
             elif warning_count:
                 self.arguments['toolsBadgeClass'] = ' btn-warning'
             self.arguments['toolsBadge'] = ' <span class="badge{type}">{number}</span>'.format(
-                type=self.arguments['toolsBadgeClass'], number=numCombined)
+                type=self.arguments['toolsBadgeClass'], number=num_combined)
 
     def render(self, *args, **kwargs):
         """

@@ -65,9 +65,9 @@ class ConfigSubtitles(Config):
         subtitles_services_list = []
         subtitles_services_enabled = []
         for curServiceStr in services_str_list:
-            curService, curEnabled = curServiceStr.split(':')
-            subtitles_services_list.append(curService)
-            subtitles_services_enabled.append(int(curEnabled))
+            cur_service, cur_enabled = curServiceStr.split(':')
+            subtitles_services_list.append(cur_service)
+            subtitles_services_enabled.append(int(cur_enabled))
 
         sickbeard.SUBTITLES_SERVICES_LIST = subtitles_services_list
         sickbeard.SUBTITLES_SERVICES_ENABLED = subtitles_services_enabled

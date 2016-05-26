@@ -58,36 +58,36 @@ class HomeAddShows(Home):
 
         search_term = search_term.encode('utf-8')
 
-        searchTerms = [search_term]
+        search_terms = [search_term]
 
         # If search term ends with what looks like a year, enclose it in ()
         matches = re.match(r'^(.+ |)([12][0-9]{3})$', search_term)
         if matches:
-            searchTerms.append('%s(%s)' % (matches.group(1), matches.group(2)))
+            search_terms.append('%s(%s)' % (matches.group(1), matches.group(2)))
 
-        for searchTerm in searchTerms:
+        for searchTerm in search_terms:
             # If search term begins with an article, let's also search for it without
             matches = re.match(r'^(?:a|an|the) (.+)$', searchTerm, re.I)
             if matches:
-                searchTerms.append(matches.group(1))
+                search_terms.append(matches.group(1))
 
         results = {}
         final_results = []
 
         # Query Indexers for each search term and build the list of results
         for indexer in sickbeard.indexerApi().indexers if not int(indexer) else [int(indexer)]:
-            lINDEXER_API_PARMS = sickbeard.indexerApi(indexer).api_params.copy()
-            lINDEXER_API_PARMS['language'] = lang
-            lINDEXER_API_PARMS['custom_ui'] = classes.AllShowsListUI
-            t = sickbeard.indexerApi(indexer).indexer(**lINDEXER_API_PARMS)
+            l_indexer_api_parms = sickbeard.indexerApi(indexer).api_params.copy()
+            l_indexer_api_parms['language'] = lang
+            l_indexer_api_parms['custom_ui'] = classes.AllShowsListUI
+            t = sickbeard.indexerApi(indexer).indexer(**l_indexer_api_parms)
 
             logger.log(u'Searching for Show with searchterm(s): %s on Indexer: %s' % (
-                searchTerms, sickbeard.indexerApi(indexer).name), logger.DEBUG)
-            for searchTerm in searchTerms:
+                search_terms, sickbeard.indexerApi(indexer).name), logger.DEBUG)
+            for searchTerm in search_terms:
                 try:
-                    indexerResults = t[searchTerm]
+                    indexer_results = t[searchTerm]
                     # add search results
-                    results.setdefault(indexer, []).extend(indexerResults)
+                    results.setdefault(indexer, []).extend(indexer_results)
                 except indexer_exception as msg:
                     logger.log(u'Error searching for show: {error}'.format(error=msg))
 
@@ -146,14 +146,14 @@ class HomeAddShows(Home):
                 }
 
                 # see if the folder is in KODI already
-                dirResults = main_db_con.select(
+                dir_results = main_db_con.select(
                     b'SELECT indexer_id '
                     b'FROM tv_shows '
                     b'WHERE location = ? LIMIT 1', 
                     [cur_path]
                 )
 
-                if dirResults:
+                if dir_results:
                     cur_dir['added_already'] = True
                 else:
                     cur_dir['added_already'] = False
@@ -235,35 +235,34 @@ class HomeAddShows(Home):
         Display the new show page which collects a tvdb id, folder, and extra options and
         posts them to addNewShow
         """
-        if traktList is None:
-            traktList = ''
+        trakt_list = traktList if traktList else ''
 
-        traktList = traktList.lower()
+        trakt_list = trakt_list.lower()
 
-        if traktList == 'trending':
+        if trakt_list == 'trending':
             page_title = 'Trending Shows'
-        elif traktList == 'popular':
+        elif trakt_list == 'popular':
             page_title = 'Popular Shows'
-        elif traktList == 'anticipated':
+        elif trakt_list == 'anticipated':
             page_title = 'Most Anticipated Shows'
-        elif traktList == 'collected':
+        elif trakt_list == 'collected':
             page_title = 'Most Collected Shows'
-        elif traktList == 'watched':
+        elif trakt_list == 'watched':
             page_title = 'Most Watched Shows'
-        elif traktList == 'played':
+        elif trakt_list == 'played':
             page_title = 'Most Played Shows'
-        elif traktList == 'recommended':
+        elif trakt_list == 'recommended':
             page_title = 'Recommended Shows'
-        elif traktList == 'newshow':
+        elif trakt_list == 'newshow':
             page_title = 'New Shows'
-        elif traktList == 'newseason':
+        elif trakt_list == 'newseason':
             page_title = 'Season Premieres'
         else:
             page_title = 'Most Anticipated Shows'
 
         t = PageTemplate(rh=self, filename='addShows_trendingShows.mako')
         return t.render(title=page_title, header=page_title, enable_anime_options=False,
-                        traktList=traktList, controller='addShows', action='trendingShows')
+                        traktList=trakt_list, controller='addShows', action='trendingShows')
 
     def getTrendingShows(self, traktList=None):
         """
@@ -271,28 +270,27 @@ class HomeAddShows(Home):
         posts them to addNewShow
         """
         t = PageTemplate(rh=self, filename='trendingShows.mako')
-        if traktList is None:
-            traktList = ''
+        trakt_list = traktList if traktList else ''
 
-        traktList = traktList.lower()
+        trakt_list = trakt_list.lower()
 
-        if traktList == 'trending':
+        if trakt_list == 'trending':
             page_url = 'shows/trending'
-        elif traktList == 'popular':
+        elif trakt_list == 'popular':
             page_url = 'shows/popular'
-        elif traktList == 'anticipated':
+        elif trakt_list == 'anticipated':
             page_url = 'shows/anticipated'
-        elif traktList == 'collected':
+        elif trakt_list == 'collected':
             page_url = 'shows/collected'
-        elif traktList == 'watched':
+        elif trakt_list == 'watched':
             page_url = 'shows/watched'
-        elif traktList == 'played':
+        elif trakt_list == 'played':
             page_url = 'shows/played'
-        elif traktList == 'recommended':
+        elif trakt_list == 'recommended':
             page_url = 'recommendations/shows'
-        elif traktList == 'newshow':
+        elif trakt_list == 'newshow':
             page_url = 'calendars/all/shows/new/%s/30' % datetime.date.today().strftime('%Y-%m-%d')
-        elif traktList == 'newseason':
+        elif trakt_list == 'newseason':
             page_url = 'calendars/all/shows/premieres/%s/30' % datetime.date.today().strftime('%Y-%m-%d')
         else:
             page_url = 'shows/anticipated'
@@ -312,7 +310,7 @@ class HomeAddShows(Home):
                     logger.log(u'Trakt blacklist name is empty', logger.DEBUG)
 
             limit_show = ''
-            if traktList not in ['recommended', 'newshow', 'newseason']:
+            if trakt_list not in ['recommended', 'newshow', 'newseason']:
                 limit_show = 'limit={number}&'.format(number=100 + len(not_liked_show))
 
             shows = trakt_api.traktRequest('{url}?{limit}extended=full,images'.format(url=page_url, limit=limit_show)) or []
@@ -499,9 +497,11 @@ class HomeAddShows(Home):
         Receive tvdb id, dir, and other options and create a show from them. If extra show dirs are
         provided then it forwards back to newShow, if not it goes to /home.
         """
+        provided_indexer = providedIndexer
+        allowed_qualities = anyQualities
+        preferred_qualities = bestQualities
 
-        if indexerLang is None:
-            indexerLang = sickbeard.INDEXER_DEFAULT_LANGUAGE
+        indexer_lang = sickbeard.INDEXER_DEFAULT_LANGUAGE if not indexerLang else indexerLang
 
         # grab our list of other dirs if given
         if not other_shows:
@@ -545,10 +545,10 @@ class HomeAddShows(Home):
             show_name = series_pieces[4].decode('utf-8')
         else:
             # if no indexer was provided use the default indexer set in General settings
-            if not providedIndexer:
-                providedIndexer = sickbeard.INDEXER_DEFAULT
+            if not provided_indexer:
+                provided_indexer = sickbeard.INDEXER_DEFAULT
 
-            indexer = int(providedIndexer)
+            indexer = int(provided_indexer)
             indexer_id = int(whichSeries)
             show_name = ek(os.path.basename, ek(os.path.normpath, fullShowPath))
 
@@ -590,19 +590,19 @@ class HomeAddShows(Home):
         if blacklist:
             blacklist = short_group_names(blacklist)
 
-        if not anyQualities:
-            anyQualities = []
-        if not bestQualities or try_int(quality_preset, None):
-            bestQualities = []
-        if not isinstance(anyQualities, list):
-            anyQualities = [anyQualities]
-        if not isinstance(bestQualities, list):
-            bestQualities = [bestQualities]
-        newQuality = Quality.combineQualities([int(q) for q in anyQualities], [int(q) for q in bestQualities])
+        if not allowed_qualities:
+            allowed_qualities = []
+        if not preferred_qualities or try_int(quality_preset, None):
+            preferred_qualities = []
+        if not isinstance(allowed_qualities, list):
+            allowed_qualities = [allowed_qualities]
+        if not isinstance(preferred_qualities, list):
+            preferred_qualities = [preferred_qualities]
+        new_quality = Quality.combineQualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
 
         # add the show
-        sickbeard.showQueueScheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), newQuality,
-                                                    flatten_folders, indexerLang, subtitles, anime,
+        sickbeard.showQueueScheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
+                                                    flatten_folders, indexer_lang, subtitles, anime,
                                                     scene, None, blacklist, whitelist, int(defaultStatusAfter))
         ui.notifications.message('Show added', 'Adding the specified show into {path}'.format(path=show_dir))
 
@@ -629,6 +629,8 @@ class HomeAddShows(Home):
         Receives a dir list and add them. Adds the ones with given TVDB IDs first, then forwards
         along to the newShow page.
         """
+        prompt_for_settings = promptForSettings
+
         # grab a list of other shows to add, if provided
         if not shows_to_add:
             shows_to_add = []
@@ -637,7 +639,7 @@ class HomeAddShows(Home):
 
         shows_to_add = [unquote_plus(x) for x in shows_to_add]
 
-        promptForSettings = config.checkbox_to_value(promptForSettings)
+        prompt_for_settings = config.checkbox_to_value(prompt_for_settings)
 
         indexer_id_given = []
         dirs_only = []
@@ -658,7 +660,7 @@ class HomeAddShows(Home):
                 indexer_id_given.append((int(indexer), show_dir, int(indexer_id), show_name))
 
         # if they want me to prompt for settings then I will just carry on to the newShow page
-        if promptForSettings and shows_to_add:
+        if prompt_for_settings and shows_to_add:
             return self.newShow(shows_to_add[0], shows_to_add[1:])
 
         # if they don't want me to prompt for settings then I can just add all the nfo shows now

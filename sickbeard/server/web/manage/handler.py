@@ -283,14 +283,14 @@ class Manage(Home, WebRoot):
     def backlogOverview(self):
         t = PageTemplate(rh=self, filename='manage_backlogOverview.mako')
 
-        showCounts = {}
-        showCats = {}
-        showSQLResults = {}
+        show_counts = {}
+        show_cats = {}
+        show_sql_results = {}
 
         main_db_con = db.DBConnection()
-        for curShow in sickbeard.showList:
+        for cur_show in sickbeard.showList:
 
-            epCounts = {
+            ep_counts = {
                 Overview.SKIPPED: 0,
                 Overview.WANTED: 0,
                 Overview.QUAL: 0,
@@ -300,7 +300,7 @@ class Manage(Home, WebRoot):
                 Overview.SNATCHED_PROPER: 0,
                 Overview.SNATCHED_BEST: 0
             }
-            epCats = {}
+            ep_cats = {}
 
             sql_results = main_db_con.select(
                 """
@@ -313,22 +313,22 @@ class Manage(Home, WebRoot):
                                                    paused = 0)
                 ORDER BY tv_episodes.season DESC, tv_episodes.episode DESC
                 """,
-                [curShow.indexerid]
+                [cur_show.indexerid]
             )
 
-            for curResult in sql_results:
-                curEpCat = curShow.getOverview(curResult[b'status'])
-                if curEpCat:
-                    epCats[u'{ep}'.format(ep=episode_num(curResult[b'season'], curResult[b'episode']))] = curEpCat
-                    epCounts[curEpCat] += 1
+            for cur_result in sql_results:
+                cur_ep_cat = cur_show.getOverview(cur_result[b'status'])
+                if cur_ep_cat:
+                    ep_cats[u'{ep}'.format(ep=episode_num(cur_result[b'season'], cur_result[b'episode']))] = cur_ep_cat
+                    ep_counts[cur_ep_cat] += 1
 
-            showCounts[curShow.indexerid] = epCounts
-            showCats[curShow.indexerid] = epCats
-            showSQLResults[curShow.indexerid] = sql_results
+            show_counts[cur_show.indexerid] = ep_counts
+            show_cats[cur_show.indexerid] = ep_cats
+            show_sql_results[cur_show.indexerid] = sql_results
 
         return t.render(
-            showCounts=showCounts, showCats=showCats,
-            showSQLResults=showSQLResults, controller='manage',
+            showCounts=show_counts, showCats=show_cats,
+            showSQLResults=show_sql_results, controller='manage',
             action='backlogOverview', title='Backlog Overview',
             header='Backlog Overview', topmenu='manage')
 
@@ -338,15 +338,15 @@ class Manage(Home, WebRoot):
         if not toEdit:
             return self.redirect('/manage/')
 
-        showIDs = toEdit.split('|')
-        showList = []
-        showNames = []
-        for curID in showIDs:
-            curID = int(curID)
-            showObj = Show.find(sickbeard.showList, curID)
-            if showObj:
-                showList.append(showObj)
-                showNames.append(showObj.name)
+        show_ids = toEdit.split('|')
+        show_list = []
+        show_names = []
+        for cur_id in show_ids:
+            cur_id = int(cur_id)
+            show_obj = Show.find(sickbeard.showList, cur_id)
+            if show_obj:
+                show_list.append(show_obj)
+                show_names.append(show_obj.name)
 
         flatten_folders_all_same = True
         last_flatten_folders = None
@@ -377,68 +377,68 @@ class Manage(Home, WebRoot):
 
         root_dir_list = []
 
-        for curShow in showList:
+        for cur_show in show_list:
 
-            cur_root_dir = ek(os.path.dirname, curShow._location)  # pylint: disable=protected-access
+            cur_root_dir = ek(os.path.dirname, cur_show._location)  # pylint: disable=protected-access
             if cur_root_dir not in root_dir_list:
                 root_dir_list.append(cur_root_dir)
 
             # if we know they're not all the same then no point even bothering
             if paused_all_same:
                 # if we had a value already and this value is different then they're not all the same
-                if last_paused not in (None, curShow.paused):
+                if last_paused not in (None, cur_show.paused):
                     paused_all_same = False
                 else:
-                    last_paused = curShow.paused
+                    last_paused = cur_show.paused
 
             if default_ep_status_all_same:
-                if last_default_ep_status not in (None, curShow.default_ep_status):
+                if last_default_ep_status not in (None, cur_show.default_ep_status):
                     default_ep_status_all_same = False
                 else:
-                    last_default_ep_status = curShow.default_ep_status
+                    last_default_ep_status = cur_show.default_ep_status
 
             if anime_all_same:
                 # if we had a value already and this value is different then they're not all the same
-                if last_anime not in (None, curShow.is_anime):
+                if last_anime not in (None, cur_show.is_anime):
                     anime_all_same = False
                 else:
-                    last_anime = curShow.anime
+                    last_anime = cur_show.anime
 
             if flatten_folders_all_same:
-                if last_flatten_folders not in (None, curShow.flatten_folders):
+                if last_flatten_folders not in (None, cur_show.flatten_folders):
                     flatten_folders_all_same = False
                 else:
-                    last_flatten_folders = curShow.flatten_folders
+                    last_flatten_folders = cur_show.flatten_folders
 
             if quality_all_same:
-                if last_quality not in (None, curShow.quality):
+                if last_quality not in (None, cur_show.quality):
                     quality_all_same = False
                 else:
-                    last_quality = curShow.quality
+                    last_quality = cur_show.quality
 
             if subtitles_all_same:
-                if last_subtitles not in (None, curShow.subtitles):
+                if last_subtitles not in (None, cur_show.subtitles):
                     subtitles_all_same = False
                 else:
-                    last_subtitles = curShow.subtitles
+                    last_subtitles = cur_show.subtitles
 
             if scene_all_same:
-                if last_scene not in (None, curShow.scene):
+                if last_scene not in (None, cur_show.scene):
                     scene_all_same = False
                 else:
-                    last_scene = curShow.scene
+                    last_scene = cur_show.scene
 
             if sports_all_same:
-                if last_sports not in (None, curShow.sports):
+                if last_sports not in (None, cur_show.sports):
                     sports_all_same = False
                 else:
-                    last_sports = curShow.sports
+                    last_sports = cur_show.sports
 
             if air_by_date_all_same:
-                if last_air_by_date not in (None, curShow.air_by_date):
+                if last_air_by_date not in (None, cur_show.air_by_date):
                     air_by_date_all_same = False
                 else:
-                    last_air_by_date = curShow.air_by_date
+                    last_air_by_date = cur_show.air_by_date
 
         default_ep_status_value = last_default_ep_status if default_ep_status_all_same else None
         paused_value = last_paused if paused_all_same else None
@@ -451,7 +451,7 @@ class Manage(Home, WebRoot):
         air_by_date_value = last_air_by_date if air_by_date_all_same else None
         root_dir_list = root_dir_list
 
-        return t.render(showList=toEdit, showNames=showNames, default_ep_status_value=default_ep_status_value,
+        return t.render(showList=toEdit, showNames=show_names, default_ep_status_value=default_ep_status_value,
                         paused_value=paused_value, anime_value=anime_value, flatten_folders_value=flatten_folders_value,
                         quality_value=quality_value, subtitles_value=subtitles_value, scene_value=scene_value, sports_value=sports_value,
                         air_by_date_value=air_by_date_value, root_dir_list=root_dir_list, title='Mass Edit', header='Mass Edit', topmenu='manage')
@@ -460,6 +460,9 @@ class Manage(Home, WebRoot):
                        anime=None, sports=None, scene=None, flatten_folders=None, quality_preset=None,
                        subtitles=None, air_by_date=None, anyQualities=[], bestQualities=[], toEdit=None, *args,
                        **kwargs):
+        allowed_qualities = anyQualities
+        preferred_qualities = bestQualities
+
         dir_map = {}
         for cur_arg in kwargs:
             if not cur_arg.startswith('orig_root_dir_'):
@@ -468,94 +471,94 @@ class Manage(Home, WebRoot):
             end_dir = kwargs['new_root_dir_{index}'.format(index=which_index)]
             dir_map[kwargs[cur_arg]] = end_dir
 
-        showIDs = toEdit.split('|')
+        show_ids = toEdit.split('|')
         errors = []
-        for curShow in showIDs:
-            curErrors = []
-            showObj = Show.find(sickbeard.showList, int(curShow))
-            if not showObj:
+        for cur_show in show_ids:
+            cur_errors = []
+            show_obj = Show.find(sickbeard.showList, int(cur_show))
+            if not show_obj:
                 continue
 
-            cur_root_dir = ek(os.path.dirname, showObj._location)  # pylint: disable=protected-access
-            cur_show_dir = ek(os.path.basename, showObj._location)  # pylint: disable=protected-access
+            cur_root_dir = ek(os.path.dirname, show_obj._location)  # pylint: disable=protected-access
+            cur_show_dir = ek(os.path.basename, show_obj._location)  # pylint: disable=protected-access
             if cur_root_dir in dir_map and cur_root_dir != dir_map[cur_root_dir]:
                 new_show_dir = ek(os.path.join, dir_map[cur_root_dir], cur_show_dir)
                 logger.log(u'For show {show.name} changing dir from {show.location} to {location}'.format
-                           (show=showObj, location=new_show_dir))  # pylint: disable=protected-access
+                           (show=show_obj, location=new_show_dir))  # pylint: disable=protected-access
             else:
-                new_show_dir = showObj._location  # pylint: disable=protected-access
+                new_show_dir = show_obj._location  # pylint: disable=protected-access
 
             if paused == 'keep':
-                new_paused = showObj.paused
+                new_paused = show_obj.paused
             else:
                 new_paused = True if paused == 'enable' else False
             new_paused = 'on' if new_paused else 'off'
 
             if default_ep_status == 'keep':
-                new_default_ep_status = showObj.default_ep_status
+                new_default_ep_status = show_obj.default_ep_status
             else:
                 new_default_ep_status = default_ep_status
 
             if anime == 'keep':
-                new_anime = showObj.anime
+                new_anime = show_obj.anime
             else:
                 new_anime = True if anime == 'enable' else False
             new_anime = 'on' if new_anime else 'off'
 
             if sports == 'keep':
-                new_sports = showObj.sports
+                new_sports = show_obj.sports
             else:
                 new_sports = True if sports == 'enable' else False
             new_sports = 'on' if new_sports else 'off'
 
             if scene == 'keep':
-                new_scene = showObj.is_scene
+                new_scene = show_obj.is_scene
             else:
                 new_scene = True if scene == 'enable' else False
             new_scene = 'on' if new_scene else 'off'
 
             if air_by_date == 'keep':
-                new_air_by_date = showObj.air_by_date
+                new_air_by_date = show_obj.air_by_date
             else:
                 new_air_by_date = True if air_by_date == 'enable' else False
             new_air_by_date = 'on' if new_air_by_date else 'off'
 
             if flatten_folders == 'keep':
-                new_flatten_folders = showObj.flatten_folders
+                new_flatten_folders = show_obj.flatten_folders
             else:
                 new_flatten_folders = True if flatten_folders == 'enable' else False
             new_flatten_folders = 'on' if new_flatten_folders else 'off'
 
             if subtitles == 'keep':
-                new_subtitles = showObj.subtitles
+                new_subtitles = show_obj.subtitles
             else:
                 new_subtitles = True if subtitles == 'enable' else False
 
             new_subtitles = 'on' if new_subtitles else 'off'
 
             if quality_preset == 'keep':
-                anyQualities, bestQualities = Quality.splitQuality(showObj.quality)
+                allowed_qualities, preferred_qualities = Quality.splitQuality(show_obj.quality)
             elif try_int(quality_preset, None):
-                bestQualities = []
+                preferred_qualities = []
 
             exceptions_list = []
 
-            curErrors += self.editShow(curShow, new_show_dir, anyQualities,
-                                       bestQualities, exceptions_list,
-                                       defaultEpStatus=new_default_ep_status,
-                                       flatten_folders=new_flatten_folders,
-                                       paused=new_paused, sports=new_sports,
-                                       subtitles=new_subtitles, anime=new_anime,
-                                       scene=new_scene, air_by_date=new_air_by_date,
-                                       directCall=True)
+            cur_errors += self.editShow(cur_show, new_show_dir, allowed_qualities,
+                                        preferred_qualities, exceptions_list,
+                                        defaultEpStatus=new_default_ep_status,
+                                        flatten_folders=new_flatten_folders,
+                                        paused=new_paused, sports=new_sports,
+                                        subtitles=new_subtitles, anime=new_anime,
+                                        scene=new_scene, air_by_date=new_air_by_date,
+                                        directCall=True)
 
-            if curErrors:
-                logger.log(u'Errors: {errors}'.format(errors=curErrors), logger.ERROR)
+            if cur_errors:
+                logger.log(u'Errors: {errors}'.format(errors=cur_errors), logger.ERROR)
                 errors.append(
                     '<b>{show}:</b>\n<ul>{errors}</ul>'.format(
-                        show=showObj.name,
+                        show=show_obj.name,
                         errors=' '.join(['<li>{error}</li>'.format(error=error)
-                                         for error in curErrors])
+                                         for error in cur_errors])
                     )
                 )
         if errors:
@@ -570,13 +573,13 @@ class Manage(Home, WebRoot):
 
     def massUpdate(self, toUpdate=None, toRefresh=None, toRename=None, toDelete=None, toRemove=None, toMetadata=None,
                    toSubtitle=None):
-        toUpdate = toUpdate.split('|') if toUpdate else []
-        toRefresh = toRefresh.split('|') if toRefresh else []
-        toRename = toRename.split('|') if toRename else []
-        toSubtitle = toSubtitle.split('|') if toSubtitle else []
-        toDelete = toDelete.split('|') if toDelete else []
-        toRemove = toRemove.split('|') if toRemove else []
-        toMetadata = toMetadata.split('|') if toMetadata else []
+        to_update = toUpdate.split('|') if toUpdate else []
+        to_refresh = toRefresh.split('|') if toRefresh else []
+        to_rename = toRename.split('|') if toRename else []
+        to_subtitle = toSubtitle.split('|') if toSubtitle else []
+        to_delete = toDelete.split('|') if toDelete else []
+        to_remove = toRemove.split('|') if toRemove else []
+        to_metadata = toMetadata.split('|') if toMetadata else []
 
         errors = []
         refreshes = []
@@ -584,38 +587,38 @@ class Manage(Home, WebRoot):
         renames = []
         subtitles = []
 
-        for curShowID in set(toUpdate + toRefresh + toRename + toSubtitle + toDelete + toRemove + toMetadata):
-            showObj = Show.find(sickbeard.showList, int(curShowID)) if curShowID else None
+        for cur_show_id in set(to_update + to_refresh + to_rename + to_subtitle + to_delete + to_remove + to_metadata):
+            show_obj = Show.find(sickbeard.showList, int(cur_show_id)) if cur_show_id else None
 
-            if not showObj:
+            if not show_obj:
                 continue
 
-            if curShowID in toDelete + toRemove:
-                sickbeard.showQueueScheduler.action.removeShow(showObj, curShowID in toDelete)
+            if cur_show_id in to_delete + to_remove:
+                sickbeard.showQueueScheduler.action.removeShow(show_obj, cur_show_id in to_delete)
                 continue  # don't do anything else if it's being deleted or removed
 
-            if curShowID in toUpdate:
+            if cur_show_id in to_update:
                 try:
-                    sickbeard.showQueueScheduler.action.updateShow(showObj, True)
-                    updates.append(showObj.name)
+                    sickbeard.showQueueScheduler.action.updateShow(show_obj, True)
+                    updates.append(show_obj.name)
                 except CantUpdateShowException as msg:
                     errors.append('Unable to update show: {error}'.format(error=msg))
 
-            elif curShowID in toRefresh:  # don't bother refreshing shows that were updated
+            elif cur_show_id in to_refresh:  # don't bother refreshing shows that were updated
                 try:
-                    sickbeard.showQueueScheduler.action.refreshShow(showObj)
-                    refreshes.append(showObj.name)
+                    sickbeard.showQueueScheduler.action.refreshShow(show_obj)
+                    refreshes.append(show_obj.name)
                 except CantRefreshShowException as msg:
                     errors.append('Unable to refresh show {show.name}: {error}'.format
-                                  (show=showObj, error=msg))
+                                  (show=show_obj, error=msg))
 
-            if curShowID in toRename:
-                sickbeard.showQueueScheduler.action.renameShowEpisodes(showObj)
-                renames.append(showObj.name)
+            if cur_show_id in to_rename:
+                sickbeard.showQueueScheduler.action.renameShowEpisodes(show_obj)
+                renames.append(show_obj.name)
 
-            if curShowID in toSubtitle:
-                sickbeard.showQueueScheduler.action.download_subtitles(showObj)
-                subtitles.append(showObj.name)
+            if cur_show_id in to_subtitle:
+                sickbeard.showQueueScheduler.action.download_subtitles(show_obj)
+                subtitles.append(show_obj.name)
 
         if errors:
             ui.notifications.error('Errors encountered',
@@ -704,16 +707,16 @@ class Manage(Home, WebRoot):
                 b'FROM failed'
             )
 
-        toRemove = toRemove.split('|') if toRemove is not None else []
+        to_remove = toRemove.split('|') if toRemove is not None else []
 
-        for release in toRemove:
+        for release in to_remove:
             failed_db_con.action(
                 b'DELETE FROM failed '
                 b'WHERE failed.release = ?',
                 [release]
             )
 
-        if toRemove:
+        if to_remove:
             return self.redirect('/manage/failedDownloads/')
 
         t = PageTemplate(rh=self, filename='manage_failedDownloads.mako')

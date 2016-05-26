@@ -41,21 +41,14 @@ class ConfigGeneral(Config):
     def saveAddShowDefaults(defaultStatus, anyQualities, bestQualities, defaultFlattenFolders, subtitles=False,
                             anime=False, scene=False, defaultStatusAfter=WANTED):
 
-        if anyQualities:
-            anyQualities = anyQualities.split(',')
-        else:
-            anyQualities = []
+        allowed_qualities = anyQualities.split(',') if anyQualities else []
+        preferred_qualities = bestQualities.split(',') if bestQualities else []
 
-        if bestQualities:
-            bestQualities = bestQualities.split(',')
-        else:
-            bestQualities = []
-
-        newQuality = Quality.combineQualities([int(quality) for quality in anyQualities], [int(quality) for quality in bestQualities])
+        new_quality = Quality.combineQualities([int(quality) for quality in allowed_qualities], [int(quality) for quality in preferred_qualities])
 
         sickbeard.STATUS_DEFAULT = int(defaultStatus)
         sickbeard.STATUS_DEFAULT_AFTER = int(defaultStatusAfter)
-        sickbeard.QUALITY_DEFAULT = int(newQuality)
+        sickbeard.QUALITY_DEFAULT = int(new_quality)
 
         sickbeard.FLATTEN_FOLDERS_DEFAULT = config.checkbox_to_value(defaultFlattenFolders)
         sickbeard.SUBTITLES_DEFAULT = config.checkbox_to_value(subtitles)
