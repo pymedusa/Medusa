@@ -1016,10 +1016,10 @@ class Home(WebRoot):
         # Move on and show results
         # Return a list of queues the episode has been found in
         search_status = [item.get('searchstatus') for item in searched_item]
-        if not searched_item or (last_prov_updates and
-                                 SEARCH_STATUS_QUEUED not in search_status and
-                                 SEARCH_STATUS_SEARCHING not in search_status and
-                                 SEARCH_STATUS_FINISHED in search_status):
+        if not searched_item or all([last_prov_updates,
+                                     SEARCH_STATUS_QUEUED not in search_status,
+                                     SEARCH_STATUS_SEARCHING not in search_status,
+                                     SEARCH_STATUS_FINISHED in search_status]):
             # If the ep not anymore in the QUEUED or SEARCHING Thread, and it has the status finished,
             # return it as finished
             return {'result': SEARCH_STATUS_FINISHED}
@@ -1665,20 +1665,23 @@ class Home(WebRoot):
                                    (episode=curEp), logger.WARNING)
                         continue
 
-                    if int(status) in Quality.DOWNLOADED and epObj.status not in Quality.SNATCHED + \
-                            Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST + Quality.DOWNLOADED + [IGNORED] and not ek(os.path.isfile, epObj.location):
+                    snatched_qualities = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
+                    if all([int(status) in Quality.DOWNLOADED,
+                            epObj.status not in snatched_qualities + Quality.DOWNLOADED + [IGNORED],
+                            not ek(os.path.isfile, epObj.location)]):
                         logger.log(u'Refusing to change status of {episode} to DOWNLOADED '
                                    u'because it\'s not SNATCHED/DOWNLOADED'.format
                                    (episode=curEp), logger.WARNING)
                         continue
 
-                    if int(status) == FAILED and epObj.status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + \
-                            Quality.SNATCHED_BEST + Quality.DOWNLOADED + Quality.ARCHIVED:
+                    if all([int(status) == FAILED,
+                            epObj.status not in snatched_qualities + Quality.DOWNLOADED + Quality.ARCHIVED]):
                         logger.log(u'Refusing to change status of {episode} to FAILED '
                                    u'because it\'s not SNATCHED/DOWNLOADED'.format(episode=curEp), logger.WARNING)
                         continue
 
-                    if epObj.status in Quality.DOWNLOADED + Quality.ARCHIVED and int(status) == WANTED:
+                    if all([int(status) == WANTED,
+                            epObj.status in Quality.DOWNLOADED + Quality.ARCHIVED]):
                         logger.log(u'Removing release_name for episode as you want to set a downloaded episode back to wanted, '
                                    u'so obviously you want it replaced')
                         epObj.release_name = ''
