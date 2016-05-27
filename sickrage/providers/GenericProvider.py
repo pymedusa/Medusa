@@ -523,14 +523,19 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
     @property
     def recent_results(self):
         if sickbeard.provider_recent_results.get(self.get_id()):
-            return sickbeard.provider_recent_results.get(self.get_id())[::-1]
+            return sickbeard.provider_recent_results.get(self.get_id())
         else:
             return []
 
     @recent_results.setter
     def recent_results(self, items):
-        if not sickbeard.provider_recent_results.get(self.get_id()):
-            sickbeard.provider_recent_results.update({self.get_id(): []})
-        sickbeard.provider_recent_results[self.get_id()] += items
+        recent_results = sickbeard.provider_recent_results
+        if not recent_results.get(self.get_id()):
+            recent_results.update({self.get_id(): []})
         if items:
-            del sickbeard.provider_recent_results[self.get_id()][:len(sickbeard.provider_recent_results[self.get_id()]) - self.max_recent_items]
+            add_to_list = []
+            for item in items:
+                if item['link'] not in {cache_item['link'] for cache_item in recent_results[self.get_id()]}:
+                    add_to_list += [item]
+            recent_results[self.get_id()] = add_to_list + recent_results[self.get_id()]
+            recent_results[self.get_id()][:self.max_recent_items]
