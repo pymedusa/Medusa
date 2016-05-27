@@ -187,10 +187,10 @@ class TVCache(object):
                 # set updated
                 self.setLastUpdate()
 
-                # get last 5 provider_rss_cache results
+                # get last 5 rss cache results
                 recent_results = self.provider.recent_results
-                found_recent_results = 0
-                stop_at = 1
+                found_recent_results = 0  # A counter that keeps track of the number of items that have been found in cache
+                stop_at = 3  # Configuration as an error margin, to stop at. The lower the number, the faster it will stop parsing items
 
                 cl = []
                 index = 0
@@ -213,8 +213,9 @@ class TVCache(object):
                 if cl:
                     cache_db_con.mass_action(cl)
 
-                # finished processing, let's save the newest x (index) items and store these in cache with a max of 5
-                self.provider.recent_results = data['entries'][0:min(index, 5)]
+                # finished processing, let's save the newest x (index) items and store these in cache with a max of 5 
+                # (overwritable per provider, throug hthe max_recent_items attribute.
+                self.provider.recent_results = data['entries'][0:min(index, self.provider.max_recent_items)]
 
         except AuthException as e:
             logger.log(u'Authentication error: {0!r}'.format(e), logger.ERROR)

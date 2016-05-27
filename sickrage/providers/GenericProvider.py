@@ -534,4 +534,3 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         sickbeard.provider_recent_results[self.get_id()] += items
         if items:
             del sickbeard.provider_recent_results[self.get_id()][:len(sickbeard.provider_recent_results[self.get_id()]) - self.max_recent_items]
-        pass
