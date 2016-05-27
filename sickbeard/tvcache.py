@@ -190,15 +190,14 @@ class TVCache(object):
                 # get last 5 rss cache results
                 recent_results = self.provider.recent_results
                 found_recent_results = 0  # A counter that keeps track of the number of items that have been found in cache
-                stop_at = 3  # Configuration as an error margin, to stop at. The lower the number, the faster it will stop parsing items
 
                 cl = []
                 index = 0
                 for index, item in enumerate(data['entries'] or []):
-                    if recent_results and item['link'] in {cache_item['link'] for cache_item in recent_results}:
+                    if item['link'] in {cache_item['link'] for cache_item in recent_results}:
                         found_recent_results += 1
 
-                    if found_recent_results >= stop_at:
+                    if found_recent_results >= self.provider.stop_at:
                         logger.log(u'Hit the old cached items, not parsing any more for: {0}'.format
                                    (self.provider_id), logger.ERROR)
                         break
@@ -206,7 +205,7 @@ class TVCache(object):
                         ci = self._parseItem(item)
                         if ci is not None:
                             cl.append(ci)
-                    except UnicodeDecodeError, e:
+                    except UnicodeDecodeError:
                         continue
 
                 cache_db_con = self._get_db()

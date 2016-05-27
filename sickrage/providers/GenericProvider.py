@@ -71,7 +71,10 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         self.supports_backlog = True
         self.url = ''
         self.urls = {}
+
+        # Paramaters for reducting the daily search results parsing
         self.max_recent_items = 5
+        self.stop_at = 3
 
         shuffle(self.bt_cache_urls)
 
@@ -522,10 +525,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
     @property
     def recent_results(self):
-        if sickbeard.provider_recent_results.get(self.get_id()):
-            return sickbeard.provider_recent_results.get(self.get_id())
-        else:
-            return []
+        return sickbeard.provider_recent_results.get(self.get_id(), [])
 
     @recent_results.setter
     def recent_results(self, items):
@@ -537,5 +537,5 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             for item in items:
                 if item['link'] not in {cache_item['link'] for cache_item in recent_results[self.get_id()]}:
                     add_to_list += [item]
-            recent_results[self.get_id()] = add_to_list + recent_results[self.get_id()]
-            recent_results[self.get_id()][:self.max_recent_items]
+            results = add_to_list + recent_results[self.get_id()]
+            recent_results[self.get_id()] = results[:self.max_recent_items]
