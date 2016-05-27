@@ -195,7 +195,7 @@ class TVCache(object):
                 cl = []
                 index = 0
                 for index, item in enumerate(data['entries'] or []):
-                    if recent_results and item.get('link').strip() in [cached_item['link'].strip() for cached_item in recent_results]:
+                    if recent_results and item['link'] in {cache_item['link'] for cache_item in recent_results}:
                         found_recent_results += 1
 
                     if found_recent_results >= stop_at:
