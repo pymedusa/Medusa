@@ -205,8 +205,9 @@ class TVCache(object):
                         ci = self._parseItem(item)
                         if ci is not None:
                             cl.append(ci)
-                    except UnicodeDecodeError:
-                        continue
+                    except UnicodeDecodeError as e:
+                        logger.log(u'Unicode decoding error, missed parsing item from provider {0}: {1!r}'.format
+                                   (self.provider.name, e), logger.WARNING)
 
                 cache_db_con = self._get_db()
                 if cl:
