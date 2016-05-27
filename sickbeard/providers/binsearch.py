@@ -114,7 +114,7 @@ class BinSearchCache(tvcache.TVCache):
                     cl.append(ci)
 
         if cl:
-            cache_db_con = self._getDB()
+            cache_db_con = self._get_db()
             cache_db_con.mass_action(cl)
 
     def _checkAuth(self, data):

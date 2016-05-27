@@ -327,7 +327,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         if cl:
             # pylint: disable=protected-access
             # Access to a protected member of a client class
-            db = self.cache._getDB()
+            db = self.cache._get_db()
             db.mass_action(cl)
 
         return results
