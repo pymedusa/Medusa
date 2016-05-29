@@ -56,7 +56,7 @@ class ConfigPostProcessing(Config):
                            naming_abd_pattern=None, naming_strip_year=None,
                            naming_custom_sports=None, naming_sports_pattern=None,
                            naming_custom_anime=None, naming_anime_pattern=None,
-                           naming_anime_multi_ep=None, autopostprocessor_frequency=None):
+                           naming_anime_multi_ep=None, autopostprocesser_frequency=None):
 
         results = []
 
@@ -64,7 +64,7 @@ class ConfigPostProcessing(Config):
             results += ['Unable to create directory {dir}, '
                         'dir not changed.'.format(dir=ek(os.path.normpath, tv_download_dir))]
 
-        config.change_AUTOPOSTPROCESSOR_FREQUENCY(autopostprocessor_frequency)
+        config.change_AUTOPOSTPROCESSER_FREQUENCY(autopostprocesser_frequency)
         config.change_PROCESS_AUTOMATICALLY(process_automatically)
 
         if unpack:

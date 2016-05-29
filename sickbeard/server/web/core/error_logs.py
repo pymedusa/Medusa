@@ -133,7 +133,7 @@ class ErrorLogs(WebRoot):
             'SHOWQUEUE-REFRESH': 'Search Queue (Refresh)',
             'SHOWQUEUE-FORCE-REFRESH': 'Search Queue (Forced Refresh)',
             'FINDPROPERS': 'Find Propers',
-            'POSTPROCESSOR': 'Post Processor',
+            'POSTPROCESSER': 'PostProcesser',
             'FINDSUBTITLES': 'Find Subtitles',
             'TRAKTCHECKER': 'Trakt Checker',
             'EVENT': 'Event',
