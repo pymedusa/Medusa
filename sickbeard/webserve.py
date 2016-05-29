@@ -4288,7 +4288,8 @@ class ConfigSearch(Config):
                    torrent_dir=None, torrent_username=None, torrent_password=None, torrent_host=None,
                    torrent_label=None, torrent_label_anime=None, torrent_path=None, torrent_verify_cert=None,
                    torrent_seed_time=None, torrent_paused=None, torrent_high_bandwidth=None,
-                   torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, preferred_words=None, undesired_words=None, trackers_list=None, require_words=None, ignored_subs_list=None, ignore_und_subs=None):
+                   torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, preferred_words=None, undesired_words=None, trackers_list=None, require_words=None, ignored_subs_list=None, ignore_und_subs=None,
+                   cache_trimming=None, max_cache_age=None):
 
         results = []
 
@@ -4301,6 +4302,9 @@ class ConfigSearch(Config):
         config.change_DAILYSEARCH_FREQUENCY(dailysearch_frequency)
 
         config.change_BACKLOG_FREQUENCY(backlog_frequency)
+
+        sickbeard.CACHE_TRIMMING = config.checkbox_to_value(cache_trimming)
+        sickbeard.MAX_CACHE_AGE = float(max_cache_age)
         sickbeard.BACKLOG_DAYS = try_int(backlog_days, 7)
 
         sickbeard.USE_NZBS = config.checkbox_to_value(use_nzbs)
