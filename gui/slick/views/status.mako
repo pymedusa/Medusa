@@ -21,7 +21,7 @@
         'Show Queue': 'showQueueScheduler',
         'Search Queue': 'searchQueueScheduler',
         'Proper Finder': 'properFinderScheduler',
-        'Post Process': 'autoPostProcessorScheduler',
+        'Post Process': 'autoPostProcesserScheduler',
         'Subtitles Finder': 'subtitlesFinderScheduler',
         'Trakt Checker': 'traktCheckerScheduler',
     }
