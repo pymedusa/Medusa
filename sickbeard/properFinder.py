@@ -142,7 +142,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     logger.log(u'Skipping non-proper: {name}'.format(name=proper.name))
                     continue
 
-                name = self._genericName(proper.name)
+                name = self._genericName(proper.name, remove=False)
                 if name not in propers:
                     logger.log(u'Found new proper result: {name}'.format
                                (name=proper.name), logger.DEBUG)
@@ -265,37 +265,31 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # make sure the episode has been downloaded before
             main_db_con = db.DBConnection()
             history_results = main_db_con.select(
-                "SELECT resource FROM history " +
-                "WHERE showid = ? AND season = ? AND episode = ? AND quality = ? AND date >= ? " +
+                "SELECT resource FROM history "
+                "WHERE showid = ? "
+                "AND season = ? "
+                "AND episode = ? "
+                "AND quality = ? "
+                "AND date >= ? "
                 "AND (action LIKE '%2' OR action LIKE '%4')",
                 [cur_proper.indexerid, cur_proper.season, cur_proper.episode, cur_proper.quality,
                  history_limit.strftime(History.date_format)])
 
             # make sure that none of the existing history downloads are the same proper we're trying to download
-            clean_proper_name = self._genericName(remove_non_release_groups(cur_proper.name, clean_proper=True))
-            is_same = False
-
-            for cur_result in history_results:
-                # if the result exists in history already we need to skip it
-                proper_from_history = self._genericName(remove_non_release_groups(cur_result["resource"], clean_proper=True))
-                if proper_from_history == clean_proper_name:
-                    is_same = True
-                    break
-
-            if is_same:
-                logger.log(u"This proper '{result}' is already in history, skipping it".format(result=cur_proper.name), logger.DEBUG)
+            # if the result exists in history already we need to skip it
+            clean_proper_name = self._genericName(cur_proper.name, clean_proper=True)
+            if any(clean_proper_name == self._genericName(cur_result[b'resource'], clean_proper=True)
+                   for cur_result in history_results):
+                logger.log(u'This proper {result!r} is already in history, skipping it'.format
+                           (result=cur_proper.name), logger.DEBUG)
                 continue
             else:
                 # make sure that none of the existing history downloads are the same proper we're trying to download
-                clean_proper_name = self._genericName(remove_non_release_groups(cur_proper.name))
-                is_same = False
-                for cur_result in history_results:
-                    # if the result exists in history already we need to skip it
-                    if self._genericName(remove_non_release_groups(cur_result["resource"])) == clean_proper_name:
-                        is_same = True
-                        break
-                if is_same:
-                    logger.log(u"This proper '{result}' is already in history, skipping it".format(result=cur_proper.name), logger.DEBUG)
+                clean_proper_name = self._genericName(cur_proper.name)
+                if any(clean_proper_name == self._genericName(cur_result[b'resource'])
+                       for cur_result in history_results):
+                    logger.log(u'This proper {result!r} is already in history, skipping it'.format
+                               (result=cur_proper.name), logger.DEBUG)
                     continue
 
                 # get the episode object
@@ -321,7 +315,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 
     @staticmethod
-    def _genericName(name):
+    def _genericName(name, **kwargs):
+        if kwargs.pop('remove', True):
+            name = remove_non_release_groups(name, clean_proper=kwargs.pop('clean_proper', False))
         return name.replace(".", " ").replace("-", " ").replace("_", " ").lower()
 
     @staticmethod
