@@ -39,6 +39,10 @@ from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 
 
+# Keep a list of per provider of recent provider search results
+recent_results = {}
+
+
 class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
     NZB = 'nzb'
     TORRENT = 'torrent'
@@ -525,11 +529,10 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
     @property
     def recent_results(self):
-        return sickbeard.provider_recent_results.get(self.get_id(), [])
+        return recent_results.get(self.get_id(), [])
 
     @recent_results.setter
     def recent_results(self, items):
-        recent_results = sickbeard.provider_recent_results
         if not recent_results.get(self.get_id()):
             recent_results.update({self.get_id(): []})
         if items:
