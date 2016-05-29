@@ -722,15 +722,14 @@ class SubtitlesFinder(object):
 
                 if not isMediaFile(filename):
                     continue
-                
-                filename = os.path.basename(clear_non_release_groups(os.path.join(root, filename)))
 
-                if processTV.subtitles_enabled(filename) is False:
-                    logger.debug(u'Subtitle disabled for show: %s', filename)
+                video_path = clear_non_release_groups(os.path.join(root, filename))
+
+                if processTV.subtitles_enabled(video_path) is False:
+                    logger.debug(u'Subtitle disabled for show: %s', video_path)
                     continue
 
-                video_path = os.path.join(root, filename)
-                release_name = os.path.splitext(filename)[0]
+                release_name = os.path.splitext(os.path.basename(video_path))[0]
                 found_subtitles = download_best_subs(video_path, root, release_name, languages, subtitles=False,
                                                      embedded_subtitles=False, provider_pool=pool)
                 downloaded_languages = {s.language.opensubtitles for s in found_subtitles}
