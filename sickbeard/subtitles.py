@@ -665,11 +665,12 @@ def delete_unwanted_subtitles(dirpath, filename):
             logger.info(u"Couldn't delete subtitle: %s. Error: %s", filename, ex(error))
 
 
-def clear_non_release_groups(filepath):
+def clear_non_release_groups(filename, filepath):
     """Remove non release groups from the name of the given file path.
 
     It also renames/moves the file to the path
 
+    :param filename: the file name
     :param filepath: the file path
     :type filepath: str
     :return: the new file path
@@ -677,14 +678,14 @@ def clear_non_release_groups(filepath):
     """
     try:
         # Remove non release groups from video file. Needed to match subtitles
-        new_filepath = remove_non_release_groups(filepath)
-        if new_filepath != filepath:
-            os.rename(filepath, new_filepath)
-            filepath = new_filepath
+        new_filename = remove_non_release_groups(filename)
+        if new_filename != filename:
+            os.rename(os.path.join(filepath, filename), os.path.join(new_filepath, new_filename))
+            filename = new_filename
     except Exception as error:
         logger.debug(u"Couldn't remove non release groups from video file. Error: %s", ex(error))
 
-    return filepath
+    return filename
 
 
 class SubtitlesFinder(object):
@@ -723,7 +724,7 @@ class SubtitlesFinder(object):
                 if not isMediaFile(filename):
                     continue
                 
-                filename = clear_non_release_groups(os.path.join(root, filename))
+                filename = clear_non_release_groups(root, filename)
 
                 if processTV.subtitles_enabled(filename) is False:
                     logger.debug(u'Subtitle disabled for show: %s', filename)
