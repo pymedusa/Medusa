@@ -723,7 +723,7 @@ class SubtitlesFinder(object):
                 if not isMediaFile(filename):
                     continue
                 
-                filename = clear_non_release_groups(os.path.join(root, filename))
+                filename = os.path.basename(clear_non_release_groups(os.path.join(root, filename)))
 
                 if processTV.subtitles_enabled(filename) is False:
                     logger.debug(u'Subtitle disabled for show: %s', filename)
