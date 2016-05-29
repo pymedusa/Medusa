@@ -934,7 +934,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         CACHE_TRIMMING = bool(check_setting_int(CFG, 'General', 'cache_trimming', 0))
 
-        MAX_CACHE_AGE = check_setting_float(CFG, 'General', 'max_cache_age', 30.0)
+        MAX_CACHE_AGE = check_setting_int(CFG, 'General', 'max_cache_age', 30)
 
         AUTOPOSTPROCESSOR_FREQUENCY = check_setting_int(CFG, 'General', 'autopostprocessor_frequency',
                                                         DEFAULT_AUTOPOSTPROCESSOR_FREQUENCY)
@@ -1747,7 +1747,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['torrent_method'] = TORRENT_METHOD
     new_config['General']['usenet_retention'] = int(USENET_RETENTION)
     new_config['General']['cache_trimming'] = int(CACHE_TRIMMING)
-    new_config['General']['max_cache_age'] = float(MAX_CACHE_AGE)
+    new_config['General']['max_cache_age'] = int(MAX_CACHE_AGE)
     new_config['General']['autopostprocessor_frequency'] = int(AUTOPOSTPROCESSOR_FREQUENCY)
     new_config['General']['dailysearch_frequency'] = int(DAILYSEARCH_FREQUENCY)
     new_config['General']['backlog_frequency'] = int(BACKLOG_FREQUENCY)
