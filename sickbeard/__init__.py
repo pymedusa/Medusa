@@ -246,6 +246,8 @@ USE_TORRENTS = False
 NZB_METHOD = None
 NZB_DIR = None
 USENET_RETENTION = None
+CACHE_TRIMMING = None
+MAX_CACHE_AGE = None
 TORRENT_METHOD = None
 TORRENT_DIR = None
 DOWNLOAD_PROPERS = False
@@ -625,7 +627,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             PLEX_SERVER_HOST, PLEX_SERVER_TOKEN, PLEX_CLIENT_HOST, PLEX_SERVER_USERNAME, PLEX_SERVER_PASSWORD, PLEX_SERVER_HTTPS, MIN_BACKLOG_FREQUENCY, SKIP_REMOVED_FILES, ALLOWED_EXTENSIONS, \
             USE_EMBY, EMBY_HOST, EMBY_APIKEY, \
             showUpdateScheduler, __INITIALIZED__, INDEXER_DEFAULT_LANGUAGE, EP_DEFAULT_DELETED_STATUS, LAUNCH_BROWSER, TRASH_REMOVE_SHOW, TRASH_ROTATE_LOGS, SORT_ARTICLE, \
-            NEWZNAB_DATA, NZBS, NZBS_UID, NZBS_HASH, INDEXER_DEFAULT, INDEXER_TIMEOUT, USENET_RETENTION, TORRENT_DIR, \
+            NEWZNAB_DATA, NZBS, NZBS_UID, NZBS_HASH, INDEXER_DEFAULT, INDEXER_TIMEOUT, USENET_RETENTION, CACHE_TRIMMING, MAX_CACHE_AGE, TORRENT_DIR, \
             QUALITY_DEFAULT, FLATTEN_FOLDERS_DEFAULT, SUBTITLES_DEFAULT, STATUS_DEFAULT, STATUS_DEFAULT_AFTER, \
             GROWL_NOTIFY_ONSNATCH, GROWL_NOTIFY_ONDOWNLOAD, GROWL_NOTIFY_ONSUBTITLEDOWNLOAD, TWITTER_NOTIFY_ONSNATCH, TWITTER_NOTIFY_ONDOWNLOAD, TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD, USE_FREEMOBILE, FREEMOBILE_ID, FREEMOBILE_APIKEY, FREEMOBILE_NOTIFY_ONSNATCH, FREEMOBILE_NOTIFY_ONDOWNLOAD, FREEMOBILE_NOTIFY_ONSUBTITLEDOWNLOAD, \
             USE_TELEGRAM, TELEGRAM_ID, TELEGRAM_APIKEY, TELEGRAM_NOTIFY_ONSNATCH, TELEGRAM_NOTIFY_ONDOWNLOAD, TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD, \
@@ -929,6 +931,10 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         ALLOWED_EXTENSIONS = check_setting_str(CFG, 'General', 'allowed_extensions', ALLOWED_EXTENSIONS)
 
         USENET_RETENTION = check_setting_int(CFG, 'General', 'usenet_retention', 500)
+
+        CACHE_TRIMMING = bool(check_setting_int(CFG, 'General', 'cache_trimming', 0))
+
+        MAX_CACHE_AGE = check_setting_float(CFG, 'General', 'max_cache_age', 30.0)
 
         AUTOPOSTPROCESSER_FREQUENCY = check_setting_int(CFG, 'General', 'autopostprocesser_frequency',
                                                         DEFAULT_AUTOPOSTPROCESSER_FREQUENCY)
@@ -1740,6 +1746,8 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['nzb_method'] = NZB_METHOD
     new_config['General']['torrent_method'] = TORRENT_METHOD
     new_config['General']['usenet_retention'] = int(USENET_RETENTION)
+    new_config['General']['cache_trimming'] = int(CACHE_TRIMMING)
+    new_config['General']['max_cache_age'] = float(MAX_CACHE_AGE)
     new_config['General']['autopostprocesser_frequency'] = int(AUTOPOSTPROCESSER_FREQUENCY)
     new_config['General']['dailysearch_frequency'] = int(DAILYSEARCH_FREQUENCY)
     new_config['General']['backlog_frequency'] = int(BACKLOG_FREQUENCY)

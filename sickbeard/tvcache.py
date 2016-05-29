@@ -113,17 +113,31 @@ class TVCache(object):
         return self.providerDB
 
     def _clearCache(self):
-        # Clear only items older than 7 days
-        self._clearCacheItem()
-        #if self.shouldClearCache():
-        #    cache_db_con = self._getDB()
-        #    cache_db_con.action("DELETE FROM [" + self.providerID + "] WHERE 1")
+        """
+        Performs requalar cache cleaning as required
+        """
+        # if cache trimming is enabled
+        if sickbeard.CACHE_TRIMMING:
+            # trim items older than MAX_CACHE_AGE days
+            self.trim_cache(days=sickbeard.MAX_CACHE_AGE)
 
-    def _clearCacheItem(self):
-        cache_db_con = self._getDB()
-        today = int(time.mktime(datetime.datetime.today().timetuple()))
-        # Keep item in cache for 7 days
-        cache_db_con.action("DELETE FROM [" + self.providerID + "] WHERE time > ? ", [today + 7*86400]) # 86400 POSIX day (exact value)
+    def trim_cache(self, days=None):
+        """
+        Remove old items from cache
+
+        :param days: Number of days to retain
+        """
+        if days:
+            now = int(time.time())  # current timestamp
+            retention_period = now - (days * 86400)
+            logger.log(u'Removing cache entries older than {x} days from {provider}'.format
+                       (x=days, provider=self.providerID))
+            cache_db_con = self._getDB()
+            cache_db_con.action(
+                b'DELETE FROM [{provider}] '
+                b'WHERE time < ? '.format(provider=self.providerID),
+                [retention_period]
+            )
 
     def _get_title_and_url(self, item):
         return self.provider._get_title_and_url(item)  # pylint:disable=protected-access
@@ -302,9 +316,9 @@ class TVCache(object):
         return True
 
     def shouldClearCache(self):
-        # if daily search hasn't used our previous results yet then don't clear the cache
-        #if self.lastUpdate > self.lastSearch:
-            #return False
+        # # if daily search hasn't used our previous results yet then don't clear the cache
+        # if self.lastUpdate > self.lastSearch:
+        #     return False
 
         return False
 

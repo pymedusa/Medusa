@@ -134,6 +134,26 @@
                                     </span>
                                 </label>
                             </div><!-- delete failed -->
+                            <div class="field-pair">
+                                <label for="cache_trimming">
+                                    <span class="component-title">Cache Trimming</span>
+                                    <span class="component-desc">
+                                        <input id="cache_trimming" type="checkbox" name="cache_trimming" ${('', 'checked="checked"')[bool(sickbeard.CACHE_TRIMMING)]}/>
+                                        Enable trimming of provider cache<br />
+                                    </span>
+                                </label>
+                            </div><!-- cache trimming -->
+                            <div class="field-pair">
+                                <label for="max_cache_age">
+                                    <span class="component-title">Cache Retention</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="1" step="1" name="max_cache_age" id="max_cache_age" value="${sickbeard.MAX_CACHE_AGE}" class="form-control input-sm input75" autocapitalize="off" />
+                                        days<br />
+                                        <br />
+                                        Number of days to retain results in cache.  Results older than this will be removed if cache trimming is enabled.
+                                    </span>
+                                </label>
+                            </div><!-- max cache age -->
                             <input type="submit" class="btn config_submitter" value="Save Changes" />
                         </fieldset>
                     </div><!-- general settings -->
