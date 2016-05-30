@@ -21,7 +21,7 @@ class HomePostProcess(Home):
     # TODO: PR to NZBtoMedia so that we can rename dir to proc_dir, and type to proc_type.
     # Using names of builtins as var names is bad
     # pylint: disable=redefined-builtin
-    def processEpisode(self, dir=None, nzbName=None, jobName=None, quiet=None, process_method=None, force=None,
+    def processEpisode(self, proc_dir=None, nzbName=None, jobName=None, quiet=None, process_method=None, force=None,
                        is_priority=None, delete_on='0', failed='0', type='auto', *args, **kwargs):
         nzb_name = nzbName
 
@@ -38,13 +38,13 @@ class HomePostProcess(Home):
 
             return argument
 
-        if not dir:
+        if not proc_dir:
             return self.redirect('/home/postprocess/')
         else:
             nzb_name = ss(nzb_name) if nzb_name else nzb_name
 
             result = processTV.processDir(
-                ss(dir), nzb_name, process_method=process_method, force=argToBool(force),
+                ss(proc_dir), nzb_name, process_method=process_method, force=argToBool(force),
                 is_priority=argToBool(is_priority), delete_on=argToBool(delete_on), failed=argToBool(failed), proc_type=type
             )
 
