@@ -11,7 +11,7 @@
 % endif
 
 <div id="postProcess">
-    <form name="processForm" method="post" action="processEpisode" style="line-height: 40px;">
+    <form name="processForm" method="post" action="${srRoot}/home/postprocess/processEpisode" style="line-height: 40px;">
     <table>
         <input type="hidden" id="type" name="type" value="manual">
         <tr>
