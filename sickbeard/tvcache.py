@@ -199,7 +199,7 @@ class TVCache(object):
 
                     if found_recent_results >= self.provider.stop_at:
                         logger.log(u'Hit the old cached items, not parsing any more for: {0}'.format
-                                   (self.provider_id), logger.ERROR)
+                                   (self.provider_id), logger.DEBUG)
                         break
                     try:
                         ci = self._parseItem(item)
