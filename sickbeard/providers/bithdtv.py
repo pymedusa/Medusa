@@ -27,7 +27,7 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """BIT-HDTV Torrent provider"""
     def __init__(self):
 
         # Provider Init
@@ -54,6 +54,7 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         self.cache = tvcache.TVCache(self, min_time=10)  # Only poll BitHDTV every 10 minutes max
 
     def login(self):
+        """Login method used for logging in before doing search and torrent downloads"""
         if any(dict_from_cookiejar(self.session.cookies).values()):
             return True
 
@@ -76,6 +77,13 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         return True
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """BIT HDTV login method
+
+        @param search_string: A dict with mode (key) and the search value (value)
+        @param age: Not used
+        @param ep_obj: Not used
+        @return: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
