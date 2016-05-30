@@ -69,7 +69,7 @@ class ConfigSearch(Config):
         sickbeard.BACKLOG_DAYS = try_int(backlog_days, 7)
 
         sickbeard.CACHE_TRIMMING = config.checkbox_to_value(cache_trimming)
-        sickbeard.MAX_CACHE_AGE = float(max_cache_age)
+        sickbeard.MAX_CACHE_AGE = try_int(max_cache_age, 0)
 
         sickbeard.USE_NZBS = config.checkbox_to_value(use_nzbs)
         sickbeard.USE_TORRENTS = config.checkbox_to_value(use_torrents)
