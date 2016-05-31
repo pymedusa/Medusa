@@ -122,7 +122,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     post_data.update({'free': 'on'})
 
                 try:
-                    response = self.get_url(self.urls['search'], post_data=post_data)
+                    response = self.get_url(self.urls['search'], post_data=post_data, returns='response')
                     response.raise_for_status()
                 except RequestException as msg:
                     logger.log(u'Error while connecting to provider: {error}'.format(error=msg), logger.ERROR)
