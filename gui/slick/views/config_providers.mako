@@ -402,7 +402,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_password">
                                 <span class="component-title">Password:</span>
                                 <span class="component-desc">
-                                    <input type="password" name="${curTorrentProvider.get_id()}_password" id="${curTorrentProvider.get_id()}_password" value="${curTorrentProvider.password}" class="form-control input-sm input350" autocomplete="no" autocapitalize="off" />
+                                    <input type="password" name="${curTorrentProvider.get_id()}_password" id="${curTorrentProvider.get_id()}_password" value="${curTorrentProvider.password | h}" class="form-control input-sm input350" autocomplete="no" autocapitalize="off" />
                                 </span>
                             </label>
                         </div>

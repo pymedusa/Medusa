@@ -24,6 +24,8 @@
 # based on fuzemans work
 # https://github.com/RuudBurger/CouchPotatoServer/blob/develop/couchpotato/core/downloaders/rtorrent/main.py
 
+from __future__ import unicode_literals
+
 from rtorrent import RTorrent  # pylint: disable=import-error
 
 import sickbeard
@@ -32,13 +34,11 @@ from sickbeard import logger, ex
 from sickbeard.clients.generic import GenericClient
 
 
-class rTorrentAPI(GenericClient):  # pylint: disable=invalid-name
+class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
     def __init__(self, host=None, username=None, password=None):
-        super(rTorrentAPI, self).__init__(u'rTorrent', host, username, password)
+        super(RTorrentAPI, self).__init__('rTorrent', host, username, password)
 
     def _get_auth(self):
-        self.auth = None
-
         if self.auth is not None:
             return self.auth
 
@@ -61,10 +61,7 @@ class rTorrentAPI(GenericClient):  # pylint: disable=invalid-name
 
     def _add_torrent_uri(self, result):
 
-        if not self.auth:
-            return False
-
-        if not result:
+        if not (self.auth or result):
             return False
 
         try:
@@ -86,25 +83,17 @@ class rTorrentAPI(GenericClient):  # pylint: disable=invalid-name
 
             # Start torrent
             torrent.start()
-
-            return True
-
         except Exception as error:  # pylint: disable=broad-except
-            logger.log(u'Error while sending torrent: {error}'.format  # pylint: disable=no-member
+            logger.log('Error while sending torrent: {error}'.format  # pylint: disable=no-member
                        (error=ex(error)), logger.WARNING)
             return False
+        else:
+            return True
 
     def _add_torrent_file(self, result):
 
-        if not self.auth:
+        if not (self.auth or result):
             return False
-
-        if not result:
-            return False
-
-            # group_name = 'sb_test'.lower() ##### Use provider instead of _test
-            # if not self._set_torrent_ratio(group_name):
-            # return False
 
         # Send request to rTorrent
         try:
@@ -124,67 +113,30 @@ class rTorrentAPI(GenericClient):  # pylint: disable=invalid-name
             if sickbeard.TORRENT_PATH:
                 torrent.set_directory(sickbeard.TORRENT_PATH)
 
-            # Set Ratio Group
-            # torrent.set_visible(group_name)
-
             # Start torrent
             torrent.start()
-
+        except Exception as msg:  # pylint: disable=broad-except
+            logger.log('Error while sending torrent: {error}'.format  # pylint: disable=no-member
+                       (error=ex(msg)), logger.WARNING)
+            return False
+        else:
             return True
 
-        except Exception as error:  # pylint: disable=broad-except
-            logger.log(u'Error while sending torrent: {error}'.format  # pylint: disable=no-member
-                       (error=ex(error)), logger.WARNING)
-            return False
-
     def _set_torrent_ratio(self, name):
-
-        # if not name:
-        # return False
-        #
-        # if not self.auth:
-        # return False
-        #
-        # views = self.auth.get_views()
-        #
-        # if name not in views:
-        # self.auth.create_group(name)
-
-        # group = self.auth.get_group(name)
-
-        # ratio = int(float(sickbeard.TORRENT_RATIO) * 100)
-        #
-        # try:
-        # if ratio > 0:
-        #
-        # # Explicitly set all group options to ensure it is setup correctly
-        # group.set_upload('1M')
-        # group.set_min(ratio)
-        # group.set_max(ratio)
-        # group.set_command('d.stop')
-        # group.enable()
-        # else:
-        # # Reset group action and disable it
-        # group.set_command()
-        # group.disable()
-        #
-        # except:
-        # return False
-
         _ = name
 
         return True
 
-    def testAuthentication(self):
+    def test_authentication(self):
         try:
+            self.auth = None
             self._get_auth()
-
-            if self.auth is not None:
-                return True, u'Success: Connected and Authenticated'
-            else:
-                return False, u'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
         except Exception:  # pylint: disable=broad-except
-            return False, u'Error: Unable to connect to {name}'.format(name=self.name)
+            return False, 'Error: Unable to connect to {name}'.format(name=self.name)
+        else:
+            if self.auth is None:
+                return False, 'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
+            else:
+                return True, 'Success: Connected and Authenticated'
 
-
-api = rTorrentAPI()  # pylint: disable=invalid-name
+api = RTorrentAPI()  # pylint: disable=invalid-name

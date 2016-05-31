@@ -924,9 +924,9 @@ class GenericMetadata(object):
 
             name = showXML.findtext('title')
 
-            if showXML.findtext('tvdbid') is not None:
+            if showXML.findtext('tvdbid'):
                 indexer_id = int(showXML.findtext('tvdbid'))
-            elif showXML.findtext('id') is not None:
+            elif showXML.findtext('id'):
                 indexer_id = int(showXML.findtext('id'))
             else:
                 logger.log(u"Empty <id> or <tvdbid> field in NFO, unable to find a ID", logger.WARNING)
@@ -937,7 +937,7 @@ class GenericMetadata(object):
                 return empty_return
 
             indexer = None
-            if showXML.find('episodeguide/url') is not None:
+            if showXML.find('episodeguide/url'):
                 epg_url = showXML.findtext('episodeguide/url').lower()
                 if str(indexer_id) in epg_url:
                     if 'thetvdb.com' in epg_url:

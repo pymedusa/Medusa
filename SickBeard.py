@@ -43,8 +43,8 @@ Options:
                          is installed
 """
 
-from __future__ import unicode_literals
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import codecs
 import datetime
@@ -94,7 +94,7 @@ if os.path.isdir(OLD_TORNADO):
 import sickbeard
 from sickbeard import db, logger, network_timezones, failed_history, name_cache
 from sickbeard.tv import TVShow
-from sickbeard.webserveInit import SRWebServer
+from sickbeard.server.core import SRWebServer
 from sickbeard.event_queue import Events
 from configobj import ConfigObj  # pylint: disable=import-error
 

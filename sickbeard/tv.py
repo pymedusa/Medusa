@@ -2245,13 +2245,13 @@ class TVEpisode(object):  # pylint: disable=too-many-instance-attributes, too-ma
 
             season_format = sep = ep_sep = ep_format = None
 
-            season_ep_regex = r'''
+            season_ep_regex = r"""
                                 (?P<pre_sep>[ _.-]*)
                                 ((?:s(?:eason|eries)?\s*)?%0?S(?![._]?N))
                                 (.*?)
                                 (%0?E(?![._]?N))
                                 (?P<post_sep>[ _.-]*)
-                              '''
+                              """
             ep_only_regex = r'(E?%0?E(?![._]?N))'
 
             # try the normal way
