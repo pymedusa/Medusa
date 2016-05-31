@@ -24,11 +24,14 @@ import os
 import re
 import time
 import validators
-
 import sickbeard
+import datetime
+import traceback
+
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 from sickbeard.common import cpu_presets
+from dateutil import parser
 
 from sickrage.helper.common import convert_size, try_int
 from sickrage.helper.encoding import ek, ss
@@ -71,7 +74,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         # self.cap_movie_search = None
         # self.cap_audio_search = None
 
-        self.cache = tvcache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
+        self.cache = tvcache.TVCache(self, min_time=10)  # only poll newznab providers every 30 minutes max
 
     def configStr(self):
         """
@@ -270,8 +273,13 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
         """
         Searches indexer using the params in search_strings, either for latest releases, or a string/id search
-        Returns: list of results in dict form
+        :param search_strings: Search to perform
+        :param age: Not used for this provider
+        :param ep_obj: episode object
+
+        :return: A list of items found
         """
+
         results = []
         if not self._check_auth():
             return results
@@ -339,6 +347,8 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                         try:
                             title = item.title.get_text(strip=True)
                             download_url = None
+                            pubdate_raw = item.pubdate.get_text(strip=True)
+                            pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
                             if item.link:
                                 if validators.url(item.link.get_text(strip=True), require_tld=False):
                                     download_url = item.link.get_text(strip=True)
@@ -369,9 +379,10 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
                             size = convert_size(item_size) or -1
 
-                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
                             items.append(result)
                         except StandardError:
+                            logger.log(u"Failed parsing provider. Traceback: {0!r}".format(traceback.format_exc()), logger.ERROR)
                             continue
 
                 # Since we arent using the search string,

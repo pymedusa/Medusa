@@ -1,7 +1,5 @@
 # coding=utf-8
 #
-
-#
 # This file is part of SickRage.
 #
 # SickRage is free software: you can redistribute it and/or modify
@@ -19,8 +17,11 @@
 
 import re
 import traceback
+import datetime
+
 from requests.utils import dict_from_cookiejar
 from requests.compat import urljoin
+from dateutil import parser
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -88,12 +89,22 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
         return True
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals, too-many-statements
+        """
+        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
+        :param search_strings: Search to perform
+        :param age: Not used for this provider
+        :param ep_obj: Not used for this provider
+
+        :return: A list of items found
+        """
+
         results = []
         if not self.login():
             return results
 
         for mode in search_strings:
             items = []
+
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
@@ -154,6 +165,8 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                             cells = torrent_row('td')
                             seeders = try_int(cells[8].text.strip())
                             leechers = try_int(cells[9].text.strip())
+                            pubdate_raw = cells[6].find('span')['title']
+                            pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
@@ -165,14 +178,15 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
 
                             size = temp_anchor['data-filesize'] or -1
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
                             if mode != 'RSS':
                                 logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format
                                            (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
-                except Exception:
+                except StandardError:
                     logger.log(u"Failed parsing provider. Traceback: %s" % traceback.format_exc(), logger.ERROR)
+                    continue
 
             # For each search mode sort all the items by seeders
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)

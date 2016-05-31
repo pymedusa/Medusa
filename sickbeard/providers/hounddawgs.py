@@ -18,10 +18,13 @@
 
 import re
 import traceback
+import datetime
+
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
+from dateutil import parser
 
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
@@ -92,6 +95,15 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return True
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+        """
+        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
+        :param search_strings: Search to perform
+        :param age: Not used for this provider
+        :param ep_obj: Not used for this provider
+
+        :return: A list of items found
+        """
+
         results = []
         if not self.login():
             return results
@@ -99,6 +111,7 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         for mode in search_strings:
             items = []
             logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
@@ -153,8 +166,11 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                     size = convert_size(torrent_size) or -1
                                 seeders = try_int((result('td')[6]).text.replace(',', ''))
                                 leechers = try_int((result('td')[7]).text.replace(',', ''))
+                                pubdate_raw = pubdate = result.find("span", class_="time")['title']
+                                pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
-                            except (AttributeError, TypeError):
+                            except StandardError:
+                                logger.log(u"Failed parsing provider. Traceback: {0!r}".format(traceback.format_exc()), logger.ERROR)
                                 continue
 
                             if not title or not download_url:
@@ -167,7 +183,7 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                                (title, seeders), logger.DEBUG)
                                 continue
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': pubdate, 'hash': None}
                             if mode != 'RSS':
                                 logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 
