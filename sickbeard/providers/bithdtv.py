@@ -94,8 +94,9 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                with BS4Parser(response.text, 'html5lib') as html:
-                    torrent_table = html.find('table', width='750')
+                # Need the html.parser, as the html5parser has issues with this site.
+                with BS4Parser(response.text, 'html.parser') as html:
+                    torrent_table = html('table', width='750')[-1]  # Get the last table with a width of 750px.
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
                     # Continue only if at least one Release is found
@@ -155,29 +156,28 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         return results
 
+    def login(self):
+        """Login method used for logging in before doing search and torrent downloads"""
+        if any(dict_from_cookiejar(self.session.cookies).values()):
+            return True
 
-def login(self):
-    """Login method used for logging in before doing search and torrent downloads"""
-    if any(dict_from_cookiejar(self.session.cookies).values()):
+        login_params = {
+            'username': self.username.encode('utf-8'),
+            'password': self.password.encode('utf-8'),
+        }
+
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
+        if not response:
+            logger.log(u'Unable to connect to provider', logger.WARNING)
+            self.session.cookies.clear()
+            return False
+
+        if '<h2>Login failed!</h2>' in response:
+            logger.log(u'Invalid username or password. Check your settings', logger.WARNING)
+            self.session.cookies.clear()
+            return False
+
         return True
-
-    login_params = {
-        'username': self.username.encode('utf-8'),
-        'password': self.password.encode('utf-8'),
-    }
-
-    response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-    if not response:
-        logger.log(u'Unable to connect to provider', logger.WARNING)
-        self.session.cookies.clear()
-        return False
-
-    if '<h2>Login failed!</h2>' in response:
-        logger.log(u'Invalid username or password. Check your settings', logger.WARNING)
-        self.session.cookies.clear()
-        return False
-
-    return True
 
 
 provider = BithdtvProvider()
