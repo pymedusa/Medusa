@@ -146,7 +146,8 @@ class Manage(Home, WebRoot):
                     b'AND showid = ?'.format(statuses=','.join(['?'] * len(status_list))),
                     status_list + [cur_indexer_id]
                 )
-                all_eps = [str(x['season']) + 'x' + str(x['episode']) for x in all_eps_results]
+
+                all_eps = ['{season}x{episode}'.format(season=x[b'season'], episode=x[b'episode']) for x in all_eps_results]
                 to_change[cur_indexer_id] = all_eps
 
             self.setStatus(cur_indexer_id, '|'.join(to_change[cur_indexer_id]), newStatus, direct=True)
