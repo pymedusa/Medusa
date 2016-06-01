@@ -82,7 +82,7 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    search_params = {'q': '{0}+category:TV'.format(search_strings)}
+                    search_params = {'q': '{0} category:TV'.format(search_string)}
 
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
                 if not response.text:
