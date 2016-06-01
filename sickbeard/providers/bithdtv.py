@@ -16,7 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import re
+from __future__ import unicode_literals
+
+from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
@@ -31,7 +33,7 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
     def __init__(self):
 
         # Provider Init
-        TorrentProvider.__init__(self, "BITHDTV")
+        TorrentProvider.__init__(self, 'BITHDTV')
 
         # Credentials
         self.username = None
@@ -45,90 +47,73 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # URLs
         self.url = 'https://www.bit-hdtv.com/'
         self.urls = {
-            'login': self.url + 'takelogin.php',
-            'search': self.url + 'torrents.php',
+            'login': urljoin(self.url, 'takelogin.php'),
+            'search': urljoin(self.url, 'torrents.php'),
         }
+
         # Proper Strings
 
         # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # Only poll BitHDTV every 10 minutes max
 
-    def login(self):
-        """Login method used for logging in before doing search and torrent downloads"""
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
-        login_params = {
-            'username': self.username.encode('utf-8'),
-            'password': self.password.encode('utf-8'),
-        }
-
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-        if not response:
-            logger.log(u"Unable to connect to provider", logger.WARNING)
-            self.session.cookies.clear()
-            return False
-
-        if '<h2>Login failed!</h2>' in response:
-            logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
-            self.session.cookies.clear()
-            return False
-
-        return True
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
-        """BIT HDTV login method
+        """
+        BIT HDTV search and parsing
 
-        @param search_string: A dict with mode (key) and the search value (value)
-        @param age: Not used
-        @param ep_obj: Not used
-        @return: A list of search results (structure)
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
         """
         results = []
         if not self.login():
             return results
 
         # Search Params
-        search_params = {'cat': '12'} if 'Season' in search_strings else {'cat': '10'}
+        search_params = {
+            'cat': 10,
+        }
 
         # Units
         units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
 
         for mode in search_strings:
             items = []
-            logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
-                               logger.DEBUG)
-
                     search_params['search'] = search_string
 
-                search_params['cat'] = '12' if mode == 'Season' else '10'
+                if mode == 'Season':
+                    search_params['cat'] = 12
 
-                data = self.get_url(self.urls['search'], params=search_params, returns='text')
-                if not data:
-                    logger.log(u"No data returned from provider", logger.DEBUG)
+                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                if not response.text:
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                with BS4Parser(data, 'html.parser') as html:
+                with BS4Parser(response.text, 'html5lib') as html:
                     torrent_table = html.find('table', width='750')
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
                     # Continue only if at least one Release is found
                     if len(torrent_rows) < 2:
-                        logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
+                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
 
                     # Skip column headers
                     for result in torrent_rows[1:]:
+                        freeleech = result.get('bgcolor')
+                        if self.freeleech and not freeleech:
+                            continue
 
                         try:
-                            cells = result.find_all('td')
+                            cells = result('td')
+
                             title = cells[2].find('a')['title']
-                            download_url = result.find_all('td')[0].find('a')['href']
+                            download_url = cells[0].find('a')['href']
                             if not all([title, download_url]):
                                 continue
 
@@ -138,22 +123,26 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log(u"Discarding torrent because it doesn't meet the"
-                                               u" minimum seeders: {0}. Seeders: {1})".format
+                                    logger.log('Discarding torrent because it doesn\'t meet the'
+                                               ' minimum seeders: {0}. Seeders: {1})'.format
                                                (title, seeders), logger.DEBUG)
-                                continue
-
-                            freeleech = bool(result.get('bgcolor'))
-                            if self.freeleech and not freeleech:
                                 continue
 
                             torrent_size = '{size} {unit}'.format(size=cells[6].contents[0], unit=cells[6].contents[1].get_text())
 
                             size = convert_size(torrent_size, units=units) or -1
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': None
+                            }
                             if mode != 'RSS':
-                                logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
                                            (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
@@ -165,5 +154,30 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
             results += items
 
         return results
+
+
+def login(self):
+    """Login method used for logging in before doing search and torrent downloads"""
+    if any(dict_from_cookiejar(self.session.cookies).values()):
+        return True
+
+    login_params = {
+        'username': self.username.encode('utf-8'),
+        'password': self.password.encode('utf-8'),
+    }
+
+    response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
+    if not response:
+        logger.log(u'Unable to connect to provider', logger.WARNING)
+        self.session.cookies.clear()
+        return False
+
+    if '<h2>Login failed!</h2>' in response:
+        logger.log(u'Invalid username or password. Check your settings', logger.WARNING)
+        self.session.cookies.clear()
+        return False
+
+    return True
+
 
 provider = BithdtvProvider()
