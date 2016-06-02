@@ -105,7 +105,9 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
                             cells = result('td')
 
                             title = cells[1].find('a').get_text()
-                            download_url = cells[2].find('a')['href']
+                            magnet = cells[2].find('a')['href']
+                            download_url = '{magnet}{trackers}'.format(magnet=magnet,
+                                                                       trackers=self._custom_trackers)
                             if not all([title, download_url]):
                                 continue
 
