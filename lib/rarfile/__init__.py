@@ -1,6 +1,6 @@
 # rarfile.py
 #
-# Copyright (c) 2005-2014  Marko Kreen <markokr@gmail.com>
+# Copyright (c) 2005-2016  Marko Kreen <markokr@gmail.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -84,19 +84,34 @@ __all__ = ['is_rarfile', 'RarInfo', 'RarFile', 'RarExtFile']
 ##
 
 import sys, os, struct, errno
-from struct import pack, unpack
+from struct import pack, unpack, Struct
 from binascii import crc32
 from tempfile import mkstemp
 from subprocess import Popen, PIPE, STDOUT
 from datetime import datetime
+from io import RawIOBase
+from hashlib import sha1
 
 # only needed for encryped headers
 try:
-    from Crypto.Cipher import AES
     try:
-        from hashlib import sha1
+        from cryptography.hazmat.primitives.ciphers import algorithms, modes, Cipher
+        from cryptography.hazmat.backends import default_backend
+        class AES_CBC_Decrypt:
+            block_size = 16
+            def __init__(self, key, iv):
+                ciph = Cipher(algorithms.AES(key), modes.CBC(iv), default_backend())
+                self.dec = ciph.decryptor()
+            def decrypt(self, data):
+                return self.dec.update(data)
     except ImportError:
-        from sha import new as sha1
+        from Crypto.Cipher import AES
+        class AES_CBC_Decrypt:
+            block_size = 16
+            def __init__(self, key, iv):
+                self.dec = AES.new(key, AES.MODE_CBC, iv)
+            def decrypt(self, data):
+                return self.dec.decrypt(data)
     _have_crypto = 1
 except ImportError:
     _have_crypto = 0
@@ -105,56 +120,8 @@ except ImportError:
 if sys.hexversion < 0x3000000:
     # prefer 3.x behaviour
     range = xrange
-    # py2.6 has broken bytes()
-    def bytes(s, enc):
-        return str(s)
 else:
     unicode = str
-
-# see if compat bytearray() is needed
-try:
-    bytearray
-except NameError:
-    import array
-    class bytearray:
-        def __init__(self, val = ''):
-            self.arr = array.array('B', val)
-            self.append = self.arr.append
-            self.__getitem__ = self.arr.__getitem__
-            self.__len__ = self.arr.__len__
-        def decode(self, *args):
-            return self.arr.tostring().decode(*args)
-
-# Optimized .readinto() requires memoryview
-try:
-    memoryview
-    have_memoryview = 1
-except NameError:
-    have_memoryview = 0
-
-# Struct() for older python
-try:
-    from struct import Struct
-except ImportError:
-    class Struct:
-        def __init__(self, fmt):
-            self.format = fmt
-            self.size = struct.calcsize(fmt)
-        def unpack(self, buf):
-            return unpack(self.format, buf)
-        def unpack_from(self, buf, ofs = 0):
-            return unpack(self.format, buf[ofs : ofs + self.size])
-        def pack(self, *args):
-            return pack(self.format, *args)
-
-# file object superclass
-try:
-    from io import RawIOBase
-except ImportError:
-    class RawIOBase(object):
-        def close(self):
-            pass
-
 
 ##
 ## Module configuration.  Can be tuned after importing.
@@ -294,9 +261,9 @@ RAR_M5 = 0x35
 ## internal constants
 ##
 
-RAR_ID = bytes("Rar!\x1a\x07\x00", 'ascii')
-ZERO = bytes("\0", 'ascii')
-EMPTY = bytes("", 'ascii')
+RAR_ID = b"Rar!\x1a\x07\x00"
+ZERO = b"\0"
+EMPTY = b""
 
 S_BLK_HDR = Struct('<HBHH')
 S_FILE_HDR = Struct('<LLBLLBBHL')
@@ -465,7 +432,7 @@ class RarInfo(object):
         return False
 
     def needs_password(self):
-        return self.flags & RAR_FILE_PASSWORD
+        return (self.flags & RAR_FILE_PASSWORD) > 0
 
 
 class RarFile(object):
@@ -503,6 +470,7 @@ class RarFile(object):
 
         self._info_list = []
         self._info_map = {}
+        self._parse_error = None
         self._needs_password = False
         self._password = None
         self._crc_check = crc_check
@@ -638,6 +606,8 @@ class RarFile(object):
             return self._open_clear(inf)
         elif use_hack:
             return self._open_hack(inf, psw)
+        elif is_filelike(self.rarfile):
+            return self._open_unrar_membuf(self.rarfile, inf, psw)
         else:
             return self._open_unrar(self.rarfile, inf, psw)
 
@@ -786,7 +756,9 @@ class RarFile(object):
         self._fd = fd
         id = fd.read(len(RAR_ID))
         if id != RAR_ID:
-            raise NotRarFile("Not a Rar archive: "+self.rarfile)
+            if isinstance(self.rarfile, (str, unicode)):
+                raise NotRarFile("Not a Rar archive: {}".format(self.rarfile))
+            raise NonRarFile("Not a Rar archive")
 
         volume = 0  # first vol (.rar) is 0
         more_vols = 0
@@ -1183,12 +1155,34 @@ class RarFile(object):
 
         return self._decode_comment(cmt)
 
+    # write in-memory archive to temp file - needed for solid archives
+    def _open_unrar_membuf(self, memfile, inf, psw):
+        memfile.seek(0, 0)
+
+        tmpfd, tmpname = mkstemp(suffix='.rar')
+        tmpf = os.fdopen(tmpfd, "wb")
+
+        try:
+            BSIZE = 32*1024
+            while True:
+                buf = memfile.read(BSIZE)
+                if not buf:
+                    break
+                tmpf.write(buf)
+            tmpf.close()
+        except:
+            tmpf.close()
+            os.unlink(tmpname)
+            raise
+        return self._open_unrar(tmpname, inf, psw, tmpname)
+
     # extract using unrar
     def _open_unrar(self, rarfile, inf, psw = None, tmpfile = None):
         if is_filelike(rarfile):
             raise ValueError("Cannot use unrar directly on memory buffer")
         cmd = [UNRAR_TOOL] + list(OPEN_ARGS)
         add_password_arg(cmd, psw)
+        cmd.append("--")
         cmd.append(rarfile)
 
         # not giving filename avoids encoding related problems
@@ -1564,23 +1558,22 @@ class PipeReader(RarExtFile):
                 pass
             self.tempfile = None
 
-    if have_memoryview:
-        def readinto(self, buf):
-            """Zero-copy read directly into buffer."""
-            cnt = len(buf)
-            if cnt > self.remain:
-                cnt = self.remain
-            vbuf = memoryview(buf)
-            res = got = 0
-            while got < cnt:
-                res = self.fd.readinto(vbuf[got : cnt])
-                if not res:
-                    break
-                if self.crc_check:
-                    self.CRC = crc32(vbuf[got : got + res], self.CRC)
-                self.remain -= res
-                got += res
-            return got
+    def readinto(self, buf):
+        """Zero-copy read directly into buffer."""
+        cnt = len(buf)
+        if cnt > self.remain:
+            cnt = self.remain
+        vbuf = memoryview(buf)
+        res = got = 0
+        while got < cnt:
+            res = self.fd.readinto(vbuf[got : cnt])
+            if not res:
+                break
+            if self.crc_check:
+                self.CRC = crc32(vbuf[got : got + res], self.CRC)
+            self.remain -= res
+            got += res
+        return got
 
 
 class DirectReader(RarExtFile):
@@ -1674,39 +1667,38 @@ class DirectReader(RarExtFile):
             self.cur_avail = cur.add_size
             return True
 
-    if have_memoryview:
-        def readinto(self, buf):
-            """Zero-copy read directly into buffer."""
-            got = 0
-            vbuf = memoryview(buf)
-            while got < len(buf):
-                # next vol needed?
-                if self.cur_avail == 0:
-                    if not self._open_next():
-                        break
-
-                # lenght for next read
-                cnt = len(buf) - got
-                if cnt > self.cur_avail:
-                    cnt = self.cur_avail
-
-                # read into temp view
-                res = self.fd.readinto(vbuf[got : got + cnt])
-                if not res:
+    def readinto(self, buf):
+        """Zero-copy read directly into buffer."""
+        got = 0
+        vbuf = memoryview(buf)
+        while got < len(buf):
+            # next vol needed?
+            if self.cur_avail == 0:
+                if not self._open_next():
                     break
-                if self.crc_check:
-                    self.CRC = crc32(vbuf[got : got + res], self.CRC)
-                self.cur_avail -= res
-                self.remain -= res
-                got += res
-            return got
+
+            # length for next read
+            cnt = len(buf) - got
+            if cnt > self.cur_avail:
+                cnt = self.cur_avail
+
+            # read into temp view
+            res = self.fd.readinto(vbuf[got : got + cnt])
+            if not res:
+                break
+            if self.crc_check:
+                self.CRC = crc32(vbuf[got : got + res], self.CRC)
+            self.cur_avail -= res
+            self.remain -= res
+            got += res
+        return got
 
 
 class HeaderDecrypt:
     """File-like object that decrypts from another file"""
     def __init__(self, f, key, iv):
         self.f = f
-        self.ciph = AES.new(key, AES.MODE_CBC, iv)
+        self.ciph = AES_CBC_Decrypt(key, iv)
         self.buf = EMPTY
 
     def tell(self):
@@ -1814,7 +1806,7 @@ def rar_decompress(vers, meth, data, declen=0, flags=0, crc=0, psw=None, salt=No
     flags |= RAR_LONG_BLOCK
 
     # file header
-    fname = bytes('data', 'ascii')
+    fname = b'data'
     date = 0
     mode = 0x20
     fhdr = S_FILE_HDR.pack(len(data), declen, RAR_OS_MSDOS, crc,
