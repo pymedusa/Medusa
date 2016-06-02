@@ -906,7 +906,7 @@ class Home(WebRoot):
                                          cached_result[b'indexerid'],
                                          cached_result[b'season'],
                                          provider]):
-            return self._genericMessage('Error', 'Cached result doesn\'t have all needed info to snatch episode')
+            return self._genericMessage('Error', "Cached result doesn't have all needed info to snatch episode")
 
         if manual_search_type == 'season':
             try:
@@ -915,10 +915,10 @@ class Home(WebRoot):
                     b'SELECT episode '
                     b'FROM tv_episodes '
                     b'WHERE showid = ? AND season = ?',
-                    [cached_result['indexerid'], cached_result['season']]
+                    [cached_result[b'indexerid'], cached_result[b'season']]
                 )
             except Exception as msg:
-                error_message = 'Couldn\'t read episodes for season pack result. Error: {error}'.format(error=msg)
+                error_message = "Couldn't read episodes for season pack result. Error: {error}".format(error=msg)
                 logger.log(error_message)
                 return self._genericMessage('Error', error_message)
 
@@ -1176,7 +1176,7 @@ class Home(WebRoot):
                 for item in episode_status_result:
                     episode_history.append(dict(item))
         except Exception as msg:
-            logger.log('Couldn\'t read latest episode status. Error: {error}'.format(error=msg))
+            logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
 
         show_words = show_name_helpers.show_words(show_obj)
 
