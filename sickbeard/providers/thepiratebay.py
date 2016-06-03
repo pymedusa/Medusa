@@ -163,8 +163,6 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                         except StandardError:
                             continue
 
-            # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
 
         return results

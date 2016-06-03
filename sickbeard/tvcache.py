@@ -344,7 +344,7 @@ class TVCache(object):
 
         return False
 
-    def _addCacheEntry(self, name, url, seeders, leechers, size, pubdate, hash):
+    def _addCacheEntry(self, name, url, seeders, leechers, size, pubdate, torrent_hash, parse_result=None, indexer_id=0):
 
         try:
             parse_result = NameParser().parse(name)
@@ -383,7 +383,7 @@ class TVCache(object):
                 'INSERT OR REPLACE INTO [{0}]  (name, season, episodes, indexerid, url, time, quality, release_group, '
                 'version, seeders, leechers, size, pubdate, hash) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(self.provider_id),
                 [name, season, episodeText, parse_result.show.indexerid, url, curTimestamp, quality,
-                 release_group, version, seeders, leechers, size, pubdate, hash]]
+                 release_group, version, seeders, leechers, size, pubdate, torrent_hash]]
 
     def searchCache(self, episode, forced_search=False, downCurQuality=False):
         neededEps = self.findNeededEpisodes(episode, forced_search, downCurQuality)
