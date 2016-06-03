@@ -584,6 +584,10 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
                     else:
                         foundResults[cur_provider.name][curEp] = searchResults[curEp]
 
+                    # Sort the list by seeders if possible
+                    if cur_provider.provider_type == 'torrent':
+                        foundResults[cur_provider.name][curEp].sort(key=lambda d: int(d.seeders), reverse=True)
+
                 break
             elif not cur_provider.search_fallback or searchCount == 2:
                 break

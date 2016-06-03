@@ -140,10 +140,6 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
                     continue
 
-            # NOTE: searched_scene_season is always None?
-            if (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly' and searched_scene_season == episode.scene_season:
-                continue
-
             search_strings = []
             searched_scene_season = episode.scene_season
 
@@ -183,7 +179,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             (seeders, leechers) = self._get_result_info(item)
             size = self._get_size(item)
             pubdate = self._get_pubdate(item)
-            hash = self._get_hash(item)
+            torrent_hash = self._get_hash(item)
 
             try:
                 parse_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]).parse(title)
@@ -272,7 +268,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                 logger.log(u'Adding item from search to cache: %s' % title, logger.DEBUG)
                 # pylint: disable=protected-access
                 # Access to a protected member of a client class
-                ci = self.cache._addCacheEntry(title, url, seeders, leechers, size, pubdate, hash, parse_result=parse_result)
+                ci = self.cache._addCacheEntry(title, url, seeders, leechers, size, pubdate, torrent_hash, parse_result=parse_result)
 
                 if ci is not None:
                     cl.append(ci)

@@ -70,7 +70,7 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     search_params.pop('fl', '')
 
                 if mode != 'RSS':
-                    logger.log(u"Search string: " + search_string.strip(), logger.DEBUG)
+                    logger.log(u"Search string: {0}".format(search_string), logger.DEBUG)
                     search_params['search'] = search_string
                 else:
                     search_params.pop('search', '')
@@ -121,9 +121,6 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                         items.append(item)
                     except StandardError:
                         continue
-
-            # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
 
             results += items
 

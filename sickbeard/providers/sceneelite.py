@@ -137,15 +137,13 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                         if mode != "RSS":
                             logger.log("Found result: {0} with {1} seeders and {2} leechers".format
-                                      (title, seeders, leechers), logger.DEBUG)
+                                       (title, seeders, leechers), logger.DEBUG)
 
                         items.append(item)
 
                     except StandardError:
                         continue
-                        
-            # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
+
             results += items
 
         return results
