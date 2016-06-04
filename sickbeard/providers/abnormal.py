@@ -1,26 +1,26 @@
 # coding=utf-8
 # Author: adaur <adaur.underground@gmail.com>
 #
-
+# This file is part of Medusa.
 #
-# This file is part of SickRage.
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
 import re
+import traceback
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
@@ -86,7 +86,8 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
         # Search Params
         search_params = {
-            'cat[]': ['TV|SD|VOSTFR', 'TV|HD|VOSTFR', 'TV|SD|VF', 'TV|HD|VF', 'TV|PACK|FR', 'TV|PACK|VOSTFR', 'TV|EMISSIONS', 'ANIME'],
+            'cat[]': ['TV|SD|VOSTFR', 'TV|HD|VOSTFR', 'TV|SD|VF', 'TV|HD|VF',
+                      'TV|PACK|FR', 'TV|PACK|VOSTFR', 'TV|EMISSIONS', 'ANIME'],
             # Both ASC and DESC are available for sort direction
             'way': 'DESC'
         }
@@ -96,12 +97,12 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {}'.format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {}'.format(search_string.decode('utf-8')),
+                    logger.log('Search string: {0}'.format(search_string.decode('utf-8')),
                                logger.DEBUG)
 
                 # Sorting: Available parameters: ReleaseName, Seeders, Leechers, Snatched, Size
@@ -115,7 +116,7 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                     torrent_table = html.find(class_='torrent_table')
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
-                    # Continue only if at least one Release is found
+                    # Continue only if at least one release is found
                     if len(torrent_rows) < 2:
                         logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
@@ -131,7 +132,8 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
                         try:
                             title = cells[labels.index('Release')].get_text(strip=True)
-                            download_url = urljoin(self.url, cells[labels.index('DL')].find('a', class_='tooltip')['href'])
+                            download = cells[labels.index('DL')].find('a', class_='tooltip')['href']
+                            download_url = urljoin(self.url, download)
                             if not all([title, download_url]):
                                 continue
 
@@ -141,7 +143,8 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log('Discarding torrent because it doesn\'t meet the minimum seeders: {0}. Seeders: {1})'.format
+                                    logger.log("Discarding torrent because it doesn't meet the"
+                                               'minimum seeders: {0}. Seeders: {1})'.format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -149,13 +152,23 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                             torrent_size = cells[size_index].get_text()
                             size = convert_size(torrent_size, units=units) or -1
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': None
+                            }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
                                            (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
-                        except StandardError:
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
                             continue
 
             results += items

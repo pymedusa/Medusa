@@ -1,27 +1,28 @@
 # coding=utf-8
 # Author: Gonçalo M. (aka duramato/supergonkas) <supergonkas@gmail.com>
 #
-
+# This file is part of Medusa.
 #
-# This file is part of SickRage.
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import unicode_literals
 
 import traceback
+import sickbeard
+
 from bs4 import BeautifulSoup
 
-import sickbeard
 from sickbeard import logger, tvcache
 
 from sickrage.helper.common import convert_size, try_int
@@ -32,7 +33,7 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
     def __init__(self):
 
-        TorrentProvider.__init__(self, "BitSnoop")
+        TorrentProvider.__init__(self, 'BitSnoop')
 
         self.urls = {
             'index': 'http://bitsnoop.com',
@@ -52,13 +53,14 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches,too-many-locals
         results = []
+
         for mode in search_strings:
             items = []
-            logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
+                    logger.log('Search string: {0}'.format(search_string.decode('utf-8')),
                                logger.DEBUG)
 
                 try:
@@ -66,11 +68,11 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
                     data = self.get_url(search_url, returns='text')
                     if not data:
-                        logger.log(u"No data returned from provider", logger.DEBUG)
+                        logger.log('No data returned from provider', logger.DEBUG)
                         continue
 
                     if not data.startswith('<?xml'):
-                        logger.log(u'Expected xml but got something else, is your mirror failing?', logger.INFO)
+                        logger.log('Expected xml but got something else, is your mirror failing?', logger.INFO)
                         continue
 
                     data = BeautifulSoup(data, 'html5lib')
@@ -86,7 +88,7 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                             # because we want to use magnets if connecting direct to client
                             # so that proxies work.
                             download_url = item.enclosure['url']
-                            if sickbeard.TORRENT_METHOD != "blackhole" or 'torcache' not in download_url:
+                            if sickbeard.TORRENT_METHOD != 'blackhole' or 'torcache' not in download_url:
                                 download_url = item.find('magneturi').next.replace('CDATA', '').strip('[]') + self._custom_trackers
 
                             if not (title and download_url):
@@ -102,21 +104,32 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                         except (AttributeError, TypeError, KeyError, ValueError):
                             continue
 
-                            # Filter unseeded torrent
+                        # Filter unseeded torrent
                         if seeders < min(self.minseed, 1):
                             if mode != 'RSS':
-                                logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                logger.log("Discarding torrent because it doesn't meet the"
+                                           'minimum seeders: {0}. Seeders: {1})'.format
                                            (title, seeders), logger.DEBUG)
                             continue
 
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': info_hash}
+                        item = {
+                            'title': title,
+                            'link': download_url,
+                            'size': size,
+                            'seeders': seeders,
+                            'leechers': leechers,
+                            'pubdate': None,
+                            'hash': info_hash
+                        }
                         if mode != 'RSS':
-                            logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
+                            logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                       (title, seeders, leechers), logger.DEBUG)
 
                         items.append(item)
-
-                except (AttributeError, TypeError, KeyError, ValueError):
-                    logger.log(u"Failed parsing provider. Traceback: %r" % traceback.format_exc(), logger.ERROR)
+                except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                               (traceback.format_exc()), logger.ERROR)
+                    continue
 
             results += items
 
