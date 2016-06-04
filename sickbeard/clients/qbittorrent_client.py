@@ -18,9 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
+from requests.auth import HTTPDigestAuth
+
 import sickbeard
 from sickbeard.clients.generic import GenericClient
-from requests.auth import HTTPDigestAuth
 
 
 class qbittorrentAPI(GenericClient):
@@ -35,7 +38,7 @@ class qbittorrentAPI(GenericClient):
     @property
     def api(self):
         try:
-            self.url = self.host + 'version/api'
+            self.url = '{host}version/api'.format(host=self.host)
             version = int(self.session.get(self.url, verify=sickbeard.TORRENT_VERIFY_CERT).content)
         except Exception:
             version = 1
@@ -44,8 +47,11 @@ class qbittorrentAPI(GenericClient):
     def _get_auth(self):
 
         if self.api > 1:
-            self.url = self.host + 'login'
-            data = {'username': self.username, 'password': self.password}
+            self.url = '{host}login'.format(host=self.host)
+            data = {
+                'username': self.username,
+                'password': self.password,
+            }
             try:
                 self.response = self.session.post(self.url, data=data)
             except Exception:
@@ -65,44 +71,51 @@ class qbittorrentAPI(GenericClient):
 
     def _add_torrent_uri(self, result):
 
-        self.url = self.host + 'command/download'
-        data = {'urls': result.url}
+        self.url = '{host}command/download'.format(host=self.host)
+        data = {
+            'urls': result.url,
+        }
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
     def _add_torrent_file(self, result):
 
-        self.url = self.host + 'command/upload'
-        files = {'torrents': (result.name + '.torrent', result.content)}
+        self.url = '{host}command/upload'.format(host=self.host)
+        files = {
+            'torrents': (
+                '{result}.torrent'.format(result=result.name),
+                result.content,
+            ),
+        }
         return self._request(method='post', files=files, cookies=self.session.cookies)
 
     def _set_torrent_label(self, result):
 
-        label = sickbeard.TORRENT_LABEL
-        if result.show.is_anime:
-            label = sickbeard.TORRENT_LABEL_ANIME
+        label = sickbeard.TORRENT_LABEL_ANIME if result.show.is_anime else sickbeard.TORRENT_LABEL
 
         if self.api > 6 and label:
-            self.url = self.host + 'command/setLabel'
-            data = {'hashes': result.hash.lower(), 'label': label.replace(' ', '_')}
+            self.url = '{host}command/setLabel'.format(host=self.host)
+            data = {
+                'hashes': result.hash.lower(),
+                'label': label.replace(' ', '_'),
+            }
             return self._request(method='post', data=data, cookies=self.session.cookies)
         return None
 
     def _set_torrent_priority(self, result):
 
-        self.url = self.host + 'command/decreasePrio '
-        if result.priority == 1:
-            self.url = self.host + 'command/increasePrio'
-
-        data = {'hashes': result.hash.lower()}
+        self.url = '{host}command/{method}Prio'.format(host=self.host,
+                                                       method='increase' if result.priority == 1 else 'decrease')
+        data = {
+            'hashes': result.hash.lower(),
+        }
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
     def _set_torrent_pause(self, result):
-
-        self.url = self.host + 'command/resume'
-        if sickbeard.TORRENT_PAUSED:
-            self.url = self.host + 'command/pause'
-
-        data = {'hash': result.hash}
+        self.url = '{host}command/{state}'.format(host=self.host,
+                                                  state='pause' if sickbeard.TORRENT_PAUSED else 'resume')
+        data = {
+            'hash': result.hash,
+        }
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
 api = qbittorrentAPI()

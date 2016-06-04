@@ -195,19 +195,19 @@ def change_TV_DOWNLOAD_DIR(tv_download_dir):
     return True
 
 
-def change_AUTOPOSTPROCESSER_FREQUENCY(freq):
+def change_AUTOPOSTPROCESSOR_FREQUENCY(freq):
     """
     Change frequency of automatic postprocessing thread
     TODO: Make all thread frequency changers in config.py return True/False status
 
     :param freq: New frequency
     """
-    sickbeard.AUTOPOSTPROCESSER_FREQUENCY = try_int(freq, sickbeard.DEFAULT_AUTOPOSTPROCESSER_FREQUENCY)
+    sickbeard.AUTOPOSTPROCESSOR_FREQUENCY = try_int(freq, sickbeard.DEFAULT_AUTOPOSTPROCESSOR_FREQUENCY)
 
-    if sickbeard.AUTOPOSTPROCESSER_FREQUENCY < sickbeard.MIN_AUTOPOSTPROCESSER_FREQUENCY:
-        sickbeard.AUTOPOSTPROCESSER_FREQUENCY = sickbeard.MIN_AUTOPOSTPROCESSER_FREQUENCY
+    if sickbeard.AUTOPOSTPROCESSOR_FREQUENCY < sickbeard.MIN_AUTOPOSTPROCESSOR_FREQUENCY:
+        sickbeard.AUTOPOSTPROCESSOR_FREQUENCY = sickbeard.MIN_AUTOPOSTPROCESSOR_FREQUENCY
 
-    sickbeard.autoPostProcesserScheduler.cycleTime = datetime.timedelta(minutes=sickbeard.AUTOPOSTPROCESSER_FREQUENCY)
+    sickbeard.autoPostProcessorScheduler.cycleTime = datetime.timedelta(minutes=sickbeard.AUTOPOSTPROCESSOR_FREQUENCY)
 
 
 def change_DAILYSEARCH_FREQUENCY(freq):
@@ -390,16 +390,16 @@ def change_PROCESS_AUTOMATICALLY(process_automatically):
 
     sickbeard.PROCESS_AUTOMATICALLY = process_automatically
     if sickbeard.PROCESS_AUTOMATICALLY:
-        if not sickbeard.autoPostProcesserScheduler.enable:
-            logger.log(u"Starting POSTPROCESSER thread", logger.INFO)
-            sickbeard.autoPostProcesserScheduler.silent = False
-            sickbeard.autoPostProcesserScheduler.enable = True
+        if not sickbeard.autoPostProcessorScheduler.enable:
+            logger.log(u"Starting POSTPROCESSOR thread", logger.INFO)
+            sickbeard.autoPostProcessorScheduler.silent = False
+            sickbeard.autoPostProcessorScheduler.enable = True
         else:
-            logger.log(u"Unable to start POSTPROCESSER thread. Already running", logger.INFO)
+            logger.log(u"Unable to start POSTPROCESSOR thread. Already running", logger.INFO)
     else:
-        logger.log(u"Stopping POSTPROCESSER thread", logger.INFO)
-        sickbeard.autoPostProcesserScheduler.enable = False
-        sickbeard.autoPostProcesserScheduler.silent = True
+        logger.log(u"Stopping POSTPROCESSOR thread", logger.INFO)
+        sickbeard.autoPostProcessorScheduler.enable = False
+        sickbeard.autoPostProcessorScheduler.silent = True
 
 
 def CheckSection(CFG, sec):
@@ -577,6 +577,11 @@ def check_setting_float(config, cfg_name, item_name, def_val, silent=True):
 ################################################################################
 def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_log=False):
     # For passwords you must include the word `password` in the item_name and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
+    if not censor_log:
+        censor_level = sickbeard.common.privacy_levels['stupid']
+    else:
+        censor_level = sickbeard.common.privacy_levels[censor_log]
+    privacy_level = sickbeard.common.privacy_levels[sickbeard.PRIVACY_LEVEL]
     if bool(item_name.find('password') + 1):
         encryption_version = sickbeard.ENCRYPTION_VERSION
     else:
@@ -594,7 +599,7 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
             config[cfg_name] = {}
             config[cfg_name][item_name] = helpers.encrypt(my_val, encryption_version)
 
-    if censor_log or (cfg_name, item_name) in logger.censored_items.iteritems():
+    if privacy_level >= censor_level or (cfg_name, item_name) in logger.censored_items.iteritems():
         if not item_name.endswith('custom_url'):
             logger.censored_items[cfg_name, item_name] = my_val
 

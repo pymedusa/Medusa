@@ -29,11 +29,11 @@ session = helpers.make_session()
 
 
 def sendNZB(nzb):  # pylint:disable=too-many-return-statements, too-many-branches, too-many-statements
-    '''
+    """
     Sends an NZB to SABnzbd via the API.
 
     :param nzb: The NZBSearchResult object to send to SAB
-    '''
+    """
 
     category = sickbeard.SAB_CATEGORY
     if nzb.show.is_anime:
@@ -82,12 +82,12 @@ def sendNZB(nzb):  # pylint:disable=too-many-return-statements, too-many-branche
 
 
 def _checkSabResponse(jdata):
-    '''
+    """
     Check response from SAB
 
     :param jdata: Response from requests api call
     :return: a list of (Boolean, string) which is True if SAB is not reporting an error
-    '''
+    """
     if 'error' in jdata:
         logger.log(jdata['error'], logger.ERROR)
         return False, jdata['error']
@@ -96,7 +96,7 @@ def _checkSabResponse(jdata):
 
 
 def getSabAccesMethod(host=None):
-    '''
+    """
     Find out how we should connect to SAB
 
     :param host: hostname where SAB lives
@@ -104,7 +104,7 @@ def getSabAccesMethod(host=None):
     :param password: password to use
     :param apikey: apikey to use
     :return: (boolean, string) with True if method was successful
-    '''
+    """
     params = {'mode': 'auth', 'output': 'json'}
     url = urljoin(host, 'api')
     data = helpers.getURL(url, params=params, session=session, returns='json', verify=False)
@@ -115,7 +115,7 @@ def getSabAccesMethod(host=None):
 
 
 def testAuthentication(host=None, username=None, password=None, apikey=None):
-    '''
+    """
     Sends a simple API request to SAB to determine if the given connection information is connect
 
     :param host: The host where SAB is running (incl port)
@@ -123,7 +123,7 @@ def testAuthentication(host=None, username=None, password=None, apikey=None):
     :param password: The password to use for the HTTP request
     :param apikey: The API key to provide to SAB
     :return: A tuple containing the success boolean and a message
-    '''
+    """
 
     # build up the URL parameters
     params = {

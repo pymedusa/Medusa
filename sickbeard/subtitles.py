@@ -665,26 +665,27 @@ def delete_unwanted_subtitles(dirpath, filename):
             logger.info(u"Couldn't delete subtitle: %s. Error: %s", filename, ex(error))
 
 
-def clear_non_release_groups(filepath):
+def clear_non_release_groups(filepath, filename):
     """Remove non release groups from the name of the given file path.
 
     It also renames/moves the file to the path
 
     :param filepath: the file path
+    :param filename: the file name
     :type filepath: str
     :return: the new file path
     :rtype: str
     """
     try:
         # Remove non release groups from video file. Needed to match subtitles
-        new_filepath = remove_non_release_groups(filepath)
-        if new_filepath != filepath:
-            os.rename(filepath, new_filepath)
-            filepath = new_filepath
+        new_filename = remove_non_release_groups(filename)
+        if new_filename != filename:
+            os.rename(os.path.join(filepath, filename), os.path.join(filepath, new_filename))
+            filename = new_filename
     except Exception as error:
         logger.debug(u"Couldn't remove non release groups from video file. Error: %s", ex(error))
 
-    return filepath
+    return filename
 
 
 class SubtitlesFinder(object):
@@ -717,19 +718,19 @@ class SubtitlesFinder(object):
         run_post_process = False
         for root, _, files in os.walk(sickbeard.TV_DOWNLOAD_DIR, topdown=False):
             for filename in sorted(files):
-                filename = clear_non_release_groups(filename)
-
                 # Delete unwanted subtitles before downloading new ones
                 delete_unwanted_subtitles(root, filename)
 
                 if not isMediaFile(filename):
                     continue
+                
+                filename = clear_non_release_groups(root, filename)
+                video_path = os.path.join(root, filename)
 
-                if processTV.subtitles_enabled(filename) is False:
+                if processTV.subtitles_enabled(video_path) is False:
                     logger.debug(u'Subtitle disabled for show: %s', filename)
                     continue
 
-                video_path = os.path.join(root, filename)
                 release_name = os.path.splitext(filename)[0]
                 found_subtitles = download_best_subs(video_path, root, release_name, languages, subtitles=False,
                                                      embedded_subtitles=False, provider_pool=pool)

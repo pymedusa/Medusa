@@ -43,20 +43,12 @@ class NZBProvider(GenericProvider):
             size = item.get('links')[1].get('length', -1)
         except (AttributeError, IndexError, TypeError):
             size = -1
-
-        if not size:
-            logger.log(u'The size was not found in the provider response', logger.DEBUG)
-
         return try_int(size, -1)
 
     def _get_result_info(self, item):
         # Get seeders/leechers for Torznab
-        try:
-            seeders = item.get('seeders')
-            leechers = item.get('leechers')
-        except (AttributeError, IndexError, TypeError):
-            seeders = leechers = -1
-
+        seeders = item.get('seeders', -1)
+        leechers = item.get('leechers', -1)
         return try_int(seeders, -1), try_int(leechers, -1)
 
     def _get_storage_dir(self):
@@ -64,15 +56,6 @@ class NZBProvider(GenericProvider):
 
     def _get_pubdate(self, item):
         """
-        Return publish date of the item. If provider doesnt
-        have _get_pubdate function this will be used
+        Return publish date of the item.
         """
-        try:
-            pubdate = item.get('pubdate')
-        except (AttributeError, IndexError, TypeError):
-            pubdate = None
-
-        if not pubdate:
-            logger.log(u'The pubdate was not found in the provider response', logger.DEBUG)
-
-        return pubdate
+        return item.get('pubdate')

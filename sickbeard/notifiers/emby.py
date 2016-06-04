@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+import json
+
 from requests.compat import urlencode
 from six.moves.urllib.request import urlopen, Request
 from six.moves.urllib.error import URLError
@@ -26,11 +28,6 @@ import sickbeard
 
 from sickbeard import logger
 from sickrage.helper.exceptions import ex
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
 
 class Notifier(object):

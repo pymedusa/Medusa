@@ -33,12 +33,12 @@ from sickrage.helper.common import try_int
 
 
 def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-return-statements
-    '''
+    """
     Sends NZB to NZBGet client
 
     :param nzb: nzb object
     :param proper: True if this is a Proper download, False if not. Defaults to False
-    '''
+    """
     if sickbeard.NZBGET_HOST is None:
         logger.log('No NZBget host found in configuration. Please configure it.', logger.WARNING)
         return False

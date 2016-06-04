@@ -20,6 +20,7 @@
 
 import re
 from requests.compat import urljoin
+from requests.exceptions import RequestException
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
 
 from sickbeard import logger, tvcache
@@ -120,19 +121,25 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 if self.freeleech:
                     post_data.update({'free': 'on'})
 
-                parsedJSON = self.get_url(self.urls['search'], post_data=post_data, returns='json')
-                if not parsedJSON:
-                    logger.log(u"No data returned from provider", logger.DEBUG)
+                try:
+                    response = self.get_url(self.urls['search'], post_data=post_data, returns='response')
+                    response.raise_for_status()
+                except RequestException as msg:
+                    logger.log(u'Error while connecting to provider: {error}'.format(error=msg), logger.ERROR)
                     continue
 
                 try:
-                    torrents = parsedJSON.get('Fs', [])[0].get('Cn', {}).get('torrents', [])
-                except Exception:
+                    jdata = response.json()
+                except ValueError:  # also catches JSONDecodeError if simplejson is installed
+                    logger.log(u"Data returned from provider is not json", logger.ERROR)
+                    continue
+
+                torrents = jdata.get('Fs', [dict()])[0].get('Cn', {}).get('torrents', [])
+                if not torrents:
                     logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
                     continue
 
                 for torrent in torrents:
-
                     title = re.sub(r"\[.*\=.*\].*\[/.*\]", "", torrent['name']) if torrent['name'] else None
                     download_url = urljoin(self.urls['download'], '{}/{}'.format(torrent['id'], torrent['fname'])) if torrent['id'] and torrent['fname'] else None
 
