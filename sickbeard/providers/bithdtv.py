@@ -114,7 +114,7 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                             cells = result('td')
 
                             title = cells[2].find('a')['title']
-                            download_url = cells[0].find('a')['href']
+                            download_url = urljoin(self.url, cells[0].find('a')['href'])
                             if not all([title, download_url]):
                                 continue
 
