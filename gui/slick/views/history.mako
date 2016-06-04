@@ -138,7 +138,7 @@
                     <time datetime="${isoDate}" class="date">${airDate}</time>
                 </td>
                 <td class="tvShow">
-                    <span><a href="${srRoot}/home/displayShow?show=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)}${' <span class="quality Proper">Proper</span>' if guessit(hItem.actions[0].resource).get('proper_count') else ''}</a></span>
+                    <span><a href="${srRoot}/home/displayShow?show=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)}</a></span>
                 </td>
                 <td align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
                     % for cur_action in sorted(hItem.actions):
