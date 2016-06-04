@@ -6,8 +6,6 @@
     import re
     import time
 
-    from guessit import guessit
-
     from sickbeard import providers
     from sickbeard.sbdatetime import sbdatetime
 
@@ -74,7 +72,7 @@
                     <% isoDate = datetime.strptime(str(hItem.date), History.date_format).isoformat('T') %>
                     <time datetime="${isoDate}" class="date">${airDate}</time>
                 </td>
-                <td class="tvShow"><a href="${srRoot}/home/displayShow?show=${hItem.show_id}#S${hItem.season}E${hItem.episode}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${'<span class="quality Proper">Proper</span>' if guessit(hItem.resource).get('proper_count') else ''}</a></td>
+                <td class="tvShow"><a href="${srRoot}/home/displayShow?show=${hItem.show_id}#S${hItem.season}E${hItem.episode}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)}</a></td>
                 <td align="center" ${('', 'class="subtitles_column"')[composite.status == SUBTITLED]}>
                 % if composite.status == SUBTITLED:
                     <img width="16" height="11" style="vertical-align:middle;" src="${srRoot}/images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='${srRoot}/images/flags/unknown.png';">
