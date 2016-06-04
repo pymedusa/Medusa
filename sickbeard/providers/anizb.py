@@ -75,17 +75,17 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
 
                     data = self.get_url(search_url, returns='text')
                     if not data:
-                        logger.log(u'No data returned from provider', logger.DEBUG)
+                        logger.log('No data returned from provider', logger.DEBUG)
                         continue
 
                     if not data.startswith('<?xml'):
-                        logger.log(u'Expected xml but got something else, is your mirror failing?', logger.INFO)
+                        logger.log('Expected xml but got something else, is your mirror failing?', logger.INFO)
                         continue
 
                     data = BeautifulSoup(data, 'html5lib')
                     entries = data('item')
                     if not entries:
-                        logger.log(u'Returned xml contained no results', logger.INFO)
+                        logger.log('Returned xml contained no results', logger.INFO)
                         continue
 
                     for item in entries:
