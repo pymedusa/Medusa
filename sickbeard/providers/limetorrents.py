@@ -22,8 +22,9 @@ import re
 import requests
 import traceback
 
-from requests.compat import urljoin
 from contextlib2 import suppress
+
+from requests.compat import urljoin
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -128,16 +129,16 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     if self.confirmed and not verified:
                         continue
 
-                    titleinfo = result('a')
-                    info = titleinfo[1]['href']
-                    torrent_id = id_regex.search(info).group(1)
-
                     url = result.find('a', rel='nofollow')
-                    if not url:
+                    title_info = result('a')
+                    info = title_info[1]['href']
+                    if not all([url, title_info, info]):
                         continue
 
+                    title = title_info[1].get_text(strip=True)
+                    torrent_id = id_regex.search(info).group(1)
                     torrent_hash = hash_regex.search(url['href']).group(2)
-                    if not any([torrent_id, torrent_hash]):
+                    if not all([title, torrent_id, torrent_hash]):
                         continue
 
                     with suppress(requests.exceptions.Timeout):
@@ -145,10 +146,6 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                         self.session.get(self.urls['update'], timeout=0.1,
                                          params={'torrent_id': torrent_id,
                                                  'infohash': torrent_hash})
-
-                    title = titleinfo[1].get_text(strip=True)
-                    if not title:
-                        continue
 
                     # Remove comma as thousands separator from larger number like 2,000 seeders = 2000
                     seeders = try_int(cells[3].get_text(strip=True).replace(',', ''))
@@ -171,7 +168,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'hash': torrent_hash or ''
+                        'hash': torrent_hash
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
