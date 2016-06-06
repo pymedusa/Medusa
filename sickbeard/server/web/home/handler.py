@@ -1388,7 +1388,7 @@ class Home(WebRoot):
                         except CantRefreshShowException as msg:
                             errors.append('Unable to refresh this show:{error}'.format(error=msg))
                             # grab updated info from TVDB
-                            # showObj.loadEpisodesFromIndexer()
+                            # show_obj.loadEpisodesFromIndexer()
                             # rescan the episodes in the new folder
                     except NoNFOException:
                         errors.append('The folder at <tt>{location}</tt> doesn\'t contain a tvshow.nfo - '
@@ -1434,7 +1434,7 @@ class Home(WebRoot):
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
-    def erase_cache(self, showObj):
+    def erase_cache(self, show_obj):
 
         try:
             main_db_con = db.DBConnection('cache.db')
@@ -1452,36 +1452,36 @@ class Home(WebRoot):
                     main_db_con.action(
                         b'DELETE FROM \'{provider}\' '
                         b'WHERE indexerid = ?'.format(provider=cur_provider.get_id()),
-                        [showObj.indexerid]
+                        [show_obj.indexerid]
                     )
                 except Exception:
                     logger.log(u'Unable to delete cached results for provider {provider} for show: {show}'.format
-                               (provider=cur_provider, show=showObj.name), logger.DEBUG)
+                               (provider=cur_provider, show=show_obj.name), logger.DEBUG)
 
         except Exception:
             logger.log(u'Unable to delete cached results for show: {show}'.format
-                       (show=showObj.name), logger.DEBUG)
+                       (show=show_obj.name), logger.DEBUG)
 
     def togglePause(self, show=None):
-        error, show = Show.pause(show)
+        error, show_obj = Show.pause(show)
 
         if error is not None:
             return self._genericMessage('Error', error)
 
         ui.notifications.message('{show} has been {state}'.format
-                                 (show=show.name, state='paused' if show.paused else 'resumed'))
+                                 (show=show_obj.name, state='paused' if show_obj.paused else 'resumed'))
 
-        return self.redirect('/home/displayShow?show={show}'.format(show=show.indexerid))
+        return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
     def deleteShow(self, show=None, full=0):
         if show:
-            error, show = Show.delete(show, full)
+            error, show_obj = Show.delete(show, full)
 
             if error is not None:
                 return self._genericMessage('Error', error)
 
             ui.notifications.message('{show} has been {state} {details}'.format(
-                show=show.name,
+                show=show_obj.name,
                 state='trashed' if sickbeard.TRASH_REMOVE_SHOW else 'deleted',
                 details='(with all related media)' if full else '(media untouched)',
             ))
@@ -1489,16 +1489,16 @@ class Home(WebRoot):
             time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 
         # Remove show from 'RECENT SHOWS' in 'Shows' menu
-        sickbeard.SHOWS_RECENT = [x for x in sickbeard.SHOWS_RECENT if x['indexerid'] != show.indexerid]
+        sickbeard.SHOWS_RECENT = [x for x in sickbeard.SHOWS_RECENT if x['indexerid'] != show_obj.indexerid]
 
         # Don't redirect to the default page, so the user can confirm that the show was deleted
         return self.redirect('/home/')
 
     def refreshShow(self, show=None):
-        error, show = Show.refresh(show)
+        error, show_obj = Show.refresh(show)
 
         # This is a show validation error
-        if error is not None and show is None:
+        if error is not None and show_obj is None:
             return self._genericMessage('Error', error)
 
         # This is a refresh error
@@ -1507,7 +1507,7 @@ class Home(WebRoot):
 
         time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 
-        return self.redirect('/home/displayShow?show={show}'.format(show=show.indexerid))
+        return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
     def updateShow(self, show=None, force=0):
 
@@ -1528,7 +1528,7 @@ class Home(WebRoot):
         # just give it some time
         time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 
-        return self.redirect('/home/displayShow?show={show}'.format(show=show.indexerid))
+        return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
     def subtitleShow(self, show=None, force=0):
 
@@ -1545,7 +1545,7 @@ class Home(WebRoot):
 
         time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 
-        return self.redirect('/home/displayShow?show={show}'.format(show=show.indexerid))
+        return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
     def updateKODI(self, show=None):
         show_name = None
@@ -1567,7 +1567,7 @@ class Home(WebRoot):
             ui.notifications.error('Unable to contact one or more KODI host(s): {host}'.format(host=host))
 
         if show_obj:
-            return self.redirect('/home/displayShow?show={show}'.format(show=show.indexerid))
+            return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
         else:
             return self.redirect('/home/')
 
@@ -1592,7 +1592,7 @@ class Home(WebRoot):
             ui.notifications.error('Unable to contact Emby host: {host}'.format(host=sickbeard.EMBY_HOST))
 
         if show_obj:
-            return self.redirect('/home/displayShow?show={show}'.format(show=show.indexerid))
+            return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
         else:
             return self.redirect('/home/')
 
@@ -1796,7 +1796,7 @@ class Home(WebRoot):
         t = PageTemplate(rh=self, filename='testRename.mako')
         submenu = [{
             'title': 'Edit',
-            'path': 'home/editShow?show={show}'.format(show=show.indexerid),
+            'path': 'home/editShow?show={show}'.format(show=show_obj.indexerid),
             'icon': 'ui-icon ui-icon-pencil'
         }]
 
