@@ -19,7 +19,6 @@
 from __future__ import unicode_literals
 
 import re
-import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
@@ -27,10 +26,9 @@ from requests.utils import dict_from_cookiejar
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 
-from sickrage.helper.common import convert_size, try_int
+from sickrage.helper.common import convert_size
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 from sickbeard.show_name_helpers import allPossibleShowNames
-from sickrage.helper.common import convert_size, try_int
 
 
 class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attributes
@@ -43,8 +41,6 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         # Credentials
         self.username = None
         self.password = None
-        self.userid = None
-        self.passkey = None
 
         # Torrent Stats
         self.minseed = None
@@ -189,6 +185,9 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
                             'seeders': torrent_seeders, 'leechers': torrent_leechers, 'pubdate': None, 'hash': None}
                     items.append(item)
         return items
+
+    def _get_episode_search_strings(self, episode, add_string=''):
+        return []
 
     def _get_season_search_strings(self, episode):
         search_string = {
