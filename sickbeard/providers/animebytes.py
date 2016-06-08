@@ -53,6 +53,9 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
             'search': urljoin(self.url, 'torrents.php'),
         }
 
+        # season pack only provider
+        self.search_mode = 'sponly'
+
         # Proper Strings
         self.proper_strings = []
 
