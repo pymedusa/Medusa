@@ -696,7 +696,7 @@ class Manage(Home, WebRoot):
     def failedDownloads(self, limit=100, toRemove=None):
         failed_db_con = db.DBConnection('failed.db')
 
-        if limit:
+        if int(limit):
             sql_results = failed_db_con.select(
                 b'SELECT * '
                 b'FROM failed '
