@@ -172,9 +172,9 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
     @staticmethod
     def _episodeQuality(torrent_rows):  # pylint: disable=too-many-return-statements, too-many-branches
-        '''
+        """
             Return The quality from the scene episode HTML row.
-        '''
+        """
         file_quality = ''
 
         img_all = (torrent_rows('td'))[1]('img')
