@@ -116,7 +116,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             for search_string in search_params[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string.decode('utf-8')),
+                    logger.log('Search string: {0}'.format(search_string),
                                logger.DEBUG)
 
                 search_url = self.urls['search'] % (freeleech, search_string)

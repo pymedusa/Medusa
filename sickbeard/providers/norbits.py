@@ -20,6 +20,7 @@
 
 from __future__ import unicode_literals
 
+import traceback
 import json
 
 from requests.compat import urlencode
@@ -74,12 +75,12 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         for mode in search_params:
             items = []
-            logger.log('Search Mode: {}'.format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_params[mode]:
                 if mode != 'RSS':
-                    logger.log('Search string: {}'.format
-                               (search_string.decode('utf-8')), logger.DEBUG)
+                    logger.log('Search string: {0}'.format
+                               (search_string), logger.DEBUG)
 
                 post_data = {
                     'username': self.username,
@@ -103,32 +104,37 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                    'not parsing it', logger.ERROR)
 
                     for item in json_items.get('torrents', []):
-                        title = item.pop('name', '')
-                        download_url = '{}{}'.format(
-                            self.urls['download'],
-                            urlencode({'id': item.pop('id', ''), 'passkey': self.passkey}))
+                        try:
+                            title = item.pop('name', '')
+                            download_url = '{0}{1}'.format(
+                                self.urls['download'],
+                                urlencode({'id': item.pop('id', ''), 'passkey': self.passkey}))
 
-                        if not all([title, download_url]):
+                            if not all([title, download_url]):
+                                continue
+
+                            seeders = try_int(item.pop('seeders', 0))
+                            leechers = try_int(item.pop('leechers', 0))
+
+                            if seeders < min(self.minseed, 1):
+                                logger.log('Discarding torrent because it does not meet '
+                                           'the minimum seeders: {0}. Seeders: {1})'.format
+                                           (title, seeders), logger.DEBUG)
+                                continue
+
+                            info_hash = item.pop('info_hash', '')
+                            size = convert_size(item.pop('size', -1), -1)
+
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': info_hash}
+                            if mode != 'RSS':
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format(
+                                    title, seeders, leechers), logger.DEBUG)
+
+                            items.append(item)
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
                             continue
-
-                        seeders = try_int(item.pop('seeders', 0))
-                        leechers = try_int(item.pop('leechers', 0))
-
-                        if seeders < min(self.minseed, 1):
-                            logger.log('Discarding torrent because it does not meet '
-                                       'the minimum seeders: {0}. Seeders: {1})'.format
-                                       (title, seeders), logger.DEBUG)
-                            continue
-
-                        info_hash = item.pop('info_hash', '')
-                        size = convert_size(item.pop('size', -1), -1)
-
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': info_hash}
-                        if mode != 'RSS':
-                            logger.log('Found result: {0} with {1} seeders and {2} leechers'.format(
-                                title, seeders, leechers), logger.DEBUG)
-
-                        items.append(item)
 
             results += items
 

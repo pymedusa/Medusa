@@ -50,7 +50,7 @@ class elitetorrentProvider(TorrentProvider):
         results = []
         lang_info = '' if not ep_obj or not ep_obj.show else ep_obj.show.lang
 
-        '''
+        """
         Search query:
         http://www.elitetorrent.net/torrents.php?cat=4&modo=listado&orden=fecha&pag=1&buscar=fringe
 
@@ -59,7 +59,7 @@ class elitetorrentProvider(TorrentProvider):
         orden = fecha => order
         buscar => Search show
         pag = 1 => page number
-        '''
+        """
 
         search_params = {
             'cat': 4,
@@ -80,7 +80,7 @@ class elitetorrentProvider(TorrentProvider):
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string.decode('utf-8')),
+                    logger.log('Search string: {0}'.format(search_string),
                                logger.DEBUG)
 
                 search_string = re.sub(r'S0*(\d*)E(\d*)', r'\1x\2', search_string)

@@ -19,8 +19,10 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+
 from requests.compat import urljoin
 import re
+import traceback
 
 from sickbeard import helpers
 from sickbeard import logger, tvcache
@@ -69,7 +71,7 @@ class newpctProvider(TorrentProvider):
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {}'.format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
 
             # Only search if user conditions are true
             if self.onlyspasearch and lang_info != 'es' and mode != 'RSS':
@@ -80,7 +82,7 @@ class newpctProvider(TorrentProvider):
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    logger.log('Search string: {}'.format(search_string.decode('utf-8')),
+                    logger.log('Search string: {0}'.format(search_string),
                                logger.DEBUG)
 
                 search_params['q'] = search_string
@@ -119,10 +121,12 @@ class newpctProvider(TorrentProvider):
                             size = convert_size(torrent_size) or -1
                             item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                             if mode != 'RSS':
-                                logger.log('Found result: {}'.format(title), logger.DEBUG)
+                                logger.log('Found result: {0}'.format(title), logger.DEBUG)
 
                             items.append(item)
-                        except (AttributeError, TypeError):
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
                             continue
 
             results += items
@@ -163,14 +167,14 @@ class newpctProvider(TorrentProvider):
             if url_torrent.startswith('http'):
                 self.headers.update({'Referer': '/'.join(url_torrent.split('/')[:3]) + '/'})
 
-            logger.log('Downloading a result from {}'.format(url))
+            logger.log('Downloading a result from {0}'.format(url))
 
             if helpers.download_file(url_torrent, filename, session=self.session, headers=self.headers):
                 if self._verify_download(filename):
-                    logger.log('Saved result to {}'.format(filename), logger.INFO)
+                    logger.log('Saved result to {0}'.format(filename), logger.INFO)
                     return True
                 else:
-                    logger.log('Could not download {}'.format(url), logger.WARNING)
+                    logger.log('Could not download {0}'.format(url), logger.WARNING)
                     helpers.remove_file_failed(filename)
 
         if urls:
@@ -199,8 +203,8 @@ class newpctProvider(TorrentProvider):
         # Language
         title = re.sub(r'\[Spanish[^\[]*]', 'SPANISH AUDIO', title, flags=re.IGNORECASE)
         title = re.sub(r'\[Castellano[^\[]*]', 'SPANISH AUDIO', title, flags=re.IGNORECASE)
-        title = re.sub(ur'\[Español[^\[]*]', 'SPANISH AUDIO', title, flags=re.IGNORECASE)
-        title = re.sub(ur'\[AC3 5\.1 Español[^\[]*]', 'SPANISH AUDIO', title, flags=re.IGNORECASE)
+        title = re.sub(r'\[Español[^\[]*]', 'SPANISH AUDIO', title, flags=re.IGNORECASE)
+        title = re.sub(r'\[AC3 5\.1 Español[^\[]*]', 'SPANISH AUDIO', title, flags=re.IGNORECASE)
 
         title += '-NEWPCT'
 

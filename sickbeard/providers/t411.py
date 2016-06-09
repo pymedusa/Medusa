@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 from requests.auth import AuthBase
 import time
 import traceback
@@ -69,7 +71,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
 
         response = self.get_url(self.urls['login_page'], post_data=login_params, returns='json')
         if not response:
-            logger.log(u"Unable to connect to provider", logger.WARNING)
+            logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
         if response and 'token' in response:
@@ -79,7 +81,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
             self.session.auth = T411Auth(self.token)
             return True
         else:
-            logger.log(u"Token not found in authentication response", logger.WARNING)
+            logger.log('Token not found in authentication response', logger.WARNING)
             return False
 
     def search(self, search_params, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals, too-many-statements
@@ -89,11 +91,11 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
 
         for mode in search_params:
             items = []
-            logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
             for search_string in search_params[mode]:
 
                 if mode != 'RSS':
-                    logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
+                    logger.log('Search string: {0}'.format(search_string),
                                logger.DEBUG)
 
                 search_urlS = ([self.urls['search'] % (search_string, u) for u in self.subcategories], [self.urls['rss']])[mode == 'RSS']
@@ -104,13 +106,13 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
 
                     try:
                         if 'torrents' not in data and mode != 'RSS':
-                            logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
+                            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                             continue
 
                         torrents = data['torrents'] if mode != 'RSS' else data
 
                         if not torrents:
-                            logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
+                            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                             continue
 
                         for torrent in torrents:
@@ -120,7 +122,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                             try:
                                 title = torrent['name']
                                 torrent_id = torrent['id']
-                                download_url = (self.urls['download'] % torrent_id).encode('utf8')
+                                download_url = (self.urls['download'] % torrent_id)
                                 if not all([title, download_url]):
                                     continue
 
@@ -132,27 +134,28 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                                 # Filter unseeded torrent
                                 if seeders < min(self.minseed, 1):
                                     if mode != 'RSS':
-                                        logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
+                                        logger.log("Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
                                     continue
 
                                 if self.confirmed and not verified and mode != 'RSS':
-                                    logger.log(u"Found result " + title + " but that doesn't seem like a verified result so I'm ignoring it", logger.DEBUG)
+                                    logger.log("Found result {0} but that doesn't seem like a verified result so I'm ignoring it".format(title), logger.DEBUG)
                                     continue
 
                                 size = convert_size(torrent_size) or -1
-                                item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                                item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders,
+                                        'leechers': leechers, 'pubdate': None, 'hash': None}
                                 if mode != 'RSS':
-                                    logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
+                                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format(title, seeders, leechers), logger.DEBUG)
 
                                 items.append(item)
 
-                            except Exception:
-                                logger.log(u"Invalid torrent data, skipping result: %s" % torrent, logger.DEBUG)
-                                logger.log(u"Failed parsing provider. Traceback: %s" % traceback.format_exc(), logger.DEBUG)
+                            except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                                logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                           (traceback.format_exc()), logger.ERROR)
                                 continue
 
                     except Exception:
-                        logger.log(u"Failed parsing provider. Traceback: %s" % traceback.format_exc(), logger.ERROR)
+                        logger.log('Failed parsing provider. Traceback: %s' % traceback.format_exc(), logger.ERROR)
 
             results += items
 

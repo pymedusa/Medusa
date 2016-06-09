@@ -31,7 +31,7 @@ from bs4 import BeautifulSoup
 
 
 class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
-    '''Nzb Provider using the open api of anizb.org for daily (rss) and backlog/forced searches'''
+    """Nzb Provider using the open api of anizb.org for daily (rss) and backlog/forced searches"""
     def __init__(self):
 
         # Provider Init
@@ -52,11 +52,11 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
         self.cache = tvcache.TVCache(self)
 
     def _get_size(self, item):
-        '''Override the default _get_size to prevent it from extracting using it the default tags'''
+        """Override the default _get_size to prevent it from extracting using it the default tags"""
         return try_int(item.get('size'))
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
-        '''Start searching for anime using the provided search_strings. Used for backlog and daily'''
+        """Start searching for anime using the provided search_strings. Used for backlog and daily"""
         results = []
 
         if self.show and not self.show.is_anime:
@@ -67,8 +67,7 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string.decode('utf-8')),
-                               logger.DEBUG)
+                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
 
                 try:
                     search_url = (self.urls['rss'], self.urls['api'] + search_string)[mode != 'RSS']
@@ -109,6 +108,5 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
                                (traceback.format_exc()), logger.ERROR)
 
         return results
-
 
 provider = Anizb()

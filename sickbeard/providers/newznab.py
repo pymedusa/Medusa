@@ -125,7 +125,6 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 providers_dict[default.name].enable_daily = default.enable_daily
                 providers_dict[default.name].enable_backlog = default.enable_backlog
                 providers_dict[default.name].enable_manualsearch = default.enable_manualsearch
-                providers_dict[default.name].catIDs = default.catIDs
 
         return [provider for provider in providers_list if provider]
 
@@ -174,13 +173,13 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
         data = self.get_url(urljoin(self.url, 'api'), params=url_params, returns='text')
         if not data:
-            error_string = 'Error getting caps xml for [{}]'.format(self.name)
+            error_string = 'Error getting caps xml for [{0}]'.format(self.name)
             logger.log(error_string, logger.WARNING)
             return False, return_categories, error_string
 
         with BS4Parser(data, 'html5lib') as html:
             if not html.find('categories'):
-                error_string = 'Error parsing caps xml for [{}]'.format(self.name)
+                error_string = 'Error parsing caps xml for [{0}]'.format(self.name)
                 logger.log(error_string, logger.DEBUG)
                 return False, return_categories, error_string
 
@@ -276,12 +275,11 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         if not self._check_auth():
             return results
 
-        # gingadaddy has no caps.
-        if not self.caps and 'gingadaddy' not in self.url:
+        # For providers that don't have no caps, or for which the t=caps is not working.
+        if not self.caps and all(provider not in self.url for provider in ['gingadaddy', 'usenet-crawler']):
             self.get_newznab_categories(just_caps=True)
-
-        if not self.caps and 'gingadaddy' not in self.url:
-            return results
+            if not self.caps:
+                return results
 
         for mode in search_strings:
             torznab = False
@@ -312,10 +310,10 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                     search_params.pop('ep', '')
 
             items = []
-            logger.log('Search Mode: {}'.format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    logger.log('Search string: {}'.format(search_string.decode('utf-8')), logger.DEBUG)
+                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
 
                     if search_params['t'] != 'tvsearch':
                         search_params['q'] = search_string

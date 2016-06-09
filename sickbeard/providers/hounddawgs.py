@@ -105,7 +105,7 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string.decode('utf-8')),
+                    logger.log('Search string: {0}'.format(search_string),
                                logger.DEBUG)
 
                 self.search_params['searchstr'] = search_string

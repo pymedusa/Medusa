@@ -104,7 +104,7 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     search_url = self.urls['search'] % ''
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string.decode('utf-8')),
+                    logger.log('Search string: {0}'.format(search_string),
                                logger.DEBUG)
 
                 data = self.get_url(search_url, returns='text')

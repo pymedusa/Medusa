@@ -31,7 +31,7 @@ class WombleProvider(NZBProvider):
 
     def __init__(self):
 
-        NZBProvider.__init__(self, 'Womble\'s Index')
+        NZBProvider.__init__(self, "Womble's Index")
 
         self.public = True
 
