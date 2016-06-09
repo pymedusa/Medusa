@@ -18,14 +18,18 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import re
+import traceback
+
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 
-from sickrage.helper.exceptions import AuthException, ex
-from sickrage.helper.common import convert_size, try_int
+from sickrage.helper.exceptions import AuthException
+from sickrage.helper.common import convert_size
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
@@ -33,7 +37,7 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
     def __init__(self):
 
-        TorrentProvider.__init__(self, "IPTorrents")
+        TorrentProvider.__init__(self, 'IPTorrents')
 
         self.username = None
         self.password = None
@@ -54,7 +58,7 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
     def _check_auth(self):
 
         if not self.username or not self.password:
-            raise AuthException("Your authentication credentials for " + self.name + " are missing, check your config.")
+            raise AuthException('Your authentication credentials for {0} are missing, check your config.'.format(self.name))
 
         return True
 
@@ -69,17 +73,17 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.get_url(self.urls['login'], returns='text')
         response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
         if not response:
-            logger.log(u"Unable to connect to provider", logger.WARNING)
+            logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
         # Invalid username and password combination
         if re.search('Invalid username and password combination', response):
-            logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
 
         # You tried too often, please try again after 2 hours!
         if re.search('You tried too often', response):
-            logger.log(u"You tried too often, please try again after 2 hours! Disable IPTorrents for at least 2 hours", logger.WARNING)
+            logger.log('You tried too often, please try again after 2 hours! Disable IPTorrents for at least 2 hours', logger.WARNING)
             return False
 
         return True
@@ -93,11 +97,11 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         for mode in search_params:
             items = []
-            logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
             for search_string in search_params[mode]:
 
                 if mode != 'RSS':
-                    logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
+                    logger.log('Search string: {0}'.format(search_string),
                                logger.DEBUG)
 
                 # URL with 50 tv-show results, or max 150 if adjusted in IPTorrents profile
@@ -112,11 +116,11 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     data = re.sub(r'(?im)<button.+?<[\/]button>', '', data, 0)
                     with BS4Parser(data, 'html5lib') as html:
                         if not html:
-                            logger.log(u"No data returned from provider", logger.DEBUG)
+                            logger.log('No data returned from provider', logger.DEBUG)
                             continue
 
                         if html.find(text='No Torrents Found!'):
-                            logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
+                            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                             continue
 
                         torrent_table = html.find('table', attrs={'class': 'torrents'})
@@ -124,7 +128,7 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                         # Continue only if one Release is found
                         if len(torrents) < 2:
-                            logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
+                            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                             continue
 
                         for result in torrents[1:]:
@@ -135,28 +139,31 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                 leechers = int(result.find('td', attrs={'class': 'ac t_leechers'}).text)
                                 torrent_size = result('td')[5].text
                                 size = convert_size(torrent_size) or -1
-                            except (AttributeError, TypeError, KeyError):
-                                continue
 
-                            if not all([title, download_url]):
-                                continue
+                                if not all([title, download_url]):
+                                    continue
 
-                            # Filter unseeded torrent
-                            if seeders < min(self.minseed, 1):
+                                # Filter unseeded torrent
+                                if seeders < min(self.minseed, 1):
+                                    if mode != 'RSS':
+                                        logger.log("Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                                   (title, seeders), logger.DEBUG)
+                                    continue
+
+                                item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders,
+                                        'leechers': leechers, 'pubdate': None, 'hash': None}
                                 if mode != 'RSS':
-                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
-                                               (title, seeders), logger.DEBUG)
+                                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format(title, seeders, leechers), logger.DEBUG)
+
+                                items.append(item)
+                            except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                                logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                           (traceback.format_exc()), logger.ERROR)
                                 continue
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
-                            if mode != 'RSS':
-                                logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
-
-                            items.append(item)
-
-                except Exception as e:
-                    logger.log(u"Failed parsing provider. Error: %r" % ex(e), logger.ERROR)
-
+                except Exception:
+                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                               (traceback.format_exc()), logger.ERROR)
             results += items
 
         return results

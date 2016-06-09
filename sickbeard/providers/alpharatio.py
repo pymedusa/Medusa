@@ -115,7 +115,7 @@ class AlphaRatioProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
-                               (search=search_string.decode('utf-8')), logger.DEBUG)
+                               (search=search_string), logger.DEBUG)
 
                 search_params['searchstr'] = search_string
                 search_url = self.urls['search']

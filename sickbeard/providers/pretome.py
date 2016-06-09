@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import re
 import traceback
 from requests.compat import quote
@@ -26,7 +28,7 @@ from requests.utils import dict_from_cookiejar
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 
-from sickrage.helper.common import convert_size, try_int
+from sickrage.helper.common import convert_size
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
@@ -34,7 +36,7 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
     def __init__(self):
 
-        TorrentProvider.__init__(self, "Pretome")
+        TorrentProvider.__init__(self, 'Pretome')
 
         self.username = None
         self.password = None
@@ -50,7 +52,7 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         self.url = self.urls['base_url']
 
-        self.categories = "&st=1&cat%5B%5D=7"
+        self.categories = '&st=1&cat%5B%5D=7'
 
         self.proper_strings = ['PROPER', 'REPACK']
 
@@ -59,7 +61,7 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
     def _check_auth(self):
 
         if not self.username or not self.password or not self.pin:
-            logger.log(u"Invalid username or password or pin. Check your settings", logger.WARNING)
+            logger.log('Invalid username or password or pin. Check your settings', logger.WARNING)
 
         return True
 
@@ -73,11 +75,11 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
         if not response:
-            logger.log(u"Unable to connect to provider", logger.WARNING)
+            logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
         if re.search('Username or password incorrect', response):
-            logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
 
         return True
@@ -89,11 +91,11 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         for mode in search_params:
             items = []
-            logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
             for search_string in search_params[mode]:
 
                 if mode != 'RSS':
-                    logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
+                    logger.log('Search string: {0}'.format(search_string),
                                logger.DEBUG)
 
                 search_url = self.urls['search'] % (quote(search_string), self.categories)
@@ -105,26 +107,26 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                 try:
                     with BS4Parser(data, 'html5lib') as html:
                         # Continue only if one Release is found
-                        empty = html.find('h2', text="No .torrents fit this filter criteria")
+                        empty = html.find('h2', text='No .torrents fit this filter criteria')
                         if empty:
-                            logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
+                            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                             continue
 
                         torrent_table = html.find('table', attrs={'style': 'border: none; width: 100%;'})
                         if not torrent_table:
-                            logger.log(u"Could not find table of torrents", logger.ERROR)
+                            logger.log('Could not find table of torrents', logger.ERROR)
                             continue
 
                         torrent_rows = torrent_table('tr', attrs={'class': 'browse'})
 
                         for result in torrent_rows:
-                            cells = result('td')
-                            size = None
-                            link = cells[1].find('a', attrs={'style': 'font-size: 1.25em; font-weight: bold;'})
-
-                            torrent_id = link['href'].replace('details.php?id=', '')
-
                             try:
+                                cells = result('td')
+                                size = None
+                                link = cells[1].find('a', attrs={'style': 'font-size: 1.25em; font-weight: bold;'})
+
+                                torrent_id = link['href'].replace('details.php?id=', '')
+
                                 if link.get('title', ''):
                                     title = link['title']
                                 else:
@@ -139,27 +141,31 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                     torrent_size = cells[7].text
                                     size = convert_size(torrent_size) or -1
 
-                            except (AttributeError, TypeError):
-                                continue
+                                if not all([title, download_url]):
+                                    continue
 
-                            if not all([title, download_url]):
-                                continue
+                                # Filter unseeded torrent
+                                if seeders < min(self.minseed, 1):
+                                    if mode != 'RSS':
+                                        logger.log("Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                                   (title, seeders), logger.DEBUG)
+                                    continue
 
-                            # Filter unseeded torrent
-                            if seeders < min(self.minseed, 1):
+                                item = {'title': title, 'link': download_url, 'size': size, 'seeders':
+                                        seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                                 if mode != 'RSS':
-                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
-                                               (title, seeders), logger.DEBUG)
+                                    logger.log('Found result: %s with %s seeders and %s leechers' % (title, seeders, leechers), logger.DEBUG)
+
+                                items.append(item)
+
+                            except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                                logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                           (traceback.format_exc()), logger.ERROR)
                                 continue
-
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
-                            if mode != 'RSS':
-                                logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
-
-                            items.append(item)
 
                 except Exception:
-                    logger.log(u"Failed parsing provider. Traceback: %s" % traceback.format_exc(), logger.ERROR)
+                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                               (traceback.format_exc()), logger.ERROR)
 
             results += items
 
