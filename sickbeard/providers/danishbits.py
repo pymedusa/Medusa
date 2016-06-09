@@ -62,8 +62,8 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             return True
 
         login_params = {
-            'username': self.username.encode('utf-8'),
-            'password': self.password.encode('utf-8'),
+            'username': self.username,
+            'password': self.password,
             'keeplogged': 1,
             'langlang': '',
             'login': 'Login',
@@ -103,7 +103,7 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 result = td.img.get('title')
             if not result:
                 result = td.get_text(strip=True)
-            return result.encode('utf-8')
+            return result
 
         for mode in search_strings:
             items = []

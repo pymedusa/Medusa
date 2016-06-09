@@ -122,7 +122,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                             try:
                                 title = torrent['name']
                                 torrent_id = torrent['id']
-                                download_url = (self.urls['download'] % torrent_id).encode('utf8')
+                                download_url = (self.urls['download'] % torrent_id)
                                 if not all([title, download_url]):
                                     continue
 
