@@ -18,7 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import re
+import traceback
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
@@ -34,7 +37,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
     def __init__(self):
 
         # Provider Init
-        TorrentProvider.__init__(self, "TorrentDay")
+        TorrentProvider.__init__(self, 'TorrentDay')
 
         # Credentials
         self.username = None
@@ -79,11 +82,11 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
             response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
             if not response:
-                logger.log(u"Unable to connect to provider", logger.WARNING)
+                logger.log('Unable to connect to provider', logger.WARNING)
                 return False
 
             if re.search('You tried too often', response):
-                logger.log(u"Too many login access attempts", logger.WARNING)
+                logger.log('Too many login access attempts', logger.WARNING)
                 return False
 
             try:
@@ -96,7 +99,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             except Exception:
                 pass
 
-            logger.log(u"Unable to obtain cookie", logger.WARNING)
+            logger.log('Unable to obtain cookie', logger.WARNING)
             return False
 
     def search(self, search_params, age=0, ep_obj=None):  # pylint: disable=too-many-locals
@@ -106,11 +109,11 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         for mode in search_params:
             items = []
-            logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
             for search_string in search_params[mode]:
 
                 if mode != 'RSS':
-                    logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
+                    logger.log('Search string: {0}'.format(search_string),
                                logger.DEBUG)
 
                 search_string = '+'.join(search_string.split())
@@ -131,40 +134,45 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 try:
                     jdata = response.json()
                 except ValueError:  # also catches JSONDecodeError if simplejson is installed
-                    logger.log(u"Data returned from provider is not json", logger.ERROR)
+                    logger.log('Data returned from provider is not json', logger.ERROR)
                     continue
 
                 torrents = jdata.get('Fs', [dict()])[0].get('Cn', {}).get('torrents', [])
                 if not torrents:
-                    logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
+                    logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                     continue
 
                 for torrent in torrents:
-                    title = re.sub(r"\[.*\=.*\].*\[/.*\]", "", torrent['name']) if torrent['name'] else None
-                    download_url = urljoin(self.urls['download'], '{}/{}'.format(torrent['id'], torrent['fname'])) if torrent['id'] and torrent['fname'] else None
+                    try:
+                        title = re.sub(r'\[.*\=.*\].*\[/.*\]', '', torrent['name']) if torrent['name'] else None
+                        download_url = urljoin(self.urls['download'], '{}/{}'.format(torrent['id'], torrent['fname'])) if torrent['id'] and torrent['fname'] else None
 
-                    if not all([title, download_url]):
-                        continue
+                        if not all([title, download_url]):
+                            continue
 
-                    seeders = int(torrent['seed']) if torrent['seed'] else 1
-                    leechers = int(torrent['leech']) if torrent['leech'] else 0
+                        seeders = int(torrent['seed']) if torrent['seed'] else 1
+                        leechers = int(torrent['leech']) if torrent['leech'] else 0
 
-                    # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                        # Filter unseeded torrent
+                        if seeders < min(self.minseed, 1):
+                            if mode != 'RSS':
+                                logger.log("Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
+                            continue
+
+                        torrent_size = torrent['size']
+                        size = convert_size(torrent_size) or -1
+
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+
                         if mode != 'RSS':
-                            logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
-                        continue
+                            logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                       (title, seeders, leechers), logger.DEBUG)
 
-                    torrent_size = torrent['size']
-                    size = convert_size(torrent_size) or -1
-
-                    item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
-
-                    if mode != 'RSS':
-                        logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format
-                                   (title, seeders, leechers), logger.DEBUG)
-
-                    items.append(item)
+                        items.append(item)
+                    except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
+                            continue
 
             results += items
 

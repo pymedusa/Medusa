@@ -18,7 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import re
+import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
@@ -35,7 +38,7 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
     def __init__(self):
 
         # Provider Init
-        TorrentProvider.__init__(self, "Speedcd")
+        TorrentProvider.__init__(self, 'Speedcd')
 
         # Credentials
         self.username = None
@@ -70,11 +73,11 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
         if not response:
-            logger.log(u"Unable to connect to provider", logger.WARNING)
+            logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
         if re.search('Incorrect username or Password. Please try again.', response):
-            logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
 
         return True
@@ -115,12 +118,12 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         for mode in search_strings:
             items = []
-            logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
+                    logger.log('Search string: {0}'.format(search_string),
                                logger.DEBUG)
 
                 search_params['search'] = search_string
@@ -136,7 +139,7 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                     # Continue only if at least one Release is found
                     if len(torrent_rows) < 2:
-                        logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
+                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
 
                     labels = [process_column_header(label) for label in torrent_rows[0]('th')]
@@ -157,19 +160,22 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
+                                    logger.log("Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
                                 continue
 
                             torrent_size = cells[labels.index('Size')].get_text()
                             torrent_size = torrent_size[:-2] + ' ' + torrent_size[-2:]
                             size = convert_size(torrent_size, units=units) or -1
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders,
+                                    'leechers': leechers, 'pubdate': None, 'hash': None}
                             if mode != 'RSS':
-                                logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format(title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
-                        except StandardError:
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
                             continue
 
             results += items

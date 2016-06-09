@@ -19,15 +19,14 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-import re
 
+import traceback
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
-from sickbeard.bs4_parser import BS4Parser
 
-from sickrage.helper.common import convert_size, try_int
+from sickrage.helper.common import try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
@@ -36,7 +35,7 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
     def __init__(self):
 
         # Provider Init
-        TorrentProvider.__init__(self, "SceneElite")
+        TorrentProvider.__init__(self, 'SceneElite')
 
         # Credentials
         self.username = None
@@ -48,16 +47,16 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.freeleech = None
 
         # URLs
-        self.url = "https://sceneelite.org/"
+        self.url = 'https://sceneelite.org/'
         self.urls = {
-            "login": urljoin(self.url, "/api/v1/auth"),
-            "search": urljoin(self.url, "/api/v1/torrents"),
-            "download": urljoin(self.url, "/api/v1/torrents/download/"),
+            'login': urljoin(self.url, '/api/v1/auth'),
+            'search': urljoin(self.url, '/api/v1/torrents'),
+            'download': urljoin(self.url, '/api/v1/torrents/download/'),
         }
 
         # Proper Strings
-        self.proper_strings = ["PROPER", "REPACK", "REAL"]
-        cache_params = {"RSS": [""]}
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+        cache_params = {'RSS': ['']}
         # Cache
         self.cache = tvcache.TVCache(self, min_time=0.1, search_params=cache_params)
 
@@ -66,13 +65,13 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             return True
 
         login_params = {
-            "username": self.username,
-            "password": self.password
+            'username': self.username,
+            'password': self.password
         }
 
-        response = self.get_url(self.urls["login"], params=login_params, returns="json")
+        response = self.get_url(self.urls['login'], params=login_params, returns='json')
         if not response:
-            logger.log("Unable to connect to provider", logger.WARNING)
+            logger.log('Unable to connect to provider', logger.WARNING)
             return False
         return True
 
@@ -83,66 +82,68 @@ class SceneEliteProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         # Search Params
         search_params = {
-            "extendedSearch": 'false',
-            "hideOld": 'false',
-            "index": '0',
-            "limit": '100',
-            "order": 'asc',
-            "page": 'search',
-            "sort": 'n',
-            "categories[0]": 3,
-            "categories[1]": 6,
-            "categories[2]": 7
+            'extendedSearch': 'false',
+            'hideOld': 'false',
+            'index': '0',
+            'limit': '100',
+            'order': 'asc',
+            'page': 'search',
+            'sort': 'n',
+            'categories[0]': 3,
+            'categories[1]': 6,
+            'categories[2]': 7
         }
 
         for mode in search_strings:
             items = []
-            logger.log("Search Mode: {0}".format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
-                if mode != "RSS":
-                    logger.log("Search string: {0}".format
-                               (search_string.decode("utf-8")), logger.DEBUG)
-                    search_params["searchText"] = search_string
-                else: 
-                    search_params["page"] = 'last_seriebrowse'
+                if mode != 'RSS':
+                    logger.log('Search string: {0}'.format
+                               (search_string), logger.DEBUG)
+                    search_params['searchText'] = search_string
+                else:
+                    search_params['page'] = 'last_seriebrowse'
                 results = []
-                search_url = self.urls["search"]
+                search_url = self.urls['search']
                 try:
-                    jdata = self.get_url(search_url, params=search_params, returns="json") 
+                    jdata = self.get_url(search_url, params=search_params, returns='json')
                 except ValueError:
-                    logger.log("No data returned from provider", logger.DEBUG)
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
                 for torrent in jdata:
                     try:
-                        title = torrent.pop("name", "")
-                        id = str(torrent.pop("id", ""))
+                        title = torrent.pop('name', '')
+                        id = str(torrent.pop('id', ''))
                         if not id:
                             continue
-                        seeders = try_int(torrent.pop("seeders", ""), 1)
-                        leechers = try_int(torrent.pop("leechers", ""), 0)
-                        freeleech = torrent.pop("frileech")
+                        seeders = try_int(torrent.pop('seeders', ''), 1)
+                        leechers = try_int(torrent.pop('leechers', ''), 0)
+                        freeleech = torrent.pop('frileech')
                         if self.freeleech and freeleech != 1:
                             continue
-                        size = try_int(torrent.pop("size", ""), 0)
-                        download_url = self.urls["download"] + id
+                        size = try_int(torrent.pop('size', ''), 0)
+                        download_url = self.urls['download'] + id
 
                         # Filter unseeded torrent
                         if seeders < min(self.minseed, 1):
                             if mode != 'RSS':
-                                logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
+                                logger.log("Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
                             continue
 
                         item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
 
-                        if mode != "RSS":
-                            logger.log("Found result: {0} with {1} seeders and {2} leechers".format
+                        if mode != 'RSS':
+                            logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
                                        (title, seeders, leechers), logger.DEBUG)
 
                         items.append(item)
 
-                    except StandardError:
-                        continue
+                    except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
+                            continue
 
             results += items
 

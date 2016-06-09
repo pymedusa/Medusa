@@ -17,6 +17,7 @@
 
 from __future__ import unicode_literals
 import re
+import traceback
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -95,15 +96,15 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {}'.format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode == 'Season':
-                    search_string = re.sub(ur'(.*)S0?', ur'\1Series ', search_string)
+                    search_string = re.sub(r'(.*)S0?', r'\1Series ', search_string)
 
                 if mode != 'RSS':
-                    logger.log('Search string: {}'.format(search_string), logger.DEBUG)
+                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
 
                 search_params['keywords'] = search_string
                 data = self.get_url(self.urls['search'], post_data=search_params, returns='text')
@@ -144,17 +145,17 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
                             # Chop off tracker/channel prefix or we cant parse the result!
                             if mode != 'RSS' and search_params['keywords']:
-                                show_name_first_word = re.search(ur'^[^ .]+', search_params['keywords']).group()
+                                show_name_first_word = re.search(r'^[^ .]+', search_params['keywords']).group()
                                 if not title.startswith(show_name_first_word):
-                                    title = re.sub(ur'.*(' + show_name_first_word + '.*)', ur'\1', title)
+                                    title = re.sub(r'.*(' + show_name_first_word + '.*)', r'\1', title)
 
                             # Change title from Series to Season, or we can't parse
                             if mode == 'Season':
-                                title = re.sub(ur'(.*)(?i)Series', ur'\1Season', title)
+                                title = re.sub(r'(.*)(?i)Series', r'\1Season', title)
 
                             # Strip year from the end or we can't parse it!
-                            title = re.sub(ur'(.*)[\. ]?\(\d{4}\)', ur'\1', title)
-                            title = re.sub(ur'\s+', ur' ', title)
+                            title = re.sub(r'(.*)[\. ]?\(\d{4}\)', r'\1', title)
+                            title = re.sub(r'\s+', r' ', title)
 
                             torrent_size = torrent('td')[labels.index('Size')].get_text(strip=True)
                             size = convert_size(torrent_size, units=units) or -1
@@ -165,7 +166,9 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
                             item = {'title': title + '.hdtv.x264', 'link': download_url, 'size': size, 'seeders': seeders,  'leechers': leechers, 'pubdate': None, 'hash': None}
                             items.append(item)
-                        except StandardError:
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
                             continue
 
             results += items

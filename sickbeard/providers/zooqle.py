@@ -18,6 +18,7 @@
 
 from __future__ import unicode_literals
 
+import traceback
 from requests.compat import urljoin
 
 from sickbeard import logger, tvcache
@@ -141,7 +142,9 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
                                            (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
-                        except StandardError:
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
                             continue
 
             # For each search mode sort all the items by seeders if available

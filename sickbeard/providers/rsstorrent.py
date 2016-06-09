@@ -155,14 +155,14 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             if self.cookies:
                 cookie_validator = re.compile(r'^(\w+=\w+)(;\w+=\w+)*$')
                 if not cookie_validator.match(self.cookies):
-                    return False, 'Cookie is not correctly formatted: {}'.format(self.cookies)
+                    return False, 'Cookie is not correctly formatted: {0}'.format(self.cookies)
                 add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
 
             # pylint: disable=protected-access
             # Access to a protected member of a client class
             data = self.cache._getRSSData()['entries']
             if not data:
-                return False, 'No items found in the RSS feed {}'.format(self.url)
+                return False, 'No items found in the RSS feed {0}'.format(self.url)
 
             title, url = self._get_title_and_url(data[0])
 
@@ -180,12 +180,12 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     bdecode(torrent_file)
                 except Exception as error:
                     self.dumpHTML(torrent_file)
-                    return False, 'Torrent link is not a valid torrent file: {}'.format(ex(error))
+                    return False, 'Torrent link is not a valid torrent file: {0}'.format(ex(error))
 
             return True, 'RSS feed Parsed correctly'
 
         except Exception as error:
-            return False, 'Error when trying to load RSS: {}'.format(ex(error))
+            return False, 'Error when trying to load RSS: {0}'.format(ex(error))
 
     @staticmethod
     def dumpHTML(data):
@@ -197,10 +197,10 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             fileOut.close()
             helpers.chmodAsParent(dumpName)
         except IOError as error:
-            logger.log('Unable to save the file: {}'.format(ex(error)), logger.ERROR)
+            logger.log('Unable to save the file: {0}'.format(ex(error)), logger.ERROR)
             return False
 
-        logger.log('Saved custom_torrent html dump {} '.format(dumpName), logger.INFO)
+        logger.log('Saved custom_torrent html dump {0} '.format(dumpName), logger.INFO)
         return True
 
 

@@ -18,7 +18,9 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+
 import re
+import traceback
 
 import sickbeard
 from sickbeard import logger, tvcache
@@ -83,7 +85,7 @@ class OmgwtfnzbsProvider(NZBProvider):
             units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
             summary = item.get('summary')
             if summary:
-                size_match = re.search(ur'Size[^\d]*([0-9.]*.[A-Z]*)', summary)
+                size_match = re.search(r'Size[^\d]*([0-9.]*.[A-Z]*)', summary)
                 size = convert_size(size_match.group(1), units=units) or -1 if size_match else -1
 
         return try_int(size)
@@ -103,11 +105,11 @@ class OmgwtfnzbsProvider(NZBProvider):
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {}'.format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
             for search_string in search_strings[mode]:
                 search_params['search'] = search_string
                 if mode != 'RSS':
-                    logger.log('Search string: {}'.format(search_string.decode('utf-8')),
+                    logger.log('Search string: {0}'.format(search_string.decode('utf-8')),
                                logger.DEBUG)
 
                 data = self.get_url(self.urls['api'], params=search_params, returns='json')
@@ -119,11 +121,16 @@ class OmgwtfnzbsProvider(NZBProvider):
                     continue
 
                 for item in data:
-                    if not self._get_title_and_url(item):
-                        continue
+                    try:
+                        if not self._get_title_and_url(item):
+                            continue
 
-                    logger.log('Found result: {}'.format(item.get('title')), logger.DEBUG)
-                    items.append(item)
+                        logger.log('Found result: {0}'.format(item.get('title')), logger.DEBUG)
+                        items.append(item)
+                    except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
+                            continue
 
             results += items
 

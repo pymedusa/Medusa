@@ -17,7 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-from requests.compat import urljoin
+from __future__ import unicode_literals
+
+import traceback
 import validators
 
 from sickbeard import logger, tvcache
@@ -32,7 +34,7 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
     def __init__(self):
 
         # Provider Init
-        TorrentProvider.__init__(self, "TorrentProject")
+        TorrentProvider.__init__(self, 'TorrentProject')
 
         # Credentials
         self.public = True
@@ -63,59 +65,63 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
 
         for mode in search_strings:  # Mode = RSS, Season, Episode
             items = []
-            logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+            logger.log(u'Search Mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
-                               logger.DEBUG)
+                    logger.log(u'Search string: {0}'.format(search_string), logger.DEBUG)
 
                 search_params['s'] = search_string
 
                 if self.custom_url:
                     if not validators.url(self.custom_url):
-                        logger.log("Invalid custom url set, please check your settings", logger.WARNING)
+                        logger.log('Invalid custom url set, please check your settings', logger.WARNING)
                         return results
                     search_url = self.custom_url
                 else:
                     search_url = self.url
 
                 torrents = self.get_url(search_url, params=search_params, returns='json')
-                if not (torrents and "total_found" in torrents and int(torrents["total_found"]) > 0):
-                    logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
+                if not (torrents and 'total_found' in torrents and int(torrents['total_found']) > 0):
+                    logger.log(u'Data returned from provider does not contain any torrents', logger.DEBUG)
                     continue
 
-                del torrents["total_found"]
+                del torrents['total_found']
 
                 results = []
                 for i in torrents:
-                    title = torrents[i].get("title")
-                    seeders = try_int(torrents[i].get("seeds"), 1)
-                    leechers = try_int(torrents[i].get("leechs"), 0)
+                    try:
+                        title = torrents[i].get('title')
+                        seeders = try_int(torrents[i].get('seeds'), 1)
+                        leechers = try_int(torrents[i].get('leechs'), 0)
 
-                    # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                        # Filter unseeded torrent
+                        if seeders < min(self.minseed, 1):
+                            if mode != 'RSS':
+                                logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
+                            continue
+
+                        t_hash = torrents[i].get('torrent_hash')
+                        torrent_size = torrents[i].get('torrent_size')
+                        size = convert_size(torrent_size) or -1
+                        download_url = torrents[i].get('magnet') + self._custom_trackers
+
+                        if not all([title, download_url]):
+                            continue
+
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders,
+                                'leechers': leechers, 'pubdate': None, 'hash': t_hash}
+
                         if mode != 'RSS':
-                            logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
-                        continue
+                            logger.log(u'Found result: {0} with {1} seeders and {2} leechers'.format
+                                       (title, seeders, leechers), logger.DEBUG)
 
-                    t_hash = torrents[i].get("torrent_hash")
-                    torrent_size = torrents[i].get("torrent_size")
-                    size = convert_size(torrent_size) or -1
-                    download_url = torrents[i].get("magnet") + self._custom_trackers
-                    pubdate = '' #TBA
-
-                    if not all([title, download_url]):
-                        continue
-
-                    item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': t_hash}
-
-                    if mode != 'RSS':
-                        logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format
-                                   (title, seeders, leechers), logger.DEBUG)
-
-                    items.append(item)
+                        items.append(item)
+                    except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
+                            continue
 
             results += items
 

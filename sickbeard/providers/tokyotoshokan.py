@@ -18,7 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+
 import re
+import traceback
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -31,7 +34,7 @@ class TokyoToshokanProvider(TorrentProvider):  # pylint: disable=too-many-instan
 
     def __init__(self):
 
-        TorrentProvider.__init__(self, "TokyoToshokan")
+        TorrentProvider.__init__(self, 'TokyoToshokan')
 
         self.public = True
         self.supports_absolute_numbering = True
@@ -54,15 +57,15 @@ class TokyoToshokanProvider(TorrentProvider):  # pylint: disable=too-many-instan
 
         for mode in search_strings:
             items = []
-            logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
+                    logger.log('Search string: {0}'.format(search_string),
                                logger.DEBUG)
 
                 search_params = {
-                    "terms": search_string,
-                    "type": 1,  # get anime types
+                    'terms': search_string,
+                    'type': 1,  # get anime types
                 }
 
                 data = self.get_url(self.urls['search'], params=search_params, returns='text')
@@ -75,7 +78,7 @@ class TokyoToshokanProvider(TorrentProvider):  # pylint: disable=too-many-instan
 
                     # Continue only if one Release is found
                     if len(torrent_rows) < 2:
-                        logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
+                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
 
                     a = 1 if len(torrent_rows[0]('td')) < 2 else 0
@@ -93,24 +96,26 @@ class TokyoToshokanProvider(TorrentProvider):  # pylint: disable=too-many-instan
                             sl = re.match(r'S:(?P<seeders>\d+)L:(?P<leechers>\d+)C:(?:\d+)ID:(?:\d+)', stats.replace(' ', ''))
                             seeders = try_int(sl.group('seeders')) if sl else 0
                             leechers = try_int(sl.group('leechers')) if sl else 0
-                        except StandardError:
-                            continue
 
-                        if not all([title, download_url]):
-                            continue
+                            if not all([title, download_url]):
+                                continue
 
-                        # Filter unseeded torrent
-                        if seeders < min(self.minseed, 1):
+                            # Filter unseeded torrent
+                            if seeders < min(self.minseed, 1):
+                                if mode != 'RSS':
+                                    logger.log("Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                               (title, seeders), logger.DEBUG)
+                                continue
+
+                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
                             if mode != 'RSS':
-                                logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
-                                           (title, seeders), logger.DEBUG)
+                                logger.log('Found result: %s with %s seeders and %s leechers' % (title, seeders, leechers), logger.DEBUG)
+
+                            items.append(item)
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
                             continue
-
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
-                        if mode != 'RSS':
-                            logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
-
-                        items.append(item)
 
             results += items
 

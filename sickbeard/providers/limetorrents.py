@@ -170,9 +170,10 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                (title, seeders, leechers), logger.DEBUG)
                     items.append(item)
 
-                except StandardError:
-                    logger.log(u"Failed parsing provider. Traceback: {!r}".format(traceback.format_exc()), logger.ERROR)
-                    continue
+                except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
+                            continue
 
         return items
 
