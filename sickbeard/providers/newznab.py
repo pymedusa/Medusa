@@ -1,31 +1,33 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # Rewrite: Dustyn Gibson (miigotu) <miigotu@gmail.com>
-
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-from requests.compat import urljoin
+
 import os
 import re
 import time
 import validators
-
 import sickbeard
+import traceback
+
+from requests.compat import urljoin
+
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 from sickbeard.common import cpu_presets
@@ -367,9 +369,23 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
                             size = convert_size(item_size) or -1
 
-                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            result = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': None
+                            }
+                            if mode != 'RSS':
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                           (title, seeders, leechers), logger.DEBUG)
+
                             items.append(result)
-                        except StandardError:
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
                             continue
 
                 # Since we arent using the search string,
@@ -377,8 +393,6 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 if 'tvdbid' in search_params:
                     break
 
-            if torznab:
-                results.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
 
         return results

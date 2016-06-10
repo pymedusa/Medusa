@@ -1,25 +1,26 @@
 # coding=utf-8
 # Author: Dustyn Gibson <miigotu@gmail.com>
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
 import traceback
 import validators
+
 from requests.compat import urljoin
 from sickbeard.bs4_parser import BS4Parser
 
@@ -64,6 +65,7 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
         for mode in search_strings:
             items = []
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
 
                 search_params['q'] = search_string if mode != 'RSS' else ''
@@ -110,27 +112,36 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                    logger.log("Discarding torrent because it doesn't meet the"
+                                               ' minimum seeders: {0}. Seeders: {1}'.format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
                             verified = bool(try_int(item.find('torrent:verified').get_text(strip=True)))
                             if self.confirmed and not verified:
                                 if mode != 'RSS':
-                                    logger.log("Found result {0} but that doesn't seem like a verified result so I'm ignoring it".format(title), logger.DEBUG)
+                                    logger.log("Found result {0} but that doesn't seem like a verified"
+                                               " result so I'm ignoring it".format(title), logger.DEBUG)
                                 continue
 
                             torrent_size = item.find('torrent:contentlength').get_text(strip=True)
                             size = convert_size(torrent_size) or -1
                             info_hash = item.find('torrent:infohash').get_text(strip=True)
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders,
-                                    'leechers': leechers, 'pubdate': None, 'hash': info_hash}
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': info_hash
+                            }
                             if mode != 'RSS':
-                                logger.log('Found result: %s with %s seeders and %s leechers' % (title, seeders, leechers), logger.DEBUG)
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                           (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
-
                         except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                             logger.log('Failed parsing provider. Traceback: {0!r}'.format
                                        (traceback.format_exc()), logger.ERROR)
