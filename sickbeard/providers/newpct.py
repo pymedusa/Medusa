@@ -1,28 +1,28 @@
 # coding=utf-8
 # Author: CristianBB
 # Greetings to Mr. Pine-apple
-
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
-from requests.compat import urljoin
 import re
 import traceback
+
+from requests.compat import urljoin
 
 from sickbeard import helpers
 from sickbeard import logger, tvcache
@@ -117,11 +117,20 @@ class newpctProvider(TorrentProvider):
                             seeders = 1
                             leechers = 0
                             torrent_size = cells[labels.index('Tamaño')].get_text(strip=True)
-
                             size = convert_size(torrent_size) or -1
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': None
+                            }
                             if mode != 'RSS':
-                                logger.log('Found result: {0}'.format(title), logger.DEBUG)
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                           (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
                         except (AttributeError, TypeError, KeyError, ValueError, IndexError):
@@ -209,5 +218,6 @@ class newpctProvider(TorrentProvider):
         title += '-NEWPCT'
 
         return title.strip()
+
 
 provider = newpctProvider()

@@ -1,7 +1,6 @@
 # coding=utf-8
 # Author: Jordon Smith <smith@jordon.me.uk>
 #
-#
 # This file is part of Medusa.
 #
 # Medusa is free software: you can redistribute it and/or modify
@@ -21,8 +20,8 @@ from __future__ import unicode_literals
 
 import re
 import traceback
-
 import sickbeard
+
 from sickbeard import logger, tvcache
 
 from sickrage.helper.common import convert_size, try_int
@@ -30,6 +29,7 @@ from sickrage.providers.nzb.NZBProvider import NZBProvider
 
 
 class OmgwtfnzbsProvider(NZBProvider):
+
     def __init__(self):
         NZBProvider.__init__(self, 'OMGWTFNZBs')
 
@@ -106,6 +106,7 @@ class OmgwtfnzbsProvider(NZBProvider):
         for mode in search_strings:
             items = []
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
                 search_params['search'] = search_string
                 if mode != 'RSS':
@@ -157,5 +158,6 @@ class OmgwtfnzbsCache(tvcache.TVCache):
             'catid': '19,20'  # SD,HD
         }
         return self.getRSSFeed(self.provider.urls['rss'], params=search_params)
+
 
 provider = OmgwtfnzbsProvider()

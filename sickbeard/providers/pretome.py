@@ -1,27 +1,26 @@
 # coding=utf-8
 # Author: Nick Sologoub
 #
-
+# This file is part of Medusa.
 #
-# This file is part of SickRage.
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
 import re
 import traceback
+
 from requests.compat import quote
 from requests.utils import dict_from_cookiejar
 
@@ -104,68 +103,71 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                 if not data:
                     continue
 
-                try:
-                    with BS4Parser(data, 'html5lib') as html:
-                        # Continue only if one Release is found
-                        empty = html.find('h2', text='No .torrents fit this filter criteria')
-                        if empty:
-                            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
-                            continue
+                with BS4Parser(data, 'html5lib') as html:
+                    # Continue only if one Release is found
+                    empty = html.find('h2', text='No .torrents fit this filter criteria')
+                    if empty:
+                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                        continue
 
-                        torrent_table = html.find('table', attrs={'style': 'border: none; width: 100%;'})
-                        if not torrent_table:
-                            logger.log('Could not find table of torrents', logger.ERROR)
-                            continue
+                    torrent_table = html.find('table', attrs={'style': 'border: none; width: 100%;'})
+                    if not torrent_table:
+                        logger.log('Could not find table of torrents', logger.ERROR)
+                        continue
 
-                        torrent_rows = torrent_table('tr', attrs={'class': 'browse'})
+                    torrent_rows = torrent_table('tr', attrs={'class': 'browse'})
 
-                        for result in torrent_rows:
-                            try:
-                                cells = result('td')
-                                size = None
-                                link = cells[1].find('a', attrs={'style': 'font-size: 1.25em; font-weight: bold;'})
+                    for result in torrent_rows:
+                        try:
+                            cells = result('td')
+                            size = None
+                            link = cells[1].find('a', attrs={'style': 'font-size: 1.25em; font-weight: bold;'})
 
-                                torrent_id = link['href'].replace('details.php?id=', '')
+                            torrent_id = link['href'].replace('details.php?id=', '')
 
-                                if link.get('title', ''):
-                                    title = link['title']
-                                else:
-                                    title = link.contents[0]
+                            if link.get('title', ''):
+                                title = link['title']
+                            else:
+                                title = link.contents[0]
 
-                                download_url = self.urls['download'] % (torrent_id, link.contents[0])
-                                seeders = int(cells[9].contents[0])
-                                leechers = int(cells[10].contents[0])
-
-                                # Need size for failed downloads handling
-                                if size is None:
-                                    torrent_size = cells[7].text
-                                    size = convert_size(torrent_size) or -1
-
-                                if not all([title, download_url]):
-                                    continue
-
-                                # Filter unseeded torrent
-                                if seeders < min(self.minseed, 1):
-                                    if mode != 'RSS':
-                                        logger.log("Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
-                                                   (title, seeders), logger.DEBUG)
-                                    continue
-
-                                item = {'title': title, 'link': download_url, 'size': size, 'seeders':
-                                        seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
-                                if mode != 'RSS':
-                                    logger.log('Found result: %s with %s seeders and %s leechers' % (title, seeders, leechers), logger.DEBUG)
-
-                                items.append(item)
-
-                            except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                                logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                                           (traceback.format_exc()), logger.ERROR)
+                            download_url = self.urls['download'] % (torrent_id, link.contents[0])
+                            if not all([title, download_url]):
                                 continue
 
-                except Exception:
-                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                               (traceback.format_exc()), logger.ERROR)
+                            seeders = int(cells[9].contents[0])
+                            leechers = int(cells[10].contents[0])
+
+                            # Need size for failed downloads handling
+                            if size is None:
+                                torrent_size = cells[7].text
+                                size = convert_size(torrent_size) or -1
+
+                            # Filter unseeded torrent
+                            if seeders < min(self.minseed, 1):
+                                if mode != 'RSS':
+                                    logger.log("Discarding torrent because it doesn't meet the"
+                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                               (title, seeders), logger.DEBUG)
+                                continue
+
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': None
+                            }
+                            if mode != 'RSS':
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                           (title, seeders, leechers), logger.DEBUG)
+
+                            items.append(item)
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
+                            continue
 
             results += items
 
