@@ -103,17 +103,17 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
                     return False
 
-    def search(self, search_params, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         results = []
         if not self.login():
             return results
 
         freeleech = '3' if self.freeleech else '0'
 
-        for mode in search_params:
+        for mode in search_strings:
             items = []
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
-            for search_string in search_params[mode]:
+            for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
                     logger.log('Search string: {0}'.format(search_string),

@@ -275,17 +275,17 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         if int(episodes[0]['count']) == len(parse_result.episode_numbers):
             return True
 
-    def search(self, search_params, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         results = []
         if not self.login():
             return results
 
         self.categories = 'cat=' + str(self.cat)
 
-        for mode in search_params:
+        for mode in search_strings:
             items = []
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
-            for search_string in search_params[mode]:
+            for search_string in search_strings[mode]:
 
                 if mode == 'RSS':
                     self.page = 2
