@@ -1,32 +1,32 @@
 # coding=utf-8
 # # Author: Mr_Orange
 #
-
+# This file is part of Medusa.
 #
-# This file is part of SickRage.
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
 import io
 import os
 import re
+import sickbeard
+
 from requests.utils import add_dict_to_cookiejar
+
 from bencode import bdecode
 
-import sickbeard
 from sickbeard import helpers, logger, tvcache
 
 from sickrage.helper.encoding import ek
@@ -189,18 +189,18 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
     @staticmethod
     def dumpHTML(data):
-        dumpName = ek(os.path.join, sickbeard.CACHE_DIR, 'custom_torrent.html')
+        dump_name = ek(os.path.join, sickbeard.CACHE_DIR, 'custom_torrent.html')
 
         try:
-            fileOut = io.open(dumpName, 'wb')
-            fileOut.write(data)
-            fileOut.close()
-            helpers.chmodAsParent(dumpName)
+            file_out = io.open(dump_name, 'wb')
+            file_out.write(data)
+            file_out.close()
+            helpers.chmodAsParent(dump_name)
         except IOError as error:
             logger.log('Unable to save the file: {0}'.format(ex(error)), logger.ERROR)
             return False
 
-        logger.log('Saved custom_torrent html dump {0} '.format(dumpName), logger.INFO)
+        logger.log('Saved custom_torrent html dump {0} '.format(dump_name), logger.INFO)
         return True
 
 

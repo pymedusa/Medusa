@@ -1,36 +1,32 @@
 # coding=utf-8
 # Author: Idan Gutman
 # Modified by jkaberg, https://github.com/jkaberg for SceneAccess
-
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
 import re
 import traceback
-import time
 
 from requests.compat import urljoin, quote
 from requests.utils import dict_from_cookiejar
 
-import sickbeard
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
-from sickbeard.common import cpu_presets
 
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
@@ -99,21 +95,15 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
 
         for mode in search_strings:
             items = []
-            if mode != 'RSS':
-                logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
 
                 search_url = self.urls['search'] % (quote(search_string), self.categories[mode])
 
-                try:
-                    data = self.get_url(search_url, returns='text')
-                    time.sleep(cpu_presets[sickbeard.CPU_PRESET])
-                except Exception as e:
-                    logger.log('Unable to fetch data. Error: %s' % repr(e), logger.WARNING)
-
+                data = self.get_url(search_url, returns='text')
                 if not data:
                     continue
 
@@ -127,7 +117,6 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                         continue
 
                     for result in torrent_table('tr')[1:]:
-
                         try:
                             link = result.find('td', attrs={'class': 'ttr_name'}).find('a')
                             url = result.find('td', attrs={'class': 'td_dl'}).find('a')
@@ -139,30 +128,41 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                                     with BS4Parser(data) as details_html:
                                         title = re.search("(?<=').+(?<!')", details_html.title.string).group(0)
                             download_url = self.urls['download'] % url['href']
+                            if not all([title, download_url]):
+                                continue
+
                             seeders = int(result.find('td', attrs={'class': 'ttr_seeders'}).string)
                             leechers = int(result.find('td', attrs={'class': 'ttr_leechers'}).string)
-                            torrent_size = result.find('td', attrs={'class': 'ttr_size'}).contents[0]
 
+                            # Filter unseeded torrent
+                            if seeders < min(self.minseed, 1):
+                                if mode != 'RSS':
+                                    logger.log("Discarding torrent because it doesn't meet the"
+                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                               (title, seeders), logger.DEBUG)
+                                continue
+
+                            torrent_size = result.find('td', attrs={'class': 'ttr_size'}).contents[0]
                             size = convert_size(torrent_size) or -1
+
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': None
+                            }
+                            if mode != 'RSS':
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                           (title, seeders, leechers), logger.DEBUG)
+
+                            items.append(item)
                         except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                             logger.log('Failed parsing provider. Traceback: {0!r}'.format
                                        (traceback.format_exc()), logger.ERROR)
                             continue
-
-                        if not all([title, download_url]):
-                            continue
-
-                        # Filter unseeded torrent
-                        if seeders < min(self.minseed, 1):
-                            if mode != 'RSS':
-                                logger.log("Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format(title, seeders), logger.DEBUG)
-                            continue
-
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
-                        if mode != 'RSS':
-                            logger.log('Found result: %s with %s seeders and %s leechers' % (title, seeders, leechers), logger.DEBUG)
-
-                        items.append(item)
 
             results += items
 
