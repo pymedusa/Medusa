@@ -369,7 +369,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
                             size = convert_size(item_size) or -1
 
-                            result = {
+                            item = {
                                 'title': title,
                                 'link': download_url,
                                 'size': size,
@@ -382,7 +382,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
                                            (title, seeders, leechers), logger.DEBUG)
 
-                            items.append(result)
+                            items.append(item)
                         except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                             logger.log('Failed parsing provider. Traceback: {0!r}'.format
                                        (traceback.format_exc()), logger.ERROR)
