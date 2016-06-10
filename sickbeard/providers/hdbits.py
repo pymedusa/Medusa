@@ -75,16 +75,16 @@ class HDBitsProvider(TorrentProvider):
 
         return title, url
 
-    def search(self, search_params, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None):
 
         # FIXME
         results = []
 
-        logger.log('Search string: {0}'.format(search_params), logger.DEBUG)
+        logger.log('Search string: {0}'.format(search_strings), logger.DEBUG)
 
         self._check_auth()
 
-        parsed_json = self.get_url(self.urls['search'], post_data=search_params, returns='json')
+        parsed_json = self.get_url(self.urls['search'], post_data=search_strings, returns='json')
         if not parsed_json:
             return []
 

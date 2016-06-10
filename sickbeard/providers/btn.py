@@ -18,13 +18,14 @@
 
 from __future__ import unicode_literals
 
-from datetime import datetime
 import jsonrpclib
 import math
 import socket
 import time
-
 import sickbeard
+
+from datetime import datetime
+
 from sickbeard import classes, logger, scene_exceptions, tvcache
 from sickbeard.common import cpu_presets
 from sickbeard.helpers import sanitizeSceneName
@@ -63,13 +64,13 @@ class BTNProvider(TorrentProvider):
             return self._check_auth()
 
         if 'api-error' in parsed_json:
-            logger.log('Incorrect authentication credentials: % s' % parsed_json['api-error'], logger.DEBUG)
-            raise AuthException(
-                'Your authentication credentials for ' + self.name + ' are incorrect, check your config.')
+            logger.log('Incorrect authentication credentials: %s' % parsed_json['api-error'], logger.DEBUG)
+            raise AuthException('Your authentication credentials for {0} are missing,'
+                                ' check your config.'.format(self.name))
 
         return True
 
-    def search(self, search_params, age=0, ep_obj=None):  # pylint:disable=too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint:disable=too-many-locals
 
         self._check_auth()
 
@@ -81,9 +82,9 @@ class BTNProvider(TorrentProvider):
         if age:
             params['age'] = '<=' + str(int(age))
 
-        if search_params:
-            params.update(search_params)
-            logger.log('Search string: %s' % search_params, logger.DEBUG)
+        if search_strings:
+            params.update(search_strings)
+            logger.log('Search string: %s' % search_strings, logger.DEBUG)
 
         parsed_json = self._api_call(apikey, params)
         if not parsed_json:
@@ -288,9 +289,9 @@ class BTNCache(tvcache.TVCache):
         seconds_since_last_update = math.ceil(time.time() - time.mktime(self._getLastUpdate().timetuple()))
 
         # default to 15 minutes
-        seconds_minTime = self.minTime * 60
-        if seconds_since_last_update < seconds_minTime:
-            seconds_since_last_update = seconds_minTime
+        seconds_min_time = self.minTime * 60
+        if seconds_since_last_update < seconds_min_time:
+            seconds_since_last_update = seconds_min_time
 
         # Set maximum to 24 hours (24 * 60 * 60 = 86400 seconds) of 'RSS' data search, older things will need to be done through backlog
         if seconds_since_last_update > 86400:

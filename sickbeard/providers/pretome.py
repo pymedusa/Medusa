@@ -83,15 +83,15 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         return True
 
-    def search(self, search_params, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         results = []
         if not self.login():
             return results
 
-        for mode in search_params:
+        for mode in search_strings:
             items = []
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
-            for search_string in search_params[mode]:
+            for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
                     logger.log('Search string: {0}'.format(search_string),
