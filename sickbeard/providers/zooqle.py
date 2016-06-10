@@ -19,6 +19,7 @@
 from __future__ import unicode_literals
 
 import traceback
+
 from requests.compat import urljoin
 
 from sickbeard import logger, tvcache
@@ -119,13 +120,12 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log('Discarding torrent because it doesn\'t meet the'
-                                               ' minimum seeders: {0}. Seeders: {1})'.format
+                                    logger.log("Discarding torrent because it doesn't meet the"
+                                               ' minimum seeders: {0}. Seeders: {1}'.format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
                             torrent_size = cells[4].get_text(strip=True)
-
                             size = convert_size(torrent_size, units=units) or -1
 
                             item = {
@@ -147,8 +147,6 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
                                        (traceback.format_exc()), logger.ERROR)
                             continue
 
-            # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
 
         return results

@@ -1,20 +1,20 @@
 # coding=utf-8
 # Author: Dustyn Gibson <miigotu@gmail.com>
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
@@ -92,25 +92,37 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
                             title_raw = item.title.text
                             # Add "-" after codec and add missing "."
-                            title = re.sub(r'([xh][ .]?264|xvid)( )', r'\1-', title_raw).replace(' ','.') if title_raw else ''
-                            t_hash = item.guid.text.rsplit('/', 1)[-1]
-
-                            if not all([title, t_hash]):
+                            title = re.sub(r'([xh][ .]?264|xvid)( )', r'\1-', title_raw).replace(' ', '.') if title_raw else ''
+                            torrent_hash = item.guid.text.rsplit('/', 1)[-1]
+                            if not all([title, torrent_hash]):
                                 continue
 
-                            download_url = "magnet:?xt=urn:btih:" + t_hash + "&dn=" + title + self._custom_trackers
+                            download_url = "magnet:?xt=urn:btih:" + torrent_hash + "&dn=" + title + self._custom_trackers
                             torrent_size, seeders, leechers = self._split_description(item.find('description').text)
                             size = convert_size(torrent_size) or -1
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                    logger.log("Discarding torrent because it doesn't meet the"
+                                               ' minimum seeders: {0}. Seeders: {1}'.format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
-                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': t_hash}
-                            items.append(result)
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': torrent_hash
+                            }
+                            if mode != 'RSS':
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                           (title, seeders, leechers), logger.DEBUG)
+
+                            items.append(item)
                         except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                             logger.log('Failed parsing provider. Traceback: {0!r}'.format
                                        (traceback.format_exc()), logger.ERROR)
