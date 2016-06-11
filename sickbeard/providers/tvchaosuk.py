@@ -166,7 +166,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             size = convert_size(torrent_size, units=units) or -1
 
                             item = {
-                                'title': title,
+                                'title': title + '.hdtv.x264',
                                 'link': download_url,
                                 'size': size,
                                 'seeders': seeders,

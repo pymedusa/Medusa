@@ -81,9 +81,9 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                 return False
 
             if re.search('/logout.php', response):
-
                 try:
-                    if dict_from_cookiejar(self.session.cookies)['uid'] and dict_from_cookiejar(self.session.cookies)['pass']:
+                    if dict_from_cookiejar(self.session.cookies)['uid'] and \
+                            dict_from_cookiejar(self.session.cookies)['pass']:
                         self._uid = dict_from_cookiejar(self.session.cookies)['uid']
                         self._hash = dict_from_cookiejar(self.session.cookies)['pass']
 
@@ -92,10 +92,12 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                         return True
                 except Exception:
                     logger.log('Unable to login to provider (cookie)', logger.WARNING)
-                    return False
 
+                    return False
             else:
-                if re.search('Username does not exist in the userbase or the account is not confirmed yet.', response):
+                if re.search('Username does not exist in the userbase or the account is not confirmed yet.', response) or \
+                    re.search('Username or password is incorrect. If you have an account here please use the'
+                              ' recovery system or try again.', response):
                     logger.log('Invalid username or password. Check your settings', logger.WARNING)
 
                 if re.search('DDoS protection by CloudFlare', response):
@@ -117,8 +119,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
 
                 search_url = self.urls['search'] % (freeleech, search_string)
 
@@ -154,7 +155,8 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                         if max_page_number > 3 and mode == 'RSS':
                             max_page_number = 3
                     except Exception:
-                        logger.log('Failed parsing provider. Traceback: %s' % traceback.format_exc(), logger.ERROR)
+                        logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                   (traceback.format_exc()), logger.ERROR)
                         continue
 
                 data_response_list = [init_html]
@@ -164,7 +166,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                     for i in range(1, max_page_number):
 
                         time.sleep(1)
-                        page_search_url = search_url + '&page=' + str(i)
+                        page_search_url = search_url + '&page=' + unicode(i)
                         # '.log('Search string: ' + page_search_url, logger.DEBUG)
                         page_html = self.get_url(page_search_url, returns='text')
 
@@ -176,7 +178,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                 for data_response in data_response_list:
 
                     with BS4Parser(data_response, 'html5lib') as html:
-                        torrent_rows = html('tr', {'class': re.compile('torrent_[0-9]*')})
+                        torrent_rows = html('tr', class_=re.compile('torrent_[0-9]*'))
 
                         # Continue only if a Release is found
                         if not torrent_rows:
@@ -190,25 +192,29 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                 if individual_torrent.find('img', alt='Nuked') is not None:
                                     continue
 
-                                title = individual_torrent.find('a', {'class': 'torrent_name_link'})['title']
-                                details_url = individual_torrent.find('a', {'class': 'torrent_name_link'})['href']
+                                title = individual_torrent.find('a', class_='torrent_name_link')['title']
+                                details_url = individual_torrent.find('a', class_='torrent_name_link')['href']
                                 torrent_id = int((re.match('.*?([0-9]+)$', details_url).group(1)).strip())
-                                download_url = self.urls['download'] % (str(torrent_id))
+                                download_url = self.urls['download'] % (unicode(torrent_id))
                                 if not all([title, download_url]):
                                     continue
 
-                                seeders = try_int(individual_torrent.find('td', {'class': 'table_seeders'}).find('span').text.strip(), 1)
-                                leechers = try_int(individual_torrent.find('td', {'class': 'table_leechers'}).find('a').text.strip(), 0)
+                                seeders = try_int(individual_torrent.find('td', class_='table_seeders').find('span').get_text(strip=True), 1)
+                                leechers = try_int(individual_torrent.find('td', class_='table_leechers').find('a').get_text(strip=True), 0)
 
                                 # Filter unseeded torrent
                                 if seeders < min(self.minseed, 1):
                                     if mode != 'RSS':
                                         logger.log("Discarding torrent because it doesn't meet the"
-                                                   ' minimum seeders: {0}. Seeders: {1})'.format
+                                                   ' minimum seeders: {0}. Seeders: {1}'.format
                                                    (title, seeders), logger.DEBUG)
                                     continue
 
-                                torrent_size = individual_torrent.find('td', {'class': 'table_size'}).get_text()
+                                torrent_size = individual_torrent.find('td', class_='table_size').get_text(strip=True)
+                                torrent_lenght = len(torrent_size)
+                                torrent_weight = torrent_size[:torrent_lenght - 2]
+                                torrent_unit = torrent_size[torrent_lenght - 2:]
+                                torrent_size = '{0} {1}'.format(torrent_weight, torrent_unit)
                                 size = convert_size(torrent_size) or -1
 
                                 item = {
@@ -225,7 +231,6 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                                (title, seeders, leechers), logger.DEBUG)
 
                                 items.append(item)
-
                             except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                                 logger.log('Failed parsing provider. Traceback: {0!r}'.format
                                            (traceback.format_exc()), logger.ERROR)
