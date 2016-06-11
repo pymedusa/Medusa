@@ -78,10 +78,6 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     for item in html('item'):
                         try:
                             title = re.sub(r'^<!\[CDATA\[|\]\]>$', '', item.find('title').get_text(strip=True))
-                            seeders = try_int(item.find('seeders').get_text(strip=True))
-                            leechers = try_int(item.find('leechers').get_text(strip=True))
-                            torrent_size = item.find('size').get_text()
-                            size = convert_size(torrent_size) or -1
 
                             if sickbeard.TORRENT_METHOD == 'blackhole':
                                 enclosure = item.find('enclosure')  # Backlog doesnt have enclosure
@@ -94,13 +90,22 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                             if not all([title, download_url]):
                                 continue
 
-                                # Filter unseeded torrent
+                            seeders = item.find('seeders')
+                            seeders = try_int(seeders.get_text(strip=True)) if seeders else 1
+                            leechers = item.find('leechers')
+                            leechers = try_int(leechers.get_text(strip=True)) if leechers else 0
+
+                            # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log("Discarding torrent because it doesn't meet the"
                                                ' minimum seeders: {0}. Seeders: {1})'.format
                                                (title, seeders), logger.DEBUG)
                                 continue
+
+                            torrent_size = item.find('size')
+                            torrent_size = torrent_size.get_text() if torrent_size else None
+                            size = convert_size(torrent_size) or -1
 
                             item = {
                                 'title': title,
