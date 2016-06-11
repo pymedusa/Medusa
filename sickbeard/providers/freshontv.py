@@ -113,6 +113,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         for mode in search_strings:
             items = []
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
@@ -129,9 +130,8 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                try:
-                    with BS4Parser(init_html, 'html5lib') as init_soup:
-
+                with BS4Parser(init_html, 'html5lib') as init_soup:
+                    try:
                         # Check to see if there is more than 1 page of results
                         pager = init_soup.find('div', {'class': 'pager'})
                         if pager:
@@ -153,9 +153,9 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                         # limit RSS search
                         if max_page_number > 3 and mode == 'RSS':
                             max_page_number = 3
-                except Exception:
-                    logger.log('Failed parsing provider. Traceback: %s' % traceback.format_exc(), logger.ERROR)
-                    continue
+                    except Exception:
+                        logger.log('Failed parsing provider. Traceback: %s' % traceback.format_exc(), logger.ERROR)
+                        continue
 
                 data_response_list = [init_html]
 
@@ -173,44 +173,32 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
                         data_response_list.append(page_html)
 
-                try:
+                for data_response in data_response_list:
 
-                    for data_response in data_response_list:
+                    with BS4Parser(data_response, 'html5lib') as html:
+                        torrent_rows = html('tr', {'class': re.compile('torrent_[0-9]*')})
 
-                        with BS4Parser(data_response, 'html5lib') as html:
+                        # Continue only if a Release is found
+                        if not torrent_rows:
+                            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                            continue
 
-                            torrent_rows = html('tr', {'class': re.compile('torrent_[0-9]*')})
+                        for individual_torrent in torrent_rows:
 
-                            # Continue only if a Release is found
-                            if not torrent_rows:
-                                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
-                                continue
-
-                            for individual_torrent in torrent_rows:
-
+                            try:
                                 # skip if torrent has been nuked due to poor quality
                                 if individual_torrent.find('img', alt='Nuked') is not None:
                                     continue
 
-                                try:
-                                    title = individual_torrent.find('a', {'class': 'torrent_name_link'})['title']
-                                except Exception:
-                                    logger.log('Unable to parse torrent title. Traceback: %s ' % traceback.format_exc(), logger.WARNING)
-                                    continue
-
-                                try:
-                                    details_url = individual_torrent.find('a', {'class': 'torrent_name_link'})['href']
-                                    torrent_id = int((re.match('.*?([0-9]+)$', details_url).group(1)).strip())
-                                    download_url = self.urls['download'] % (str(torrent_id))
-                                    seeders = try_int(individual_torrent.find('td', {'class': 'table_seeders'}).find('span').text.strip(), 1)
-                                    leechers = try_int(individual_torrent.find('td', {'class': 'table_leechers'}).find('a').text.strip(), 0)
-                                    torrent_size = individual_torrent.find('td', {'class': 'table_size'}).get_text()
-                                    size = convert_size(torrent_size) or -1
-                                except Exception:
-                                    continue
-
+                                title = individual_torrent.find('a', {'class': 'torrent_name_link'})['title']
+                                details_url = individual_torrent.find('a', {'class': 'torrent_name_link'})['href']
+                                torrent_id = int((re.match('.*?([0-9]+)$', details_url).group(1)).strip())
+                                download_url = self.urls['download'] % (str(torrent_id))
                                 if not all([title, download_url]):
                                     continue
+
+                                seeders = try_int(individual_torrent.find('td', {'class': 'table_seeders'}).find('span').text.strip(), 1)
+                                leechers = try_int(individual_torrent.find('td', {'class': 'table_leechers'}).find('a').text.strip(), 0)
 
                                 # Filter unseeded torrent
                                 if seeders < min(self.minseed, 1):
@@ -219,6 +207,9 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                                    ' minimum seeders: {0}. Seeders: {1})'.format
                                                    (title, seeders), logger.DEBUG)
                                     continue
+
+                                torrent_size = individual_torrent.find('td', {'class': 'table_size'}).get_text()
+                                size = convert_size(torrent_size) or -1
 
                                 item = {
                                     'title': title,
@@ -235,14 +226,14 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
                                 items.append(item)
 
-                except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                               (traceback.format_exc()), logger.ERROR)
-                    continue
+                            except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                                logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                           (traceback.format_exc()), logger.ERROR)
+                                continue
 
-            results += items
+                results += items
 
-        return results
+            return results
 
 
 provider = FreshOnTVProvider()
