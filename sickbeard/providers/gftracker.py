@@ -63,7 +63,8 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
     def _check_auth(self):
 
         if not self.username or not self.password:
-            raise AuthException('Your authentication credentials for ' + self.name + ' are missing, check your config.')
+            raise AuthException('Your authentication credentials for {0} are missing,'
+                                ' check your config.'.format(self.name))
 
         return True
 
@@ -152,7 +153,9 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                         try:
                             cells = result('td')
 
-                            title = cells[labels.index('Name')].find('a').find_next('a')['title'] or cells[labels.index('Name')].find('a')['title']
+                            title_anchor = cells[labels.index('Name')].find('a').find_next('a') or \
+                                cells[labels.index('Name')].find('a')
+                            title = title_anchor.get('title') if title_anchor else None
                             download_url = self.url + cells[labels.index('DL')].find('a')['href']
                             if not all([title, download_url]):
                                 continue
