@@ -100,16 +100,16 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 if not data:
                     continue
 
-                try:
-                    with BS4Parser(data, 'html5lib') as html:
-                        result_linkz = html('a', href=re.compile('torrents-details'))
+                with BS4Parser(data, 'html5lib') as html:
+                    result_linkz = html('a', href=re.compile('torrents-details'))
 
-                        if not result_linkz:
-                            logger.log('Data returned from provider do not contains any torrent', logger.DEBUG)
-                            continue
+                    if not result_linkz:
+                        logger.log('Data returned from provider do not contains any torrent', logger.DEBUG)
+                        continue
 
-                        if result_linkz:
-                            for link in result_linkz:
+                    if result_linkz:
+                        for link in result_linkz:
+                            try:
                                 title = link.text
                                 download_url = self.urls['base_url'] + link['href']
                                 download_url = download_url.replace('torrents-details', 'download')
@@ -143,12 +143,12 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                                 items.append(item)
 
-                except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                               (traceback.format_exc()), logger.ERROR)
-                    continue
+                            except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                                logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                           (traceback.format_exc()), logger.ERROR)
+                            continue
 
-            results += items
+                results += items
 
         return results
 
