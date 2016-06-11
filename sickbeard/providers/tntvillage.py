@@ -117,7 +117,8 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
     def _check_auth(self):
 
         if not self.username or not self.password:
-            raise AuthException('Your authentication credentials for {0} are missing, check your config.'.format(self.name))
+            raise AuthException('Your authentication credentials for {0} are missing,'
+                                ' check your config.'.format(self.name))
 
         return True
 
@@ -137,7 +138,8 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
-        if re.search('Sono stati riscontrati i seguenti errori', response) or re.search('<title>Connettiti</title>', response):
+        if re.search('Sono stati riscontrati i seguenti errori', response) or \
+                re.search('<title>Connettiti</title>', response):
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
 
@@ -181,7 +183,8 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         if img_all:
             for img_type in img_all:
                 try:
-                    file_quality = file_quality + ' ' + img_type['src'].replace('style_images/mkportal-636/', '').replace('.gif', '').replace('.png', '')
+                    file_quality = file_quality + ' ' + img_type['src'].replace('style_images/mkportal-636/', '')
+                    file_quality = file_quality.replace('.gif', '').replace('.png', '')
                 except Exception:
                     logger.log('Failed parsing quality. Traceback: %s' % traceback.format_exc(), logger.ERROR)
 
@@ -201,7 +204,8 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         if img_all:
             file_quality = (torrent_rows('td'))[1].get_text()
 
-        webdl = checkName(['webdl', 'webmux', 'webrip', 'dl-webmux', 'web-dlmux', 'webdl-mux', 'web-dl', 'webdlmux', 'dlmux'], any)
+        webdl = checkName(['webdl', 'webmux', 'webrip', 'dl-webmux', 'web-dlmux',
+                           'webdl-mux', 'web-dl', 'webdlmux', 'dlmux'], any)
 
         if sdOptions and not dvdOptions and not fullHD and not hdOptions:
             return Quality.SDTV
@@ -272,7 +276,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         main_db_con = db.DBConnection()
         sql_selection = 'select count(*) as count from tv_episodes where showid = ? and season = ?'
         episodes = main_db_con.select(sql_selection, [parse_result.show.indexerid, parse_result.season_number])
-        if int(episodes[0]['count']) == len(parse_result.episode_numbers):
+        if int(episodes[0][b'count']) == len(parse_result.episode_numbers):
             return True
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
@@ -333,8 +337,10 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         for result in torrent_table('tr')[2:]:
                             try:
                                 link = result.find('td').find('a')
-                                title = link.string
-                                download_url = self.urls['download'] % result('td')[8].find('a')['href'][-8:]
+                                title = link.string if link else None
+                                dl_link = result('td')
+                                dl_url = dl_link[8].find('a')['href'][-8:] if len(dl_link) > 7 else None
+                                download_url = self.urls['download'] % dl_url if dl_url else None
                                 if not all([title, download_url]):
                                     continue
 
@@ -366,7 +372,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                     continue
 
                                 if self.engrelease and not self._is_english(result):
-                                    logger.log('Torrent isnt english audio/subtitled , skipping: %s ' % title, logger.DEBUG)
+                                    logger.log('Torrent isnt english audio/subtitled, skipping: %s ' % title, logger.DEBUG)
                                     continue
 
                                 search_show = re.split(r'([Ss][\d{1,2}]+)', search_string)[0]
