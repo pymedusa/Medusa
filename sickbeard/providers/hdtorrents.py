@@ -146,16 +146,14 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             if len(cells) < len(labels):
                                 continue
 
-                            title = cells[labels.index('Filename')].a.get_text(strip=True)
-                            seeders = try_int(cells[labels.index('S')].get_text(strip=True))
-                            leechers = try_int(cells[labels.index('L')].get_text(strip=True))
-                            torrent_size = cells[labels.index('Size')].get_text()
-
-                            size = convert_size(torrent_size) or -1
+                            title = cells[labels.index('Filename')].a
+                            title = title.get_text(strip=True) if title else None
                             download_url = self.url + '/' + cells[labels.index('Dl')].a['href']
-
                             if not all([title, download_url]):
                                 continue
+
+                            seeders = try_int(cells[labels.index('S')].get_text(strip=True))
+                            leechers = try_int(cells[labels.index('L')].get_text(strip=True))
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
@@ -164,6 +162,9 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                                ' minimum seeders: {0}. Seeders: {1})'.format
                                                (title, seeders), logger.DEBUG)
                                 continue
+
+                            torrent_size = cells[labels.index('Size')].get_text()
+                            size = convert_size(torrent_size) or -1
 
                             item = {
                                 'title': title,
