@@ -54,7 +54,8 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         if self.username and self.password:
             return True
 
-        raise AuthException('Your authentication credentials for {0} are missing, check your config.'.format(self.name))
+        raise AuthException('Your authentication credentials for {0} are missing,'
+                            ' check your config.'.format(self.name))
 
     def login(self):
         if len(self.session.cookies) >= 4:
@@ -116,11 +117,11 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
                 with BS4Parser(data, 'html5lib') as html:
                     torrent_table = html.find(id='sortabletable')
-                    torrent_rows = torrent_table("tr") if torrent_table else []
+                    torrent_rows = torrent_table('tr') if torrent_table else []
 
                     # Continue only if at least one Release is found
                     if len(torrent_rows) < 2:
-                        logger.log("Data returned from provider does not contain any torrents", logger.DEBUG)
+                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
 
                     labels = [label.img['title'] if label.img else label.get_text(strip=True) for label in torrent_rows[0]('td')]
@@ -129,8 +130,10 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             if self.freeleech and not torrent.find('img', alt=re.compile('Free Torrent')):
                                 continue
 
-                            title = torrent.find(class_='tooltip-content').div.get_text(strip=True)
-                            download_url = torrent.find(title='Click to Download this Torrent!').parent['href']
+                            title = torrent.find(class_='tooltip-content')
+                            title = title.div.get_text(strip=True) if title else None
+                            download_url = torrent.find(title='Click to Download this Torrent!')
+                            download_url = download_url.parent['href'] if download_url else None
                             if not all([title, download_url]):
                                 continue
 
