@@ -284,7 +284,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 return results
 
         for mode in search_strings:
-            torznab = False
+            self.torznab = False
             search_params = {
                 't': 'tvsearch' if 'tvdbid' in str(self.cap_tv_search) else 'search',
                 'limit': 100,
@@ -331,9 +331,9 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                         break
 
                     try:
-                        torznab = 'xmlns:torznab' in html.rss.attrs
+                        self.torznab = 'xmlns:torznab' in html.rss.attrs
                     except AttributeError:
-                        torznab = False
+                        self.torznab = False
 
                     for item in html('item'):
                         try:
@@ -364,7 +364,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                                     peers = try_int(attr['value']) if attr['name'] == 'peers' else None
                                     leechers = peers - seeders if peers else leechers
 
-                            if not item_size or (torznab and (seeders is -1 or leechers is -1)):
+                            if not item_size or (self.torznab and (seeders is -1 or leechers is -1)):
                                 continue
 
                             size = convert_size(item_size) or -1
