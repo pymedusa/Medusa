@@ -1,21 +1,21 @@
 # coding=utf-8
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-
 # Git: https://github.com/PyMedusa/SickRage.git
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import unicode_literals
 
 import re
@@ -216,7 +216,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                             parse_result.season_number is not None,
                             parse_result.episode_numbers,
                             [ep for ep in episodes if (ep.season, ep.scene_season)[ep.show.is_scene] ==
-                            parse_result.season_number and (ep.episode, ep.scene_episode)[ep.show.is_scene] in parse_result.episode_numbers]
+                             parse_result.season_number and (ep.episode, ep.scene_episode)[ep.show.is_scene] in parse_result.episode_numbers]
                         ]):
 
                             logger.log(
@@ -244,13 +244,13 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                         )
 
                         if len(sql_results) == 2:
-                            if int(sql_results[0]['season']) == 0 and int(sql_results[1]['season']) != 0:
-                                actual_season = int(sql_results[1]['season'])
-                                actual_episodes = [int(sql_results[1]['episode'])]
+                            if int(sql_results[0][b'season']) == 0 and int(sql_results[1][b'season']) != 0:
+                                actual_season = int(sql_results[1][b'season'])
+                                actual_episodes = [int(sql_results[1][b'episode'])]
                                 same_day_special = True
-                            elif int(sql_results[1]['season']) == 0 and int(sql_results[0]['season']) != 0:
-                                actual_season = int(sql_results[0]['season'])
-                                actual_episodes = [int(sql_results[0]['episode'])]
+                            elif int(sql_results[1][b'season']) == 0 and int(sql_results[0][b'season']) != 0:
+                                actual_season = int(sql_results[0][b'season'])
+                                actual_episodes = [int(sql_results[0][b'episode'])]
                                 same_day_special = True
                         elif len(sql_results) != 1:
                             logger.log(
@@ -259,8 +259,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                             add_cache_entry = True
 
                     if not add_cache_entry and not same_day_special:
-                        actual_season = int(sql_results[0]['season'])
-                        actual_episodes = [int(sql_results[0]['episode'])]
+                        actual_season = int(sql_results[0][b'season'])
+                        actual_episodes = [int(sql_results[0][b'episode'])]
             else:
                 actual_season = parse_result.season_number
                 actual_episodes = parse_result.episode_numbers
