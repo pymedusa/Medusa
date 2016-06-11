@@ -122,59 +122,60 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     logger.log('Could not find main torrent table', logger.ERROR)
                     continue
 
-                html = BS4Parser(data[index:], 'html5lib')
-                if not html:
-                    logger.log('No html data parsed from provider', logger.DEBUG)
-                    continue
-
-                torrents = html('tr')
-                if not torrents:
-                    continue
-
-                # Skip column headers
-                for result in torrents[1:]:
-                    if len(result.contents) < 10:
-                        # skip extraneous rows at the end
+                with BS4Parser(data[index:], 'html5lib') as html:
+                    if not html:
+                        logger.log('No html data parsed from provider', logger.DEBUG)
                         continue
 
-                    try:
-                        dl_href = result.find('a', attrs={'href': re.compile(r'download.php.*')})['href']
-                        title = re.search('f=(.*).torrent', dl_href).group(1).replace('+', '.')
-                        download_url = self.urls['base_url'] + dl_href
-                        seeders = int(result.find('span', attrs={'class': 'seedy'}).find('a').text)
-                        leechers = int(result.find('span', attrs={'class': 'leechy'}).find('a').text)
-                        torrent_size = re.match(r'.*?([0-9]+,?\.?[0-9]* [KkMmGg]+[Bb]+).*', str(result), re.DOTALL).group(1)
-                        size = convert_size(torrent_size) or -1
+                    torrents = html('tr')
+                    if not torrents:
+                        continue
 
-                        if not all([title, download_url]):
+                    # Skip column headers
+                    for result in torrents[1:]:
+                        if len(result.contents) < 10:
+                            # skip extraneous rows at the end
                             continue
 
-                        # Filter unseeded torrent
-                        if seeders < min(self.minseed, 1):
+                        try:
+                            dl_href = result.find('a', attrs={'href': re.compile(r'download.php.*')})['href']
+                            title = re.search('f=(.*).torrent', dl_href).group(1).replace('+', '.')
+                            download_url = self.urls['base_url'] + dl_href
+                            if not all([title, download_url]):
+                                continue
+
+                            seeders = int(result.find('span', attrs={'class': 'seedy'}).find('a').text)
+                            leechers = int(result.find('span', attrs={'class': 'leechy'}).find('a').text)
+
+                            # Filter unseeded torrent
+                            if seeders < min(self.minseed, 1):
+                                if mode != 'RSS':
+                                    logger.log("Discarding torrent because it doesn't meet the"
+                                               ' minimum seeders: {0}. Seeders: {1})'.format
+                                               (title, seeders), logger.DEBUG)
+                                continue
+
+                            torrent_size = re.match(r'.*?([0-9]+,?\.?[0-9]* [KkMmGg]+[Bb]+).*', str(result), re.DOTALL).group(1)
+                            size = convert_size(torrent_size) or -1
+
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': None
+                            }
                             if mode != 'RSS':
-                                logger.log("Discarding torrent because it doesn't meet the"
-                                           ' minimum seeders: {0}. Seeders: {1})'.format
-                                           (title, seeders), logger.DEBUG)
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                           (title, seeders, leechers), logger.DEBUG)
+
+                            items.append(item)
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
                             continue
-
-                        item = {
-                            'title': title,
-                            'link': download_url,
-                            'size': size,
-                            'seeders': seeders,
-                            'leechers': leechers,
-                            'pubdate': None,
-                            'hash': None
-                        }
-                        if mode != 'RSS':
-                            logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                       (title, seeders, leechers), logger.DEBUG)
-
-                        items.append(item)
-                    except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                        logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                                   (traceback.format_exc()), logger.ERROR)
-                        continue
 
             results += items
 
