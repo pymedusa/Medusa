@@ -57,7 +57,7 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         # Proper Strings
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=30)  # only poll ThePirateBay every 30 minutes max
+        self.cache = tvcache.TVCache(self, min_time=1)  # only poll ThePirateBay every 30 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         results = []
@@ -126,9 +126,11 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                         try:
                             cells = result('td')
 
-                            title = result.find(class_='detName').get_text(strip=True)
-                            download_url = result.find(title='Download this torrent using magnet')['href'] + self._custom_trackers
-                            if 'magnet:?' not in download_url:
+                            title = result.find(class_='detName')
+                            title = title.get_text(strip=True) if title else None
+                            download_url = result.find(title='Download this torrent using magnet')
+                            download_url = download_url['href'] + self._custom_trackers if download_url else None
+                            if download_url and 'magnet:?' not in download_url:
                                 logger.log('Invalid ThePirateBay proxy please try another one', logger.DEBUG)
                                 continue
                             if not all([title, download_url]):
