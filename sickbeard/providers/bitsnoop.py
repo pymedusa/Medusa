@@ -21,9 +21,8 @@ from __future__ import unicode_literals
 import traceback
 import sickbeard
 
-from bs4 import BeautifulSoup
-
 from sickbeard import logger, tvcache
+from sickbeard.bs4_parser import BS4Parser
 
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
@@ -57,31 +56,31 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         for mode in search_strings:
             items = []
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
                     logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
 
-                try:
-                    search_url = (self.urls['rss'], self.urls['search'] + search_string + '/s/d/1/?fmt=rss')[mode != 'RSS']
+                search_url = (self.urls['rss'], self.urls['search'] + search_string + '/s/d/1/?fmt=rss')[mode != 'RSS']
 
-                    data = self.get_url(search_url, returns='text')
-                    if not data:
-                        logger.log('No data returned from provider', logger.DEBUG)
-                        continue
+                data = self.get_url(search_url, returns='text')
+                if not data:
+                    logger.log('No data returned from provider', logger.DEBUG)
+                    continue
 
-                    if not data.startswith('<?xml'):
-                        logger.log('Expected xml but got something else, is your mirror failing?', logger.INFO)
-                        continue
+                if not data.startswith('<?xml'):
+                    logger.log('Expected xml but got something else, is your mirror failing?', logger.INFO)
+                    continue
 
-                    data = BeautifulSoup(data, 'html5lib')
-                    for item in data('item'):
+                with BS4Parser(data, 'html5lib') as html:
+                    for item in html('item'):
+
                         try:
                             if not item.category.text.endswith(('TV', 'Anime')):
                                 continue
 
                             title = item.title.text
-                            assert isinstance(title, unicode)
                             # Use the torcache link bitsnoop provides,
                             # unless it is not torcache or we are not using blackhole
                             # because we want to use magnets if connecting direct to client
@@ -95,40 +94,37 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
                             seeders = try_int(item.find('numseeders').text)
                             leechers = try_int(item.find('numleechers').text)
+
+                            # Filter unseeded torrent
+                            if seeders < min(self.minseed, 1):
+                                if mode != 'RSS':
+                                    logger.log("Discarding torrent because it doesn't meet the"
+                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                               (title, seeders), logger.DEBUG)
+                                continue
+
                             torrent_size = item.find('size').text
                             size = convert_size(torrent_size) or -1
-
                             info_hash = item.find('infohash').text
 
-                        except (AttributeError, TypeError, KeyError, ValueError):
-                            continue
-
-                        # Filter unseeded torrent
-                        if seeders < min(self.minseed, 1):
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': info_hash
+                            }
                             if mode != 'RSS':
-                                logger.log("Discarding torrent because it doesn't meet the"
-                                           'minimum seeders: {0}. Seeders: {1})'.format
-                                           (title, seeders), logger.DEBUG)
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                           (title, seeders, leechers), logger.DEBUG)
+
+                            items.append(item)
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
                             continue
-
-                        item = {
-                            'title': title,
-                            'link': download_url,
-                            'size': size,
-                            'seeders': seeders,
-                            'leechers': leechers,
-                            'pubdate': None,
-                            'hash': info_hash
-                        }
-                        if mode != 'RSS':
-                            logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                       (title, seeders, leechers), logger.DEBUG)
-
-                        items.append(item)
-                except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                               (traceback.format_exc()), logger.ERROR)
-                    continue
 
             results += items
 
