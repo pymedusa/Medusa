@@ -62,7 +62,8 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
     def _check_auth(self):
 
         if not self.username or not self.password:
-            raise AuthException('Your authentication credentials for {0} are missing, check your config.'.format(self.name))
+            raise AuthException('Your authentication credentials for {0} are missing,'
+                                ' check your config.'.format(self.name))
 
         return True
 
