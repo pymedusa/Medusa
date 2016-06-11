@@ -58,6 +58,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         for mode in search_strings:
             items = []
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
                     logger.log('Search string: {0}'.format(search_string), logger.DEBUG)

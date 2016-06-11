@@ -102,6 +102,7 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         for mode in search_strings:
             items = []
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
@@ -121,47 +122,40 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 if not trimmed_data:
                     continue
 
-                try:
-                    with BS4Parser(trimmed_data, 'html5lib') as html:
-                        result_table = html.find('table', {'id': 'torrent_table'})
+                with BS4Parser(trimmed_data, 'html5lib') as html:
+                    result_table = html.find('table', {'id': 'torrent_table'})
 
-                        if not result_table:
-                            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
-                            continue
+                    if not result_table:
+                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                        continue
 
-                        result_tbody = result_table.find('tbody')
-                        entries = result_tbody.contents
-                        del entries[1::2]
+                    result_tbody = result_table.find('tbody')
+                    entries = result_tbody.contents
+                    del entries[1::2]
 
-                        for result in entries[1:]:
-
+                    for result in entries[1:]:
+                        try:
                             torrent = result('td')
                             if len(torrent) <= 1:
                                 break
 
                             all_as = (torrent[1])('a')
-
-                            try:
-                                notinternal = result.find('img', src='/static//common/user_upload.png')
-                                if self.ranked and notinternal:
-                                    logger.log('Found a user uploaded release, Ignoring it..', logger.DEBUG)
-                                    continue
-                                freeleech = result.find('img', src='/static//common/browse/freeleech.png')
-                                if self.freeleech and not freeleech:
-                                    continue
-                                title = all_as[2].string
-                                download_url = self.urls['base_url'] + all_as[0].attrs['href']
-                                torrent_size = result.find('td', class_='nobr').find_next_sibling('td').string
-                                if torrent_size:
-                                    size = convert_size(torrent_size) or -1
-                                seeders = try_int((result('td')[6]).text.replace(',', ''))
-                                leechers = try_int((result('td')[7]).text.replace(',', ''))
-
-                            except (AttributeError, TypeError):
+                            notinternal = result.find('img', src='/static//common/user_upload.png')
+                            if self.ranked and notinternal:
+                                logger.log('Found a user uploaded release, Ignoring it..', logger.DEBUG)
                                 continue
 
+                            freeleech = result.find('img', src='/static//common/browse/freeleech.png')
+                            if self.freeleech and not freeleech:
+                                continue
+
+                            title = all_as[2].string
+                            download_url = self.urls['base_url'] + all_as[0].attrs['href']
                             if not all([title, download_url]):
                                 continue
+
+                            seeders = try_int((result('td')[6]).text.replace(',', ''))
+                            leechers = try_int((result('td')[7]).text.replace(',', ''))
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
@@ -171,24 +165,28 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                                (title, seeders), logger.DEBUG)
                                 continue
 
-                                item = {
-                                    'title': title,
-                                    'link': download_url,
-                                    'size': size,
-                                    'seeders': seeders,
-                                    'leechers': leechers,
-                                    'pubdate': None,
-                                    'hash': None
-                                }
-                                if mode != 'RSS':
-                                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                               (title, seeders, leechers), logger.DEBUG)
+                            torrent_size = result.find('td', class_='nobr').find_next_sibling('td').string
+                            if torrent_size:
+                                size = convert_size(torrent_size) or -1
 
-                                items.append(item)
-                except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                               (traceback.format_exc()), logger.ERROR)
-                    continue
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': None
+                            }
+                            if mode != 'RSS':
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                           (title, seeders, leechers), logger.DEBUG)
+
+                            items.append(item)
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
+                            continue
 
             results += items
 
