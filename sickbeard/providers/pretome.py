@@ -91,6 +91,7 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         for mode in search_strings:
             items = []
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':

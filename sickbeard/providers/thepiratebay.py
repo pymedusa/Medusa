@@ -89,6 +89,7 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
+
                 search_url = self.urls['search'] if mode != 'RSS' else self.urls['rss']
                 if self.custom_url:
                     if not validators.url(self.custom_url):

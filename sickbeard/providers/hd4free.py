@@ -65,6 +65,7 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         for mode in search_strings:
             items = []
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
                 if self.freeleech:
                     search_params['fl'] = 'true'
@@ -95,7 +96,7 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     if jdata['0']['total_results'] == 0:
                         logger.log('Provider has no results for this search', logger.DEBUG)
                         continue
-                except StandardError:
+                except KeyError:
                     continue
 
                 for i in jdata:
