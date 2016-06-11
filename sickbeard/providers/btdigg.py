@@ -57,11 +57,14 @@ class BTDiggProvider(TorrentProvider):
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
         results = []
         search_params = {'p': 0}
+
         for mode in search_strings:
             items = []
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
                 search_params['q'] = search_string
+
                 if mode != 'RSS':
                     search_params['order'] = 0
                     logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
@@ -74,6 +77,7 @@ class BTDiggProvider(TorrentProvider):
                     search_url = self.custom_url + 'api/private-341ada3245790954/s02'
                 else:
                     search_url = self.urls['api']
+
                 jdata = self.get_url(search_url, params=search_params, returns='json')
                 if not jdata:
                     logger.log('Provider did not return data', logger.DEBUG)
