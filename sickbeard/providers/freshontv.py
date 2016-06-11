@@ -211,10 +211,8 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                     continue
 
                                 torrent_size = individual_torrent.find('td', class_='table_size').get_text(strip=True)
-                                torrent_lenght = len(torrent_size)
-                                torrent_weight = torrent_size[:torrent_lenght - 2]
-                                torrent_unit = torrent_size[torrent_lenght - 2:]
-                                torrent_size = '{0} {1}'.format(torrent_weight, torrent_unit)
+                                torrent_size = re.split('(\d+.?\d+)', unicode(torrent_size), 1)
+                                torrent_size = '{0} {1}'.format(torrent_size[1], torrent_size[2])
                                 size = convert_size(torrent_size) or -1
 
                                 item = {
