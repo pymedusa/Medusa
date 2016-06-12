@@ -98,8 +98,13 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                 # Need the html.parser, as the html5parser has issues with this site.
                 with BS4Parser(response.text, 'html.parser') as html:
-                    torrent_table = html('table', width='750')[-1]  # Get the last table with a width of 750px.
-                    torrent_rows = torrent_table('tr') if torrent_table else []
+                    all_tables = html('table', width='750')  # Get the last table with a width of 750px.
+                    if all_tables:
+                        result_table = all_tables[-1]
+                    else:
+                        continue
+
+                    torrent_rows = result_table('tr') if result_table else []
 
                     # Continue only if at least one Release is found
                     if len(torrent_rows) < 2:
