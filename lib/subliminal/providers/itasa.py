@@ -2,12 +2,13 @@
 import copy
 import io
 import logging
+import re
 
 from babelfish import Language
 from guessit import guessit
 try:
     from lxml import etree
-except ImportError:
+except ImportError:  # pragma: no cover
     try:
         import xml.etree.cElementTree as etree
     except ImportError:
@@ -17,7 +18,7 @@ from zipfile import ZipFile, is_zipfile
 
 from . import Provider
 from .. import __version__
-from .. cache import SHOW_EXPIRATION_TIME, region
+from .. cache import EPISODE_EXPIRATION_TIME, SHOW_EXPIRATION_TIME, region
 from .. exceptions import AuthenticationError, ConfigurationError, TooManyRequests
 from .. subtitle import (Subtitle, fix_line_ending, guess_matches, sanitize)
 from .. video import Episode
@@ -28,18 +29,19 @@ logger = logging.getLogger(__name__)
 class ItaSASubtitle(Subtitle):
     provider_name = 'itasa'
 
-    def __init__(self, sub_id, series, season, episode, format, full_data, hash=None):
+    def __init__(self, sub_id, series, season, episode, video_format, year, tvdb_id, full_data):
         super(ItaSASubtitle, self).__init__(Language('ita'))
         self.sub_id = sub_id
         self.series = series
         self.season = season
         self.episode = episode
-        self.format = format
+        self.format = video_format
+        self.year = year
+        self.tvdb_id = tvdb_id
         self.full_data = full_data
-        self.hash = hash
 
     @property
-    def id(self):
+    def id(self):  # pragma: no cover
         return self.sub_id
 
     def get_matches(self, video, hearing_impaired=False):
@@ -57,13 +59,10 @@ class ItaSASubtitle(Subtitle):
         # format
         if video.format and video.format.lower() in self.format.lower():
             matches.add('format')
-        if not video.format and not self.format:
-            matches.add('format')
-        # hash
-        if 'itasa' in video.hashes and self.hash == video.hashes['itasa']:
-            print('Hash %s' % video.hashes['itasa'])
-            if 'series' in matches and 'season' in matches and 'episode' in matches:
-                matches.add('hash')
+        if video.year and self.year == video.year:
+            matches.add('year')
+        if video.series_tvdb_id and self.tvdb_id == video.series_tvdb_id:
+            matches.add('tvdb_id')
 
         # other properties
         matches |= guess_matches(video, guessit(self.full_data), partial=True)
@@ -75,8 +74,6 @@ class ItaSAProvider(Provider):
     languages = {Language('ita')}
 
     video_types = (Episode,)
-
-    required_hash = 'itasa'
 
     server_url = 'https://api.italiansubs.net/api/rest/'
 
@@ -90,10 +87,12 @@ class ItaSAProvider(Provider):
         self.password = password
         self.logged_in = False
         self.login_itasa = False
+        self.session = None
+        self.auth_code = None
 
     def initialize(self):
         self.session = Session()
-        self.session.headers = {'User-Agent': 'Subliminal/%s' % __version__}
+        self.session.headers['User-Agent'] = 'Subliminal/%s' % __version__
 
         # login
         if self.username is not None and self.password is not None:
@@ -110,7 +109,6 @@ class ItaSAProvider(Provider):
             if root.find('status').text == 'fail':
                 raise AuthenticationError(root.find('error/message').text)
 
-            # logger.debug('Logged in: \n' + etree.tostring(root))
             self.auth_code = root.find('data/user/authcode').text
 
             data = {
@@ -148,7 +146,7 @@ class ItaSAProvider(Provider):
         # populate the show ids
         show_ids = {}
         for show in root.findall('data/shows/show'):
-            if show.find('name').text is None:
+            if show.find('name').text is None:  # pragma: no cover
                 continue
             show_ids[sanitize(show.find('name').text).lower()] = int(show.find('id').text)
         logger.debug('Found %d show ids', len(show_ids))
@@ -186,14 +184,14 @@ class ItaSAProvider(Provider):
                 return show_id
 
         # Not in the first page of result try next (if any)
-        next = root.find('data/next')
-        while next.text is not None:
+        next_page = root.find('data/next')
+        while next_page.text is not None:  # pragma: no cover
 
-            r = self.session.get(next.text, timeout=10)
+            r = self.session.get(next_page.text, timeout=10)
             r.raise_for_status()
             root = etree.fromstring(r.content)
 
-            logger.info('Loading suggestion page %s', root.find('data/page').text)
+            logger.info('Loading suggestion page %r', root.find('data/page').text)
 
             # Looking for show in following pages
             for show in root.findall('data/shows/show'):
@@ -203,7 +201,7 @@ class ItaSAProvider(Provider):
 
                     return show_id
 
-            next = root.find('data/next')
+            next_page = root.find('data/next')
 
         # No matches found
         logger.warning('Show id not found: suggestions does not match')
@@ -216,6 +214,7 @@ class ItaSAProvider(Provider):
         First search in the result of :meth:`_get_show_ids` and fallback on a search with :meth:`_search_show_id`
 
         :param str series: series of the episode.
+        :param str country_code: the country in which teh show is aired.
         :return: the show id, if found.
         :rtype: int or None
 
@@ -241,6 +240,7 @@ class ItaSAProvider(Provider):
 
         return show_id
 
+    @region.cache_on_arguments(expiration_time=EPISODE_EXPIRATION_TIME)
     def _download_zip(self, sub_id):
         # download the subtitle
         logger.info('Downloading subtitle %r', sub_id)
@@ -256,10 +256,62 @@ class ItaSAProvider(Provider):
 
         return r.content
 
-    def query(self, series, season, episode, format, country=None, hash=None):
+    def _get_season_subtitles(self, show_id, season, sub_format):
+        params = {
+            'apikey': self.apikey,
+            'show_id': show_id,
+            'q': 'Stagione %d' % season,
+            'version': sub_format
+        }
+        r = self.session.get(self.server_url + 'subtitles/search', params=params, timeout=30)
+        r.raise_for_status()
+        root = etree.fromstring(r.content)
+
+        if int(root.find('data/count').text) == 0:
+            logger.warning('Subtitles for season not found')
+            return []
+
+        subs = []
+        # Looking for subtitles in first page
+        for subtitle in root.findall('data/subtitles/subtitle'):
+            if 'stagione %d' % season in subtitle.find('name').text.lower():
+                logger.debug('Found season zip id %d - %r - %r',
+                             int(subtitle.find('id').text),
+                             subtitle.find('name').text,
+                             subtitle.find('version').text)
+
+                content = self._download_zip(int(subtitle.find('id').text))
+                if not is_zipfile(io.BytesIO(content)):   # pragma: no cover
+                    if 'limite di download' in content:
+                        raise TooManyRequests()
+                    else:
+                        raise ConfigurationError('Not a zip file: %r' % content)
+
+                with ZipFile(io.BytesIO(content)) as zf:
+                    episode_re = re.compile('s(\d{1,2})e(\d{1,2})')
+                    for index, name in enumerate(zf.namelist()):
+                        match = episode_re.search(name)
+                        if not match:  # pragma: no cover
+                            logger.debug('Cannot decode subtitle %r', name)
+                        else:
+                            sub = ItaSASubtitle(
+                                int(subtitle.find('id').text),
+                                subtitle.find('show_name').text,
+                                int(match.group(1)),
+                                int(match.group(2)),
+                                None,
+                                None,
+                                None,
+                                name)
+                            sub.content = fix_line_ending(zf.read(name))
+                            subs.append(sub)
+
+        return subs
+
+    def query(self, series, season, episode, video_format, resolution, country=None):
 
         # To make queries you need to be logged in
-        if not self.logged_in:
+        if not self.logged_in:  # pragma: no cover
             raise ConfigurationError('Cannot query if not logged in')
 
         # get the show id
@@ -269,16 +321,33 @@ class ItaSAProvider(Provider):
             return []
 
         # get the page of the season of the show
-        logger.info('Getting the subtitle of show id %d, season %d episode %d, format %s', show_id,
-                    season, episode, format)
+        logger.info('Getting the subtitle of show id %d, season %d episode %d, format %r', show_id,
+                    season, episode, video_format)
         subtitles = []
 
-        # Default format is HDTV
-        sub_format = ''
-        if format is None or format.lower() == 'hdtv':
-            sub_format = 'normale'
+        # Default format is SDTV
+        if not video_format or video_format.lower() == 'hdtv':
+            if resolution in ('1080i', '1080p', '720p'):
+                sub_format = resolution
+            else:
+                sub_format = 'normale'
         else:
-            sub_format = format.lower()
+            sub_format = video_format.lower()
+
+        # Look for year
+        params = {
+            'apikey': self.apikey
+        }
+        r = self.session.get(self.server_url + 'shows/' + str(show_id), params=params, timeout=30)
+        r.raise_for_status()
+        root = etree.fromstring(r.content)
+
+        year = root.find('data/show/started').text
+        if year:
+            year = int(year.split('-', 1)[0])
+        tvdb_id = root.find('data/show/id_tvdb').text
+        if tvdb_id:
+            tvdb_id = int(tvdb_id)
 
         params = {
             'apikey': self.apikey,
@@ -286,20 +355,29 @@ class ItaSAProvider(Provider):
             'q': '%dx%02d' % (season, episode),
             'version': sub_format
             }
-        logger.debug(params)
         r = self.session.get(self.server_url + 'subtitles/search', params=params, timeout=30)
         r.raise_for_status()
         root = etree.fromstring(r.content)
 
         if int(root.find('data/count').text) == 0:
             logger.warning('Subtitles not found')
-            return []
+            # If no subtitle are found for single episode try to download all season zip
+            subs = self._get_season_subtitles(show_id, season, sub_format)
+            if subs:
+                for subtitle in subs:
+                    subtitle.format = video_format
+                    subtitle.year = year
+                    subtitle.tvdb_id = tvdb_id
 
-        # Looking for subtitlles in first page
+                return subs
+            else:
+                return []
+
+        # Looking for subtitles in first page
         for subtitle in root.findall('data/subtitles/subtitle'):
             if '%dx%02d' % (season, episode) in subtitle.find('name').text.lower():
 
-                logger.debug('Found subtitle id %d - %s - %s',
+                logger.debug('Found subtitle id %d - %r - %r',
                              int(subtitle.find('id').text),
                              subtitle.find('name').text,
                              subtitle.find('version').text)
@@ -309,27 +387,28 @@ class ItaSAProvider(Provider):
                         subtitle.find('show_name').text,
                         season,
                         episode,
-                        format,
-                        subtitle.find('name').text,
-                        hash)
+                        video_format,
+                        year,
+                        tvdb_id,
+                        subtitle.find('name').text)
 
                 subtitles.append(sub)
 
         # Not in the first page of result try next (if any)
-        next = root.find('data/next')
-        while next.text is not None:
+        next_page = root.find('data/next')
+        while next_page.text is not None:   # pragma: no cover
 
-            r = self.session.get(next.text, timeout=30)
+            r = self.session.get(next_page.text, timeout=30)
             r.raise_for_status()
             root = etree.fromstring(r.content)
 
-            logger.info('Loading subtitles page %s', root.data.page.text)
+            logger.info('Loading subtitles page %r', root.data.page.text)
 
             # Looking for show in following pages
             for subtitle in root.findall('data/subtitles/subtitle'):
                 if '%dx%02d' % (season, episode) in subtitle.find('name').text.lower():
 
-                    logger.debug('Found subtitle id %d - %s - %s',
+                    logger.debug('Found subtitle id %d - %r - %r',
                                  int(subtitle.find('id').text),
                                  subtitle.find('name').text,
                                  subtitle.find('version').text)
@@ -339,39 +418,40 @@ class ItaSAProvider(Provider):
                         subtitle.find('show_name').text,
                         season,
                         episode,
-                        format,
-                        subtitle.find('name').text,
-                        hash)
+                        video_format,
+                        year,
+                        tvdb_id,
+                        subtitle.find('name').text)
 
                     subtitles.append(sub)
 
-            next = root.find('data/next')
+            next_page = root.find('data/next')
 
-        # Dowload the subs found, can be more than one in zip
+        # Download the subs found, can be more than one in zip
         additional_subs = []
         for sub in subtitles:
 
             # open the zip
             content = self._download_zip(sub.sub_id)
-            if not is_zipfile(io.BytesIO(content)):
+            if not is_zipfile(io.BytesIO(content)):   # pragma: no cover
                 if 'limite di download' in content:
                     raise TooManyRequests()
                 else:
                     raise ConfigurationError('Not a zip file: %r' % content)
 
             with ZipFile(io.BytesIO(content)) as zf:
-                if len(zf.namelist()) > 1:
+                if len(zf.namelist()) > 1:   # pragma: no cover
 
-                    for name in enumerate(zf.namelist()):
+                    for index, name in enumerate(zf.namelist()):
 
-                        if name[0] == 0:
-                            # First elemnent
-                            sub.content = fix_line_ending(zf.read(name[1]))
-                            sub.full_data = name[1]
+                        if index == 0:
+                            # First element
+                            sub.content = fix_line_ending(zf.read(name))
+                            sub.full_data = name
                         else:
                             add_sub = copy.deepcopy(sub)
-                            add_sub.content = fix_line_ending(zf.read(name[1]))
-                            add_sub.full_data = name[1]
+                            add_sub.content = fix_line_ending(zf.read(name))
+                            add_sub.full_data = name
                             additional_subs.append(add_sub)
                 else:
                     sub.content = fix_line_ending(zf.read(zf.namelist()[0]))
@@ -380,7 +460,7 @@ class ItaSAProvider(Provider):
         return subtitles + additional_subs
 
     def list_subtitles(self, video, languages):
-        return self.query(video.series, video.season, video.episode, video.format, hash=video.hashes.get('itasa'))
+        return self.query(video.series, video.season, video.episode, video.format, video.resolution)
 
-    def download_subtitle(self, subtitle):
+    def download_subtitle(self, subtitle):   # pragma: no cover
         pass

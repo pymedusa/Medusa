@@ -1,5 +1,5 @@
 # coding=utf-8
-'''A Norbits (https://norbits.net) provider'''
+"""A Norbits (https://norbits.net) provider"""
 
 # URL: https://sickrage.github.io
 #
@@ -19,6 +19,9 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
+
+import json
+
 from requests.compat import urlencode
 
 from sickbeard import logger, tvcache
@@ -27,17 +30,12 @@ from sickrage.helper.exceptions import AuthException
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
 
 class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    '''Main provider object'''
+    """Main provider object"""
 
     def __init__(self):
-        ''' Initialize the class '''
+        """ Initialize the class """
         TorrentProvider.__init__(self, 'Norbits')
 
         self.username = None
@@ -60,7 +58,7 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         return True
 
     def _checkAuthFromData(self, parsed_json):  # pylint: disable=invalid-name
-        ''' Check that we are authenticated. '''
+        """ Check that we are authenticated. """
 
         if 'status' in parsed_json and 'message' in parsed_json:
             if parsed_json.get('status') == 3:
@@ -70,7 +68,7 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         return True
 
     def search(self, search_params, age=0, ep_obj=None):  # pylint: disable=too-many-locals
-        ''' Do the actual searching and JSON parsing'''
+        """ Do the actual searching and JSON parsing"""
 
         results = []
 

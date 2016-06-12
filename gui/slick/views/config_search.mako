@@ -5,11 +5,10 @@
 %>
 <%block name="content">
 % if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
+<h1 class="header">${header}</h1>
 % else:
-    <h1 class="title">${title}</h1>
+<h1 class="title">${title}</h1>
 % endif
-
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="saveSearch" method="post">
@@ -19,223 +18,228 @@
                     <li><a href="#nzb-search">NZB Search</a></li>
                     <li><a href="#torrent-search">Torrent Search</a></li>
                 </ul>
-
-                <div id="episode-search" class="component-group">
-                    <div class="component-group-desc">
-                        <h3>Episode Search</h3>
-                        <p>How to manage searching with <a href="${srRoot}/config/providers">providers</a>.</p>
-                    </div>
-
-                    <fieldset class="component-group-list">
-                        <div class="field-pair">
-                            <label for="randomize_providers">
-                                <span class="component-title">Randomize Providers</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="randomize_providers" id="randomize_providers" class="enabler" ${('', 'checked="checked"')[bool(sickbeard.RANDOMIZE_PROVIDERS)]}/>
-                                    <p>randomize the provider search order instead of going in order of placement</p>
-                                </span>
-                            </label>
+                <div id="episode-search">
+                    <div class="component-group">
+                        <div class="component-group-desc">
+                            <h3>General Search Settings</h3>
+                            <p>How to manage searching with <a href="${srRoot}/config/providers">providers</a>.</p>
                         </div>
-                        <div class="field-pair">
-                            <label for="download_propers">
-                                <span class="component-title">Download propers</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="download_propers" id="download_propers" class="enabler" ${('', 'checked="checked"')[bool(sickbeard.DOWNLOAD_PROPERS)]}/>
-                                    <p>replace original download with "Proper" or "Repack" if nuked</p>
-                                </span>
-                            </label>
-                        </div>
-                        <div id="content_download_propers">
+                        <fieldset class="component-group-list">
                             <div class="field-pair">
-                                <label for="check_propers_interval">
-                                    <span class="component-title">Check propers every:</span>
+                                <label for="randomize_providers">
+                                    <span class="component-title">Randomize Providers</span>
                                     <span class="component-desc">
-                                        <select id="check_propers_interval" name="check_propers_interval" class="form-control input-sm">
-<% check_propers_interval_text = {'daily': "24 hours", '4h': "4 hours", '90m': "90 mins", '45m': "45 mins", '15m': "15 mins"} %>
-% for curInterval in ('daily', '4h', '90m', '45m', '15m'):
-                                            <option value="${curInterval}" ${('', 'selected="selected"')[sickbeard.CHECK_PROPERS_INTERVAL == curInterval]}>${check_propers_interval_text[curInterval]}</option>
-% endfor
-                                        </select>
+                                        <input type="checkbox" name="randomize_providers" id="randomize_providers" class="enabler" ${('', 'checked="checked"')[bool(sickbeard.RANDOMIZE_PROVIDERS)]}/>
+                                        <p>randomize the provider search order instead of going in order of placement</p>
                                     </span>
                                 </label>
-                            </div>
-                        </div>
-
-                        <div class="field-pair">
-                            <label>
-                                <span class="component-title">Backlog search day(s)</span>
-                                <span class="component-desc">
-                                    <input type="number" min="1" step="1" name="backlog_days" value="${sickbeard.BACKLOG_DAYS}" class="form-control input-sm input75" autocapitalize="off" />
-                                    <p>number of day(s) that the "Forced Backlog Search" will cover (e.g. 7 Days)</p>
-                                </span>
-                            </label>
-                        </div>
-
-                        <div class="field-pair">
-                            <label>
-                                <span class="component-title">Backlog search frequency</span>
-                                <span class="component-desc">
-                                    <input type="number" min="720" step="1" name="backlog_frequency" value="${sickbeard.BACKLOG_FREQUENCY}" class="form-control input-sm input75" autocapitalize="off" />
-                                    <p>time in minutes between searches (min. ${sickbeard.MIN_BACKLOG_FREQUENCY})</p>
-                                </span>
-                            </label>
-                        </div>
-
-                        <div class="field-pair">
-                            <label>
-                                <span class="component-title">Daily search frequency</span>
-                                <span class="component-desc">
-                                    <input type="number" min="10" step="1" name="dailysearch_frequency" value="${sickbeard.DAILYSEARCH_FREQUENCY}" class="form-control input-sm input75" autocapitalize="off" />
-                                    <p>time in minutes between searches (min. ${sickbeard.MIN_DAILYSEARCH_FREQUENCY})</p>
-                                    </span>
-                            </label>
-                        </div>
-
-                        <div class="field-pair">
-                            <label>
-                                <span class="component-title">Usenet retention</span>
-                                <span class="component-desc">
-                                    <input type="number" min="1" step="1" name="usenet_retention" value="${sickbeard.USENET_RETENTION}" class="form-control input-sm input75" autocapitalize="off" />
-                                    <p>age limit in days for usenet articles to be used (e.g. 500)</p>
-                                </span>
-                            </label>
-                        </div>
-
-                        <div class="field-pair">
-                            <label>
-                                <span class="component-title">Ignore words</span>
-                                <span class="component-desc">
-                                    <input type="text" name="ignore_words" value="${sickbeard.IGNORE_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
-                                    <div class="clear-left">results with one or more word from this list will be ignored<br>
-                                    separate words with a comma, e.g. "word1,word2,word3"
-                                    </div>
-                                </span>
-                            </label>
-                        </div>
-
-                        <div class="field-pair">
-                            <label>
-                                <span class="component-title">Require words</span>
-                                <span class="component-desc">
-                                    <input type="text" name="require_words" value="${sickbeard.REQUIRE_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
-                                    <div class="clear-left">results with no word from this list will be ignored<br>
-                                    separate words with a comma, e.g. "word1,word2,word3"
-                                    </div>
-                                </span>
-                            </label>
-                        </div>
-
-                        <div class="field-pair">
-                            <label>
-                                <span class="component-title">Preferred words</span>
-                                <span class="component-desc">
-                                    <input type="text" name="preferred_words" value="${sickbeard.PREFERRED_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
-                                    <div class="clear-left">results with one or more word from this list will be chosen over others<br>
-                                    separate words with a comma, e.g. "word1,word2,word3"
-                                    </div>
-                                </span>
-                            </label>
-                        </div>
-
-                        <div class="field-pair">
-                            <label>
-                                <span class="component-title">Undesired words</span>
-                                <span class="component-desc">
-                                    <input type="text" name="undesired_words" value="${sickbeard.UNDESIRED_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
-                                    <div class="clear-left">results withouth words from this list will be preferred<br>
-                                    separate words with a comma, e.g. "word1,word2,word3"
-                                    </div>
-                                </span>
-                            </label>
-                        </div>
-
-                        <div class="field-pair">
-                            <label>
-                                <span class="component-title">Trackers list</span>
-                                <span class="component-desc">
-                                    <input type="text" name="trackers_list" value="${sickbeard.TRACKERS_LIST}" class="form-control input-sm input350" autocapitalize="off" />
-                                    <div class="clear-left">Trackers that will be added to magnets without trackers<br>
-                                    separate trackers with a comma, e.g. "tracker1,tracker2,tracker3"
-                                    </div>
-                                </span>
-                            </label>
-                        </div>
-
-                        <div class="field-pair">
-                            <label>
-                                <span class="component-title">Ignore language names in subbed results</span>
-                                <span class="component-desc">
-                                    <input type="text" name="ignored_subs_list" value="${sickbeard.IGNORED_SUBS_LIST}" class="form-control input-sm input350" autocapitalize="off" />
-                                    <div class="clear-left">Ignore subbed releases based on language names <br>
-                                    Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br>
-                                    separate languages with a comma, e.g. "lang1,lang2,lang3
-                                    </div>
-                                </span>
-                            </label>
-                        </div>
-
-                        <div class="field-pair">
-                            <label for="ignore_und_subs">
-                                <span class="component-title">Ignore unknown subbed releases</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="ignore_und_subs" id="ignore_und_subs" ${('', 'checked="checked"')[bool(sickbeard.IGNORE_UND_SUBS)]}/>
-                                    Ignore subbed releases without language names <br>
-                                    Filter words: subbed, subpack, subbed, subs, etc.)
-                                </span>
-                            </label>
-                        </div>
-
-                        <div class="field-pair">
-                            <label for="allow_high_priority">
-                                <span class="component-title">Allow high priority</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="allow_high_priority" id="allow_high_priority" ${('', 'checked="checked"')[bool(sickbeard.ALLOW_HIGH_PRIORITY)]}/>
-                                    <p>set downloads of recently aired episodes to high priority</p>
-                                </span>
-                            </label>
-                        </div>
-
-                         <div class="field-pair">
-                             <input id="use_failed_downloads" type="checkbox" class="enabler" name="use_failed_downloads" ${('', 'checked="checked"')[bool(sickbeard.USE_FAILED_DOWNLOADS)]} />
-                             <label for="use_failed_downloads">
-                                 <span class="component-title">Use Failed Downloads</span>
-                                 <span class="component-desc">Use Failed Download Handling?</span>
-                             </label>
-                             <label class="nocheck" for="use_failed_downloads">
-                                 <span class="component-title">&nbsp;</span>
-                                 <span class="component-desc">Will only work with snatched/downloaded episodes after enabling this</span>
-                             </label>
-                         </div>
-
-                        <div id="content_use_failed_downloads">
+                            </div><!-- randomize providers -->
                             <div class="field-pair">
-                                <input id="delete_failed" type="checkbox" name="delete_failed" ${('', 'checked="checked"')[bool(sickbeard.DELETE_FAILED)]}/>
+                                <label for="download_propers">
+                                    <span class="component-title">Download propers</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="download_propers" id="download_propers" class="enabler" ${('', 'checked="checked"')[bool(sickbeard.DOWNLOAD_PROPERS)]}/>
+                                        <p>replace original download with "Proper" or "Repack" if nuked</p>
+                                    </span>
+                                </label>
+                            </div><!-- download propers -->
+                            <div id="content_download_propers">
+                                <div class="field-pair">
+                                    <label for="check_propers_interval">
+                                        <span class="component-title">Check propers every:</span>
+                                        <span class="component-desc">
+                                            <select id="check_propers_interval" name="check_propers_interval" class="form-control input-sm">
+    <% check_propers_interval_text = {'daily': "24 hours", '4h': "4 hours", '90m': "90 mins", '45m': "45 mins", '15m': "15 mins"} %>
+    % for curInterval in ('daily', '4h', '90m', '45m', '15m'):
+                                                <option value="${curInterval}" ${('', 'selected="selected"')[sickbeard.CHECK_PROPERS_INTERVAL == curInterval]}>${check_propers_interval_text[curInterval]}</option>
+    % endfor
+                                            </select>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div><!-- check propers -->
+                            <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Backlog search day(s)</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="1" step="1" name="backlog_days" value="${sickbeard.BACKLOG_DAYS}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <p>number of day(s) that the "Forced Backlog Search" will cover (e.g. 7 Days)</p>
+                                    </span>
+                                </label>
+                            </div><!-- backlog days -->
+                            <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Backlog search frequency</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="720" step="1" name="backlog_frequency" value="${sickbeard.BACKLOG_FREQUENCY}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <p>time in minutes between searches (min. ${sickbeard.MIN_BACKLOG_FREQUENCY})</p>
+                                    </span>
+                                </label>
+                            </div><!-- backlog frequency -->
+                            <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Daily search frequency</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="10" step="1" name="dailysearch_frequency" value="${sickbeard.DAILYSEARCH_FREQUENCY}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <p>time in minutes between searches (min. ${sickbeard.MIN_DAILYSEARCH_FREQUENCY})</p>
+                                        </span>
+                                </label>
+                            </div><!-- daily search frequency -->
+                            <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Usenet retention</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="1" step="1" name="usenet_retention" value="${sickbeard.USENET_RETENTION}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <p>age limit in days for usenet articles to be used (e.g. 500)</p>
+                                    </span>
+                                </label>
+                            </div><!-- usenet retention -->
+                            <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Trackers list</span>
+                                    <span class="component-desc">
+                                        <input type="text" name="trackers_list" value="${sickbeard.TRACKERS_LIST}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <div class="clear-left">Trackers that will be added to magnets without trackers<br>
+                                        separate trackers with a comma, e.g. "tracker1,tracker2,tracker3"
+                                        </div>
+                                    </span>
+                                </label>
+                            </div><!-- trackers -->
+                            <div class="field-pair">
+                                <label for="allow_high_priority">
+                                    <span class="component-title">Allow high priority</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="allow_high_priority" id="allow_high_priority" ${('', 'checked="checked"')[bool(sickbeard.ALLOW_HIGH_PRIORITY)]}/>
+                                        <p>set downloads of recently aired episodes to high priority</p>
+                                    </span>
+                                </label>
+                            </div><!-- high priority -->
+                            <div class="field-pair">
+                                <label for="use_failed_downloads">
+                                    <span class="component-title">Use Failed Downloads</span>
+                                    <span class="component-desc">
+                                        <input id="use_failed_downloads" type="checkbox" class="enabler" name="use_failed_downloads" ${('', 'checked="checked"')[bool(sickbeard.USE_FAILED_DOWNLOADS)]} />
+                                        Use Failed Download Handling?<br />
+                                        Will only work with snatched/downloaded episodes after enabling this
+                                    </span>
+                                </label>
+                            </div><!-- use failed -->
+                            <div class="field-pair">
                                 <label for="delete_failed">
                                     <span class="component-title">Delete Failed</span>
-                                    <span class="component-desc">Delete files left over from a failed download?</span>
+                                    <span class="component-desc">
+                                        <input id="delete_failed" type="checkbox" name="delete_failed" ${('', 'checked="checked"')[bool(sickbeard.DELETE_FAILED)]}/>
+                                        Delete files left over from a failed download?<br />
+                                        <b>NOTE:</b> This only works if Use Failed Downloads is enabled.
+                                    </span>
                                 </label>
-                                <label class="nocheck" for="delete_failed">
-                                    <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc"><b>NOTE:</b> This only works if Use Failed Downloads is enabled.</span>
+                            </div><!-- delete failed -->
+                            <div class="field-pair">
+                                <label for="cache_trimming">
+                                    <span class="component-title">Cache Trimming</span>
+                                    <span class="component-desc">
+                                        <input id="cache_trimming" type="checkbox" name="cache_trimming" ${('', 'checked="checked"')[bool(sickbeard.CACHE_TRIMMING)]}/>
+                                        Enable trimming of provider cache<br />
+                                    </span>
                                 </label>
-                            </div>
+                            </div><!-- cache trimming -->
+                            <div class="field-pair">
+                                <label for="max_cache_age">
+                                    <span class="component-title">Cache Retention</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="1" step="1" name="max_cache_age" id="max_cache_age" value="${sickbeard.MAX_CACHE_AGE}" class="form-control input-sm input75" autocapitalize="off" />
+                                        days<br />
+                                        <br />
+                                        Number of days to retain results in cache.  Results older than this will be removed if cache trimming is enabled.
+                                    </span>
+                                </label>
+                            </div><!-- max cache age -->
+                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        </fieldset>
+                    </div><!-- general settings -->
+                    <div class="component-group">
+                        <div class="component-group-desc">
+                            <h3>Search Filters</h3>
+                            <p>Options to filter search results</p>
                         </div>
-
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
-
-                    </fieldset>
+                        <fieldset class="component-group-list">
+                            <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Ignore words</span>
+                                    <span class="component-desc">
+                                        <input type="text" name="ignore_words" value="${sickbeard.IGNORE_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <div class="clear-left">results with any words from this list will be ignored<br>
+                                        separate words with a comma, e.g. "word1,word2,word3"
+                                        </div>
+                                    </span>
+                                </label>
+                            </div><!-- ignored words -->
+                            <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Undesired words</span>
+                                    <span class="component-desc">
+                                        <input type="text" name="undesired_words" value="${sickbeard.UNDESIRED_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <div class="clear-left">results with words from this list will only be selected as a last resort<br>
+                                        separate words with a comma, e.g. "word1,word2,word3"
+                                        </div>
+                                    </span>
+                                </label>
+                            </div><!-- undesired words -->
+                            <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Preferred words</span>
+                                    <span class="component-desc">
+                                        <input type="text" name="preferred_words" value="${sickbeard.PREFERRED_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <div class="clear-left">results with one or more word from this list will be chosen over others<br>
+                                        separate words with a comma, e.g. "word1,word2,word3"
+                                        </div>
+                                    </span>
+                                </label>
+                            </div><!-- preferred words -->
+                            <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Require words</span>
+                                    <span class="component-desc">
+                                        <input type="text" name="require_words" value="${sickbeard.REQUIRE_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <div class="clear-left">results must include at least one word from this list<br>
+                                        separate words with a comma, e.g. "word1,word2,word3"
+                                        </div>
+                                    </span>
+                                </label>
+                            </div><!-- required words -->
+                            <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Ignore language names in subbed results</span>
+                                    <span class="component-desc">
+                                        <input type="text" name="ignored_subs_list" value="${sickbeard.IGNORED_SUBS_LIST}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <div class="clear-left">Ignore subbed releases based on language names <br>
+                                        Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br>
+                                        separate languages with a comma, e.g. "lang1,lang2,lang3
+                                        </div>
+                                    </span>
+                                </label>
+                            </div><!-- subbed results -->
+                            <div class="field-pair">
+                                <label for="ignore_und_subs">
+                                    <span class="component-title">Ignore unknown subbed releases</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="ignore_und_subs" id="ignore_und_subs" ${('', 'checked="checked"')[bool(sickbeard.IGNORE_UND_SUBS)]}/>
+                                        Ignore subbed releases without language names <br>
+                                        Filter words: subbed, subpack, subbed, subs, etc.)
+                                    </span>
+                                </label>
+                            </div><!-- ignore unknown subs -->
+                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        </fieldset>
+                    </div><!-- search filters -->
                 </div><!-- /component-group1 //-->
-
                 <div id="nzb-search" class="component-group">
-
                     <div class="component-group-desc">
                         <h3>NZB Search</h3>
                         <p>How to handle NZB search results.</p>
                         <div id="nzb_method_icon" class="add-client-icon-${sickbeard.NZB_METHOD}"></div>
                     </div>
-
                     <fieldset class="component-group-list">
-
                         <div class="field-pair">
                             <label for="use_nzbs">
                                 <span class="component-title">Search NZBs</span>
@@ -244,7 +248,6 @@
                                     <p>enable NZB search providers</p></span>
                             </label>
                         </div>
-
                         <div id="content_use_nzbs">
                         <div class="field-pair">
                             <label for="nzb_method">
@@ -259,7 +262,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="blackhole_settings">
                             <div class="field-pair">
                                 <label>
@@ -271,7 +273,6 @@
                                 </label>
                             </div>
                         </div>
-
                         <div id="sabnzbd_settings">
                             <div class="field-pair">
                                 <label>
@@ -282,7 +283,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">SABnzbd username</span>
@@ -292,7 +292,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">SABnzbd password</span>
@@ -302,7 +301,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">SABnzbd API key</span>
@@ -312,7 +310,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Use SABnzbd category</span>
@@ -322,7 +319,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Use SABnzbd category (backlog episodes)</span>
@@ -332,7 +328,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Use SABnzbd category for anime</span>
@@ -342,8 +337,6 @@
                                     </span>
                                 </label>
                             </div>
-
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Use SABnzbd category for anime (backlog episodes)</span>
@@ -353,7 +346,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             % if sickbeard.ALLOW_HIGH_PRIORITY is True:
                             <div class="field-pair">
                                 <label for="sab_forced">
@@ -365,7 +357,6 @@
                             </div>
                             % endif
                         </div>
-
                         <div id="nzbget_settings">
                             <div class="field-pair">
                                 <label for="nzbget_use_https">
@@ -377,7 +368,6 @@
                                 </label>
 
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">NZBget host:port</span>
@@ -388,7 +378,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">NZBget username</span>
@@ -398,7 +387,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">NZBget password</span>
@@ -408,7 +396,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Use NZBget category</span>
@@ -418,7 +405,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Use NZBget category (backlog episodes)</span>
@@ -428,7 +414,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Use NZBget category for anime</span>
@@ -438,7 +423,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Use NZBget category for anime (backlog episodes)</span>
@@ -448,7 +432,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">NZBget priority</span>
@@ -466,23 +449,18 @@
                                 </label>
                             </div>
                         </div>
-
                         <div class="testNotification" id="testSABnzbd_result">Click below to test</div>
-                        <input class="btn" type="button" value="Test SABnzbd" id="testSABnzbd" class="btn test-button"/>
-                        <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
-
+                            <input class="btn" type="button" value="Test SABnzbd" id="testSABnzbd" class="btn test-button"/>
+                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                         </div><!-- /content_use_nzbs //-->
-
                     </fieldset>
                 </div><!-- /component-group2 //-->
-
                 <div id="torrent-search" class="component-group">
                     <div class="component-group-desc">
                         <h3>Torrent Search</h3>
                         <p>How to handle Torrent search results.</p>
                         <div id="torrent_method_icon" class="add-client-icon-${sickbeard.TORRENT_METHOD}"></div>
                     </div>
-
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label for="use_torrents">
@@ -505,8 +483,8 @@
                                     <option value="${curAction}" ${('', 'selected="selected"')[sickbeard.TORRENT_METHOD == curAction]}>${torrent_method_text[curAction]}</option>
     % endfor
                                     </select>
+                                    </span>
                                 </label>
-
                                 <div id="options_torrent_blackhole">
                                     <div class="field-pair">
                                         <label>
@@ -517,11 +495,9 @@
                                             </span>
                                         </label>
                                     </div>
-
                                     <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                                 </div>
                             </div>
-
                             <div id="options_torrent_clients">
                                 <div class="field-pair">
                                     <label>
@@ -534,7 +510,6 @@
                                         </span>
                                     </label>
                                 </div>
-
                                 <div class="field-pair" id="torrent_rpcurl_option">
                                     <label>
                                         <span class="component-title" id="rpcurl_title">Torrent RPC URL</span>
@@ -546,7 +521,6 @@
                                         </span>
                                     </label>
                                 </div>
-
                                 <div class="field-pair" id="torrent_auth_type_option">
                                     <label>
                                         <span class="component-title">Http Authentication</span>
@@ -561,7 +535,6 @@
                                         </span>
                                     </label>
                                 </div>
-
                                 <div class="field-pair" id="torrent_verify_cert_option">
                                     <label for="torrent_verify_cert">
                                         <span class="component-title">Verify certificate</span>
@@ -572,7 +545,6 @@
                                         </span>
                                     </label>
                                 </div>
-
                                 <div class="field-pair" id="torrent_username_option">
                                     <label>
                                         <span class="component-title" id="username_title">Client username</span>
@@ -582,7 +554,6 @@
                                         </span>
                                     </label>
                                 </div>
-
                                 <div class="field-pair" id="torrent_password_option">
                                     <label>
                                         <span class="component-title" id="password_title">Client password</span>
@@ -592,37 +563,34 @@
                                         </span>
                                     </label>
                                 </div>
-
                                 <div class="field-pair" id="torrent_label_option">
                                     <label>
                                         <span class="component-title">Add label to torrent</span>
                                         <span class="component-desc">
                                             <input type="text" name="torrent_label" id="torrent_label" value="${sickbeard.TORRENT_LABEL}" class="form-control input-sm input200" autocapitalize="off" />
-                                            <span id="label_warning_deluge" style="display:none"><p>(blank spaces are not allowed)</p>
+                                            <span id="label_warning_deluge" style="display:none;"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: label plugin must be enabled in Deluge clients</p></div>
                                             </span>
-                                            <span id="label_warning_qbittorrent" style="display:none"><p>(blank spaces are not allowed)</p>
+                                            <span id="label_warning_qbittorrent" style="display:none;"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: for QBitTorrent 3.3.1 and up</p></div>
                                             </span>
                                         </span>
                                     </label>
                                 </div>
-
                                 <div class="field-pair" id="torrent_label_anime_option">
                                     <label>
                                         <span class="component-title">Add label to torrent for anime</span>
                                         <span class="component-desc">
                                             <input type="text" name="torrent_label_anime" id="torrent_label_anime" value="${sickbeard.TORRENT_LABEL_ANIME}" class="form-control input-sm input200" autocapitalize="off" />
-                                            <span id="label_anime_warning_deluge" style="display:none"><p>(blank spaces are not allowed)</p>
+                                            <span id="label_anime_warning_deluge" style="display:none;"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: label plugin must be enabled in Deluge clients</p></div>
                                             </span>
-                                            <span id="label_anime_warning_qbittorrent" style="display:none"><p>(blank spaces are not allowed)</p>
+                                            <span id="label_anime_warning_qbittorrent" style="display:none;"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: for QBitTorrent 3.3.1 and up </p></div>
                                             </span>
                                         </span>
                                     </label>
                                 </div>
-
                                 <div class="field-pair" id="torrent_path_option">
                                     <label>
                                         <span class="component-title" id="directory_title">Downloaded files location</span>
@@ -634,7 +602,6 @@
                                         </span>
                                     </label>
                                 </div>
-
                                 <div class="field-pair" id="torrent_seed_time_option">
                                     <label>
                                         <span class="component-title" id="torrent_seed_time_label">Minimum seeding time is</span>
@@ -642,17 +609,15 @@
                                         <p>hours. (default:'0' passes blank to client and '-1' passes nothing)</p></span>
                                     </label>
                                 </div>
-
                                 <div class="field-pair" id="torrent_paused_option">
                                     <label>
                                         <span class="component-title">Start torrent paused</span>
                                         <span class="component-desc">
                                             <input type="checkbox" name="torrent_paused" class="enabler" id="torrent_paused" ${('', 'checked="checked"')[bool(sickbeard.TORRENT_PAUSED)]}/>
-                                            <p>add .torrent to client but do <b style="font-weight:900">not</b> start downloading</p>
+                                            <p>add .torrent to client but do <b style="font-weight:900;">not</b> start downloading</p>
                                         </span>
                                     </label>
                                 </div>
-
                                 <div class="field-pair" id="torrent_high_bandwidth_option">
                                     <label>
                                         <span class="component-title">Allow high bandwidth</span>
@@ -662,19 +627,16 @@
                                         </span>
                                     </label>
                                 </div>
-
                                 <div class="testNotification" id="test_torrent_result">Click below to test</div>
-                                <input class="btn" type="button" value="Test Connection" id="test_torrent" class="btn test-button"/>
-                                <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                                    <input class="btn" type="button" value="Test Connection" id="test_torrent" class="btn test-button"/>
+                                    <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                                 </div>
                         </div><!-- /content_use_torrents //-->
                     </fieldset>
                 </div><!-- /component-group3 //-->
-
                 <br>
                 <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${sickbeard.DATA_DIR}</span></b> </h6>
                 <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
-
             </div><!-- /config-components //-->
         </form>
     </div>

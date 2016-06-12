@@ -1,20 +1,20 @@
 # coding=utf-8
 # Author: Gonçalo M. (aka duramato/supergonkas) <supergonkas@gmail.com>
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
@@ -22,8 +22,9 @@ import re
 import requests
 import traceback
 
-from requests.compat import urljoin
 from contextlib2 import suppress
+
+from requests.compat import urljoin
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -36,9 +37,7 @@ hash_regex = re.compile(r'(.*)([0-9a-f]{40})(.*)', re.I)
 
 
 class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """
-    Search provider LimeTorrents
-    """
+    """Search provider LimeTorrents."""
 
     def __init__(self):
 
@@ -70,7 +69,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches,too-many-locals
         """
-        Search the provider for results
+        Search the provider for results.
 
         :param search_strings: Search to perform
         :param age: Not used for this provider
@@ -79,28 +78,31 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         :return: A list of items found
         """
         results = []
+
         for mode in search_strings:
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
                 if mode == 'RSS':
-                    for page in range(1, 4):
-                        search_url = self.urls['rss'].format(page=page)
-                        data = self.get_url(search_url, returns='text')
-                        items = self.parse(data, mode)
-                        results += items
+                    search_url = self.urls['rss'].format(page=1)
                 else:
+                    logger.log("Search string: {0}".format(search_string), logger.DEBUG)
                     search_url = self.urls['search'].format(query=search_string)
-                    data = self.get_url(search_url, returns='text')
-                    items = self.parse(data, mode)
-                    results += items
+
+                data = self.get_url(search_url, returns='text')
                 if not data:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
+
+                items = self.parse(data, mode)
+                if items:
+                    results += items
+
         return results
 
     def parse(self, data, mode):
         """
-        Parse search results for items
+        Parse search results for items.
 
         :param data: The raw response from a search
         :param mode: The current mode used to search, e.g. RSS
@@ -108,40 +110,43 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         :return: A list of items found
         """
         items = []
+
         with BS4Parser(data, 'html5lib') as html:
             torrent_table = html('table', class_='table2')
-            if mode != 'RSS' and len(torrent_table) < 2:
+
+            if mode != 'RSS' and torrent_table and len(torrent_table) < 2:
                 logger.log(u'Data returned from provider does not contain any torrents', logger.DEBUG)
                 return
 
             torrent_table = torrent_table[0 if mode == 'RSS' else 1]
             torrent_rows = torrent_table('tr')
-            first = True
-            for result in torrent_rows:
-                # Skip the first, since it isn't a valid result
-                if first:
-                    first = False
-                    continue
+
+            # Skip the first row, since it isn't a valid result
+            for result in torrent_rows[1:]:
                 cells = result('td')
                 try:
                     verified = result('img', title='Verified torrent')
                     if self.confirmed and not verified:
                         continue
-                    titleinfo = result('a')
-                    info = titleinfo[1]['href']
-                    torrent_id = id_regex.search(info).group(1)
+
                     url = result.find('a', rel='nofollow')
-                    if not url:
+                    title_info = result('a')
+                    info = title_info[1]['href']
+                    if not all([url, title_info, info]):
                         continue
+
+                    title = title_info[1].get_text(strip=True)
+                    torrent_id = id_regex.search(info).group(1)
                     torrent_hash = hash_regex.search(url['href']).group(2)
-                    if not torrent_id or not torrent_hash:
+                    if not all([title, torrent_id, torrent_hash]):
                         continue
+
                     with suppress(requests.exceptions.Timeout):
                         # Suppress the timeout since we are not interested in actually getting the results
-                        hashdata = self.session.get(self.urls['update'], timeout=0.1,
-                                                    params={'torrent_id': torrent_id,
-                                                            'infohash': torrent_hash})
-                    title = titleinfo[1].get_text(strip=True)
+                        self.session.get(self.urls['update'], timeout=0.1,
+                                         params={'torrent_id': torrent_id,
+                                                 'infohash': torrent_hash})
+
                     # Remove comma as thousands separator from larger number like 2,000 seeders = 2000
                     seeders = try_int(cells[3].get_text(strip=True).replace(',', ''))
                     leechers = try_int(cells[4].get_text(strip=True).replace(',', ''))
@@ -151,8 +156,8 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
-                            logger.log('Discarding torrent because it doesn\'t meet the minimum '
-                                       'seeders or leechers: {0}. Seeders: {1})'.format
+                            logger.log("Discarding torrent because it doesn't meet the"
+                                       ' minimum seeders: {0}. Seeders: {1}'.format
                                        (title, seeders), logger.DEBUG)
                         continue
 
@@ -162,21 +167,22 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'hash': torrent_hash or ''
+                        'pubdate': None,
+                        'hash': torrent_hash
                     }
+                    if mode != 'RSS':
+                        logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                   (title, seeders, leechers), logger.DEBUG)
 
-                    # if mode != 'RSS':
-                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                               (title, seeders, leechers), logger.DEBUG)
                     items.append(item)
-
-                except StandardError:
-                    logger.log(u"Failed parsing provider. Traceback: {!r}".format(traceback.format_exc()), logger.ERROR)
+                except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                               (traceback.format_exc()), logger.ERROR)
                     continue
 
-                    # For each search mode sort all the items by seeders if available
-
+            # For each search mode sort all the items by seeders if available
             items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
+
         return items
 
 

@@ -4,7 +4,7 @@
     import locale
     import sickbeard
     from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from sickbeard.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets
+    from sickbeard.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, privacy_levels
     from sickbeard.sbdatetime import sbdatetime, date_presets, time_presets
     from sickbeard import config
     from sickbeard import metadata
@@ -527,26 +527,6 @@
                         </div>
 
                         <div class="field-pair">
-                            <label for="debug">
-                                <span class="component-title">Enable debug</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="debug" id="debug" ${('', 'checked="checked"')[bool(sickbeard.DEBUG)]}/>
-                                    <p>Enable debug logs<p>
-                                </span>
-                            </label>
-                        </div>
-
-                        <div class="field-pair">
-                            <label for="subliminal_log">
-                                <span class="component-title">Subliminal logs</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="subliminal_log" id="subliminal_log" ${('', 'checked="checked"')[bool(sickbeard.SUBLIMINAL_LOG)]}/>
-                                    <p>enable logs from subliminal library (subtitles)</p>
-                                </span>
-                            </label>
-                        </div>
-
-                        <div class="field-pair">
                             <label for="ssl_verify">
                                 <span class="component-title">Verify SSL Certs</span>
                                     <span class="component-desc">
@@ -608,6 +588,7 @@
                                 <span class="component-desc">
                                     <input type="text" name="proxy_setting" value="${sickbeard.PROXY_SETTING}" class="form-control input-sm input300" autocapitalize="off" />
                                     <div class="clear-left"><p>blank to disable or proxy to use when connecting to providers</p></div>
+                                </span>
                             </label>
                         </div>
 
@@ -631,6 +612,7 @@
                                 <div class="clear-left">
                                 <span class="component-desc"><b>NOTE:</b> This may mean Medusa misses renames as well</span>
                                 </div>
+                            </label>
                         </div>
 
                         <div class="field-pair">
@@ -662,6 +644,53 @@
 
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
+                </div>
+                <div class="component-group">
+                    <div class="component-group-desc">
+                        <h3>Logging</h3>
+                    </div>
+                    <fieldset class="component-group-list">
+                        <div class="field-pair">
+                            <label for="debug">
+                                <span class="component-title">Enable debug</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="debug" id="debug" ${('', 'checked="checked"')[bool(sickbeard.DEBUG)]}/>
+                                    <p>Enable debug logs<p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="field-pair">
+                            <label for="subliminal_log">
+                                <span class="component-title">Subliminal logs</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="subliminal_log" id="subliminal_log" ${('', 'checked="checked"')[bool(sickbeard.SUBLIMINAL_LOG)]}/>
+                                    <p>enable logs from subliminal library (subtitles)</p>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="field-pair">
+                            <label>
+                                <span class="component-title">Privacy:</span>
+                                <span class="component-desc">
+                                    <select id="privacy_level" name="privacy_level" class="form-control input-sm">
+                                    % for privacy_level in ['high', 'normal', 'low', ]:
+                                        <option value="${privacy_level}" ${('', 'selected="selected"')[sickbeard.PRIVACY_LEVEL == privacy_level]}>${privacy_level.capitalize()}</option>
+                                    % endfor
+                                    </select>
+                                    <span>
+                                        Set the level of log-filtering.
+                                        Normal (default).
+                                        <br />NOTE: A restart may be required to take effect.
+                                        <br />WARNING: Setting to "DISABLED" will show sensitive information such as passwords in the logs!
+                                    </span>
+                                </span>
+                            </label>
+                        </div>
+                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                    </fieldset>
+
                 </div>
 
                 <div class="component-group">
