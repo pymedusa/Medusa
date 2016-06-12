@@ -149,7 +149,8 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                             title = cells[labels.index('Filename')].a
                             title = title.get_text(strip=True) if title else None
-                            download_url = self.url + '/' + cells[labels.index('Dl')].a['href']
+                            download_url = self.url + '/' + cells[labels.index('Dl')].a
+                            download_url = download_url.get('href') if download_url else None
                             if not all([title, download_url]):
                                 continue
 
