@@ -73,6 +73,16 @@ cpu_presets = {
     'DISABLED': 0
 }
 
+privacy_levels = {
+    'absurd': 9002,
+    'stupid': 9001,  # it's over 9000!
+    'max': 9000,
+    'high': 30,
+    'normal': 20,
+    'low': 10,
+    'disabled': 0
+}
+
 # Other constants
 MULTI_EP_RESULT = -1
 SEASON_RESULT = -2

@@ -20,6 +20,7 @@
 
 import socket
 import base64
+import json
 import time
 
 from requests.compat import urlencode, unquote, unquote_plus, quote
@@ -36,12 +37,6 @@ try:
     import xml.etree.cElementTree as etree
 except ImportError:
     import xml.etree.ElementTree as etree
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
-
 
 class Notifier(object):
     def _get_kodi_version(self, host, username, password, dest_app="KODI"):

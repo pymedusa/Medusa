@@ -23,6 +23,7 @@ import io
 import ctypes
 import re
 import socket
+import ssl
 import stat
 import tempfile
 import time
@@ -1013,8 +1014,8 @@ By Pedro Jose Pereira Vieito <pvieito@gmail.com> (@pvieito)
 
 To add a new encryption_version:
   1) Code your new encryption_version
-  2) Update the last encryption_version available in webserve.py
-  3) Remember to maintain old encryption versions and key generators for retrocompatibility
+  2) Update the last encryption_version available in sickbeard/server/web/config/general.py
+  3) Remember to maintain old encryption versions and key generators for retro-compatibility
 """
 
 # Key Generators
@@ -1532,6 +1533,27 @@ def download_file(url, filename, session=None, headers=None, **kwargs):  # pylin
         return False
 
     return True
+
+
+def handle_requests_exception(requests_exception):  # pylint: disable=too-many-branches, too-many-statements
+    default = "Request failed: {0}"
+    try:
+        raise requests_exception
+    except requests.exceptions.SSLError as error:
+        if ssl.OPENSSL_VERSION_INFO < (1, 0, 1, 5):
+            logger.log("SSL Error requesting url: '{0}' You have {1}, try upgrading OpenSSL to 1.0.1e+".format(
+                error.request.url, ssl.OPENSSL_VERSION))
+        if sickbeard.SSL_VERIFY:
+            logger.log(
+                "SSL Error requesting url: '{0}' Try disabling Cert Verification on the advanced tab of /config/general")
+        logger.log(default.format(error), logger.DEBUG)
+        logger.log(traceback.format_exc(), logger.DEBUG)
+
+    except requests.exceptions.RequestException as error:
+        logger.log(default.format(error))
+    except Exception as error:
+        logger.log(default.format(error), logger.ERROR)
+        logger.log(traceback.format_exc(), logger.DEBUG)
 
 
 def get_size(start_path='.'):

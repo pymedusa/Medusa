@@ -102,9 +102,9 @@ class Notifier(object):
             returns='json'
         ) or {}
 
-        '''
+        """
         {'Status': 200, 'Description': 'The request has been completed successfully.', 'Success': True}
-        '''
+        """
 
         success = jdata.pop('Success', False)
         if success:
