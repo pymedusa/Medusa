@@ -85,7 +85,10 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                 download_url = enclosure['url'] if enclosure else item.find('link').next.strip()
                                 download_url = re.sub(r'(.*)/torrent/(.*).html', r'\1/download/\2.torrent', download_url)
                             else:
-                                info_hash = item.find('info_hash').get_text(strip=True)
+                                info_hash = item.find('info_hash')
+                                if not info_hash:
+                                    continue
+                                info_hash = info_hash.get_text(strip=True)
                                 download_url = 'magnet:?xt=urn:btih:' + info_hash + '&dn=' + title + self._custom_trackers
 
                             if not all([title, download_url]):
