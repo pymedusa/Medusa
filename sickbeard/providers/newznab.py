@@ -69,6 +69,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
         self.caps = False
         self.cap_tv_search = None
+        self.force_query = False
         # self.cap_search = None
         # self.cap_movie_search = None
         # self.cap_audio_search = None
@@ -286,7 +287,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         for mode in search_strings:
             self.torznab = False
             search_params = {
-                't': 'tvsearch' if 'tvdbid' in str(self.cap_tv_search) else 'search',
+                't': 'tvsearch' if 'tvdbid' in str(self.cap_tv_search) and not self.force_query else 'search',
                 'limit': 100,
                 'offset': 0,
                 'cat': self.catIDs.strip(', ') or '5030,5040',
@@ -396,6 +397,11 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                     break
 
             results += items
+
+        # Reproces but now use force_query = True
+        if not results and not self.force_query:
+            self.force_query = True
+            return self.search(search_strings, ep_obj=ep_obj)
 
         return results
 
