@@ -86,8 +86,8 @@ class TokyoToshokanProvider(TorrentProvider):  # pylint: disable=too-many-instan
                     for top, bot in zip(torrent_rows[a::2], torrent_rows[a + 1::2]):
                         try:
                             desc_top = top.find('td', class_='desc-top')
-                            title = desc_top.get_text(strip=True)
-                            download_url = desc_top.find('a')['href']
+                            title = desc_top.get_text(strip=True) if desc_top else None
+                            download_url = desc_top.find('a')['href'] if desc_top else None
                             if not all([title, download_url]):
                                 continue
 
