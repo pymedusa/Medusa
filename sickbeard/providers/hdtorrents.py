@@ -1,5 +1,5 @@
 # coding=utf-8
-# Author: Dustyn Gibson <miigotu@gmail.com>
+# Orginal author: Dustyn Gibson <miigotu@gmail.com>
 #
 # This file is part of Medusa.
 #
@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import re
 import traceback
 
-from requests.compat import quote_plus
+from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
@@ -39,25 +39,22 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         self.username = None
         self.password = None
+
         self.minseed = None
         self.minleech = None
         self.freeleech = None
 
-        self.urls = {'base_url': 'https://hd-torrents.org',
-                     'login': 'https://hd-torrents.org/login.php',
-                     'search': 'https://hd-torrents.org/torrents.php?search=%s&active=1&options=0%s',
-                     'rss': 'https://hd-torrents.org/torrents.php?search=&active=1&options=0%s',
-                     'home': 'https://hd-torrents.org/%s'}
+        self.url = 'https://hd-torrents.org/'
+        self.urls = {
+            'login': urljoin(self.url, 'login.php'),
+            'search': urljoin(self.url, 'torrents.php'),
+        }
 
-        self.url = self.urls['base_url']
-
-        self.categories = '&category[]=59&category[]=60&category[]=30&category[]=38'
         self.proper_strings = ['PROPER', 'REPACK']
 
         self.cache = tvcache.TVCache(self, min_time=30)  # only poll HDTorrents every 30 minutes max
 
     def _check_auth(self):
-
         if not self.username or not self.password:
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
 
@@ -67,9 +64,11 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         if any(dict_from_cookiejar(self.session.cookies).values()):
             return True
 
-        login_params = {'uid': self.username,
-                        'pwd': self.password,
-                        'submit': 'Confirm'}
+        login_params = {
+            'uid': self.username,
+            'pwd': self.password,
+            'submit': 'Confirm'
+        }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
         if not response:
@@ -87,6 +86,18 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         if not self.login():
             return results
 
+        # Search Params
+        search_params = {
+            'search': '',  # BROWSE
+            'active': 1,  # TV/XVID
+            'options': 0,  # TV/X264
+            'category[]': 59,  # TV/DVDRIP
+            'category[]': 60,  # TV/BLURAY
+            'category[]': 30,  # TV/DVDR
+            'category[]': 38,  # TV/SD
+            'category[]': 65,
+        }
+
         for mode in search_strings:
             items = []
             logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
@@ -94,47 +105,23 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    search_url = self.urls['search'] % (quote_plus(search_string), self.categories)
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
-                else:
-                    search_url = self.urls['rss'] % self.categories
+                    search_params['search'] = search_string
+                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
 
                 if self.freeleech:
-                    search_url = search_url.replace('active=1', 'active=5')
+                    search_params['active'] = 5
 
-                data = self.get_url(search_url, returns='text')
-                if not data or 'please try later' in data:
+                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                if data.find('No torrents here') != -1:
-                    logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
-                    continue
-
-                # Search result page contains some invalid html that prevents html parser from returning all data.
-                # We cut everything before the table that contains the data we are interested in thus eliminating
-                # the invalid html portions
-                try:
-                    index = data.lower().index('<table class="mainblockcontenttt"')
-                except ValueError:
-                    logger.log('Could not find table of torrents mainblockcontenttt', logger.DEBUG)
-                    continue
-
-                data = data[index:]
-
-                with BS4Parser(data, 'html5lib') as html:
-                    if not html:
-                        logger.log('No html data parsed from provider', logger.DEBUG)
-                        continue
-
-                    torrent_rows = []
+                with BS4Parser(response.text, 'html5lib') as html:
                     torrent_table = html.find('table', class_='mainblockcontenttt')
-                    if torrent_table:
-                        torrent_rows = torrent_table('tr')
+                    torrent_rows = torrent_table('tr') if torrent_table else []
 
-                    if not torrent_rows:
-                        logger.log('Could not find results in returned data', logger.DEBUG)
+                    if not torrent_rows or torrent_rows[2].find('td', class_='lista'):
+                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
 
                     # Cat., Active, Filename, Dl, Wl, Added, Size, Uploader, S, L, C
@@ -149,8 +136,9 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                             title = cells[labels.index('Filename')].a
                             title = title.get_text(strip=True) if title else None
-                            download_url = self.url + '/' + cells[labels.index('Dl')].a
-                            download_url = download_url.get('href') if download_url else None
+                            link = cells[labels.index('Dl')].a
+                            link = link.get('href') if link else None
+                            download_url = urljoin(self.url, link) if link else None
                             if not all([title, download_url]):
                                 continue
 
@@ -161,7 +149,7 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1})'.format
+                                               ' minimum seeders: {0}. Seeders: {1}'.format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
