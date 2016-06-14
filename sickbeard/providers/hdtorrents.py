@@ -28,6 +28,7 @@ from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 
 from sickrage.helper.common import convert_size, try_int
+from sickrage.helper.exceptions import AuthException
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
@@ -50,13 +51,15 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             'search': urljoin(self.url, 'torrents.php'),
         }
 
-        self.proper_strings = ['PROPER', 'REPACK']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
-        self.cache = tvcache.TVCache(self, min_time=30)  # only poll HDTorrents every 30 minutes max
+        self.cache = tvcache.TVCache(self, min_time=30)
 
     def _check_auth(self):
+
         if not self.username or not self.password:
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            raise AuthException('Your authentication credentials for {0} are missing,'
+                                ' check your config.'.format(self.name))
 
         return True
 
@@ -88,14 +91,14 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         # Search Params
         search_params = {
-            'search': '',  # BROWSE
-            'active': 1,  # TV/XVID
-            'options': 0,  # TV/X264
-            'category[]': 59,  # TV/DVDRIP
-            'category[]': 60,  # TV/BLURAY
-            'category[]': 30,  # TV/DVDR
-            'category[]': 38,  # TV/SD
-            'category[]': 65,
+            'search': '',
+            'active': 1,
+            'options': 0,
+            'category[0]': 59,
+            'category[1]': 60,
+            'category[2]': 30,
+            'category[3]': 38,
+            'category[4]': 65,
         }
 
         for mode in search_strings:
@@ -116,7 +119,16 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                with BS4Parser(response.text, 'html5lib') as html:
+                # Search result page contains some invalid html that prevents html parser from returning all data.
+                # We cut everything before the table that contains the data we are interested in thus eliminating
+                # the invalid html portions
+                try:
+                    index = response.text.index('<TABLE class="mainblockcontenttt"')
+                except ValueError:
+                    logger.log('Could not find table of torrents mainblockcontenttt', logger.DEBUG)
+                    continue
+
+                with BS4Parser(response.text[index:], 'html5lib') as html:
                     torrent_table = html.find('table', class_='mainblockcontenttt')
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
