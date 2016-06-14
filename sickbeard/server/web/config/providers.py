@@ -107,7 +107,7 @@ class ConfigProviders(Config):
             url = provider.urls.get('login')
         mysession = make_session()
         # captcha_page = provider.get_url(url, post_data=post_data, params=params, verify=False, returns='response')
-        captcha_page = getURL(url, post_data=post_data, session=mysession, params=params, verify=False, returns='text')
+        captcha_page = getURL(url, post_data=post_data, session=mysession, params=params, returns='text')
         return captcha_page
 
     @staticmethod

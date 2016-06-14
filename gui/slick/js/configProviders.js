@@ -575,14 +575,17 @@ $(document).ready(function(){
         return false;
     });
     
-    $( "#captcha-modal" ).on( "click", function(event) {
-        if (event.target.value === 'Sign In') {
-            var gCaptchaResponse = $('textarea#g-recaptcha-response').val();
+    $("#captcha-modal, #captcha-ok-button").on("click", function(event) {
+        debugger;
+        var params = {'provider_id': 'torrentday', captcha: gCaptchaResponse};
+        var gCaptchaResponse = $('textarea#g-recaptcha-response').val();
+        if (event.target.value === 'Sign In' || event.target.id === 'captcha-ok-button') {
             if (gCaptchaResponse){
                 var params = {'provider_id': 'torrentday', captcha: gCaptchaResponse};
                 $.getJSON(srRoot + '/config/providers/getProviderCaptchaCookie', params, function(data){
                     if (data.error !== undefined) {
                         alert(data.error);
+                        $('#myModal').modal("hide");
                         return false;
                     }
                     
@@ -590,8 +593,10 @@ $(document).ready(function(){
             }
             
         } else {
+            //Not the sign in button
             return false;
         }
+        $('#myModal').modal("hide");
         return false;
     })
     
