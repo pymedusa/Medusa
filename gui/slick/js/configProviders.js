@@ -567,4 +567,32 @@ $(document).ready(function(){
     if ($('#editANewznabProvider').length) {
         $(this).populateNewznabSection();
     }
+    
+    $(".get-recaptcha").on( "click", function(e) {
+        var providerId = $(this).attr('data-provider');
+        $("#captcha-modal").load(srRoot + '/config/providers/loadReCaptcha?provider_id='+ providerId + '&url=https://www.torrentday.com');
+        $('#myModal').modal({show:true})
+        return false;
+    });
+    
+    $( "#captcha-modal" ).on( "click", function(event) {
+        if (event.target.value === 'Sign In') {
+            var gCaptchaResponse = $('textarea#g-recaptcha-response').val();
+            if (gCaptchaResponse){
+                var params = {'provider_id': 'torrentday', captcha: gCaptchaResponse};
+                $.getJSON(srRoot + '/config/providers/getProviderCaptchaCookie', params, function(data){
+                    if (data.error !== undefined) {
+                        alert(data.error);
+                        return false;
+                    }
+                    
+                });
+            }
+            
+        } else {
+            return false;
+        }
+        return false;
+    })
+    
 });

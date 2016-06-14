@@ -326,14 +326,16 @@ def episode_num(season=None, episode=None, **kwargs):
         if not (season and episode) and (season or episode):
             return '{0:0>3}'.format(season or episode)
 
+
 def enabled_providers(search_type):
-    """ 
+    """
     Return providers based on search type: daily, backlog and manualsearch
     """
     return [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
-        if x.is_active() and
-        hasattr(x, 'enable_{}'.format(search_type)) and
-        getattr(x, 'enable_{}'.format(search_type))]
+            if x.is_active() and
+            hasattr(x, 'enable_{}'.format(search_type)) and
+            getattr(x, 'enable_{}'.format(search_type))]
+
 
 def remove_strings(old_string, unwanted_strings):
     """

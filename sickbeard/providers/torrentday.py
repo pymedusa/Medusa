@@ -50,20 +50,32 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # URLs
         self.url = 'https://classic.torrentday.com'
         self.urls = {
-            'login': urljoin(self.url, '/torrents/'),
+            'recaptcha': 'https://www.torrentday.com/tak3login.php',
+            'login': 'https://www.torrentday.com',
             'search': urljoin(self.url, '/V3/API/API.php'),
             'download': urljoin(self.url, '/download.php/')
         }
+
+        self.recaptcha = {'uid': self._uid, 'pass': self._hash}
 
         self.cookies = None
         self.categories = {'Season': {'c14': 1}, 'Episode': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1},
                            'RSS': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1, 'c14': 1}}
 
+        self.login_data = {
+            'username': self.username,
+            'password': self.password,
+            'submit.x': 0,
+            'submit.y': 0
+        }
+
         # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # Only poll IPTorrents every 10 minutes max
 
     def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
+        if (any(dict_from_cookiejar(self.session.cookies).values()) and
+            all(['uid' in dict_from_cookiejar(self.session.cookies),
+                 'pass' in dict_from_cookiejar(self.session.cookies)])):
             return True
 
         if self._uid and self._hash:
@@ -87,7 +99,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 return False
 
             try:
-                if dict_from_cookiejar(self.session.cookies)['uid'] and dict_from_cookiejar(self.session.cookies)['pass']:
+                if dict_from_cookiejar(self.session.cookies).get('uid') and dict_from_cookiejar(self.session.cookies).get('pass'):
                     self._uid = dict_from_cookiejar(self.session.cookies)['uid']
                     self._hash = dict_from_cookiejar(self.session.cookies)['pass']
                     self.cookies = {'uid': self._uid,

@@ -418,6 +418,17 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
+                        
+                        % if hasattr(curTorrentProvider, 'recaptcha'):
+                        <div class="field-pair">
+                            <label for="${curTorrentProvider.get_id()}_freeleech">
+                                <span class="component-title">Reauth Captcha</span>
+                                <span class="component-desc">
+                                    <button class="get-recaptcha" data-provider=${curTorrentProvider.get_id()}>Get Providers reCaptcha login page</button>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
 
                         % if hasattr(curTorrentProvider, 'pin'):
                         <div class="field-pair">
@@ -800,5 +811,21 @@ $('#config-components').tabs();
 
         </form>
     </div>
+
+	<div id="myModal" class="modal fade" tabindex="-1" role="dialog" style="width: 750px; margin-left: auto; margin-right:auto; background-color: white;">
+	    <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal">x</button>
+	            <h3>This is CSS-less representation of your providers login page. <br/>
+	            You might need to authenticate with captcha. If that's the case, you can do it here.<br/>
+	            Make sure you click on the Sign-In button after performing the captcha test. 
+	            You don't need to enter your credentials, Medusa already has those!</h3>
+	    </div>
+	    <div id="captcha-modal" class="modal-body">
+	    </div>
+	    <div class="modal-footer">
+	        <button class="btn" data-dismiss="modal">OK</button>
+	    </div>
+    </div>
 </div>
+
 </%block>
