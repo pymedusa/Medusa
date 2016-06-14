@@ -19,6 +19,9 @@
 from __future__ import unicode_literals
 
 import re
+import traceback
+
+from urlparse import parse_qs
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
@@ -28,7 +31,6 @@ from sickbeard.bs4_parser import BS4Parser
 
 from sickrage.helper.common import convert_size
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
-from sickbeard.show_name_helpers import allPossibleShowNames
 
 
 class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attributes
@@ -51,10 +53,8 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         self.urls = {
             'login': urljoin(self.url, '/user/login'),
             'search': urljoin(self.url, 'torrents.php'),
+            'download': urljoin(self.url, '/torrent/{torrent_id}/download/{passkey}'),
         }
-
-        # season pack only provider
-        self.search_mode = 'sponly'
 
         # Proper Strings
         self.proper_strings = []
@@ -84,13 +84,12 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
             'keeplogged_sent': 'true',
         }
 
-        # Login
         response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
         if not response:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
-        if not re.search('torrents.php', response):
+        if re.search('Login incorrect. Only perfect spellers may enter this system!', response):
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
             self.session.cookies.clear()
             return False
@@ -115,6 +114,8 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
             'sort': 'time_added',
             'way': 'desc',
             'hentai': '2',
+            'anime[tv_series]': '1',
+            'anime[tv_special]': '1',
             'releasegroup': '',
             'epcount': '',
             'epcount2': '',
@@ -130,76 +131,127 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
                 if mode != 'RSS':
                     logger.log('Search string: {0}'.format(search_string),
                                logger.DEBUG)
-                    search_params["searchstr"] = search_string
+                    search_params['searchstr'] = search_string
 
                 data = self.get_url(self.urls['search'], params=search_params, returns='text')
                 if not data:
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 with BS4Parser(data, 'html5lib') as html:
-                    group_cont = html.find_all(True, {'class': 'group_cont'})
+                    torrent_div = html.find('div', class_='thin')
+                    torrent_group = torrent_div.find_all('div', class_='group_cont box anime')
 
-                    for group in group_cont:
-                        results += self.parse(group, search_string)
+                    if not torrent_group:
+                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                        continue
 
-        return results
+                    for group in torrent_group:
+                        torrent_main = group.find_all('div', class_='group_main')
 
-    def parse(self, html, search_string):
-        """Parse the result"""
-        items = []
+                        for row in torrent_main:
+                            try:
+                                show_title = row.find('span', class_='group_title').find_next('a').get_text()
+                                show_table = row.find('table', class_='torrent_group')
+                                show_info = show_table.find_all('td')
 
-        # Get genaral box info
-        group_title = html.find('span', class_='group_title')
-        show_title = group_title.find_all('a')[0].get_text()
-        category = group_title.find_all('a')[1].get_text()
+                                show_name = None
+                                rows_to_skip = 0
 
-        if category != 'TV Series':
-            return items
+                                # Complete searies don't have a description td
+                                if len(show_info) < 6:
+                                    show_name = '{0}.{1}'.format(show_title, 'Complete Series')
 
-        get_rows = html.find_all('tr', {'class': ['edition_info', 'torrent']})
-        start_parsing_season = False
-        for row in get_rows:
-            if 'Season' in row.get_text():
-                season = row.get_text().split(' ')[1]
-                start_parsing_season = True
+                                for index, info in enumerate(show_info):
 
-            if start_parsing_season:
-                if 'torrent' in row['class']:
-                    torrent_url = urljoin(self.url, row.find('a')['href'])
-                    properties = row.find_all('a')[-1].get_text().split(' | ')
-                    torrent_source = properties[0]
-                    torrent_container = properties[1]
-                    torrent_codec = properties[2]
-                    torrent_res = properties[3]
-                    torrent_audio = properties[4]
-                    if len(properties[5].split(' ')) == 2:
-                        subs = properties[5].split(' ')[0]
-                        release_group = properties[5].split(' ')[1].strip('()')
-                    torrent_size = row.find('td', class_='torrent_size').get_text()
-                    size = convert_size(torrent_size) or -1
-                    torrent_seeders = row.find('td', class_='torrent_seeders').get_text()
-                    torrent_leechers = row.find('td', class_='torrent_leechers').get_text()
-                    # lets wrap up and create this release
-                    release_name = '{title}.Season.{season}.{torrent_res}.{torrent_source}.' \
-                                   '{torrent_codec}.-{release_group}'.format(title=search_string, season=season.lstrip('0'), torrent_res=torrent_res,
-                                                                             torrent_source=torrent_source, torrent_codec=torrent_codec,
-                                                                             release_group=release_group)
-                    item = {'title': release_name, 'link': torrent_url, 'size': size,
-                            'seeders': torrent_seeders, 'leechers': torrent_leechers, 'pubdate': None, 'hash': None}
-                    items.append(item)
-        return items
+                                    if rows_to_skip:
+                                        rows_to_skip = rows_to_skip - 1
+                                        continue
 
-    def _get_episode_search_strings(self, episode, add_string=''):
-        return []
+                                    info = info.get_text(strip=True)
 
-    def _get_season_search_strings(self, episode):
-        search_string = {
-            'Season': []
-        }
+                                    if show_name and info.startswith('[DL]'):
+                                        # Set skip next 4 rows, as they are useless
+                                        rows_to_skip = 4
 
-        for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
-            search_string['Season'].append(show_name)
+                                        hrefs = show_info[index].find_all('a')
+                                        params = parse_qs(hrefs[0].get('href', ''))
+                                        properties = hrefs[1].get_text().split(' | ')
+                                        download_url = self.urls['download'].format(torrent_id=params['id'][0],
+                                                                                    passkey=params['torrent_pass'][0])
+                                        if not all([params, properties]):
+                                            continue
 
-        return [search_string]
+                                        torrent_source = properties[0]
+                                        torrent_container = properties[1]
+                                        torrent_codec = properties[2]
+                                        torrent_res = properties[3]
+                                        torrent_audio = properties[4]
+                                        if len(properties[5].split(' ')) == 2:
+                                            subs = properties[5].split(' ')[0]
+                                            release_group = properties[5].split(' ')[1].strip('()')
+
+                                        # Construct title
+                                        title = '{title}.{torrent_res}.{torrent_source}.{torrent_codec}' \
+                                                '-{release_group}'.format(title=show_name,
+                                                                          torrent_res=torrent_res,
+                                                                          torrent_source=torrent_source,
+                                                                          torrent_codec=torrent_codec,
+                                                                          release_group=release_group)
+
+                                        seeders = show_info[index + 3].get_text()
+                                        leechers = show_info[index + 4].get_text()
+
+                                        # Filter unseeded torrent
+                                        if seeders < min(self.minseed, 1):
+                                            if mode != 'RSS':
+                                                logger.log("Discarding torrent because it doesn't meet the"
+                                                           ' minimum seeders: {0}. Seeders: {1}'.format
+                                                           (title, seeders), logger.DEBUG)
+                                            continue
+
+                                        torrent_size = show_info[index + 1].get_text()
+                                        size = convert_size(torrent_size) or -1
+
+                                        item = {
+                                            'title': title,
+                                            'link': download_url,
+                                            'size': size,
+                                            'seeders': seeders,
+                                            'leechers': leechers,
+                                            'pubdate': None,
+                                            'hash': None
+                                        }
+                                        if mode != 'RSS':
+                                            logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                                       (title, seeders, leechers), logger.DEBUG)
+
+                                        items.append(item)
+
+                                    # Determine name and type
+                                    if info.startswith('Episode'):
+                                        show_name = '{0}.{1}'.format(show_title, info)
+                                    elif info.startswith('Season'):
+                                        info = info.split(' (', 1)[0]
+                                        show_name = '{0}.{1}'.format(show_title, info)
+                                    elif any(word in info for word in ['episodes', 'episode']):
+                                        if show_info[index + 1].get_text(strip=True).startswith('Episode'):
+                                            # It's not a pack, skip this row
+                                            continue
+                                        info = info.split('/', 1)[0].strip()
+                                        show_name = '{0}.{1}'.format(show_title, info)
+                                    else:
+                                        # Row is useless, skip it (eg. only animation studio)
+                                        continue
+
+                            except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                                logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                           (traceback.format_exc()), logger.ERROR)
+                                continue
+
+                results += items
+
+            return results
+
 
 provider = AnimeBytes()
