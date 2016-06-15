@@ -30,7 +30,7 @@
             | <span class="footerhighlight">${ep_downloaded}</span>
 
             % if ep_snatched:
-            <span class="footerhighlight"><a href="${srRoot}/manage/episodeStatuses?whichStatus=2" title="View overview of snatched episodes">+${ep_snatched}</a></span> Snatched
+            <span class="footerhighlight"><a href="/manage/episodeStatuses?whichStatus=2" title="View overview of snatched episodes">+${ep_snatched}</a></span> Snatched
             % endif
 
             &nbsp;/&nbsp;<span class="footerhighlight">${ep_total}</span> Episodes Downloaded ${ep_percentage}
@@ -47,16 +47,16 @@
             </div>
         </div>
     </footer>
-    <script type="text/javascript" src="${srRoot}/js/vender.min.js?${sbPID}"></script>
-    <script type="text/javascript" src="${srRoot}/js/lib/jquery.cookiejar.js?${sbPID}"></script>
-    <script type="text/javascript" src="${srRoot}/js/lib/jquery.form.min.js?${sbPID}"></script>
-    <script type="text/javascript" src="${srRoot}/js/lib/jquery.json-2.2.min.js?${sbPID}"></script>
-    <script type="text/javascript" src="${srRoot}/js/lib/jquery.selectboxes.min.js?${sbPID}"></script>
-    <script type="text/javascript" src="${srRoot}/js/lib/formwizard.js?${sbPID}"></script>
-    <script type="text/javascript" src="${srRoot}/js/parsers.js?${sbPID}"></script>
-    <script type="text/javascript" src="${srRoot}/js/rootDirs.js?${sbPID}"></script>
-    <script type="text/javascript" src="${srRoot}/js/core.js?${sbPID}"></script>
-    <script type="text/javascript" src="${srRoot}/js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
-    <script type="text/javascript" src="${srRoot}/js/browser.js?${sbPID}"></script>
-    <script type="text/javascript" src="${srRoot}/js/ajaxNotifications.js?${sbPID}"></script>
+    <script type="text/javascript" src="/js/vender.min.js?${sbPID}"></script>
+    <script type="text/javascript" src="/js/lib/jquery.cookiejar.js?${sbPID}"></script>
+    <script type="text/javascript" src="/js/lib/jquery.form.min.js?${sbPID}"></script>
+    <script type="text/javascript" src="/js/lib/jquery.json-2.2.min.js?${sbPID}"></script>
+    <script type="text/javascript" src="/js/lib/jquery.selectboxes.min.js?${sbPID}"></script>
+    <script type="text/javascript" src="/js/lib/formwizard.js?${sbPID}"></script>
+    <script type="text/javascript" src="/js/parsers.js?${sbPID}"></script>
+    <script type="text/javascript" src="/js/rootDirs.js?${sbPID}"></script>
+    <script type="text/javascript" src="/js/core.js?${sbPID}"></script>
+    <script type="text/javascript" src="/js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
+    <script type="text/javascript" src="/js/browser.js?${sbPID}"></script>
+    <script type="text/javascript" src="/js/ajaxNotifications.js?${sbPID}"></script>
 % endif
