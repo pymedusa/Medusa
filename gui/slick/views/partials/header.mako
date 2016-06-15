@@ -31,7 +31,7 @@
     % if loggedIn:
         <div class="collapse navbar-collapse" id="main_nav">
             <ul class="nav navbar-nav navbar-right">
-                <li id="NAVhome" class="navbar-split dropdown${('', ' active')[topmenu == 'home']}">
+                <li id="NAVhome" class="navbar-split dropdown${' active' if topmenu == 'home' else ''}">
                     <a href="/home/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Shows</span>
                     <b class="caret"></b>
                     </a>
@@ -49,15 +49,15 @@
                     <div style="clear:both;"></div>
                 </li>
 
-                <li id="NAVschedule"${('', ' class="active"')[topmenu == 'schedule']}>
+                <li id="NAVschedule"${' class="active"' if topmenu == 'schedule' else ''}>
                     <a href="/schedule/">Schedule</a>
                 </li>
 
-                <li id="NAVhistory"${('', ' class="active"')[topmenu == 'history']}>
+                <li id="NAVhistory"${' class="active"' if topmenu == 'history' else ''}>
                     <a href="/history/">History</a>
                 </li>
 
-                <li id="NAVmanage" class="navbar-split dropdown${('', ' active')[topmenu == 'manage']}">
+                <li id="NAVmanage" class="navbar-split dropdown${' active' if topmenu == 'manage' else ''}">
                     <a href="/manage/episodeStatuses/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Manage</span>
                     <b class="caret"></b>
                     </a>
@@ -88,7 +88,7 @@
                     <div style="clear:both;"></div>
                 </li>
 
-                <li id="NAVconfig" class="navbar-split dropdown${('', ' active')[topmenu == 'config']}">
+                <li id="NAVconfig" class="navbar-split dropdown${' active' if topmenu == 'config' else ''}">
                     <a href="/config/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Config</span><img src="/images/menu/system18.png" class="navbaricon hidden-xs" />
                     <b class="caret"></b>
                     </a>
@@ -106,7 +106,7 @@
                     <div style="clear:both;"></div>
                 </li>
 
-                <li id="NAVsystem" class="navbar-split dropdown${('', ' active')[topmenu == 'system']}">
+                <li id="NAVsystem" class="navbar-split dropdown${' active' if topmenu == 'system' else ''}">
                     <a href="/home/status/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="/images/menu/system18-2.png" class="navbaricon hidden-xs" />${toolsBadge}
                     <b class="caret"></b>
                     </a>

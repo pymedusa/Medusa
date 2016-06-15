@@ -40,7 +40,7 @@
         <meta name="msapplication-config" content="/css/browserconfig.xml">
 
         <meta data-var="srRoot" data-content="">
-        <meta data-var="themeSpinner" data-content="${('', '-dark')[sickbeard.THEME_NAME == 'dark']}">
+        <meta data-var="themeSpinner" data-content="${'-dark' if sickbeard.THEME_NAME == 'dark' else ''}">
         <meta data-var="anonURL" data-content="${sickbeard.ANON_REDIRECT}">
 
         <meta data-var="sickbeard.ANIME_SPLIT_HOME" data-content="${sickbeard.ANIME_SPLIT_HOME}">

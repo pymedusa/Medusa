@@ -25,21 +25,21 @@
 % endif
 <div class="h2footer pull-right"><b>Limit:</b>
     <select name="history_limit" id="history_limit" class="form-control form-control-inline input-sm">
-        <option value="10" ${('', 'selected="selected"')[limit == 10]}>10</option>
-        <option value="25" ${('', 'selected="selected"')[limit == 25]}>25</option>
-        <option value="50" ${('', 'selected="selected"')[limit == 50]}>50</option>
-        <option value="100" ${('', 'selected="selected"')[limit == 100]}>100</option>
-        <option value="250" ${('', 'selected="selected"')[limit == 250]}>250</option>
-        <option value="500" ${('', 'selected="selected"')[limit == 500]}>500</option>
-        <option value="750" ${('', 'selected="selected"')[limit == 750]}>750</option>
-        <option value="1000" ${('', 'selected="selected"')[limit == 1000]}>1000</option>
-        <option value="0"   ${('', 'selected="selected"')[limit == 0  ]}>All</option>
+        <option value="10" ${'selected="selected"' if limit == 10 else ''}>10</option>
+        <option value="25" ${'selected="selected"' if limit == 25 else ''}>25</option>
+        <option value="50" ${'selected="selected"' if limit == 50 else ''}>50</option>
+        <option value="100" ${'selected="selected"' if limit == 100 else ''}>100</option>
+        <option value="250" ${'selected="selected"' if limit == 250 else ''}>250</option>
+        <option value="500" ${'selected="selected"' if limit == 500 else ''}>500</option>
+        <option value="750" ${'selected="selected"' if limit == 750 else ''}>750</option>
+        <option value="1000" ${'selected="selected"' if limit == 1000 else ''}>1000</option>
+        <option value="0"   ${'selected="selected"' if limit == 0   else ''}>All</option>
     </select>
 
     <span> Layout:
         <select name="HistoryLayout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="/setHistoryLayout/?layout=compact"  ${('', 'selected="selected"')[sickbeard.HISTORY_LAYOUT == 'compact']}>Compact</option>
-            <option value="/setHistoryLayout/?layout=detailed" ${('', 'selected="selected"')[sickbeard.HISTORY_LAYOUT == 'detailed']}>Detailed</option>
+            <option value="/setHistoryLayout/?layout=compact"  ${'selected="selected"' if sickbeard.HISTORY_LAYOUT == 'compact' else ''}>Compact</option>
+            <option value="/setHistoryLayout/?layout=detailed" ${'selected="selected"' if sickbeard.HISTORY_LAYOUT == 'detailed' else ''}>Detailed</option>
         </select>
     </span>
 </div>
@@ -73,7 +73,7 @@
                     <time datetime="${isoDate}" class="date">${airDate}</time>
                 </td>
                 <td class="tvShow"><a href="/home/displayShow?show=${hItem.show_id}#S${hItem.season}E${hItem.episode}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${('', '<span class="quality Proper">Proper</span>')[any(x in hItem.resource.lower() for x in ['proper', 'repack', 'real', 'rerip'])]}</a></td>
-                <td align="center" ${('', 'class="subtitles_column"')[composite.status == SUBTITLED]}>
+                <td align="center" ${'class="subtitles_column"' if composite.status == SUBTITLED else ''}>
                 % if composite.status == SUBTITLED:
                     <img width="16" height="11" style="vertical-align:middle;" src="/images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='/images/flags/unknown.png';">
                 % endif
