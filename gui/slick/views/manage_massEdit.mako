@@ -16,8 +16,8 @@
 
     anyQualities, bestQualities = common.Quality.splitQuality(initial_quality)
 %>
-<script type="text/javascript" src="${srRoot}/js/qualityChooser.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/massEdit.js?${sbPID}"></script>
+<script type="text/javascript" src="/js/qualityChooser.js?${sbPID}"></script>
+<script type="text/javascript" src="/js/massEdit.js?${sbPID}"></script>
 </%block>
 
 <%block name="content">

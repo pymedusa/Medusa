@@ -8,8 +8,8 @@
     import re
 %>
 <%block name="scripts">
-<script type="text/javascript" src="${srRoot}/js/ajaxEpSearch.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/plotTooltip.js?${sbPID}"></script>
+<script type="text/javascript" src="/js/ajaxEpSearch.js?${sbPID}"></script>
+<script type="text/javascript" src="/js/plotTooltip.js?${sbPID}"></script>
 </%block>
 <%block name="css">
 <style type="text/css">
@@ -26,9 +26,9 @@
 % else:
     <span>Sort By:
         <select name="sort" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="${srRoot}/setScheduleSort/?sort=date" ${('', 'selected="selected"')[sickbeard.COMING_EPS_SORT == 'date']} >Date</option>
-            <option value="${srRoot}/setScheduleSort/?sort=network" ${('', 'selected="selected"')[sickbeard.COMING_EPS_SORT == 'network']} >Network</option>
-            <option value="${srRoot}/setScheduleSort/?sort=show" ${('', 'selected="selected"')[sickbeard.COMING_EPS_SORT == 'show']} >Show</option>
+            <option value="/setScheduleSort/?sort=date" ${('', 'selected="selected"')[sickbeard.COMING_EPS_SORT == 'date']} >Date</option>
+            <option value="/setScheduleSort/?sort=network" ${('', 'selected="selected"')[sickbeard.COMING_EPS_SORT == 'network']} >Network</option>
+            <option value="/setScheduleSort/?sort=show" ${('', 'selected="selected"')[sickbeard.COMING_EPS_SORT == 'show']} >Show</option>
         </select>
     </span>
 % endif
@@ -36,18 +36,18 @@
 
     <span>View Paused:
         <select name="viewpaused" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="${srRoot}/toggleScheduleDisplayPaused" ${('', 'selected="selected"')[not bool(sickbeard.COMING_EPS_DISPLAY_PAUSED)]}>Hidden</option>
-            <option value="${srRoot}/toggleScheduleDisplayPaused" ${('', 'selected="selected"')[bool(sickbeard.COMING_EPS_DISPLAY_PAUSED)]}>Shown</option>
+            <option value="/toggleScheduleDisplayPaused" ${('', 'selected="selected"')[not bool(sickbeard.COMING_EPS_DISPLAY_PAUSED)]}>Hidden</option>
+            <option value="/toggleScheduleDisplayPaused" ${('', 'selected="selected"')[bool(sickbeard.COMING_EPS_DISPLAY_PAUSED)]}>Shown</option>
         </select>
     </span>
     &nbsp;
 
     <span>Layout:
         <select name="layout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="${srRoot}/setScheduleLayout/?layout=poster" ${('', 'selected="selected"')[sickbeard.COMING_EPS_LAYOUT == 'poster']} >Poster</option>
-            <option value="${srRoot}/setScheduleLayout/?layout=calendar" ${('', 'selected="selected"')[sickbeard.COMING_EPS_LAYOUT == 'calendar']} >Calendar</option>
-            <option value="${srRoot}/setScheduleLayout/?layout=banner" ${('', 'selected="selected"')[sickbeard.COMING_EPS_LAYOUT == 'banner']} >Banner</option>
-            <option value="${srRoot}/setScheduleLayout/?layout=list" ${('', 'selected="selected"')[sickbeard.COMING_EPS_LAYOUT == 'list']} >List</option>
+            <option value="/setScheduleLayout/?layout=poster" ${('', 'selected="selected"')[sickbeard.COMING_EPS_LAYOUT == 'poster']} >Poster</option>
+            <option value="/setScheduleLayout/?layout=calendar" ${('', 'selected="selected"')[sickbeard.COMING_EPS_LAYOUT == 'calendar']} >Calendar</option>
+            <option value="/setScheduleLayout/?layout=banner" ${('', 'selected="selected"')[sickbeard.COMING_EPS_LAYOUT == 'banner']} >Banner</option>
+            <option value="/setScheduleLayout/?layout=list" ${('', 'selected="selected"')[sickbeard.COMING_EPS_LAYOUT == 'list']} >List</option>
         </select>
     </span>
 </div>
@@ -70,7 +70,7 @@
 <!-- start list view //-->
 <% show_div = 'listing-default' %>
 
-<input type="hidden" id="srRoot" value="${srRoot}" />
+<input type="hidden" id="srRoot" value="" />
 
 <table id="showListTable" class="sickbeardTable tablesorter seasonstyle" cellspacing="1" border="0" cellpadding="0">
 
@@ -125,7 +125,7 @@
                 <time datetime="${ends.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(ends)}</time>
             </td>
 
-            <td class="tvShow" nowrap="nowrap"><a href="${srRoot}/home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}</a>
+            <td class="tvShow" nowrap="nowrap"><a href="/home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}</a>
 % if int(cur_result['paused']):
                 <span class="pause">[paused]</span>
 % endif
@@ -137,9 +137,9 @@
 
             <td>
 % if cur_result['description']:
-                <img alt="" src="${srRoot}/images/info32.png" height="16" width="16" class="plotInfo" id="plot_info_${'%s_%s_%s' % (cur_result['showid'], cur_result['season'], cur_result['episode'])}" />
+                <img alt="" src="/images/info32.png" height="16" width="16" class="plotInfo" id="plot_info_${'%s_%s_%s' % (cur_result['showid'], cur_result['season'], cur_result['episode'])}" />
 % else:
-                <img alt="" src="${srRoot}/images/info32.png" width="16" height="16" class="plotInfoNone"  />
+                <img alt="" src="/images/info32.png" width="16" height="16" class="plotInfoNone"  />
 % endif
                 ${cur_result['name']}
             </td>
@@ -158,16 +158,16 @@
 
             <td align="center" style="vertical-align: middle;">
 % if cur_result['imdb_id']:
-                <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}"><img alt="[imdb]" height="16" width="16" src="${srRoot}/images/imdb.png" />
+                <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}"><img alt="[imdb]" height="16" width="16" src="/images/imdb.png" />
 % endif
                 <a href="${anon_url(sickbeard.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${sickbeard.indexerApi(cur_indexer).config['show_url']}${cur_result['showid']}">
-                    <img alt="${sickbeard.indexerApi(cur_indexer).name}" height="16" width="16" src="${srRoot}/images/${sickbeard.indexerApi(cur_indexer).config['icon']}" />
+                    <img alt="${sickbeard.indexerApi(cur_indexer).name}" height="16" width="16" src="/images/${sickbeard.indexerApi(cur_indexer).config['icon']}" />
                 </a>
             </td>
 
             <td align="center">
-            <a class="epSearch" id="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="${srRoot}/home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="${srRoot}/images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
-            <a class="epManualSearch" id="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="${srRoot}/home/snatchSelection?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}&amp;manual_search_type=episode"><img data-ep-manual-search src="${srRoot}/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+            <a class="epSearch" id="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="/home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="/images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
+            <a class="epManualSearch" id="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="/home/snatchSelection?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}&amp;manual_search_type=episode"><img data-ep-manual-search src="/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
 
             </td>
         </tr>
@@ -289,8 +289,8 @@
         <table width="100%" border="0" cellpadding="0" cellspacing="0">
         <tr>
             <th ${('class="nobg"', 'rowspan="2"')[layout == 'poster']} valign="top">
-                <a href="${srRoot}/home/displayShow?show=${cur_result['showid']}">
-                    <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" src="${srRoot}/showPoster/?show=${cur_result['showid']}&amp;which=${(layout, 'poster_thumb')[layout == 'poster']}" />
+                <a href="/home/displayShow?show=${cur_result['showid']}">
+                    <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" src="/showPoster/?show=${cur_result['showid']}&amp;which=${(layout, 'poster_thumb')[layout == 'poster']}" />
                 </a>
             </th>
 % if 'banner' == layout:
@@ -300,18 +300,18 @@
             <td class="next_episode">
                 <div class="clearfix">
                     <span class="tvshowTitle">
-                        <a href="${srRoot}/home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}
+                        <a href="/home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}
                             ${('', '<span class="pause">[paused]</span>')[int(cur_result['paused'])]}
                         </a>
                     </span>
 
                     <span class="tvshowTitleIcons">
 % if cur_result['imdb_id']:
-                        <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}"><img alt="[imdb]" height="16" width="16" src="${srRoot}/images/imdb.png" />
+                        <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}"><img alt="[imdb]" height="16" width="16" src="/images/imdb.png" />
 % endif
-                        <a href="${anon_url(sickbeard.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${sickbeard.indexerApi(cur_indexer).config['show_url']}"><img alt="${sickbeard.indexerApi(cur_indexer).name}" height="16" width="16" src="${srRoot}/images/${sickbeard.indexerApi(cur_indexer).config['icon']}" /></a>
-                        <a class="epSearch" id="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="${srRoot}/home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="${srRoot}/images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
-                        <a class="epManualSearch" id="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="${srRoot}/home/snatchSelection?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}&amp;manual_search_type=episode"><img data-ep-manual-search src="${srRoot}/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                        <a href="${anon_url(sickbeard.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${sickbeard.indexerApi(cur_indexer).config['show_url']}"><img alt="${sickbeard.indexerApi(cur_indexer).name}" height="16" width="16" src="/images/${sickbeard.indexerApi(cur_indexer).config['icon']}" /></a>
+                        <a class="epSearch" id="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="/home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="/images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
+                        <a class="epManualSearch" id="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="/home/snatchSelection?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}&amp;manual_search_type=episode"><img data-ep-manual-search src="/images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                     </span>
                 </div>
 
@@ -332,10 +332,10 @@
                 <div>
 % if cur_result['description']:
                         <span class="title" style="vertical-align:middle;">Plot:</span>
-                        <img class="ep_summaryTrigger" src="${srRoot}/images/plus.png" height="16" width="16" alt="" title="Toggle Summary" /><div class="ep_summary">${cur_result['description']}</div>
+                        <img class="ep_summaryTrigger" src="/images/plus.png" height="16" width="16" alt="" title="Toggle Summary" /><div class="ep_summary">${cur_result['description']}</div>
 % else:
                         <span class="title ep_summaryTriggerNone" style="vertical-align:middle;">Plot:</span>
-                        <img class="ep_summaryTriggerNone" src="${srRoot}/images/plus.png" height="16" width="16" alt="" />
+                        <img class="ep_summaryTriggerNone" src="/images/plus.png" height="16" width="16" alt="" />
 % endif
                 </div>
             </td>
@@ -356,7 +356,7 @@
 <br>
 <br>
 <div class="calendarWrapper">
-<input type="hidden" id="srRoot" value="${srRoot}" />
+<input type="hidden" id="srRoot" value="" />
     % for day in dates:
     <% tbl_day += 1 %>
         <table class="sickbeardTable tablesorter calendarTable ${'cal-%s' % (('even', 'odd')[bool(tbl_day % 2)])}" cellspacing="0" border="0" cellpadding="0">
@@ -386,7 +386,7 @@
                 <tr>
                     <td class="calendarShow">
                         <div class="poster">
-                            <a title="${cur_result['show_name']}" href="${srRoot}/home/displayShow?show=${cur_result['showid']}"><img alt="" src="${srRoot}/showPoster/?show=${cur_result['showid']}&amp;which=poster_thumb" /></a>
+                            <a title="${cur_result['show_name']}" href="/home/displayShow?show=${cur_result['showid']}"><img alt="" src="/showPoster/?show=${cur_result['showid']}&amp;which=poster_thumb" /></a>
                         </div>
                         <div class="text">
                             <span class="airtime">

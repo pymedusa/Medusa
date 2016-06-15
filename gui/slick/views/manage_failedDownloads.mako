@@ -55,9 +55,9 @@
     <td align="center">
     <% provider = providers.getProviderClass(GenericProvider.make_id(hItem["provider"])) %>
     % if provider is not None:
-        <img src="${srRoot}/images/providers/${provider.image_name()}" width="16" height="16" alt="${provider.name}" title="${provider.name}"/>
+        <img src="/images/providers/${provider.image_name()}" width="16" height="16" alt="${provider.name}" title="${provider.name}"/>
     % else:
-        <img src="${srRoot}/images/providers/missing.png" width="16" height="16" alt="missing provider" title="missing provider"/>
+        <img src="/images/providers/missing.png" width="16" height="16" alt="missing provider" title="missing provider"/>
     % endif
     </td>
     <td align="center"><input type="checkbox" class="removeCheck" id="remove-${hItem["release"] | u}" /></td>
