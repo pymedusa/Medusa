@@ -211,7 +211,7 @@
                                                 <span class="component-desc">
                                                     <input type="text" name="plex_server_host" id="plex_server_host" value="${re.sub(r'\b,\b', ', ', sickbeard.PLEX_SERVER_HOST)}" class="form-control input-sm input350" autocapitalize="off" />
                                                     <div class="clear-left">
-                                                        <p>one or more hosts running Plex Media Server<br>(eg. 192.168.1.1:32400, 192.168.1.2:32400)</p>
+                                                        <p>one or more hosts running Plex Media Server<br />(eg. 192.168.1.1:32400, 192.168.1.2:32400)</p>
                                                     </div>
                                                 </span>
                                             </label>
@@ -285,7 +285,7 @@
                                         <span class="component-desc">
                                             <input type="text" name="plex_client_host" id="plex_client_host" value="${sickbeard.PLEX_CLIENT_HOST}" class="form-control input-sm input350" autocapitalize="off" />
                                             <div class="clear-left">
-                                                <p>one or more hosts running Plex Home Theater<br>(eg. 192.168.1.100:3000, 192.168.1.101:3000)</p>
+                                                <p>one or more hosts running Plex Home Theater<br />(eg. 192.168.1.100:3000, 192.168.1.101:3000)</p>
                                             </div>
                                         </span>
                                     </label>
@@ -771,10 +771,10 @@
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">Prowl API(s) listed here, separated by commas if applicable, will<br> receive notifications for <b>all</b> shows.
+                                        <span class="component-desc">Prowl API(s) listed here, separated by commas if applicable, will<br /> receive notifications for <b>all</b> shows.
                                                                      Your Prowl API key is available at:
                                                                      <a href="${anon_url('https://www.prowlapp.com/api_settings.php')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">
-                                                                     https://www.prowlapp.com/api_settings.php</a><br>
+                                                                     https://www.prowlapp.com/api_settings.php</a><br />
                                                                      (This field may be blank except when testing.)</span>
                                     </label>
                                 </div>
@@ -1258,7 +1258,7 @@
                         <div class="component-group-desc">
                             <span class="icon-notifiers-freemobile" alt="" title="Free Mobile"></span>
                             <h3><a href="${anon_url('http://mobile.free.fr/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Free Mobile</a></h3>
-                            <p>Free Mobile is a famous French cellular network provider.<br> It provides to their customer a free SMS API.</p>
+                            <p>Free Mobile is a famous French cellular network provider.<br /> It provides to their customer a free SMS API.</p>
                         </div>
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -1467,7 +1467,7 @@
                                         <span class="component-title">Step One</span>
                                     </label>
                                     <label>
-                                        <span style="font-size: 11px;">Click the "Request Authorization" button.<br> This will open a new page containing an auth key.<br> <b>Note:</b> if nothing happens check your popup blocker.<br></span>
+                                        <span style="font-size: 11px;">Click the "Request Authorization" button.<br /> This will open a new page containing an auth key.<br /> <b>Note:</b> if nothing happens check your popup blocker.<br /></span>
                                         <input class="btn" type="button" value="Request Authorization" id="twitterStep1" />
                                     </label>
                                 </div>
@@ -1476,7 +1476,7 @@
                                         <span class="component-title">Step Two</span>
                                     </label>
                                     <label>
-                                        <span style="font-size: 11px;">Enter the key Twitter gave you below, and click "Verify Key".<br><br></span>
+                                        <span style="font-size: 11px;">Enter the key Twitter gave you below, and click "Verify Key".<br /><br /></span>
                                         <input type="text" id="twitter_key" value="" class="form-control input-sm input350" autocapitalize="off" />
                                         <input class="btn btn-inline" type="button" value="Verify Key" id="twitterStep2" />
                                     </label>
@@ -1818,7 +1818,7 @@
                 </div><!-- #tabs-3 //-->
             </div><!-- #config-components //-->
         </form><!-- #configForm //-->
-        <br><input type="submit" class="config_submitter btn" value="Save Changes" /><br>
+        <br /><input type="submit" class="config_submitter btn" value="Save Changes" /><br />
     </div><!-- #config-content //-->
 </div><!-- #config //-->
 <div class="clearfix"></div>

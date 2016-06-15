@@ -23,7 +23,7 @@
     <div id="tabs-2" class="existingtabs">
         <%include file="/inc_addShowOptions.mako"/>
     </div>
-    <br>
+    <br />
     <span>Sort By:</span>
     <select id="showsort" class="form-control form-control-inline input-sm">
         <option value="name">Name</option>
@@ -52,9 +52,9 @@
 % endif
     </select>
 </div>
-<br>
+<br />
 <div id="trendingShows"></div>
-<br>
+<br />
 % if traktList:
     <input type="hidden" name="traktList" id="traktList" value="${traktList}" />
 % endif

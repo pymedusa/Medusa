@@ -28,7 +28,7 @@
     </select>
 </div>
 <% imdb_tt = [show.imdbid for show in sickbeard.showList if show.imdbid] %>
-<br>
+<br />
 <div id="popularShows">
     <div id="container">
 % if not popular_shows:
@@ -68,5 +68,5 @@
 % endif
     </div>
 </div>
-<br>
+<br />
 </%block>

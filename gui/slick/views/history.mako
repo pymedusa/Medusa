@@ -39,7 +39,7 @@
         </select>
     </span>
 </div>
-<br>
+<br />
 % if sickbeard.HISTORY_LAYOUT == "detailed":
     <table id="historyTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
         <thead>

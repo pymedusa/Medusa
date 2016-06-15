@@ -17,8 +17,8 @@
     % if sr_version:
     <tr><td class="infoTableHeader" style="vertical-align: top;"><i class="icon16-config-sickrage"></i> Medusa Info:</td>
         <td class="infoTableCell">
-        Branch: <a href="${anon_url('https://github.com/PyMedusa/SickRage/tree/%s' % sickbeard.BRANCH)}">${sickbeard.BRANCH}</a><br>
-        Commit: <a href="${anon_url('https://github.com/PyMedusa/SickRage/commit/%s' % sickbeard.CUR_COMMIT_HASH)}">${sickbeard.CUR_COMMIT_HASH}</a><br>
+        Branch: <a href="${anon_url('https://github.com/PyMedusa/SickRage/tree/%s' % sickbeard.BRANCH)}">${sickbeard.BRANCH}</a><br />
+        Commit: <a href="${anon_url('https://github.com/PyMedusa/SickRage/commit/%s' % sickbeard.CUR_COMMIT_HASH)}">${sickbeard.CUR_COMMIT_HASH}</a><br />
         Version: <a href="${anon_url('https://github.com/PyMedusa/SickRage/releases/tag/%s' % sr_version)}">${sr_version}</a>
         </td>
     </tr>

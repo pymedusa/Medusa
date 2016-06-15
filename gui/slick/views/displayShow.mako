@@ -102,7 +102,7 @@
 
             <div id="showinfo">
 % if 'rating' in show.imdb_info:
-    <% rating_tip = str(show.imdb_info['rating']) + " / 10" + " Stars" + "<br>" + str(show.imdb_info['votes']) + " Votes" %>
+    <% rating_tip = str(show.imdb_info['rating']) + " / 10" + " Stars" + "<br />" + str(show.imdb_info['votes']) + " Votes" %>
     <span class="imdbstars" qtip-content="${rating_tip}">${show.imdb_info['rating']}</span>
 % endif
 % if not show.imdbid:
@@ -156,7 +156,7 @@
                     ${renderQualityPill(show.quality)}
                 % else:
                 % if anyQualities:
-                    <i>Allowed:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(anyQualities)])}${("", "<br>")[bool(bestQualities)]}
+                    <i>Allowed:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(anyQualities)])}${("", "<br />")[bool(bestQualities)]}
                 % endif
                 % if bestQualities:
                     <i>Preferred:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(bestQualities)])}
@@ -226,7 +226,7 @@
     </div>
     <div class="clearfix"></div>
     <div class="pull-left" >
-        Change selected episodes to:<br>
+        Change selected episodes to:<br />
         <select id="statusSelect" class="form-control form-control-inline input-sm">
         <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
         % if not sickbeard.USE_FAILED_DOWNLOADS:
@@ -242,7 +242,7 @@
         <input type="hidden" id="indexer" value="${show.indexer}" />
         <input class="btn btn-inline" type="button" id="changeStatus" value="Go" />
     </div>
-    <br>
+    <br />
     <div class="pull-right clearfix" id="checkboxControls">
         <div style="padding-bottom: 5px;">
             <% total_snatched = epCounts[Overview.SNATCHED] + epCounts[Overview.SNATCHED_PROPER] + epCounts[Overview.SNATCHED_BEST] %>
