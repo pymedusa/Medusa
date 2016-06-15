@@ -121,7 +121,7 @@
                                 <span class="component-title">Air by date</span>
                                 <span class="component-desc">
                                     <input type="checkbox" id="airbydate" name="air_by_date" ${('', 'checked="checked"')[show.air_by_date == 1]} /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
-                                    <span style="color:rgb(255, 0, 0)">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
+                                    <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
                         </div>
@@ -143,7 +143,7 @@
                                 <span class="component-title">Sports</span>
                                 <span class="component-desc">
                                     <input type="checkbox" id="sports" name="sports" ${('', 'checked="checked"')[show.sports == 1]}/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
-                                    <span style="color:rgb(255, 0, 0)">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
+                                    <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
                         </div>

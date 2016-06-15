@@ -200,7 +200,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                         <p class="note"><span style="font-size: 16px;">*</span> Web-scraping plugin</p>
                     </div>
 
-                    <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px">
+                    <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px;">
                         <ul id="service_order_list">
                         % for curService in sickbeard.subtitles.sorted_service_list():
                             <li class="ui-state-default" id="${curService['name']}">
@@ -224,7 +224,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                         <p>Set user and password for each provider</p>
                     </div><!-- /component-group-desc //-->
 
-                    <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px">
+                    <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px;">
                         <%
                             providerLoginDict = {
                                 'addic7ed': {'user': sickbeard.ADDIC7ED_USER, 'pass': sickbeard.ADDIC7ED_PASS},
