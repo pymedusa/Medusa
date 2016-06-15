@@ -8,7 +8,7 @@
             <p>Groups are shown as <b>Name</b> | <b>Rating</b> | <b>Number of subbed episodes</b>.</p>
             <p>You may also add any fansub group not listed to either list manually.</p>
             <p>When doing this please note that you can only use groups listed on anidb for this anime.
-            <br>If a group is not listed on anidb but subbed this anime, please correct anidb's data.</p>
+            <br />If a group is not listed on anidb but subbed this anime, please correct anidb's data.</p>
         </div>
         <div class="bwlWrapper" id="Anime">
         <div class="blackwhitelist all">
@@ -20,7 +20,7 @@
                             <option value="${keyword}">${keyword}</option>
                         % endfor
                     </select>
-                    <br>
+                    <br />
                     <input class="btn" id="removeW" value="Remove" type="button"/>
                 </div>
                 <div class="blackwhitelist pool">
@@ -32,7 +32,7 @@
                         % endif
                     % endfor
                     </select>
-                    <br>
+                    <br />
                     <input class="btn" id="addW" value="Add to Whitelist" type="button"/>
                     <input class="btn" id="addB" value="Add to Blacklist" type="button"/>
                 </div>
@@ -43,7 +43,7 @@
                             <option value="${keyword}">${keyword}</option>
                         % endfor
                     </select>
-                    <br>
+                    <br />
                     <input class="btn" id="removeB" value="Remove" type="button"/>
                 </div>
             </div>

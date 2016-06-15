@@ -99,7 +99,7 @@
                                     <span class="component-title">Trackers list</span>
                                     <span class="component-desc">
                                         <input type="text" name="trackers_list" value="${sickbeard.TRACKERS_LIST}" class="form-control input-sm input350" autocapitalize="off" />
-                                        <div class="clear-left">Trackers that will be added to magnets without trackers<br>
+                                        <div class="clear-left">Trackers that will be added to magnets without trackers<br />
                                         separate trackers with a comma, e.g. "tracker1,tracker2,tracker3"
                                         </div>
                                     </span>
@@ -168,7 +168,7 @@
                                     <span class="component-title">Ignore words</span>
                                     <span class="component-desc">
                                         <input type="text" name="ignore_words" value="${sickbeard.IGNORE_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
-                                        <div class="clear-left">results with any words from this list will be ignored<br>
+                                        <div class="clear-left">results with any words from this list will be ignored<br />
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
                                     </span>
@@ -179,7 +179,7 @@
                                     <span class="component-title">Undesired words</span>
                                     <span class="component-desc">
                                         <input type="text" name="undesired_words" value="${sickbeard.UNDESIRED_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
-                                        <div class="clear-left">results with words from this list will only be selected as a last resort<br>
+                                        <div class="clear-left">results with words from this list will only be selected as a last resort<br />
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
                                     </span>
@@ -190,7 +190,7 @@
                                     <span class="component-title">Preferred words</span>
                                     <span class="component-desc">
                                         <input type="text" name="preferred_words" value="${sickbeard.PREFERRED_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
-                                        <div class="clear-left">results with one or more word from this list will be chosen over others<br>
+                                        <div class="clear-left">results with one or more word from this list will be chosen over others<br />
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
                                     </span>
@@ -201,7 +201,7 @@
                                     <span class="component-title">Require words</span>
                                     <span class="component-desc">
                                         <input type="text" name="require_words" value="${sickbeard.REQUIRE_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
-                                        <div class="clear-left">results must include at least one word from this list<br>
+                                        <div class="clear-left">results must include at least one word from this list<br />
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
                                     </span>
@@ -212,8 +212,8 @@
                                     <span class="component-title">Ignore language names in subbed results</span>
                                     <span class="component-desc">
                                         <input type="text" name="ignored_subs_list" value="${sickbeard.IGNORED_SUBS_LIST}" class="form-control input-sm input350" autocapitalize="off" />
-                                        <div class="clear-left">Ignore subbed releases based on language names <br>
-                                        Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br>
+                                        <div class="clear-left">Ignore subbed releases based on language names <br />
+                                        Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br />
                                         separate languages with a comma, e.g. "lang1,lang2,lang3
                                         </div>
                                     </span>
@@ -224,7 +224,7 @@
                                     <span class="component-title">Ignore unknown subbed releases</span>
                                     <span class="component-desc">
                                         <input type="checkbox" name="ignore_und_subs" id="ignore_und_subs" ${'checked="checked"' if sickbeard.IGNORE_UND_SUBS else ''}/>
-                                        Ignore subbed releases without language names <br>
+                                        Ignore subbed releases without language names <br />
                                         Filter words: subbed, subpack, subbed, subs, etc.)
                                     </span>
                                 </label>
@@ -450,7 +450,7 @@
                         </div>
                         <div class="testNotification" id="testSABnzbd_result">Click below to test</div>
                             <input class="btn" type="button" value="Test SABnzbd" id="testSABnzbd" class="btn test-button"/>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br />
                         </div><!-- /content_use_nzbs //-->
                     </fieldset>
                 </div><!-- /component-group2 //-->
@@ -493,7 +493,7 @@
                                             </span>
                                         </label>
                                     </div>
-                                    <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                                    <input type="submit" class="btn config_submitter" value="Save Changes" /><br />
                                 </div>
                             </div>
                             <div id="options_torrent_clients">
@@ -627,12 +627,12 @@
                                 </div>
                                 <div class="testNotification" id="test_torrent_result">Click below to test</div>
                                     <input class="btn" type="button" value="Test Connection" id="test_torrent" class="btn test-button"/>
-                                    <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                                    <input type="submit" class="btn config_submitter" value="Save Changes" /><br />
                                 </div>
                         </div><!-- /content_use_torrents //-->
                     </fieldset>
                 </div><!-- /component-group3 //-->
-                <br>
+                <br />
                 <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${sickbeard.DATA_DIR}</span></b> </h6>
                 <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
             </div><!-- /config-components //-->
