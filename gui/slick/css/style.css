@@ -145,18 +145,18 @@ inc_top.mako
 }
 
 .ui-tabs {
-    padding: 0px;
+    padding: 0;
     background: none;
-    border-width: 0px;
+    border-width: 0;
 }
 
 .ui-tabs .ui-tabs-nav {
-    padding-left: 0px;
+    padding-left: 0;
     background: transparent;
-    border-width: 0px 0px 0px 0px;
-    -moz-border-radius: 0px;
-    -webkit-border-radius: 0px;
-    border-radius: 0px;
+    border-width: 0 0 0 0;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+    border-radius: 0;
 }
 
 .ui-tabs .ui-tabs-panel {
@@ -197,7 +197,7 @@ inc_top.mako
     margin-left: auto;
     margin-right: auto;
     margin-top: 50px;
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 [class^="menu-icon-"], [class*=" menu-icon-"] {
@@ -211,155 +211,155 @@ inc_top.mako
 }
 
 .menu-icon-addshow {
-    background-position: 0px 0px;
+    background-position: 0 0;
 }
 
 .menu-icon-anime {
-    background-position: -21px 0px;
+    background-position: -21px 0;
 }
 
 .menu-icon-backlog-view {
-    background-position: -42px 0px;
+    background-position: -42px 0;
 }
 
 .menu-icon-backlog {
-    background-position: -63px 0px;
+    background-position: -63px 0;
 }
 
 .menu-icon-bittorrent {
-    background-position: -84px 0px;
+    background-position: -84px 0;
 }
 
 .menu-icon-config-index {
-    background-position: -105px 0px;
+    background-position: -105px 0;
 }
 
 .menu-icon-config {
-    background-position: -126px 0px;
+    background-position: -126px 0;
 }
 
 .menu-icon-failed-download {
-    background-position: -147px 0px;
+    background-position: -147px 0;
 }
 
 .menu-icon-home {
-    background-position: -168px 0px;
+    background-position: -168px 0;
 }
 
 .menu-icon-manage {
-    background-position: -189px 0px;
+    background-position: -189px 0;
 }
 
 .menu-icon-manage-searches {
-    background-position: -210px 0px;
+    background-position: -210px 0;
 }
 
 .menu-icon-poster {
-    background-position: -231px 0px;
+    background-position: -231px 0;
 }
 
 .menu-icon-postprocess {
-    background-position: -252px 0px;
+    background-position: -252px 0;
 }
 
 .menu-icon-restart {
-    background-position: -273px 0px;
+    background-position: -273px 0;
 }
 
 .menu-icon-shutdown {
-    background-position: -294px 0px;
+    background-position: -294px 0;
 }
 
 .menu-icon-update {
-    background-position: -315px 0px;
+    background-position: -315px 0;
 }
 
 .menu-icon-viewlog-errors {
-    background-position: -336px 0px;
+    background-position: -336px 0;
 }
 
 .menu-icon-viewlog {
-    background-position: -357px 0px;
+    background-position: -357px 0;
 }
 
 .menu-icon-kodi {
-    background-position: -378px 0px;
+    background-position: -378px 0;
 }
 
 .menu-icon-help {
-    background-position: -399px 0px;
+    background-position: -399px 0;
 }
 
 .menu-icon-info {
-    background-position: -418px 0px;
+    background-position: -418px 0;
 }
 
 .menu-icon-error {
-    background-position: -436px 0px;
+    background-position: -436px 0;
 }
 
 .menu-icon-news {
-    background-position: -456px 0px;
+    background-position: -456px 0;
 }
 
 .menu-icon-irc {
-    background-position: -478px 0px;
+    background-position: -478px 0;
 }
 
 .menu-icon-changelog {
-    background-position: -495px 0px;
+    background-position: -495px 0;
 }
 
 .menu-icon-support {
-    background-position: -516px 0px;
+    background-position: -516px 0;
 }
 
 .menu-icon-plex {
-    background-position: -536px 0px;
+    background-position: -536px 0;
 }
 
 .menu-icon-backup {
-    background-position: -556px 0px;
+    background-position: -556px 0;
 }
 
 .menu-icon-provider {
-    background-position: -576px 0px;
+    background-position: -576px 0;
 }
 
 .menu-icon-notification {
-    background-position: -597px 0px;
+    background-position: -597px 0;
 }
 
 .menu-icon-emby {
-    background-position: -614px 0px;
+    background-position: -614px 0;
 }
 
 .menu-icon-blackhole {
-    background-position: -632px 0px;
+    background-position: -632px 0;
 }
 
 .menu-icon-schedule {
-    background-position: -653px 0px;
+    background-position: -653px 0;
 }
 
 .menu-icon-manage2 {
-    background-position: -673px 0px;
+    background-position: -673px 0;
 }
 
 .menu-icon-history {
-    background-position: -695px 0px;
+    background-position: -695px 0;
 }
 
 .menu-icon-trash {
-    background-position: -711px 0px;
+    background-position: -711px 0;
 }
 
 .menu-icon-cut {
-    background-position: -727px 0px;
+    background-position: -727px 0;
 }
 
 .menu-icon-select {
-    background-position: -742px 0px;
+    background-position: -742px 0;
 }
 
 .enable-daily-search-icon {
@@ -548,7 +548,7 @@ span.show-option {
     background-color: rgb(243, 243, 243);
     border: 5px solid rgb(243, 243, 243);
     overflow: hidden;
-    box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.31);
+    box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.31);
 }
 
 .show-details {
@@ -567,26 +567,26 @@ span.show-option {
 }
 
 .show-container .ui-corner-all, .ui-corner-bottom, .ui-corner-right, .ui-corner-br {
-    border-bottom-right-radius: 0px;
+    border-bottom-right-radius: 0;
 }
 
 .show-container .ui-corner-all, .ui-corner-bottom, .ui-corner-left, .ui-corner-bl {
-    border-bottom-left-radius: 0px;
+    border-bottom-left-radius: 0;
 }
 
 .show-container .ui-corner-all, .ui-corner-top, .ui-corner-right, .ui-corner-tr {
-    border-top-right-radius: 0px;
+    border-top-right-radius: 0;
 }
 
 .show-container .ui-corner-all, .ui-corner-top, .ui-corner-left, .ui-corner-tl {
-    border-top-left-radius: 0px;
+    border-top-left-radius: 0;
 }
 
 .show-container .ui-widget-content {
     border-top: 1px solid rgb(17, 17, 17);
     border-bottom: 1px solid rgb(17, 17, 17);
-    border-left: 0px;
-    border-right: 0px;
+    border-left: 0;
+    border-right: 0;
 }
 .ui-progressbar .ui-progressbar-value {
     height:20px;
@@ -598,7 +598,7 @@ span.show-option {
 .show-container .progress-40,
 .show-container .progress-60,
 .show-container .progress-80 {
-    border-radius: 0px;
+    border-radius: 0;
     height: 7px;
 }
 
@@ -607,7 +607,7 @@ span.show-option {
     overflow: hidden;
     white-space: nowrap;
     font-size: 11px;
-    margin: 4px 4px 0px 4px;
+    margin: 4px 4px 0 4px;
 }
 
 .show-title:after {
@@ -630,7 +630,7 @@ span.show-option {
     overflow: hidden;
     white-space: nowrap;
     font-size: 11px;
-    margin: 0px 4px 4px 4px;
+    margin: 0 4px 4px 4px;
     color: rgb(148, 148, 148);
 }
 
@@ -773,23 +773,23 @@ div.buttontext p {
 }
 
 .add-list-icon-addnewshow {
-    background-position: 0px 0px;
+    background-position: 0 0;
 }
 
 .add-list-icon-addtrakt {
-    background-position: -37px 0px;
+    background-position: -37px 0;
 }
 
 .add-list-icon-addimdb {
-    background-position: -76px 0px;
+    background-position: -76px 0;
 }
 
 .add-list-icon-addexistingshow {
-    background-position: -113px 0px;
+    background-position: -113px 0;
 }
 
 .add-list-icon-addanime {
-    background-position: -150px 0px;
+    background-position: -150px 0;
 }
 
 /* =======================================================================
@@ -1002,7 +1002,7 @@ ul.tags li {
     border: 1px solid rgb(17, 17, 17);
     color: rgb(255, 255, 255);
     font: 14px/18px "Open Sans", "Helvetica Neue", Helvetica, Arial, Geneva, sans-serif;
-    text-shadow: 0px 1px rgba(0, 0, 0, 0.8);
+    text-shadow: 0 1px rgba(0, 0, 0, 0.8);
     float: left;
 }
 
@@ -1363,7 +1363,7 @@ h2.day, h2.network {
     letter-spacing: 1px;
     color: rgb(255, 255, 255);
     text-align: center;
-    text-shadow: -1px -1px 0px rgba(0, 0, 0, 0.3);
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
     background-color: rgb(51, 51, 51);
 }
 
@@ -1372,7 +1372,7 @@ h2.day, h2.network {
     clear: both;
     border: 1px solid rgb(204, 204, 204);
     margin: auto;
-    padding: 0px;
+    padding: 0;
     text-align: left;
     width: 750px;
     border-radius: 5px;
@@ -1534,7 +1534,7 @@ config*.mako
 }
 
 #config div.field-pair {
-    padding: 12px 0px;
+    padding: 12px 0;
 }
 
 #config div.field-pair select,
@@ -1625,7 +1625,7 @@ select .selected {
 
 #provider_order_list input,
 #service_order_list input {
-    margin: 0px 2px;
+    margin: 0 2px;
 }
 
 #config .tip_scale label span.component-title {
@@ -1726,67 +1726,67 @@ select .selected {
 }
 
 .add-client-icon-sabnzbd {
-    background-position: 0px 0px;
+    background-position: 0 0;
 }
 
 .add-client-icon-nzbget {
-    background-position: -34px 0px;
+    background-position: -34px 0;
 }
 
 .add-client-icon-blackhole {
-    background-position: -71px 0px;
+    background-position: -71px 0;
 }
 
 .add-client-icon-deluge {
-    background-position: -106px 0px;
+    background-position: -106px 0;
 }
 
 .add-client-icon-deluged {
-    background-position: -106px 0px;
+    background-position: -106px 0;
 }
 
 .add-client-icon-qbittorrent {
-    background-position: -138px 0px;
+    background-position: -138px 0;
 }
 
 .add-client-icon-rtorrent {
-    background-position: -172px 0px;
+    background-position: -172px 0;
 }
 
 .add-client-icon-download-station {
-    background-position: -205px 0px;
+    background-position: -205px 0;
 }
 
 .add-client-icon-transmission {
-    background-position: -241px 0px;
+    background-position: -241px 0;
 }
 
 .add-client-icon-utorrent {
-    background-position: -273px 0px;
+    background-position: -273px 0;
 }
 
 .add-client-icon-spotnet {
-    background-position: -311px 0px;
+    background-position: -311px 0;
 }
 
 .add-client-icon-mlnet {
-    background-position: -344px 0px;
+    background-position: -344px 0;
 }
 
 .add-client-icon-rss {
-    background-position: -380px 0px;
+    background-position: -380px 0;
 }
 
 .add-client-icon-folder {
-    background-position: -416px 0px;
+    background-position: -416px 0;
 }
 
 .add-client-icon-ftp {
-    background-position: -452px 0px;
+    background-position: -452px 0;
 }
 
 .add-client-icon-irc {
-    background-position: -488px 0px;
+    background-position: -488px 0;
 }
 
 /* =======================================================================
@@ -1883,7 +1883,7 @@ div.metadataDiv .disabled {
 
 .notifier-icon {
     float: left;
-    margin: 6px 4px 0px 0px;
+    margin: 6px 4px 0 0;
 }
 
 .warning {
@@ -1902,95 +1902,95 @@ div.metadataDiv .disabled {
 }
 
 .icon-notifiers-kodi {
-    background-position: 0px 0px;
+    background-position: 0 0;
 }
 
 .icon-notifiers-plex {
-    background-position: -35px 0px;
+    background-position: -35px 0;
 }
 
 .icon-notifiers-plexth {
-    background-position: -69px 0px;
+    background-position: -69px 0;
 }
 
 .icon-notifiers-emby {
-    background-position: -104px 0px;
+    background-position: -104px 0;
 }
 
 .icon-notifiers-nmj {
-    background-position: -136px 0px;
+    background-position: -136px 0;
 }
 
 .icon-notifiers-syno1 {
-    background-position: -168px 0px;
+    background-position: -168px 0;
 }
 
 .icon-notifiers-syno2 {
-    background-position: -202px 0px;
+    background-position: -202px 0;
 }
 
 .icon-notifiers-pytivo {
-    background-position: -237px 0px;
+    background-position: -237px 0;
 }
 
 .icon-notifiers-growl {
-    background-position: -272px 0px;
+    background-position: -272px 0;
 }
 
 .icon-notifiers-prowl {
-    background-position: -308px 0px;
+    background-position: -308px 0;
 }
 
 .icon-notifiers-libnotify {
-    background-position: -345px 0px;
+    background-position: -345px 0;
 }
 
 .icon-notifiers-pushover {
-    background-position: -377px 0px;
+    background-position: -377px 0;
 }
 
 .icon-notifiers-boxcar2 {
-    background-position: -414px 0px;
+    background-position: -414px 0;
 }
 
 .icon-notifiers-nma {
-    background-position: -450px 0px;
+    background-position: -450px 0;
 }
 
 .icon-notifiers-pushalot {
-    background-position: -486px 0px;
+    background-position: -486px 0;
 }
 
 .icon-notifiers-pushbullet {
-    background-position: -519px 0px;
+    background-position: -519px 0;
 }
 
 .icon-notifiers-freemobile {
-    background-position: -551px 0px;
+    background-position: -551px 0;
 }
 
 .icon-notifiers-telegram {
-    background-position: -587px 0px;
+    background-position: -587px 0;
 }
 
 .icon-notifiers-twitter {
-    background-position: -624px 0px;
+    background-position: -624px 0;
 }
 
 .icon-notifiers-trakt {
-    background-position: -659px 0px;
+    background-position: -659px 0;
 }
 
 .icon-notifiers-email {
-    background-position: -695px 0px;
+    background-position: -695px 0;
 }
 
 .icon-notifiers-anime {
-    background-position: -733px 0px;
+    background-position: -733px 0;
 }
 
 .icon-notifiers-look {
-    background-position: -769px 0px;
+    background-position: -769px 0;
 }
 
 /* =======================================================================
@@ -2022,7 +2022,7 @@ td.tableright {
     text-align: left;
     vertical-align: middle;
     width: 225px;
-    padding: 6px 0px;
+    padding: 6px 0;
 }
 
 .optionWrapper div.selectChoices {
@@ -2077,7 +2077,7 @@ span.quality {
     background-image:linear-gradient(to bottom, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 50%,rgba(0,0,0,0.25));
     -webkit-box-shadow:inset 0 1px rgba(255,255,255,0.1),inset 0 -1px 3px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(255,255,255,0.08),0 1px 2px rgba(0,0,0,0.15);
     box-shadow:inset 0 1px rgba(255,255,255,0.1),inset 0 -1px 3px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(255,255,255,0.08),0 1px 2px rgba(0,0,0,0.15);
-    text-shadow: 0px 1px rgba(0, 0, 0, 0.8);
+    text-shadow: 0 1px rgba(0, 0, 0, 0.8);
     color: rgb(255, 255, 255);
     display: inline-block;
     padding: 2px 4px;
@@ -2212,7 +2212,7 @@ div.blackwhitelist{
 }
 
 div.blackwhitelist input {
-    margin: 5px 0px;
+    margin: 5px 0;
 }
 
 div.blackwhitelist.pool select{
@@ -2229,7 +2229,7 @@ div.blackwhitelist span {
 }
 
 div.blackwhitelist.anidb, div.blackwhitelist.manual {
-    margin: 7px 0px;
+    margin: 7px 0;
 }
 
 /* =======================================================================
@@ -2248,12 +2248,12 @@ html * {
 }
 
 input[type="checkbox"] {
-    margin: 2px 0px 0px;
+    margin: 2px 0 0;
     line-height: normal;
 }
 
 input[type="radio"] {
-    margin: 2px 0px 0px;
+    margin: 2px 0 0;
     line-height: normal;
 }
 
@@ -2268,7 +2268,7 @@ input, textarea, select, .uneditable-input {
 }
 
 .navbar-brand {
-    padding: 0px;
+    padding: 0;
 }
 
 /* navbar styling */
@@ -2402,7 +2402,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 .dropdown-menu {
     background-color: rgb(245, 241, 228);
     border: 1px solid rgba(0, 0, 0, 0.15);
-    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.176);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
 }
 
 .form-control {
@@ -2844,7 +2844,7 @@ fieldset.sectionwrap {
 
 legend.legendStep {
     color: rgb(87, 68, 43);
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 div.stepsguide {
@@ -3248,7 +3248,7 @@ jquery.confirm.css
     top: 50%;
     margin: -130px 0 0 -230px;
     border: 1px solid rgb(17, 17, 17);
-    box-shadow: 0px 0px 12px 0px rgba(0, 0, 0, 0.175);
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.175);
 }
 
 #confirmBox h1,
@@ -3262,13 +3262,13 @@ jquery.confirm.css
     color: rgb(255, 255, 255);
     margin: 0;
     font-size: 22px;
-    text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.75);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
 }
 
 #confirmBox p {
     padding-top: 20px;
     color: rgb(0, 0, 0);
-    text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.75);
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
 }
 
 #confirmButtons {
@@ -3283,7 +3283,7 @@ jquery.confirm.css
     display: inline-block;
     color: rgb(255, 255, 255);
     text-align:center;
-    text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.75);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
     background-clip: padding-box;
     border: 1px solid rgb(17, 17, 17);
     border-radius: 3px;
@@ -3411,8 +3411,8 @@ IMDB Popular
 }
 
 .popularShow h3{
-    padding:0px;
-    margin:0px;
+    padding:0;
+    margin:0;
     display:inline-block;
     margin-right:30px;
 }
@@ -3441,11 +3441,11 @@ IMDB Popular
 .popularShow .rating{
     font-size:90%;
     display:inline-block;
-    margin-left:0px;
+    margin-left:0;
 }
 
 .popularShow p{
-    margin-bottom:0px;
+    margin-bottom:0;
 }
 
 table.home-header {
