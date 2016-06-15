@@ -17,12 +17,10 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
-
 <% indexer = 0 %>
 % if sickbeard.INDEXER_DEFAULT:
     <% indexer = sickbeard.INDEXER_DEFAULT %>
 % endif
-
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="saveGeneral" method="post">
@@ -32,7 +30,6 @@
                     <li><a href="#interface">Interface</a></li>
                     <li><a href="#advanced-settings">Advanced Settings</a></li>
                 </ul>
-
                 <div id="misc">
                     <div class="component-group">
                         <div class="component-group-desc">
@@ -40,9 +37,7 @@
                             <p>Startup options. Indexer options. Log and show file locations.</p>
                             <p><b>Some options may require a manual restart to take effect.</b></p>
                         </div>
-
                         <fieldset class="component-group-list">
-
                             <div class="field-pair">
                                 <label for="indexerDefaultLang">
                                     <span class="component-title">Default Indexer Language</span>
@@ -86,7 +81,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <span class="component-title">Send to trash for actions</span>
                                 <span class="component-desc">
@@ -101,7 +95,6 @@
                                     <div class="clear-left"><p>selected actions use trash (recycle bin) instead of the default permanent delete</p></div>
                                 </span>
                             </div>
-
                             <div class="field-pair">
                                 <label for="log_dir">
                                     <span class="component-title">Log file folder location</span>
@@ -110,7 +103,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label for="log_nr">
                                     <span class="component-title">Number of Log files saved</span>
@@ -120,7 +112,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label for="log_size">
                                     <span class="component-title">Size of Log files saved</span>
@@ -130,7 +121,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label for="indexer_default">
                                     <span class="component-title">Use initial indexer set to</span>
@@ -145,7 +135,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label for="indexer_timeout">
                                     <span class="component-title">Timeout show indexer at</span>
@@ -155,7 +144,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Show root directories</span>
@@ -165,7 +153,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <input type="submit" class="btn config_submitter" value="Save Changes" />
                         </fieldset>
                     </div>
@@ -185,7 +172,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label for="auto_update">
                                     <span class="component-title">Automatically update</span>
@@ -196,7 +182,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Check the server every*</span>
@@ -206,7 +191,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label for="notify_on_update">
                                     <span class="component-title">Notify on software update</span>
@@ -216,24 +200,17 @@
                                     </span>
                                 </label>
                             </div>
-
                             <input type="submit" class="btn config_submitter" value="Save Changes" />
                         </fieldset>
-
                     </div>
                 </div><!-- /component-group1 //-->
-
-
                 <div id="interface">
                 <div class="component-group">
-
                     <div class="component-group-desc">
                         <h3>User Interface</h3>
                         <p>Options for visual appearance.</p>
                     </div>
-
                     <fieldset class="component-group-list">
-
                         <div class="field-pair">
                             <label for="theme_name">
                                 <span class="component-title">Display theme:</span>
@@ -313,7 +290,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="date_presets">
                                 <span class="component-title">Date style:</span>
@@ -332,7 +308,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="time_presets">
                                 <span class="component-title">Time style:</span>
@@ -346,7 +321,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <span class="component-title">Timezone:</span>
                             <span class="component-desc">
@@ -364,7 +338,6 @@
                                 </div>
                             </span>
                         </div>
-
                         <div class="field-pair">
                             <label for="download_url">
                                 <span class="component-title">Download url</span>
@@ -375,24 +348,16 @@
                             <span class="component-desc">URL where the shows can be downloaded.</span>
                             </label>
                         </div>
-
-
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
-
                     </fieldset>
-
                 </div><!-- /User interface component-group -->
-
                 <div class="component-group">
-
                     <div class="component-group-desc">
                         <h3>Web Interface</h3>
                         <p>It is recommended that you enable a username and password to secure Medusa from being tampered with remotely.</p>
                         <p><b>These options require a manual restart to take effect.</b></p>
                     </div>
-
                     <fieldset class="component-group-list">
-
                         <div class="field-pair">
                             <label for="api_key">
                                 <span class="component-title">API key</span>
@@ -406,7 +371,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="web_log">
                                 <span class="component-title">HTTP logs</span>
@@ -416,7 +380,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="web_username">
                                 <span class="component-title">HTTP username</span>
@@ -426,7 +389,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="web_password">
                                 <span class="component-title">HTTP password</span>
@@ -435,7 +397,6 @@
                                     <p>blank = no authentication</span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="web_port">
                                 <span class="component-title">HTTP port</span>
@@ -445,7 +406,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="notify_on_login">
                                 <span class="component-title">Notify on login</span>
@@ -455,7 +415,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="web_ipv6">
                                 <span class="component-title">Listen on IPv6</span>
@@ -465,7 +424,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="enable_https">
                                 <span class="component-title">Enable HTTPS</span>
@@ -495,7 +453,6 @@
                                 </label>
                             </div>
                         </div>
-
                         <div class="field-pair">
                             <label for="handle_reverse_proxy">
                                 <span class="component-title">Reverse proxy headers</span>
@@ -505,25 +462,16 @@
                                 </span>
                             </label>
                         </div>
-
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
-
                     </fieldset>
-
                 </div><!-- /component-group2 //-->
                 </div>
-
-
                 <div id="advanced-settings" class="component-group">
-
                 <div class="component-group">
-
                     <div class="component-group-desc">
                         <h3>Advanced Settings</h3>
                     </div>
-
                     <fieldset class="component-group-list">
-
                         <div class="field-pair">
                             <label>
                                 <span class="component-title">CPU throttling:</span>
@@ -537,7 +485,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label>
                                 <span class="component-title">Anonymous redirect</span>
@@ -547,7 +494,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="ssl_verify">
                                 <span class="component-title">Verify SSL Certs</span>
@@ -557,7 +503,6 @@
                                     </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="no_restart">
                                 <span class="component-title">No Restart</span>
@@ -566,10 +511,8 @@
                                     <p>Only shutdown when restarting SR.
                                     Only select this when you have external software restarting SR automatically when it stops (like FireDaemon)</p>
                                 </span>
-
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="encryption_version">
                                 <span class="component-title">Encrypt passwords</span>
@@ -580,7 +523,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="calendar_unprotected">
                                 <span class="component-title">Unprotected calendar</span>
@@ -589,10 +531,8 @@
                                     <p>allow subscribing to the calendar without user and password.
                                     Some services like Google Calendar only work this way</p>
                                 </span>
-
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="calendar_icons">
                                 <span class="component-title">Google Calendar Icons</span>
@@ -600,10 +540,8 @@
                                     <input type="checkbox" name="calendar_icons" id="calendar_icons" ${'checked="checked"' if sickbeard.CALENDAR_ICONS else ''}/>
                                     <p>show an icon next to exported calendar events in Google Calendar.</p>
                                 </span>
-
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label>
                                 <span class="component-title">Proxy host</span>
@@ -613,7 +551,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="proxy_indexers">
                                 <span class="component-title">Use proxy for indexers</span>
@@ -623,7 +560,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="skip_removed_files">
                                 <span class="component-title">Skip Remove Detection</span>
@@ -636,7 +572,6 @@
                                 </div>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="ep_default_deleted_status">
                                 <span class="component-title">Default deleted episode status:</span>
@@ -673,7 +608,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
@@ -691,7 +625,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="subliminal_log">
                                 <span class="component-title">Subliminal logs</span>
@@ -701,7 +634,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label>
                                 <span class="component-title">Privacy:</span>
@@ -722,9 +654,7 @@
                         </div>
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
-
                 </div>
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <h3>GitHub</h3>
@@ -762,7 +692,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="git_username">
                                 <span class="component-title">GitHub username</span>
@@ -772,7 +701,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="git_password">
                                 <span class="component-title">GitHub password</span>
@@ -782,7 +710,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="git_remote">
                                 <span class="component-title">GitHub remote for branch</span>
@@ -792,7 +719,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label>
                                 <span class="component-title">Git executable path</span>
@@ -802,7 +728,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair" hidden>
                             <label for="git_reset">
                                 <span class="component-title">Git reset</span>
@@ -814,11 +739,8 @@
                         </div>
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
-
                 </div>
-
                 </div><!-- /component-group3 //-->
-
                 <br>
                 <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${sickbeard.DATA_DIR}</span></b> </h6>
                 <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />

@@ -8,23 +8,18 @@
 <h1 class="header">${header}</h1>
 <div id="config">
     <div id="config-content">
-
         <form id="configForm" action="saveAnime" method="post">
-
             <div id="config-components">
-
                 <ul>
                     <li><a href="#animedb-settings">AnimeDB Settings</a></li>
                     <li><a href="#anime-look-feel">Look &amp; Feel</a></li>
                 </ul>
-
                 <div id="animedb-settings" class="tab-pane active component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-anime" title="AniDB"></span>
                         <h3><a href="${anon_url('http://anidb.info')}" onclick="window.open(this.href, '_blank'); return false;">AniDB</a></h3>
                         <p>AniDB is non-profit database of anime information that is freely open to the public</p>
                     </div>
-
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <input type="checkbox" class="enabler" name="use_anidb" id="use_anidb" ${'checked="checked"' if sickbeard.USE_ANIDB else ''} />
@@ -33,7 +28,6 @@
                                 <span class="component-desc">Should Medusa use data from AniDB?</span>
                             </label>
                         </div>
-
                         <div id="content_use_anidb">
                             <div class="field-pair">
                                 <label class="nocheck">
@@ -45,7 +39,6 @@
                                     <span class="component-desc">Username of your AniDB account</span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <label class="nocheck">
                                     <span class="component-title">AniDB Password</span>
@@ -66,11 +59,8 @@
                         </div>
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
-
                 </div><!-- /component-group //-->
-
                 <div id="anime-look-feel" class="tab-pane component-group">
-
                     <div class="component-group-desc">
                         <span class="icon-notifiers-look" title="look"></span>
                         <h3>Look and Feel</h3>
@@ -87,11 +77,8 @@
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                    </fieldset>
                 </div><!-- /component-group //-->
-
                 <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
-
             </div><!-- /config-components //-->
-
         </form>
     </div>
 </div>

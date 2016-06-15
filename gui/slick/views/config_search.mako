@@ -366,7 +366,6 @@
                                         <p><b>note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
                                     </span>
                                 </label>
-
                             </div>
                             <div class="field-pair">
                                 <label>
@@ -471,7 +470,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_torrents">
                             <div class="field-pair">
                                 <label for="torrent_method">

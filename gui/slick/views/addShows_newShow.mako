@@ -15,23 +15,19 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
-
 <div id="newShowPortal">
     <div id="config-components">
         <ul>
             <li><a href="#core-component-group1">Add New Show</a></li>
         </ul>
-
         <div id="core-component-group1" class="tab-pane active component-group">
             <div id="displayText"></div>
             <br>
             <form id="addShowForm" method="post" action="/addShows/addNewShow" accept-charset="utf-8">
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Find a show on theTVDB</legend>
-
                     <div class="stepDiv">
                         <input type="hidden" id="indexer_timeout" value="${sickbeard.INDEXER_TIMEOUT}" />
-
                         % if use_provided_info:
                             Show retrieved from existing metadata: <a href="${anon_url(sickbeard.indexerApi(provided_indexer).config['show_url'], provided_indexer_id)}">${provided_indexer_name}</a>
                             <input type="hidden" id="indexerLang" name="indexerLang" value="en" />
@@ -54,7 +50,6 @@
                             </select>
                             &nbsp;
                             <input class="btn btn-inline" type="button" id="searchName" value="Search" />
-
                             <br><br>
                             <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
                             This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!<br><br>
@@ -62,7 +57,6 @@
                         % endif
                     </div>
                 </fieldset>
-
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Pick the parent folder</legend>
                     <div class="stepDiv">
@@ -74,21 +68,18 @@
                         % endif
                     </div>
                 </fieldset>
-
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Customize options</legend>
                     <div class="stepDiv">
                         <%include file="/inc_addShowOptions.mako"/>
                     </div>
                 </fieldset>
-
                 % for curNextDir in other_shows:
                 <input type="hidden" name="other_shows" value="${curNextDir}" />
                 % endfor
                 <input type="hidden" name="skipShow" id="skipShow" value="" />
             </form>
             <br>
-
             <div style="width: 100%; text-align: center;">
                 <input class="btn" type="button" id="addShowButton" value="Add Show" disabled="disabled" />
                 % if provided_show_dir:

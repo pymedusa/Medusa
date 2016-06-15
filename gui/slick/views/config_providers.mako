@@ -31,9 +31,7 @@ $('#config-components').tabs();
 % endif
 <div id="config">
     <div id="config-content">
-
         <form id="configForm" action="saveProviders" method="post">
-
             <div id="config-components">
                 <ul>
                     <li><a href="#provider-priorities">Provider Priorities</a></li>
@@ -45,26 +43,21 @@ $('#config-components').tabs();
                     <li><a href="#custom-torrent">Configure Custom Torrent Providers</a></li>
                   % endif
                 </ul>
-
                 <div id="provider-priorities" class="component-group" style='min-height: 550px;'>
-
                     <div class="component-group-desc">
                         <h3>Provider Priorities</h3>
                         <p>Check off and drag the providers into the order you want them to be used.</p>
                         <p>At least one provider is required but two are recommended.</p>
-
                         % if not sickbeard.USE_NZBS or not sickbeard.USE_TORRENTS:
                         <blockquote style="margin: 20px 0;">NZB/Torrent providers can be toggled in <b><a href="/config/search">Search Settings</a></b></blockquote>
                         % else:
                         <br>
                         % endif
-
                         <div>
                             <p class="note"><span class="red-text">*</span> Provider does not support backlog searches at this time.</p>
                             <p class="note"><span class="red-text">!</span> Provider is <b>NOT WORKING</b>.</p>
                         </div>
                     </div>
-
                     <fieldset class="component-group-list">
                         <ul id="provider_order_list">
                         % for curProvider in sickbeard.providers.sortedProviderList():
@@ -75,7 +68,6 @@ $('#config-components').tabs();
                                     continue
                                 elif curProvider.provider_type == GenericProvider.TORRENT and not sickbeard.USE_TORRENTS:
                                     continue
-
                                 curName = curProvider.get_id()
                                 if hasattr(curProvider, 'custom_url'):
                                     curURL = curProvider.custom_url or curProvider.url
@@ -100,15 +92,12 @@ $('#config-components').tabs();
                         <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group1 //-->
-
                 <div id="provider-options" class="component-group">
-
                     <div class="component-group-desc">
                         <h3>Provider Options</h3>
                         <p>Configure individual provider settings here.</p>
                         <p>Check with provider's website on how to obtain an API key if needed.</p>
                     </div>
-
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label for="editAProvider" id="provider-list">
@@ -135,8 +124,6 @@ $('#config-components').tabs();
                                 </span>
                             </label>
                         </div>
-
-
                     <!-- start div for editing providers //-->
                     % for curNewznabProvider in [curProvider for curProvider in sickbeard.newznabProviderList]:
                     <div class="providerDiv" id="${curNewznabProvider.get_id()}Div">
@@ -158,7 +145,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curNewznabProvider, 'enable_daily'):
                         <div class="field-pair">
                             <label for="${curNewznabProvider.get_id()}_enable_daily">
@@ -170,7 +156,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curNewznabProvider, 'enable_manualsearch'):
                         <div class="field-pair${(' hidden', '')[curNewznabProvider.supports_backlog]}">
                             <label for="${curNewznabProvider.get_id()}_enable_manualsearch">
@@ -182,7 +167,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curNewznabProvider, 'enable_backlog'):
                         <div class="field-pair${(' hidden', '')[curNewznabProvider.supports_backlog]}">
                             <label for="${curNewznabProvider.get_id()}_enable_backlog">
@@ -194,7 +178,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curNewznabProvider, 'search_mode'):
                         <div class="field-pair">
                             <label>
@@ -217,7 +200,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curNewznabProvider, 'search_fallback'):
                         <div class="field-pair">
                             <label for="${curNewznabProvider.get_id()}_search_fallback">
@@ -229,10 +211,8 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                     </div>
                     % endfor
-
                     % for curNzbProvider in [curProvider for curProvider in sickbeard.providers.sortedProviderList() if curProvider.provider_type == GenericProvider.NZB and curProvider not in sickbeard.newznabProviderList]:
                     <div class="providerDiv" id="${curNzbProvider.get_id()}Div">
                         % if hasattr(curNzbProvider, 'username'):
@@ -245,7 +225,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curNzbProvider, 'api_key'):
                         <div class="field-pair">
                             <label for="${curNzbProvider.get_id()}_api_key">
@@ -256,8 +235,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
-
                         % if hasattr(curNzbProvider, 'enable_daily'):
                         <div class="field-pair">
                             <label for="${curNzbProvider.get_id()}_enable_daily">
@@ -269,7 +246,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curNzbProvider, 'enable_manualsearch'):
                         <div class="field-pair${(' hidden', '')[curNzbProvider.supports_backlog]}">
                             <label for="${curNzbProvider.get_id()}_enable_manualsearch">
@@ -281,8 +257,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
-
                         % if hasattr(curNzbProvider, 'enable_backlog'):
                         <div class="field-pair${(' hidden', '')[curNzbProvider.supports_backlog]}">
                             <label for="${curNzbProvider.get_id()}_enable_backlog">
@@ -294,7 +268,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curNzbProvider, 'search_mode'):
                         <div class="field-pair">
                             <label>
@@ -317,7 +290,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curNzbProvider, 'search_fallback'):
                         <div class="field-pair">
                             <label for="${curNzbProvider.get_id()}_search_fallback">
@@ -329,13 +301,10 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                     </div>
                     % endfor
-
                     % for curTorrentProvider in [curProvider for curProvider in sickbeard.providers.sortedProviderList() if curProvider.provider_type == GenericProvider.TORRENT]:
                     <div class="providerDiv" id="${curTorrentProvider.get_id()}Div">
-
                         % if hasattr(curTorrentProvider, 'custom_url'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_custom_url">
@@ -352,7 +321,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'api_key'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_api_key">
@@ -363,7 +331,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'digest'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_digest">
@@ -374,7 +341,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'hash'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_hash">
@@ -385,7 +351,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'username'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_username">
@@ -396,7 +361,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'password'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_password">
@@ -424,7 +388,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'passkey'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_passkey">
@@ -435,7 +398,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'pin'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_pin">
@@ -446,7 +408,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'ratio'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_ratio">
@@ -463,7 +424,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'minseed'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_minseed">
@@ -474,7 +434,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'minleech'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_minleech">
@@ -485,7 +444,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'confirmed'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_confirmed">
@@ -497,7 +455,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'ranked'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_ranked">
@@ -509,7 +466,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'engrelease'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_engrelease">
@@ -521,7 +477,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'onlyspasearch'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_onlyspasearch">
@@ -533,7 +488,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'sorting'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_sorting">
@@ -548,7 +502,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'freeleech'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_freeleech">
@@ -560,7 +513,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'enable_daily'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_enable_daily">
@@ -572,7 +524,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'enable_manualsearch'):
                         <div class="field-pair${(' hidden', '')[curTorrentProvider.supports_backlog]}">
                             <label for="${curTorrentProvider.get_id()}_enable_manualsearch">
@@ -584,7 +535,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'enable_backlog'):
                         <div class="field-pair${(' hidden', '')[curTorrentProvider.supports_backlog]}">
                             <label for="${curTorrentProvider.get_id()}_enable_backlog">
@@ -596,7 +546,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'search_mode'):
                         <div class="field-pair">
                             <label>
@@ -619,7 +568,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'search_fallback'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_search_fallback">
@@ -631,7 +579,6 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'cat') and curTorrentProvider.get_id() == 'tntvillage':
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_cat">
@@ -646,7 +593,6 @@ $('#config-components').tabs();
                            </label>
                         </div>
                         % endif
-
                         % if hasattr(curTorrentProvider, 'subtitle') and curTorrentProvider.get_id() == 'tntvillage':
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_subtitle">
@@ -658,26 +604,18 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
-
                     </div>
                     % endfor
-
-
                     <!-- end div for editing providers -->
-
                     <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
-
                     </fieldset>
                 </div><!-- /component-group2 //-->
-
                 % if sickbeard.USE_NZBS:
                 <div id="custom-newznab" class="component-group">
-
                     <div class="component-group-desc">
                         <h3>Configure Custom<br>Newznab Providers</h3>
                         <p>Add and setup or remove custom Newznab providers.</p>
                     </div>
-
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label for="newznab_string">
@@ -690,7 +628,6 @@ $('#config-components').tabs();
                                 </span>
                             </label>
                         </div>
-
                     <div class="newznabProviderDiv" id="addNewznab">
                         <div class="field-pair">
                             <label for="newznab_name">
@@ -714,7 +651,6 @@ $('#config-components').tabs();
                                 <span class="component-desc">(if not required, type 0)</span>
                             </label>
                         </div>
-
                         <div class="field-pair" id="newznabcapdiv">
                             <label>
                                 <span class="component-title">Newznab search categories:</span>
@@ -732,7 +668,6 @@ $('#config-components').tabs();
                                 </span>
                             </label>
                         </div>
-
                         <div id="newznab_add_div">
                             <input class="btn" type="button" class="newznab_save" id="newznab_add" value="Add" />
                         </div>
@@ -740,20 +675,15 @@ $('#config-components').tabs();
                             <input class="btn btn-danger newznab_delete" type="button" class="newznab_delete" id="newznab_delete" value="Delete" />
                         </div>
                     </div>
-
                     </fieldset>
                 </div><!-- /component-group3 //-->
                 % endif
-
                 % if sickbeard.USE_TORRENTS:
-
                 <div id="custom-torrent" class="component-group">
-
                 <div class="component-group-desc">
                     <h3>Configure Custom Torrent Providers</h3>
                     <p>Add and setup or remove custom RSS providers.</p>
                 </div>
-
                 <fieldset class="component-group-list">
                     <div class="field-pair">
                         <label for="torrentrss_string">
@@ -766,7 +696,6 @@ $('#config-components').tabs();
                             </span>
                         </label>
                     </div>
-
                     <div class="torrentRssProviderDiv" id="addTorrentRss">
                         <div class="field-pair">
                             <label for="torrentrss_name">
@@ -810,11 +739,8 @@ $('#config-components').tabs();
                 </fieldset>
             </div><!-- /component-group4 //-->
             % endif
-
             <br><input type="submit" class="btn config_submitter_refresh" value="Save Changes" /><br>
-
             </div><!-- /config-components //-->
-
         </form>
     </div>
 </div>

@@ -9,7 +9,6 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
-
 <div id="postProcess">
     <form name="processForm" method="post" action="processEpisode" style="line-height: 40px;">
     <table>

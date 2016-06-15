@@ -25,13 +25,10 @@
                     <div class="show-add">Loading... (${curLoadingShow.show_name})</div>
                 </div>
             </div>
-
         % endif
     % endfor
-
     <% myShowList.sort(lambda x, y: cmp(x.name, y.name)) %>
     % for curShow in myShowList:
-
     <%
         cur_airs_next = ''
         cur_snatched = 0
@@ -39,47 +36,36 @@
         cur_total = 0
         download_stat_tip = ''
         display_status = curShow.status
-
         if None is not display_status:
             if re.search(r'(?i)(?:new|returning)\s*series', curShow.status):
                 display_status = 'Continuing'
             elif re.search(r'(?i)(?:nded)', curShow.status):
                 display_status = 'Ended'
-
         if curShow.indexerid in show_stat:
             cur_airs_next = show_stat[curShow.indexerid]['ep_airs_next']
-
             cur_snatched = show_stat[curShow.indexerid]['ep_snatched']
             if not cur_snatched:
                 cur_snatched = 0
-
             cur_downloaded = show_stat[curShow.indexerid]['ep_downloaded']
             if not cur_downloaded:
                 cur_downloaded = 0
-
             cur_total = show_stat[curShow.indexerid]['ep_total']
             if not cur_total:
                 cur_total = 0
-
         download_stat = str(cur_downloaded)
         download_stat_tip = "Downloaded: " + str(cur_downloaded)
-
         if cur_snatched:
             download_stat = download_stat + "+" + str(cur_snatched)
             download_stat_tip = download_stat_tip + "&#013;" + "Snatched: " + str(cur_snatched)
-
         download_stat = download_stat + " / " + str(cur_total)
         download_stat_tip = download_stat_tip + "&#013;" + "Total: " + str(cur_total)
-
         nom = cur_downloaded
         if cur_total:
             den = cur_total
         else:
             den = 1
             download_stat_tip = "Unaired"
-
         progressbar_percent = nom * 100 / den
-
         data_date = '6000000000.0'
         if cur_airs_next:
             data_date = calendar.timegm(sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, curShow.airs, curShow.network)).timetuple())
@@ -95,13 +81,10 @@
             <div class="show-image">
                 <a href="/home/displayShow?show=${curShow.indexerid}"><img alt="" class="show-image" src="/showPoster/?show=${curShow.indexerid}&amp;which=poster_thumb" /></a>
             </div>
-
             <div class="progressbar hidden-print" style="position:relative;" data-show-id="${curShow.indexerid}" data-progress-percentage="${progressbar_percent}"></div>
-
             <div class="show-title">
                 ${curShow.name}
             </div>
-
             <div class="show-date">
     % if cur_airs_next:
         <% ldatetime = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, curShow.airs, curShow.network)) %>
@@ -126,14 +109,12 @@
         ${output_html}
     % endif
             </div>
-
             <div class="show-details">
                 <table class="show-details" width="100%" cellspacing="1" border="0" cellpadding="0">
                     <tr>
                         <td class="show-table">
                             <span class="show-dlstats" title="${download_stat_tip}">${download_stat}</span>
                         </td>
-
                         <td class="show-table">
                             % if curShow.network:
                                 <span title="${curShow.network}"><img class="show-network-image" src="/showPoster/?show=${curShow.indexerid}&amp;which=network" alt="${curShow.network}" title="${curShow.network}" /></span>
@@ -141,16 +122,13 @@
                                 <span title="No Network"><img class="show-network-image" src="/images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
                             % endif
                         </td>
-
                         <td class="show-table">
                             ${renderQualityPill(curShow.quality, showTitle=True, overrideClass="show-quality")}
                         </td>
                     </tr>
                 </table>
             </div>
-
         </div>
-
     % endfor
     </div>
 </div>

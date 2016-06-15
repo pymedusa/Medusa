@@ -15,7 +15,6 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
-
 <div class="h2footer pull-right"><b>Limit:</b>
     <select name="limit" id="limit" class="form-control form-control-inline input-sm">
         <option value="100" ${'selected="selected"' if limit == '100' else ''}>100</option>
@@ -24,7 +23,6 @@
         <option value="0" ${'selected="selected"' if limit == '0' else ''}>All</option>
     </select>
 </div>
-
 <table id="failedTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
   <thead>
     <tr>

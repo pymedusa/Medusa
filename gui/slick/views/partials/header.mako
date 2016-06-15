@@ -5,7 +5,6 @@
     from sickrage.helper.common import pretty_file_size
     from sickrage.show.Show import Show
     from time import time
-
     # resource module is unix only
     has_resource_module = True
     try:
@@ -27,7 +26,6 @@
             </button>
             <a class="navbar-brand" href="/home/" title="SickRage"><img alt="SickRage" src="/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
         </div>
-
     % if loggedIn:
         <div class="collapse navbar-collapse" id="main_nav">
             <ul class="nav navbar-nav navbar-right">
@@ -48,15 +46,12 @@
                     </ul>
                     <div style="clear:both;"></div>
                 </li>
-
                 <li id="NAVschedule"${' class="active"' if topmenu == 'schedule' else ''}>
                     <a href="/schedule/">Schedule</a>
                 </li>
-
                 <li id="NAVhistory"${' class="active"' if topmenu == 'history' else ''}>
                     <a href="/history/">History</a>
                 </li>
-
                 <li id="NAVmanage" class="navbar-split dropdown${' active' if topmenu == 'manage' else ''}">
                     <a href="/manage/episodeStatuses/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span>Manage</span>
                     <b class="caret"></b>
@@ -87,7 +82,6 @@
                     </ul>
                     <div style="clear:both;"></div>
                 </li>
-
                 <li id="NAVconfig" class="navbar-split dropdown${' active' if topmenu == 'config' else ''}">
                     <a href="/config/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Config</span><img src="/images/menu/system18.png" class="navbaricon hidden-xs" />
                     <b class="caret"></b>
@@ -105,7 +99,6 @@
                     </ul>
                     <div style="clear:both;"></div>
                 </li>
-
                 <li id="NAVsystem" class="navbar-split dropdown${' active' if topmenu == 'system' else ''}">
                     <a href="/home/status/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="/images/menu/system18-2.png" class="navbaricon hidden-xs" />${toolsBadge}
                     <b class="caret"></b>

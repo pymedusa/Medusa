@@ -6,7 +6,6 @@
     import sickbeard
     from sickbeard import subtitles, sbdatetime, network_timezones
     import sickbeard.helpers
-
     from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
     from sickbeard.common import Quality, qualityPresets, statusStrings, Overview
     from sickbeard.helpers import anon_url
@@ -29,7 +28,6 @@
             % for curShowList in sortedShowLists:
                 <% curShowType = curShowList[0] %>
                 <% curShowList = curShowList[1] %>
-
                 % if len(sortedShowLists) > 1:
                     <optgroup label="${curShowType}">
                 % endif
@@ -43,13 +41,10 @@
             </select>
         <div class="navShow"><img id="nextShow" src="/images/next.png" alt="&gt;&gt;" title="Next Show" /></div>
     </div>
-
     <div class="clearfix"></div>
-
     <div id="showtitle" data-showname="${show.name}">
         <h1 class="title" id="scene_exception_${show.indexerid}">${show.name}</h1>
     </div>
-
     % if seasonResults:
         ##There is a special/season_0?##
         % if int(seasonResults[-1]["season"]) == 0:
@@ -66,7 +61,6 @@
                 <a class="inner" href="/toggleDisplayShowSpecials/?show=${show.indexerid}">${('Show', 'Hide')[bool(sickbeard.DISPLAY_SHOW_SPECIALS)]}</a>
             % endif
         </span>
-
         <div class="h2footer pull-right">
             <span>
             % if (len(seasonResults) > 14):
@@ -90,24 +84,18 @@
                 % endfor
             % endif
             </span>
-
         </div>
         % endif
-
-
     <div class="clearfix"></div>
-
 % if show_message:
     <div class="alert alert-info">
         ${show_message}
     </div>
 % endif
-
     <div id="container">
         <div id="posterCol">
             <a href="/showPoster/?show=${show.indexerid}&amp;which=poster" rel="dialog" title="View Poster for ${show.name}"><img src="/showPoster/?show=${show.indexerid}&amp;which=poster_thumb" class="tvshowImg" alt=""/></a>
         </div>
-
         <div id="showCol">
 
             <img id="showBanner" src="${srRoot}/showPoster/?show=${show.indexerid}&amp;which=banner">
@@ -117,7 +105,6 @@
     <% rating_tip = str(show.imdb_info['rating']) + " / 10" + " Stars" + "<br>" + str(show.imdb_info['votes']) + " Votes" %>
     <span class="imdbstars" qtip-content="${rating_tip}">${show.imdb_info['rating']}</span>
 % endif
-
 % if not show.imdbid:
     <span>(${show.startyear}) - ${show.runtime} minutes - </span>
 % else:
@@ -132,16 +119,13 @@
     % endif
                     ${show.imdb_info.get('runtimes') or show.runtime} minutes
                 </span>
-
                 <a href="${anon_url('http://www.imdb.com/title/', show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdbid}">
                     <img alt="[imdb]" height="16" width="16" src="/images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
 % endif
-
                 <a href="${anon_url(sickbeard.indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${sickbeard.indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
                     <img alt="${sickbeard.indexerApi(show.indexer).name}" height="16" width="16" src="/images/${sickbeard.indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
-
 % if xem_numbering or xem_absolute_numbering:
                 <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
                     <img alt="[xem]" height="16" width="16" src="/images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
@@ -149,7 +133,6 @@
 % endif
                 <a href="${anon_url('https://fanart.tv/series/', show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="https://fanart.tv/series/${show.name}"><img alt="[fanart.tv]" height="16" width="16" src="${srRoot}/images/fanart.tv.png" class="fanart"/></a>
             </div>
-
             <div id="tags">
                 <ul class="tags">
                     % if show.imdb_info.get('genres'):
@@ -179,7 +162,6 @@
                     <i>Preferred:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(bestQualities)])}
                 % endif
                 % endif
-
                 % if show.network and show.airs:
                     <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${("<font color='#FF0000'><b>(invalid Timeformat)</b></font> ", "")[network_timezones.test_timeformat(show.airs)]} on ${show.network}</td></tr>
                 % elif show.network:
@@ -197,7 +179,6 @@
                 % if all_scene_exceptions:
                     <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${all_scene_exceptions}</td></tr>
                 % endif
-
                 % if require_words:
                     <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">${require_words}</span></td></tr>
                 % endif
@@ -222,9 +203,7 @@
                         <td>${', '.join(bwl.blacklist)}</td>
                     </tr>
                 % endif
-
                 <tr><td class="showLegend">Size:</td><td>${pretty_file_size(sickbeard.helpers.get_size(showLoc[0]))}</td></tr>
-
                 </table>
 
                 <!-- Option table right -->
@@ -245,9 +224,7 @@
             </div>
         </div>
     </div>
-
     <div class="clearfix"></div>
-
     <div class="pull-left" >
         Change selected episodes to:<br>
         <select id="statusSelect" class="form-control form-control-inline input-sm">
@@ -265,9 +242,7 @@
         <input type="hidden" id="indexer" value="${show.indexer}" />
         <input class="btn btn-inline" type="button" id="changeStatus" value="Go" />
     </div>
-
     <br>
-
     <div class="pull-right clearfix" id="checkboxControls">
         <div style="padding-bottom: 5px;">
             <% total_snatched = epCounts[Overview.SNATCHED] + epCounts[Overview.SNATCHED_PROPER] + epCounts[Overview.SNATCHED_BEST] %>
@@ -277,7 +252,6 @@
             <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" /> Skipped: <b>${epCounts[Overview.SKIPPED]}</b></span></label>
             <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>${total_snatched}</b></span></label>
         </div>
-
         <button id="popover" type="button" class="btn btn-xs">Select Columns <b class="caret"></b></button>
         <div class="pull-right" >
             <button class="btn btn-xs seriesCheck">Select Filtered Episodes</button>
@@ -296,38 +270,31 @@
         epStr = str(epResult["season"]) + "x" + str(epResult["episode"])
         if not epStr in epCats:
             continue
-
         if not sickbeard.DISPLAY_SHOW_SPECIALS and int(epResult["season"]) == 0:
             continue
-
         scene = False
         scene_anime = False
         if not show.air_by_date and not show.is_sports and not show.is_anime and show.is_scene:
             scene = True
         elif not show.air_by_date and not show.is_sports and show.is_anime and show.is_scene:
             scene_anime = True
-
         (dfltSeas, dfltEpis, dfltAbsolute) = (0, 0, 0)
         if (epResult["season"], epResult["episode"]) in xem_numbering:
             (dfltSeas, dfltEpis) = xem_numbering[(epResult["season"], epResult["episode"])]
-
         if epResult["absolute_number"] in xem_absolute_numbering:
             dfltAbsolute = xem_absolute_numbering[epResult["absolute_number"]]
-
         if epResult["absolute_number"] in scene_absolute_numbering:
             scAbsolute = scene_absolute_numbering[epResult["absolute_number"]]
             dfltAbsNumbering = False
         else:
             scAbsolute = dfltAbsolute
             dfltAbsNumbering = True
-
         if (epResult["season"], epResult["episode"]) in scene_numbering:
             (scSeas, scEpis) = scene_numbering[(epResult["season"], epResult["episode"])]
             dfltEpNumbering = False
         else:
             (scSeas, scEpis) = (dfltSeas, dfltEpis)
             dfltEpNumbering = True
-
         epLoc = epResult["location"]
         if epLoc and show._location and epLoc.lower().startswith(show._location.lower()):
             epLoc = epLoc[len(show._location)+1:]
@@ -544,9 +511,7 @@
     % endfor
     </tbody>
 </table>
-
 <!--Begin - Bootstrap Modal-->
-
 <div id="forcedSearchModalFailed" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -565,7 +530,6 @@
         </div>
     </div>
 </div>
-
 <div id="forcedSearchModalQuality" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -584,7 +548,5 @@
         </div>
     </div>
 </div>
-
 <!--End - Bootstrap Modal-->
-
 </%block>

@@ -5,7 +5,6 @@
     from sickrage.helper.common import pretty_file_size
     from sickrage.show.Show import Show
     from time import time
-
     # resource module is unix only
     has_resource_module = True
     try:
@@ -28,15 +27,12 @@
         %>
             <span class="footerhighlight">${stats['shows']['total']}</span> Shows (<span class="footerhighlight">${stats['shows']['active']}</span> Active)
             | <span class="footerhighlight">${ep_downloaded}</span>
-
             % if ep_snatched:
             <span class="footerhighlight"><a href="/manage/episodeStatuses?whichStatus=2" title="View overview of snatched episodes">+${ep_snatched}</a></span> Snatched
             % endif
-
             &nbsp;/&nbsp;<span class="footerhighlight">${ep_total}</span> Episodes Downloaded ${ep_percentage}
             | Daily Search: <span class="footerhighlight">${str(sickbeard.dailySearchScheduler.timeLeft()).split('.')[0]}</span>
             | Backlog Search: <span class="footerhighlight">${str(sickbeard.backlogSearchScheduler.timeLeft()).split('.')[0]}</span>
-
             <div>
                 % if has_resource_module:
                 Memory used: <span class="footerhighlight">${pretty_file_size(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)}</span> |

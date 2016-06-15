@@ -11,7 +11,6 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
-
 <%
     schedulerList = {
         'Daily Search': 'dailySearchScheduler',
