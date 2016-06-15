@@ -23,7 +23,7 @@
         <option value="rating_votes">% Rating > Votes</option>
     </select>
 
-    <span style="margin-left:12px">Sort Order:</span>
+    <span style="margin-left:12px;">Sort Order:</span>
     <select id="showsortdirection" class="form-control form-control-inline input-sm">
         <option value="asc" selected="selected">Asc</option>
         <option value="desc">Desc</option>
@@ -36,7 +36,7 @@
 <div id="popularShows">
     <div id="container">
     % if not popular_shows:
-        <div class="trakt_show" style="width:100%; margin-top:20px">
+        <div class="trakt_show" style="width:100%; margin-top:20px;">
             <p class="red-text">Fetching of IMDB Data failed. Are you online?
             <strong>Exception:</strong>
             <p>${imdb_exception}</p>

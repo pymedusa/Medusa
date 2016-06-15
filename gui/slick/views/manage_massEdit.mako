@@ -73,7 +73,7 @@
                                                     <a href="#" class="btn edit_root_dir" class="edit_root_dir" id="edit_root_dir_${cur_index}">Edit</a>
                                                     <a href="#" class="btn delete_root_dir" class="delete_root_dir" id="delete_root_dir_${cur_index}">Delete</a>
                                                     <input type="hidden" name="orig_root_dir_${cur_index}" value="${cur_dir}" />
-                                                    <input type="text" style="display: none" name="new_root_dir_${cur_index}" id="new_root_dir_${cur_index}" class="new_root_dir" value="${cur_dir}" autocapitalize="off" />
+                                                    <input type="text" style="display: none;" name="new_root_dir_${cur_index}" id="new_root_dir_${cur_index}" class="new_root_dir" value="${cur_dir}" autocapitalize="off" />
                                                 </td>
                                             </tr>
                                         % endfor
@@ -210,7 +210,7 @@
                                         <option value="disable" ${('', 'selected="selected"')[sports_value == 0]}>No</option>
                                     </select><br>
                                     Set if these shows are sporting or MMA events released as Show.03.02.2010 rather than Show.S02E03.<br>
-                                    <span style="color:rgb(255, 0, 0)">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
+                                    <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
                         </div>
@@ -225,7 +225,7 @@
                                         <option value="disable" ${('', 'selected="selected"')[air_by_date_value == 0]}>No</option>
                                     </select><br>
                                     Set if these shows are released as Show.03.02.2010 rather than Show.S02E03.<br>
-                                    <span style="color:rgb(255, 0, 0)">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
+                                    <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
                         </div>
