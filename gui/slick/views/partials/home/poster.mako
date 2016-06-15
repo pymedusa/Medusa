@@ -20,7 +20,7 @@
     % for curLoadingShow in sickbeard.showQueueScheduler.action.loadingShowList:
         % if curLoadingShow.show is None:
             <div class="show-container" data-name="0" data-date="010101" data-network="0" data-progress="101">
-                <img alt="" title="${curLoadingShow.show_name}" class="show-image" style="border-bottom: 1px solid #111;" src="/images/poster.png" />
+                <img alt="" title="${curLoadingShow.show_name}" class="show-image" style="border-bottom: 1px solid rgb(17, 17, 17);" src="/images/poster.png" />
                 <div class="show-details">
                     <div class="show-add">Loading... (${curLoadingShow.show_name})</div>
                 </div>
