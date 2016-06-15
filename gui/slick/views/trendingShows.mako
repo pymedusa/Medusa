@@ -18,13 +18,11 @@
 % else:
 % for cur_show in trending_shows:
     <% show_url = 'http://www.trakt.tv/shows/%s' % cur_show['show']['ids']['slug'] %>
-
 % if 'poster' in cur_show['show']['images'] and cur_show['show']['images']['poster']['thumb']:
     <% poster_url = cur_show['show']['images']['poster']['thumb'] %>
 % else:
     <% poster_url = 'http://www.trakt.tv/assets/placeholders/thumb/poster-2d5709c1b640929ca1ab60137044b152.png' %>
 % endif
-
     <div class="trakt_show" data-name="${cur_show['show']['title']}" data-rating="${cur_show['show']['rating']}" data-votes="${cur_show['show']['votes']}">
         <div class="traktContainer">
             <div class="trakt-image">
@@ -32,11 +30,9 @@
                     <img alt="" class="trakt-image" src="${poster_url}" height="273px" width="186px" />
                 </a>
             </div>
-
             <div class="show-title">
                 ${(cur_show['show']['title'], '<span>&nbsp;</span>')['' == cur_show['show']['title']]}
             </div>
-
         <div class="clearfix">
             <p>${int(cur_show['show']['rating']*10)}% <img src="/images/heart.png"></p>
             <i>${cur_show['show']['votes']} votes</i>

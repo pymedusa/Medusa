@@ -4,7 +4,6 @@
     from sickbeard.common import Quality, qualityPresets, qualityPresetStrings, statusStrings
     from sickbeard import subtitles
 %>
-
         <div class="field-pair alt">
             <label for="customQuality" class="clearfix">
                 <span class="component-title">Preferred Quality</span>
@@ -14,7 +13,6 @@
                 </span>
             </label>
         </div>
-
         % if sickbeard.USE_SUBTITLES:
         <br><div class="field-pair">
             <label for="subtitles" class="clearfix">
@@ -26,7 +24,6 @@
             </label>
         </div>
         % endif
-
         <div class="field-pair">
             <label for="statusSelect">
                 <span class="component-title">Status for previously aired episodes</span>
@@ -60,7 +57,6 @@
                 </span>
             </label>
         </div>
-
 % if enable_anime_options:
         <div class="field-pair alt">
             <label for="anime" class="clearfix">
@@ -72,7 +68,6 @@
             </label>
         </div>
 % endif
-
         <div class="field-pair alt">
             <label for="scene" class="clearfix">
                 <span class="component-title">Scene Numbering</span>
@@ -82,7 +77,6 @@
                 </span>
             </label>
         </div>
-
         <br>
         <div class="field-pair alt">
             <label for="saveDefaultsButton" class="nocheck clearfix">
@@ -92,7 +86,6 @@
                 </span>
             </label>
         </div><br>
-
 % if enable_anime_options:
     <% import sickbeard.blackandwhitelist %>
     <%include file="/inc_blackwhitelist.mako"/>

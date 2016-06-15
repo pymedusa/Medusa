@@ -8,16 +8,13 @@
     <meta name="robots" content="noindex, nofollow">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width">
-
     <!-- These values come from css/dark.css and css/light.css -->
     % if sbThemeName == "dark":
     <meta name="theme-color" content="#15528F">
     % elif sbThemeName == "light":
     <meta name="theme-color" content="#333333">
     % endif
-
     <title>Medusa - BRANCH:[${sickbeard.BRANCH}] - ${title}</title>
-
     <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -25,11 +22,9 @@
     <meta name="msapplication-TileColor" content="#FFFFFF">
     <meta name="msapplication-TileImage" content="/images/ico/favicon-144.png">
     <meta name="msapplication-config" content="/css/browserconfig.xml">
-
     <meta data-var="srRoot" data-content="">
     <meta data-var="themeSpinner" data-content="${'-dark' if sickbeard.THEME_NAME == 'dark' else ''}">
     <meta data-var="anonURL" data-content="${sickbeard.ANON_REDIRECT}">
-
     <meta data-var="sickbeard.ANIME_SPLIT_HOME" data-content="${sickbeard.ANIME_SPLIT_HOME}">
     <meta data-var="sickbeard.COMING_EPS_LAYOUT" data-content="${sickbeard.COMING_EPS_LAYOUT}">
     <meta data-var="sickbeard.COMING_EPS_SORT" data-content="${sickbeard.COMING_EPS_SORT}">
@@ -43,7 +38,6 @@
     <meta data-var="sickbeard.SORT_ARTICLE" data-content="${sickbeard.SORT_ARTICLE}">
     <meta data-var="sickbeard.TIME_PRESET" data-content="${sickbeard.TIME_PRESET}">
     <meta data-var="sickbeard.TRIM_ZERO" data-content="${sickbeard.TRIM_ZERO}">
-
     <link rel="shortcut icon" href="/images/ico/favicon.ico">
     <link rel="icon" sizes="16x16 32x32 64x64" href="/images/ico/favicon.ico">
     <link rel="icon" type="image/png" sizes="196x196" href="/images/ico/favicon-196.png">
@@ -59,7 +53,6 @@
     <link rel="apple-touch-icon" sizes="76x76" href="/images/ico/favicon-76.png">
     <link rel="apple-touch-icon" sizes="72x72" href="/images/ico/favicon-72.png">
     <link rel="apple-touch-icon" href="/images/ico/favicon-57.png">
-
     <link rel="stylesheet" type="text/css" href="/css/vender.min.css?${sbPID}"/>
     <link rel="stylesheet" type="text/css" href="/css/browser.css?${sbPID}" />
     <link rel="stylesheet" type="text/css" href="/css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
@@ -81,7 +74,6 @@
                 <p class="navbar-text hidden-xs">${title}</p>
             </a>
         </div>
-
         <div class="collapse navbar-collapse" id="nav-collapsed">
             <div class="btn-group navbar-btn" data-toggle="buttons">
                 <label class="btn btn-primary">
@@ -91,7 +83,6 @@
                     <input autocomplete="off" id="option-jsonp" type="checkbox" /> JSONP
                 </label>
             </div>
-
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="/home/">Back to Medusa</a></li>
                 <li class="hidden-xs">
@@ -100,7 +91,6 @@
                     </a>
                 </li>
             </ul>
-
             <form class="navbar-form navbar-right">
                 <div class="form-group">
                     <input autocomplete="off" class="form-control" id="command-search" placeholder="Command name" type="search"/>
@@ -109,7 +99,6 @@
         </div>
     </div>
 </nav>
-
 <div id="content">
     <div class="panel-group" id="commands_list">
         % for command in sorted(commands):
@@ -126,10 +115,8 @@
             <div class="panel-collapse collapse" id="command-${command_id}">
                 <div class="panel-body">
                     <blockquote>${help['message']}</blockquote>
-
                     % if help['data']['optionalParameters'] or help['data']['requiredParameters']:
                     <h4>Parameters</h4>
-
                     <table class="tablesorter">
                     <thead>
                         <tr>
@@ -145,21 +132,15 @@
                     ${display_parameters_doc(help['data']['optionalParameters'], False)}
                     </table>
                     % endif
-
                     <h4>Playground</h4>
-
                     URL: <kbd id="command-${command_id}-base-url">/api/${apikey}/?cmd=${command}</kbd><br>
-
                     % if help['data']['requiredParameters']:
                         Required parameters: ${display_parameters_playground(help['data']['requiredParameters'], True, command_id)}<br>
                     % endif
-
                     % if help['data']['optionalParameters']:
                         Optional parameters: ${display_parameters_playground(help['data']['optionalParameters'], False, command_id)}<br>
                     % endif
-
                     <button class="btn btn-primary" data-action="api-call" data-command-name="${command_id}" data-base-url="command-${command_id}-base-url" data-target="#command-${command_id}-response" data-time="#command-${command_id}-time" data-url="#command-${command_id}-url">Call API</button><br>
-
                     <div class="result-wrapper hidden">
                         <div class="clearfix">
                             <span class="pull-left">
@@ -170,7 +151,6 @@
                                 <button class="btn btn-default" data-action="clear-result" data-target="#command-${command_id}-response">Clear</button>
                             </span>
                         </div>
-
                         <pre><code id="command-${command_id}-response"></code></pre>
                     </div>
                 </div>
@@ -179,7 +159,6 @@
         % endfor
     </div>
 </div>
-
 <script type="text/javascript">
 var commands = ${sorted(commands)};
 var episodes = ${episodes};
@@ -189,7 +168,6 @@ var episodes = ${episodes};
 <script type="text/javascript" src="/js/apibuilder.js?${sbPID}"></script>
 </body>
 </html>
-
 <%def name="display_parameters_doc(parameters, required)">
 <tbody>
 % for parameter in parameters:
@@ -217,7 +195,6 @@ var episodes = ${episodes};
 % endfor
 </tbody>
 </%def>
-
 <%def name="display_parameters_playground(parameters, required, command)">
 <div class="form-inline">
     % for parameter in parameters:
@@ -226,11 +203,9 @@ var episodes = ${episodes};
         allowed_values = parameter_help.get('allowedValues', '')
         type = parameter_help.get('type', '')
     %>
-
     % if isinstance(allowed_values, list):
         <select class="form-control"${' multiple="multiple"' if type == 'list' else ''} name="${parameter}" data-command="${command}">
             <option>${parameter}</option>
-
             % if allowed_values == [0, 1]:
                 <option value="0">No</option>
                 <option value="1">Yes</option>
@@ -243,18 +218,15 @@ var episodes = ${episodes};
     % elif parameter == 'indexerid':
         <select class="form-control" name="${parameter}" data-action="update-seasons" data-command="${command}">
             <option>${parameter}</option>
-
             % for show in shows:
             <option value="${show.indexerid}">${show.name}</option>
             % endfor
         </select>
-
         % if 'season' in parameters:
         <select class="form-control hidden" name="season" data-action="update-episodes" data-command="${command}">
             <option>season</option>
         </select>
         % endif
-
         % if 'episode' in parameters:
         <select class="form-control hidden" name="episode" data-command="${command}">
             <option>episode</option>

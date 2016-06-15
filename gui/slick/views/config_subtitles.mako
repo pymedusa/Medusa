@@ -26,26 +26,20 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
 % else:
     <h1 class="title">${title}</h1>
 % endif
-
 <div id="config">
 <div id="config-content">
-
 <form id="configForm" action="saveSubtitles" method="post">
-
             <div id="config-components">
                 <ul>
                     <li><a href="#subtitles-search">Subtitles Search</a></li>
                     <li><a href="#subtitles-plugin">Subtitles Plugin</a></li>
                     <li><a href="#plugin-settings">Plugin Settings</a></li>
                 </ul>
-
                 <div id="subtitles-search" class="component-group">
-
                     <div class="component-group-desc">
                         <h3>Subtitles Search</h3>
                         <p>Settings that dictate how Medusa handles subtitles search results.</p>
                     </div>
-
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label for="use_subtitles" class="clearfix">
@@ -190,16 +184,13 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                         <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group1 //-->
-
                 <div id="subtitles-plugin" class="component-group">
-
                     <div class="component-group-desc">
                         <h3>Subtitle Providers</h3>
                         <p>Check off and drag the plugins into the order you want them to be used.</p>
                         <p class="note">At least one plugin is required.</p>
                         <p class="note"><span style="font-size: 16px;">*</span> Web-scraping plugin</p>
                     </div>
-
                     <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px;">
                         <ul id="service_order_list">
                         % for curService in sickbeard.subtitles.sorted_service_list():
@@ -214,7 +205,6 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                         % endfor
                         </ul>
                         <input type="hidden" name="service_order" id="service_order" value="${' '.join(['%s:%d' % (x['name'], x['enabled']) for x in sickbeard.subtitles.sorted_service_list()])}"/>
-
                         <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group2 //-->
@@ -223,7 +213,6 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                         <h3>Provider Settings</h3>
                         <p>Set user and password for each provider</p>
                     </div><!-- /component-group-desc //-->
-
                     <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px;">
                         <%
                             providerLoginDict = {
@@ -257,10 +246,8 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                 </div><!-- /component-group3 //-->
                 <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
             </div><!-- /config-components //-->
-
 </form>
 </div>
 </div>
-
 <div class="clearfix"></div>
 </%block>

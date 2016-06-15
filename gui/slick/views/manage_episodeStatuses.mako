@@ -10,14 +10,11 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
-
 % if not whichStatus or (whichStatus and not ep_counts):
-
 % if whichStatus:
 <h2>None of your episodes have status ${common.statusStrings[whichStatus]}</h2>
 <br>
 % endif
-
 <form action="/manage/episodeStatuses" method="get">
 Manage episodes with status <select name="whichStatus" class="form-control form-control-inline input-sm">
 % for curStatus in [common.SKIPPED, common.SNATCHED, common.WANTED, common.IGNORED] + common.Quality.DOWNLOADED + common.Quality.ARCHIVED:
@@ -28,25 +25,18 @@ Manage episodes with status <select name="whichStatus" class="form-control form-
 </select>
 <input class="btn btn-inline" type="submit" value="Manage" />
 </form>
-
 % else:
-
 <form action="/manage/changeEpisodeStatuses" method="post">
 <input type="hidden" id="oldStatus" name="oldStatus" value="${whichStatus}" />
-
 <h2>Shows containing ${common.statusStrings[whichStatus]} episodes</h2>
-
 <br>
-
 <%
     if int(whichStatus) in [common.IGNORED, common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST] + common.Quality.DOWNLOADED + common.Quality.ARCHIVED:
         row_class = "good"
     else:
         row_class = common.Overview.overviewStrings[int(whichStatus)]
 %>
-
 <input type="hidden" id="row_class" value="${row_class}" />
-
 Set checked shows/episodes to <select name="newStatus" class="form-control form-control-inline input-sm">
 <%
     statusList = [common.SKIPPED, common.WANTED, common.IGNORED] + common.Quality.DOWNLOADED + common.Quality.ARCHIVED
@@ -55,25 +45,19 @@ Set checked shows/episodes to <select name="newStatus" class="form-control form-
     statusList.remove(common.ARCHIVED)
     if int(whichStatus) in statusList:
         statusList.remove(int(whichStatus))
-
     if int(whichStatus) in [common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST] + common.Quality.ARCHIVED + common.Quality.DOWNLOADED and sickbeard.USE_FAILED_DOWNLOADS:
         statusList.append(common.FAILED)
 %>
-
 % for curStatus in statusList:
 <option value="${curStatus}">${common.statusStrings[curStatus]}</option>
 % endfor
-
 </select>
-
 <input class="btn btn-inline" type="submit" value="Go" />
-
 <div>
     <button type="button" class="btn btn-xs selectAllShows">Select all</a></button>
     <button type="button" class="btn btn-xs unselectAllShows">Clear all</a></button>
 </div>
 <br>
-
 <table class="sickbeardTable manageTable" cellspacing="1" border="0" cellpadding="0">
     % for cur_indexer_id in sorted_show_ids:
     <tr id="${cur_indexer_id}">
@@ -84,7 +68,6 @@ Set checked shows/episodes to <select name="newStatus" class="form-control form-
     <tr><td style="padding:0;"></td><td style="padding:0;"></td><td style="padding:0;"></td></tr>
 </table>
 </form>
-
 % endif
 </div>
 </%block>

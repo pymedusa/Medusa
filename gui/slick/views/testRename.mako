@@ -17,9 +17,7 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
-
 <input type="hidden" id="showID" value="${show.indexerid}" />
-
 <h3>Preview of the proposed name changes</h3>
 <blockquote>
 % if int(show.air_by_date) == 1 and sickbeard.NAMING_CUSTOM_ABD:
@@ -30,10 +28,8 @@
     ${sickbeard.NAMING_PATTERN}
 % endif
 </blockquote>
-
 <% curSeason = -1 %>
 <% odd = False%>
-
 <table id="SelectAllTable" class="sickbeardTable" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr class="seasonheader" id="season-all">
@@ -48,12 +44,9 @@
         </tr>
     </thead>
 </table>
-
 <br>
 <input type="submit" value="Rename Selected" class="btn btn-success"> <a href="/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
-
 <table id="testRenameTable" class="sickbeardTable" cellspacing="1" border="0" cellpadding="0">
-
 % for cur_ep_obj in ep_obj_list:
 <%
     curLoc = cur_ep_obj.location[len(cur_ep_obj.show.location)+1:]
@@ -96,7 +89,6 @@ if len(epList) > 1:
             <td width="50%" class="col-name">${newLoc}</td>
         </tr>
     </tbody>
-
 % endfor
 </table><br>
 <input type="submit" value="Rename Selected" class="btn btn-success"> <a href="/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>

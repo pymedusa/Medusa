@@ -21,7 +21,6 @@
         title = ' title="' + cgi.escape(title.rstrip(), True) + '"'
     else:
         title = ""
-
     sum_allowed_qualities = quality & 0xFFFF
     sum_preferred_qualities = quality >> 16
     set_hdtv = {Quality.HDTV, Quality.RAWHDTV, Quality.FULLHDTV}
@@ -31,11 +30,9 @@
     set_720p = {Quality.HDTV, Quality.RAWHDTV, Quality.HDWEBDL, Quality.HDBLURAY}
     set_uhd_4k = {Quality.UHD_4K_TV, Quality.UHD_4K_BLURAY, Quality.UHD_4K_WEBDL}
     set_uhd_8k = {Quality.UHD_8K_TV, Quality.UHD_8K_BLURAY, Quality.UHD_8K_WEBDL}
-
     # If allowed and preferred qualities are the same, show pill as allowed quality
     if sum_allowed_qualities == sum_preferred_qualities:
         quality = sum_allowed_qualities
-
     if quality in qualityPresets:
         cssClass = qualityPresetStrings[quality]
         qualityString = qualityPresetStrings[quality]
@@ -76,10 +73,8 @@
     else:
         cssClass = "Custom"
         qualityString = "Custom"
-
     if overrideClass is None:
         cssClass = "quality " + cssClass
     else:
         cssClass = overrideClass
-
 %><span${title} class="${cssClass}">${qualityString}</span></%def>

@@ -2,7 +2,6 @@
     import sickbeard
     from sickbeard.helpers import anon_url
 %>
-
 <table id="addRootDirTable" class="sickbeardTable tablesorter">
     <thead><tr><th class="col-checkbox"><input type="checkbox" id="checkAll" checked=checked></th><th>Directory</th><th width="20%">Show Name (tvshow.nfo)<th width="20%">Indexer</td></tr></thead>
     <tbody>
@@ -10,12 +9,10 @@
     <%
         if curDir['added_already']:
             continue
-
         show_id = curDir['dir']
         if curDir['existing_info'][0]:
             show_id = show_id + '|' + str(curDir['existing_info'][0]) + '|' + str(curDir['existing_info'][1])
             indexer = curDir['existing_info'][2]
-
         indexer = 0
         if curDir['existing_info'][0]:
             indexer = curDir['existing_info'][2]

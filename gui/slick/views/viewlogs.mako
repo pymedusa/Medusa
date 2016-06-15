@@ -14,7 +14,6 @@ pre {
 </style>
 </%block>
 <%block name="content">
-
 <div class="row">
 	<div class="col-xs-3 col-sm-3">
 	% if not header is UNDEFINED:
@@ -23,7 +22,6 @@ pre {
 	    <h1 class="title">${title}</h1>
 	% endif
 	</div>
-
 	<div class="col-xs-12 col-sm-9 pull-right pull-xs-left log-filter">
 	    <div class="form-group form-horizontal">
 		    <!-- Select Loglevel -->
@@ -43,7 +41,6 @@ pre {
 			    % endfor
 			    </select>
 		    </div>
-
 		    <!-- Filter log -->
 		    <label for="logFilter" class="col-sm-2 control-label text-right hidden-xs">Filter log by: </label>
 		    <div class="col-xs-4 col-sm-2">
@@ -53,7 +50,6 @@ pre {
 			    % endfor
 			    </select>
 		    </div>
-
 		    <!-- Search Log -->
 		    <label for="logFilter" class="col-xs-2 col-sm-2 control-label text-right hidden-xs">Search log by: </label>
 		    <div class="col-xs-4 col-sm-2">

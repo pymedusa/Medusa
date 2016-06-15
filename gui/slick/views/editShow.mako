@@ -8,11 +8,9 @@
     from sickrage.helper import exceptions
     from sickbeard import scene_exceptions
 %>
-
 <%block name="metas">
 <meta data-var="show.is_anime" data-content="${show.is_anime}">
 </%block>
-
 <%block name="scripts">
     <script type="text/javascript" src="/js/qualityChooser.js?${sbPID}"></script>
     <script type="text/javascript" src="/js/editShow.js"></script>
@@ -20,31 +18,25 @@
     <script type="text/javascript" src="/js/blackwhite.js?${sbPID}"></script>
 % endif
 </%block>
-
 <%block name="content">
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
 % else:
     <h1 class="title">${title}</h1>
 % endif
-
 <div id="config">
-
     <div id="config-content">
         <form action="editShow" method="post">
-
         <div id="config-components">
             <ul>
                 <li><a href="#core-component-group1">Main</a></li>
                 <li><a href="#core-component-group2">Format</a></li>
                 <li><a href="#core-component-group3">Advanced</a></li>
             </ul>
-
             <div id="core-component-group1">
                 <div class="component-group">
                     <h3>Main Settings</h3>
                     <fieldset class="component-group-list">
-
                         <div class="field-pair">
                             <label for="location">
                                 <span class="component-title">Show Location</span>
@@ -54,7 +46,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="qualityPreset">
                                 <span class="component-title">Preferred Quality</span>
@@ -64,7 +55,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="defaultEpStatusSelect">
                                 <span class="component-title">Default Episode Status</span>
@@ -78,7 +68,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="indexerLangSelect">
                                 <span class="component-title">Info Language</span>
@@ -88,7 +77,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="subtitles">
                                 <span class="component-title">Subtitles</span>
@@ -97,7 +85,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="paused">
                                 <span class="component-title">Paused</span>
@@ -106,16 +93,13 @@
                                 </span>
                             </label>
                         </div>
-
                     </fieldset>
                 </div>
             </div>
-
             <div id="core-component-group2">
                 <div class="component-group">
                     <h3>Format Settings</h3>
                     <fieldset class="component-group-list">
-
                         <div class="field-pair">
                             <label for="airbydate">
                                 <span class="component-title">Air by date</span>
@@ -125,7 +109,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="anime">
                                 <span class="component-title">Anime</span>
@@ -137,7 +120,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="sports">
                                 <span class="component-title">Sports</span>
@@ -147,7 +129,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="season_folders">
                                 <span class="component-title">Season folders</span>
@@ -156,7 +137,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="scene">
                                 <span class="component-title">Scene Numbering</span>
@@ -165,7 +145,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="dvdorder">
                                 <span class="component-title">DVD Order</span>
@@ -175,16 +154,13 @@
                                 </span>
                             </label>
                         </div>
-
                     </fieldset>
                 </div>
             </div>
-
             <div id="core-component-group3">
                 <div class="component-group">
                     <h3>Advanced Settings</h3>
                     <fieldset class="component-group-list">
-
                         <div class="field-pair">
                             <label for="rls_ignore_words">
                                 <span class="component-title">Ignored Words</span>
@@ -197,7 +173,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="rls_require_words">
                                 <span class="component-title">Required Words</span>
@@ -210,7 +185,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="SceneName">
                                 <span class="component-title">Scene Exception</span>
@@ -228,17 +202,13 @@
                                 </span>
                             </label>
                         </div>
-
                     </fieldset>
                 </div>
             </div>
-
         </div>
-
         <br>
         <input id="submit" type="submit" value="Save Changes" class="btn pull-left config_submitter button">
         </form>
     </div>
 </div>
-
 </%block>

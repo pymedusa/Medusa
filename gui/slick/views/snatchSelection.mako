@@ -8,7 +8,6 @@
     import time
     from sickbeard import subtitles, sbdatetime, network_timezones, helpers, show_name_helpers
     import sickbeard.helpers
-
     from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
     from sickbeard.common import Quality, qualityPresets, statusStrings, Overview
     from sickbeard.helpers import anon_url
@@ -18,7 +17,6 @@
     from sickbeard.failed_history import prepareFailedName
     from sickrage.providers.GenericProvider import GenericProvider
     from sickbeard import providers
-
     from sickrage.helper.encoding import ek
 %>
 <%block name="scripts">
@@ -30,34 +28,25 @@
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <input type="hidden" id="srRoot" value="" />
-
     <div class="clearfix"></div>
-
     <div id="showtitle" data-showname="${show.name}">
         <h1 class="title" id="scene_exception_${show.indexerid}"> <a href="/home/displayShow?show=${show.indexerid}">${show.name}</h1>
     </div>
-
-
     <div class="clearfix"></div>
-
 % if show_message:
     <div class="alert alert-info">
         ${show_message}
     </div>
 % endif
-
         <div id="posterCol">
             <a href="/showPoster/?show=${show.indexerid}&amp;which=poster" rel="dialog" title="View Poster for ${show.name}"><img src="/showPoster/?show=${show.indexerid}&amp;which=poster_thumb" class="tvshowImg" alt=""/></a>
         </div>
-
         <div id="showCol">
-
             <div id="showinfo">
 % if 'rating' in show.imdb_info:
     <% rating_tip = str(show.imdb_info['rating']) + " / 10" + " Stars" + "<br>" + str(show.imdb_info['votes']) + " Votes" %>
     <span class="imdbstars" qtip-content="${rating_tip}">${show.imdb_info['rating']}</span>
 % endif
-
 % if not show.imdbid:
     <span>(${show.startyear}) - ${show.runtime} minutes - </span>
 % else:
@@ -72,23 +61,19 @@
     % endif
                     ${show.imdb_info.get('runtimes') or show.runtime} minutes
                 </span>
-
                 <a href="${anon_url('http://www.imdb.com/title/', show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdbid}">
                     <img alt="[imdb]" height="16" width="16" src="/images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
 % endif
-
                 <a href="${anon_url(sickbeard.indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${sickbeard.indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
                     <img alt="${sickbeard.indexerApi(show.indexer).name}" height="16" width="16" src="/images/${sickbeard.indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
-
 % if xem_numbering or xem_absolute_numbering:
                 <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
                     <img alt="[xem]" height="16" width="16" src="/images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
 % endif
             </div>
-
             <div id="tags">
                 <ul class="tags">
                     % if show.imdb_info.get('genres'):
@@ -102,7 +87,6 @@
                     % endif
                 </ul>
             </div>
-
             <div id="summary">
                 <table class="summaryTable pull-left">
                 <% anyQualities, bestQualities = Quality.splitQuality(int(show.quality)) %>
@@ -117,7 +101,6 @@
                     <i>Preferred:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(bestQualities)])}
                 % endif
                 % endif
-
                 % if show.network and show.airs:
                     <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${("<font color='#FF0000'><b>(invalid Timeformat)</b></font> ", "")[network_timezones.test_timeformat(show.airs)]} on ${show.network}</td></tr>
                 % elif show.network:
@@ -135,7 +118,6 @@
                 % if show.exceptions:
                     <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${(show.name, " | ".join(show.exceptions))[show.exceptions != 0]}</td></tr>
                 % endif
-
                 % if require_words:
                     <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word"><font color="green">${require_words}</font></span></td></tr>
                 % endif
@@ -160,11 +142,8 @@
                         <td>${', '.join(bwl.blacklist)}</td>
                     </tr>
                 % endif
-
                 <tr><td class="showLegend">Size:</td><td>${pretty_file_size(sickbeard.helpers.get_size(showLoc[0]))}</td></tr>
-
                 </table>
-
                 <table style="width:180px; float: right; vertical-align: middle; height: 100%;">
                     <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %>
                     <tr><td class="showLegend">Info Language:</td><td><img src="/images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='/images/flags/unknown.png';"/></td></tr>
@@ -181,18 +160,14 @@
                 </table>
             </div>
         </div>
-
     <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
     <input class="btn manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-force-search="1" />
     <div id="searchNotification"></div>
-
     <div class="clearfix"></div>
     <div id="wrapper" data-history-toggle="hide">
     <div id="container">
-
     % if episode_history:
         <table id="history" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
-
                 <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
                 <tr style="height: 60px;" role="row">
                     <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader displayShowTable">
@@ -201,7 +176,6 @@
                     </th>
                 </tr>
                 </tbody>
-
             <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
                 <tr>
                     <th width="15%">Date</th>
@@ -210,7 +184,6 @@
                     <th width="52%">Release</th>
                 </tr>
             </tbody>
-
             <tbody class="toggle collapse" aria-live="polite" aria-relevant="all" id="historydata">
                 % for item in episode_history:
                     <% status, quality = Quality.splitCompositeStatus(item['action']) %>
@@ -221,7 +194,6 @@
                     % elif status == FAILED:
                         <tr style="background-color:rgb(255, 153, 153);!important">
                     % endif
-
                     <td align="center" style="width: auto;">
                         <% action_date = sbdatetime.sbfdatetime(datetime.datetime.strptime(str(item['date']), History.date_format), show_seconds=True) %>
                         ${action_date}
@@ -245,7 +217,6 @@
             </tbody>
         </table>
     % endif
-
     <!-- @TODO: Change this to use the REST API -->
     <!-- add provider meta data -->
     <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-show="${show.indexerid}" data-season="${season}"
@@ -262,7 +233,6 @@
                 </th>
             </tr>
             </tbody>
-
             <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
                 <tr>
                     <th class="col-name">Release</th>
@@ -277,14 +247,11 @@
                     <th class="col-search">Snatch</th>
                 </tr>
             </tbody>
-
             <tbody aria-live="polite" aria-relevant="all">
             % for hItem in provider_results['found_items']:
-
                 <%
                 if manual_search_type == 'season' and 'E00' in hItem["name"]:
                     continue
-
                 release_group_ignore = False
                 release_group_require = False
                 release_group_preferred = False
@@ -295,7 +262,6 @@
                 name_preferred = False
                 below_minseed = False
                 below_minleech = False
-
                 release_group = hItem["release_group"]
                 if release_group and ignore_words and release_group.lower() in ignore_words.lower().split(','):
                     release_group_ignore = True
@@ -305,7 +271,6 @@
                     release_group_preferred = True
                 elif release_group and undesired_words and release_group.lower() in undesired_words.lower().split(','):
                     release_group_undesired = True
-
                 if hItem["name"] and require_words and show_name_helpers.containsAtLeastOneWord(hItem["name"], require_words):
                     name_require = True
                 if hItem["name"] and ignore_words and show_name_helpers.containsAtLeastOneWord(hItem["name"], ignore_words):
@@ -316,12 +281,10 @@
                     name_undesired = True
                 if hItem["name"] and preferred_words and show_name_helpers.containsAtLeastOneWord(hItem["name"], preferred_words):
                     name_preferred = True
-
-                if hItem["provider_minseed"] and int(hItem["seeders"]) > -1 and int(hItem["seeders"]) < int(hItem["provider_minseed"]):
+                if hItem["provider_minseed"] and hItem["seeders"] > -1 and hItem["seeders"] < hItem["provider_minseed"]:
                     below_minseed = True
-                if hItem["provider_minleech"] and int(hItem["leechers"]) > -1 and int(hItem["leechers"]) < int(hItem["provider_minleech"]):
+                if hItem["provider_minleech"] and hItem["leechers"] > -1 and int(hItem["leechers"]) < hItem["provider_minleech"]:
                     below_minleech = True
-
                 %>
                 % if any([i for i in episode_history if prepareFailedName(str(hItem["name"])) in i['resource'] and (hItem['release_group'] == i['provider'] or  hItem['provider'] == i['provider']) and Quality.splitCompositeStatus(i['action']).status == FAILED]):
                     <tr style="text-decoration:line-through;!important" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
@@ -360,7 +323,6 @@
                         % endif
                     </td>
                     <td align="center">${renderQualityPill(int(hItem["quality"]))}</td>
-                    
                     % if below_minseed:
                         <td align="center"><font color="red">${hItem["seeders"] if hItem["seeders"] > -1 else '-'}</font></td>
                     % else:

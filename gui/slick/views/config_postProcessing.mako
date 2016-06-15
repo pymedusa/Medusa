@@ -231,12 +231,10 @@
                     </fieldset>
                 </div><!-- /component-group1 //-->
                 <div id="episode-naming" class="component-group">
-
                     <div class="component-group-desc">
                         <h3>Episode Naming</h3>
                         <p>How Medusa will name and sort your episodes.</p>
                     </div>
-
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label class="nocheck" for="name_presets">
@@ -256,7 +254,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="naming_custom">
                             <div class="field-pair" style="padding-top: 0;">
                                 <label class="nocheck">
@@ -273,7 +270,6 @@
                                     <span class="component-desc"><b>NOTE:</b> Don't forget to add quality pattern. Otherwise after post-processing the episode will have UNKNOWN quality</span>
                                  </label>
                             </div>
-
                             <div id="naming_key" class="nocheck" style="display: none;">
                                   <table class="Key">
                                     <thead>
@@ -439,7 +435,6 @@
                                   <br>
                             </div>
                         </div>
-
                         <div class="field-pair">
                             <label class="nocheck" for="naming_multi_ep">
                                 <span class="component-title">Multi-Episode Style:</span>
@@ -452,7 +447,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="naming_example_div">
                             <h3>Single-EP Sample:</h3>
                             <div class="example">
@@ -460,7 +454,6 @@
                             </div>
                             <br>
                         </div>
-
                         <div id="naming_example_multi_div">
                             <h3>Multi-EP sample:</h3>
                             <div class="example">
@@ -468,7 +461,6 @@
                             </div>
                             <br>
                         </div>
-
                         <div class="field-pair">
                             <input type="checkbox" id="naming_strip_year"  name="naming_strip_year" ${'checked="checked"' if sickbeard.NAMING_STRIP_YEAR else ''}/>
                             <label for="naming_strip_year">
@@ -480,7 +472,6 @@
                                 <span class="component-desc">Only applies to shows that have year inside parentheses</span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <input type="checkbox" class="enabler" id="naming_custom_abd" name="naming_custom_abd" ${'checked="checked"' if sickbeard.NAMING_CUSTOM_ABD else ''}/>
                             <label for="naming_custom_abd">
@@ -488,7 +479,6 @@
                                 <span class="component-desc">Name Air-By-Date shows differently than regular shows?</span>
                             </label>
                         </div>
-
                         <div id="content_naming_custom_abd">
                             <div class="field-pair">
                                 <label class="nocheck" for="name_abd_presets">
@@ -508,7 +498,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div id="naming_abd_custom">
                                 <div class="field-pair">
                                     <label class="nocheck">
@@ -521,7 +510,6 @@
                                         </span>
                                     </label>
                                 </div>
-
                                 <div id="naming_abd_key" class="nocheck" style="display: none;">
                                       <table class="Key">
                                         <thead>
@@ -647,7 +635,6 @@
                                       <br>
                                 </div>
                             </div><!-- /naming_abd_custom -->
-
                             <div id="naming_abd_example_div">
                                 <h3>Sample:</h3>
                                 <div class="example">
@@ -655,9 +642,7 @@
                                 </div>
                                 <br>
                             </div>
-
                         </div><!-- /naming_abd_different -->
-
                         <div class="field-pair">
                             <input type="checkbox" class="enabler" id="naming_custom_sports" name="naming_custom_sports" ${'checked="checked"' if sickbeard.NAMING_CUSTOM_SPORTS else ''}/>
                             <label for="naming_custom_sports">
@@ -665,7 +650,6 @@
                                 <span class="component-desc">Name Sports shows differently than regular shows?</span>
                             </label>
                         </div>
-
                         <div id="content_naming_custom_sports">
                             <div class="field-pair">
                                 <label class="nocheck" for="name_sports_presets">
@@ -685,7 +669,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div id="naming_sports_custom">
                                 <div class="field-pair" style="padding-top: 0;">
                                     <label class="nocheck">
@@ -698,7 +681,6 @@
                                         </span>
                                     </label>
                                 </div>
-
                                 <div id="naming_sports_key" class="nocheck" style="display: none;">
                                       <table class="Key">
                                         <thead>
@@ -824,7 +806,6 @@
                                       <br>
                                 </div>
                             </div><!-- /naming_sports_custom -->
-
                             <div id="naming_sports_example_div">
                                 <h3>Sample:</h3>
                                 <div class="example">
@@ -832,9 +813,7 @@
                                 </div>
                                 <br>
                             </div>
-
                         </div><!-- /naming_sports_different -->
-
                         <!-- naming_anime_custom -->
                         <div class="field-pair">
                             <input type="checkbox" class="enabler" id="naming_custom_anime" name="naming_custom_anime" ${'checked="checked"' if sickbeard.NAMING_CUSTOM_ANIME else ''}/>
@@ -843,7 +822,6 @@
                                 <span class="component-desc">Name Anime shows differently than regular shows?</span>
                             </label>
                         </div>
-
                         <div id="content_naming_custom_anime">
                             <div class="field-pair">
                                 <label class="nocheck" for="name_anime_presets">
@@ -863,7 +841,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div id="naming_anime_custom">
                                 <div class="field-pair" style="padding-top: 0;">
                                     <label class="nocheck">
@@ -876,7 +853,6 @@
                                         </span>
                                     </label>
                                 </div>
-
                                 <div id="naming_anime_key" class="nocheck" style="display: none;">
                                       <table class="Key">
                                         <thead>
@@ -997,7 +973,6 @@
                                       <br>
                                 </div>
                             </div><!-- /naming_anime_custom -->
-
                             <div class="field-pair">
                                 <label class="nocheck" for="naming_anime_multi_ep">
                                     <span class="component-title">Multi-Episode Style:</span>
@@ -1010,7 +985,6 @@
                                     </span>
                                 </label>
                             </div>
-
                             <div id="naming_example_anime_div">
                                 <h3>Single-EP Anime Sample:</h3>
                                 <div class="example">
@@ -1018,7 +992,6 @@
                                 </div>
                                 <br>
                             </div>
-
                             <div id="naming_example_multi_anime_div">
                                 <h3>Multi-EP Anime sample:</h3>
                                 <div class="example">
@@ -1026,7 +999,6 @@
                                 </div>
                                 <br>
                             </div>
-
                             <div class="field-pair">
                                 <input type="radio" name="naming_anime" id="naming_anime" value="1" ${'checked="checked"' if sickbeard.NAMING_ANIME == 1 else ''}/>
                                 <label for="naming_anime">
@@ -1038,7 +1010,6 @@
                                     <span class="component-desc">Only applies to animes. (eg. S15E45 - 310 vs S15E45)</span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <input type="radio" name="naming_anime" id="naming_anime_only" value="2" ${'checked="checked"' if sickbeard.NAMING_ANIME == 2 else ''}/>
                                 <label for="naming_anime_only">
@@ -1050,7 +1021,6 @@
                                     <span class="component-desc">Only applies to animes.</span>
                                 </label>
                             </div>
-
                             <div class="field-pair">
                                 <input type="radio" name="naming_anime" id="naming_anime_none" value="3" ${'checked="checked"' if sickbeard.NAMING_ANIME == 3 else ''}/>
                                 <label for="naming_anime_none">
@@ -1062,19 +1032,15 @@
                                     <span class="component-desc">Only applies to animes.</span>
                                 </label>
                             </div>
-
                         </div><!-- /naming_anime_different -->
-
                         <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group2 //-->
-
                 <div id="metadata" class="component-group">
                     <div class="component-group-desc">
                         <h3>Metadata</h3>
                         <p>The data associated to the data. These are files associated to a TV show in the form of images and text that, when supported, will enhance the viewing experience.</p>
                     </div>
-
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label>
@@ -1090,7 +1056,6 @@
                             </label>
                             <span>Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>
                         </div>
-
                         % for (cur_name, cur_generator) in m_dict.iteritems():
                         <% cur_metadata_inst = sickbeard.metadata_provider_dict[cur_generator.name] %>
                         <% cur_id = cur_generator.get_id() %>
@@ -1128,13 +1093,10 @@
                             <input type="hidden" name="${cur_id}_data" id="${cur_id}_data" value="${cur_metadata_inst.get_config()}" />
                         </div>
                         % endfor
-
                         <div class="clearfix"></div><br>
-
                         <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group3 //-->
-
                 <br>
                 <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${sickbeard.DATA_DIR}</span></b> </h6>
                 <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
