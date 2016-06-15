@@ -35,25 +35,19 @@
 <br>
 <div id="popularShows">
     <div id="container">
-    % if not popular_shows:
+% if not popular_shows:
         <div class="trakt_show" style="width:100%; margin-top:20px;">
             <p class="red-text">Fetching of IMDB Data failed. Are you online?
             <strong>Exception:</strong>
             <p>${imdb_exception}</p>
         </div>
-    % else:
-        % for cur_result in popular_shows:
-            % if cur_result['imdb_tt'] in imdb_tt:
-                <% continue %>
-            % endif
-
-            % if 'rating' in cur_result and cur_result['rating']:
-                <% cur_rating = cur_result['rating'] %>
-                <% cur_votes = cur_result['votes'] %>
-            % else:
-                <% cur_rating = '0' %>
-                <% cur_votes = '0' %>
-            % endif
+% else:
+    % for cur_result in popular_shows:
+        % if cur_result['imdb_tt'] not in imdb_tt:
+            <%
+                cur_rating = float(cur_result.get('rating', 0))
+                cur_votes = int(cur_result.get('votes', 0))
+            %>
 
             <div class="trakt_show" data-name="${cur_result['name']}" data-rating="${cur_rating}" data-votes="${cur_votes}">
                 <div class="traktContainer">
@@ -68,20 +62,17 @@
                     </div>
 
                     <div class="clearfix">
-                        <p>${int(float(cur_rating)*10)}% <img src="/images/heart.png"></p>
-                        % if cur_votes != '0':
-                            <i>${cur_votes}</i>
-                        % else:
-                            <i>${cur_votes} votes</i>
-                        % endif
+                        <p>${int(cur_rating*10)}% <img src="/images/heart.png"></p>
+                        <i>$('{x} votes'.format(x=cur_votes) if cur_votes else '')</i>
                         <div class="traktShowTitleIcons">
                             <a href="/addShows/addShowByID?indexer_id=${cur_result['imdb_tt']}&amp;show_name=${cur_result['name'] | u}&amp;indexer=IMDB" class="btn btn-xs" data-no-redirect>Add Show</a>
                         </div>
                     </div>
                 </div>
             </div>
-        % endfor
-    % endif
+        % endif
+    % endfor
+% endif
     </div>
 </div>
 <br>
