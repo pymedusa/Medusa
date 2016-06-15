@@ -22,7 +22,7 @@ selected = None
 </select>
 
 <div id="customQualityWrapper">
-    <div id="customQuality" style="padding-left: 0px;">
+    <div id="customQuality" style="padding-left: 0;">
         <p><b><u>Preferred</u></b> qualities will replace those in <b><u>allowed</u></b>, even if they are lower.</p>
 
         <div style="padding-right: 40px; text-align: left; float: left;">
