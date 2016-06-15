@@ -10,5 +10,5 @@
 % endif
 
 ${info_download_station}
-<iframe id="extFrame" src="${webui_url}" width="100%" height="500" frameBorder="0" style="border: 1px black solid;"></iframe>
+<iframe id="extFrame" src="${webui_url}" width="100%" height="500" frameBorder="0" style="border: 1px rgb(0, 0, 0) solid;"></iframe>
 </%block>

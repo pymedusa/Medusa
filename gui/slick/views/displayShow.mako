@@ -188,7 +188,7 @@
                 % if showLoc[1]:
                     <tr><td class="showLegend">Location: </td><td>${showLoc[0]}</td></tr>
                 % else:
-                    <tr><td class="showLegend"><span style="color: red;">Location: </span></td><td><span style="color: red;">${showLoc[0]}</span> (Missing)</td></tr>
+                    <tr><td class="showLegend"><span style="color: rgb(255, 0, 0);">Location: </span></td><td><span style="color: rgb(255, 0, 0);">${showLoc[0]}</span> (Missing)</td></tr>
                 % endif
                 % if all_scene_exceptions:
                     <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${all_scene_exceptions}</td></tr>
