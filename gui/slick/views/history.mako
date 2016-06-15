@@ -38,8 +38,8 @@
 
     <span> Layout:
         <select name="HistoryLayout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="${srRoot}/setHistoryLayout/?layout=compact"  ${('', 'selected="selected"')[sickbeard.HISTORY_LAYOUT == 'compact']}>Compact</option>
-            <option value="${srRoot}/setHistoryLayout/?layout=detailed" ${('', 'selected="selected"')[sickbeard.HISTORY_LAYOUT == 'detailed']}>Detailed</option>
+            <option value="/setHistoryLayout/?layout=compact"  ${('', 'selected="selected"')[sickbeard.HISTORY_LAYOUT == 'compact']}>Compact</option>
+            <option value="/setHistoryLayout/?layout=detailed" ${('', 'selected="selected"')[sickbeard.HISTORY_LAYOUT == 'detailed']}>Detailed</option>
         </select>
     </span>
 </div>
@@ -72,10 +72,10 @@
                     <% isoDate = datetime.strptime(str(hItem.date), History.date_format).isoformat('T') %>
                     <time datetime="${isoDate}" class="date">${airDate}</time>
                 </td>
-                <td class="tvShow"><a href="${srRoot}/home/displayShow?show=${hItem.show_id}#S${hItem.season}E${hItem.episode}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${('', '<span class="quality Proper">Proper</span>')[any(x in hItem.resource.lower() for x in ['proper', 'repack', 'real', 'rerip'])]}</a></td>
+                <td class="tvShow"><a href="/home/displayShow?show=${hItem.show_id}#S${hItem.season}E${hItem.episode}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${('', '<span class="quality Proper">Proper</span>')[any(x in hItem.resource.lower() for x in ['proper', 'repack', 'real', 'rerip'])]}</a></td>
                 <td align="center" ${('', 'class="subtitles_column"')[composite.status == SUBTITLED]}>
                 % if composite.status == SUBTITLED:
-                    <img width="16" height="11" style="vertical-align:middle;" src="${srRoot}/images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='${srRoot}/images/flags/unknown.png';">
+                    <img width="16" height="11" style="vertical-align:middle;" src="/images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='/images/flags/unknown.png';">
                 % endif
                     <span style="cursor: help; vertical-align:middle;" title="${ek(os.path.basename, hItem.resource)}">${statusStrings[composite.status]}</span>
                 </td>
@@ -91,12 +91,12 @@
                         % if composite.status in [SNATCHED, FAILED]:
                             <% provider = providers.getProviderClass(GenericProvider.make_id(hItem.provider)) %>
                             % if provider is not None:
-                                <img src="${srRoot}/images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" /> <span style="vertical-align:middle;">${provider.name}</span>
+                                <img src="/images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" /> <span style="vertical-align:middle;">${provider.name}</span>
                             % else:
-                                <img src="${srRoot}/images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" title="missing provider"/> <span style="vertical-align:middle;">Missing Provider</span>
+                                <img src="/images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" title="missing provider"/> <span style="vertical-align:middle;">Missing Provider</span>
                             % endif
                         % else:
-                                <img src="${srRoot}/images/subtitles/${hItem.provider}.png" width="16" height="16" style="vertical-align:middle;" /> <span style="vertical-align:middle;">${hItem.provider.capitalize()}</span>
+                                <img src="/images/subtitles/${hItem.provider}.png" width="16" height="16" style="vertical-align:middle;" /> <span style="vertical-align:middle;">${hItem.provider.capitalize()}</span>
                         % endif
                     % endif
                 % endif
@@ -138,7 +138,7 @@
                     <time datetime="${isoDate}" class="date">${airDate}</time>
                 </td>
                 <td class="tvShow">
-                    <span><a href="${srRoot}/home/displayShow?show=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${('', '<span class="quality Proper">Proper</span>')[any(x in hItem.actions[0].resource.lower() for x in ['proper', 'repack', 'real', 'rerip'])]}</a></span>
+                    <span><a href="/home/displayShow?show=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${('', '<span class="quality Proper">Proper</span>')[any(x in hItem.actions[0].resource.lower() for x in ['proper', 'repack', 'real', 'rerip'])]}</a></span>
                 </td>
                 <td align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
                     % for cur_action in sorted(hItem.actions):
@@ -146,9 +146,9 @@
                         % if composite.status in [SNATCHED, FAILED]:
                             <% provider = providers.getProviderClass(GenericProvider.make_id(cur_action.provider)) %>
                             % if provider is not None:
-                                <img src="${srRoot}/images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" alt="${provider.name}" style="cursor: help;" title="${provider.name}: ${ek(os.path.basename, cur_action.resource)}"/>
+                                <img src="/images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" alt="${provider.name}" style="cursor: help;" title="${provider.name}: ${ek(os.path.basename, cur_action.resource)}"/>
                             % else:
-                                <img src="${srRoot}/images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="missing provider"/>
+                                <img src="/images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="missing provider"/>
                             % endif
                         % endif
                     % endfor
@@ -170,9 +170,9 @@
                     % for cur_action in sorted(hItem.actions):
                         <% composite = Quality.splitCompositeStatus(int(cur_action.action)) %>
                         % if composite.status == SUBTITLED:
-                            <img src="${srRoot}/images/subtitles/${cur_action.provider}.png" width="16" height="16" style="vertical-align:middle;" alt="${cur_action.provider}" title="${cur_action.provider.capitalize()}: ${ek(os.path.basename, cur_action.resource)}"/>
+                            <img src="/images/subtitles/${cur_action.provider}.png" width="16" height="16" style="vertical-align:middle;" alt="${cur_action.provider}" title="${cur_action.provider.capitalize()}: ${ek(os.path.basename, cur_action.resource)}"/>
                             <span style="vertical-align:middle;"> / </span>
-                            <img width="16" height="11" style="vertical-align:middle;" src="${srRoot}/images/subtitles/flags/${cur_action.resource}.png" onError="this.onerror=null;this.src='${srRoot}/images/flags/unknown.png';" style="vertical-align: middle !important;">
+                            <img width="16" height="11" style="vertical-align:middle;" src="/images/subtitles/flags/${cur_action.resource}.png" onError="this.onerror=null;this.src='/images/flags/unknown.png';" style="vertical-align: middle !important;">
                             &nbsp;
                         % endif
                     % endfor

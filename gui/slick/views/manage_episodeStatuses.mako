@@ -18,7 +18,7 @@
 <br>
 % endif
 
-<form action="${srRoot}/manage/episodeStatuses" method="get">
+<form action="/manage/episodeStatuses" method="get">
 Manage episodes with status <select name="whichStatus" class="form-control form-control-inline input-sm">
 % for curStatus in [common.SKIPPED, common.SNATCHED, common.WANTED, common.IGNORED] + common.Quality.DOWNLOADED + common.Quality.ARCHIVED:
     %if curStatus not in [common.ARCHIVED, common.DOWNLOADED]:
@@ -31,7 +31,7 @@ Manage episodes with status <select name="whichStatus" class="form-control form-
 
 % else:
 
-<form action="${srRoot}/manage/changeEpisodeStatuses" method="post">
+<form action="/manage/changeEpisodeStatuses" method="post">
 <input type="hidden" id="oldStatus" name="oldStatus" value="${whichStatus}" />
 
 <h2>Shows containing ${common.statusStrings[whichStatus]} episodes</h2>
@@ -78,7 +78,7 @@ Set checked shows/episodes to <select name="newStatus" class="form-control form-
     % for cur_indexer_id in sorted_show_ids:
     <tr id="${cur_indexer_id}">
         <th><input type="checkbox" class="allCheck" id="allCheck-${cur_indexer_id}" name="${cur_indexer_id}-all" checked="checked" /></th>
-        <th colspan="2" style="width: 100%; text-align: left;"><a class="whitelink" href="${srRoot}/home/displayShow?show=${cur_indexer_id}">${show_names[cur_indexer_id]}</a> (${ep_counts[cur_indexer_id]}) <input type="button" class="pull-right get_more_eps btn" id="${cur_indexer_id}" value="Expand" /></th>
+        <th colspan="2" style="width: 100%; text-align: left;"><a class="whitelink" href="/home/displayShow?show=${cur_indexer_id}">${show_names[cur_indexer_id]}</a> (${ep_counts[cur_indexer_id]}) <input type="button" class="pull-right get_more_eps btn" id="${cur_indexer_id}" value="Expand" /></th>
     </tr>
     % endfor
     <tr><td style="padding:0;"></td><td style="padding:0;"></td><td style="padding:0;"></td></tr>

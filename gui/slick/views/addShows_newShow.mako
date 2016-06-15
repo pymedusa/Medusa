@@ -4,10 +4,10 @@
     from sickbeard.helpers import anon_url
 %>
 <%block name="scripts">
-<script type="text/javascript" src="${srRoot}/js/qualityChooser.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/addShowOptions.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/rootDirs.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/blackwhite.js?${sbPID}"></script>
+<script type="text/javascript" src="/js/qualityChooser.js?${sbPID}"></script>
+<script type="text/javascript" src="/js/addShowOptions.js?${sbPID}"></script>
+<script type="text/javascript" src="/js/rootDirs.js?${sbPID}"></script>
+<script type="text/javascript" src="/js/blackwhite.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -25,7 +25,7 @@
         <div id="core-component-group1" class="tab-pane active component-group">
             <div id="displayText"></div>
             <br>
-            <form id="addShowForm" method="post" action="${srRoot}/addShows/addNewShow" accept-charset="utf-8">
+            <form id="addShowForm" method="post" action="/addShows/addNewShow" accept-charset="utf-8">
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Find a show on theTVDB</legend>
 

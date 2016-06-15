@@ -59,7 +59,7 @@
                 <div class="traktContainer">
                     <div class="trakt-image">
                         <a class="trakt-image" href="${anon_url(cur_result['imdb_url'])}" target="_blank">
-                            <img alt="" class="trakt-image" src="${srRoot}/cache/${cur_result['image_path']}" height="273px" width="186px" />
+                            <img alt="" class="trakt-image" src="/cache/${cur_result['image_path']}" height="273px" width="186px" />
                         </a>
                     </div>
 
@@ -68,14 +68,14 @@
                     </div>
 
                     <div class="clearfix">
-                        <p>${int(float(cur_rating)*10)}% <img src="${srRoot}/images/heart.png"></p>
+                        <p>${int(float(cur_rating)*10)}% <img src="/images/heart.png"></p>
                         % if cur_votes != '0':
                             <i>${cur_votes}</i>
                         % else:
                             <i>${cur_votes} votes</i>
                         % endif
                         <div class="traktShowTitleIcons">
-                            <a href="${srRoot}/addShows/addShowByID?indexer_id=${cur_result['imdb_tt']}&amp;show_name=${cur_result['name'] | u}&amp;indexer=IMDB" class="btn btn-xs" data-no-redirect>Add Show</a>
+                            <a href="/addShows/addShowByID?indexer_id=${cur_result['imdb_tt']}&amp;show_name=${cur_result['name'] | u}&amp;indexer=IMDB" class="btn btn-xs" data-no-redirect>Add Show</a>
                         </div>
                     </div>
                 </div>

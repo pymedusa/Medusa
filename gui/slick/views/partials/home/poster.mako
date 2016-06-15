@@ -20,7 +20,7 @@
     % for curLoadingShow in sickbeard.showQueueScheduler.action.loadingShowList:
         % if curLoadingShow.show is None:
             <div class="show-container" data-name="0" data-date="010101" data-network="0" data-progress="101">
-                <img alt="" title="${curLoadingShow.show_name}" class="show-image" style="border-bottom: 1px solid #111;" src="${srRoot}/images/poster.png" />
+                <img alt="" title="${curLoadingShow.show_name}" class="show-image" style="border-bottom: 1px solid #111;" src="/images/poster.png" />
                 <div class="show-details">
                     <div class="show-add">Loading... (${curLoadingShow.show_name})</div>
                 </div>
@@ -93,7 +93,7 @@
     %>
         <div class="show-container" id="show${curShow.indexerid}" data-name="${curShow.name}" data-date="${data_date}" data-network="${curShow.network}" data-progress="${progressbar_percent}">
             <div class="show-image">
-                <a href="${srRoot}/home/displayShow?show=${curShow.indexerid}"><img alt="" class="show-image" src="${srRoot}/showPoster/?show=${curShow.indexerid}&amp;which=poster_thumb" /></a>
+                <a href="/home/displayShow?show=${curShow.indexerid}"><img alt="" class="show-image" src="/showPoster/?show=${curShow.indexerid}&amp;which=poster_thumb" /></a>
             </div>
 
             <div class="progressbar hidden-print" style="position:relative;" data-show-id="${curShow.indexerid}" data-progress-percentage="${progressbar_percent}"></div>
@@ -136,9 +136,9 @@
 
                         <td class="show-table">
                             % if curShow.network:
-                                <span title="${curShow.network}"><img class="show-network-image" src="${srRoot}/showPoster/?show=${curShow.indexerid}&amp;which=network" alt="${curShow.network}" title="${curShow.network}" /></span>
+                                <span title="${curShow.network}"><img class="show-network-image" src="/showPoster/?show=${curShow.indexerid}&amp;which=network" alt="${curShow.network}" title="${curShow.network}" /></span>
                             % else:
-                                <span title="No Network"><img class="show-network-image" src="${srRoot}/images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
+                                <span title="No Network"><img class="show-network-image" src="/images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
                             % endif
                         </td>
 
