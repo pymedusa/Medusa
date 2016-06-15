@@ -51,7 +51,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                             <label for="use_subtitles" class="clearfix">
                                 <span class="component-title">Search Subtitles</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" class="enabler" ${('', ' checked="checked"')[bool(sickbeard.USE_SUBTITLES)]} id="use_subtitles" name="use_subtitles">
+                                    <input type="checkbox" class="enabler" ${' checked="checked"' if sickbeard.USE_SUBTITLES else ''} id="use_subtitles" name="use_subtitles">
                                 </span>
                             </label>
                         </div>
@@ -87,7 +87,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label for="subtitles_perfect_match" class="clearfix">
                                         <span class="component-title">Perfect matches</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" class="enabler" ${('', ' checked="checked"')[bool(sickbeard.SUBTITLES_PERFECT_MATCH)]} id="subtitles_perfect_match" name="subtitles_perfect_match">
+                                            <input type="checkbox" class="enabler" ${' checked="checked"' if sickbeard.SUBTITLES_PERFECT_MATCH else ''} id="subtitles_perfect_match" name="subtitles_perfect_match">
                                             <p>Only download subtitles that match: release group, video codec, audio codec and resolution</p>
                                             <p>If disabled you may get out of sync subtitles</p>
                                         </span>
@@ -97,7 +97,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="subtitles_history">
                                         <span class="component-title">Subtitles History</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="subtitles_history" id="subtitles_history" ${('', 'checked="checked"')[bool(sickbeard.SUBTITLES_HISTORY)]}/>
+                                            <input type="checkbox" name="subtitles_history" id="subtitles_history" ${'checked="checked"' if sickbeard.SUBTITLES_HISTORY else ''}/>
                                             <p>Log downloaded Subtitle on History page?</p>
                                         </span>
                                     </label>
@@ -106,7 +106,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="subtitles_multi">
                                         <span class="component-title">Subtitles Multi-Language</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="subtitles_multi" id="subtitles_multi" ${('', 'checked="checked"')[bool(sickbeard.SUBTITLES_MULTI)]}/>
+                                            <input type="checkbox" name="subtitles_multi" id="subtitles_multi" ${'checked="checked"' if sickbeard.SUBTITLES_MULTI else ''}/>
                                             <p>Append language codes to subtitle filenames?</p>
                                         </span>
                                     </label>
@@ -119,7 +119,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="subtitles_download_in_pp">
                                         <span class="component-title">Subtitles in Post-Process folder</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="subtitles_download_in_pp" id="subtitles_download_in_pp" ${('', 'checked="checked"')[bool(sickbeard.SUBTITLES_DOWNLOAD_IN_PP)]}/>
+                                            <input type="checkbox" name="subtitles_download_in_pp" id="subtitles_download_in_pp" ${'checked="checked"' if sickbeard.SUBTITLES_DOWNLOAD_IN_PP else ''}/>
                                             <p>Download subtitles in post-process folder</p>
                                             <p>Useful if you only want the episode to be post-processed when it has subtitles associated</p>
                                             <p>You might also want to enable the post-process setting 'Postpone if no subtitle'</p>
@@ -130,7 +130,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="subtitles_keep_only_wanted">
                                         <span class="component-title">Delete unwanted subtitles</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="subtitles_keep_only_wanted" id="subtitles_keep_only_wanted" ${('', 'checked="checked"')[bool(sickbeard.SUBTITLES_KEEP_ONLY_WANTED)]}/>
+                                            <input type="checkbox" name="subtitles_keep_only_wanted" id="subtitles_keep_only_wanted" ${'checked="checked"' if sickbeard.SUBTITLES_KEEP_ONLY_WANTED else ''}/>
                                             <p>Enable to delete unwanted subtitle languages bundled with release</p>
                                             <p>Avoid post-process releases with unwanted language subtitles when feature 'postpone if no subs' is enabled</p>
                                         </span>
@@ -140,7 +140,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="embedded_subtitles_all">
                                         <span class="component-title">Embedded Subtitles</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="embedded_subtitles_all" id="embedded_subtitles_all" ${('', 'checked="checked"')[bool(sickbeard.EMBEDDED_SUBTITLES_ALL)]}/>
+                                            <input type="checkbox" name="embedded_subtitles_all" id="embedded_subtitles_all" ${'checked="checked"' if sickbeard.EMBEDDED_SUBTITLES_ALL else ''}/>
                                             <p>Ignore subtitles embedded inside video file?</p>
                                             <p><b>Warning: </b>this will ignore <u>all</u> embedded subtitles for every video file!</p>
                                         </span>
@@ -150,7 +150,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="subtitles_hearing_impaired">
                                         <span class="component-title">Hearing Impaired Subtitles</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="subtitles_hearing_impaired" id="subtitles_hearing_impaired" ${('', 'checked="checked"')[bool(sickbeard.SUBTITLES_HEARING_IMPAIRED)]}/>
+                                            <input type="checkbox" name="subtitles_hearing_impaired" id="subtitles_hearing_impaired" ${'checked="checked"' if sickbeard.SUBTITLES_HEARING_IMPAIRED else ''}/>
                                             <p>Download hearing impaired style subtitles?</p>
                                         </span>
                                     </label>

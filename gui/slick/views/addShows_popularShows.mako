@@ -64,7 +64,7 @@
                     </div>
 
                     <div class="show-title">
-                        ${(cur_result['name'], '<span>&nbsp;</span>')['' == cur_result['name']]}
+                        ${cur_result['name'] or '<span>&nbsp;</span>'}
                     </div>
 
                     <div class="clearfix">

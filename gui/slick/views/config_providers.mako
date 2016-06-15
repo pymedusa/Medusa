@@ -83,7 +83,7 @@ $('#config-components').tabs();
                                     curURL = curProvider.url
                             %>
                             <li class="ui-state-default ${('nzb-provider', 'torrent-provider')[bool(curProvider.provider_type == GenericProvider.TORRENT)]}" id="${curName}">
-                                <input type="checkbox" id="enable_${curName}" class="provider_enabler" ${('', 'checked="checked"')[curProvider.is_enabled() is True]}/>
+                                <input type="checkbox" id="enable_${curName}" class="provider_enabler" ${'checked="checked"' if curProvider.is_enabled() is True else ''}/>
                                 <a href="${anon_url(curURL)}" class="imgLink" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><img src="/images/providers/${curProvider.image_name()}" alt="${curProvider.name}" title="${curProvider.name}" width="16" height="16" style="vertical-align:middle;"/></a>
                                 <span style="vertical-align:middle;">${curProvider.name}</span>
                                 ${('<span class="red-text">*</span>', '')[bool(curProvider.supports_backlog)]}
@@ -164,7 +164,7 @@ $('#config-components').tabs();
                             <label for="${curNewznabProvider.get_id()}_enable_daily">
                                 <span class="component-title">Enable daily searches</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curNewznabProvider.get_id()}_enable_daily" id="${curNewznabProvider.get_id()}_enable_daily" ${('', 'checked="checked"')[bool(curNewznabProvider.enable_daily)]}/>
+                                    <input type="checkbox" name="${curNewznabProvider.get_id()}_enable_daily" id="${curNewznabProvider.get_id()}_enable_daily" ${'checked="checked"' if curNewznabProvider.enable_daily else ''}/>
                                     <p>enable provider to perform daily searches.</p>
                                 </span>
                             </label>
@@ -176,7 +176,7 @@ $('#config-components').tabs();
                             <label for="${curNewznabProvider.get_id()}_enable_manualsearch">
                                 <span class="component-title">Enable manual searches</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curNewznabProvider.get_id()}_enable_manualsearch" id="${curNewznabProvider.get_id()}_enable_manualsearch" ${('', 'checked="checked"')[bool(curNewznabProvider.enable_manualsearch  and curNewznabProvider.supports_backlog)]}/>
+                                    <input type="checkbox" name="${curNewznabProvider.get_id()}_enable_manualsearch" id="${curNewznabProvider.get_id()}_enable_manualsearch" ${'checked="checked"' if curNewznabProvider.enable_manualsearch  and curNewznabProvider.supports_backlog else ''}/>
                                     <p>enable provider to perform manual searches.</p>
                                 </span>
                             </label>
@@ -188,7 +188,7 @@ $('#config-components').tabs();
                             <label for="${curNewznabProvider.get_id()}_enable_backlog">
                                 <span class="component-title">Enable backlog searches</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curNewznabProvider.get_id()}_enable_backlog" id="${curNewznabProvider.get_id()}_enable_backlog" ${('', 'checked="checked"')[bool(curNewznabProvider.enable_backlog and curNewznabProvider.supports_backlog)]}/>
+                                    <input type="checkbox" name="${curNewznabProvider.get_id()}_enable_backlog" id="${curNewznabProvider.get_id()}_enable_backlog" ${'checked="checked"' if curNewznabProvider.enable_backlog and curNewznabProvider.supports_backlog else ''}/>
                                     <p>enable provider to perform backlog searches.</p>
                                 </span>
                             </label>
@@ -206,13 +206,13 @@ $('#config-components').tabs();
                             <label>
                                 <span class="component-title"></span>
                                 <span class="component-desc">
-                                    <input type="radio" name="${curNewznabProvider.get_id()}_search_mode" id="${curNewznabProvider.get_id()}_search_mode_sponly" value="sponly" ${('', 'checked="checked"')[curNewznabProvider.search_mode=="sponly"]}/>season packs only.
+                                    <input type="radio" name="${curNewznabProvider.get_id()}_search_mode" id="${curNewznabProvider.get_id()}_search_mode_sponly" value="sponly" ${'checked="checked"' if curNewznabProvider.search_mode=="sponly" else ''}/>season packs only.
                                 </span>
                             </label>
                             <label>
                                 <span class="component-title"></span>
                                 <span class="component-desc">
-                                    <input type="radio" name="${curNewznabProvider.get_id()}_search_mode" id="${curNewznabProvider.get_id()}_search_mode_eponly" value="eponly" ${('', 'checked="checked"')[curNewznabProvider.search_mode=="eponly"]}/>episodes only.
+                                    <input type="radio" name="${curNewznabProvider.get_id()}_search_mode" id="${curNewznabProvider.get_id()}_search_mode_eponly" value="eponly" ${'checked="checked"' if curNewznabProvider.search_mode=="eponly" else ''}/>episodes only.
                                 </span>
                             </label>
                         </div>
@@ -223,7 +223,7 @@ $('#config-components').tabs();
                             <label for="${curNewznabProvider.get_id()}_search_fallback">
                                 <span class="component-title">Enable fallback</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curNewznabProvider.get_id()}_search_fallback" id="${curNewznabProvider.get_id()}_search_fallback" ${('', 'checked="checked"')[bool(curNewznabProvider.search_fallback)]}/>
+                                    <input type="checkbox" name="${curNewznabProvider.get_id()}_search_fallback" id="${curNewznabProvider.get_id()}_search_fallback" ${'checked="checked"' if curNewznabProvider.search_fallback else ''}/>
                                     <p>when searching for a complete season depending on search mode you may return no results, this helps by restarting the search using the opposite search mode.</p>
                                 </span>
                             </label>
@@ -263,7 +263,7 @@ $('#config-components').tabs();
                             <label for="${curNzbProvider.get_id()}_enable_daily">
                                 <span class="component-title">Enable daily searches</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curNzbProvider.get_id()}_enable_daily" id="${curNzbProvider.get_id()}_enable_daily" ${('', 'checked="checked"')[bool(curNzbProvider.enable_daily)]}/>
+                                    <input type="checkbox" name="${curNzbProvider.get_id()}_enable_daily" id="${curNzbProvider.get_id()}_enable_daily" ${'checked="checked"' if curNzbProvider.enable_daily else ''}/>
                                     <p>enable provider to perform daily searches.</p>
                                 </span>
                             </label>
@@ -275,7 +275,7 @@ $('#config-components').tabs();
                             <label for="${curNzbProvider.get_id()}_enable_manualsearch">
                                 <span class="component-title">Enable manual searches</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curNzbProvider.get_id()}_enable_manualsearch" id="${curNzbProvider.get_id()}_enable_manualsearch" ${('', 'checked="checked"')[bool(curNzbProvider.enable_manualsearch and curNzbProvider.supports_backlog)]}/>
+                                    <input type="checkbox" name="${curNzbProvider.get_id()}_enable_manualsearch" id="${curNzbProvider.get_id()}_enable_manualsearch" ${'checked="checked"' if curNzbProvider.enable_manualsearch and curNzbProvider.supports_backlog else ''}/>
                                     <p>enable provider to perform manual searches.</p>
                                 </span>
                             </label>
@@ -288,7 +288,7 @@ $('#config-components').tabs();
                             <label for="${curNzbProvider.get_id()}_enable_backlog">
                                 <span class="component-title">Enable backlog searches</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curNzbProvider.get_id()}_enable_backlog" id="${curNzbProvider.get_id()}_enable_backlog" ${('', 'checked="checked"')[bool(curNzbProvider.enable_backlog and curNzbProvider.supports_backlog)]}/>
+                                    <input type="checkbox" name="${curNzbProvider.get_id()}_enable_backlog" id="${curNzbProvider.get_id()}_enable_backlog" ${'checked="checked"' if curNzbProvider.enable_backlog and curNzbProvider.supports_backlog else ''}/>
                                     <p>enable provider to perform backlog searches.</p>
                                 </span>
                             </label>
@@ -306,13 +306,13 @@ $('#config-components').tabs();
                             <label>
                                 <span class="component-title"></span>
                                 <span class="component-desc">
-                                    <input type="radio" name="${curNzbProvider.get_id()}_search_mode" id="${curNzbProvider.get_id()}_search_mode_sponly" value="sponly" ${('', 'checked="checked"')[curNzbProvider.search_mode=="sponly"]}/>season packs only.
+                                    <input type="radio" name="${curNzbProvider.get_id()}_search_mode" id="${curNzbProvider.get_id()}_search_mode_sponly" value="sponly" ${'checked="checked"' if curNzbProvider.search_mode=="sponly" else ''}/>season packs only.
                                 </span>
                             </label>
                             <label>
                                 <span class="component-title"></span>
                                 <span class="component-desc">
-                                    <input type="radio" name="${curNzbProvider.get_id()}_search_mode" id="${curNzbProvider.get_id()}_search_mode_eponly" value="eponly" ${('', 'checked="checked"')[curNzbProvider.search_mode=="eponly"]}/>episodes only.
+                                    <input type="radio" name="${curNzbProvider.get_id()}_search_mode" id="${curNzbProvider.get_id()}_search_mode_eponly" value="eponly" ${'checked="checked"' if curNzbProvider.search_mode=="eponly" else ''}/>episodes only.
                                 </span>
                             </label>
                         </div>
@@ -323,7 +323,7 @@ $('#config-components').tabs();
                             <label for="${curNzbProvider.get_id()}_search_fallback">
                                 <span class="component-title">Enable fallback</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curNzbProvider.get_id()}_search_fallback" id="${curNzbProvider.get_id()}_search_fallback" ${('', 'checked="checked"')[bool(curNzbProvider.search_fallback)]}/>
+                                    <input type="checkbox" name="${curNzbProvider.get_id()}_search_fallback" id="${curNzbProvider.get_id()}_search_fallback" ${'checked="checked"' if curNzbProvider.search_fallback else ''}/>
                                     <p>when searching for a complete season depending on search mode you may return no results, this helps by restarting the search using the opposite search mode.</p>
                                 </span>
                             </label>
@@ -474,7 +474,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_confirmed">
                                 <span class="component-title">Confirmed download</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_confirmed" id="${curTorrentProvider.get_id()}_confirmed" ${('', 'checked="checked"')[bool(curTorrentProvider.confirmed)]}/>
+                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_confirmed" id="${curTorrentProvider.get_id()}_confirmed" ${'checked="checked"' if curTorrentProvider.confirmed else ''}/>
                                     <p>only download torrents from trusted or verified uploaders ?</p>
                                 </span>
                             </label>
@@ -486,7 +486,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_ranked">
                                 <span class="component-title">Ranked torrents</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_ranked" id="${curTorrentProvider.get_id()}_ranked" ${('', 'checked="checked"')[bool(curTorrentProvider.ranked)]} />
+                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_ranked" id="${curTorrentProvider.get_id()}_ranked" ${'checked="checked"' if curTorrentProvider.ranked else ''} />
                                     <p>only download ranked torrents (trusted releases)</p>
                                 </span>
                             </label>
@@ -498,7 +498,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_engrelease">
                                 <span class="component-title">English torrents</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_engrelease" id="${curTorrentProvider.get_id()}_engrelease" ${('', 'checked="checked"')[bool(curTorrentProvider.engrelease)]} />
+                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_engrelease" id="${curTorrentProvider.get_id()}_engrelease" ${'checked="checked"' if curTorrentProvider.engrelease else ''} />
                                     <p>only download english torrents, or torrents containing english subtitles</p>
                                 </span>
                             </label>
@@ -510,7 +510,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_onlyspasearch">
                                 <span class="component-title">For Spanish torrents</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_onlyspasearch" id="${curTorrentProvider.get_id()}_onlyspasearch" ${('', 'checked="checked"')[bool(curTorrentProvider.onlyspasearch)]} />
+                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_onlyspasearch" id="${curTorrentProvider.get_id()}_onlyspasearch" ${'checked="checked"' if curTorrentProvider.onlyspasearch else ''} />
                                     <p>ONLY search on this provider if show info is defined as "Spanish" (avoid provider's use for VOS shows)</p>
                                 </span>
                             </label>
@@ -524,7 +524,7 @@ $('#config-components').tabs();
                                 <span class="component-desc">
                                     <select name="${curTorrentProvider.get_id()}_sorting" id="${curTorrentProvider.get_id()}_sorting" class="form-control input-sm">
                                     % for curAction in ('last', 'seeders', 'leechers'):
-                                    <option value="${curAction}" ${('', 'selected="selected"')[curAction == curTorrentProvider.sorting]}>${curAction}</option>
+                                    <option value="${curAction}" ${'selected="selected"' if curAction == curTorrentProvider.sorting else ''}>${curAction}</option>
                                     % endfor
                                     </select>
                                 </span>
@@ -537,7 +537,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_freeleech">
                                 <span class="component-title">Freeleech</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_freeleech" id="${curTorrentProvider.get_id()}_freeleech" ${('', 'checked="checked"')[bool(curTorrentProvider.freeleech)]}/>
+                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_freeleech" id="${curTorrentProvider.get_id()}_freeleech" ${'checked="checked"' if curTorrentProvider.freeleech else ''}/>
                                     <p>only download <b>"FreeLeech"</b> torrents.</p>
                                 </span>
                             </label>
@@ -549,7 +549,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_enable_daily">
                                 <span class="component-title">Enable daily searches</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_enable_daily" id="${curTorrentProvider.get_id()}_enable_daily" ${('', 'checked="checked"')[bool(curTorrentProvider.enable_daily)]}/>
+                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_enable_daily" id="${curTorrentProvider.get_id()}_enable_daily" ${'checked="checked"' if curTorrentProvider.enable_daily else ''}/>
                                     <p>enable provider to perform daily searches.</p>
                                 </span>
                             </label>
@@ -561,7 +561,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_enable_manualsearch">
                                 <span class="component-title">Enable manual searches</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_enable_manualsearch" id="${curTorrentProvider.get_id()}_enable_manualsearch" ${('', 'checked="checked"')[bool(curTorrentProvider.enable_manualsearch and curTorrentProvider.supports_backlog)]}/>
+                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_enable_manualsearch" id="${curTorrentProvider.get_id()}_enable_manualsearch" ${'checked="checked"' if curTorrentProvider.enable_manualsearch and curTorrentProvider.supports_backlog else ''}/>
                                     <p>enable provider to perform manual searches.</p>
                                 </span>
                             </label>
@@ -573,7 +573,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_enable_backlog">
                                 <span class="component-title">Enable backlog searches</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_enable_backlog" id="${curTorrentProvider.get_id()}_enable_backlog" ${('', 'checked="checked"')[bool(curTorrentProvider.enable_backlog and curTorrentProvider.supports_backlog)]}/>
+                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_enable_backlog" id="${curTorrentProvider.get_id()}_enable_backlog" ${'checked="checked"' if curTorrentProvider.enable_backlog and curTorrentProvider.supports_backlog else ''}/>
                                     <p>enable provider to perform backlog searches.</p>
                                 </span>
                             </label>
@@ -591,13 +591,13 @@ $('#config-components').tabs();
                             <label>
                                 <span class="component-title"></span>
                                 <span class="component-desc">
-                                    <input type="radio" name="${curTorrentProvider.get_id()}_search_mode" id="${curTorrentProvider.get_id()}_search_mode_sponly" value="sponly" ${('', 'checked="checked"')[curTorrentProvider.search_mode=="sponly"]}/>season packs only.
+                                    <input type="radio" name="${curTorrentProvider.get_id()}_search_mode" id="${curTorrentProvider.get_id()}_search_mode_sponly" value="sponly" ${'checked="checked"' if curTorrentProvider.search_mode=="sponly" else ''}/>season packs only.
                                 </span>
                             </label>
                             <label>
                                 <span class="component-title"></span>
                                 <span class="component-desc">
-                                    <input type="radio" name="${curTorrentProvider.get_id()}_search_mode" id="${curTorrentProvider.get_id()}_search_mode_eponly" value="eponly" ${('', 'checked="checked"')[curTorrentProvider.search_mode=="eponly"]}/>episodes only.
+                                    <input type="radio" name="${curTorrentProvider.get_id()}_search_mode" id="${curTorrentProvider.get_id()}_search_mode_eponly" value="eponly" ${'checked="checked"' if curTorrentProvider.search_mode=="eponly" else ''}/>episodes only.
                                 </span>
                             </label>
                         </div>
@@ -608,7 +608,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_search_fallback">
                                 <span class="component-title">Enable fallback</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_search_fallback" id="${curTorrentProvider.get_id()}_search_fallback" ${('', 'checked="checked"')[bool(curTorrentProvider.search_fallback)]}/>
+                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_search_fallback" id="${curTorrentProvider.get_id()}_search_fallback" ${'checked="checked"' if curTorrentProvider.search_fallback else ''}/>
                                     <p>when searching for a complete season depending on search mode you may return no results, this helps by restarting the search using the opposite search mode.</p>
                                 </span>
                             </label>
@@ -635,7 +635,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_subtitle">
                                 <span class="component-title">Subtitled</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_subtitle" id="${curTorrentProvider.get_id()}_subtitle" ${('', 'checked="checked"')[bool(curTorrentProvider.subtitle)]}/>
+                                    <input type="checkbox" name="${curTorrentProvider.get_id()}_subtitle" id="${curTorrentProvider.get_id()}_subtitle" ${'checked="checked"' if curTorrentProvider.subtitle else ''}/>
                                     <p>select torrent with Italian subtitle</p>
                                 </span>
                             </label>

@@ -17,7 +17,7 @@ selected = None
 <select id="qualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
     <option value="0">Custom</option>
     % for curPreset in qualityPresets:
-        <option value="${curPreset}" ${('', 'selected="selected"')[curPreset == overall_quality]} ${('', 'style="padding-left: 15px;"')[qualityPresetStrings[curPreset].endswith("0p")]}>${qualityPresetStrings[curPreset]}</option>
+        <option value="${curPreset}" ${'selected="selected"' if curPreset == overall_quality else ''} ${('', 'style="padding-left: 15px;"')[qualityPresetStrings[curPreset].endswith("0p")]}>${qualityPresetStrings[curPreset]}</option>
     % endfor
 </select>
 
@@ -30,7 +30,7 @@ selected = None
             <% anyQualityList = filter(lambda x: x > Quality.NONE, Quality.qualityStrings) %>
             <select id="anyQualities" name="anyQualities" multiple="multiple" size="${len(anyQualityList)}" class="form-control form-control-inline input-sm">
             % for curQuality in sorted(anyQualityList):
-                <option value="${curQuality}" ${('', 'selected="selected"')[curQuality in anyQualities]}>${Quality.qualityStrings[curQuality]}</option>
+                <option value="${curQuality}" ${'selected="selected"' if curQuality in anyQualities else ''}>${Quality.qualityStrings[curQuality]}</option>
             % endfor
             </select>
         </div>
@@ -40,7 +40,7 @@ selected = None
             <% bestQualityList = filter(lambda x: x >= Quality.SDTV and x < Quality.UNKNOWN, Quality.qualityStrings) %>
             <select id="bestQualities" name="bestQualities" multiple="multiple" size="${len(bestQualityList)}" class="form-control form-control-inline input-sm">
             % for curQuality in sorted(bestQualityList):
-                <option value="${curQuality}" ${('', 'selected="selected"')[curQuality in bestQualities]}>${Quality.qualityStrings[curQuality]}</option>
+                <option value="${curQuality}" ${'selected="selected"' if curQuality in bestQualities else ''}>${Quality.qualityStrings[curQuality]}</option>
             % endfor
             </select>
         </div>
