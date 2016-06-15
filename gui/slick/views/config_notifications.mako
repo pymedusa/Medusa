@@ -1785,7 +1785,7 @@
                             <div class="field-pair">
                                 <label for="email_port">
                                     <span class="component-title">SMTP port</span>
-                                    <input type="number" min"1" step="1" name="email_port" id="email_port" value="${sickbeard.EMAIL_PORT}" class="form-control input-sm input75" autocapitalize="off" />
+                                    <input type="number" min="1" step="1" name="email_port" id="email_port" value="${sickbeard.EMAIL_PORT}" class="form-control input-sm input75" autocapitalize="off" />
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
