@@ -210,7 +210,7 @@
                                         <option value="disable" ${('', 'selected="selected"')[sports_value == 0]}>No</option>
                                     </select><br>
                                     Set if these shows are sporting or MMA events released as Show.03.02.2010 rather than Show.S02E03.<br>
-                                    <span style="color:red">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
+                                    <span style="color:rgb(255, 0, 0)">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
                         </div>
@@ -225,7 +225,7 @@
                                         <option value="disable" ${('', 'selected="selected"')[air_by_date_value == 0]}>No</option>
                                     </select><br>
                                     Set if these shows are released as Show.03.02.2010 rather than Show.S02E03.<br>
-                                    <span style="color:red">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
+                                    <span style="color:rgb(255, 0, 0)">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
                         </div>

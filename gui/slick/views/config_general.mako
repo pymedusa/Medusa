@@ -723,7 +723,7 @@
                                        <input class="btn btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch">
                                     % endif
                                     % if not gh_branch:
-                                       <div class="clear-left" style="color:#FF0000"><p>Error: No branches found.</p></div>
+                                       <div class="clear-left" style="color:rgb(255, 0, 0)"><p>Error: No branches found.</p></div>
                                     % else:
                                        <div class="clear-left"><p>select branch to use (restart required)</p></div>
                                     % endif

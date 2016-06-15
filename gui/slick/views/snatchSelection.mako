@@ -130,7 +130,7 @@
                 % if showLoc[1]:
                     <tr><td class="showLegend">Location: </td><td>${showLoc[0]}</td></tr>
                 % else:
-                    <tr><td class="showLegend"><span style="color: red;">Location: </span></td><td><span style="color: red;">${showLoc[0]}</span> (Missing)</td></tr>
+                    <tr><td class="showLegend"><span style="color: rgb(255, 0, 0);">Location: </span></td><td><span style="color: rgb(255, 0, 0);">${showLoc[0]}</span> (Missing)</td></tr>
                 % endif
                 % if show.exceptions:
                     <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${(show.name, " | ".join(show.exceptions))[show.exceptions != 0]}</td></tr>
@@ -215,11 +215,11 @@
                 % for item in episode_history:
                     <% status, quality = Quality.splitCompositeStatus(item['action']) %>
                     % if status == DOWNLOADED:
-                        <tr style="background-color:#C3E3C8;!important">
+                        <tr style="background-color:rgb(195, 227, 200);!important">
                     % elif status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
-                        <tr style="background-color:#EBC1EA;!important">
+                        <tr style="background-color:rgb(235, 193, 234);!important">
                     % elif status == FAILED:
-                        <tr style="background-color:#FF9999;!important">
+                        <tr style="background-color:rgb(255, 153, 153);!important">
                     % endif
 
                     <td align="center" style="width: auto;">
@@ -326,7 +326,7 @@
                 % if any([i for i in episode_history if prepareFailedName(str(hItem["name"])) in i['resource'] and (hItem['release_group'] == i['provider'] or  hItem['provider'] == i['provider']) and Quality.splitCompositeStatus(i['action']).status == FAILED]):
                     <tr style="text-decoration:line-through;!important" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
                 % elif any([i for i in episode_history if Quality.splitCompositeStatus(i['action']).status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST) and hItem["name"] in i['resource'] and hItem['provider'] == i['provider']]):
-                    <tr style="background-color:#EBC1EA;!important" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
+                    <tr style="background-color:rgb(235, 193, 234);!important" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
                 % else:
                     <tr id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
                 % endif
