@@ -29,14 +29,14 @@
                 <div id="core-component-group1">
                     <div class="component-group">
                         <h3>Main Settings</h3>
-                        ==> <u>Changing any settings marked with (<span class="separator">*</span>) will force a refresh of the selected shows.</u><br>
-                        <br>
+                        ==> <u>Changing any settings marked with (<span class="separator">*</span>) will force a refresh of the selected shows.</u><br />
+                        <br />
                         <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label for="shows">
                                 <span class="component-title">Selected Shows</span>
                                 <span class="component-desc">
-                                    <span style="font-size: 14px;">${', '.join(sorted(showNames))}</span><br>
+                                    <span style="font-size: 14px;">${', '.join(sorted(showNames))}</span><br />
                                 </span>
                             </label>
                         </div>
@@ -121,7 +121,7 @@
                                         <option value="keep" ${'selected="selected"' if flatten_folders_value is None else ''}>&lt; Keep &gt;</option>
                                         <option value="enable" ${'selected="selected"' if flatten_folders_value == 0 else ''}>Yes</option>
                                         <option value="disable" ${'selected="selected"' if flatten_folders_value == 1 else ''}>No</option>
-                                    </select><br>
+                                    </select><br />
                                     Group episodes by season folder (set to "No" to store in a single folder).
                                 </span>
                             </label>
@@ -148,7 +148,7 @@
                                         % for curStatus in [WANTED, SKIPPED, IGNORED]:
                                         <option value="${curStatus}" ${'selected="selected"' if curStatus == default_ep_status_value else ''}>${statusStrings[curStatus]}</option>
                                         % endfor
-                                    </select><br>
+                                    </select><br />
                                     This will set the status for future episodes.
                                 </span>
                             </label>
@@ -161,7 +161,7 @@
                                         <option value="keep" ${'selected="selected"' if scene_value is None else ''}>&lt; Keep &gt;</option>
                                         <option value="enable" ${'selected="selected"' if scene_value == 1 else ''}>Yes</option>
                                         <option value="disable" ${'selected="selected"' if scene_value == 0 else ''}>No</option>
-                                    </select><br>
+                                    </select><br />
                                     Search by scene numbering (set to "No" to search by indexer numbering).
                                 </span>
                             </label>
@@ -174,7 +174,7 @@
                                         <option value="keep" ${'selected="selected"' if anime_value is None else ''}>&lt; Keep &gt;</option>
                                         <option value="enable" ${'selected="selected"' if anime_value == 1 else ''}>Yes</option>
                                         <option value="disable" ${'selected="selected"' if anime_value == 0 else ''}>No</option>
-                                    </select><br>
+                                    </select><br />
                                     Set if these shows are Anime and episodes are released as Show.265 rather than Show.S02E03
                                 </span>
                             </label>
@@ -187,8 +187,8 @@
                                         <option value="keep" ${'selected="selected"' if sports_value is None else ''}>&lt; Keep &gt;</option>
                                         <option value="enable" ${'selected="selected"' if sports_value == 1 else ''}>Yes</option>
                                         <option value="disable" ${'selected="selected"' if sports_value == 0 else ''}>No</option>
-                                    </select><br>
-                                    Set if these shows are sporting or MMA events released as Show.03.02.2010 rather than Show.S02E03.<br>
+                                    </select><br />
+                                    Set if these shows are sporting or MMA events released as Show.03.02.2010 rather than Show.S02E03.<br />
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
@@ -201,8 +201,8 @@
                                         <option value="keep" ${'selected="selected"' if air_by_date_value is None else ''}>&lt; Keep &gt;</option>
                                         <option value="enable" ${'selected="selected"' if air_by_date_value == 1 else ''}>Yes</option>
                                         <option value="disable" ${'selected="selected"' if air_by_date_value == 0 else ''}>No</option>
-                                    </select><br>
-                                    Set if these shows are released as Show.03.02.2010 rather than Show.S02E03.<br>
+                                    </select><br />
+                                    Set if these shows are released as Show.03.02.2010 rather than Show.S02E03.<br />
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
@@ -215,7 +215,7 @@
                                         <option value="keep" ${'selected="selected"' if subtitles_value is None else ''}>&lt; Keep &gt;</option>
                                         <option value="enable" ${'selected="selected"' if subtitles_value == 1 else ''}>Yes</option>
                                         <option value="disable" ${'selected="selected"' if subtitles_value == 0 else ''}>No</option>
-                                    </select><br>
+                                    </select><br />
                                     Search for subtitles.
                                 </span>
                             </label>

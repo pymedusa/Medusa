@@ -436,7 +436,7 @@
                                 <span class="component-title">Reverse proxy headers</span>
                                 <span class="component-desc">
                                     <input type="checkbox" name="handle_reverse_proxy" id="handle_reverse_proxy" ${'checked="checked"' if sickbeard.HANDLE_REVERSE_PROXY else ''}/>
-                                    <p>accept the following reverse proxy headers (advanced)...<br>(X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto)</p>
+                                    <p>accept the following reverse proxy headers (advanced)...<br />(X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto)</p>
                                 </span>
                             </label>
                         </div>
@@ -709,7 +709,7 @@
                     </fieldset>
                 </div>
                 </div><!-- /component-group3 //-->
-                <br>
+                <br />
                 <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${sickbeard.DATA_DIR}</span></b> </h6>
                 <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
             </div><!-- /config-components -->

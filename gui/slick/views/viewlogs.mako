@@ -58,11 +58,11 @@ pre {
 	    </div> <!-- End form group -->
 	</div>
 </div>
-<br>
+<br />
 <div class="row">
 <pre>
 ${logLines}
 </pre>
 </div>
-<br>
+<br />
 </%block>

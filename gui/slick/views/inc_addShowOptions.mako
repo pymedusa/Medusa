@@ -14,7 +14,7 @@
             </label>
         </div>
         % if sickbeard.USE_SUBTITLES:
-        <br><div class="field-pair">
+        <br /><div class="field-pair">
             <label for="subtitles" class="clearfix">
                 <span class="component-title">Subtitles</span>
                 <span class="component-desc">
@@ -77,7 +77,7 @@
                 </span>
             </label>
         </div>
-        <br>
+        <br />
         <div class="field-pair alt">
             <label for="saveDefaultsButton" class="nocheck clearfix">
                 <span class="component-title"><input class="btn btn-inline" type="button" id="saveDefaultsButton" value="Save Defaults" disabled="disabled" /></span>
@@ -85,7 +85,7 @@
                     <p>Use current values as the defaults</p>
                 </span>
             </label>
-        </div><br>
+        </div><br />
 % if enable_anime_options:
     <% import sickbeard.blackandwhitelist %>
     <%include file="/inc_blackwhitelist.mako"/>

@@ -227,7 +227,7 @@
                                     <span class="component-desc">See <a href="https://github.com/PyMedusa/SickRage/wiki/Post-Processing#extra-scripts"><font color='red'><b>Wiki</b></font></a> for script arguments description and usage.</span>
                                 </label>
                             </div>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br />
                         </fieldset>
                     </div><!-- /component-group1 //-->
                     <div id="episode-naming" class="component-group">
@@ -432,7 +432,7 @@
                                             </tr>
                                         </tbody>
                                       </table>
-                                      <br>
+                                      <br />
                                 </div>
                             </div>
                             <div class="field-pair">
@@ -452,14 +452,14 @@
                                 <div class="example">
                                     <span class="jumbo" id="naming_example">&nbsp;</span>
                                 </div>
-                                <br>
+                                <br />
                             </div>
                             <div id="naming_example_multi_div">
                                 <h3>Multi-EP sample:</h3>
                                 <div class="example">
                                     <span class="jumbo" id="naming_example_multi">&nbsp;</span>
                                 </div>
-                                <br>
+                                <br />
                             </div>
                             <div class="field-pair">
                                 <input type="checkbox" id="naming_strip_year"  name="naming_strip_year" ${'checked="checked"' if sickbeard.NAMING_STRIP_YEAR else ''}/>
@@ -632,7 +632,7 @@
                                                 </tr>
                                             </tbody>
                                           </table>
-                                          <br>
+                                          <br />
                                     </div>
                                 </div><!-- /naming_abd_custom -->
                                 <div id="naming_abd_example_div">
@@ -640,7 +640,7 @@
                                     <div class="example">
                                         <span class="jumbo" id="naming_abd_example">&nbsp;</span>
                                     </div>
-                                    <br>
+                                    <br />
                                 </div>
                             </div><!-- /naming_abd_different -->
                             <div class="field-pair">
@@ -803,7 +803,7 @@
                                                 </tr>
                                             </tbody>
                                           </table>
-                                          <br>
+                                          <br />
                                     </div>
                                 </div><!-- /naming_sports_custom -->
                                 <div id="naming_sports_example_div">
@@ -811,7 +811,7 @@
                                     <div class="example">
                                         <span class="jumbo" id="naming_sports_example">&nbsp;</span>
                                     </div>
-                                    <br>
+                                    <br />
                                 </div>
                             </div><!-- /naming_sports_different -->
                             <!-- naming_anime_custom -->
@@ -970,7 +970,7 @@
                                                 </tr>
                                             </tbody>
                                           </table>
-                                          <br>
+                                          <br />
                                     </div>
                                 </div><!-- /naming_anime_custom -->
                                 <div class="field-pair">
@@ -990,14 +990,14 @@
                                     <div class="example">
                                         <span class="jumbo" id="naming_example_anime">&nbsp;</span>
                                     </div>
-                                    <br>
+                                    <br />
                                 </div>
                                 <div id="naming_example_multi_anime_div">
                                     <h3>Multi-EP Anime sample:</h3>
                                     <div class="example">
                                         <span class="jumbo" id="naming_example_multi_anime">&nbsp;</span>
                                     </div>
-                                    <br>
+                                    <br />
                                 </div>
                                 <div class="field-pair">
                                     <input type="radio" name="naming_anime" id="naming_anime" value="1" ${'checked="checked"' if sickbeard.NAMING_ANIME == 1 else ''}/>
@@ -1033,7 +1033,7 @@
                                     </label>
                                 </div>
                             </div><!-- /naming_anime_different -->
-                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br />
                         </fieldset>
                     </div><!-- /component-group2 //-->
                     <div id="metadata" class="component-group">
@@ -1093,11 +1093,11 @@
                                 <input type="hidden" name="${cur_id}_data" id="${cur_id}_data" value="${cur_metadata_inst.get_config()}" />
                             </div>
                             % endfor
-                            <div class="clearfix"></div><br>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
+                            <div class="clearfix"></div><br />
+                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br />
                         </fieldset>
                     </div><!-- /component-group3 //-->
-                    <br>
+                    <br />
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${sickbeard.DATA_DIR}</span></b> </h6>
                     <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
             </form>

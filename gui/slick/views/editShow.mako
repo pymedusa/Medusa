@@ -104,7 +104,7 @@
                             <label for="airbydate">
                                 <span class="component-title">Air by date</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="airbydate" name="air_by_date" ${'checked="checked"' if show.air_by_date == 1 else ''} /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
+                                    <input type="checkbox" id="airbydate" name="air_by_date" ${'checked="checked"' if show.air_by_date == 1 else ''} /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br />
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
@@ -113,7 +113,7 @@
                             <label for="anime">
                                 <span class="component-title">Anime</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="anime" name="anime" ${'checked="checked"' if show.is_anime == 1 else ''}> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
+                                    <input type="checkbox" id="anime" name="anime" ${'checked="checked"' if show.is_anime == 1 else ''}> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br />
                                     % if show.is_anime:
                                         <%include file="/inc_blackwhitelist.mako"/>
                                     % endif
@@ -124,7 +124,7 @@
                             <label for="sports">
                                 <span class="component-title">Sports</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="sports" name="sports" ${'checked="checked"' if show.sports == 1 else ''}/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
+                                    <input type="checkbox" id="sports" name="sports" ${'checked="checked"' if show.sports == 1 else ''}/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br />
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
@@ -149,7 +149,7 @@
                             <label for="dvdorder">
                                 <span class="component-title">DVD Order</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="dvdorder" name="dvdorder" ${'checked="checked"' if show.dvdorder == 1 else ''} /> use the DVD order instead of the air order<br>
+                                    <input type="checkbox" id="dvdorder" name="dvdorder" ${'checked="checked"' if show.dvdorder == 1 else ''} /> use the DVD order instead of the air order<br />
                                     <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                                 </span>
                             </label>
@@ -165,7 +165,7 @@
                             <label for="rls_ignore_words">
                                 <span class="component-title">Ignored Words</span>
                                 <span class="component-desc">
-                                    <input type="text" id="rls_ignore_words" name="rls_ignore_words" id="rls_ignore_words" value="${show.rls_ignore_words}" class="form-control form-control-inline input-sm input350" autocapitalize="off" /><br>
+                                    <input type="text" id="rls_ignore_words" name="rls_ignore_words" id="rls_ignore_words" value="${show.rls_ignore_words}" class="form-control form-control-inline input-sm input350" autocapitalize="off" /><br />
                                     <div class="clear-left">
                                         <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
                                         <p>Search results with one or more words from this list will be ignored.</p>
@@ -177,7 +177,7 @@
                             <label for="rls_require_words">
                                 <span class="component-title">Required Words</span>
                                 <span class="component-desc">
-                                    <input type="text" id="rls_require_words" name="rls_require_words" id="rls_require_words" value="${show.rls_require_words}" class="form-control form-control-inline input-sm input350" autocapitalize="off" /><br>
+                                    <input type="text" id="rls_require_words" name="rls_require_words" id="rls_require_words" value="${show.rls_require_words}" class="form-control form-control-inline input-sm input350" autocapitalize="off" /><br />
                                     <div class="clear-left">
                                         <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
                                         <p>Search results with no words from this list will be ignored.</p>
@@ -189,7 +189,7 @@
                             <label for="SceneName">
                                 <span class="component-title">Scene Exception</span>
                                 <span class="component-desc">
-                                    <input type="text" id="SceneName" class="form-control form-control-inline input-sm input200" autocapitalize="off" /><input class="btn btn-inline" type="button" value="Add" id="addSceneName" /><br><br>
+                                    <input type="text" id="SceneName" class="form-control form-control-inline input-sm input200" autocapitalize="off" /><input class="btn btn-inline" type="button" value="Add" id="addSceneName" /><br /><br />
                                     <div class="pull-left">
                                         <select id="exceptions_list" name="exceptions_list" multiple="multiple" style="min-width:200px;height:99px;">
                                         % for cur_exception in show.exceptions:
@@ -206,7 +206,7 @@
                 </div>
             </div>
         </div>
-        <br>
+        <br />
         <input id="submit" type="submit" value="Save Changes" class="btn pull-left config_submitter button">
         </form>
     </div>

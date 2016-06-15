@@ -38,7 +38,7 @@
     % if totalQual > 0:
     <span class="listing-key qual">Allowed: <b>${totalQual}</b></span>
     % endif
-</div><br>
+</div><br />
 <div class="float-left">
 Jump to Show:
     <select id="pickShow" class="form-control form-control-inline input-sm">
