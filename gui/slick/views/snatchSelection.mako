@@ -30,7 +30,9 @@
 <input type="hidden" id="srRoot" value="" />
     <div class="clearfix"></div>
     <div id="showtitle" data-showname="${show.name}">
-        <h1 class="title" id="scene_exception_${show.indexerid}"> <a href="/home/displayShow?show=${show.indexerid}">${show.name}</h1>
+        <h1 class="title" id="scene_exception_${show.indexerid}">
+            <a href="/home/displayShow?show=${show.indexerid}">${show.name}</a>
+        </h1>
     </div>
     <div class="clearfix"></div>
 % if show_message:

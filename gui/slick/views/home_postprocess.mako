@@ -94,4 +94,5 @@
         <input id="submit" class="btn" type="submit" value="Process" />
     </form>
 </div>
+</div>
 </%block>
