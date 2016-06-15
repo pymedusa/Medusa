@@ -12,7 +12,6 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
-
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="saveNotifications" method="post">
@@ -22,10 +21,8 @@
                     <li><a href="#tabs-2">Devices</a></li>
                     <li><a href="#tabs-3">Social</a></li>
                 </ul>
-
                 <div id="tabs-1">
                 <div class="component-group">
-
                     <div class="component-group-desc">
                         <span class="icon-notifiers-kodi" title="KODI"></span>
                         <h3><a href="${anon_url('http://kodi.tv/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">KODI</a></h3>
@@ -41,7 +38,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_kodi">
                             <div class="field-pair">
                                 <label for="kodi_always_on">
@@ -144,11 +140,8 @@
                             <input  class="btn" type="button" value="Test KODI" id="testKODI" />
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                         </div><!-- /content_use_kodi //-->
-
                     </fieldset>
-
                 </div><!-- /kodi component-group //-->
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-plex" title="Plex Media Server"></span>
@@ -166,7 +159,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_plex_server">
                             <div class="field-pair">
                                 <label for="plex_server_token">
@@ -244,7 +236,6 @@
                         </div><!-- /content_use_plex_server -->
                     </fieldset>
                 </div><!-- /plex media server component-group -->
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-plexth" title="Plex Home Theater"></span>
@@ -260,7 +251,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_plex_client">
                             <div class="field-pair">
                                 <label for="plex_notify_onsnatch">
@@ -320,7 +310,6 @@
                                     </label>
                                 </div>
                             </div>
-
                             <div class="field-pair">
                                 <div class="testNotification" id="testPHT-result">Click below to test Plex Home Theater(s)</div>
                                 <input class="btn" type="button" value="Test Plex Home Theater" id="testPHT" />
@@ -330,8 +319,6 @@
                         </div><!-- /content_use_plex_client -->
                     </fieldset>
                 </div><!-- /Plex Home Theater component-group -->
-
-
                  <div class="component-group">
                      <div class="component-group-desc">
                         <span class="icon-notifiers-emby" alt="" title="Emby"></span>
@@ -372,8 +359,6 @@
                         <!-- /content_use_emby //-->
                     </fieldset>
                 </div><!-- /emby component-group //-->
-
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-nmj" alt="" title="Networked Media Jukebox"></span>
@@ -390,7 +375,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_nmj">
                             <div class="field-pair">
                                 <label for="nmj_host">
@@ -436,10 +420,8 @@
                             <input class="btn" type="button" value="Test NMJ" id="testNMJ" />
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                         </div><!-- /content_use_nmj //-->
-
                     </fieldset>
                 </div><!-- /nmj component-group //-->
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-nmj" alt="" title="Networked Media Jukebox v2"></span>
@@ -456,7 +438,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_nmjv2">
                             <div class="field-pair">
                                 <label for="nmjv2_host">
@@ -523,11 +504,8 @@
                         <input class="btn" type="button" value="Test NMJv2" id="testNMJv2" />
                         <input type="submit" class="config_submitter btn" value="Save Changes" />
                         </div><!-- /content_use_nmjv2 //-->
-
                     </fieldset>
                 </div><!-- /nmjv2 component-group //-->
-
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-syno1" alt="" title="Synology"></span>
@@ -535,7 +513,6 @@
                         <p>The Synology DiskStation NAS.</p>
                         <p>Synology Indexer is the daemon running on the Synology NAS to build its media database.</p>
                     </div>
-
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label for="use_synoindex">
@@ -550,22 +527,17 @@
                                 <span class="component-desc"><b>Note:</b> requires Medusa to be running on your Synology NAS.</span>
                             </label>
                         </div>
-
                         <div id="content_use_synoindex">
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                         </div><!-- /content_use_synoindex //-->
-
                     </fieldset>
                 </div><!-- /synoindex component-group //-->
-
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-syno2" alt="" title="Synology Indexer"></span>
                         <h3><a href="${anon_url('http://synology.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Synology Notifier</a></h3>
                         <p>Synology Notifier is the notification system of Synology DSM</p>
                     </div>
-
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label for="use_synologynotifier">
@@ -612,8 +584,6 @@
                            </div>
                     </fieldset>
                 </div><!-- /synology notifier component-group //-->
-
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-pytivo" alt="" title="pyTivo"></span>
@@ -634,7 +604,6 @@
                                 <span class="component-desc"><b>Note:</b> requires the downloaded files to be accessible by pyTivo.</span>
                             </label>
                         </div>
-
                         <div id="content_use_pytivo">
                             <div class="field-pair">
                                 <label for="pytivo_host">
@@ -668,13 +637,9 @@
                             </div>
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                         </div><!-- /content_use_pytivo //-->
-
                     </fieldset>
                 </div><!-- /component-group //-->
-
             </div>
-
-
             <div id="tabs-2">
                 <div class="component-group">
                     <div class="component-group-desc">
@@ -692,7 +657,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_growl">
                             <div class="field-pair">
                                 <label for="growl_notify_onsnatch">
@@ -749,11 +713,8 @@
                             <input  class="btn" type="button" value="Register Growl" id="testGrowl" />
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                         </div><!-- /content_use_growl //-->
-
                     </fieldset>
                 </div><!-- /growl component-group //-->
-
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-prowl" title="Prowl"></span>
@@ -770,7 +731,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_prowl">
                             <div class="field-pair">
                                 <label for="prowl_notify_onsnatch">
@@ -861,11 +821,8 @@
                             <input  class="btn" type="button" value="Test Prowl" id="testProwl" />
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                         </div><!-- /content_use_prowl //-->
-
                     </fieldset>
                 </div><!-- /prowl component-group //-->
-
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-libnotify" title="Libnotify"></span>
@@ -882,7 +839,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_libnotify">
                             <div class="field-pair">
                                 <label for="libnotify_notify_onsnatch">
@@ -915,11 +871,8 @@
                             <input  class="btn" type="button" value="Test Libnotify" id="testLibnotify" />
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                         </div><!-- /content_use_libnotify //-->
-
                     </fieldset>
                 </div><!-- /libnotify component-group //-->
-
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-pushover" alt="" title="Pushover"></span>
@@ -936,7 +889,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_pushover">
                             <div class="field-pair">
                                 <label for="pushover_notify_onsnatch">
@@ -1033,10 +985,8 @@
                             <input  class="btn" type="button" value="Test Pushover" id="testPushover" />
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                         </div><!-- /content_use_pushover //-->
-
                     </fieldset>
                 </div><!-- /pushover component-group //-->
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-boxcar2" alt="" title="Boxcar 2"></span>
@@ -1053,7 +1003,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_boxcar2">
                             <div class="field-pair">
                                 <label for="boxcar2_notify_onsnatch">
@@ -1096,10 +1045,8 @@
                             <input  class="btn" type="button" value="Test Boxcar" id="testBoxcar2" />
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                         </div><!-- /content_use_boxcar2 //-->
-
                     </fieldset>
                 </div><!-- /boxcar2 component-group //-->
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-nma" alt="" title="NMA"></span>
@@ -1116,7 +1063,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_nma">
                             <div class="field-pair">
                                 <label for="nma_notify_onsnatch">
@@ -1175,10 +1121,8 @@
                             <input  class="btn" type="button" value="Test NMA" id="testNMA" />
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                         </div><!-- /content_use_nma //-->
-
                     </fieldset>
                 </div><!-- /nma component-group //-->
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-pushalot" alt="" title="Pushalot"></span>
@@ -1195,7 +1139,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_pushalot">
                             <div class="field-pair">
                                 <label for="pushalot_notify_onsnatch">
@@ -1238,10 +1181,8 @@
                             <input type="button" class="btn" value="Test Pushalot" id="testPushalot" />
                             <input type="submit" class="btn config_submitter" value="Save Changes" />
                         </div><!-- /content_use_pushalot //-->
-
                     </fieldset>
                 </div><!-- /pushalot component-group //-->
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-pushbullet" alt="" title="Pushbullet"></span>
@@ -1258,7 +1199,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_pushbullet">
                             <div class="field-pair">
                                 <label for="pushbullet_notify_onsnatch">
@@ -1313,7 +1253,6 @@
                             <input type="button" class="btn" value="Test Pushbullet" id="testPushbullet" />
                             <input type="submit" class="btn config_submitter" value="Save Changes" />
                         </div><!-- /content_use_pushbullet //-->
-
                     </fieldset>
                 </div><!-- /pushbullet component-group //-->
                 <div class="component-group">
@@ -1332,7 +1271,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_freemobile">
                             <div class="field-pair">
                                 <label for="freemobile_notify_onsnatch">
@@ -1385,7 +1323,6 @@
                             <input  class="btn" type="button" value="Test SMS" id="testFreeMobile" />
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                         </div><!-- /content_use_freemobile //-->
-
                     </fieldset>
                 </div><!-- /freemobile component-group //-->
                 <div class="component-group">
@@ -1404,7 +1341,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_telegram">
                             <div class="field-pair">
                                 <label for="telegram_notify_onsnatch">
@@ -1457,12 +1393,9 @@
                             <input  class="btn" type="button" value="Test Telegram" id="testTelegram" />
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                         </div><!-- /content_use_telegram //-->
-
                     </fieldset>
                 </div><!-- /telegram component-group //-->
-
             </div>
-
             <div id="tabs-3">
                 <div class="component-group">
                        <div class="component-group-desc">
@@ -1484,7 +1417,6 @@
                                 <span class="component-desc"><b>Note:</b> you may want to use a secondary account.</span>
                             </label>
                         </div>
-
                         <div id="content_use_twitter">
                             <div class="field-pair">
                                 <label for="twitter_notify_onsnatch">
@@ -1561,11 +1493,8 @@
                             <input  class="btn" type="button" value="Test Twitter" id="testTwitter" />
                             <input type="submit" class="config_submitter btn" value="Save Changes" />
                         </div><!-- /content_use_twitter //-->
-
                     </fieldset>
                 </div><!-- /twitter component-group //-->
-
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-trakt" alt="" title="Trakt"></span>
@@ -1582,7 +1511,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_trakt">
                             <div class="field-pair">
                                 <label for="trakt_username">
@@ -1726,7 +1654,6 @@
                         </div><!-- /content_use_trakt //-->
                     </fieldset>
                 </div><!-- /trakt component-group //-->
-
                 <div class="component-group">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-email" alt="" title="Email"></span>
@@ -1743,7 +1670,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div id="content_use_email">
                             <div class="field-pair">
                                 <label for="email_notify_onsnatch">
@@ -1875,21 +1801,16 @@
                                     <input id="email_show_save" class="btn" type="button" value="Save for this show" />
                                 </label>
                             </div>
-
                             <div class="testNotification" id="testEmail-result">Click below to test.</div>
                             <input class="btn" type="button" value="Test Email" id="testEmail" />
                             <input class="btn" type="submit" class="config_submitter" value="Save Changes" />
                         </div><!-- /content_use_email //-->
                     </fieldset>
                 </div><!-- /email component-group //-->
-
             </div><!-- /config-components //-->
         </form>
-
         <br><input type="submit" class="config_submitter btn" value="Save Changes" /><br>
-
     </div>
 </div>
-
 <div class="clearfix"></div>
 </%block>

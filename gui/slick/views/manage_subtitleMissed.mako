@@ -20,7 +20,6 @@
         <h2>All of your episodes have ${subsLanguage} subtitles.</h2>
         <br>
         % endif
-
         <form action="/manage/subtitleMissed" method="get">
             % if sickbeard.SUBTITLES_MULTI:
                 Manage episodes without <select name="whichSubs" class="form-control form-control-inline input-sm">
@@ -43,7 +42,6 @@
             % endif
             <input class="btn" type="submit" value="Manage" />
         </form>
-
     % else:
         ##Strange that this is used by js but is an input outside of any form?
         <input type="hidden" id="selectSubLang" name="selectSubLang" value="${whichSubs}" />

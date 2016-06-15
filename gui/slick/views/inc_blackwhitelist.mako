@@ -1,7 +1,6 @@
 <div id="blackwhitelist">
     <input type="hidden" name="whitelist" id="whitelist"/>
     <input type="hidden" name="blacklist" id="blacklist"/>
-
     <b>Fansub Groups:</b>
         <div >
             <p>Select your preferred fansub groups from the <b>Available Groups</b> and add them to the <b>Whitelist</b>. Add groups to the <b>Blacklist</b> to ignore them.</p>

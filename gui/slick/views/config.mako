@@ -6,14 +6,12 @@
     import sys
     import platform
 %>
-
 <%block name="content">
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
 % else:
     <h1 class="title">${title}</h1>
 % endif
-
 <div id="config-content">
 <table class="infoTable" cellspacing="1" border="0" cellpadding="0" width="100%">
     % if sr_version:

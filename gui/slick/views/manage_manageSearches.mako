@@ -15,7 +15,6 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
-
 <div id="summary2" class="align-left">
 <h3>Backlog Search:</h3>
 <a class="btn" href="/manage/manageSearches/forceBacklog"><i class="icon-exclamation-sign"></i> Force</a>
@@ -27,12 +26,10 @@
     Currently running<br>
 % endif
 <br>
-
 <h3>Daily Search:</h3>
 <a class="btn" href="/manage/manageSearches/forceSearch"><i class="icon-exclamation-sign"></i> Force</a>
 ${('Not in progress', 'In Progress')[dailySearchStatus]}<br>
 <br>
-
 <h3>Find Propers Search:</h3>
 <a class="btn ${('disabled', '')[bool(sickbeard.DOWNLOAD_PROPERS)]}" href="/manage/manageSearches/forceFindPropers"><i class="icon-exclamation-sign"></i> Force</a>
 % if not sickbeard.DOWNLOAD_PROPERS:
@@ -43,7 +40,6 @@ ${('Not in progress', 'In Progress')[dailySearchStatus]}<br>
     In Progress<br>
 % endif
 <br>
-
 <h3>Subtitle Search:</h3>
 <a class="btn ${('disabled', '')[bool(sickbeard.USE_SUBTITLES)]}" href="/manage/manageSearches/forceSubtitlesFinder"><i class="icon-exclamation-sign"></i> Force</a>
 % if not sickbeard.USE_SUBTITLES:
@@ -54,7 +50,6 @@ ${('Not in progress', 'In Progress')[dailySearchStatus]}<br>
     In Progress<br>
 % endif
 <br>
-
 <h3>Search Queue:</h3>
 Backlog: <i>${searchQueueLength['backlog']} pending items</i><br>
 Daily: <i>${searchQueueLength['daily']} pending items</i><br>

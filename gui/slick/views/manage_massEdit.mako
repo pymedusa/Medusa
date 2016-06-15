@@ -6,42 +6,32 @@
     from sickbeard.common import Quality, qualityPresets, qualityPresetStrings, statusStrings
     from sickrage.helper import exceptions
 %>
-
 <%block name="scripts">
 <%
     if quality_value is not None:
         initial_quality = int(quality_value)
     else:
         initial_quality = common.SD
-
     anyQualities, bestQualities = common.Quality.splitQuality(initial_quality)
 %>
 <script type="text/javascript" src="/js/qualityChooser.js?${sbPID}"></script>
 <script type="text/javascript" src="/js/massEdit.js?${sbPID}"></script>
 </%block>
-
 <%block name="content">
-
 <div id="config">
-
     <div id="config-content">
         <form action="massEditSubmit" method="post">
             <input type="hidden" name="toEdit" value="${showList}" />
-
             <div id="config-components">
                 <ul>
                     <li><a href="#core-component-group1">Main</a></li>
                 </ul>
-
                 <div id="core-component-group1">
                     <div class="component-group">
                         <h3>Main Settings</h3>
-
                         ==> <u>Changing any settings marked with (<span class="separator">*</span>) will force a refresh of the selected shows.</u><br>
                         <br>
-
                         <fieldset class="component-group-list">
-
                         <div class="field-pair">
                             <label for="shows">
                                 <span class="component-title">Selected Shows</span>
@@ -50,7 +40,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="edit_root_dir_0">
                                 <span class="component-title">Root Directories (<span class="separator">*</span>)</span>
@@ -82,7 +71,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="qualityPreset">
                                 <span class="component-title">Preferred Quality</span>
@@ -92,7 +80,6 @@
                                             initial_quality = int(quality_value)
                                         else:
                                             initial_quality = common.SD
-
                                         anyQualities, bestQualities = common.Quality.splitQuality(initial_quality)
                                     %>
                                     <select id="qualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
@@ -103,7 +90,6 @@
                                         <option value="${curPreset}" ${'selected="selected"' if quality_value == curPreset else ''}>${common.qualityPresetStrings[curPreset]}</option>
                                         % endfor
                                     </select>
-
                                     <div id="customQuality" style="padding-left: 0;">
                                         <div style="padding-right: 40px; text-align: left; float: left;">
                                             <h5>Allowed</h5>
@@ -114,7 +100,6 @@
                                                 % endfor
                                             </select>
                                         </div>
-
                                         <div style="text-align: left; float: left;">
                                             <h5>Preferred</h5>
                                             <% bestQualityList = filter(lambda x: x >= common.Quality.SDTV, common.Quality.qualityStrings) %>
@@ -128,7 +113,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="edit_flatten_folders">
                                 <span class="component-title">Season folders (<span class="separator">*</span>)</span>
@@ -142,7 +126,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="edit_paused">
                                 <span class="component-title">Paused</span>
@@ -156,7 +139,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="edit_default_ep_status">
                                 <span class="component-title">Default Episode Status</span>
@@ -171,7 +153,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="edit_scene">
                                 <span class="component-title">Scene Numbering</span>
@@ -185,7 +166,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="edit_anime">
                                 <span class="component-title">Anime</span>
@@ -199,7 +179,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="edit_sports">
                                 <span class="component-title">Sports</span>
@@ -214,7 +193,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="edit_air_by_date">
                                 <span class="component-title">Air by date</span>
@@ -229,7 +207,6 @@
                                 </span>
                             </label>
                         </div>
-
                         <div class="field-pair">
                             <label for="edit_subtitles">
                                 <span class="component-title">Subtitles</span>
@@ -243,16 +220,12 @@
                                 </span>
                             </label>
                         </div>
-
                         </fieldset>
                     </div>
                 </div>
-
             </div>
-
             <input id="submit" type="submit" value="Save Changes" class="btn pull-left config_submitter button">
         </form>
     </div>
 </div>
-
 </%block>

@@ -5,13 +5,10 @@
     from datetime import datetime
     import re
     import time
-
     from sickbeard import providers
     from sickbeard.sbdatetime import sbdatetime
-
     from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED, DOWNLOADED, SUBTITLED
     from sickbeard.common import Quality, statusStrings, Overview
-
     from sickrage.show.History import History
     from sickrage.helper.encoding import ek
     from sickrage.providers.GenericProvider import GenericProvider
@@ -35,7 +32,6 @@
         <option value="1000" ${'selected="selected"' if limit == 1000 else ''}>1000</option>
         <option value="0"   ${'selected="selected"' if limit == 0   else ''}>All</option>
     </select>
-
     <span> Layout:
         <select name="HistoryLayout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
             <option value="/setHistoryLayout/?layout=compact"  ${'selected="selected"' if sickbeard.HISTORY_LAYOUT == 'compact' else ''}>Compact</option>
@@ -44,7 +40,6 @@
     </span>
 </div>
 <br>
-
 % if sickbeard.HISTORY_LAYOUT == "detailed":
     <table id="historyTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
         <thead>
@@ -56,13 +51,11 @@
                 <th width="14%">Quality</th>
             </tr>
         </thead>
-
         <tfoot>
             <tr>
                 <th class="nowrap" colspan="5">&nbsp;</th>
             </tr>
         </tfoot>
-
         <tbody>
         % for hItem in historyResults:
             <% composite = Quality.splitCompositeStatus(int(hItem.action)) %>
@@ -108,7 +101,6 @@
         </tbody>
     </table>
 % else:
-
     <table id="historyTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
         <thead>
             <tr>
@@ -122,13 +114,11 @@
                 <th width="14%">Quality</th>
             </tr>
         </thead>
-
         <tfoot>
             <tr>
                 <th class="nowrap" colspan="6">&nbsp;</th>
             </tr>
         </tfoot>
-
         <tbody>
         % for hItem in compactResults:
             <tr>
@@ -183,6 +173,5 @@
         % endfor
         </tbody>
     </table>
-
 % endif
 </%block>
