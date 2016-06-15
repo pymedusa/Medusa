@@ -20,7 +20,7 @@
             <label for="subtitles" class="clearfix">
                 <span class="component-title">Subtitles</span>
                 <span class="component-desc">
-                     <input type="checkbox" name="subtitles" id="subtitles" ${('', 'checked="checked"')[bool(sickbeard.SUBTITLES_DEFAULT)]} />
+                     <input type="checkbox" name="subtitles" id="subtitles" ${'checked="checked"' if sickbeard.SUBTITLES_DEFAULT else ''} />
                     <p>Download subtitles for this show?</p>
                 </span>
             </label>
@@ -33,7 +33,7 @@
                 <span class="component-desc">
                     <select name="defaultStatus" id="statusSelect" class="form-control form-control-inline input-sm">
                     % for curStatus in [SKIPPED, WANTED, IGNORED]:
-                        <option value="${curStatus}" ${('', 'selected="selected"')[sickbeard.STATUS_DEFAULT == curStatus]}>${statusStrings[curStatus]}</option>
+                        <option value="${curStatus}" ${'selected="selected"' if sickbeard.STATUS_DEFAULT == curStatus else ''}>${statusStrings[curStatus]}</option>
                     % endfor
                     </select>
                 </span>
@@ -45,7 +45,7 @@
                 <span class="component-desc">
                     <select name="defaultStatusAfter" id="statusSelectAfter" class="form-control form-control-inline input-sm">
                     % for curStatus in [SKIPPED, WANTED, IGNORED]:
-                        <option value="${curStatus}" ${('', 'selected="selected"')[sickbeard.STATUS_DEFAULT_AFTER == curStatus]}>${statusStrings[curStatus]}</option>
+                        <option value="${curStatus}" ${'selected="selected"' if sickbeard.STATUS_DEFAULT_AFTER == curStatus else ''}>${statusStrings[curStatus]}</option>
                     % endfor
                     </select>
                 </span>
@@ -55,7 +55,7 @@
             <label for="flatten_folders" class="clearfix">
                 <span class="component-title">Flatten Folders</span>
                 <span class="component-desc">
-                    <input class="cb" type="checkbox" name="flatten_folders" id="flatten_folders" ${('', 'checked="checked"')[bool(sickbeard.FLATTEN_FOLDERS_DEFAULT)]}/>
+                    <input class="cb" type="checkbox" name="flatten_folders" id="flatten_folders" ${'checked="checked"' if sickbeard.FLATTEN_FOLDERS_DEFAULT else ''}/>
                     <p>Disregard sub-folders?</p>
                 </span>
             </label>
@@ -66,7 +66,7 @@
             <label for="anime" class="clearfix">
                 <span class="component-title">Anime</span>
                 <span class="component-desc">
-                    <input type="checkbox" name="anime" id="anime" ${('', 'checked="checked"')[bool(sickbeard.ANIME_DEFAULT)]} />
+                    <input type="checkbox" name="anime" id="anime" ${'checked="checked"' if sickbeard.ANIME_DEFAULT else ''} />
                     <p>Is this show an Anime?<p>
                 </span>
             </label>
@@ -77,7 +77,7 @@
             <label for="scene" class="clearfix">
                 <span class="component-title">Scene Numbering</span>
                 <span class="component-desc">
-                    <input type="checkbox" name="scene" id="scene" ${('', 'checked="checked"')[bool(sickbeard.SCENE_DEFAULT)]} />
+                    <input type="checkbox" name="scene" id="scene" ${'checked="checked"' if sickbeard.SCENE_DEFAULT else ''} />
                     <p>Is this show scene numbered?</p>
                 </span>
             </label>

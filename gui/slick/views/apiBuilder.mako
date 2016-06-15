@@ -27,7 +27,7 @@
     <meta name="msapplication-config" content="/css/browserconfig.xml">
 
     <meta data-var="srRoot" data-content="">
-    <meta data-var="themeSpinner" data-content="${('', '-dark')[sickbeard.THEME_NAME == 'dark']}">
+    <meta data-var="themeSpinner" data-content="${'-dark' if sickbeard.THEME_NAME == 'dark' else ''}">
     <meta data-var="anonURL" data-content="${sickbeard.ANON_REDIRECT}">
 
     <meta data-var="sickbeard.ANIME_SPLIT_HOME" data-content="${sickbeard.ANIME_SPLIT_HOME}">
@@ -228,7 +228,7 @@ var episodes = ${episodes};
     %>
 
     % if isinstance(allowed_values, list):
-        <select class="form-control"${('', ' multiple="multiple"')[type == 'list']} name="${parameter}" data-command="${command}">
+        <select class="form-control"${' multiple="multiple"' if type == 'list' else ''} name="${parameter}" data-command="${command}">
             <option>${parameter}</option>
 
             % if allowed_values == [0, 1]:

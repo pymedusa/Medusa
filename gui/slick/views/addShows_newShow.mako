@@ -45,9 +45,9 @@
                             </select><b>*</b>
                             &nbsp;
                             <select name="providedIndexer" id="providedIndexer" class="form-control form-control-inline input-sm">
-                                <option value="0" ${('', 'selected="selected"')[provided_indexer == 0]}>All Indexers</option>
+                                <option value="0" ${'' if provided_indexer else 'selected="selected"'}>All Indexers</option>
                                 % for indexer in indexers:
-                                    <option value="${indexer}" ${('', 'selected="selected"')[provided_indexer == indexer]}>
+                                    <option value="${indexer}" ${'selected="selected"' if provided_indexer == indexer else ''}>
                                         ${indexers[indexer]}
                                     </option>
                                 % endfor

@@ -98,9 +98,9 @@
                                     <select id="qualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
                                         <option value="keep">&lt; Keep &gt;</option>
                                         <% selected = None %>
-                                        <option value="0" ${('', 'selected="selected"')[quality_value is not None and quality_value not in common.qualityPresets]}>Custom</option>
+                                        <option value="0" ${'selected="selected"' if quality_value is not None and quality_value not in common.qualityPresets else ''}>Custom</option>
                                         % for curPreset in sorted(common.qualityPresets):
-                                        <option value="${curPreset}" ${('', 'selected="selected"')[quality_value == curPreset]}>${common.qualityPresetStrings[curPreset]}</option>
+                                        <option value="${curPreset}" ${'selected="selected"' if quality_value == curPreset else ''}>${common.qualityPresetStrings[curPreset]}</option>
                                         % endfor
                                     </select>
 
@@ -110,7 +110,7 @@
                                             <% anyQualityList = filter(lambda x: x > common.Quality.NONE, common.Quality.qualityStrings) %>
                                             <select id="anyQualities" name="anyQualities" multiple="multiple" size="${len(anyQualityList)}" class="form-control form-control-inline input-sm">
                                                 % for curQuality in sorted(anyQualityList):
-                                                <option value="${curQuality}" ${('', 'selected="selected"')[curQuality in anyQualities]}>${common.Quality.qualityStrings[curQuality]}</option>
+                                                <option value="${curQuality}" ${'selected="selected"' if curQuality in anyQualities else ''}>${common.Quality.qualityStrings[curQuality]}</option>
                                                 % endfor
                                             </select>
                                         </div>
@@ -120,7 +120,7 @@
                                             <% bestQualityList = filter(lambda x: x >= common.Quality.SDTV, common.Quality.qualityStrings) %>
                                             <select id="bestQualities" name="bestQualities" multiple="multiple" size="${len(bestQualityList)}" class="form-control form-control-inline input-sm">
                                                 % for curQuality in sorted(bestQualityList):
-                                                <option value="${curQuality}" ${('', 'selected="selected"')[curQuality in bestQualities]}>${common.Quality.qualityStrings[curQuality]}</option>
+                                                <option value="${curQuality}" ${'selected="selected"' if curQuality in bestQualities else ''}>${common.Quality.qualityStrings[curQuality]}</option>
                                                 % endfor
                                             </select>
                                         </div>
@@ -134,9 +134,9 @@
                                 <span class="component-title">Season folders (<span class="separator">*</span>)</span>
                                 <span class="component-desc">
                                     <select id="" name="flatten_folders" class="form-control form-control-inline input-sm">
-                                        <option value="keep" ${('', 'selected="selected"')[flatten_folders_value is None]}>&lt; Keep &gt;</option>
-                                        <option value="enable" ${('', 'selected="selected"')[flatten_folders_value == 0]}>Yes</option>
-                                        <option value="disable" ${('', 'selected="selected"')[flatten_folders_value == 1]}>No</option>
+                                        <option value="keep" ${'selected="selected"' if flatten_folders_value is None else ''}>&lt; Keep &gt;</option>
+                                        <option value="enable" ${'selected="selected"' if flatten_folders_value == 0 else ''}>Yes</option>
+                                        <option value="disable" ${'selected="selected"' if flatten_folders_value == 1 else ''}>No</option>
                                     </select><br>
                                     Group episodes by season folder (set to "No" to store in a single folder).
                                 </span>
@@ -148,9 +148,9 @@
                                 <span class="component-title">Paused</span>
                                 <span class="component-desc">
                                     <select id="edit_paused" name="paused" class="form-control form-control-inline input-sm">
-                                        <option value="keep" ${('', 'selected="selected"')[paused_value is None]}>&lt; Keep &gt;</option>
-                                        <option value="enable" ${('', 'selected="selected"')[paused_value == 1]}>Yes</option>
-                                        <option value="disable" ${('', 'selected="selected"')[paused_value == 0]}>No</option>
+                                        <option value="keep" ${'selected="selected"' if paused_value is None else ''}>&lt; Keep &gt;</option>
+                                        <option value="enable" ${'selected="selected"' if paused_value == 1 else ''}>Yes</option>
+                                        <option value="disable" ${'selected="selected"' if paused_value == 0 else ''}>No</option>
                                     </select><br/ >
                                     Pause these shows (Medusa will not download episodes).
                                 </span>
@@ -164,7 +164,7 @@
                                     <select id="edit_default_ep_status" name="default_ep_status" class="form-control form-control-inline input-sm">
                                         <option value="keep">&lt; Keep &gt;</option>
                                         % for curStatus in [WANTED, SKIPPED, IGNORED]:
-                                        <option value="${curStatus}" ${('', 'selected="selected"')[curStatus == default_ep_status_value]}>${statusStrings[curStatus]}</option>
+                                        <option value="${curStatus}" ${'selected="selected"' if curStatus == default_ep_status_value else ''}>${statusStrings[curStatus]}</option>
                                         % endfor
                                     </select><br>
                                     This will set the status for future episodes.
@@ -177,9 +177,9 @@
                                 <span class="component-title">Scene Numbering</span>
                                 <span class="component-desc">
                                     <select id="edit_scene" name="scene" class="form-control form-control-inline input-sm">
-                                        <option value="keep" ${('', 'selected="selected"')[scene_value is None]}>&lt; Keep &gt;</option>
-                                        <option value="enable" ${('', 'selected="selected"')[scene_value == 1]}>Yes</option>
-                                        <option value="disable" ${('', 'selected="selected"')[scene_value == 0]}>No</option>
+                                        <option value="keep" ${'selected="selected"' if scene_value is None else ''}>&lt; Keep &gt;</option>
+                                        <option value="enable" ${'selected="selected"' if scene_value == 1 else ''}>Yes</option>
+                                        <option value="disable" ${'selected="selected"' if scene_value == 0 else ''}>No</option>
                                     </select><br>
                                     Search by scene numbering (set to "No" to search by indexer numbering).
                                 </span>
@@ -191,9 +191,9 @@
                                 <span class="component-title">Anime</span>
                                 <span class="component-desc">
                                     <select id="edit_anime" name="anime" class="form-control form-control-inline input-sm">
-                                        <option value="keep" ${('', 'selected="selected"')[anime_value is None]}>&lt; Keep &gt;</option>
-                                        <option value="enable" ${('', 'selected="selected"')[anime_value == 1]}>Yes</option>
-                                        <option value="disable" ${('', 'selected="selected"')[anime_value == 0]}>No</option>
+                                        <option value="keep" ${'selected="selected"' if anime_value is None else ''}>&lt; Keep &gt;</option>
+                                        <option value="enable" ${'selected="selected"' if anime_value == 1 else ''}>Yes</option>
+                                        <option value="disable" ${'selected="selected"' if anime_value == 0 else ''}>No</option>
                                     </select><br>
                                     Set if these shows are Anime and episodes are released as Show.265 rather than Show.S02E03
                                 </span>
@@ -205,9 +205,9 @@
                                 <span class="component-title">Sports</span>
                                 <span class="component-desc">
                                     <select id="edit_sports" name="sports" class="form-control form-control-inline input-sm">
-                                        <option value="keep" ${('', 'selected="selected"')[sports_value is None]}>&lt; Keep &gt;</option>
-                                        <option value="enable" ${('', 'selected="selected"')[sports_value == 1]}>Yes</option>
-                                        <option value="disable" ${('', 'selected="selected"')[sports_value == 0]}>No</option>
+                                        <option value="keep" ${'selected="selected"' if sports_value is None else ''}>&lt; Keep &gt;</option>
+                                        <option value="enable" ${'selected="selected"' if sports_value == 1 else ''}>Yes</option>
+                                        <option value="disable" ${'selected="selected"' if sports_value == 0 else ''}>No</option>
                                     </select><br>
                                     Set if these shows are sporting or MMA events released as Show.03.02.2010 rather than Show.S02E03.<br>
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
@@ -220,9 +220,9 @@
                                 <span class="component-title">Air by date</span>
                                 <span class="component-desc">
                                     <select id="edit_air_by_date" name="air_by_date" class="form-control form-control-inline input-sm">
-                                        <option value="keep" ${('', 'selected="selected"')[air_by_date_value is None]}>&lt; Keep &gt;</option>
-                                        <option value="enable" ${('', 'selected="selected"')[air_by_date_value == 1]}>Yes</option>
-                                        <option value="disable" ${('', 'selected="selected"')[air_by_date_value == 0]}>No</option>
+                                        <option value="keep" ${'selected="selected"' if air_by_date_value is None else ''}>&lt; Keep &gt;</option>
+                                        <option value="enable" ${'selected="selected"' if air_by_date_value == 1 else ''}>Yes</option>
+                                        <option value="disable" ${'selected="selected"' if air_by_date_value == 0 else ''}>No</option>
                                     </select><br>
                                     Set if these shows are released as Show.03.02.2010 rather than Show.S02E03.<br>
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
@@ -235,9 +235,9 @@
                                 <span class="component-title">Subtitles</span>
                                 <span class="component-desc">
                                     <select id="edit_subtitles" name="subtitles" class="form-control form-control-inline input-sm">
-                                        <option value="keep" ${('', 'selected="selected"')[subtitles_value is None]}>&lt; Keep &gt;</option>
-                                        <option value="enable" ${('', 'selected="selected"')[subtitles_value == 1]}>Yes</option>
-                                        <option value="disable" ${('', 'selected="selected"')[subtitles_value == 0]}>No</option>
+                                        <option value="keep" ${'selected="selected"' if subtitles_value is None else ''}>&lt; Keep &gt;</option>
+                                        <option value="enable" ${'selected="selected"' if subtitles_value == 1 else ''}>Yes</option>
+                                        <option value="disable" ${'selected="selected"' if subtitles_value == 0 else ''}>No</option>
                                     </select><br>
                                     Search for subtitles.
                                 </span>

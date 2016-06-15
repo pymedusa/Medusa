@@ -18,10 +18,10 @@
 
 <div class="h2footer pull-right"><b>Limit:</b>
     <select name="limit" id="limit" class="form-control form-control-inline input-sm">
-        <option value="100" ${('', 'selected="selected"')[limit == '100']}>100</option>
-        <option value="250" ${('', 'selected="selected"')[limit == '250']}>250</option>
-        <option value="500" ${('', 'selected="selected"')[limit == '500']}>500</option>
-        <option value="0" ${('', 'selected="selected"')[limit == '0']}>All</option>
+        <option value="100" ${'selected="selected"' if limit == '100' else ''}>100</option>
+        <option value="250" ${'selected="selected"' if limit == '250' else ''}>250</option>
+        <option value="500" ${'selected="selected"' if limit == '500' else ''}>500</option>
+        <option value="0" ${'selected="selected"' if limit == '0' else ''}>All</option>
     </select>
 </div>
 

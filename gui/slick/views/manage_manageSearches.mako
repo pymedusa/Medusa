@@ -23,7 +23,7 @@
 % if not backlogRunning:
     Not in progress<br>
 % else:
-    ${('', 'Paused:')[bool(backlogPaused)]}
+    ${'Paused:' if backlogPaused else ''}
     Currently running<br>
 % endif
 <br>

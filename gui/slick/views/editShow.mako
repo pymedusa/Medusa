@@ -71,7 +71,7 @@
                                 <span class="component-desc">
                                     <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm">
                                         % for curStatus in [WANTED, SKIPPED, IGNORED]:
-                                        <option value="${curStatus}" ${('', 'selected="selected"')[curStatus == show.default_ep_status]}>${statusStrings[curStatus]}</option>
+                                        <option value="${curStatus}" ${'selected="selected"' if curStatus == show.default_ep_status else ''}>${statusStrings[curStatus]}</option>
                                         % endfor
                                     </select>
                                     <div class="clear-left"><p>This will set the status for future episodes.</p></div>
@@ -93,7 +93,7 @@
                             <label for="subtitles">
                                 <span class="component-title">Subtitles</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="subtitles" name="subtitles" ${('', 'checked="checked"')[show.subtitles == 1 and sickbeard.USE_SUBTITLES is True]} ${('disabled="disabled"', '')[bool(sickbeard.USE_SUBTITLES)]}/> search for subtitles
+                                    <input type="checkbox" id="subtitles" name="subtitles" ${'checked="checked"' if show.subtitles == 1 and sickbeard.USE_SUBTITLES is True else ''} ${('disabled="disabled"', '')[bool(sickbeard.USE_SUBTITLES)]}/> search for subtitles
                                 </span>
                             </label>
                         </div>
@@ -102,7 +102,7 @@
                             <label for="paused">
                                 <span class="component-title">Paused</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="paused" name="paused" ${('', 'checked="checked"')[show.paused == 1]} /> pause this show (Medusa will not download episodes)
+                                    <input type="checkbox" id="paused" name="paused" ${'checked="checked"' if show.paused == 1 else ''} /> pause this show (Medusa will not download episodes)
                                 </span>
                             </label>
                         </div>
@@ -120,7 +120,7 @@
                             <label for="airbydate">
                                 <span class="component-title">Air by date</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="airbydate" name="air_by_date" ${('', 'checked="checked"')[show.air_by_date == 1]} /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
+                                    <input type="checkbox" id="airbydate" name="air_by_date" ${'checked="checked"' if show.air_by_date == 1 else ''} /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
@@ -130,7 +130,7 @@
                             <label for="anime">
                                 <span class="component-title">Anime</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="anime" name="anime" ${('', 'checked="checked"')[show.is_anime == 1]}> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
+                                    <input type="checkbox" id="anime" name="anime" ${'checked="checked"' if show.is_anime == 1 else ''}> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
                                     % if show.is_anime:
                                         <%include file="/inc_blackwhitelist.mako"/>
                                     % endif
@@ -142,7 +142,7 @@
                             <label for="sports">
                                 <span class="component-title">Sports</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="sports" name="sports" ${('', 'checked="checked"')[show.sports == 1]}/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
+                                    <input type="checkbox" id="sports" name="sports" ${'checked="checked"' if show.sports == 1 else ''}/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
                                     <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
                                 </span>
                             </label>
@@ -152,7 +152,7 @@
                             <label for="season_folders">
                                 <span class="component-title">Season folders</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="season_folders" name="flatten_folders" ${('checked="checked"', '')[show.flatten_folders == 1 and not sickbeard.NAMING_FORCE_FOLDERS]} ${('', 'disabled="disabled"')[bool(sickbeard.NAMING_FORCE_FOLDERS)]}/> group episodes by season folder (uncheck to store in a single folder)
+                                    <input type="checkbox" id="season_folders" name="flatten_folders" ${('checked="checked"', '')[show.flatten_folders == 1 and not sickbeard.NAMING_FORCE_FOLDERS]} ${'disabled="disabled"' if sickbeard.NAMING_FORCE_FOLDERS else ''}/> group episodes by season folder (uncheck to store in a single folder)
                                 </span>
                             </label>
                         </div>
@@ -161,7 +161,7 @@
                             <label for="scene">
                                 <span class="component-title">Scene Numbering</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="scene" name="scene" ${('', 'checked="checked"')[show.scene == 1]} /> search by scene numbering (uncheck to search by indexer numbering)
+                                    <input type="checkbox" id="scene" name="scene" ${'checked="checked"' if show.scene == 1 else ''} /> search by scene numbering (uncheck to search by indexer numbering)
                                 </span>
                             </label>
                         </div>
@@ -170,7 +170,7 @@
                             <label for="dvdorder">
                                 <span class="component-title">DVD Order</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="dvdorder" name="dvdorder" ${('', 'checked="checked"')[show.dvdorder == 1]} /> use the DVD order instead of the air order<br>
+                                    <input type="checkbox" id="dvdorder" name="dvdorder" ${'checked="checked"' if show.dvdorder == 1 else ''} /> use the DVD order instead of the air order<br>
                                     <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                                 </span>
                             </label>
