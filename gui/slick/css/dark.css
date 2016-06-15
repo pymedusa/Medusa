@@ -72,9 +72,9 @@ inc_top.mako
 }
 
 .ui-tabs {
-    padding: 0px;
+    padding: 0;
     background: none;
-    border-width: 0px;
+    border-width: 0;
 }
 
 .ui-tabs .ui-tabs-panel {
@@ -277,7 +277,7 @@ ul.tags li {
     border: 1px solid rgb(17, 17, 17);
     color: rgb(255, 255, 255);
     font: 14px/18px "Open Sans", "Helvetica Neue", Helvetica, Arial, Geneva, sans-serif;
-    text-shadow: 0px 1px rgba(0, 0, 0, 0.8);
+    text-shadow: 0 1px rgba(0, 0, 0, 0.8);
     float: left;
 }
 
@@ -358,7 +358,7 @@ h2.day, h2.network {
     letter-spacing: 1px;
     color: rgb(255, 255, 255);
     text-align: center;
-    text-shadow: -1px -1px 0px rgba(0, 0, 0, 0.3);
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
     background-color: rgb(21, 82, 143);
 }
 
@@ -367,7 +367,7 @@ h2.day, h2.network {
     clear: both;
     border: 1px solid rgb(204, 204, 204);
     margin: auto;
-    padding: 0px;
+    padding: 0;
     text-align: left;
     width: 750px;
     border-radius: 5px;
@@ -601,7 +601,7 @@ body {
 .dropdown-menu {
     background-color: rgb(51, 51, 51);
     border: 1px solid rgba(0, 0, 0, 0.15);
-    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.176);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
 }
 
 .btn {
@@ -744,7 +744,7 @@ formWizard.css
 
 legend.legendStep {
     color: rgb(255, 255, 255);
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 div.stepsguide .step p {
@@ -779,10 +779,10 @@ pnotify.css
     background-image: -o-linear-gradient(rgb(51, 51, 51), rgb(61, 61, 61)) !important;
     filter: progid:dximagetransform.microsoft.gradient(startColorstr=rgb(51, 51, 51), endColorstr=rgb(61, 61, 61)) !important;
     -ms-filter: progid:dximagetransform.microsoft.gradient(startColorstr=rgb(51, 51, 51), endColorstr=rgb(61, 61, 61)) !important;
-    -moz-box-shadow: 0px 0px 2px rgb(0, 0, 0);
-    -webkit-box-shadow: 0px 0px 2px rgb(0, 0, 0);
-    -o-box-shadow: 0px 0px 2px rgb(0, 0, 0);
-    box-shadow: 0px 0px 2px rgb(0, 0, 0);
+    -moz-box-shadow: 0 0 2px rgb(0, 0, 0);
+    -webkit-box-shadow: 0 0 2px rgb(0, 0, 0);
+    -o-box-shadow: 0 0 2px rgb(0, 0, 0);
+    box-shadow: 0 0 2px rgb(0, 0, 0);
 }
 
 .ui-pnotify-title {
@@ -908,7 +908,7 @@ jquery.confirm.css
     top: 50%;
     margin: -130px 0 0 -230px;
     border: 1px solid rgb(17, 17, 17);
-    box-shadow: 0px 0px 12px 0px rgba(0, 0, 0, 0.175);
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.175);
 }
 
 #confirmBox h1 {
@@ -917,13 +917,13 @@ jquery.confirm.css
     color: rgb(255, 255, 255);
     margin: 0;
     font-size: 22px;
-    text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.75);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
 }
 
 #confirmBox p {
     padding-top: 20px;
     color: rgb(255, 255, 255);
-    text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.75);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
 }
 
 /* =======================================================================
@@ -976,17 +976,17 @@ new #confirmBox
     top: 50%;
     margin: -130px 0 0 -230px;
     border: 1px solid rgb(17, 17, 17);
-    box-shadow: 0px 0px 12px 0px rgba(0, 0, 0, 0.175);
-    border-radius: 0px;
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.175);
+    border-radius: 0;
 }
 
 .modal-content {
-    border-radius: 0px;
+    border-radius: 0;
 }
 
 .modal-header {
     border-bottom: none;
-    border-radius: 0px;
+    border-radius: 0;
 }
 
 .modal-body, .modal-content{
@@ -1017,7 +1017,7 @@ new #confirmBox
     display: inline-block;
     color: rgb(255, 255, 255);
     text-align:center;
-    text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.75);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
     background-clip: padding-box;
     border: 1px solid rgb(17, 17, 17);
     border-radius: 3px;

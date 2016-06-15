@@ -104,7 +104,7 @@
                                         % endfor
                                     </select>
 
-                                    <div id="customQuality" style="padding-left: 0px;">
+                                    <div id="customQuality" style="padding-left: 0;">
                                         <div style="padding-right: 40px; text-align: left; float: left;">
                                             <h5>Allowed</h5>
                                             <% anyQualityList = filter(lambda x: x > common.Quality.NONE, common.Quality.qualityStrings) %>
