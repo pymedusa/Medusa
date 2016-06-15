@@ -149,7 +149,7 @@ class HomeAddShows(Home):
                 dir_results = main_db_con.select(
                     b'SELECT indexer_id '
                     b'FROM tv_shows '
-                    b'WHERE location = ? LIMIT 1', 
+                    b'WHERE location = ? LIMIT 1',
                     [cur_path]
                 )
 
@@ -534,7 +534,7 @@ class HomeAddShows(Home):
         series_pieces = whichSeries.split('|')
         if (whichSeries and rootDir) or (whichSeries and fullShowPath and len(series_pieces) > 1):
             if len(series_pieces) < 6:
-                logger.log(u'Unable to add show due to show selection. Not anough arguments: %s' % (repr(series_pieces)),
+                logger.log(u'Unable to add show due to show selection. Not enough arguments: %s' % (repr(series_pieces)),
                            logger.ERROR)
                 ui.notifications.error('Unknown error. Unable to add show due to problem with show selection.')
                 return self.redirect('/addShows/existingShows/')

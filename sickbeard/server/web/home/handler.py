@@ -1369,7 +1369,6 @@ class Home(WebRoot):
                 show_obj.rls_ignore_words = rls_ignore_words.strip()
                 show_obj.rls_require_words = rls_require_words.strip()
 
-            location = location.decode('UTF-8')
             # if we change location clear the db of episodes, change it, write to db, and rescan
             old_location = ek(os.path.normpath, show_obj._location)
             new_location = ek(os.path.normpath, location)
