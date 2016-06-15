@@ -167,7 +167,7 @@
                                 <span class="component-desc">
                                     <input type="text" id="rls_ignore_words" name="rls_ignore_words" id="rls_ignore_words" value="${show.rls_ignore_words}" class="form-control form-control-inline input-sm input350" autocapitalize="off" /><br>
                                     <div class="clear-left">
-                                        <p>comma-separated <i>e.g. "word1,word2,word3"</i></>
+                                        <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
                                         <p>Search results with one or more words from this list will be ignored.</p>
                                     </div>
                                 </span>

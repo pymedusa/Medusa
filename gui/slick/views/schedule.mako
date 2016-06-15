@@ -136,7 +136,9 @@
             </td>
             <td align="center" style="vertical-align: middle;">
 % if cur_result['imdb_id']:
-                <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}"><img alt="[imdb]" height="16" width="16" src="/images/imdb.png" />
+                <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}">
+                    <img alt="[imdb]" height="16" width="16" src="/images/imdb.png" />
+                </a>
 % endif
                 <a href="${anon_url(sickbeard.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${sickbeard.indexerApi(cur_indexer).config['show_url']}${cur_result['showid']}">
                     <img alt="${sickbeard.indexerApi(cur_indexer).name}" height="16" width="16" src="/images/${sickbeard.indexerApi(cur_indexer).config['icon']}" />
@@ -267,7 +269,9 @@
                     </span>
                     <span class="tvshowTitleIcons">
 % if cur_result['imdb_id']:
-                        <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}"><img alt="[imdb]" height="16" width="16" src="/images/imdb.png" />
+                        <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}">
+                            <img alt="[imdb]" height="16" width="16" src="/images/imdb.png" />
+                        </a>
 % endif
                         <a href="${anon_url(sickbeard.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${sickbeard.indexerApi(cur_indexer).config['show_url']}"><img alt="${sickbeard.indexerApi(cur_indexer).name}" height="16" width="16" src="/images/${sickbeard.indexerApi(cur_indexer).config['icon']}" /></a>
                         <a class="epSearch" id="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="/home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="/images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
@@ -361,4 +365,6 @@
 </div>
 % endif
 <div class="clearfix"></div>
+</div>
+</div>
 </%block>
