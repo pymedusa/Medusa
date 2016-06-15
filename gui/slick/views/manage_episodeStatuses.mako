@@ -54,8 +54,8 @@ Set checked shows/episodes to <select name="newStatus" class="form-control form-
 </select>
 <input class="btn btn-inline" type="submit" value="Go" />
 <div>
-    <button type="button" class="btn btn-xs selectAllShows">Select all</a></button>
-    <button type="button" class="btn btn-xs unselectAllShows">Clear all</a></button>
+    <button type="button" class="btn btn-xs selectAllShows">Select all</button>
+    <button type="button" class="btn btn-xs unselectAllShows">Clear all</button>
 </div>
 <br>
 <table class="sickbeardTable manageTable" cellspacing="1" border="0" cellpadding="0">

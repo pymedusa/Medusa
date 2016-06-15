@@ -3,7 +3,14 @@
     from sickbeard.helpers import anon_url
 %>
 <table id="addRootDirTable" class="sickbeardTable tablesorter">
-    <thead><tr><th class="col-checkbox"><input type="checkbox" id="checkAll" checked=checked></th><th>Directory</th><th width="20%">Show Name (tvshow.nfo)<th width="20%">Indexer</td></tr></thead>
+    <thead>
+        <tr>
+            <th class="col-checkbox"><input type="checkbox" id="checkAll" checked=checked></th>
+            <th>Directory</th>
+            <th width="20%">Show Name (tvshow.nfo)</th>
+            <th width="20%">Indexer</th>
+        </tr>
+    </thead>
     <tbody>
 % for curDir in dirList:
     <%

@@ -27,6 +27,7 @@
                 % for sub_code in subtitles.wanted_languages():
                     <option value="${sub_code}">${subtitles.name_from_code(sub_code)}</option>
                 % endfor
+                </select>
             % else:
                 Manage episodes without <select name="whichSubs" class="form-control form-control-inline input-sm">
                 % if not subtitles.wanted_languages():
@@ -38,7 +39,7 @@
                         % endif
                     % endfor
                 % endif
-            </select>
+                </select>
             % endif
             <input class="btn" type="submit" value="Manage" />
         </form>
@@ -58,8 +59,8 @@
             <br>
             Download missed subtitles for selected episodes <input class="btn btn-inline" type="submit" value="Go" />
             <div>
-                <button type="button" class="btn btn-xs selectAllShows">Select all</a></button>
-                <button type="button" class="btn btn-xs unselectAllShows">Clear all</a></button>
+                <button type="button" class="btn btn-xs selectAllShows">Select all</button>
+                <button type="button" class="btn btn-xs unselectAllShows">Clear all</button>
             </div>
             <br>
             <table class="sickbeardTable manageTable" cellspacing="1" border="0" cellpadding="0">

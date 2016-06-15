@@ -134,7 +134,7 @@
                                         <option value="keep" ${'selected="selected"' if paused_value is None else ''}>&lt; Keep &gt;</option>
                                         <option value="enable" ${'selected="selected"' if paused_value == 1 else ''}>Yes</option>
                                         <option value="disable" ${'selected="selected"' if paused_value == 0 else ''}>No</option>
-                                    </select><br/ >
+                                    </select><br />
                                     Pause these shows (Medusa will not download episodes).
                                 </span>
                             </label>
