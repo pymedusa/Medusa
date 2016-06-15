@@ -85,11 +85,11 @@ table.cal-even {
 }
 
 .calendarShow .text .airtime {
-    color: rgb(0, 0, 0)
+    color: rgb(0, 0, 0);
 }
 
 .calendarShow .text .episode-title {
-    color: rgb(136, 136, 136)
+    color: rgb(136, 136, 136);
 }
 
 /* =======================================================================

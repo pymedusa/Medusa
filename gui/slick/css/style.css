@@ -410,13 +410,13 @@ inc_rootDirs.mako
 .rootdir-selectbox,
 .rootdir-selectbox #rootDirs,
 .rootdir-controls {
-    width: 430px
+    width: 430px;
 }
 .rootdir-selectbox {
-    padding: 0 0 5px
+    padding: 0 0 5px;
 }
 .rootdir-controls {
-    text-align: center
+    text-align: center;
 }
 
 /* =======================================================================
@@ -589,7 +589,7 @@ span.show-option {
     border-right: 0px;
 }
 .ui-progressbar .ui-progressbar-value {
-    height:20px
+    height:20px;
 }
 .ui-progressbar .progress-20 {
     border: none;
@@ -599,7 +599,7 @@ span.show-option {
 .show-container .progress-60,
 .show-container .progress-80 {
     border-radius: 0px;
-    height: 7px
+    height: 7px;
 }
 
 .show-title {
@@ -652,7 +652,7 @@ span.show-option {
 .show-table {
     text-align:center;
     vertical-align:middle;
-    width: 33%
+    width: 33%;
 }
 
 .show-add {
@@ -1134,7 +1134,7 @@ span.snatched b {
 }
 
 .displayShowTable.display_show {
-    clear:both
+    clear:both;
 }
 
 .displayShowTable th.row-seasonheader {
@@ -1160,7 +1160,7 @@ span.snatched b {
 }
 
 .sickbeardTable.display_show {
-    clear:both
+    clear:both;
 }
 
 .sickbeardTable th{
@@ -1454,7 +1454,7 @@ h2.day, h2.network {
 .calendarWrapper {
     width:1000px;
     margin:0 auto;
-    padding:0 3px
+    padding:0 3px;
 }
 
 .calendarTable {
@@ -1465,20 +1465,20 @@ h2.day, h2.network {
 }
 
 .calendarShow {
-    padding:0 !important
+    padding:0 !important;
 }
 
 .calendarShow .poster {
-    padding-bottom:2px
+    padding-bottom:2px;
 }
 
 .calendarShow .poster img {
     width:142px;
-    height:auto
+    height:auto;
 }
 
 .calendarShow .text {
-    padding:0 5px 10px 5px
+    padding:0 5px 10px 5px;
 }
 
 .calendarShow .text .airtime,
@@ -1486,12 +1486,12 @@ h2.day, h2.network {
     overflow:hidden;
     text-overflow:ellipsis;
     display:block;
-    font-size:11px
+    font-size:11px;
 }
 
 .calendarShow .show-status {
     padding:5px 10px 10px;
-    text-align:center
+    text-align:center;
 }
 
 /* =======================================================================
@@ -1563,11 +1563,11 @@ config*.mako
     font-weight: normal;
     display:block;
     width:475px;
-    margin-left:182px
+    margin-left:182px;
 }
 
 #config label.space-right {
-    margin-right:10px
+    margin-right:10px;
 }
 
 #config .metadataDiv {
@@ -3211,15 +3211,17 @@ span.token-input-delete-token {
     margin: 0 1px;
 }
 
-.red-text {color: rgb(221, 51, 51)
+.red-text {color: rgb(221, 51, 51);
 }
-.clear-left {clear:left}
-.nextline-block {display:block}
+.clear-left {clear:left;
+}
+.nextline-block {display:block;
+}
 
 .trakt-image {
     display: block;
     z-index: 0;
-    background-image: url(/images/poster-dark.jpg)
+    background-image: url(/images/poster-dark.jpg);
 }
 
 /* =======================================================================

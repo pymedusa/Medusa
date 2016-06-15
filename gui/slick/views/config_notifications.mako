@@ -182,7 +182,7 @@
                                     <span class="component-desc">(<a href="${anon_url('https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><u>Finding your account token</u></a>)</span>
                                 </label>
                             </div>
-                            <div class="component-group" style="padding: 0; min-height: 130px">
+                            <div class="component-group" style="padding: 0; min-height: 130px;">
                                 <div class="field-pair">
                                     <label for="plex_server_username">
                                         <span class="component-title">Username</span>
@@ -202,7 +202,7 @@
                                     </label>
                                 </div>
                             </div>
-                            <div class="component-group" style="padding: 0; min-height: 50px">
+                            <div class="component-group" style="padding: 0; min-height: 50px;">
                                 <div class="field-pair">
                                     <label for="plex_update_library">
                                         <span class="component-title">Update Library</span>
@@ -300,7 +300,7 @@
                                     </span>
                                 </label>
                             </div>
-                            <div class="component-group" style="padding: 0; min-height: 130px">
+                            <div class="component-group" style="padding: 0; min-height: 130px;">
                                 <div class="field-pair">
                                     <label for="plex_server_username">
                                         <span class="component-title">Username</span>
