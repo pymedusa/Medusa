@@ -19,7 +19,7 @@ selected = None
 </select>
 <div id="customQualityWrapper">
     <div id="customQuality" style="padding-left: 0;">
-        <p><b><u>Preferred</u></b> qualities will replace those in <b><u>allowed</u></b>, even if they are lower.</p>
+        <p><b><strong>Preferred</strong></b> qualities will replace those in <b><strong>allowed</strong></b>, even if they are lower.</p>
         <div style="padding-right: 40px; text-align: left; float: left;">
             <h5>Allowed</h5>
             <% anyQualityList = filter(lambda x: x > Quality.NONE, Quality.qualityStrings) %>

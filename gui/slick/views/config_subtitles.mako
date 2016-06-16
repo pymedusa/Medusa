@@ -136,7 +136,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                         <span class="component-desc">
                                             <input type="checkbox" name="embedded_subtitles_all" id="embedded_subtitles_all" ${'checked="checked"' if sickbeard.EMBEDDED_SUBTITLES_ALL else ''}/>
                                             <p>Ignore subtitles embedded inside video file?</p>
-                                            <p><b>Warning: </b>this will ignore <u>all</u> embedded subtitles for every video file!</p>
+                                            <p><b>Warning: </b>this will ignore <em>all</em> embedded subtitles for every video file!</p>
                                         </span>
                                     </label>
                                 </div>
@@ -167,15 +167,13 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                         </label>
                                         <label>
                                         <span class="component-desc">
+                                            <li>See the <a href="https://github.com/PyMedusa/SickRage/wiki/Subtitle%20Scripts" class="wiki"><strong>Wiki</strong></a> for a script arguments description.</li>
+                                            <li>Additional scripts separated by <b>|</b>.</li>
+                                            <li>Scripts are called after each episode has searched and downloaded subtitles.</li>
+                                            <li>For any scripted languages, include the interpreter executable before the script. See the following example:</li>
                                             <ul>
-                                                    <li>See <a href="https://github.com/PyMedusa/SickRage/wiki/Subtitle%20Scripts"><font color='red'><b>Wiki</b></font></a> for a script arguments description.</li>
-                                                    <li>Additional scripts separated by <b>|</b>.</li>
-                                                    <li>Scripts are called after each episode has searched and downloaded subtitles.</li>
-                                                    <li>For any scripted languages, include the interpreter executable before the script. See the following example:</li>
-                                                    <ul>
-                                                        <li>For Windows: <pre>C:\Python27\pythonw.exe C:\Script\test.py</pre></li>
-                                                        <li>For Linux: <pre>python /Script/test.py</pre></li>
-                                                    </ul>
+                                                <li>For Windows: <pre>C:\Python27\pythonw.exe C:\Script\test.py</pre></li>
+                                                <li>For Linux: <pre>python /Script/test.py</pre></li>
                                             </ul>
                                         </span>
                                         </label>
