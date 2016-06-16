@@ -5,16 +5,8 @@
     from sickrage.helper.common import pretty_file_size
     from sickrage.show.Show import Show
     from time import time
-    # resource module is unix only
-    has_resource_module = True
-    try:
-        import resource
-    except ImportError:
-        has_resource_module = False
 %>
-<%
-    srRoot = sickbeard.WEB_ROOT
-%>
+<!-- BEGIN HEADER -->
 <nav class="navbar navbar-default navbar-fixed-top hidden-print" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header">
@@ -133,3 +125,4 @@
         </div><!-- /.navbar-collapse -->
     </div><!-- /.container-fluid -->
 </nav>
+<!-- END HEADER -->
