@@ -31,6 +31,15 @@ from sickbeard.bs4_parser import BS4Parser
 
 from sickrage.helper.common import convert_size
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from sickbeard.show_name_helpers import allPossibleShowNames
+
+
+SEASON_PACK = 1
+SINGLE_EP = 2
+MULTI_EP = 3
+MULTI_SEASON = 4
+COMPLETE = 5
+OTHER = 6
 
 
 class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attributes
@@ -98,6 +107,9 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         results = []
+        episode = None
+        season = None
+
         if not self.login():
             return results
 
@@ -151,16 +163,20 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
 
                         for row in torrent_main:
                             try:
-                                show_title = row.find('span', class_='group_title').find_next('a').get_text()
+                                show_name = row.find('span', class_='group_title').find_next('a').get_text()
                                 show_table = row.find('table', class_='torrent_group')
                                 show_info = show_table.find_all('td')
 
-                                show_name = None
+                                # A type of release used to determin how to parse the release
+                                # For example a SINGLE_EP should be parsed like: show_name.episode.12.[source].[codec].[release_group]
+                                # A multi ep release shoiuld look like: show_name.episode.1-12.[source]..
+                                release_type = OTHER
+
                                 rows_to_skip = 0
 
-                                # Complete searies don't have a description td
-                                if len(show_info) < 6:
-                                    show_name = '{0}.{1}'.format(show_title, 'Complete Series')
+                                # Complete series don't have a description td
+#                                 if len(show_info) < 6:
+#                                     show_name = '{0}.{1}'.format(show_title, 'Complete Series')
 
                                 for index, info in enumerate(show_info):
 
@@ -176,28 +192,61 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
 
                                         hrefs = show_info[index].find_all('a')
                                         params = parse_qs(hrefs[0].get('href', ''))
-                                        properties = hrefs[1].get_text().split(' | ')
+                                        properties_string = hrefs[1].get_text().rstrip(' |').replace('|', '.').replace(' ', '')
+                                        properties_string = properties_string.replace('h26410-bit', 'h264.hi10p')  # Hack for the h264 10bit stuff
+                                        properties = properties_string.split('.')
                                         download_url = self.urls['download'].format(torrent_id=params['id'][0],
                                                                                     passkey=params['torrent_pass'][0])
                                         if not all([params, properties]):
                                             continue
 
-                                        torrent_source = properties[0]
-                                        torrent_container = properties[1]
-                                        torrent_codec = properties[2]
-                                        torrent_res = properties[3]
-                                        torrent_audio = properties[4]
-                                        if len(properties[5].split(' ')) == 2:
-                                            subs = properties[5].split(' ')[0]
-                                            release_group = properties[5].split(' ')[1].strip('()')
+                                        tags = '{torrent_source}.{torrent_container}.{torrent_codec}.{torrent_res}.' \
+                                               '{torrent_audio}'.format(torrent_source=properties[0],
+                                                                        torrent_container=properties[1],
+                                                                        torrent_codec=properties[2],
+                                                                        torrent_res=properties[3],
+                                                                        torrent_audio=properties[4])
 
-                                        # Construct title
-                                        title = '{title}.{torrent_res}.{torrent_source}.{torrent_codec}' \
-                                                '-{release_group}'.format(title=show_name,
-                                                                          torrent_res=torrent_res,
-                                                                          torrent_source=torrent_source,
-                                                                          torrent_codec=torrent_codec,
-                                                                          release_group=release_group)
+                                        last_field = re.match('(.*)\((.*)\)', properties[-1])
+                                        subs = last_field.group(1) if last_field else ''
+                                        release_group = '-{0}'.format(last_field.group(2)) if last_field else ''
+
+                                        # Construct title based on the release type
+
+                                        if release_type == SINGLE_EP:
+                                            # Create the single episode release_name
+                                            # Single.Episode.TV.Show.SXXEXX[Episode.Part].[Episode.Title].TAGS.[LANGUAGE].720p.FORMAT.x264-GROUP
+                                            title = '{title}.{season}{episode}.{tags}' \
+                                                    '{release_group}'.format(title=show_name,
+                                                                             season='S{0}'.format(season) if season else 'S01',
+                                                                             episode='E{0}'.format(episode),
+                                                                             tags=tags,
+                                                                             release_group=release_group)
+                                        if release_type == MULTI_EP:
+                                            # Create the multi-episode release_name
+                                            # Multiple.Episode.TV.Show.SXXEXX-EXX[Episode.Part].[Episode.Title].TAGS.[LANGUAGE].720p.FORMAT.x264-GROUP
+                                            title = '{title}.{season}{multi_episode}.{tags}' \
+                                                    '{release_group}'.format(title=show_name,
+                                                                             season='S{0}'.format(season) if season else 'S01',
+                                                                             multi_episode='E01-E{0}'.format(episode),
+                                                                             tags=tags,
+                                                                             release_group=release_group)
+                                        if release_type == SEASON_PACK:
+                                            # Create the season pack release_name
+                                            title = '{title}.{season}.{tags}' \
+                                                    '{release_group}'.format(title=show_name,
+                                                                             season='S{0}'.format(season) if season else 'S01',
+                                                                             tags=tags,
+                                                                             release_group=release_group)
+
+                                        if release_type == MULTI_SEASON:
+                                            # Create the multi season pack release_name
+                                            # Multiple.Episode.TV.Show.EXX-EXX[Episode.Part].[Episode.Title].TAGS.[LANGUAGE].720p.FORMAT.x264-GROUP
+                                                title = '{title}.{episode}.{tags}' \
+                                                        '{release_group}'.format(title=show_name,
+                                                                                 episode=episode,
+                                                                                 tags=tags,
+                                                                                 release_group=release_group)
 
                                         seeders = show_info[index + 3].get_text()
                                         leechers = show_info[index + 4].get_text()
@@ -228,18 +277,30 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
 
                                         items.append(item)
 
-                                    # Determine name and type
+                                    # Determine episode, season and type
+
                                     if info.startswith('Episode'):
-                                        show_name = '{0}.{1}'.format(show_title, info)
+                                        # show_name = '{0}.{1}'.format(show_title, info)
+                                        episode = re.match('^Episode.([0-9]+)', info).group(1)
+                                        release_type = SINGLE_EP
                                     elif info.startswith('Season'):
-                                        info = info.split(' (', 1)[0]
-                                        show_name = '{0}.{1}'.format(show_title, info)
-                                    elif any(word in info for word in ['episodes', 'episode']):
-                                        if show_info[index + 1].get_text(strip=True).startswith('Episode'):
-                                            # It's not a pack, skip this row
-                                            continue
-                                        info = info.split('/', 1)[0].strip()
-                                        show_name = '{0}.{1}'.format(show_title, info)
+                                        # Test for MultiSeason pack
+                                        if re.match('Season.[0-9]+-[0-9]+.\([0-9-]+\)', info):
+                                            # We can read the season AND the episodes, but we can only process multiep.
+                                            # So i've chosen to use it like 12-23 or 1-12.
+                                            match = re.match('Season.([0-9]+)-([0-9]+).\(([0-9-]+)\)', info)
+                                            episode = match.group(3).upper()
+                                            season = '{0}-{1}'.format(match.group(1), match.group(2))
+                                            release_type = MULTI_SEASON
+                                        else:
+                                            season = re.match('Season.([0-9]+)', info).group(1)
+                                            # show_name = '{0}.{1}'.format(show_title, info)
+                                            release_type = SEASON_PACK
+                                    elif re.match('([0-9]+).episodes.*', info):
+                                        # This is a season pack, but, let's use it as a multi ep for now
+                                        # 13 episodes -> SXXEXX-EXX
+                                        episode = re.match('^([0-9]+).episodes.*', info).group(1)
+                                        release_type = MULTI_EP
                                     else:
                                         # Row is useless, skip it (eg. only animation studio)
                                         continue
@@ -252,6 +313,19 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
                 results += items
 
             return results
+
+    def _get_episode_search_strings(self, episode, add_string=''):
+        return TorrentProvider._get_episode_search_strings(self, episode, add_string=add_string)
+
+    def _get_season_search_strings(self, episode):
+        search_string = {
+            'Season': []
+        }
+
+        for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
+            search_string['Season'].append(show_name)
+
+        return [search_string]
 
 
 provider = AnimeBytes()
