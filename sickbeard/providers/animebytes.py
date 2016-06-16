@@ -315,7 +315,17 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
             return results
 
     def _get_episode_search_strings(self, episode, add_string=''):
-        return TorrentProvider._get_episode_search_strings(self, episode, add_string=add_string)
+        if not episode:
+            return []
+
+        search_string = {
+            'Episode': []
+        }
+
+        for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
+            search_string['Episode'].append(show_name.strip())
+
+        return [search_string]
 
     def _get_season_search_strings(self, episode):
         search_string = {
@@ -323,7 +333,7 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         }
 
         for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
-            search_string['Season'].append(show_name)
+            search_string['Season'].append(show_name.strip())
 
         return [search_string]
 
