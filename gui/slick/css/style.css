@@ -2172,6 +2172,25 @@ span.true {
 span.break-word {
 	word-break: break-all;
 }
+span.required {
+	color: green;
+}
+span.preferred {
+	color: blue;
+}
+span.undesired {
+	color: orange;
+}
+span.ignored {
+	color: red;
+}
+
+a.wiki {
+    color: red;
+}
+a.wiki strong{
+    color: red;
+}
 
 option.flag {
     padding-left: 35px;

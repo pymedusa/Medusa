@@ -171,7 +171,7 @@
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">(<a href="${anon_url('https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><u>Finding your account token</u></a>)</span>
+                                        <span class="component-desc">See: <a href="${anon_url('https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token')}" class="wiki" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><strong>Finding your account token</strong></a></span>
                                     </label>
                                 </div>
                                 <div class="component-group" style="padding: 0; min-height: 130px;">
