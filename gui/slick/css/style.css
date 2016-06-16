@@ -1,3 +1,6 @@
+strong.warning {
+    color: red;
+}
 /* =======================================================================
 inc_top.mako
 ========================================================================== */
@@ -1069,6 +1072,11 @@ ul.tags li a{
 }
 .snatched {
     background-color: rgb(235, 193, 234);
+}
+.failed {
+    text-decoration: line-through;
+    text-decoration-color: red;
+    background-color: grey;
 }
 
 span.unaired {
