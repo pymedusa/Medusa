@@ -222,7 +222,9 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                             parse_result.season_number is not None,
                             parse_result.episode_numbers,
                             [ep for ep in episodes if (ep.season, ep.scene_season)[ep.show.is_scene] ==
-                             parse_result.season_number and (ep.episode, ep.scene_episode)[ep.show.is_scene] in parse_result.episode_numbers]
+                             parse_result.season_number and
+                             (ep.episode, ep.scene_episode)[ep.show.is_scene] in
+                             parse_result.episode_numbers]
                         ]):
 
                             logger.log(

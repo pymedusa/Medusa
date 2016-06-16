@@ -43,10 +43,8 @@ OTHER = 6
 
 
 class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
     def __init__(self):
-
-        # Provider Init
+        """"Provider Init"""
         TorrentProvider.__init__(self, 'AnimeBytes')
 
         # Credentials
@@ -72,6 +70,7 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         self.cache = tvcache.TVCache(self, min_time=30)
 
     def login(self):
+        """Login to AnimeBytes, check of the session cookie"""
         if (any(dict_from_cookiejar(self.session.cookies).values()) and
                 dict_from_cookiejar(self.session.cookies).get('session')):
                     return True
@@ -106,12 +105,19 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         return True
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """Start searching for anime using the provided search_strings. Used for backlog and daily"""
+        _ = age
+        _ = ep_obj
         results = []
-        episode = None
-        season = None
+
+        if self.show and not self.show.is_anime:
+            return results
 
         if not self.login():
             return results
+
+        episode = None
+        season = None
 
         # Search Params
         search_params = {
@@ -207,8 +213,8 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
                                                                         torrent_res=properties[3],
                                                                         torrent_audio=properties[4])
 
-                                        last_field = re.match('(.*)\((.*)\)', properties[-1])
-                                        subs = last_field.group(1) if last_field else ''
+                                        last_field = re.match(r'(.*)\((.*)\)', properties[-1])
+                                        subs = last_field.group(1) if last_field else ''  # We're not doing anything with this for now
                                         release_group = '-{0}'.format(last_field.group(2)) if last_field else ''
 
                                         # Construct title based on the release type
@@ -315,6 +321,7 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
             return results
 
     def _get_episode_search_strings(self, episode, add_string=''):
+        """Method override because AnimeBytes doesnt support searching showname + episode number"""
         if not episode:
             return []
 
@@ -328,6 +335,7 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         return [search_string]
 
     def _get_season_search_strings(self, episode):
+        """Method override because AnimeBytes doesnt support searching showname + season number"""
         search_string = {
             'Season': []
         }
