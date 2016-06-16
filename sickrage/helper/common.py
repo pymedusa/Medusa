@@ -332,6 +332,7 @@ def episode_num(season=None, episode=None, **kwargs):
         if not (season and episode) and (season or episode):
             return '{0:0>3}'.format(season or episode)
 
+
 def enabled_providers(search_type):
     """
     Return providers based on search type: daily, backlog and manualsearch
@@ -340,6 +341,7 @@ def enabled_providers(search_type):
         if x.is_active() and
         hasattr(x, 'enable_{}'.format(search_type)) and
         getattr(x, 'enable_{}'.format(search_type))]
+
 
 def remove_strings(old_string, unwanted_strings):
     """
@@ -356,5 +358,3 @@ def remove_strings(old_string, unwanted_strings):
     for item in unwanted_strings:
         old_string = old_string.replace(item, '')
     return old_string
-
-
