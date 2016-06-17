@@ -36,31 +36,37 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """TNTVillage Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'TNTVillage')
 
+        # Credentials
+        self.username = None
+        self.password = None
         self._uid = None
         self._hash = None
 
-        self.username = None
-        self.password = None
-
-        self.minseed = None
-        self.minleech = None
-
+        # URLs
         self.url = 'http://forum.tntvillage.scambioetico.org/'
         self.urls = {
             'login': urljoin(self.url, 'index.php?act=Login&CODE=01'),
             'download': urljoin(self.url, 'index.php?act=Attach&type=post&id={0}'),
         }
 
+        # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK']
 
-        self.cache = tvcache.TVCache(self, min_time=30)  # only poll TNTVillage every 30 minutes max
-
+        # Miscellaneous Options
         self.subtitle = None
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
+        # Cache
+        self.cache = tvcache.TVCache(self, min_time=30)  # only poll TNTVillage every 30 minutes max
 
     def _check_auth(self):
 
@@ -80,7 +86,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             'UserName': self.username,
             'PassWord': self.password,
             'CookieDate': 1,
-            'submit': 'Connettiti al Forum'
+            'submit': 'Connettiti al Forum',
         }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
@@ -95,7 +101,15 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         return True
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        TNTVillage search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
@@ -103,19 +117,19 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         search_params = {
             'act': 'allreleases',
             'filter': '',
+            'cat': 29,
         }
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
-                    if mode != 'RSS':
-                        search_params['filter'] = search_string
-                        logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
-                    else:
-                        search_params['cat'] = 29
+                if mode != 'RSS':
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
+                    search_params['filter'] = search_string
 
                     response = self.get_url(self.url, params=search_params, returns='response')
                     if not response or not response.text:
@@ -126,11 +140,12 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         torrent_table = html.find('table', class_='copyright')
                         torrent_rows = torrent_table('tr') if torrent_table else []
 
-                        # Continue only if one release is found
+                        # Continue only if at least one release is found
                         if len(torrent_rows) < 3:
                             logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                             continue
 
+                    # Skip column headers
                         for result in torrent_table('tr')[1:]:
                             try:
                                 cells = result('td')
@@ -156,8 +171,8 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                 # Filter unseeded torrent
                                 if seeders < min(self.minseed, 1):
                                     if mode != 'RSS':
-                                        logger.log("Discarding torrent because it doesn't meet the"
-                                                   ' minimum seeders: {0}. Seeders: {1}'.format
+                                        logger.log("Discarding torrent because it doesn't meet the "
+                                                   "minimum seeders: {0}. Seeders: {1}".format
                                                    (title, seeders), logger.DEBUG)
                                     continue
 
@@ -176,7 +191,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                     'seeders': seeders,
                                     'leechers': leechers,
                                     'pubdate': None,
-                                    'hash': None
+                                    'hash': None,
                                 }
                                 if mode != 'RSS':
                                     logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
