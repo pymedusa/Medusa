@@ -49,7 +49,7 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         # URLs
         self.url = 'https://thepiratebay.se'
         self.urls = {
-            'rss': urljoin(self.url, 'browse/200'),
+            'rss': urljoin(self.url, 'tv/latest'),
             'search': urljoin(self.url, 's/'),  # Needs trailing /
         }
         self.custom_url = None
