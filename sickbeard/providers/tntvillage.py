@@ -59,6 +59,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.proper_strings = ['PROPER', 'REPACK']
 
         # Miscellaneous Options
+        self.engrelease = None
         self.subtitle = None
 
         # Torrent Stats
@@ -117,7 +118,6 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         search_params = {
             'act': 'allreleases',
             'filter': '',
-            'cat': 29,
         }
 
         for mode in search_strings:
@@ -126,86 +126,93 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
             for search_string in search_strings[mode]:
 
+                if self.engrelease:
+                    search_params['filter'] = 'eng'
+                    search_string += ' eng'
+
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
                     search_params['filter'] = search_string
+                else:
+                    search_params['cat'] = 29
 
-                    response = self.get_url(self.url, params=search_params, returns='response')
-                    if not response or not response.text:
-                        logger.log('No data returned from provider', logger.DEBUG)
+                response = self.get_url(self.url, params=search_params, returns='response')
+                if not response or not response.text:
+                    logger.log('No data returned from provider', logger.DEBUG)
+                    continue
+
+                with BS4Parser(response.text, 'html5lib') as html:
+                    torrent_table = html.find('table', class_='copyright')
+                    torrent_rows = torrent_table('tr') if torrent_table else []
+
+                    # Continue only if at least one release is found
+                    if len(torrent_rows) < 3:
+                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
 
-                    with BS4Parser(response.text, 'html5lib') as html:
-                        torrent_table = html.find('table', class_='copyright')
-                        torrent_rows = torrent_table('tr') if torrent_table else []
-
-                        # Continue only if at least one release is found
-                        if len(torrent_rows) < 3:
-                            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
-                            continue
-
                     # Skip column headers
-                        for result in torrent_table('tr')[1:]:
-                            try:
-                                cells = result('td')
-                                if not cells:
-                                    continue
-
-                                last_cell_anchor = cells[-1].find('a')
-                                if not last_cell_anchor:
-                                    continue
-                                params = parse_qs(last_cell_anchor.get('href', ''))
-                                download_url = self.urls['download'].format(params['pid'][0]) if \
-                                    params.get('pid') else None
-                                title = _normalize_title(cells[0], cells[1], mode)
-                                if not all([title, download_url]):
-                                    continue
-
-                                info_cell = cells[3].find_all('td')
-                                leechers = info_cell[0].find('span').get_text(strip=True)
-                                leechers = try_int(leechers)
-                                seeders = info_cell[1].find('span').get_text()
-                                seeders = try_int(seeders, 1)
-
-                                # Filter unseeded torrent
-                                if seeders < min(self.minseed, 1):
-                                    if mode != 'RSS':
-                                        logger.log("Discarding torrent because it doesn't meet the "
-                                                   "minimum seeders: {0}. Seeders: {1}".format
-                                                   (title, seeders), logger.DEBUG)
-                                    continue
-
-                                if _has_only_subs(title) and not self.subtitle:
-                                    logger.log('Torrent is only subtitled, skipping: {0}'.format
-                                               (title), logger.DEBUG)
-                                    continue
-
-                                torrent_size = info_cell[3].find('span').get_text() + ' GB'
-                                size = convert_size(torrent_size) or -1
-
-                                item = {
-                                    'title': title,
-                                    'link': download_url,
-                                    'size': size,
-                                    'seeders': seeders,
-                                    'leechers': leechers,
-                                    'pubdate': None,
-                                    'hash': None,
-                                }
-                                if mode != 'RSS':
-                                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                               (title, seeders, leechers), logger.DEBUG)
-
-                                items.append(item)
-                            except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                                logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                                           (traceback.format_exc()), logger.ERROR)
+                    for result in torrent_table('tr')[1:]:
+                        try:
+                            cells = result('td')
+                            if not cells:
                                 continue
 
-                    results += items
+                            last_cell_anchor = cells[-1].find('a')
+                            if not last_cell_anchor:
+                                continue
+                            params = parse_qs(last_cell_anchor.get('href', ''))
+                            download_url = self.urls['download'].format(params['pid'][0]) if \
+                                params.get('pid') else None
+                            title = _normalize_title(cells[0], cells[1], mode)
+                            if not all([title, download_url]):
+                                continue
 
-            return results
+                            info_cell = cells[3].find_all('td')
+                            leechers = info_cell[0].find('span').get_text(strip=True)
+                            leechers = try_int(leechers)
+                            seeders = info_cell[1].find('span').get_text()
+                            seeders = try_int(seeders, 1)
+
+                            # Filter unseeded torrent
+                            if seeders < min(self.minseed, 1):
+                                if mode != 'RSS':
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
+                                               (title, seeders), logger.DEBUG)
+                                continue
+
+                            if _has_only_subs(title) and not self.subtitle:
+                                logger.log('Torrent is only subtitled, skipping: {0}'.format
+                                           (title), logger.DEBUG)
+                                continue
+
+                            torrent_size = info_cell[3].find('span').get_text() + ' GB'
+                            size = convert_size(torrent_size) or -1
+
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': None,
+                            }
+                            if mode != 'RSS':
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                           (title, seeders, leechers), logger.DEBUG)
+
+                            items.append(item)
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
+                            continue
+
+                items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
+                results += items
+
+        return results
 
 
 def _normalize_title(title, info, mode):
