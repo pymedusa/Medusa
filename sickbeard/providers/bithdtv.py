@@ -152,7 +152,7 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
                                            (title, seeders, leechers), logger.DEBUG)
 
-                                items.append(item)
+                            items.append(item)
                         except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                             logger.log('Failed parsing provider. Traceback: {0!r}'.format
                                        (traceback.format_exc()), logger.ERROR)
