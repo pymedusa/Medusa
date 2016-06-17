@@ -276,12 +276,11 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         if not self._check_auth():
             return results
 
-        # gingadaddy has no caps.
-        if not self.caps and 'gingadaddy' not in self.url:
+        # gingadaddy and usenet-crawler have no caps.
+        if not self.caps and all(provider not in self.url for provider in ['gingadaddy', 'usenet-crawler']):
             self.get_newznab_categories(just_caps=True)
-
-        if not self.caps and 'gingadaddy' not in self.url:
-            return results
+            if not self.caps:
+                return results
 
         for mode in search_strings:
             torznab = False
