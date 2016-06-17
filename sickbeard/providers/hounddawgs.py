@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import re
 import traceback
 
+from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
@@ -31,42 +32,35 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """HoundDawgs Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'HoundDawgs')
 
+        # Credentials
         self.username = None
         self.password = None
-        self.minseed = None
-        self.minleech = None
+
+        # URLs
+        self.url = 'https://hounddawgs.org'
+        self.urls = {
+            'base_url': self.url,
+            'search': urljoin(self.url, 'torrents.php'),
+            'login': urljoin(self.url, 'login.php'),
+        }
+
+        # Proper Strings
+
+        # Miscellaneous Options
         self.freeleech = None
         self.ranked = None
 
-        self.urls = {
-            'base_url': 'https://hounddawgs.org/',
-            'search': 'https://hounddawgs.org/torrents.php',
-            'login': 'https://hounddawgs.org/login.php'
-        }
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
-        self.url = self.urls['base_url']
-
-        self.search_params = {
-            'filter_cat[85]': 1,
-            'filter_cat[58]': 1,
-            'filter_cat[57]': 1,
-            'filter_cat[74]': 1,
-            'filter_cat[92]': 1,
-            'filter_cat[93]': 1,
-            'order_by': 's3',
-            'order_way': 'desc',
-            'type': '',
-            'userid': '',
-            'searchstr': '',
-            'searchimdb': '',
-            'searchtags': ''
-        }
-
+        # Cache
         self.cache = tvcache.TVCache(self)
 
     def login(self):
@@ -94,26 +88,49 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         return True
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        HoundDawgs search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
 
+        # Search Params
+        search_params = {
+            'filter_cat[85]': 1,
+            'filter_cat[58]': 1,
+            'filter_cat[57]': 1,
+            'filter_cat[74]': 1,
+            'filter_cat[92]': 1,
+            'filter_cat[93]': 1,
+            'order_by': 's3',
+            'order_way': 'desc',
+            'type': '',
+            'userid': '',
+            'searchstr': '',
+            'searchimdb': '',
+            'searchtags': ''
+        }
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
-                self.search_params['searchstr'] = search_string
-
-                data = self.get_url(self.urls['search'], params=self.search_params, returns='text')
+                search_params['searchstr'] = search_string
+                data = self.get_url(self.urls['search'], params=search_params, returns='text')
                 if not data:
-                    logger.log('URL did not return data', logger.DEBUG)
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 str_table_start = "<table class='torrent_table"
@@ -160,8 +177,8 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1})'.format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -176,7 +193,7 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

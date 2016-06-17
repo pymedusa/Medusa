@@ -30,21 +30,39 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class BitCannonProvider(TorrentProvider):
-
+    """BitCannon Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'BitCannon')
 
-        self.minseed = None
-        self.minleech = None
-        self.custom_url = None
+        # Credentials
         self.api_key = None
 
+        # URLs
+        self.custom_url = None
+
+        # Proper Strings
+
+        # Miscellaneous Options
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
+        # Cache
         self.cache = tvcache.TVCache(self, search_params={'RSS': ['tv', 'anime']})
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals
-        results = []
+        """
+        BitCannon search and parsing
 
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
+        results = []
         url = 'http://localhost:3000/'
         if self.custom_url:
             if not validators.url(self.custom_url, require_tld=False):
@@ -52,21 +70,21 @@ class BitCannonProvider(TorrentProvider):
                 return results
             url = self.custom_url
 
-        search_params = {}
-
-        anime = ep_obj and ep_obj.show and ep_obj.show.anime
-        search_params['category'] = ('tv', 'anime')[bool(anime)]
-
-        if self.api_key:
-            search_params['apiKey'] = self.api_key
+        # Search Params
+        search_params = {
+            'category': 'anime' if ep_obj and ep_obj.show and ep_obj.show.anime else 'tv',
+            'apiKey': self.api_key
+        }
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
                 search_params['q'] = search_string
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_url = urljoin(url, 'api/search')
                 parsed_json = self.get_url(search_url, params=search_params, returns='json')
@@ -93,10 +111,11 @@ class BitCannonProvider(TorrentProvider):
                         else:
                             seeders = leechers = 0
 
+                        # Filter unseeded torrent
                         if seeders < min(self.minseed, 1):
                             if mode != 'RSS':
                                 logger.log("Discarding torrent because it doesn't meet the "
-                                           'minimum seeders: {0}. Seeders: {1})'.format
+                                           "minimum seeders: {0}. Seeders: {1}".format
                                            (title, seeders), logger.DEBUG)
                             continue
 
@@ -119,6 +138,7 @@ class BitCannonProvider(TorrentProvider):
                     except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                         logger.log('Failed parsing provider. Traceback: {0!r}'.format
                                    (traceback.format_exc()), logger.ERROR)
+                        continue
 
             results += items
 

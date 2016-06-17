@@ -29,22 +29,32 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class HDBitsProvider(TorrentProvider):
-
+    """HDBits Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'HDBits')
 
+        # Credentials
         self.username = None
         self.passkey = None
 
-        self.cache = HDBitsCache(self, min_time=15)  # only poll HDBits every 15 minutes max
-
+        # URLs
         self.url = 'https://hdbits.org'
         self.urls = {
             'search': urljoin(self.url, '/api/torrents'),
             'rss': urljoin(self.url, '/api/torrents'),
-            'download': urljoin(self.url, '/download.php')
+            'download': urljoin(self.url, '/download.php'),
         }
+
+        # Proper Strings
+
+        # Miscellaneous Options
+
+        # Torrent Stats
+
+        # Cache
+        self.cache = HDBitsCache(self, min_time=15)  # only poll HDBits every 15 minutes max
 
     def _check_auth(self):
 

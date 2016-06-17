@@ -32,22 +32,32 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """KAT Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'KickAssTorrents')
 
+        # Credentials
         self.public = True
 
+        # URLs
+        self.url = 'https://kat.cr'
+        self.urls = {
+            'search': urljoin(self.url, '%s/'),
+        }
+        self.custom_url = None
+
+        # Proper Strings
+
+        # Miscellaneous Options
         self.confirmed = True
+
+        # Torrent Stats
         self.minseed = None
         self.minleech = None
 
-        self.url = 'https://kat.cr'
-        self.urls = {'search': urljoin(self.url, '%s/')}
-
-        self.custom_url = None
-
+        # Cache
         self.cache = tvcache.TVCache(self, search_params={'RSS': ['tv', 'anime']})
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals, too-many-statements
@@ -64,7 +74,7 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
@@ -135,7 +145,7 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': info_hash
+                                'hash': info_hash,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

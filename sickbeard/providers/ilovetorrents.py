@@ -34,11 +34,15 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class ILoveTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """ILoveTorrents Torrent provider"""
     def __init__(self):
 
         # Provider Init
         TorrentProvider.__init__(self, 'ILoveTorrents')
+
+        # Credentials
+        self.username = None
+        self.password = None
 
         # URLs
         self.url = 'https://www.ilovetorrents.me/'
@@ -48,16 +52,14 @@ class ILoveTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instan
             'download': urljoin(self.url, '{link}'),
         }
 
-        # Credentials
-        self.username = None
-        self.password = None
+        # Proper Strings
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+
+        # Miscellaneous Options
 
         # Torrent Stats
         self.minseed = None
         self.minleech = None
-
-        # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
         # Cache
         self.cache = tvcache.TVCache(self)
@@ -81,55 +83,67 @@ class ILoveTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instan
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
         if not response:
-            logger.log(u'Unable to connect to provider', logger.WARNING)
+            logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
         if re.search('Username or password incorrect', response):
-            logger.log(u'Invalid username or password. Check your settings', logger.WARNING)
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
 
         return True
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        ILoveTorrents search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
 
+        # Search Params
         search_params = {
             'cat': 0
         }
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_params['search'] = search_string
-
                 data = self.get_url(self.urls['search'], params=search_params, returns='text')
                 if not data:
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 with BS4Parser(data, 'html.parser') as html:
                     torrent_table = html.find('table', class_='koptekst')
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
-                    # Continue only if one Release is found
+                    # Continue only if at least one release is found
                     if len(torrent_rows) < 2:
-                        logger.log(u'Data returned from provider does not contain any torrents', logger.DEBUG)
+                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
 
+                    # Skip column headers
                     for result in torrent_rows[1:]:
+                        cells = result('td')
+                        if len(cells) < 11:
+                            continue
+
                         try:
-                            cells = result('td')
                             link = cells[1].find('a')
-
-                            download_url = self.urls['download'].format(link=cells[2].find('a')['href'])
                             title = link.getText()
-
+                            download_url = self.urls['download'].format(link=cells[2].find('a')['href'])
                             if not all([title, download_url]):
                                 continue
 
@@ -139,8 +153,8 @@ class ILoveTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instan
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -158,7 +172,7 @@ class ILoveTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instan
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
