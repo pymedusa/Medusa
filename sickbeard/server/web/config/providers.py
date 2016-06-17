@@ -15,10 +15,12 @@ from sickbeard import (
 )
 from sickbeard.providers import newznab, rsstorrent
 from sickrage.helper.common import try_int
+from sickbeard.helpers import getURL, make_session
 from sickrage.helper.encoding import ek
 from sickrage.providers.GenericProvider import GenericProvider
 from sickbeard.server.web.core import PageTemplate
 from sickbeard.server.web.config.handler import Config
+from requests.utils import dict_from_cookiejar
 
 
 @route('/config/providers(/?.*)')
@@ -87,6 +89,57 @@ class ConfigProviders(Config):
             new_provider = newznab.NewznabProvider(name, url, key=key)
             sickbeard.newznabProviderList.append(new_provider)
             return '|'.join([new_provider.get_id(), new_provider.configStr()])
+
+    @staticmethod
+    def testProviderLogin(provider_id):
+        """
+        Tests if it is possible to authenticate whit your current provider settings.
+        """
+        temp_provider = sickbeard.providers.getProviderClass(provider_id)
+        return json.dumps({"login": len(temp_provider.search({'RSS': ['']})) > 0})
+
+    @staticmethod
+    def loadReCaptcha(provider_id, url=None, params=None, post_data=None, headers=None):
+        provider = sickbeard.providers.getProviderClass(provider_id)
+        if not provider.urls.get('login'):
+            return "<h1>Provider does not need recaptcha authentication</h1>"
+        if not url:
+            url = provider.urls.get('login')
+        mysession = make_session()
+        # captcha_page = provider.get_url(url, post_data=post_data, params=params, verify=False, returns='response')
+        captcha_page = getURL(url, post_data=post_data, session=mysession, params=params, returns='text')
+        return captcha_page
+
+    @staticmethod
+    def getProviderCaptchaCookie(provider_id, captcha=None):
+        provider = sickbeard.providers.getProviderClass(provider_id)
+        post_data = provider.login_data
+        post_data['g-recaptcha-response'] = captcha
+        post_data['username'] = provider.username
+        post_data['password'] = provider.password
+        html = provider.get_url(provider.urls.get('recaptcha'), post_data=post_data, returns='response', verify=False)
+
+        all_cookies = {}
+        all_cookies.update(dict_from_cookiejar(html.cookies))
+        all_cookies.update(dict_from_cookiejar(html.request._cookies))
+
+        # Let's get the required cookies
+        if hasattr(provider, 'recaptcha'):
+            for key in provider.recaptcha:
+                # Combine request and response cookie
+                if key in all_cookies:
+                    provider.recaptcha[key] = all_cookies.get(key)
+                    # This is legacy crap. Should be removed later
+                    if hasattr(provider, '_uid') and key == 'uid':
+                        provider._uid = all_cookies.get(key)
+                    if hasattr(provider, '_hash') and key == 'pass':
+                        provider._hash = all_cookies.get(key)
+
+        sickbeard.save_config()
+        if provider.login():
+            return json.dumps({'result': 'true'})
+
+        return json.dumps({'result': 'false'})
 
     @staticmethod
     def getNewznabCategories(name, url, key):

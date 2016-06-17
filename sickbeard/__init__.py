@@ -1921,6 +1921,10 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
         if hasattr(curTorrentProvider, 'subtitle'):
             new_config[curTorrentProvider.get_id().upper()][curTorrentProvider.get_id() + '_subtitle'] = int(
                 curTorrentProvider.subtitle)
+        if hasattr(curTorrentProvider, '_uid'):
+            new_config[curTorrentProvider.get_id().upper()][curTorrentProvider.get_id() + '_uid'] = curTorrentProvider._uid
+        if hasattr(curTorrentProvider, '_hash'):
+            new_config[curTorrentProvider.get_id().upper()][curTorrentProvider.get_id() + '_hash'] = curTorrentProvider._hash
 
     for curNzbProvider in [curProvider for curProvider in providers.sortedProviderList() if
                            curProvider.provider_type == GenericProvider.NZB]:

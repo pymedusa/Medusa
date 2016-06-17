@@ -1789,6 +1789,10 @@ select .selected {
     background-position: -488px 0px;
 }
 
+div.g-recaptcha {
+    visibility: visible!important;
+}
+
 /* =======================================================================
 config_postProcessing.mako
 ========================================================================== */

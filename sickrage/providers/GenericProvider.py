@@ -69,6 +69,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
+        self.recaptcha = False
         self.url = ''
         self.urls = {}
 
