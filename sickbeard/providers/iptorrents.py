@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import re
 import traceback
 
+from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
@@ -32,26 +33,36 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """IPTorrents Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'IPTorrents')
 
+        # Credentials
         self.username = None
         self.password = None
+
+        # URLs
+        self.url = 'https://iptorrents.eu'
+        self.urls = {
+            'base_url': self.url,
+            'login': urljoin(self.url, 'torrents'),
+            'search': urljoin(self.url, 't?%s%s&q=%s&qf=#torrents'),
+        }
+
+        # Proper Strings
+
+        # Miscellaneous Options
         self.freeleech = False
+        self.categories = '73=&60='
+
+        # Torrent Stats
         self.minseed = None
         self.minleech = None
 
+        # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # Only poll IPTorrents every 10 minutes max
-
-        self.urls = {'base_url': 'https://iptorrents.eu',
-                     'login': 'https://iptorrents.eu/torrents/',
-                     'search': 'https://iptorrents.eu/t?%s%s&q=%s&qf=#torrents'}
-
-        self.url = self.urls['base_url']
-
-        self.categories = '73=&60='
 
     def _check_auth(self):
 
@@ -65,9 +76,11 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         if any(dict_from_cookiejar(self.session.cookies).values()):
             return True
 
-        login_params = {'username': self.username,
-                        'password': self.password,
-                        'login': 'submit'}
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+            'login': 'submit',
+        }
 
         self.get_url(self.urls['login'], returns='text')
         response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
@@ -97,13 +110,13 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 # URL with 50 tv-show results, or max 150 if adjusted in IPTorrents profile
                 search_url = self.urls['search'] % (self.categories, freeleech, search_string)
@@ -111,26 +124,20 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                 data = self.get_url(search_url, returns='text')
                 if not data:
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 data = re.sub(r'(?im)<button.+?<[\/]button>', '', data, 0)
                 with BS4Parser(data, 'html5lib') as html:
-                    if not html:
-                        logger.log('No data returned from provider', logger.DEBUG)
-                        continue
-
-                    if html.find(text='No Torrents Found!'):
-                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
-                        continue
-
                     torrent_table = html.find('table', attrs={'class': 'torrents'})
                     torrents = torrent_table('tr') if torrent_table else []
 
-                    # Continue only if one release is found
-                    if len(torrents) < 2:
+                    # Continue only if at least one release is found
+                    if len(torrents) < 2 or html.find(text='No Torrents Found!'):
                         logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
 
+                    # Skip column headers
                     for result in torrents[1:]:
                         try:
                             title = result('td')[1].find('a').text
@@ -144,8 +151,8 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -159,7 +166,7 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

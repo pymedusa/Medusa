@@ -21,8 +21,10 @@ from __future__ import unicode_literals
 
 import re
 import traceback
-import sickbeard
 
+from requests.compat import urljoin
+
+import sickbeard
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 from sickbeard.common import USER_AGENT
@@ -32,41 +34,67 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """ExtraTorrent Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'ExtraTorrent')
 
-        self.urls = {
-            'index': 'http://extratorrent.cc',
-            'rss': 'http://extratorrent.cc/rss.xml',
-        }
-
-        self.url = self.urls['index']
-
+        # Credentials
         self.public = True
-        self.minseed = None
-        self.minleech = None
+
+        # URLs
+        self.url = 'http://extratorrent.cc'
+        self.urls = {
+            'index': self.url,
+            'rss': urljoin(self.url, 'rss.xml'),
+        }
         self.custom_url = None
 
-        self.cache = tvcache.TVCache(self, min_time=30)  # Only poll ExtraTorrent every 30 minutes max
+        # Proper Strings
+
+        # Miscellaneous Options
         self.headers.update({'User-Agent': USER_AGENT})
         self.search_params = {'cid': 8}
 
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
+        # Cache
+        self.cache = tvcache.TVCache(self, min_time=30)  # Only poll ExtraTorrent every 30 minutes max
+
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        ExtraTorrent search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
+
+        # Search Params
+        search_params = {
+            'cid': 8,
+            'type': 'rss',
+        }
+
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
+
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
+                    search_params['type'] = 'search'
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
-                self.search_params.update({'type': ('search', 'rss')[mode == 'RSS'], 'search': search_string})
+                search_params['search'] = search_string
                 search_url = self.urls['rss'] if not self.custom_url else self.urls['rss'].replace(self.urls['index'], self.custom_url)
-
-                data = self.get_url(search_url, params=self.search_params, returns='text')
+                data = self.get_url(search_url, params=search_params, returns='text')
                 if not data:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -102,8 +130,8 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1})'.format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -118,7 +146,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

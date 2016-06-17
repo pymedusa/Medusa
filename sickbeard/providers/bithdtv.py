@@ -87,6 +87,8 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                 if mode != 'RSS':
                     search_params['search'] = search_string
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 if mode == 'Season':
                     search_params['cat'] = 12
@@ -96,8 +98,7 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                # Need the html.parser, as the html5parser has issues with this site.
-                with BS4Parser(response.text, 'html.parser') as html:
+                with BS4Parser(response.text, 'html.parser') as html:  # Use html.parser, since html5parser has issues with this site.
                     all_tables = html('table', width='750')  # Get the last table with a width of 750px.
                     if all_tables:
                         result_table = all_tables[-1]
@@ -131,8 +132,8 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 

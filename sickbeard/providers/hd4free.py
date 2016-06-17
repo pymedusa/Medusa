@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import traceback
 
 from requests.compat import urljoin
+
 from sickbeard import logger, tvcache
 
 from sickrage.helper.common import convert_size, try_int
@@ -28,20 +29,32 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """HD4Free Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'HD4Free')
 
-        self.url = 'https://hd4free.xyz'
-        self.urls = {'search': urljoin(self.url, '/searchapi.php')}
-
-        self.freeleech = None
+        # Credentials
         self.username = None
         self.api_key = None
+
+        # URLs
+        self.url = 'https://hd4free.xyz'
+        self.urls = {
+            'search': urljoin(self.url, '/searchapi.php'),
+        }
+
+        # Proper Strings
+
+        # Miscellaneous Options
+        self.freeleech = None
+
+        # Torrent Stats
         self.minseed = None
         self.minleech = None
 
+        # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # Only poll HD4Free every 10 minutes max
 
     def _check_auth(self):
@@ -52,39 +65,48 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         return False
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        HD4Free search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self._check_auth:
             return results
 
+        # Search Params
         search_params = {
             'tv': 'true',
             'username': self.username,
-            'apikey': self.api_key
+            'apikey': self.api_key,
+            'fl': 'true' if self.freeleech else None
         }
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
-                if self.freeleech:
-                    search_params['fl'] = 'true'
-                else:
-                    search_params.pop('fl', '')
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
                     search_params['search'] = search_string
                 else:
-                    search_params.pop('search', '')
+                    search_params['search'] = None
+
                 try:
                     jdata = self.get_url(self.urls['search'], params=search_params, returns='json')
                 except ValueError:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
+                # Continue only if at least one release is found
                 if not jdata:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                     continue
 
                 error = jdata.get('error')
@@ -108,10 +130,12 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                         seeders = jdata[i]['seeders']
                         leechers = jdata[i]['leechers']
+
+                        # Filter unseeded torrent
                         if seeders < min(self.minseed, 1):
                             if mode != 'RSS':
-                                logger.log("Discarding torrent because it doesn't meet the"
-                                           ' minimum seeders: {0}. Seeders: {1})'.format
+                                logger.log("Discarding torrent because it doesn't meet the "
+                                           "minimum seeders: {0}. Seeders: {1}".format
                                            (title, seeders), logger.DEBUG)
                             continue
 
@@ -125,7 +149,7 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                             'seeders': seeders,
                             'leechers': leechers,
                             'pubdate': None,
-                            'hash': None
+                            'hash': None,
                         }
                         if mode != 'RSS':
                             logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

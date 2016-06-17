@@ -37,16 +37,23 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
         # Provider Init
         NZBProvider.__init__(self, 'Anizb')
 
+        # Credentials
         self.public = True
-        self.supports_absolute_numbering = True
-        self.anime_only = True
 
+        # URLs
         self.url = 'https://anizb.org/'
         self.urls = {
             'rss': self.url,
             'api': urljoin(self.url, 'api/?q=')
         }
+
         # Proper Strings
+
+        # Miscellaneous Options
+        self.supports_absolute_numbering = True
+        self.anime_only = True
+
+        # Torrent Stats
 
         # Cache
         self.cache = tvcache.TVCache(self)
@@ -58,21 +65,20 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
         """Start searching for anime using the provided search_strings. Used for backlog and daily"""
         results = []
-
         if self.show and not self.show.is_anime:
             return results
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                     search_url = (self.urls['rss'], self.urls['api'] + search_string)[mode != 'RSS']
-
                     data = self.get_url(search_url, returns='text')
                     if not data:
                         logger.log('No data returned from provider', logger.DEBUG)
@@ -101,7 +107,7 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
                                 item = {
                                     'title': title,
                                     'link': download_url,
-                                    'size': size
+                                    'size': size,
                                 }
 
                                 items.append(item)
