@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 import traceback
 import json
 
+from requests.compat import urljoin
 from requests.compat import urlencode
 
 from sickbeard import logger, tvcache
@@ -34,18 +35,31 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
     def __init__(self):
         """ Initialize the class """
+
+        # Provider Init
         TorrentProvider.__init__(self, 'Norbits')
 
+        # Credentials
         self.username = None
         self.passkey = None
+
+        # URLs
+        self.url = 'https://norbits.net'
+        self.urls = {
+            'search': urljoin(self.url, 'api2.php?action=torrents'),
+            'download': urljoin(self.url, 'download.php?'),
+        }
+
+        # Proper Strings
+
+        # Miscellaneous Options
+
+        # Torrent Stats
         self.minseed = None
         self.minleech = None
 
+        # Cache
         self.cache = tvcache.TVCache(self, min_time=20)  # only poll Norbits every 15 minutes max
-
-        self.url = 'https://norbits.net'
-        self.urls = {'search': self.url + '/api2.php?action=torrents',
-                     'download': self.url + '/download.php?'}
 
     def _check_auth(self):
 
@@ -72,12 +86,13 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
+
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format
-                               (search_string), logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 post_data = {
                     'username': self.username,
@@ -100,6 +115,7 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                         logger.log('Resulting JSON from provider is not correct, '
                                    'not parsing it', logger.ERROR)
 
+                    # Skip column headers
                     for item in json_items.get('torrents', []):
                         try:
                             title = item.pop('name', '')
@@ -113,10 +129,12 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                             seeders = try_int(item.pop('seeders', 0))
                             leechers = try_int(item.pop('leechers', 0))
 
+                            # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
-                                logger.log('Discarding torrent because it does not meet '
-                                           'the minimum seeders: {0}. Seeders: {1})'.format
-                                           (title, seeders), logger.DEBUG)
+                                if mode != 'RSS':
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
+                                               (title, seeders), logger.DEBUG)
                                 continue
 
                             info_hash = item.pop('info_hash', '')
@@ -129,7 +147,7 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': info_hash
+                                'hash': info_hash,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

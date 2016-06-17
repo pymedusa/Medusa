@@ -28,17 +28,27 @@ from sickrage.providers.nzb.NZBProvider import NZBProvider
 
 
 class BinSearchProvider(NZBProvider):
-
+    """BinSearch Newznab provider"""
     def __init__(self):
 
+        # Provider Init
         NZBProvider.__init__(self, 'BinSearch')
 
-        self.url = 'https://www.binsearch.info'
-        self.urls = {'rss': urljoin(self.url, 'rss.php')}
-
+        # Credentials
         self.public = True
         self.supports_backlog = False
 
+        # URLs
+        self.url = 'https://www.binsearch.info'
+        self.urls = {
+            'rss': urljoin(self.url, 'rss.php')
+        }
+
+        # Proper Strings
+
+        # Miscellaneous Options
+
+        # Cache
         self.cache = BinSearchCache(self, min_time=30)  # only poll Binsearch every 30 minutes max
 
 

@@ -32,7 +32,7 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """ABNormal Torrent provider"""
     def __init__(self):
 
         # Provider Init
@@ -41,10 +41,6 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         # Credentials
         self.username = None
         self.password = None
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # URLs
         self.url = 'https://abnormal.ws'
@@ -55,6 +51,12 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
         # Proper Strings
         self.proper_strings = ['PROPER']
+
+        # Miscellaneous Options
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
         # Cache
         self.cache = tvcache.TVCache(self, min_time=30)
@@ -80,16 +82,32 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         return True
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        ABNormal search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
 
         # Search Params
         search_params = {
-            'cat[]': ['TV|SD|VOSTFR', 'TV|HD|VOSTFR', 'TV|SD|VF', 'TV|HD|VF',
-                      'TV|PACK|FR', 'TV|PACK|VOSTFR', 'TV|EMISSIONS', 'ANIME'],
-            # Both ASC and DESC are available for sort direction
-            'way': 'DESC'
+            'cat[]': [
+                'TV|SD|VOSTFR',
+                'TV|HD|VOSTFR',
+                'TV|SD|VF',
+                'TV|HD|VF',
+                'TV|PACK|FR',
+                'TV|PACK|VOSTFR',
+                'TV|EMISSIONS',
+                'ANIME',
+            ],
+            'order': 'Time',  # Sorting: Available parameters: ReleaseName, Seeders, Leechers, Snatched, Size
+            'way': 'DESC',  # Both ASC and DESC are available for sort direction
         }
 
         # Units
@@ -97,19 +115,19 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
+                    search_params['order'] = 'Seeders'
 
-                # Sorting: Available parameters: ReleaseName, Seeders, Leechers, Snatched, Size
-                search_params['order'] = ('Seeders', 'Time')[mode == 'RSS']
                 search_params['search'] = re.sub(r'[()]', '', search_string)
                 data = self.get_url(self.urls['search'], params=search_params, returns='text')
                 if not data:
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 with BS4Parser(data, 'html5lib') as html:
@@ -143,8 +161,8 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the"
-                                               'minimum seeders: {0}. Seeders: {1})'.format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -159,7 +177,7 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

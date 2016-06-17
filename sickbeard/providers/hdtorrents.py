@@ -33,26 +33,34 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """HDTorrents Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'HDTorrents')
 
+        # Credentials
         self.username = None
         self.password = None
 
-        self.minseed = None
-        self.minleech = None
-        self.freeleech = None
-
+        # URLs
         self.url = 'https://hd-torrents.org/'
         self.urls = {
             'login': urljoin(self.url, 'login.php'),
             'search': urljoin(self.url, 'torrents.php'),
         }
 
+        # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
+        # Miscellaneous Options
+        self.freeleech = None
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
+        # Cache
         self.cache = tvcache.TVCache(self, min_time=30)
 
     def _check_auth(self):
@@ -84,7 +92,15 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         return True
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        HDTorrents search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
@@ -99,20 +115,19 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             'category[2]': 30,
             'category[3]': 38,
             'category[4]': 65,
+            'active': 5 if self.freeleech else None,
         }
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
                     search_params['search'] = search_string
-                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
-
-                if self.freeleech:
-                    search_params['active'] = 5
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
                 if not response or not response.text:
@@ -160,8 +175,8 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -175,7 +190,7 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

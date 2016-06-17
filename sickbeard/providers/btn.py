@@ -36,21 +36,31 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class BTNProvider(TorrentProvider):
-
+    """BTN Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'BTN')
 
-        self.supports_absolute_numbering = True
-
+        # Credentials
         self.api_key = None
 
+        # URLs
+        self.url = 'http://broadcasthe.net/'
+        self.urls = {
+            'base_url': 'http://api.btnapps.net',
+            'website': self.url,
+        }
+
+        # Proper Strings
+
+        # Miscellaneous Options
+        self.supports_absolute_numbering = True
+
+        # Torrent Stats
+
+        # Cache
         self.cache = BTNCache(self, min_time=15)  # Only poll BTN every 15 minutes max
-
-        self.urls = {'base_url': 'http://api.btnapps.net',
-                     'website': 'http://broadcasthe.net/', }
-
-        self.url = self.urls['website']
 
     def _check_auth(self):
         if not self.api_key:
@@ -71,32 +81,37 @@ class BTNProvider(TorrentProvider):
         return True
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint:disable=too-many-locals
+        """
+        BTN search and parsing
 
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
+        results = []
         self._check_auth()
 
-        results = []
-        params = {}
-        apikey = self.api_key
+        # Search Params
+        search_params = {
+        }
 
         # age in seconds
         if age:
-            params['age'] = '<=' + str(int(age))
+            search_params['age'] = '<=' + str(int(age))
 
         if search_strings:
-            params.update(search_strings)
+            search_params.update(search_strings)
             logger.log('Search string: %s' % search_strings, logger.DEBUG)
 
-        parsed_json = self._api_call(apikey, params)
+        parsed_json = self._api_call(self.apikey, search_params)
         if not parsed_json:
             logger.log('No data returned from provider', logger.DEBUG)
             return results
 
         if self._checkAuthFromData(parsed_json):
 
-            if 'torrents' in parsed_json:
-                found_torrents = parsed_json['torrents']
-            else:
-                found_torrents = {}
+            found_torrents = parsed_json.get('torrents', {})
 
             # We got something, we know the API sends max 1000 results at a time.
             # See if there are more than 1000 results for our query, if not we
@@ -112,7 +127,7 @@ class BTNProvider(TorrentProvider):
 
                 # +1 because range(1,4) = 1, 2, 3
                 for page in range(1, pages_needed + 1):
-                    parsed_json = self._api_call(apikey, params, results_per_page, page * results_per_page)
+                    parsed_json = self._api_call(self.apikey, search_params, results_per_page, page * results_per_page)
                     # Note that this these are individual requests and might time out individually. This would result in 'gaps'
                     # in the results. There is no way to fix this though.
                     if 'torrents' in parsed_json:

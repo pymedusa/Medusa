@@ -22,6 +22,7 @@ import re
 import time
 import traceback
 
+from requests.compat import urljoin
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
 
 from sickbeard import logger, tvcache
@@ -32,30 +33,40 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """FreshOnTV Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'FreshOnTV')
 
-        self._uid = None
-        self._hash = None
+        # Credentials
         self.username = None
         self.password = None
-        self.minseed = None
-        self.minleech = None
+        self._uid = None
+        self._hash = None
+        self.cookies = None
+
+        # URLs
+        self.url = 'https://freshon.tv'
+        self.urls = {
+            'base_url': self.url,
+            'login': urljoin(self.url, 'login.php'),
+            'detail': urljoin(self.url, 'details.php?id=%s'),
+            'search': urljoin(self.url, 'browse.php?incldead=%s&words=0&cat=0&search=%s'),
+            'download': urljoin(self.url, 'download.php?id=%s&type=torrent'),
+        }
+
+        # Proper Strings
+
+        # Miscellaneous Options
         self.freeleech = False
 
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
+        # Cache
         self.cache = tvcache.TVCache(self)
-
-        self.urls = {'base_url': 'https://freshon.tv/',
-                     'login': 'https://freshon.tv/login.php?action=makelogin',
-                     'detail': 'https://freshon.tv/details.php?id=%s',
-                     'search': 'https://freshon.tv/browse.php?incldead=%s&words=0&cat=0&search=%s',
-                     'download': 'https://freshon.tv/download.php?id=%s&type=torrent'}
-
-        self.url = self.urls['base_url']
-
-        self.cookies = None
 
     def _check_auth(self):
 
@@ -68,13 +79,16 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         if any(dict_from_cookiejar(self.session.cookies).values()):
             return True
 
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+            'login': 'submit',
+            'action': 'makelogin',
+        }
+
         if self._uid and self._hash:
             add_dict_to_cookiejar(self.session.cookies, self.cookies)
         else:
-            login_params = {'username': self.username,
-                            'password': self.password,
-                            'login': 'submit'}
-
             response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
             if not response:
                 logger.log('Unable to connect to provider', logger.WARNING)
@@ -114,12 +128,13 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_url = self.urls['search'] % (freeleech, search_string)
 
@@ -222,7 +237,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                     'seeders': seeders,
                                     'leechers': leechers,
                                     'pubdate': None,
-                                    'hash': None
+                                    'hash': None,
                                 }
                                 if mode != 'RSS':
                                     logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

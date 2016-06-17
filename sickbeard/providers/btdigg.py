@@ -28,7 +28,7 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class BTDiggProvider(TorrentProvider):
-
+    """BTDigg Torrent provider"""
     def __init__(self):
 
         # Provider Init
@@ -36,17 +36,21 @@ class BTDiggProvider(TorrentProvider):
 
         self.public = True
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # URLs
         self.url = 'https://btdigg.org'
-        self.urls = {'api': 'https://api.btdigg.org/api/private-341ada3245790954/s02'}
+        self.urls = {
+            'api': 'https://api.btdigg.org/api/private-341ada3245790954/s02',
+        }
         self.custom_url = None
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK']
+
+        # Miscellaneous Options
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
         # Use this hacky way for RSS search since most results will use this codecs
         cache_params = {'RSS': ['x264', 'x264.HDTV', '720.HDTV.x264']}
@@ -56,20 +60,24 @@ class BTDiggProvider(TorrentProvider):
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
         results = []
-        search_params = {'p': 0}
+
+        # Search Params
+        search_params = {
+            'p': 0,
+            'order': 2,
+        }
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
                 search_params['q'] = search_string
 
                 if mode != 'RSS':
                     search_params['order'] = 0
-                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
-                else:
-                    search_params['order'] = 2
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
                 if self.custom_url:
                     # if not validators.url(self.custom_url):
                         # logger.log('Invalid custom url set, please check your settings', logger.WARNING)
@@ -80,7 +88,7 @@ class BTDiggProvider(TorrentProvider):
 
                 jdata = self.get_url(search_url, params=search_params, returns='json')
                 if not jdata:
-                    logger.log('Provider did not return data', logger.DEBUG)
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 for torrent in jdata:
@@ -122,7 +130,7 @@ class BTDiggProvider(TorrentProvider):
                             'seeders': seeders,
                             'leechers': leechers,
                             'pubdate': None,
-                            'hash': None
+                            'hash': None,
                         }
                         if mode != 'RSS':
                             logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
