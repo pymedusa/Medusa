@@ -278,7 +278,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         if not self._check_auth():
             return results
 
-        # For providers that don't have no caps, or for which the t=caps is not working.
+        # For providers that don't have caps, or for which the t=caps is not working.
         if not self.caps and all(provider not in self.url for provider in ['gingadaddy', 'usenet-crawler']):
             self.get_newznab_categories(just_caps=True)
             if not self.caps:
@@ -313,12 +313,13 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                     search_params.pop('ep', '')
 
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                     if search_params['t'] != 'tvsearch':
                         search_params['q'] = search_string
@@ -379,7 +380,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

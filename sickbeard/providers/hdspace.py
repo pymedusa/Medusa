@@ -34,23 +34,28 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """HDSpace Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'HDSpace')
 
+        # Credentials
         self.username = None
         self.password = None
-        self.minseed = None
-        self.minleech = None
 
-        self.cache = tvcache.TVCache(self, min_time=10)  # only poll HDSpace every 10 minutes max
+        # URLs
+        self.url = 'https://hd-space.org'
+        self.urls = {
+            'base_url': self.url,
+            'login': 'https://hd-space.org/index.php',
+            'search': 'https://hd-space.org/index.php?page=torrents&search=%s&active=1&options=0',
+            'rss': 'https://hd-space.org/rss_torrents.php?feed=dl',
+        }
 
-        self.urls = {'base_url': 'https://hd-space.org/',
-                     'login': 'https://hd-space.org/index.php?page=login',
-                     'search': 'https://hd-space.org/index.php?page=torrents&search=%s&active=1&options=0',
-                     'rss': 'https://hd-space.org/rss_torrents.php?feed=dl'}
+        # Proper Strings
 
+        # Miscellaneous Options
         self.categories = [15, 21, 22, 24, 25, 40]  # HDTV/DOC 1080/720, bluray, remux
         self.urls['search'] += '&category='
         for cat in self.categories:
@@ -58,7 +63,12 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
             self.urls['rss'] += '&cat[]=' + str(cat)
         self.urls['search'] = self.urls['search'][:-4]  # remove extra %%3B
 
-        self.url = self.urls['base_url']
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
+        # Cache
+        self.cache = tvcache.TVCache(self, min_time=10)  # only poll HDSpace every 10 minutes max
 
     def _check_auth(self):
 
@@ -74,8 +84,11 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         if 'pass' in dict_from_cookiejar(self.session.cookies):
             return True
 
-        login_params = {'uid': self.username,
-                        'pwd': self.password}
+        login_params = {
+            'uid': self.username,
+            'pwd': self.password,
+            'page': 'login',
+        }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
         if not response:
@@ -88,24 +101,31 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         return True
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals, too-many-statements
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        HDSpace search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
+
                 if mode != 'RSS':
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
                     search_url = self.urls['search'] % (quote_plus(search_string.replace('.', ' ')),)
                 else:
                     search_url = self.urls['search'] % ''
-
-                if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
 
                 data = self.get_url(search_url, returns='text')
                 if not data or 'please try later' in data:
@@ -150,8 +170,8 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1})'.format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -165,7 +185,7 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

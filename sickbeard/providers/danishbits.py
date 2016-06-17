@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import traceback
 
+from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
@@ -46,13 +47,17 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.freeleech = True
 
         # URLs
-        self.url = 'https://danishbits.org/'
+        self.url = 'https://danishbits.org'
         self.urls = {
-            'login': self.url + 'login.php',
-            'search': self.url + 'torrents.php',
+            'login': urljoin(self.url, 'login.php'),
+            'search': urljoin(self.url, 'torrents.php'),
         }
 
         # Proper Strings
+
+        # Miscellaneous Options
+
+        # Torrent Stats
 
         # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # Only poll Danishbits every 10 minutes max
@@ -83,6 +88,14 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return True
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        DanishBits search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
@@ -107,16 +120,15 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_params['search'] = search_string
-
                 data = self.get_url(self.urls['search'], params=search_params, returns='text')
                 if not data:
                     logger.log('No data returned from provider', logger.DEBUG)
@@ -137,6 +149,9 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                     # Skip column headers
                     for result in torrent_rows[1:]:
+                        cells = result('td')
+                        if len(cells) < len(labels):
+                            continue
 
                         try:
                             title = result.find(class_='croptorrenttext').get_text(strip=True)
@@ -144,16 +159,14 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             if not all([title, download_url]):
                                 continue
 
-                            cells = result('td')
-
                             seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
                             leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1})'.format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -171,7 +184,7 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import re
 import traceback
 
+from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
@@ -43,19 +44,21 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         self.username = None
         self.password = None
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # URLs
-        self.url = 'https://www.thegft.org/'
+        self.url = 'https://www.thegft.org'
         self.urls = {
-            'login': self.url + 'loginsite.php',
-            'search': self.url + 'browse.php',
+            'login': urljoin(self.url, 'loginsite.php'),
+            'search': urljoin(self.url, 'browse.php'),
         }
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+
+        # Miscellaneous Options
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
         # Cache
         self.cache = tvcache.TVCache(self)
@@ -91,6 +94,14 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         return True
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        GFT search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
@@ -121,16 +132,15 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_params['search'] = search_string
-
                 data = self.get_url(self.urls['search'], params=search_params, returns='text')
                 if not data:
                     logger.log('No data returned from provider', logger.DEBUG)
@@ -140,7 +150,7 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                     torrent_table = html.find('div', id='torrentBrowse')
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
-                    # Continue only if at least one Release is found
+                    # Continue only if at least one release is found
                     if len(torrent_rows) < 2:
                         logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
@@ -167,8 +177,8 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1})'.format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -182,7 +192,7 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

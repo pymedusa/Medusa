@@ -33,7 +33,7 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """MoreThanTV Torrent provider"""
     def __init__(self):
 
         # Provider Init
@@ -45,11 +45,6 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self._uid = None
         self._hash = None
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-        self.freeleech = None
-
         # URLs
         self.url = 'https://www.morethan.tv/'
         self.urls = {
@@ -59,6 +54,13 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK']
+
+        # Miscellaneous Options
+        self.freeleech = None
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
         # Cache
         self.cache = tvcache.TVCache(self)
@@ -94,6 +96,14 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return True
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        MoreThanTV search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
@@ -105,7 +115,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             'order_way': 'desc',
             'action': 'basic',
             'searchsubmit': 1,
-            'searchstr': ''
+            'searchstr': '',
         }
 
         # Units
@@ -121,13 +131,13 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_params['searchstr'] = search_string
 
@@ -140,7 +150,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     torrent_table = html.find('table', class_='torrent_table')
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
-                    # Continue only if at least one Release is found
+                    # Continue only if at least one release is found
                     if len(torrent_rows) < 2:
                         logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
@@ -149,6 +159,10 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                     # Skip column headers
                     for result in torrent_rows[1:]:
+                        cells = result('td')
+                        if len(cells) < len(labels):
+                            continue
+
                         try:
                             # skip if torrent has been nuked due to poor quality
                             if result.find('img', alt='Nuked'):
@@ -159,15 +173,14 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             if not all([title, download_url]):
                                 continue
 
-                            cells = result('td')
                             seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
                             leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the"
-                                               " minimum seeders: {0}. Seeders: {1})".format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -181,7 +194,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

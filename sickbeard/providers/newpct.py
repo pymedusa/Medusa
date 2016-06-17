@@ -33,45 +33,58 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class newpctProvider(TorrentProvider):
-
+    """Newpct Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'Newpct')
 
+        # Credentials
+
+        # URLs
+        self.url = 'http://www.newpct.com'
+        self.urls = {
+            'search': urljoin(self.url, 'index.php'),
+        }
+
+        # Proper Strings
+
+        # Miscellaneous Options
         self.onlyspasearch = None
 
-        self.url = 'http://www.newpct.com'
-        self.urls = {'search': urljoin(self.url, 'index.php')}
+        # Torrent Stats
 
+        # Cache
         self.cache = tvcache.TVCache(self, min_time=20)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
-        Search query:
-        http://www.newpct.com/index.php?l=doSearch&q=fringe&category_=All&idioma_=1&bus_de_=All
+        Newpct search and parsing
 
-        q => Show name
-        category_ = Category 'Shows' (767)
-        idioma_ = Language Spanish (1)
-        bus_de_ = Date from (All, hoy)
-
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
         """
+
         results = []
 
         # Only search if user conditions are true
         lang_info = '' if not ep_obj or not ep_obj.show else ep_obj.show.lang
 
+        # http://www.newpct.com/index.php?l=doSearch&q=fringe&category_=All&idioma_=1&bus_de_=All
+        # Search Params
         search_params = {
             'l': 'doSearch',
-            'q': '',
-            'category_': 'All',
-            'idioma_': 1,
-            'bus_de_': 'All'
+            'q': '',  # Show name
+            'category_': 'All',  # Category 'Shows' (767)
+            'idioma_': 1,  # Language Spanish (1)
+            'bus_de_': 'All'  # Date from (All, hoy)
         }
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             # Only search if user conditions are true
             if self.onlyspasearch and lang_info != 'es' and mode != 'RSS':
@@ -81,41 +94,45 @@ class newpctProvider(TorrentProvider):
             search_params['bus_de_'] = 'All' if mode != 'RSS' else 'hoy'
 
             for search_string in search_strings[mode]:
+
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_params['q'] = search_string
-
                 data = self.get_url(self.urls['search'], params=search_params, returns='text')
                 if not data:
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 with BS4Parser(data, 'html5lib') as html:
                     torrent_table = html.find('table', id='categoryTable')
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
-                    # Continue only if at least one Release is found
+                    # Continue only if at least one release is found
                     if len(torrent_rows) < 3:  # Headers + 1 Torrent + Pagination
                         logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
 
                     # 'Fecha', 'Título', 'Tamaño', ''
-                    # Date, Title, Size
+                    # Date,    Title,     Size
                     labels = [label.get_text(strip=True) for label in torrent_rows[0]('th')]
-                    for row in torrent_rows[1:-1]:
-                        try:
-                            cells = row('td')
 
+                    # Skip column headers
+                    for row in torrent_rows[1:-1]:
+                        cells = row('td')
+                        if len(cells) < len(labels):
+                            continue
+
+                        try:
                             torrent_row = row.find('a')
                             title = self._processTitle(torrent_row.get('title', ''))
                             download_url = torrent_row.get('href', '')
                             if not all([title, download_url]):
                                 continue
 
-                            # Provider does not provide seeders/leechers
-                            seeders = 1
-                            leechers = 0
+                            seeders = 1  # Provider does not provide seeders
+                            leechers = 0  # Provider does not provide leechers
                             torrent_size = cells[labels.index('Tamaño')].get_text(strip=True)
                             size = convert_size(torrent_size) or -1
 
@@ -126,7 +143,7 @@ class newpctProvider(TorrentProvider):
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

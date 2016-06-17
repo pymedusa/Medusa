@@ -29,21 +29,35 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class CpasbienProvider(TorrentProvider):
-
+    """Cpasbien Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'Cpasbien')
 
+        # Credentials
         self.public = True
-        self.minseed = None
-        self.minleech = None
+
+        # URLs
         self.url = 'http://www.cpasbien.cm'
 
+        # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK']
+
+        # Miscellaneous Options
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
+        # Cache
         self.cache = tvcache.TVCache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
         results = []
+
+        # Units
+        units = ['o', 'Ko', 'Mo', 'Go', 'To', 'Po']
 
         for mode in search_strings:
             items = []
@@ -52,8 +66,8 @@ class CpasbienProvider(TorrentProvider):
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
                     search_url = self.url + '/recherche/' + search_string.replace('.', '-').replace(' ', '-') + '.html,trie-seeds-d'
                 else:
                     search_url = self.url + '/view_cat.php?categorie=series&trie=date-d'
@@ -75,16 +89,16 @@ class CpasbienProvider(TorrentProvider):
 
                             seeders = try_int(result.find(class_='up').get_text(strip=True))
                             leechers = try_int(result.find(class_='down').get_text(strip=True))
+
+                            # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1})'.format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
                             torrent_size = result.find(class_='poid').get_text(strip=True)
-
-                            units = ['o', 'Ko', 'Mo', 'Go', 'To', 'Po']
                             size = convert_size(torrent_size, units=units) or -1
 
                             item = {
@@ -94,7 +108,7 @@ class CpasbienProvider(TorrentProvider):
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -19,9 +19,10 @@
 from __future__ import unicode_literals
 
 import traceback
-import sickbeard
 
-from sickbeard import logger, tvcache
+from requests.compat import urljoin
+
+from sickbeard import logger, tvcache, TORRENT_METHOD
 from sickbeard.bs4_parser import BS4Parser
 
 from sickrage.helper.common import convert_size, try_int
@@ -29,41 +30,57 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """BitSnoop Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'BitSnoop')
 
+        # Credentials
+        self.public = True
+
+        # URLs
+        self.url = 'http://bitsnoop.com'
         self.urls = {
-            'index': 'http://bitsnoop.com',
-            'search': 'http://bitsnoop.com/search/video/',
-            'rss': 'http://bitsnoop.com/new_video.html?fmt=rss'
+            'index': self.url,
+            'search': urljoin(self.url, '/search/video/'),
+            'rss': urljoin(self.url, '/new_video.html?fmt=rss'),
         }
 
-        self.url = self.urls['index']
+        # Proper Strings
+        self.proper_strings = ['PROPER', 'REPACK']
 
-        self.public = True
+        # Miscellaneous Options
+
+        # Torrent Stats
         self.minseed = None
         self.minleech = None
 
-        self.proper_strings = ['PROPER', 'REPACK']
-
+        # Cache
         self.cache = tvcache.TVCache(self, search_params={'RSS': ['rss']})
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches,too-many-locals
+        """
+        BitSnoop search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_url = (self.urls['rss'], self.urls['search'] + search_string + '/s/d/1/?fmt=rss')[mode != 'RSS']
-
                 data = self.get_url(search_url, returns='text')
                 if not data:
                     logger.log('No data returned from provider', logger.DEBUG)
@@ -86,7 +103,7 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                             # because we want to use magnets if connecting direct to client
                             # so that proxies work.
                             download_url = item.enclosure['url']
-                            if sickbeard.TORRENT_METHOD != 'blackhole' or 'torcache' not in download_url:
+                            if TORRENT_METHOD != 'blackhole' or 'torcache' not in download_url:
                                 download_url = item.find('magneturi').next.replace('CDATA', '').strip('[]') + self._custom_trackers
 
                             if not (title and download_url):
@@ -98,8 +115,8 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -114,7 +131,7 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': info_hash
+                                'hash': info_hash,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
