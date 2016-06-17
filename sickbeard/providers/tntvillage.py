@@ -118,6 +118,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         search_params = {
             'act': 'allreleases',
             'filter': '',
+            'cat': 29,
         }
 
         for mode in search_strings:
@@ -134,8 +135,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
                     search_params['filter'] = search_string
-                else:
-                    search_params['cat'] = 29
+                    search_params['cat'] = None
 
                 response = self.get_url(self.url, params=search_params, returns='response')
                 if not response or not response.text:
