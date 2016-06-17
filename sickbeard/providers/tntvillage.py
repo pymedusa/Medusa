@@ -209,7 +209,6 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                        (traceback.format_exc()), logger.ERROR)
                             continue
 
-                items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
                 results += items
 
         return results
