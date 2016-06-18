@@ -62,7 +62,7 @@
                                 <label>
                                     <span class="component-title">Backlog search day(s)</span>
                                     <span class="component-desc">
-                                        <input type="number" min="1" step="1" name="backlog_days" value="${sickbeard.BACKLOG_DAYS}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <input type="number" min="1" step="1" name="backlog_days" value="${sickbeard.BACKLOG_DAYS}" class="form-control input-sm input75"/>
                                         <p>number of day(s) that the "Forced Backlog Search" will cover (e.g. 7 Days)</p>
                                     </span>
                                 </label>
@@ -71,7 +71,7 @@
                                 <label>
                                     <span class="component-title">Backlog search frequency</span>
                                     <span class="component-desc">
-                                        <input type="number" min="720" step="1" name="backlog_frequency" value="${sickbeard.BACKLOG_FREQUENCY}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <input type="number" min="720" step="1" name="backlog_frequency" value="${sickbeard.BACKLOG_FREQUENCY}" class="form-control input-sm input75"/>
                                         <p>time in minutes between searches (min. ${sickbeard.MIN_BACKLOG_FREQUENCY})</p>
                                     </span>
                                 </label>
@@ -80,7 +80,7 @@
                                 <label>
                                     <span class="component-title">Daily search frequency</span>
                                     <span class="component-desc">
-                                        <input type="number" min="10" step="1" name="dailysearch_frequency" value="${sickbeard.DAILYSEARCH_FREQUENCY}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <input type="number" min="10" step="1" name="dailysearch_frequency" value="${sickbeard.DAILYSEARCH_FREQUENCY}" class="form-control input-sm input75"/>
                                         <p>time in minutes between searches (min. ${sickbeard.MIN_DAILYSEARCH_FREQUENCY})</p>
                                         </span>
                                 </label>
@@ -89,7 +89,7 @@
                                 <label>
                                     <span class="component-title">Usenet retention</span>
                                     <span class="component-desc">
-                                        <input type="number" min="1" step="1" name="usenet_retention" value="${sickbeard.USENET_RETENTION}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <input type="number" min="1" step="1" name="usenet_retention" value="${sickbeard.USENET_RETENTION}" class="form-control input-sm input75"/>
                                         <p>age limit in days for usenet articles to be used (e.g. 500)</p>
                                     </span>
                                 </label>
@@ -98,7 +98,7 @@
                                 <label>
                                     <span class="component-title">Trackers list</span>
                                     <span class="component-desc">
-                                        <input type="text" name="trackers_list" value="${sickbeard.TRACKERS_LIST}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="trackers_list" value="${sickbeard.TRACKERS_LIST}" class="form-control input-sm input350"/>
                                         <div class="clear-left">Trackers that will be added to magnets without trackers<br />
                                         separate trackers with a comma, e.g. "tracker1,tracker2,tracker3"
                                         </div>
@@ -147,7 +147,7 @@
                                 <label for="max_cache_age">
                                     <span class="component-title">Cache Retention</span>
                                     <span class="component-desc">
-                                        <input type="number" min="1" step="1" name="max_cache_age" id="max_cache_age" value="${sickbeard.MAX_CACHE_AGE}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <input type="number" min="1" step="1" name="max_cache_age" id="max_cache_age" value="${sickbeard.MAX_CACHE_AGE}" class="form-control input-sm input75"/>
                                         days<br />
                                         <br />
                                         Number of days to retain results in cache.  Results older than this will be removed if cache trimming is enabled.
@@ -167,7 +167,7 @@
                                 <label>
                                     <span class="component-title">Ignore words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="ignore_words" value="${sickbeard.IGNORE_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="ignore_words" value="${sickbeard.IGNORE_WORDS}" class="form-control input-sm input350"/>
                                         <div class="clear-left">results with any words from this list will be ignored<br />
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
@@ -178,7 +178,7 @@
                                 <label>
                                     <span class="component-title">Undesired words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="undesired_words" value="${sickbeard.UNDESIRED_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="undesired_words" value="${sickbeard.UNDESIRED_WORDS}" class="form-control input-sm input350"/>
                                         <div class="clear-left">results with words from this list will only be selected as a last resort<br />
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
@@ -189,7 +189,7 @@
                                 <label>
                                     <span class="component-title">Preferred words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="preferred_words" value="${sickbeard.PREFERRED_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="preferred_words" value="${sickbeard.PREFERRED_WORDS}" class="form-control input-sm input350"/>
                                         <div class="clear-left">results with one or more word from this list will be chosen over others<br />
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
@@ -200,7 +200,7 @@
                                 <label>
                                     <span class="component-title">Require words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="require_words" value="${sickbeard.REQUIRE_WORDS}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="require_words" value="${sickbeard.REQUIRE_WORDS}" class="form-control input-sm input350"/>
                                         <div class="clear-left">results must include at least one word from this list<br />
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
@@ -211,7 +211,7 @@
                                 <label>
                                     <span class="component-title">Ignore language names in subbed results</span>
                                     <span class="component-desc">
-                                        <input type="text" name="ignored_subs_list" value="${sickbeard.IGNORED_SUBS_LIST}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="ignored_subs_list" value="${sickbeard.IGNORED_SUBS_LIST}" class="form-control input-sm input350"/>
                                         <div class="clear-left">Ignore subbed releases based on language names <br />
                                         Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br />
                                         separate languages with a comma, e.g. "lang1,lang2,lang3
@@ -267,7 +267,7 @@
                                 <label>
                                     <span class="component-title">Black hole folder location</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzb_dir" id="nzb_dir" value="${sickbeard.NZB_DIR}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="nzb_dir" id="nzb_dir" value="${sickbeard.NZB_DIR}" class="form-control input-sm input350"/>
                                         <div class="clear-left"><p><b>.nzb</b> files are stored at this location for external software to find and use</p></div>
                                     </span>
                                 </label>
@@ -278,7 +278,7 @@
                                 <label>
                                     <span class="component-title">SABnzbd server URL</span>
                                     <span class="component-desc">
-                                        <input type="text" id="sab_host" name="sab_host" value="${sickbeard.SAB_HOST}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" id="sab_host" name="sab_host" value="${sickbeard.SAB_HOST}" class="form-control input-sm input350"/>
                                         <div class="clear-left"><p>URL to your SABnzbd server (e.g. http://localhost:8080/)</p></div>
                                     </span>
                                 </label>
@@ -287,7 +287,8 @@
                                 <label>
                                     <span class="component-title">SABnzbd username</span>
                                     <span class="component-desc">
-                                        <input type="text" name="sab_username" id="sab_username" value="${sickbeard.SAB_USERNAME}" class="form-control input-sm input200" autocapitalize="off" autocomplete="no" />
+                                        <input type="text" name="sab_username" id="sab_username" value="${sickbeard.SAB_USERNAME}" class="form-control input-sm input200"
+                                               autocomplete="no" />
                                         <p>(blank for none)</p>
                                     </span>
                                 </label>
@@ -296,7 +297,7 @@
                                 <label>
                                     <span class="component-title">SABnzbd password</span>
                                     <span class="component-desc">
-                                        <input type="password" name="sab_password" id="sab_password" value="${sickbeard.SAB_PASSWORD}" class="form-control input-sm input200" autocomplete="no" autocapitalize="off" />
+                                        <input type="password" name="sab_password" id="sab_password" value="${sickbeard.SAB_PASSWORD}" class="form-control input-sm input200" autocomplete="no"/>
                                         <p>(blank for none)</p>
                                     </span>
                                 </label>
@@ -305,7 +306,7 @@
                                 <label>
                                     <span class="component-title">SABnzbd API key</span>
                                     <span class="component-desc">
-                                        <input type="text" name="sab_apikey" id="sab_apikey" value="${sickbeard.SAB_APIKEY}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="sab_apikey" id="sab_apikey" value="${sickbeard.SAB_APIKEY}" class="form-control input-sm input350"/>
                                         <div class="clear-left"><p>locate at... SABnzbd Config -> General -> API Key</p></div>
                                     </span>
                                 </label>
@@ -314,7 +315,7 @@
                                 <label>
                                     <span class="component-title">Use SABnzbd category</span>
                                     <span class="component-desc">
-                                        <input type="text" name="sab_category" id="sab_category" value="${sickbeard.SAB_CATEGORY}" class="form-control input-sm input200" autocapitalize="off" />
+                                        <input type="text" name="sab_category" id="sab_category" value="${sickbeard.SAB_CATEGORY}" class="form-control input-sm input200"/>
                                         <p>add downloads to this category (e.g. TV)</p>
                                     </span>
                                 </label>
@@ -323,7 +324,7 @@
                                 <label>
                                     <span class="component-title">Use SABnzbd category (backlog episodes)</span>
                                     <span class="component-desc">
-                                        <input type="text" name="sab_category_backlog" id="sab_category_backlog" value="${sickbeard.SAB_CATEGORY_BACKLOG}" class="form-control input-sm input200" autocapitalize="off" />
+                                        <input type="text" name="sab_category_backlog" id="sab_category_backlog" value="${sickbeard.SAB_CATEGORY_BACKLOG}" class="form-control input-sm input200"/>
                                         <p>add downloads of old episodes to this category (e.g. TV)</p>
                                     </span>
                                 </label>
@@ -332,7 +333,7 @@
                                 <label>
                                     <span class="component-title">Use SABnzbd category for anime</span>
                                     <span class="component-desc">
-                                        <input type="text" name="sab_category_anime" id="sab_category_anime" value="${sickbeard.SAB_CATEGORY_ANIME}" class="form-control input-sm input200" autocapitalize="off" />
+                                        <input type="text" name="sab_category_anime" id="sab_category_anime" value="${sickbeard.SAB_CATEGORY_ANIME}" class="form-control input-sm input200"/>
                                         <p>add anime downloads to this category (e.g. anime)</p>
                                     </span>
                                 </label>
@@ -341,7 +342,7 @@
                                 <label>
                                     <span class="component-title">Use SABnzbd category for anime (backlog episodes)</span>
                                     <span class="component-desc">
-                                        <input type="text" name="sab_category_anime_backlog" id="sab_category_anime_backlog" value="${sickbeard.SAB_CATEGORY_ANIME_BACKLOG}" class="form-control input-sm input200" autocapitalize="off" />
+                                        <input type="text" name="sab_category_anime_backlog" id="sab_category_anime_backlog" value="${sickbeard.SAB_CATEGORY_ANIME_BACKLOG}" class="form-control input-sm input200"/>
                                         <p>add anime downloads of old episodes to this category (e.g. anime)</p>
                                     </span>
                                 </label>
@@ -371,7 +372,7 @@
                                 <label>
                                     <span class="component-title">NZBget host:port</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzbget_host" id="nzbget_host" value="${sickbeard.NZBGET_HOST}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="nzbget_host" id="nzbget_host" value="${sickbeard.NZBGET_HOST}" class="form-control input-sm input350"/>
                                         <p>(e.g. localhost:6789)</p>
                                         <div class="clear-left"><p>NZBget RPC host name and port number (not NZBgetweb!)</p></div>
                                     </span>
@@ -381,7 +382,8 @@
                                 <label>
                                     <span class="component-title">NZBget username</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzbget_username" value="${sickbeard.NZBGET_USERNAME}" class="form-control input-sm input200" autocapitalize="off" autocomplete="no" />
+                                        <input type="text" name="nzbget_username" value="${sickbeard.NZBGET_USERNAME}" class="form-control input-sm input200"
+                                               autocomplete="no" />
                                         <p>locate in nzbget.conf (default:nzbget)</p>
                                     </span>
                                 </label>
@@ -390,7 +392,7 @@
                                 <label>
                                     <span class="component-title">NZBget password</span>
                                     <span class="component-desc">
-                                        <input type="password" name="nzbget_password" id="nzbget_password" value="${sickbeard.NZBGET_PASSWORD}" class="form-control input-sm input200" autocomplete="no" autocapitalize="off" />
+                                        <input type="password" name="nzbget_password" id="nzbget_password" value="${sickbeard.NZBGET_PASSWORD}" class="form-control input-sm input200" autocomplete="no"/>
                                         <p>locate in nzbget.conf (default:tegbzn6789)</p>
                                     </span>
                                 </label>
@@ -399,7 +401,7 @@
                                 <label>
                                     <span class="component-title">Use NZBget category</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzbget_category" id="nzbget_category" value="${sickbeard.NZBGET_CATEGORY}" class="form-control input-sm input200" autocapitalize="off" />
+                                        <input type="text" name="nzbget_category" id="nzbget_category" value="${sickbeard.NZBGET_CATEGORY}" class="form-control input-sm input200"/>
                                         <p>send downloads marked this category (e.g. TV)</p>
                                     </span>
                                 </label>
@@ -408,7 +410,7 @@
                                 <label>
                                     <span class="component-title">Use NZBget category (backlog episodes)</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzbget_category_backlog" id="nzbget_category_backlog" value="${sickbeard.NZBGET_CATEGORY_BACKLOG}" class="form-control input-sm input200" autocapitalize="off" />
+                                        <input type="text" name="nzbget_category_backlog" id="nzbget_category_backlog" value="${sickbeard.NZBGET_CATEGORY_BACKLOG}" class="form-control input-sm input200"/>
                                         <p>send downloads of old episodes marked this category (e.g. TV)</p>
                                     </span>
                                 </label>
@@ -417,7 +419,7 @@
                                 <label>
                                     <span class="component-title">Use NZBget category for anime</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzbget_category_anime" id="nzbget_category_anime" value="${sickbeard.NZBGET_CATEGORY_ANIME}" class="form-control input-sm input200" autocapitalize="off" />
+                                        <input type="text" name="nzbget_category_anime" id="nzbget_category_anime" value="${sickbeard.NZBGET_CATEGORY_ANIME}" class="form-control input-sm input200"/>
                                         <p>send anime downloads marked this category (e.g. anime)</p>
                                     </span>
                                 </label>
@@ -426,7 +428,7 @@
                                 <label>
                                     <span class="component-title">Use NZBget category for anime (backlog episodes)</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzbget_category_anime_backlog" id="nzbget_category_anime_backlog" value="${sickbeard.NZBGET_CATEGORY_ANIME_BACKLOG}" class="form-control input-sm input200" autocapitalize="off" />
+                                        <input type="text" name="nzbget_category_anime_backlog" id="nzbget_category_anime_backlog" value="${sickbeard.NZBGET_CATEGORY_ANIME_BACKLOG}" class="form-control input-sm input200"/>
                                         <p>send anime downloads of old episodes marked this category (e.g. anime)</p>
                                     </span>
                                 </label>
@@ -488,7 +490,7 @@
                                         <label>
                                             <span class="component-title">Black hole folder location</span>
                                             <span class="component-desc">
-                                                <input type="text" name="torrent_dir" id="torrent_dir" value="${sickbeard.TORRENT_DIR}" class="form-control input-sm input350" autocapitalize="off" />
+                                                <input type="text" name="torrent_dir" id="torrent_dir" value="${sickbeard.TORRENT_DIR}" class="form-control input-sm input350"/>
                                                 <div class="clear-left"><p><b>.torrent</b> files are stored at this location for external software to find and use</p></div>
                                             </span>
                                         </label>
@@ -501,7 +503,7 @@
                                     <label>
                                         <span class="component-title" id="host_title">Torrent host:port</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_host" id="torrent_host" value="${sickbeard.TORRENT_HOST}" class="form-control input-sm input350" autocapitalize="off" />
+                                            <input type="text" name="torrent_host" id="torrent_host" value="${sickbeard.TORRENT_HOST}" class="form-control input-sm input350"/>
                                             <div class="clear-left">
                                                 <p id="host_desc_torrent">URL to your torrent client (e.g. http://localhost:8000/)</p>
                                             </div>
@@ -512,7 +514,7 @@
                                     <label>
                                         <span class="component-title" id="rpcurl_title">Torrent RPC URL</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_rpcurl" id="torrent_rpcurl" value="${sickbeard.TORRENT_RPCURL}" class="form-control input-sm input350" autocapitalize="off" />
+                                            <input type="text" name="torrent_rpcurl" id="torrent_rpcurl" value="${sickbeard.TORRENT_RPCURL}" class="form-control input-sm input350"/>
                                             <div class="clear-left">
                                                 <p id="rpcurl_desc_">The path without leading and trailing slashes (e.g. transmission)</p>
                                             </div>
@@ -547,7 +549,8 @@
                                     <label>
                                         <span class="component-title" id="username_title">Client username</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_username" id="torrent_username" value="${sickbeard.TORRENT_USERNAME}" class="form-control input-sm input200" autocapitalize="off" autocomplete="no" />
+                                            <input type="text" name="torrent_username" id="torrent_username" value="${sickbeard.TORRENT_USERNAME}" class="form-control input-sm input200"
+                                                   autocomplete="no" />
                                             <p>(blank for none)</p>
                                         </span>
                                     </label>
@@ -556,7 +559,7 @@
                                     <label>
                                         <span class="component-title" id="password_title">Client password</span>
                                         <span class="component-desc">
-                                            <input type="password" name="torrent_password" id="torrent_password" value="${sickbeard.TORRENT_PASSWORD}" class="form-control input-sm input200" autocomplete="no" autocapitalize="off" />
+                                            <input type="password" name="torrent_password" id="torrent_password" value="${sickbeard.TORRENT_PASSWORD}" class="form-control input-sm input200" autocomplete="no"/>
                                             <p>(blank for none)</p>
                                         </span>
                                     </label>
@@ -565,7 +568,7 @@
                                     <label>
                                         <span class="component-title">Add label to torrent</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_label" id="torrent_label" value="${sickbeard.TORRENT_LABEL}" class="form-control input-sm input200" autocapitalize="off" />
+                                            <input type="text" name="torrent_label" id="torrent_label" value="${sickbeard.TORRENT_LABEL}" class="form-control input-sm input200"/>
                                             <span id="label_warning_deluge" style="display:none;"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: label plugin must be enabled in Deluge clients</p></div>
                                             </span>
@@ -579,7 +582,7 @@
                                     <label>
                                         <span class="component-title">Add label to torrent for anime</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_label_anime" id="torrent_label_anime" value="${sickbeard.TORRENT_LABEL_ANIME}" class="form-control input-sm input200" autocapitalize="off" />
+                                            <input type="text" name="torrent_label_anime" id="torrent_label_anime" value="${sickbeard.TORRENT_LABEL_ANIME}" class="form-control input-sm input200"/>
                                             <span id="label_anime_warning_deluge" style="display:none;"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: label plugin must be enabled in Deluge clients</p></div>
                                             </span>
@@ -593,7 +596,7 @@
                                     <label>
                                         <span class="component-title" id="directory_title">Downloaded files location</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_path" id="torrent_path" value="${sickbeard.TORRENT_PATH}" class="form-control input-sm input350" autocapitalize="off" />
+                                            <input type="text" name="torrent_path" id="torrent_path" value="${sickbeard.TORRENT_PATH}" class="form-control input-sm input350"/>
                                             <div class="clear-left"><p>where <span id="torrent_client">the torrent client</span> will save downloaded files (blank for client default)
                                                 <span id="path_synology"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
                                             </div>

@@ -49,7 +49,7 @@
             </div>
             <br style="clear:both;">
             <div class="blackwhitelist manual">
-                <input type="text" id="addToPoolText" class="form-control form-control-inline input-sm input250" autocapitalize="off" />
+                <input type="text" id="addToPoolText" class="form-control form-control-inline input-sm input250"/>
                 <input class="btn btn-inline" type="button" value="Add to Whitelist" id="addToWhite">
                 <input class="btn btn-inline" type="button" value="Add to Blacklist" id="addToBlack">
             </div>
