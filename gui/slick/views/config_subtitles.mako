@@ -53,7 +53,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                 <div class="field-pair">
                                     <label>
                                         <span class="component-title">Subtitle Languages</span>
-                                        <span class="component-desc"><input type="text" id="subtitles_languages" name="subtitles_languages" autocapitalize="off" /></span>
+                                        <span class="component-desc"><input type="text" id="subtitles_languages" name="subtitles_languages"/></span>
                                     </label>
                                 </div>
                                 <div class="field-pair">
@@ -152,7 +152,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                 <div class="field-pair">
                                     <label>
                                         <span class="component-title">Pre-Scripts</span>
-                                        <input type="text" name="subtitles_pre_scripts" value="${'|'.join(sickbeard.SUBTITLES_PRE_SCRIPTS)}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="subtitles_pre_scripts" value="${'|'.join(sickbeard.SUBTITLES_PRE_SCRIPTS)}" class="form-control input-sm input350"/>
                                     </label>
                                     <label>
                                         <span class="component-desc">
@@ -163,7 +163,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                 <div class="field-pair">
                                         <label>
                                         <span class="component-title">Extra Scripts</span>
-                                           <input type="text" name="subtitles_extra_scripts" value="${'|'.join(sickbeard.SUBTITLES_EXTRA_SCRIPTS)}" class="form-control input-sm input350" autocapitalize="off" />
+                                           <input type="text" name="subtitles_extra_scripts" value="${'|'.join(sickbeard.SUBTITLES_EXTRA_SCRIPTS)}" class="form-control input-sm input350"/>
                                         </label>
                                         <label>
                                         <span class="component-desc">
@@ -228,13 +228,14 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                 <label class="nocheck" for="${curService['name']}_user">
                                     <span class="component-title">${curService['name'].capitalize()} User Name</span>
                                     <span class="component-desc">
-                                        <input type="text" name="${curService['name']}_user" id="${curService['name']}_user" value="${providerLoginDict[curService['name']]['user']}" class="form-control input-sm input300" autocapitalize="off" autocomplete="no" />
+                                        <input type="text" name="${curService['name']}_user" id="${curService['name']}_user" value="${providerLoginDict[curService['name']]['user']}" class="form-control input-sm input300"
+                                               autocomplete="no" />
                                     </span>
                                 </label>
                                 <label class="nocheck" for="${curService['name']}_pass">
                                     <span class="component-title">${curService['name'].capitalize()} Password</span>
                                     <span class="component-desc">
-                                        <input type="password" name="${curService['name']}_pass" id="${curService['name']}_pass" value="${providerLoginDict[curService['name']]['pass']}" class="form-control input-sm input300" autocomplete="no" autocapitalize="off" />
+                                        <input type="password" name="${curService['name']}_pass" id="${curService['name']}_pass" value="${providerLoginDict[curService['name']]['pass']}" class="form-control input-sm input300" autocomplete="no"/>
                                     </span>
                                 </label>
                             </div>

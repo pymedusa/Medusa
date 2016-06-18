@@ -53,7 +53,7 @@ pre {
 		    <!-- Search Log -->
 		    <label for="logFilter" class="col-xs-2 col-sm-2 control-label text-right hidden-xs">Search log by: </label>
 		    <div class="col-xs-4 col-sm-2">
-		       <input type="text" name="logSearch" placeholder="clear to reset" id="logSearch" value="${('', logSearch)[bool(logSearch)]}" class="form-control" autocapitalize="off" />
+		       <input type="text" name="logSearch" placeholder="clear to reset" id="logSearch" value="${('', logSearch)[bool(logSearch)]}" class="form-control"/>
 		    </div>
 	    </div> <!-- End form group -->
 	</div>

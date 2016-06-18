@@ -132,7 +132,7 @@ $('#config-components').tabs();
                             <label for="${curNewznabProvider.get_id()}_url">
                                 <span class="component-title">URL:</span>
                                 <span class="component-desc">
-                                    <input type="text" id="${curNewznabProvider.get_id()}_url" value="${curNewznabProvider.url}" class="form-control input-sm input350" disabled autocapitalize="off" />
+                                    <input type="text" id="${curNewznabProvider.get_id()}_url" value="${curNewznabProvider.url}" class="form-control input-sm input350" disabled/>
                                 </span>
                             </label>
                         </div>
@@ -140,7 +140,7 @@ $('#config-components').tabs();
                             <label for="${curNewznabProvider.get_id()}_hash">
                                 <span class="component-title">API key:</span>
                                 <span class="component-desc">
-                                    <input type="text" id="${curNewznabProvider.get_id()}_hash" value="${curNewznabProvider.key}" newznab_name="${curNewznabProvider.get_id()}_hash" class="newznab_key form-control input-sm input350" autocapitalize="off" />
+                                    <input type="text" id="${curNewznabProvider.get_id()}_hash" value="${curNewznabProvider.key}" newznab_name="${curNewznabProvider.get_id()}_hash" class="newznab_key form-control input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -220,7 +220,8 @@ $('#config-components').tabs();
                             <label for="${curNzbProvider.get_id()}_username">
                                 <span class="component-title">Username:</span>
                                 <span class="component-desc">
-                                    <input type="text" name="${curNzbProvider.get_id()}_username" value="${curNzbProvider.username}" class="form-control input-sm input350" autocapitalize="off" autocomplete="no" />
+                                    <input type="text" name="${curNzbProvider.get_id()}_username" value="${curNzbProvider.username}" class="form-control input-sm input350"
+                                           autocomplete="no" />
                                 </span>
                             </label>
                         </div>
@@ -230,7 +231,7 @@ $('#config-components').tabs();
                             <label for="${curNzbProvider.get_id()}_api_key">
                                 <span class="component-title">API key:</span>
                                 <span class="component-desc">
-                                    <input type="text" name="${curNzbProvider.get_id()}_api_key" value="${curNzbProvider.api_key}" class="form-control input-sm input350" autocapitalize="off" />
+                                    <input type="text" name="${curNzbProvider.get_id()}_api_key" value="${curNzbProvider.api_key}" class="form-control input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -310,7 +311,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_custom_url">
                                 <span class="component-title">Custom URL:</span>
                                 <span class="component-desc">
-                                    <input type="text" name="${curTorrentProvider.get_id()}_custom_url" id="${curTorrentProvider.get_id()}_custom_url" value="${curTorrentProvider.custom_url}" class="form-control input-sm input350" autocapitalize="off" />
+                                    <input type="text" name="${curTorrentProvider.get_id()}_custom_url" id="${curTorrentProvider.get_id()}_custom_url" value="${curTorrentProvider.custom_url}" class="form-control input-sm input350"/>
                                 </span>
                             </label>
                             <label>
@@ -326,7 +327,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_api_key">
                                 <span class="component-title">Api key:</span>
                                 <span class="component-desc">
-                                    <input type="text" name="${curTorrentProvider.get_id()}_api_key" id="${curTorrentProvider.get_id()}_api_key" value="${curTorrentProvider.api_key}" class="form-control input-sm input350" autocapitalize="off" />
+                                    <input type="text" name="${curTorrentProvider.get_id()}_api_key" id="${curTorrentProvider.get_id()}_api_key" value="${curTorrentProvider.api_key}" class="form-control input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -336,7 +337,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_digest">
                                 <span class="component-title">Digest:</span>
                                 <span class="component-desc">
-                                    <input type="text" name="${curTorrentProvider.get_id()}_digest" id="${curTorrentProvider.get_id()}_digest" value="${curTorrentProvider.digest}" class="form-control input-sm input350" autocapitalize="off" />
+                                    <input type="text" name="${curTorrentProvider.get_id()}_digest" id="${curTorrentProvider.get_id()}_digest" value="${curTorrentProvider.digest}" class="form-control input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -346,7 +347,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_hash">
                                 <span class="component-title">Hash:</span>
                                 <span class="component-desc">
-                                    <input type="text" name="${curTorrentProvider.get_id()}_hash" id="${curTorrentProvider.get_id()}_hash" value="${curTorrentProvider.hash}" class="form-control input-sm input350" autocapitalize="off" />
+                                    <input type="text" name="${curTorrentProvider.get_id()}_hash" id="${curTorrentProvider.get_id()}_hash" value="${curTorrentProvider.hash}" class="form-control input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -356,7 +357,8 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_username">
                                 <span class="component-title">Username:</span>
                                 <span class="component-desc">
-                                    <input type="text" name="${curTorrentProvider.get_id()}_username" id="${curTorrentProvider.get_id()}_username" value="${curTorrentProvider.username}" class="form-control input-sm input350" autocapitalize="off" autocomplete="no" />
+                                    <input type="text" name="${curTorrentProvider.get_id()}_username" id="${curTorrentProvider.get_id()}_username" value="${curTorrentProvider.username}" class="form-control input-sm input350"
+                                           autocomplete="no" />
                                 </span>
                             </label>
                         </div>
@@ -366,7 +368,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_password">
                                 <span class="component-title">Password:</span>
                                 <span class="component-desc">
-                                    <input type="password" name="${curTorrentProvider.get_id()}_password" id="${curTorrentProvider.get_id()}_password" value="${curTorrentProvider.password | h}" class="form-control input-sm input350" autocomplete="no" autocapitalize="off" />
+                                    <input type="password" name="${curTorrentProvider.get_id()}_password" id="${curTorrentProvider.get_id()}_password" value="${curTorrentProvider.password | h}" class="form-control input-sm input350" autocomplete="no"/>
                                 </span>
                             </label>
                         </div>
@@ -376,7 +378,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_passkey">
                                 <span class="component-title">Passkey:</span>
                                 <span class="component-desc">
-                                    <input type="text" name="${curTorrentProvider.get_id()}_passkey" id="${curTorrentProvider.get_id()}_passkey" value="${curTorrentProvider.passkey}" class="form-control input-sm input350" autocapitalize="off" />
+                                    <input type="text" name="${curTorrentProvider.get_id()}_passkey" id="${curTorrentProvider.get_id()}_passkey" value="${curTorrentProvider.passkey}" class="form-control input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -386,7 +388,7 @@ $('#config-components').tabs();
                             <label for="${curTorrentProvider.get_id()}_pin">
                                 <span class="component-title">Pin:</span>
                                 <span class="component-desc">
-                                    <input type="password" name="${curTorrentProvider.get_id()}_pin" id="${curTorrentProvider.get_id()}_pin" value="${curTorrentProvider.pin}" class="form-control input-sm input100" autocomplete="no" autocapitalize="off" />
+                                    <input type="password" name="${curTorrentProvider.get_id()}_pin" id="${curTorrentProvider.get_id()}_pin" value="${curTorrentProvider.pin}" class="form-control input-sm input100" autocomplete="no"/>
                                 </span>
                             </label>
                         </div>
@@ -615,19 +617,19 @@ $('#config-components').tabs();
                         <div class="field-pair">
                             <label for="newznab_name">
                                 <span class="component-title">Provider name:</span>
-                                <input type="text" id="newznab_name" class="form-control input-sm input200" autocapitalize="off" />
+                                <input type="text" id="newznab_name" class="form-control input-sm input200"/>
                             </label>
                         </div>
                         <div class="field-pair">
                             <label for="newznab_url">
                                 <span class="component-title">Site URL:</span>
-                                <input type="text" id="newznab_url" class="form-control input-sm input350" autocapitalize="off" />
+                                <input type="text" id="newznab_url" class="form-control input-sm input350"/>
                             </label>
                         </div>
                         <div class="field-pair">
                             <label for="newznab_key">
                                 <span class="component-title">API key:</span>
-                                <input type="password" id="newznab_key" class="form-control input-sm input350" autocapitalize="off" />
+                                <input type="password" id="newznab_key" class="form-control input-sm input350"/>
                             </label>
                             <label>
                                 <span class="component-title">&nbsp;</span>
@@ -683,19 +685,19 @@ $('#config-components').tabs();
                         <div class="field-pair">
                             <label for="torrentrss_name">
                                 <span class="component-title">Provider name:</span>
-                                <input type="text" id="torrentrss_name" class="form-control input-sm input200" autocapitalize="off" />
+                                <input type="text" id="torrentrss_name" class="form-control input-sm input200"/>
                             </label>
                         </div>
                         <div class="field-pair">
                             <label for="torrentrss_url">
                                 <span class="component-title">RSS URL:</span>
-                                <input type="text" id="torrentrss_url" class="form-control input-sm input350" autocapitalize="off" />
+                                <input type="text" id="torrentrss_url" class="form-control input-sm input350"/>
                             </label>
                         </div>
                         <div class="field-pair">
                             <label for="torrentrss_cookies">
                                 <span class="component-title">Cookies:</span>
-                                <input type="text" id="torrentrss_cookies" class="form-control input-sm input350" autocapitalize="off" />
+                                <input type="text" id="torrentrss_cookies" class="form-control input-sm input350"/>
                             </label>
                             <label>
                                 <span class="component-title">&nbsp;</span>
@@ -705,7 +707,7 @@ $('#config-components').tabs();
                         <div class="field-pair">
                             <label for="torrentrss_titleTAG">
                                 <span class="component-title">Search element:</span>
-                                <input type="text" id="torrentrss_titleTAG" class="form-control input-sm input200" value="title" autocapitalize="off" />
+                                <input type="text" id="torrentrss_titleTAG" class="form-control input-sm input200" value="title"/>
                             </label>
                             <label>
                                 <span class="component-title">&nbsp;</span>

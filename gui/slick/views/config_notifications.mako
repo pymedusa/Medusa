@@ -105,7 +105,7 @@
                                 <div class="field-pair">
                                     <label for="kodi_host">
                                         <span class="component-title">KODI IP:Port</span>
-                                        <input type="text" name="kodi_host" id="kodi_host" value="${sickbeard.KODI_HOST}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="kodi_host" id="kodi_host" value="${sickbeard.KODI_HOST}" class="form-control input-sm input350"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -119,7 +119,8 @@
                                 <div class="field-pair">
                                     <label for="kodi_username">
                                         <span class="component-title">Username</span>
-                                        <input type="text" name="kodi_username" id="kodi_username" value="${sickbeard.KODI_USERNAME}" class="form-control input-sm input250" autocapitalize="off" autocomplete="no" />
+                                        <input type="text" name="kodi_username" id="kodi_username" value="${sickbeard.KODI_USERNAME}" class="form-control input-sm input250"
+                                               autocomplete="no" />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -129,7 +130,7 @@
                                 <div class="field-pair">
                                     <label for="kodi_password">
                                         <span class="component-title">Password</span>
-                                        <input type="password" name="kodi_password" id="kodi_password" value="${sickbeard.KODI_PASSWORD}" class="form-control input-sm input250" autocomplete="no" autocapitalize="off" />
+                                        <input type="password" name="kodi_password" id="kodi_password" value="${sickbeard.KODI_PASSWORD}" class="form-control input-sm input250" autocomplete="no"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -163,7 +164,7 @@
                                 <div class="field-pair">
                                     <label for="plex_server_token">
                                         <span class="component-title">Plex Media Server Auth Token</span>
-                                        <input type="text" name="plex_server_token" id="plex_server_token" value="${sickbeard.PLEX_SERVER_TOKEN}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="plex_server_token" id="plex_server_token" value="${sickbeard.PLEX_SERVER_TOKEN}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -179,7 +180,8 @@
                                         <label for="plex_server_username">
                                             <span class="component-title">Username</span>
                                             <span class="component-desc">
-                                                <input type="text" name="plex_server_username" id="plex_server_username" value="${sickbeard.PLEX_SERVER_USERNAME}" class="form-control input-sm input250" autocapitalize="off" autocomplete="no" />
+                                                <input type="text" name="plex_server_username" id="plex_server_username" value="${sickbeard.PLEX_SERVER_USERNAME}" class="form-control input-sm input250"
+                                                       autocomplete="no" />
                                                 <p>blank = no authentication</p>
                                             </span>
                                         </label>
@@ -188,7 +190,7 @@
                                         <label for="plex_server_password">
                                             <span class="component-title">Password</span>
                                             <span class="component-desc">
-                                                <input type="password" name="plex_server_password" id="plex_server_password" value="${'*' * len(sickbeard.PLEX_SERVER_PASSWORD)}" class="form-control input-sm input250" autocomplete="no" autocapitalize="off" />
+                                                <input type="password" name="plex_server_password" id="plex_server_password" value="${'*' * len(sickbeard.PLEX_SERVER_PASSWORD)}" class="form-control input-sm input250" autocomplete="no"/>
                                                 <p>blank = no authentication</p>
                                             </span>
                                         </label>
@@ -209,7 +211,7 @@
                                             <label for="plex_server_host">
                                                 <span class="component-title">Plex Media Server IP:Port</span>
                                                 <span class="component-desc">
-                                                    <input type="text" name="plex_server_host" id="plex_server_host" value="${re.sub(r'\b,\b', ', ', sickbeard.PLEX_SERVER_HOST)}" class="form-control input-sm input350" autocapitalize="off" />
+                                                    <input type="text" name="plex_server_host" id="plex_server_host" value="${re.sub(r'\b,\b', ', ', sickbeard.PLEX_SERVER_HOST)}" class="form-control input-sm input350"/>
                                                     <div class="clear-left">
                                                         <p>one or more hosts running Plex Media Server<br />(eg. 192.168.1.1:32400, 192.168.1.2:32400)</p>
                                                     </div>
@@ -283,7 +285,7 @@
                                     <label for="plex_client_host">
                                         <span class="component-title">Plex Home Theater IP:Port</span>
                                         <span class="component-desc">
-                                            <input type="text" name="plex_client_host" id="plex_client_host" value="${sickbeard.PLEX_CLIENT_HOST}" class="form-control input-sm input350" autocapitalize="off" />
+                                            <input type="text" name="plex_client_host" id="plex_client_host" value="${sickbeard.PLEX_CLIENT_HOST}" class="form-control input-sm input350"/>
                                             <div class="clear-left">
                                                 <p>one or more hosts running Plex Home Theater<br />(eg. 192.168.1.100:3000, 192.168.1.101:3000)</p>
                                             </div>
@@ -295,7 +297,8 @@
                                         <label for="plex_server_username">
                                             <span class="component-title">Username</span>
                                             <span class="component-desc">
-                                                <input type="text" name="plex_client_username" id="plex_client_username" value="${sickbeard.PLEX_CLIENT_USERNAME}" class="form-control input-sm input250" autocapitalize="off" autocomplete="no" />
+                                                <input type="text" name="plex_client_username" id="plex_client_username" value="${sickbeard.PLEX_CLIENT_USERNAME}" class="form-control input-sm input250"
+                                                       autocomplete="no" />
                                                 <p>blank = no authentication</p>
                                             </span>
                                         </label>
@@ -304,7 +307,7 @@
                                         <label for="plex_client_password">
                                             <span class="component-title">Password</span>
                                             <span class="component-desc">
-                                                <input type="password" name="plex_client_password" id="plex_client_password" value="${'*' * len(sickbeard.PLEX_CLIENT_PASSWORD)}" class="form-control input-sm input250" autocomplete="no" autocapitalize="off" />
+                                                <input type="password" name="plex_client_password" id="plex_client_password" value="${'*' * len(sickbeard.PLEX_CLIENT_PASSWORD)}" class="form-control input-sm input250" autocomplete="no"/>
                                                 <p>blank = no authentication</p>
                                             </span>
                                         </label>
@@ -321,7 +324,7 @@
                     </div><!-- /Plex Home Theater component-group -->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-emby" alt="" title="Emby"></span>
+                            <span class="icon-notifiers-emby" title="Emby"></span>
                             <h3><a href="${anon_url('http://emby.media/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Emby</a></h3>
                             <p>A home media server built using other popular open source technologies.</p>
                         </div>
@@ -339,7 +342,7 @@
                                 <div class="field-pair">
                                     <label for="emby_host">
                                         <span class="component-title">Emby IP:Port</span>
-                                        <input type="text" name="emby_host" id="emby_host" value="${sickbeard.EMBY_HOST}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="emby_host" id="emby_host" value="${sickbeard.EMBY_HOST}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -349,7 +352,7 @@
                                 <div class="field-pair">
                                     <label for="emby_apikey">
                                         <span class="component-title">Emby API Key</span>
-                                        <input type="text" name="emby_apikey" id="emby_apikey" value="${sickbeard.EMBY_APIKEY}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="emby_apikey" id="emby_apikey" value="${sickbeard.EMBY_APIKEY}" class="form-control input-sm input250"/>
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testEMBY-result">Click below to test.</div>
@@ -360,7 +363,7 @@
                     </div><!-- /emby component-group //-->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-nmj" alt="" title="Networked Media Jukebox"></span>
+                            <span class="icon-notifiers-nmj" title="Networked Media Jukebox"></span>
                             <h3><a href="${anon_url('http://www.popcornhour.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">NMJ</a></h3>
                             <p>The Networked Media Jukebox, or NMJ, is the official media jukebox interface made available for the Popcorn Hour 200-series.</p>
                         </div>
@@ -378,7 +381,7 @@
                                 <div class="field-pair">
                                     <label for="nmj_host">
                                         <span class="component-title">Popcorn IP address</span>
-                                        <input type="text" name="nmj_host" id="nmj_host" value="${sickbeard.NMJ_HOST}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="nmj_host" id="nmj_host" value="${sickbeard.NMJ_HOST}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -398,7 +401,7 @@
                                 <div class="field-pair">
                                     <label for="nmj_database">
                                         <span class="component-title">NMJ database</span>
-                                        <input type="text" name="nmj_database" id="nmj_database" value="${sickbeard.NMJ_DATABASE}" class="form-control input-sm input250" ${'' if sickbeard.NMJ_DATABASE else ' readonly="readonly"'} autocapitalize="off" />
+                                        <input type="text" name="nmj_database" id="nmj_database" value="${sickbeard.NMJ_DATABASE}" class="form-control input-sm input250" ${'' if sickbeard.NMJ_DATABASE else ' readonly="readonly"'}  />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -408,7 +411,7 @@
                                 <div class="field-pair">
                                     <label for="nmj_mount">
                                         <span class="component-title">NMJ mount url</span>
-                                        <input type="text" name="nmj_mount" id="nmj_mount" value="${sickbeard.NMJ_MOUNT}" class="form-control input-sm input250" ${'' if sickbeard.NMJ_MOUNT else ' readonly="readonly"'} autocapitalize="off" />
+                                        <input type="text" name="nmj_mount" id="nmj_mount" value="${sickbeard.NMJ_MOUNT}" class="form-control input-sm input250" ${'' if sickbeard.NMJ_MOUNT else ' readonly="readonly"'}  />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -423,7 +426,7 @@
                     </div><!-- /nmj component-group //-->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-nmj" alt="" title="Networked Media Jukebox v2"></span>
+                            <span class="icon-notifiers-nmj" title="Networked Media Jukebox v2"></span>
                             <h3><a href="${anon_url('http://www.popcornhour.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">NMJv2</a></h3>
                             <p>The Networked Media Jukebox, or NMJv2, is the official media jukebox interface made available for the Popcorn Hour 300 & 400-series.</p>
                         </div>
@@ -441,7 +444,7 @@
                                 <div class="field-pair">
                                     <label for="nmjv2_host">
                                         <span class="component-title">Popcorn IP address</span>
-                                        <input type="text" name="nmjv2_host" id="nmjv2_host" value="${sickbeard.NMJv2_HOST}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="nmjv2_host" id="nmjv2_host" value="${sickbeard.NMJv2_HOST}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -492,7 +495,7 @@
                                 <div class="field-pair">
                                     <label for="nmjv2_database">
                                         <span class="component-title">NMJv2 database</span>
-                                        <input type="text" name="nmjv2_database" id="nmjv2_database" value="${sickbeard.NMJv2_DATABASE}" class="form-control input-sm input250" ${'' if sickbeard.NMJv2_DATABASE else ' readonly="readonly"'} autocapitalize="off" />
+                                        <input type="text" name="nmjv2_database" id="nmjv2_database" value="${sickbeard.NMJv2_DATABASE}" class="form-control input-sm input250" ${'' if sickbeard.NMJv2_DATABASE else ' readonly="readonly"'}  />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -507,7 +510,7 @@
                     </div><!-- /nmjv2 component-group //-->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-syno1" alt="" title="Synology"></span>
+                            <span class="icon-notifiers-syno1" title="Synology"></span>
                             <h3><a href="${anon_url('http://synology.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Synology</a></h3>
                             <p>The Synology DiskStation NAS.</p>
                             <p>Synology Indexer is the daemon running on the Synology NAS to build its media database.</p>
@@ -533,7 +536,7 @@
                     </div><!-- /synoindex component-group //-->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-syno2" alt="" title="Synology Indexer"></span>
+                            <span class="icon-notifiers-syno2" title="Synology Indexer"></span>
                             <h3><a href="${anon_url('http://synology.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Synology Notifier</a></h3>
                             <p>Synology Notifier is the notification system of Synology DSM</p>
                         </div>
@@ -585,7 +588,7 @@
                     </div><!-- /synology notifier component-group //-->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-pytivo" alt="" title="pyTivo"></span>
+                            <span class="icon-notifiers-pytivo" title="pyTivo"></span>
                             <h3><a href="${anon_url('http://pytivo.sourceforge.net/wiki/index.php/PyTivo')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">pyTivo</a></h3>
                             <p>pyTivo is both an HMO and GoBack server. This notifier will load the completed downloads to your Tivo.</p>
                         </div>
@@ -607,7 +610,7 @@
                                 <div class="field-pair">
                                     <label for="pytivo_host">
                                         <span class="component-title">pyTivo IP:Port</span>
-                                        <input type="text" name="pytivo_host" id="pytivo_host" value="${sickbeard.PYTIVO_HOST}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="pytivo_host" id="pytivo_host" value="${sickbeard.PYTIVO_HOST}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -617,7 +620,7 @@
                                 <div class="field-pair">
                                     <label for="pytivo_share_name">
                                         <span class="component-title">pyTivo share name</span>
-                                        <input type="text" name="pytivo_share_name" id="pytivo_share_name" value="${sickbeard.PYTIVO_SHARE_NAME}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="pytivo_share_name" id="pytivo_share_name" value="${sickbeard.PYTIVO_SHARE_NAME}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -627,7 +630,7 @@
                                 <div class="field-pair">
                                     <label for="pytivo_tivo_name">
                                         <span class="component-title">Tivo name</span>
-                                        <input type="text" name="pytivo_tivo_name" id="pytivo_tivo_name" value="${sickbeard.PYTIVO_TIVO_NAME}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="pytivo_tivo_name" id="pytivo_tivo_name" value="${sickbeard.PYTIVO_TIVO_NAME}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -642,7 +645,7 @@
                 <div id="tabs-2">
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-growl" alt="" title="Growl"></span>
+                            <span class="icon-notifiers-growl" title="Growl"></span>
                             <h3><a href="${anon_url('http://growl.info/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Growl</a></h3>
                             <p>A cross-platform unobtrusive global notification system.</p>
                         </div>
@@ -687,7 +690,7 @@
                                 <div class="field-pair">
                                     <label for="growl_host">
                                         <span class="component-title">Growl IP:Port</span>
-                                        <input type="text" name="growl_host" id="growl_host" value="${sickbeard.GROWL_HOST}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="growl_host" id="growl_host" value="${sickbeard.GROWL_HOST}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -697,7 +700,7 @@
                                 <div class="field-pair">
                                     <label for="growl_password">
                                         <span class="component-title">Password</span>
-                                        <input type="password" name="growl_password" id="growl_password" value="${sickbeard.GROWL_PASSWORD}" class="form-control input-sm input250" autocomplete="no" autocapitalize="off" />
+                                        <input type="password" name="growl_password" id="growl_password" value="${sickbeard.GROWL_PASSWORD}" class="form-control input-sm input250" autocomplete="no"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -761,13 +764,13 @@
                                 <div class="field-pair">
                                      <label for="prowl_message_title">
                                          <span class="component-title">Prowl Message Title:</span>
-                                         <input type="text" name="prowl_message_title" id="prowl_message_title" value="${sickbeard.PROWL_MESSAGE_TITLE}" class="form-control input-sm input250" autocapitalize="off" />
+                                         <input type="text" name="prowl_message_title" id="prowl_message_title" value="${sickbeard.PROWL_MESSAGE_TITLE}" class="form-control input-sm input250"/>
                                      </label>
                                 </div>
                                 <div class="field-pair">
                                     <label for="prowl_api">
                                         <span class="component-title">Global Prowl API key(s):</span>
-                                        <input type="text" name="prowl_api" id="prowl_api" value="${sickbeard.PROWL_API}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="prowl_api" id="prowl_api" value="${sickbeard.PROWL_API}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -787,7 +790,7 @@
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <input type="text" name="prowl_show_list" id="prowl_show_list" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="prowl_show_list" id="prowl_show_list" class="form-control input-sm input350"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -874,7 +877,7 @@
                     </div><!-- /libnotify component-group //-->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-pushover" alt="" title="Pushover"></span>
+                            <span class="icon-notifiers-pushover" title="Pushover"></span>
                             <h3><a href="${anon_url('https://pushover.net/apps/clone/sickrage')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Pushover</a></h3>
                             <p>Pushover makes it easy to send real-time notifications to your Android and iOS devices.</p>
                         </div>
@@ -919,7 +922,8 @@
                                 <div class="field-pair">
                                     <label for="pushover_userkey">
                                         <span class="component-title">Pushover key</span>
-                                        <input type="text" name="pushover_userkey" id="pushover_userkey" value="${sickbeard.PUSHOVER_USERKEY}" class="form-control input-sm input250" autocapitalize="off" autocomplete="no" />
+                                        <input type="text" name="pushover_userkey" id="pushover_userkey" value="${sickbeard.PUSHOVER_USERKEY}" class="form-control input-sm input250"
+                                               autocomplete="no" />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -929,7 +933,7 @@
                                 <div class="field-pair">
                                     <label for="pushover_apikey">
                                         <span class="component-title">Pushover API key</span>
-                                        <input type="text" name="pushover_apikey" id="pushover_apikey" value="${sickbeard.PUSHOVER_APIKEY}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="pushover_apikey" id="pushover_apikey" value="${sickbeard.PUSHOVER_APIKEY}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -939,7 +943,7 @@
                                 <div class="field-pair">
                                     <label for="pushover_device">
                                         <span class="component-title">Pushover devices</span>
-                                        <input type="text" name="pushover_device" id="pushover_device" value="${sickbeard.PUSHOVER_DEVICE}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="pushover_device" id="pushover_device" value="${sickbeard.PUSHOVER_DEVICE}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -988,7 +992,7 @@
                     </div><!-- /pushover component-group //-->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-boxcar2" alt="" title="Boxcar 2"></span>
+                            <span class="icon-notifiers-boxcar2" title="Boxcar 2"></span>
                             <h3><a href="${anon_url('https://new.boxcar.io/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Boxcar 2</a></h3>
                             <p>Read your messages where and when you want them!</p>
                         </div>
@@ -1033,7 +1037,7 @@
                                 <div class="field-pair">
                                     <label for="boxcar2_accesstoken">
                                         <span class="component-title">Boxcar2 access token</span>
-                                        <input type="text" name="boxcar2_accesstoken" id="boxcar2_accesstoken" value="${sickbeard.BOXCAR2_ACCESSTOKEN}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="boxcar2_accesstoken" id="boxcar2_accesstoken" value="${sickbeard.BOXCAR2_ACCESSTOKEN}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1048,7 +1052,7 @@
                     </div><!-- /boxcar2 component-group //-->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-nma" alt="" title="NMA"></span>
+                            <span class="icon-notifiers-nma" title="NMA"></span>
                             <h3><a href="${anon_url('http://www.notifymyandroid.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Notify My Android</a></h3>
                             <p>Notify My Android is a Prowl-like Android App and API that offers an easy way to send notifications from your application directly to your Android device.</p>
                         </div>
@@ -1093,7 +1097,7 @@
                                 <div class="field-pair">
                                     <label for="nma_api">
                                            <span class="component-title">NMA API key:</span>
-                                        <input type="text" name="nma_api" id="nma_api" value="${sickbeard.NMA_API}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="nma_api" id="nma_api" value="${sickbeard.NMA_API}" class="form-control input-sm input350"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1124,7 +1128,7 @@
                     </div><!-- /nma component-group //-->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-pushalot" alt="" title="Pushalot"></span>
+                            <span class="icon-notifiers-pushalot" title="Pushalot"></span>
                             <h3><a href="${anon_url('https://pushalot.com')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Pushalot</a></h3>
                             <p>Pushalot is a platform for receiving custom push notifications to connected devices running Windows Phone or Windows 8.</p>
                         </div>
@@ -1169,7 +1173,7 @@
                                 <div class="field-pair">
                                     <label for="pushalot_authorizationtoken">
                                         <span class="component-title">Pushalot authorization token</span>
-                                        <input type="text" name="pushalot_authorizationtoken" id="pushalot_authorizationtoken" value="${sickbeard.PUSHALOT_AUTHORIZATIONTOKEN}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="pushalot_authorizationtoken" id="pushalot_authorizationtoken" value="${sickbeard.PUSHALOT_AUTHORIZATIONTOKEN}" class="form-control input-sm input350"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1184,7 +1188,7 @@
                     </div><!-- /pushalot component-group //-->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-pushbullet" alt="" title="Pushbullet"></span>
+                            <span class="icon-notifiers-pushbullet" title="Pushbullet"></span>
                             <h3><a href="${anon_url('https://www.pushbullet.com')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Pushbullet</a></h3>
                             <p>Pushbullet is a platform for receiving custom push notifications to connected devices running Android and desktop Chrome browsers.</p>
                         </div>
@@ -1229,7 +1233,7 @@
                                 <div class="field-pair">
                                     <label for="pushbullet_api">
                                         <span class="component-title">Pushbullet API key</span>
-                                        <input type="text" name="pushbullet_api" id="pushbullet_api" value="${sickbeard.PUSHBULLET_API}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="pushbullet_api" id="pushbullet_api" value="${sickbeard.PUSHBULLET_API}" class="form-control input-sm input350"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1256,7 +1260,7 @@
                     </div><!-- /pushbullet component-group //-->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-freemobile" alt="" title="Free Mobile"></span>
+                            <span class="icon-notifiers-freemobile" title="Free Mobile"></span>
                             <h3><a href="${anon_url('http://mobile.free.fr/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Free Mobile</a></h3>
                             <p>Free Mobile is a famous French cellular network provider.<br /> It provides to their customer a free SMS API.</p>
                         </div>
@@ -1301,7 +1305,7 @@
                                 <div class="field-pair">
                                     <label for="freemobile_id">
                                         <span class="component-title">Free Mobile customer ID</span>
-                                        <input type="text" name="freemobile_id" id="freemobile_id" value="${sickbeard.FREEMOBILE_ID}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="freemobile_id" id="freemobile_id" value="${sickbeard.FREEMOBILE_ID}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1311,7 +1315,7 @@
                                 <div class="field-pair">
                                     <label for="freemobile_password">
                                         <span class="component-title">Free Mobile API Key</span>
-                                        <input type="text" name="freemobile_apikey" id="freemobile_apikey" value="${sickbeard.FREEMOBILE_APIKEY}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="freemobile_apikey" id="freemobile_apikey" value="${sickbeard.FREEMOBILE_APIKEY}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1326,7 +1330,7 @@
                     </div><!-- /freemobile component-group //-->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-telegram" alt="" title="Telegram"></span>
+                            <span class="icon-notifiers-telegram" title="Telegram"></span>
                             <h3><a href="${anon_url('https://telegram.org/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Telegram</a></h3>
                             <p>Telegram is a cloud-based instant messaging service.</p>
                         </div>
@@ -1371,7 +1375,7 @@
                                 <div class="field-pair">
                                     <label for="telegram_id">
                                         <span class="component-title">User/group ID</span>
-                                        <input type="text" name="telegram_id" id="telegram_id" value="${sickbeard.TELEGRAM_ID}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="telegram_id" id="telegram_id" value="${sickbeard.TELEGRAM_ID}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1381,7 +1385,7 @@
                                 <div class="field-pair">
                                     <label for="telegram_password">
                                         <span class="component-title">Bot API token</span>
-                                        <input type="text" name="telegram_apikey" id="telegram_apikey" value="${sickbeard.TELEGRAM_APIKEY}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="telegram_apikey" id="telegram_apikey" value="${sickbeard.TELEGRAM_APIKEY}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1398,7 +1402,7 @@
                 <div id="tabs-3">
                     <div class="component-group">
                            <div class="component-group-desc">
-                            <span class="icon-notifiers-twitter" alt="" title="Twitter"></span>
+                            <span class="icon-notifiers-twitter" title="Twitter"></span>
                             <h3><a href="${anon_url('http://www.twitter.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Twitter</a></h3>
                             <p>A social networking and microblogging service, enabling its users to send and read other users' messages called tweets.</p>
                         </div>
@@ -1456,7 +1460,7 @@
                                 <div class="field-pair">
                                     <label for="twitter_dmto">
                                         <span class="component-title">Send DM to</span>
-                                        <input type="text" name="twitter_dmto" id="twitter_dmto" value="${sickbeard.TWITTER_DMTO}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="twitter_dmto" id="twitter_dmto" value="${sickbeard.TWITTER_DMTO}" class="form-control input-sm input250"/>
                                     </label>
                                     <p>
                                         <span class="component-desc">Twitter account to send Direct Messages to (must follow you)</span>
@@ -1477,7 +1481,7 @@
                                     </label>
                                     <label>
                                         <span style="font-size: 11px;">Enter the key Twitter gave you below, and click "Verify Key".<br /><br /></span>
-                                        <input type="text" id="twitter_key" value="" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" id="twitter_key" value="" class="form-control input-sm input350"/>
                                         <input class="btn btn-inline" type="button" value="Verify Key" id="twitterStep2" />
                                     </label>
                                 </div>
@@ -1496,7 +1500,7 @@
                     </div><!-- twitter .component-group //-->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-trakt" alt="" title="Trakt"></span>
+                            <span class="icon-notifiers-trakt" title="Trakt"></span>
                             <h3><a href="${anon_url('http://trakt.tv/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Trakt</a></h3>
                             <p>trakt helps keep a record of what TV shows and movies you are watching. Based on your favorites, trakt recommends additional shows and movies you'll enjoy!</p>
                         </div><!-- .component-group-desc //-->
@@ -1514,7 +1518,8 @@
                                 <div class="field-pair">
                                     <label for="trakt_username">
                                         <span class="component-title">Username</span>
-                                        <input type="text" name="trakt_username" id="trakt_username" value="${sickbeard.TRAKT_USERNAME}" class="form-control input-sm input250" autocapitalize="off" autocomplete="no" />
+                                        <input type="text" name="trakt_username" id="trakt_username" value="${sickbeard.TRAKT_USERNAME}" class="form-control input-sm input250"
+                                               autocomplete="no" />
                                     </label>
                                     <p>
                                         <span class="component-desc">username of your Trakt account.</span>
@@ -1525,7 +1530,7 @@
                                 <div class="field-pair">
                                     <label for="trakt_pin">
                                         <span class="component-title">Trakt PIN</span>
-                                        <input type="text" name="trakt_pin" id="trakt_pin" value="" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="trakt_pin" id="trakt_pin" value="" class="form-control input-sm input250"/>
                                     </label>
                                     <p>
                                         <span class="component-desc">PIN code to authorize Medusa to access Trakt on your behalf.</span>
@@ -1535,7 +1540,7 @@
                                 <div class="field-pair">
                                     <label for="trakt_timeout">
                                         <span class="component-title">API Timeout</span>
-                                        <input type="number" min="10" step="1" name="trakt_timeout" id="trakt_timeout" value="${sickbeard.TRAKT_TIMEOUT}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <input type="number" min="10" step="1" name="trakt_timeout" id="trakt_timeout" value="${sickbeard.TRAKT_TIMEOUT}" class="form-control input-sm input75"/>
                                     </label>
                                     <p>
                                         <span class="component-desc">
@@ -1640,7 +1645,7 @@
                                 <div class="field-pair">
                                     <label for="trakt_blacklist_name">
                                         <span class="component-title">Trakt blackList name</span>
-                                        <input type="text" name="trakt_blacklist_name" id="trakt_blacklist_name" value="${sickbeard.TRAKT_BLACKLIST_NAME}" class="form-control input-sm input150" autocapitalize="off" />
+                                        <input type="text" name="trakt_blacklist_name" id="trakt_blacklist_name" value="${sickbeard.TRAKT_BLACKLIST_NAME}" class="form-control input-sm input150"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1655,7 +1660,7 @@
                     </div><!-- trakt .component-group //-->
                     <div class="component-group">
                         <div class="component-group-desc">
-                            <span class="icon-notifiers-email" alt="" title="Email"></span>
+                            <span class="icon-notifiers-email" title="Email"></span>
                             <h3><a href="${anon_url('http://en.wikipedia.org/wiki/Comparison_of_webmail_providers')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Email</a></h3>
                             <p>Allows configuration of email notifications on a per show basis.</p>
                         </div><!-- .component-group-desc //-->
@@ -1700,7 +1705,7 @@
                                 <div class="field-pair">
                                     <label for="email_host">
                                         <span class="component-title">SMTP host</span>
-                                        <input type="text" name="email_host" id="email_host" value="${sickbeard.EMAIL_HOST}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="email_host" id="email_host" value="${sickbeard.EMAIL_HOST}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1710,7 +1715,7 @@
                                 <div class="field-pair">
                                     <label for="email_port">
                                         <span class="component-title">SMTP port</span>
-                                        <input type="number" min="1" step="1" name="email_port" id="email_port" value="${sickbeard.EMAIL_PORT}" class="form-control input-sm input75" autocapitalize="off" />
+                                        <input type="number" min="1" step="1" name="email_port" id="email_port" value="${sickbeard.EMAIL_PORT}" class="form-control input-sm input75"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1720,7 +1725,7 @@
                                 <div class="field-pair">
                                     <label for="email_from">
                                         <span class="component-title">SMTP from</span>
-                                        <input type="text" name="email_from" id="email_from" value="${sickbeard.EMAIL_FROM}" class="form-control input-sm input250" autocapitalize="off" />
+                                        <input type="text" name="email_from" id="email_from" value="${sickbeard.EMAIL_FROM}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1739,7 +1744,8 @@
                                 <div class="field-pair">
                                     <label for="email_user">
                                         <span class="component-title">SMTP user</span>
-                                        <input type="text" name="email_user" id="email_user" value="${sickbeard.EMAIL_USER}" class="form-control input-sm input250" autocapitalize="off" autocomplete="no" />
+                                        <input type="text" name="email_user" id="email_user" value="${sickbeard.EMAIL_USER}" class="form-control input-sm input250"
+                                               autocomplete="no" />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1749,7 +1755,7 @@
                                 <div class="field-pair">
                                     <label for="email_password">
                                         <span class="component-title">SMTP password</span>
-                                        <input type="password" name="email_password" id="email_password" value="${sickbeard.EMAIL_PASSWORD}" class="form-control input-sm input250" autocomplete="no" autocapitalize="off" />
+                                        <input type="password" name="email_password" id="email_password" value="${sickbeard.EMAIL_PASSWORD}" class="form-control input-sm input250" autocomplete="no"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1759,7 +1765,7 @@
                                 <div class="field-pair">
                                     <label for="email_list">
                                         <span class="component-title">Global email list</span>
-                                        <input type="text" name="email_list" id="email_list" value="${sickbeard.EMAIL_LIST}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="email_list" id="email_list" value="${sickbeard.EMAIL_LIST}" class="form-control input-sm input350"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1773,7 +1779,7 @@
                                 <div class="field-pair">
                                     <label for="email_subject">
                                         <span class="component-title">Email Subject</span>
-                                        <input type="text" name="email_subject" id="email_subject" value="${sickbeard.EMAIL_SUBJECT}" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="email_subject" id="email_subject" value="${sickbeard.EMAIL_SUBJECT}" class="form-control input-sm input350"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1792,7 +1798,7 @@
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <input type="text" name="email_show_list" id="email_show_list" class="form-control input-sm input350" autocapitalize="off" />
+                                        <input type="text" name="email_show_list" id="email_show_list" class="form-control input-sm input350"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
