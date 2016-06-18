@@ -108,14 +108,13 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Search Params
         search_params = {
             'search': '',
-            'active': 1,
+            'active': 5 if self.freeleech else 1,
             'options': 0,
             'category[0]': 59,
             'category[1]': 60,
             'category[2]': 30,
             'category[3]': 38,
             'category[4]': 65,
-            'active': 5 if self.freeleech else None,
         }
 
         for mode in search_strings:
