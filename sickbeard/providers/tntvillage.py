@@ -255,7 +255,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             counter = 0
             for word in title:
                 if 'ita' in word:
-                    counter = counter + 1
+                    counter += 1
             if counter < 2:
                 return True
 

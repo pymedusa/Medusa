@@ -190,8 +190,8 @@ class AlphaRatioProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
-        if re.search('Invalid Username/password', response) \
-            or re.search('<title>Login :: AlphaRatio.cc</title>', response):
+        if any([re.search('Invalid Username/password', response),
+                re.search('<title>Login :: AlphaRatio.cc</title>', response)]):
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
 
