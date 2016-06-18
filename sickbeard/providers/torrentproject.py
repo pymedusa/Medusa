@@ -108,9 +108,9 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                                            (title, seeders), logger.DEBUG)
                             continue
 
-                        torrent_hash = torrents[result].get('torrent_hash')
                         torrent_size = torrents[result].get('torrent_size')
                         size = convert_size(torrent_size) or -1
+                        torrent_hash = torrents[result].get('torrent_hash')
 
                         item = {
                             'title': title,
@@ -119,7 +119,7 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                             'seeders': seeders,
                             'leechers': leechers,
                             'pubdate': None,
-                            'hash': None,
+                            'hash': torrent_hash,
                         }
                         if mode != 'RSS':
                             logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
