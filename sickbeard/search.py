@@ -548,7 +548,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
             except AuthException as e:
                 logger.log(u"Authentication error: " + ex(e), logger.ERROR)
                 break
-            except (SocketTimeout, TypeError) as e:
+            except SocketTimeout as e:
                 logger.log(u"Connection timed out (sockets) while searching %s. Error: %r" %
                            (cur_provider.name, ex(e)), logger.DEBUG)
                 break
