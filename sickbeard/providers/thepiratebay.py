@@ -42,7 +42,7 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.public = True
 
         # URLs
-        self.url = 'https://thepiratebay.se'
+        self.url = 'https://thepiratebay.org'
         self.urls = {
             'rss': urljoin(self.url, 'tv/latest'),
             'search': urljoin(self.url, 's/'),  # Needs trailing /
@@ -59,7 +59,7 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=1)  # only poll ThePirateBay every 30 minutes max
+        self.cache = tvcache.TVCache(self, min_time=20)  # only poll ThePirateBay every 20 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         results = []
