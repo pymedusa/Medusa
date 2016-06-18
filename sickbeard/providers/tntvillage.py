@@ -117,7 +117,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         search_params = {
             'act': 'allreleases',
-            'filter': '',
+            'filter': 'eng ' if self.engrelease else '',
             'cat': 29,
         }
 
@@ -127,14 +127,10 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
             for search_string in search_strings[mode]:
 
-                if self.engrelease:
-                    search_params['filter'] = 'eng'
-                    search_string += ' eng'
-
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
-                    search_params['filter'] = search_string
+                    search_params['filter'] += search_string
                     search_params['cat'] = None
 
                 response = self.get_url(self.url, params=search_params, returns='response')

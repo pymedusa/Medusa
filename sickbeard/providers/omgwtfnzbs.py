@@ -20,8 +20,8 @@ from __future__ import unicode_literals
 
 import re
 import traceback
-import sickbeard
 
+import sickbeard
 from sickbeard import logger, tvcache
 
 from sickrage.helper.common import convert_size, try_int
@@ -31,20 +31,28 @@ from sickrage.providers.nzb.NZBProvider import NZBProvider
 class OmgwtfnzbsProvider(NZBProvider):
 
     def __init__(self):
+
+        # Provider Init
         NZBProvider.__init__(self, 'OMGWTFNZBs')
 
+        # Credentials
         self.username = None
         self.api_key = None
 
-        self.cache = OmgwtfnzbsCache(self)
-
+        # URLs
         self.url = 'https://omgwtfnzbs.org/'
         self.urls = {
             'rss': 'https://rss.omgwtfnzbs.org/rss-download.php',
-            'api': 'https://api.omgwtfnzbs.org/json/'
+            'api': 'https://api.omgwtfnzbs.org/json/',
         }
 
+        # Proper Strings
         self.proper_strings = ['.PROPER.', '.REPACK.']
+
+        # Miscellaneous Options
+
+        # Cache
+        self.cache = OmgwtfnzbsCache(self)
 
     def _check_auth(self):
 
@@ -105,13 +113,13 @@ class OmgwtfnzbsProvider(NZBProvider):
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
                 search_params['search'] = search_string
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 data = self.get_url(self.urls['api'], params=search_params, returns='json')
                 if not data:

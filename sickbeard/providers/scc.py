@@ -36,15 +36,15 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
 
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'SceneAccess')
 
+        # Credentials
         self.username = None
         self.password = None
-        self.minseed = None
-        self.minleech = None
 
-        self.cache = tvcache.TVCache(self)  # only poll SCC every 20 minutes max
-
+        # URLs
+        self.url = self.urls['base_url']
         self.urls = {
             'base_url': 'https://sceneaccess.eu',
             'login': 'https://sceneaccess.eu/login',
@@ -53,13 +53,21 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
             'download': 'https://www.sceneaccess.eu/%s'
         }
 
-        self.url = self.urls['base_url']
+        # Proper Strings
 
+        # Miscellaneous Options
         self.categories = {
             'Season': 'c26=26&c44=44&c45=45',  # Archive, non-scene HD, non-scene SD; need to include non-scene because WEB-DL packs get added to those categories
             'Episode': 'c17=17&c27=27&c33=33&c34=34&c44=44&c45=45',  # TV HD, TV SD, non-scene HD, non-scene SD, foreign XviD, foreign x264
             'RSS': 'c17=17&c26=26&c27=27&c33=33&c34=34&c44=44&c45=45'  # Season + Episode
         }
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
+        # Cache
+        self.cache = tvcache.TVCache(self)  # only poll SCC every 20 minutes max
 
     def login(self):
         if any(dict_from_cookiejar(self.session.cookies).values()):
@@ -68,7 +76,7 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
         login_params = {
             'username': self.username,
             'password': self.password,
-            'submit': 'come on in'
+            'submit': 'come on in',
         }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
@@ -95,9 +103,10 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
+
                 if mode != 'RSS':
                     logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
 
@@ -105,6 +114,7 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
 
                 data = self.get_url(search_url, returns='text')
                 if not data:
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 with BS4Parser(data, 'html5lib') as html:
@@ -138,7 +148,7 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -152,7 +162,7 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -40,7 +40,6 @@ class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         # URLs
         self.url = 'http://www.nyaa.se'
 
-
         # Miscellaneous Options
         self.supports_absolute_numbering = True
         self.anime_only = True

@@ -20,6 +20,8 @@ from __future__ import unicode_literals
 import re
 import traceback
 
+from requests.compat import urljoin
+
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 
@@ -29,25 +31,34 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """TVChaosUK Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'TvChaosUK')
 
+        # Credentials
         self.username = None
         self.password = None
 
-        self.minseed = None
-        self.minleech = None
-        self.freeleech = None
-
-        self.url = 'https://www.tvchaosuk.com/'
+        # URLs
+        self.url = 'https://www.tvchaosuk.com'
         self.urls = {
-            'login': self.url + 'takelogin.php',
-            'index': self.url + 'index.php',
-            'search': self.url + 'browse.php'
+            'login': urljoin(self.url, 'takelogin.php'),
+            'index': urljoin(self.url, 'index.php'),
+            'search': urljoin(self.url, 'browse.php'),
         }
 
+        # Proper Strings
+
+        # Miscellaneous Options
+        self.freeleech = None
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
+        # Cache
         self.cache = tvcache.TVCache(self)
 
     def _check_auth(self):
@@ -66,7 +77,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             'password': self.password,
             'logout': 'no',
             'submit': 'LOGIN',
-            'returnto': '/browse.php'
+            'returnto': '/browse.php',
         }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
@@ -80,7 +91,15 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
         return True
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        TVChaosUK search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
@@ -99,7 +118,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
@@ -107,7 +126,8 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                     search_string = re.sub(r'(.*)S0?', r'\1Series ', search_string)
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_params['keywords'] = search_string
                 data = self.get_url(self.urls['search'], post_data=search_params, returns='text')
@@ -119,7 +139,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                     torrent_table = html.find(id='sortabletable')
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
-                    # Continue only if at least one Release is found
+                    # Continue only if at least one release is found
                     if len(torrent_rows) < 2:
                         logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
@@ -144,7 +164,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -172,7 +192,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
