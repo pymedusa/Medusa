@@ -22,8 +22,9 @@ import jsonrpclib
 import math
 import socket
 import time
-import sickbeard
+from six import iteritems
 
+import sickbeard
 from datetime import datetime
 
 from sickbeard import classes, logger, scene_exceptions, tvcache
@@ -110,12 +111,12 @@ class BTNProvider(TorrentProvider):
                 # +1 because range(1,4) = 1, 2, 3
                 for page in range(1, pages_needed + 1):
                     parsed_json = self._api_call(self.apikey, search_params, results_per_page, page * results_per_page)
-                    # Note that this these are individual requests and might time out individually. This would result in 'gaps'
-                    # in the results. There is no way to fix this though.
+                    # Note that these are individual requests and might time out individually.
+                    # This would result in 'gaps' in the results. There is no way to fix this though.
                     if 'torrents' in parsed_json:
                         found_torrents.update(parsed_json['torrents'])
 
-            for _, torrent_info in found_torrents.iteritems():
+            for _, torrent_info in iteritems(found_torrents):
                 (title, url) = self._get_title_and_url(torrent_info)
 
                 if title and url:
