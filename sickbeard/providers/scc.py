@@ -44,13 +44,13 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
         self.password = None
 
         # URLs
-        self.url = self.urls['base_url']
+        self.url = 'https://sceneaccess.eu'
         self.urls = {
-            'base_url': 'https://sceneaccess.eu',
-            'login': 'https://sceneaccess.eu/login',
-            'detail': 'https://www.sceneaccess.eu/details?id=%s',
-            'search': 'https://sceneaccess.eu/all?search=%s&method=1&%s',
-            'download': 'https://www.sceneaccess.eu/%s'
+            'base_url': self.url,
+            'login': urljoin(self.url, 'login'),
+            'detail': urljoin(self.url, 'details?id=%s'),
+            'search': urljoin(self.url, 'all?search=%s&method=1&%s'),
+            'download': urljoin(self.url, '%s')
         }
 
         # Proper Strings
