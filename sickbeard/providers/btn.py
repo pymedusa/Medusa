@@ -84,7 +84,7 @@ class BTNProvider(TorrentProvider):
 
         if search_strings:
             search_params.update(search_strings)
-            logger.log('Search string: %s' % search_strings, logger.DEBUG)
+            logger.log('Search string: {0}'.format(search_strings), logger.DEBUG)
 
         parsed_json = self._api_call(self.apikey, search_params)
         if not parsed_json:
@@ -119,7 +119,7 @@ class BTNProvider(TorrentProvider):
                 (title, url) = self._get_title_and_url(torrent_info)
 
                 if title and url:
-                    logger.log('Found result: %s ' % title, logger.DEBUG)
+                    logger.log('Found result: {0} '.format(title), logger.DEBUG)
                     results.append(torrent_info)
 
         # FIXME SORT RESULTS
@@ -137,7 +137,7 @@ class BTNProvider(TorrentProvider):
             return self._check_auth()
 
         if 'api-error' in parsed_json:
-            logger.log('Incorrect authentication credentials: %s' % parsed_json['api-error'], logger.DEBUG)
+            logger.log('Incorrect authentication credentials: {0}'.format(parsed_json['api-error']), logger.DEBUG)
             raise AuthException('Your authentication credentials for {0} are missing,'
                                 ' check your config.'.format(self.name))
 
@@ -268,27 +268,27 @@ class BTNProvider(TorrentProvider):
             parsed_json = server.getTorrents(apikey, params or {}, int(results_per_page), int(offset))
             time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 
-        except jsonrpclib.jsonrpc.ProtocolError, error:
+        except jsonrpclib.jsonrpc.ProtocolError as error:
             if error.message == 'Call Limit Exceeded':
                 logger.log('You have exceeded the limit of 150 calls per hour,'
                            ' per API key which is unique to your user account', logger.WARNING)
             else:
-                logger.log('JSON-RPC protocol error while accessing provicer. Error: %s ' % repr(error), logger.ERROR)
+                logger.log('JSON-RPC protocol error while accessing provider. Error: {msg!r} '.format(msg=error), logger.ERROR)
             parsed_json = {'api-error': ex(error)}
             return parsed_json
 
         except socket.timeout:
             logger.log('Timeout while accessing provider', logger.WARNING)
 
-        except socket.error, error:
+        except socket.error as error:
             # Note that sometimes timeouts are thrown as socket errors
-            logger.log('Socket error while accessing provider. Error: %s ' % error[1], logger.WARNING)
+            logger.log('Socket error while accessing provider. Error: {msg} '.format(error[1]), logger.WARNING)
 
-        except Exception, error:
+        except Exception as error:
             errorstring = str(error)
             if errorstring.startswith('<') and errorstring.endswith('>'):
                 errorstring = errorstring[1:-1]
-            logger.log('Unknown error while accessing provider. Error: %s ' % errorstring, logger.WARNING)
+            logger.log('Unknown error while accessing provider. Error: {msg} '.format(msg=errorstring), logger.WARNING)
 
         return parsed_json
 

@@ -162,7 +162,8 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         if self.username and self.api_key:
             return True
 
-        logger.log('Your authentication credentials for %s are missing, check your config.' % self.name, logger.WARNING)
+        logger.log('Your authentication credentials for {provider} are missing, check your config.'.format
+                   (provider=self.name), logger.WARNING)
         return False
 
 provider = HD4FreeProvider()
