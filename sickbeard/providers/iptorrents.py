@@ -90,7 +90,7 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                data = re.sub(r'(?im)<button.+?<[\/]button>', '', data, 0)
+                data = re.sub(r'(?im)<button.+?<[/]button>', '', data, 0)
                 with BS4Parser(data, 'html5lib') as html:
                     torrent_table = html.find('table', attrs={'class': 'torrents'})
                     torrents = torrent_table('tr') if torrent_table else []
