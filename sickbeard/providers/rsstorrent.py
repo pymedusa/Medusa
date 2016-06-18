@@ -55,7 +55,29 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.cookies = cookies
         self.titleTAG = titleTAG
 
-    def configStr(self):  # pylint: disable=too-many-arguments
+    def _get_title_and_url(self, item):
+
+        title = item.get(self.titleTAG, '').replace(' ', '.')
+
+        attempt_list = [
+            lambda: item.get('torrent_magneturi'),
+            lambda: item.enclosures[0].href,
+            lambda: item.get('link')
+        ]
+
+        url = None
+        for cur_attempt in attempt_list:
+            try:
+                url = cur_attempt()
+            except Exception:
+                continue
+
+            if title and url:
+                break
+
+        return title, url
+
+    def config_string(self):  # pylint: disable=too-many-arguments
         return '{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(
             self.name or '',
             self.url or '',
@@ -88,28 +110,6 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         if ek(os.path.isfile, ek(os.path.join, sickbeard.PROG_DIR, 'gui', sickbeard.GUI_NAME, 'images', 'providers', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'torrentrss.png'
-
-    def _get_title_and_url(self, item):
-
-        title = item.get(self.titleTAG, '').replace(' ', '.')
-
-        attempt_list = [
-            lambda: item.get('torrent_magneturi'),
-            lambda: item.enclosures[0].href,
-            lambda: item.get('link')
-        ]
-
-        url = None
-        for cur_attempt in attempt_list:
-            try:
-                url = cur_attempt()
-            except Exception:
-                continue
-
-            if title and url:
-                break
-
-        return title, url
 
     @staticmethod
     def _make_provider(config):
@@ -149,7 +149,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         return new_provider
 
-    def validateRSS(self):  # pylint: disable=too-many-return-statements
+    def validate_rss(self):  # pylint: disable=too-many-return-statements
 
         try:
             if self.cookies:
@@ -179,7 +179,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 try:
                     bdecode(torrent_file)
                 except Exception as error:
-                    self.dumpHTML(torrent_file)
+                    self.dump_html(torrent_file)
                     return False, 'Torrent link is not a valid torrent file: {0}'.format(ex(error))
 
             return True, 'RSS feed Parsed correctly'
@@ -188,7 +188,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             return False, 'Error when trying to load RSS: {0}'.format(ex(error))
 
     @staticmethod
-    def dumpHTML(data):
+    def dump_html(data):
         dump_name = ek(os.path.join, sickbeard.CACHE_DIR, 'custom_torrent.html')
 
         try:

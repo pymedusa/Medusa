@@ -57,13 +57,6 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # Only poll HD4Free every 10 minutes max
 
-    def _check_auth(self):
-        if self.username and self.api_key:
-            return True
-
-        logger.log('Your authentication credentials for %s are missing, check your config.' % self.name, logger.WARNING)
-        return False
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
         HD4Free search and parsing
@@ -165,5 +158,11 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         return results
 
+    def _check_auth(self):
+        if self.username and self.api_key:
+            return True
+
+        logger.log('Your authentication credentials for %s are missing, check your config.' % self.name, logger.WARNING)
+        return False
 
 provider = HD4FreeProvider()

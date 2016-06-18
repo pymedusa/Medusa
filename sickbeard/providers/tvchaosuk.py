@@ -61,36 +61,6 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         # Cache
         self.cache = tvcache.TVCache(self)
 
-    def _check_auth(self):
-        if self.username and self.password:
-            return True
-
-        raise AuthException('Your authentication credentials for {0} are missing,'
-                            ' check your config.'.format(self.name))
-
-    def login(self):
-        if len(self.session.cookies) >= 4:
-            return True
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-            'logout': 'no',
-            'submit': 'LOGIN',
-            'returnto': '/browse.php',
-        }
-
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-        if not response:
-            logger.log('Unable to connect to provider', logger.WARNING)
-            return False
-
-        if re.search('Error: Username or password incorrect!', response):
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
-            return False
-
-        return True
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
         TVChaosUK search and parsing
@@ -207,6 +177,36 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             results += items
 
         return results
+
+    def login(self):
+        if len(self.session.cookies) >= 4:
+            return True
+
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+            'logout': 'no',
+            'submit': 'LOGIN',
+            'returnto': '/browse.php',
+        }
+
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
+        if not response:
+            logger.log('Unable to connect to provider', logger.WARNING)
+            return False
+
+        if re.search('Error: Username or password incorrect!', response):
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            return False
+
+        return True
+
+    def _check_auth(self):
+        if self.username and self.password:
+            return True
+
+        raise AuthException('Your authentication credentials for {0} are missing,'
+                            ' check your config.'.format(self.name))
 
 
 provider = TVChaosUKProvider()

@@ -68,57 +68,6 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         # Cache
         self.cache = tvcache.TVCache(self)
 
-    def _check_auth(self):
-
-        if not self.username or not self.password:
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
-
-        return True
-
-    def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-            'login': 'submit',
-            'action': 'makelogin',
-        }
-
-        if self._uid and self._hash:
-            add_dict_to_cookiejar(self.session.cookies, self.cookies)
-        else:
-            response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-            if not response:
-                logger.log('Unable to connect to provider', logger.WARNING)
-                return False
-
-            if re.search('/logout.php', response):
-                try:
-                    if dict_from_cookiejar(self.session.cookies)['uid'] and \
-                            dict_from_cookiejar(self.session.cookies)['pass']:
-                        self._uid = dict_from_cookiejar(self.session.cookies)['uid']
-                        self._hash = dict_from_cookiejar(self.session.cookies)['pass']
-
-                        self.cookies = {'uid': self._uid,
-                                        'pass': self._hash}
-                        return True
-                except Exception:
-                    logger.log('Unable to login to provider (cookie)', logger.WARNING)
-
-                    return False
-            else:
-                if re.search('Username does not exist in the userbase or the account is not confirmed yet.', response) or \
-                    re.search('Username or password is incorrect. If you have an account here please use the'
-                              ' recovery system or try again.', response):
-                    logger.log('Invalid username or password. Check your settings', logger.WARNING)
-
-                if re.search('DDoS protection by CloudFlare', response):
-                    logger.log('Unable to login to provider due to CloudFlare DDoS javascript check', logger.WARNING)
-
-                    return False
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         results = []
         if not self.login():
@@ -252,6 +201,57 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                 results += items
 
             return results
+
+    def login(self):
+        if any(dict_from_cookiejar(self.session.cookies).values()):
+            return True
+
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+            'login': 'submit',
+            'action': 'makelogin',
+        }
+
+        if self._uid and self._hash:
+            add_dict_to_cookiejar(self.session.cookies, self.cookies)
+        else:
+            response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
+            if not response:
+                logger.log('Unable to connect to provider', logger.WARNING)
+                return False
+
+            if re.search('/logout.php', response):
+                try:
+                    if dict_from_cookiejar(self.session.cookies)['uid'] and \
+                            dict_from_cookiejar(self.session.cookies)['pass']:
+                        self._uid = dict_from_cookiejar(self.session.cookies)['uid']
+                        self._hash = dict_from_cookiejar(self.session.cookies)['pass']
+
+                        self.cookies = {'uid': self._uid,
+                                        'pass': self._hash}
+                        return True
+                except Exception:
+                    logger.log('Unable to login to provider (cookie)', logger.WARNING)
+
+                    return False
+            else:
+                if re.search('Username does not exist in the userbase or the account is not confirmed yet.', response) or \
+                    re.search('Username or password is incorrect. If you have an account here please use the'
+                              ' recovery system or try again.', response):
+                    logger.log('Invalid username or password. Check your settings', logger.WARNING)
+
+                if re.search('DDoS protection by CloudFlare', response):
+                    logger.log('Unable to login to provider due to CloudFlare DDoS javascript check', logger.WARNING)
+
+                    return False
+
+    def _check_auth(self):
+
+        if not self.username or not self.password:
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+
+        return True
 
 
 provider = FreshOnTVProvider()

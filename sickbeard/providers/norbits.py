@@ -61,24 +61,6 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # Cache
         self.cache = tvcache.TVCache(self, min_time=20)  # only poll Norbits every 15 minutes max
 
-    def _check_auth(self):
-
-        if not self.username or not self.passkey:
-            raise AuthException(('Your authentication credentials for %s are '
-                                 'missing, check your config.') % self.name)
-
-        return True
-
-    def _checkAuthFromData(self, parsed_json):  # pylint: disable=invalid-name
-        """ Check that we are authenticated. """
-
-        if 'status' in parsed_json and 'message' in parsed_json:
-            if parsed_json.get('status') == 3:
-                logger.log('Invalid username or password. '
-                           'Check your settings', logger.WARNING)
-
-        return True
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
         """ Do the actual searching and JSON parsing"""
 
@@ -109,7 +91,7 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                 if not parsed_json:
                     return results
 
-                if self._checkAuthFromData(parsed_json):
+                if self._check_auth_from_data(parsed_json):
                     json_items = parsed_json.get('data', '')
                     if not json_items:
                         logger.log('Resulting JSON from provider is not correct, '
@@ -162,6 +144,24 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
             results += items
 
         return results
+
+    def _check_auth(self):
+
+        if not self.username or not self.passkey:
+            raise AuthException(('Your authentication credentials for %s are '
+                                 'missing, check your config.') % self.name)
+
+        return True
+
+    def _check_auth_from_data(self, parsed_json):  # pylint: disable=invalid-name
+        """ Check that we are authenticated. """
+
+        if 'status' in parsed_json and 'message' in parsed_json:
+            if parsed_json.get('status') == 3:
+                logger.log('Invalid username or password. '
+                           'Check your settings', logger.WARNING)
+
+        return True
 
 
 provider = NorbitsProvider()  # pylint: disable=invalid-name

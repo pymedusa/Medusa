@@ -61,25 +61,6 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # only poll RARBG every 10 minutes max
 
-    def login(self):
-        if self.token and self.token_expires and datetime.datetime.now() < self.token_expires:
-            return True
-
-        login_params = {
-            'get_token': 'get_token',
-            'format': 'json',
-            'app_id': 'sickrage2',
-        }
-
-        response = self.get_url(self.urls['api'], params=login_params, returns='json')
-        if not response:
-            logger.log('Unable to connect to provider', logger.WARNING)
-            return False
-
-        self.token = response.get('token')
-        self.token_expires = datetime.datetime.now() + datetime.timedelta(minutes=14) if self.token else None
-        return self.token is not None
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals, too-many-statements
         """
         RARBG search and parsing
@@ -212,6 +193,25 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
             results += items
 
         return results
+
+    def login(self):
+        if self.token and self.token_expires and datetime.datetime.now() < self.token_expires:
+            return True
+
+        login_params = {
+            'get_token': 'get_token',
+            'format': 'json',
+            'app_id': 'sickrage2',
+        }
+
+        response = self.get_url(self.urls['api'], params=login_params, returns='json')
+        if not response:
+            logger.log('Unable to connect to provider', logger.WARNING)
+            return False
+
+        self.token = response.get('token')
+        self.token_expires = datetime.datetime.now() + datetime.timedelta(minutes=14) if self.token else None
+        return self.token is not None
 
 
 provider = RarbgProvider()

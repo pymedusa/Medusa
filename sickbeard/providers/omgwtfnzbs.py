@@ -54,6 +54,53 @@ class OmgwtfnzbsProvider(NZBProvider):
         # Cache
         self.cache = OmgwtfnzbsCache(self)
 
+    def search(self, search_strings, age=0, ep_obj=None):
+        results = []
+        if not self._check_auth():
+            return results
+
+        search_params = {
+            'user': self.username,
+            'api': self.api_key,
+            'eng': 1,
+            'catid': '19,20',  # SD,HD
+            'retention': sickbeard.USENET_RETENTION,
+        }
+
+        for mode in search_strings:
+            items = []
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+
+            for search_string in search_strings[mode]:
+                search_params['search'] = search_string
+                if mode != 'RSS':
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
+
+                data = self.get_url(self.urls['api'], params=search_params, returns='json')
+                if not data:
+                    logger.log('No data returned from provider', logger.DEBUG)
+                    continue
+
+                if not self._check_auth_from_data(data, is_XML=False):
+                    continue
+
+                for item in data:
+                    try:
+                        if not self._get_title_and_url(item):
+                            continue
+
+                        logger.log('Found result: {0}'.format(item.get('title')), logger.DEBUG)
+                        items.append(item)
+                    except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
+                            continue
+
+            results += items
+
+        return results
+
     def _check_auth(self):
 
         if not self.username or not self.api_key:
@@ -62,7 +109,7 @@ class OmgwtfnzbsProvider(NZBProvider):
 
         return True
 
-    def _checkAuthFromData(self, parsed_data, is_XML=True):
+    def _check_auth_from_data(self, parsed_data, is_XML=True):
 
         if not parsed_data:
             return self._check_auth()
@@ -97,53 +144,6 @@ class OmgwtfnzbsProvider(NZBProvider):
                 size = convert_size(size_match.group(1), units=units) or -1 if size_match else -1
 
         return try_int(size)
-
-    def search(self, search_strings, age=0, ep_obj=None):
-        results = []
-        if not self._check_auth():
-            return results
-
-        search_params = {
-            'user': self.username,
-            'api': self.api_key,
-            'eng': 1,
-            'catid': '19,20',  # SD,HD
-            'retention': sickbeard.USENET_RETENTION,
-        }
-
-        for mode in search_strings:
-            items = []
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
-
-            for search_string in search_strings[mode]:
-                search_params['search'] = search_string
-                if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
-
-                data = self.get_url(self.urls['api'], params=search_params, returns='json')
-                if not data:
-                    logger.log('No data returned from provider', logger.DEBUG)
-                    continue
-
-                if not self._checkAuthFromData(data, is_XML=False):
-                    continue
-
-                for item in data:
-                    try:
-                        if not self._get_title_and_url(item):
-                            continue
-
-                        logger.log('Found result: {0}'.format(item.get('title')), logger.DEBUG)
-                        items.append(item)
-                    except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                                       (traceback.format_exc()), logger.ERROR)
-                            continue
-
-            results += items
-
-        return results
 
 
 class OmgwtfnzbsCache(tvcache.TVCache):

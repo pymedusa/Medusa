@@ -69,39 +69,6 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tvcache.TVCache(self, min_time=30)  # only poll TNTVillage every 30 minutes max
 
-    def _check_auth(self):
-
-        if not self.username or not self.password:
-            raise AuthException('Your authentication credentials for {0} are missing,'
-                                ' check your config.'.format(self.name))
-
-        return True
-
-    def login(self):
-        if len(self.session.cookies) > 1:
-            cookies_dict = dict_from_cookiejar(self.session.cookies)
-            if cookies_dict['pass_hash'] != '0' and cookies_dict['member_id'] != '0':
-                return True
-
-        login_params = {
-            'UserName': self.username,
-            'PassWord': self.password,
-            'CookieDate': 1,
-            'submit': 'Connettiti al Forum',
-        }
-
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-        if not response:
-            logger.log('Unable to connect to provider', logger.WARNING)
-            return False
-
-        if re.search('Sono stati riscontrati i seguenti errori', response) or \
-                re.search('<title>Connettiti</title>', response):
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
-            return False
-
-        return True
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
         TNTVillage search and parsing
@@ -160,7 +127,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             params = parse_qs(last_cell_anchor.get('href', ''))
                             download_url = self.urls['download'].format(params['pid'][0]) if \
                                 params.get('pid') else None
-                            title = _normalize_title(cells[0], cells[1], mode)
+                            title = self._process_title(cells[0], cells[1], mode)
                             if not all([title, download_url]):
                                 continue
 
@@ -178,7 +145,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                                (title, seeders), logger.DEBUG)
                                 continue
 
-                            if _has_only_subs(title) and not self.subtitle:
+                            if self._has_only_subs(title) and not self.subtitle:
                                 logger.log('Torrent is only subtitled, skipping: {0}'.format
                                            (title), logger.DEBUG)
                                 continue
@@ -209,55 +176,88 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         return results
 
+    def login(self):
+        if len(self.session.cookies) > 1:
+            cookies_dict = dict_from_cookiejar(self.session.cookies)
+            if cookies_dict['pass_hash'] != '0' and cookies_dict['member_id'] != '0':
+                return True
 
-def _normalize_title(title, info, mode):
+        login_params = {
+            'UserName': self.username,
+            'PassWord': self.password,
+            'CookieDate': 1,
+            'submit': 'Connettiti al Forum',
+        }
 
-    result_title = title.find('a').get_text()
-    result_info = info.find('span')
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
+        if not response:
+            logger.log('Unable to connect to provider', logger.WARNING)
+            return False
 
-    if not result_info:
-        return None
+        if re.search('Sono stati riscontrati i seguenti errori', response) or \
+                re.search('<title>Connettiti</title>', response):
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            return False
 
-    bad_words = ['[cura]', 'hot', 'season', 'stagione', 'series', 'premiere', 'finale', 'fine',
-                 'full', 'Completa', 'supereroi', 'commedia', 'drammatico', 'poliziesco', 'azione',
-                 'giallo', 'politico', 'sitcom', 'funzionante']
+        return True
 
-    formatted_info = ''
-    for info_part in result_info:
-        if mode == 'RSS':
-            try:
-                info_part = info_part.get('src')
-                info_part = info_part.replace('style_images/mkportal-636/', '')
-                info_part = info_part.replace('.gif', '').replace('.png', '')
-                if info_part == 'dolby':
-                    info_part = 'Ac3'
-                elif info_part == 'fullHd':
-                    info_part = '1080p'
-            except AttributeError:
-                info_part = info_part.replace('·', '').replace(',', '')
-                info_part = info_part.replace('by', '-').strip()
-            formatted_info += ' ' + info_part
-        else:
-            formatted_info = info_part
+    def _check_auth(self):
 
-    allowed_words = [word for word in formatted_info.split() if word.lower() not in bad_words]
-    final_title = '{0} '.format(result_title) + ' '.join(allowed_words).strip('-').strip()
+        if not self.username or not self.password:
+            raise AuthException('Your authentication credentials for {0} are missing,'
+                                ' check your config.'.format(self.name))
 
-    return final_title
+        return True
 
+    @staticmethod
+    def _process_title(title, info, mode):
 
-def _has_only_subs(title):
+        result_title = title.find('a').get_text()
+        result_info = info.find('span')
 
-    title = title.lower()
+        if not result_info:
+            return None
 
-    if 'sub' in title:
-        title = title.split()
-        counter = 0
-        for word in title:
-            if 'ita' in word:
-                counter = counter + 1
-        if counter < 2:
-            return True
+        bad_words = ['[cura]', 'hot', 'season', 'stagione', 'series', 'premiere', 'finale', 'fine',
+                     'full', 'Completa', 'supereroi', 'commedia', 'drammatico', 'poliziesco', 'azione',
+                     'giallo', 'politico', 'sitcom', 'funzionante']
+
+        formatted_info = ''
+        for info_part in result_info:
+            if mode == 'RSS':
+                try:
+                    info_part = info_part.get('src')
+                    info_part = info_part.replace('style_images/mkportal-636/', '')
+                    info_part = info_part.replace('.gif', '').replace('.png', '')
+                    if info_part == 'dolby':
+                        info_part = 'Ac3'
+                    elif info_part == 'fullHd':
+                        info_part = '1080p'
+                except AttributeError:
+                    info_part = info_part.replace('·', '').replace(',', '')
+                    info_part = info_part.replace('by', '-').strip()
+                formatted_info += ' ' + info_part
+            else:
+                formatted_info = info_part
+
+        allowed_words = [word for word in formatted_info.split() if word.lower() not in bad_words]
+        final_title = '{0} '.format(result_title) + ' '.join(allowed_words).strip('-').strip()
+
+        return final_title
+
+    @staticmethod
+    def _has_only_subs(title):
+
+        title = title.lower()
+
+        if 'sub' in title:
+            title = title.split()
+            counter = 0
+            for word in title:
+                if 'ita' in word:
+                    counter = counter + 1
+            if counter < 2:
+                return True
 
 
 provider = TNTVillageProvider()

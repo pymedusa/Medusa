@@ -63,31 +63,6 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tvcache.TVCache(self)
 
-    def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-            'keeplogged': 'on',
-            'login': 'Login'
-        }
-
-        self.get_url(self.urls['base_url'], returns='text')
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-        if not response:
-            logger.log('Unable to connect to provider', logger.WARNING)
-            return False
-
-        if re.search('Dit brugernavn eller kodeord er forkert.', response) \
-                or re.search('<title>Login :: HoundDawgs</title>', response) \
-                or re.search('Dine cookies er ikke aktiveret.', response):
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
-            return False
-
-        return True
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
         HoundDawgs search and parsing
@@ -208,6 +183,31 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             results += items
 
         return results
+
+    def login(self):
+        if any(dict_from_cookiejar(self.session.cookies).values()):
+            return True
+
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+            'keeplogged': 'on',
+            'login': 'Login'
+        }
+
+        self.get_url(self.urls['base_url'], returns='text')
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
+        if not response:
+            logger.log('Unable to connect to provider', logger.WARNING)
+            return False
+
+        if re.search('Dit brugernavn eller kodeord er forkert.', response) \
+                or re.search('<title>Login :: HoundDawgs</title>', response) \
+                or re.search('Dine cookies er ikke aktiveret.', response):
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            return False
+
+        return True
 
 
 provider = HoundDawgsProvider()

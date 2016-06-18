@@ -62,31 +62,6 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # Only poll BLUETIGERS every 10 minutes max
 
-    def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-            'take_login': '1'
-        }
-
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-        if not response:
-            check_login = self.get_url(self.urls['base_url'], returns='text')
-            if re.search('account-logout.php', check_login):
-                return True
-            else:
-                logger.log('Unable to connect to provider', logger.WARNING)
-                return False
-
-        if re.search('account-login.php', response):
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
-            return False
-
-        return True
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
         """
         BLUETIGERS search and parsing
@@ -180,5 +155,29 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         return results
 
+    def login(self):
+        if any(dict_from_cookiejar(self.session.cookies).values()):
+            return True
+
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+            'take_login': '1'
+        }
+
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
+        if not response:
+            check_login = self.get_url(self.urls['base_url'], returns='text')
+            if re.search('account-logout.php', check_login):
+                return True
+            else:
+                logger.log('Unable to connect to provider', logger.WARNING)
+                return False
+
+        if re.search('account-login.php', response):
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            return False
+
+        return True
 
 provider = BlueTigersProvider()

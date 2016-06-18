@@ -69,31 +69,6 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # Only poll T411 every 10 minutes max
 
-    def login(self):
-        if self.token is not None:
-            if time.time() < (self.tokenLastUpdate + 30 * 60):
-                return True
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-        }
-
-        response = self.get_url(self.urls['login_page'], post_data=login_params, returns='json')
-        if not response:
-            logger.log('Unable to connect to provider', logger.WARNING)
-            return False
-
-        if response and 'token' in response:
-            self.token = response['token']
-            self.tokenLastUpdate = time.time()
-            # self.uid = response['uid'].encode('ascii', 'ignore')
-            self.session.auth = T411Auth(self.token)
-            return True
-        else:
-            logger.log('Token not found in authentication response', logger.WARNING)
-            return False
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
         T411 search and parsing
@@ -187,6 +162,31 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
             results += items
 
         return results
+
+    def login(self):
+        if self.token is not None:
+            if time.time() < (self.tokenLastUpdate + 30 * 60):
+                return True
+
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+        }
+
+        response = self.get_url(self.urls['login_page'], post_data=login_params, returns='json')
+        if not response:
+            logger.log('Unable to connect to provider', logger.WARNING)
+            return False
+
+        if response and 'token' in response:
+            self.token = response['token']
+            self.tokenLastUpdate = time.time()
+            # self.uid = response['uid'].encode('ascii', 'ignore')
+            self.session.auth = T411Auth(self.token)
+            return True
+        else:
+            logger.log('Token not found in authentication response', logger.WARNING)
+            return False
 
 
 class T411Auth(AuthBase):  # pylint: disable=too-few-public-methods
