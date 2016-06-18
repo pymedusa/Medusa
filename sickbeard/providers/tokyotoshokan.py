@@ -121,7 +121,7 @@ class TokyoToshokanProvider(TorrentProvider):  # pylint: disable=too-many-instan
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log("Discarding torrent because it doesn't meet the"
+                                    logger.log("Discarding torrent because it doesn't meet the "
                                                "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
