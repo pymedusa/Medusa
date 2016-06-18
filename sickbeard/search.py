@@ -548,7 +548,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
             except AuthException as e:
                 logger.log(u"Authentication error: " + ex(e), logger.ERROR)
                 break
-            except (SocketTimeout, TypeError) as e:
+            except SocketTimeout as e:
                 logger.log(u"Connection timed out (sockets) while searching %s. Error: %r" %
                            (cur_provider.name, ex(e)), logger.DEBUG)
                 break
@@ -585,7 +585,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False, m
                         foundResults[cur_provider.name][curEp] = searchResults[curEp]
 
                     # Sort the list by seeders if possible
-                    if cur_provider.provider_type == 'torrent':
+                    if cur_provider.provider_type == 'torrent' or getattr(cur_provider, 'torznab', None):
                         foundResults[cur_provider.name][curEp].sort(key=lambda d: int(d.seeders), reverse=True)
 
                 break

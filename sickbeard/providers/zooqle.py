@@ -18,6 +18,8 @@
 
 from __future__ import unicode_literals
 
+import traceback
+
 from requests.compat import urljoin
 
 from sickbeard import logger, tvcache
@@ -37,10 +39,6 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
         # Credentials
         self.public = True
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # URLs
         self.url = 'https://zooqle.com/'
         self.urls = {
@@ -49,6 +47,12 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+
+        # Miscellaneous Options
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
         # Cache
         self.cache = tvcache.TVCache(self, min_time=15)
@@ -82,10 +86,12 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
                     search_params = {'q': '{0} category:TV'.format(search_string)}
 
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
@@ -100,10 +106,9 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
 
                     # Skip column headers
                     for result in torrent_rows[1:]:
+                        cells = result('td')
 
                         try:
-                            cells = result('td')
-
                             title = cells[1].find('a').get_text()
                             magnet = cells[2].find('a')['href']
                             download_url = '{magnet}{trackers}'.format(magnet=magnet,
@@ -111,20 +116,23 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
                             if not all([title, download_url]):
                                 continue
 
-                            peers = cells[6].find('div')['title'].replace(',', '').split(' | ', 1)
-                            seeders = try_int(peers[0].strip('Seeders: '))
-                            leechers = try_int(peers[1].strip('Leechers: '))
+                            seeders = 1
+                            leechers = 0
+                            peers = cells[6].find('div')
+                            if peers and peers.get('title'):
+                                peers = peers['title'].replace(',', '').split(' | ', 1)
+                                seeders = try_int(peers[0].strip('Seeders: '))
+                                leechers = try_int(peers[1].strip('Leechers: '))
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log('Discarding torrent because it doesn\'t meet the'
-                                               ' minimum seeders: {0}. Seeders: {1})'.format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
                             torrent_size = cells[4].get_text(strip=True)
-
                             size = convert_size(torrent_size, units=units) or -1
 
                             item = {
@@ -134,18 +142,18 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
                                            (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
-                        except StandardError:
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
                             continue
 
-            # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
 
         return results

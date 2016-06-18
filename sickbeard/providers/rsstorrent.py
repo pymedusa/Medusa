@@ -1,32 +1,32 @@
 # coding=utf-8
 # # Author: Mr_Orange
 #
-
+# This file is part of Medusa.
 #
-# This file is part of SickRage.
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
 import io
 import os
 import re
+import sickbeard
+
 from requests.utils import add_dict_to_cookiejar
+
 from bencode import bdecode
 
-import sickbeard
 from sickbeard import helpers, logger, tvcache
 
 from sickrage.helper.encoding import ek
@@ -55,7 +55,29 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.cookies = cookies
         self.titleTAG = titleTAG
 
-    def configStr(self):  # pylint: disable=too-many-arguments
+    def _get_title_and_url(self, item):
+
+        title = item.get(self.titleTAG, '').replace(' ', '.')
+
+        attempt_list = [
+            lambda: item.get('torrent_magneturi'),
+            lambda: item.enclosures[0].href,
+            lambda: item.get('link')
+        ]
+
+        url = None
+        for cur_attempt in attempt_list:
+            try:
+                url = cur_attempt()
+            except Exception:
+                continue
+
+            if title and url:
+                break
+
+        return title, url
+
+    def config_string(self):  # pylint: disable=too-many-arguments
         return '{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(
             self.name or '',
             self.url or '',
@@ -88,28 +110,6 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         if ek(os.path.isfile, ek(os.path.join, sickbeard.PROG_DIR, 'gui', sickbeard.GUI_NAME, 'images', 'providers', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'torrentrss.png'
-
-    def _get_title_and_url(self, item):
-
-        title = item.get(self.titleTAG, '').replace(' ', '.')
-
-        attempt_list = [
-            lambda: item.get('torrent_magneturi'),
-            lambda: item.enclosures[0].href,
-            lambda: item.get('link')
-        ]
-
-        url = None
-        for cur_attempt in attempt_list:
-            try:
-                url = cur_attempt()
-            except Exception:
-                continue
-
-            if title and url:
-                break
-
-        return title, url
 
     @staticmethod
     def _make_provider(config):
@@ -149,20 +149,20 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         return new_provider
 
-    def validateRSS(self):  # pylint: disable=too-many-return-statements
+    def validate_rss(self):  # pylint: disable=too-many-return-statements
 
         try:
             if self.cookies:
                 cookie_validator = re.compile(r'^(\w+=\w+)(;\w+=\w+)*$')
                 if not cookie_validator.match(self.cookies):
-                    return False, 'Cookie is not correctly formatted: {}'.format(self.cookies)
+                    return False, 'Cookie is not correctly formatted: {0}'.format(self.cookies)
                 add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
 
             # pylint: disable=protected-access
             # Access to a protected member of a client class
             data = self.cache._getRSSData()['entries']
             if not data:
-                return False, 'No items found in the RSS feed {}'.format(self.url)
+                return False, 'No items found in the RSS feed {0}'.format(self.url)
 
             title, url = self._get_title_and_url(data[0])
 
@@ -179,28 +179,28 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 try:
                     bdecode(torrent_file)
                 except Exception as error:
-                    self.dumpHTML(torrent_file)
-                    return False, 'Torrent link is not a valid torrent file: {}'.format(ex(error))
+                    self.dump_html(torrent_file)
+                    return False, 'Torrent link is not a valid torrent file: {0}'.format(ex(error))
 
             return True, 'RSS feed Parsed correctly'
 
         except Exception as error:
-            return False, 'Error when trying to load RSS: {}'.format(ex(error))
+            return False, 'Error when trying to load RSS: {0}'.format(ex(error))
 
     @staticmethod
-    def dumpHTML(data):
-        dumpName = ek(os.path.join, sickbeard.CACHE_DIR, 'custom_torrent.html')
+    def dump_html(data):
+        dump_name = ek(os.path.join, sickbeard.CACHE_DIR, 'custom_torrent.html')
 
         try:
-            fileOut = io.open(dumpName, 'wb')
-            fileOut.write(data)
-            fileOut.close()
-            helpers.chmodAsParent(dumpName)
+            file_out = io.open(dump_name, 'wb')
+            file_out.write(data)
+            file_out.close()
+            helpers.chmodAsParent(dump_name)
         except IOError as error:
-            logger.log('Unable to save the file: {}'.format(ex(error)), logger.ERROR)
+            logger.log('Unable to save the file: {0}'.format(ex(error)), logger.ERROR)
             return False
 
-        logger.log('Saved custom_torrent html dump {} '.format(dumpName), logger.INFO)
+        logger.log('Saved custom_torrent html dump {0} '.format(dump_name), logger.INFO)
         return True
 
 
