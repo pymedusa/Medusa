@@ -33,22 +33,32 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
 
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'Rarbg')
 
+        # Credentials
         self.public = True
-        self.minseed = None
-        self.ranked = None
-        self.sorting = None
-        self.minleech = None
         self.token = None
         self.token_expires = None
 
-        # Spec: https://torrentapi.org/apidocs_v2.txt
-        self.url = 'https://rarbg.com'
-        self.urls = {'api': 'http://torrentapi.org/pubapi_v2.php'}
+        # URLs
+        self.url = 'https://rarbg.com'  # Spec: https://torrentapi.org/apidocs_v2.txt
+        self.urls = {
+            'api': 'http://torrentapi.org/pubapi_v2.php',
+        }
 
+        # Proper Strings
         self.proper_strings = ['{{PROPER|REPACK}}']
 
+        # Miscellaneous Options
+        self.ranked = None
+        self.sorting = None
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
+        # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # only poll RARBG every 10 minutes max
 
     def login(self):
@@ -58,7 +68,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         login_params = {
             'get_token': 'get_token',
             'format': 'json',
-            'app_id': 'sickrage2'
+            'app_id': 'sickrage2',
         }
 
         response = self.get_url(self.urls['api'], params=login_params, returns='json')
@@ -71,10 +81,19 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         return self.token is not None
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals, too-many-statements
+        """
+        RARBG search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
 
+        # Search Params
         search_params = {
             'app_id': 'sickrage2',
             'category': 'tv',
@@ -95,7 +114,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             if mode == 'RSS':
                 search_params['sort'] = 'last'
@@ -112,6 +131,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                     search_params.pop('search_tvdb', None)
 
             for search_string in search_strings[mode]:
+
                 if mode != 'RSS':
                     search_params['search_string'] = search_string
                     logger.log('Search string: {0}'.format(search_string),
@@ -159,6 +179,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                         seeders = item.pop('seeders')
                         leechers = item.pop('leechers')
 
+                        # Filter unseeded torrent
                         if seeders < min(self.minseed, 1):
                             if mode != 'RSS':
                                 logger.log("Discarding torrent because it doesn't meet the"
@@ -168,10 +189,6 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
 
                         torrent_size = item.pop('size', -1)
                         size = convert_size(torrent_size) or -1
-
-                        if mode != 'RSS':
-                            logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                       (title, seeders, leechers), logger.DEBUG)
 
                         item = {
                             'title': title,

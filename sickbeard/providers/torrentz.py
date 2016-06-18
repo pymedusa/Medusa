@@ -30,7 +30,7 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """Torrentz Torrent provider"""
     def __init__(self):
 
         # Provider Init
@@ -40,10 +40,6 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         self.public = True
         self.confirmed = True
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # URLs
         self.url = 'https://torrentz.eu/'
         self.urls = {
@@ -51,9 +47,15 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
             'feed': 'https://torrentz.eu/feed',
             'base': self.url,
         }
-        self.headers.update({'User-Agent': USER_AGENT})
 
         # Proper Strings
+        self.headers.update({'User-Agent': USER_AGENT})
+
+        # Miscellaneous Options
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
         # Cache
         self.cache = tvcache.TVCache(self, min_time=15)  # only poll Torrentz every 15 minutes max
@@ -68,16 +70,17 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+
             for search_string in search_strings[mode]:
                 search_url = self.urls['verified'] if self.confirmed else self.urls['feed']
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format
-                               (search_string), logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 data = self.get_url(search_url, params={'q': search_string}, returns='text')
                 if not data:
-                    logger.log("No data returned from provider", logger.DEBUG)
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 if not data.startswith("<?xml"):
@@ -105,7 +108,7 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -116,7 +119,7 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': torrent_hash
+                                'hash': torrent_hash,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

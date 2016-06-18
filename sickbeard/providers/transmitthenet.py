@@ -32,7 +32,7 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """TransmitTheNet Torrent provider"""
     def __init__(self):
 
         # Provider Init
@@ -42,11 +42,6 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
         self.username = None
         self.password = None
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-        self.freeleech = None
-
         # URLs
         self.url = 'https://transmithe.net/'
         self.urls = {
@@ -55,6 +50,13 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
         }
 
         # Proper Strings
+
+        # Miscellaneous Options
+        self.freeleech = None
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
         # Cache
         self.cache = tvcache.TVCache(self)
@@ -89,20 +91,28 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
 
         return True
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals, too-many-statements
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        TransmitTheNet search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_params = {
                     'searchtext': search_string,
@@ -176,7 +186,7 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

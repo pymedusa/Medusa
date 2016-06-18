@@ -26,17 +26,27 @@ from sickrage.providers.nzb.NZBProvider import NZBProvider
 
 
 class WombleProvider(NZBProvider):
-
+    """Womble Newznab provider"""
     def __init__(self):
 
+        # Provider Init
         NZBProvider.__init__(self, "Womble's Index")
 
+        # Credentials
         self.public = True
 
+        # URLs
         self.url = 'http://newshost.co.za'
-        self.urls = {'rss': urljoin(self.url, 'rss')}
+        self.urls = {
+            'rss': urljoin(self.url, 'rss'),
+        }
+
+        # Proper Strings
+
+        # Miscellaneous Options
         self.supports_backlog = False
 
+        # Cache
         self.cache = WombleCache(self, min_time=20)
 
 
@@ -50,7 +60,12 @@ class WombleCache(tvcache.TVCache):
         self.setLastUpdate()
 
         cl = []
-        search_params_list = [{'sec': 'tv-x264'}, {'sec': 'tv-hd'}, {'sec': 'tv-sd'}, {'sec': 'tv-dvd'}]
+        search_params_list = [
+            {'sec': 'tv-x264'},
+            {'sec': 'tv-hd'},
+            {'sec': 'tv-sd'},
+            {'sec': 'tv-dvd'}
+        ]
         for search_params in search_params_list:
             search_params.update({'fr': 'false'})
             data = self.getRSSFeed(self.provider.urls['rss'], params=search_params)['entries']

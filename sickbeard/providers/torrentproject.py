@@ -38,17 +38,18 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
         # Credentials
         self.public = True
 
+        # URLs
+        self.url = 'https://torrentproject.se/'
+        self.custom_url = None
+
+        # Proper Strings
+
+        # Miscellaneous Options
+        self.headers.update({'User-Agent': USER_AGENT})
+
         # Torrent Stats
         self.minseed = None
         self.minleech = None
-
-        # URLs
-        self.url = 'https://torrentproject.se/'
-
-        self.custom_url = None
-        self.headers.update({'User-Agent': USER_AGENT})
-
-        # Proper Strings
 
         # Cache
         self.cache = tvcache.TVCache(self, search_params={'RSS': ['0day']})
@@ -65,13 +66,13 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
 
         for mode in search_strings:  # Mode = RSS, Season, Episode
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string.decode('utf-8')),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_params['s'] = search_string
 
@@ -103,7 +104,7 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                         if seeders < min(self.minseed, 1):
                             if mode != 'RSS':
                                 logger.log("Discarding torrent because it doesn't meet the"
-                                           ' minimum seeders: {0}. Seeders: {1}'.format
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                            (title, seeders), logger.DEBUG)
                             continue
 
@@ -118,7 +119,7 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                             'seeders': seeders,
                             'leechers': leechers,
                             'pubdate': None,
-                            'hash': torrent_hash
+                                'hash': None,
                         }
                         if mode != 'RSS':
                             logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

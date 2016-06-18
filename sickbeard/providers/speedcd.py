@@ -32,7 +32,7 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """SpeedCD Torrent provider"""
     def __init__(self):
 
         # Provider Init
@@ -41,11 +41,6 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # Credentials
         self.username = None
         self.password = None
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-        self.freeleech = False
 
         # URLs
         self.url = 'https://speed.cd'
@@ -56,6 +51,13 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK']
+
+        # Miscellaneous Options
+        self.freeleech = False
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
         # Cache
         self.cache = tvcache.TVCache(self)
@@ -116,18 +118,18 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_params['search'] = search_string
-
                 data = self.get_url(self.urls['search'], params=search_params, returns='text')
                 if not data:
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 with BS4Parser(data, 'html5lib') as html:
@@ -135,7 +137,7 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     torrent_table = torrent_table.find('table') if torrent_table else None
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
-                    # Continue only if at least one Release is found
+                    # Continue only if at least one release is found
                     if len(torrent_rows) < 2:
                         logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
@@ -144,9 +146,11 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                     # Skip column headers
                     for result in torrent_rows[1:]:
-                        try:
-                            cells = result('td')
+                        cells = result('td')
+                        if len(cells) < len(labels):
+                            continue
 
+                        try:
                             title = cells[labels.index('Title')].find('a', class_='torrent').get_text()
                             download_url = urljoin(self.url, cells[labels.index('Download')].find(title='Download').parent['href'])
                             if not all([title, download_url]):
@@ -159,7 +163,7 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -174,7 +178,7 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -32,7 +32,7 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """TorrentBytes Torrent provider"""
     def __init__(self):
 
         # Provider Init
@@ -41,11 +41,6 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         # Credentials
         self.username = None
         self.password = None
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-        self.freeleech = False
 
         # URLs
         self.url = 'https://www.torrentbytes.net'
@@ -57,6 +52,13 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK']
 
+        # Miscellaneous Options
+        self.freeleech = False
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
         # Cache
         self.cache = tvcache.TVCache(self)
 
@@ -64,9 +66,11 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         if any(dict_from_cookiejar(self.session.cookies).values()):
             return True
 
-        login_params = {'username': self.username,
-                        'password': self.password,
-                        'login': 'Log in!'}
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+            'login': 'Log in!',
+        }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
         if not response:
@@ -84,6 +88,7 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         if not self.login():
             return results
 
+        # Search Params
         search_params = {
             'c41': 1,
             'c33': 1,
@@ -94,12 +99,13 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string), logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_params['search'] = search_string
                 data = self.get_url(self.urls['search'], params=search_params, returns='text')
@@ -111,7 +117,7 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     torrent_table = html.find('table', border='1')
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
-                    # Continue only if at least one Release is found
+                    # Continue only if at least one release is found
                     if len(torrent_rows) < 2:
                         logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
@@ -119,10 +125,13 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     # "Type", "Name", Files", "Comm.", "Added", "TTL", "Size", "Snatched", "Seeders", "Leechers"
                     labels = [label.get_text(strip=True) for label in torrent_rows[0]('td')]
 
+                    # Skip column headers
                     for result in torrent_rows[1:]:
-                        try:
-                            cells = result('td')
+                        cells = result('td')
+                        if len(cells) < len(labels):
+                            continue
 
+                        try:
                             download_url = urljoin(self.url, cells[labels.index('Name')].find('a', href=re.compile(r'download.php\?id='))['href'])
                             title_element = cells[labels.index('Name')].find('a', href=re.compile(r'details.php\?id='))
                             title = title_element.get('title', '') or title_element.get_text(strip=True)
@@ -142,7 +151,7 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -156,7 +165,7 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

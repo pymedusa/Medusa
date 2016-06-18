@@ -32,7 +32,7 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """ThePirateBay Torrent provider"""
     def __init__(self):
 
         # Provider Init
@@ -40,11 +40,6 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         # Credentials
         self.public = True
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-        self.confirmed = True
 
         # URLs
         self.url = 'https://thepiratebay.se'
@@ -55,6 +50,13 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.custom_url = None
 
         # Proper Strings
+
+        # Miscellaneous Options
+        self.confirmed = True
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
         # Cache
         self.cache = tvcache.TVCache(self, min_time=1)  # only poll ThePirateBay every 30 minutes max
@@ -86,7 +88,7 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
@@ -107,14 +109,14 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     data = self.get_url(search_url, returns='text')
 
                 if not data:
-                    logger.log('URL did not return data, maybe try a custom url, or a different one', logger.DEBUG)
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 with BS4Parser(data, 'html5lib') as html:
                     torrent_table = html.find('table', id='searchResult')
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
-                    # Continue only if at least one Release is found
+                    # Continue only if at least one release is found
                     if len(torrent_rows) < 2:
                         logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
@@ -143,7 +145,7 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -166,7 +168,7 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

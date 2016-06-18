@@ -27,18 +27,16 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class ShazbatProvider(TorrentProvider):
-
+    """Shazbat Torrent provider"""
     def __init__(self):
 
+        # Provider Init
         TorrentProvider.__init__(self, 'Shazbat.tv')
 
-        self.supports_backlog = False
-
+        # Credentials
         self.passkey = None
-        self.options = None
 
-        self.cache = ShazbatCache(self, min_time=20)
-
+        # URLs
         self.url = 'http://www.shazbat.tv'
         self.urls = {
             'login': urljoin(self.url, 'login'),
@@ -46,6 +44,17 @@ class ShazbatProvider(TorrentProvider):
             # 'rss_queue': urljoin(self.url, 'rss/download_queue'),
             # 'rss_followed': urljoin(self.url, 'rss/followed')
         }
+
+        # Proper Strings
+
+        # Miscellaneous Options
+        self.supports_backlog = False
+        self.options = None
+
+        # Torrent Stats
+
+        # Cache
+        self.cache = ShazbatCache(self, min_time=20)
 
     def _check_auth(self):
         if not self.passkey:

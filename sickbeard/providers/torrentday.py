@@ -32,7 +32,7 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """TorrentDay Torrent provider"""
     def __init__(self):
 
         # Provider Init
@@ -44,11 +44,6 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self._uid = None
         self._hash = None
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-        self.freeleech = False
-
         # URLs
         self.url = 'https://classic.torrentday.com'
         self.urls = {
@@ -57,9 +52,17 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             'download': urljoin(self.url, '/download.php/')
         }
 
+        # Proper Strings
+
+        # Miscellaneous Options
+        self.freeleech = False
         self.cookies = None
         self.categories = {'Season': {'c14': 1}, 'Episode': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1},
                            'RSS': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1, 'c14': 1}}
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
         # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # Only poll IPTorrents every 10 minutes max
@@ -76,7 +79,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 'username': self.username,
                 'password': self.password,
                 'submit.x': 0,
-                'submit.y': 0
+                'submit.y': 0,
             }
 
             response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
@@ -108,13 +111,13 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_string = '+'.join(search_string.split())
 
@@ -156,7 +159,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         if seeders < min(self.minseed, 1):
                             if mode != 'RSS':
                                 logger.log("Discarding torrent because it doesn't meet the"
-                                           ' minimum seeders: {0}. Seeders: {1}'.format
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                            (title, seeders), logger.DEBUG)
                             continue
 
@@ -170,7 +173,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             'seeders': seeders,
                             'leechers': leechers,
                             'pubdate': None,
-                            'hash': None
+                                'hash': None,
                         }
                         if mode != 'RSS':
                             logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -32,7 +32,7 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class XthorProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """Xthor Torrent provider"""
     def __init__(self):
 
         # Provider Init
@@ -42,20 +42,22 @@ class XthorProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         self.username = None
         self.password = None
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-        self.freeleech = None
-
         # URLs
         self.url = 'https://xthor.bz'
         self.urls = {
             'login': self.url + '/takelogin.php',
-            'search': self.url + '/browse.php?'
+            'search': self.url + '/browse.php?',
         }
 
         # Proper Strings
         self.proper_strings = ['PROPER']
+
+        # Miscellaneous Options
+        self.freeleech = None
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
         # Cache
         self.cache = tvcache.TVCache(self, min_time=30)
@@ -81,20 +83,18 @@ class XthorProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
 
         return True
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        Xthor search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
-
-        """
-        Séries / Pack TV 13
-        Séries / TV FR 14
-        Séries / HD FR 15
-        Séries / TV VOSTFR 16
-        Séries / HD VOSTFR 17
-        Mangas (Anime) 32
-        Sport 34
-        """
 
         # Search Params
         search_params = {
@@ -102,8 +102,13 @@ class XthorProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
             'searchin': 'title',
             'incldead': 0,
             'type': 'desc',
-            'c13': 1, 'c14': 1, 'c15': 1,
-            'c16': 1, 'c17': 1, 'c32': 1
+            'c13': 1,  # Séries / Pack TV 13
+            'c14': 1,  # Séries / TV FR 14
+            'c15': 1,  # Séries / HD FR 15
+            'c16': 1,  # Séries / TV VOSTFR 16
+            'c17': 1,  # Séries / HD VOSTFR 17
+            'c32': 1,   # Mangas (Anime) 32
+            'c34': 1,  # Sport 34
         }
 
         # Units
@@ -119,7 +124,7 @@ class XthorProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             # Sorting: 1: Name, 3: Comments, 5: Size, 6: Completed, 7: Seeders, 8: Leechers (4: Time ?)
             search_params['sort'] = (7, 4)[mode == 'RSS']
@@ -127,11 +132,10 @@ class XthorProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format
-                               (search_string), logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_params['search'] = search_string
-
                 data = self.get_url(self.urls['search'], params=search_params, returns='text')
                 if not data:
                     logger.log('No data returned from provider', logger.DEBUG)
@@ -143,7 +147,7 @@ class XthorProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                     if torrent_table:
                         torrent_rows = torrent_table('tr')
 
-                    # Continue only if at least one Release is found
+                    # Continue only if at least one release is found
                     if len(torrent_rows) < 2:
                         logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
@@ -170,7 +174,7 @@ class XthorProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -184,7 +188,7 @@ class XthorProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -32,7 +32,7 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class TorrentLeechProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """TorrentLeech Torrent provider"""
     def __init__(self):
 
         # Provider Init
@@ -41,10 +41,6 @@ class TorrentLeechProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         # Credentials
         self.username = None
         self.password = None
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # URLs
         self.url = 'https://torrentleech.org'
@@ -55,6 +51,12 @@ class TorrentLeechProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK']
+
+        # Miscellaneous Options
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
         # Cache
         self.cache = tvcache.TVCache(self)
@@ -81,7 +83,15 @@ class TorrentLeechProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         return True
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        TorrentLeech search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
@@ -102,13 +112,13 @@ class TorrentLeechProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         for mode in search_strings:
             items = []
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {0}'.format(search_string),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                     categories = ['2', '7', '35']
                     categories += ['26', '32'] if mode == 'Episode' else ['27']
@@ -131,7 +141,7 @@ class TorrentLeechProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     torrent_table = html.find('table', id='torrenttable')
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
-                    # Continue only if at least one Release is found
+                    # Continue only if at least one release is found
                     if len(torrent_rows) < 2:
                         logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
@@ -167,7 +177,7 @@ class TorrentLeechProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

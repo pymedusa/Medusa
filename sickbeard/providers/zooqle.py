@@ -39,10 +39,6 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
         # Credentials
         self.public = True
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # URLs
         self.url = 'https://zooqle.com/'
         self.urls = {
@@ -51,6 +47,12 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+
+        # Miscellaneous Options
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
         # Cache
         self.cache = tvcache.TVCache(self, min_time=15)
@@ -84,6 +86,8 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
                     search_params = {'q': '{0} category:TV'.format(search_string)}
 
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
@@ -102,14 +106,13 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
 
                     # Skip column headers
                     for result in torrent_rows[1:]:
+                        cells = result('td')
 
                         try:
-                            cells = result('td')
-
                             title = cells[1].find('a').get_text()
                             magnet = cells[2].find('a')['href']
                             download_url = '{magnet}{trackers}'.format(magnet=magnet,
-                                                                       trackers=self._custom_trackers)
+                                                                      trackers=self._custom_trackers)
                             if not all([title, download_url]):
                                 continue
 
@@ -125,7 +128,7 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
                                     logger.log("Discarding torrent because it doesn't meet the"
-                                               ' minimum seeders: {0}. Seeders: {1}'.format
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
@@ -139,7 +142,7 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None
+                                'hash': None,
                             }
                             if mode != 'RSS':
                                 logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
