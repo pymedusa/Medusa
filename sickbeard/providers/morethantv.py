@@ -56,7 +56,6 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.proper_strings = ['PROPER', 'REPACK']
 
         # Miscellaneous Options
-        self.freeleech = None
 
         # Torrent Stats
         self.minseed = None
