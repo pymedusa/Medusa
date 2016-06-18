@@ -62,24 +62,6 @@ class BTNProvider(TorrentProvider):
         # Cache
         self.cache = BTNCache(self, min_time=15)  # Only poll BTN every 15 minutes max
 
-    def _check_auth(self):
-        if not self.api_key:
-            logger.log('Invalid api key. Check your settings', logger.WARNING)
-
-        return True
-
-    def _checkAuthFromData(self, parsed_json):
-
-        if parsed_json is None:
-            return self._check_auth()
-
-        if 'api-error' in parsed_json:
-            logger.log('Incorrect authentication credentials: %s' % parsed_json['api-error'], logger.DEBUG)
-            raise AuthException('Your authentication credentials for {0} are missing,'
-                                ' check your config.'.format(self.name))
-
-        return True
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint:disable=too-many-locals
         """
         BTN search and parsing
@@ -109,7 +91,7 @@ class BTNProvider(TorrentProvider):
             logger.log('No data returned from provider', logger.DEBUG)
             return results
 
-        if self._checkAuthFromData(parsed_json):
+        if self._check_auth_from_data(parsed_json):
 
             found_torrents = parsed_json.get('torrents', {})
 
@@ -143,38 +125,23 @@ class BTNProvider(TorrentProvider):
         # FIXME SORT RESULTS
         return results
 
-    def _api_call(self, apikey, params=None, results_per_page=1000, offset=0):
+    def _check_auth(self):
+        if not self.api_key:
+            logger.log('Invalid api key. Check your settings', logger.WARNING)
 
-        server = jsonrpclib.Server(self.urls['base_url'])
-        parsed_json = {}
+        return True
 
-        try:
-            parsed_json = server.getTorrents(apikey, params or {}, int(results_per_page), int(offset))
-            time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+    def _check_auth_from_data(self, parsed_json):
 
-        except jsonrpclib.jsonrpc.ProtocolError, error:
-            if error.message == 'Call Limit Exceeded':
-                logger.log('You have exceeded the limit of 150 calls per hour,'
-                           ' per API key which is unique to your user account', logger.WARNING)
-            else:
-                logger.log('JSON-RPC protocol error while accessing provicer. Error: %s ' % repr(error), logger.ERROR)
-            parsed_json = {'api-error': ex(error)}
-            return parsed_json
+        if parsed_json is None:
+            return self._check_auth()
 
-        except socket.timeout:
-            logger.log('Timeout while accessing provider', logger.WARNING)
+        if 'api-error' in parsed_json:
+            logger.log('Incorrect authentication credentials: %s' % parsed_json['api-error'], logger.DEBUG)
+            raise AuthException('Your authentication credentials for {0} are missing,'
+                                ' check your config.'.format(self.name))
 
-        except socket.error, error:
-            # Note that sometimes timeouts are thrown as socket errors
-            logger.log('Socket error while accessing provider. Error: %s ' % error[1], logger.WARNING)
-
-        except Exception, error:
-            errorstring = str(error)
-            if errorstring.startswith('<') and errorstring.endswith('>'):
-                errorstring = errorstring[1:-1]
-            logger.log('Unknown error while accessing provider. Error: %s ' % errorstring, logger.WARNING)
-
-        return parsed_json
+        return True
 
     def _get_title_and_url(self, parsed_json):
 
@@ -209,6 +176,26 @@ class BTNProvider(TorrentProvider):
                 url = url.replace('\\/', '/')
 
         return title, url
+
+    def find_propers(self, search_date=None):
+        results = []
+
+        search_terms = ['%.proper.%', '%.repack.%']
+
+        for term in search_terms:
+            for item in self.search({'release': term}, age=4 * 24 * 60 * 60):
+                if item['Time']:
+                    try:
+                        result_date = datetime.fromtimestamp(float(item['Time']))
+                    except TypeError:
+                        result_date = None
+
+                    if result_date:
+                        if not search_date or result_date > search_date:
+                            title, url = self._get_title_and_url(item)
+                            results.append(classes.Proper(title, url, result_date, self.show))
+
+        return results
 
     def _get_season_search_strings(self, ep_obj):
         search_params = []
@@ -272,30 +259,43 @@ class BTNProvider(TorrentProvider):
 
         return to_return
 
-    def _doGeneralSearch(self, search_string):
+    def _api_call(self, apikey, params=None, results_per_page=1000, offset=0):
+
+        server = jsonrpclib.Server(self.urls['base_url'])
+        parsed_json = {}
+
+        try:
+            parsed_json = server.getTorrents(apikey, params or {}, int(results_per_page), int(offset))
+            time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+
+        except jsonrpclib.jsonrpc.ProtocolError, error:
+            if error.message == 'Call Limit Exceeded':
+                logger.log('You have exceeded the limit of 150 calls per hour,'
+                           ' per API key which is unique to your user account', logger.WARNING)
+            else:
+                logger.log('JSON-RPC protocol error while accessing provicer. Error: %s ' % repr(error), logger.ERROR)
+            parsed_json = {'api-error': ex(error)}
+            return parsed_json
+
+        except socket.timeout:
+            logger.log('Timeout while accessing provider', logger.WARNING)
+
+        except socket.error, error:
+            # Note that sometimes timeouts are thrown as socket errors
+            logger.log('Socket error while accessing provider. Error: %s ' % error[1], logger.WARNING)
+
+        except Exception, error:
+            errorstring = str(error)
+            if errorstring.startswith('<') and errorstring.endswith('>'):
+                errorstring = errorstring[1:-1]
+            logger.log('Unknown error while accessing provider. Error: %s ' % errorstring, logger.WARNING)
+
+        return parsed_json
+
+    def _do_general_search(self, search_string):
         # 'search' looks as broad is it can find. Can contain episode overview and title for example,
         # use with caution!
         return self.search({'search': search_string})
-
-    def find_propers(self, search_date=None):
-        results = []
-
-        search_terms = ['%.proper.%', '%.repack.%']
-
-        for term in search_terms:
-            for item in self.search({'release': term}, age=4 * 24 * 60 * 60):
-                if item['Time']:
-                    try:
-                        result_date = datetime.fromtimestamp(float(item['Time']))
-                    except TypeError:
-                        result_date = None
-
-                    if result_date:
-                        if not search_date or result_date > search_date:
-                            title, url = self._get_title_and_url(item)
-                            results.append(classes.Proper(title, url, result_date, self.show))
-
-        return results
 
 
 class BTNCache(tvcache.TVCache):

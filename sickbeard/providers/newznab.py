@@ -76,199 +76,6 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
         self.cache = tvcache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
 
-    def configStr(self):
-        """
-        Generates a '|' delimited string of instance attributes, for saving to config.ini
-        """
-        return '|'.join([
-            self.name, self.url, self.key, self.catIDs, str(int(self.enabled)),
-            self.search_mode, str(int(self.search_fallback)),
-            str(int(self.enable_daily)), str(int(self.enable_backlog)), str(int(self.enable_manualsearch))
-        ])
-
-    @staticmethod
-    def get_providers_list(data):
-        default_list = [
-            provider for provider in
-            (NewznabProvider._make_provider(x) for x in NewznabProvider._get_default_providers().split('!!!'))
-            if provider]
-
-        providers_list = [
-            provider for provider in
-            (NewznabProvider._make_provider(x) for x in data.split('!!!'))
-            if provider]
-
-        seen_values = set()
-        providers_set = []
-
-        for provider in providers_list:
-            value = provider.name
-
-            if value not in seen_values:
-                providers_set.append(provider)
-                seen_values.add(value)
-
-        providers_list = providers_set
-        providers_dict = dict(zip([provider.name for provider in providers_list], providers_list))
-
-        for default in default_list:
-            if not default:
-                continue
-
-            if default.name not in providers_dict:
-                default.default = True
-                providers_list.append(default)
-            else:
-                providers_dict[default.name].default = True
-                providers_dict[default.name].name = default.name
-                providers_dict[default.name].url = default.url
-                providers_dict[default.name].needs_auth = default.needs_auth
-                providers_dict[default.name].search_mode = default.search_mode
-                providers_dict[default.name].search_fallback = default.search_fallback
-                providers_dict[default.name].enable_daily = default.enable_daily
-                providers_dict[default.name].enable_backlog = default.enable_backlog
-                providers_dict[default.name].enable_manualsearch = default.enable_manualsearch
-
-        return [provider for provider in providers_list if provider]
-
-    def image_name(self):
-        """
-        Checks if we have an image for this provider already.
-        Returns found image or the default newznab image
-        """
-        if ek(os.path.isfile,
-              ek(os.path.join, sickbeard.PROG_DIR, 'gui', sickbeard.GUI_NAME, 'images', 'providers',
-                 self.get_id() + '.png')):
-            return self.get_id() + '.png'
-        return 'newznab.png'
-
-    def set_caps(self, data):
-        if not data:
-            return
-
-        def _parse_cap(tag):
-            elm = data.find(tag)
-            return elm.get('supportedparams', 'True') if elm and elm.get('available') else ''
-
-        self.cap_tv_search = _parse_cap('tv-search')
-        # self.cap_search = _parse_cap('search')
-        # self.cap_movie_search = _parse_cap('movie-search')
-        # self.cap_audio_search = _parse_cap('audio-search')
-
-        # self.caps = any([self.cap_tv_search, self.cap_search, self.cap_movie_search, self.cap_audio_search])
-        self.caps = any([self.cap_tv_search])
-
-    def get_newznab_categories(self, just_caps=False):
-        """
-        Uses the newznab provider url and apikey to get the capabilities.
-        Makes use of the default newznab caps param. e.a. http://yournewznab/api?t=caps&apikey=skdfiw7823sdkdsfjsfk
-        Returns a tuple with (succes or not, array with dicts [{'id': '5070', 'name': 'Anime'},
-        {'id': '5080', 'name': 'Documentary'}, {'id': '5020', 'name': 'Foreign'}...etc}], error message)
-        """
-        return_categories = []
-
-        if not self._check_auth():
-            return False, return_categories, 'Provider requires auth and your key is not set'
-
-        url_params = {'t': 'caps'}
-        if self.needs_auth and self.key:
-            url_params['apikey'] = self.key
-
-        data = self.get_url(urljoin(self.url, 'api'), params=url_params, returns='text')
-        if not data:
-            error_string = 'Error getting caps xml for [{0}]'.format(self.name)
-            logger.log(error_string, logger.WARNING)
-            return False, return_categories, error_string
-
-        with BS4Parser(data, 'html5lib') as html:
-            if not html.find('categories'):
-                error_string = 'Error parsing caps xml for [{0}]'.format(self.name)
-                logger.log(error_string, logger.DEBUG)
-                return False, return_categories, error_string
-
-            self.set_caps(html.find('searching'))
-            if just_caps:
-                return
-
-            for category in html('category'):
-                if 'TV' in category.get('name', '') and category.get('id', ''):
-                    return_categories.append({'id': category['id'], 'name': category['name']})
-                    for subcat in category('subcat'):
-                        if subcat.get('name', '') and subcat.get('id', ''):
-                            return_categories.append({'id': subcat['id'], 'name': subcat['name']})
-
-            return True, return_categories, ''
-
-    @staticmethod
-    def _get_default_providers():
-        # name|url|key|catIDs|enabled|search_mode|search_fallback|enable_daily|enable_backlog|enable_manualsearch
-        return 'NZB.Cat|https://nzb.cat/||5030,5040,5010|0|eponly|0|0|0|0!!!' + \
-            'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0|0!!!' + \
-            'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0|0!!!' + \
-            'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0|0!!!' + \
-            'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0'
-
-    def _check_auth(self):
-        """
-        Checks that user has set their api key if it is needed
-        Returns: True/False
-        """
-        if self.needs_auth and not self.key:
-            logger.log('Invalid api key. Check your settings', logger.WARNING)
-            return False
-
-        return True
-
-    def _checkAuthFromData(self, data):
-        """
-        Checks that the returned data is valid
-        Returns: _check_auth if valid otherwise False if there is an error
-        """
-        if data('categories') + data('item'):
-            return self._check_auth()
-
-        try:
-            err_desc = data.error.attrs['description']
-            if not err_desc:
-                raise
-        except (AttributeError, TypeError):
-            return self._check_auth()
-
-        logger.log(ss(err_desc))
-
-        return False
-
-    @staticmethod
-    def _make_provider(config):
-        if not config:
-            return None
-
-        try:
-            values = config.split('|')
-            # Pad values with None for each missing value
-            values.extend([None for x in range(len(values), 10)])
-
-            (name, url, key, category_ids, enabled,
-             search_mode, search_fallback,
-             enable_daily, enable_backlog, enable_manualsearch
-             ) = values
-
-        except ValueError:
-            logger.log('Skipping Newznab provider string: {config!r}, incorrect format'.format
-                       (config=config), logger.ERROR)
-            return None
-
-        new_provider = NewznabProvider(
-            name, url, key=key, catIDs=category_ids,
-            search_mode=search_mode or 'eponly',
-            search_fallback=search_fallback or 0,
-            enable_daily=enable_daily or 0,
-            enable_backlog=enable_backlog or 0,
-            enable_manualsearch=enable_manualsearch or 0)
-        new_provider.enabled = enabled == '1'
-
-        return new_provider
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
         """
         Searches indexer using the params in search_strings, either for latest releases, or a string/id search
@@ -331,7 +138,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                     break
 
                 with BS4Parser(data, 'html5lib') as html:
-                    if not self._checkAuthFromData(html):
+                    if not self._check_auth_from_data(html):
                         break
 
                     try:
@@ -406,9 +213,203 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
         return results
 
+    def _check_auth(self):
+        """
+        Checks that user has set their api key if it is needed
+        Returns: True/False
+        """
+        if self.needs_auth and not self.key:
+            logger.log('Invalid api key. Check your settings', logger.WARNING)
+            return False
+
+        return True
+
+    def _check_auth_from_data(self, data):
+        """
+        Checks that the returned data is valid
+        Returns: _check_auth if valid otherwise False if there is an error
+        """
+        if data('categories') + data('item'):
+            return self._check_auth()
+
+        try:
+            err_desc = data.error.attrs['description']
+            if not err_desc:
+                raise
+        except (AttributeError, TypeError):
+            return self._check_auth()
+
+        logger.log(ss(err_desc))
+
+        return False
+
     def _get_size(self, item):
         """
         Gets size info from a result item
         Returns int size or -1
         """
         return try_int(item.get('size', -1), -1)
+
+    def config_string(self):
+        """
+        Generates a '|' delimited string of instance attributes, for saving to config.ini
+        """
+        return '|'.join([
+            self.name, self.url, self.key, self.catIDs, str(int(self.enabled)),
+            self.search_mode, str(int(self.search_fallback)),
+            str(int(self.enable_daily)), str(int(self.enable_backlog)), str(int(self.enable_manualsearch))
+        ])
+
+    @staticmethod
+    def get_providers_list(data):
+        default_list = [
+            provider for provider in
+            (NewznabProvider._make_provider(x) for x in NewznabProvider._get_default_providers().split('!!!'))
+            if provider]
+
+        providers_list = [
+            provider for provider in
+            (NewznabProvider._make_provider(x) for x in data.split('!!!'))
+            if provider]
+
+        seen_values = set()
+        providers_set = []
+
+        for provider in providers_list:
+            value = provider.name
+
+            if value not in seen_values:
+                providers_set.append(provider)
+                seen_values.add(value)
+
+        providers_list = providers_set
+        providers_dict = dict(zip([provider.name for provider in providers_list], providers_list))
+
+        for default in default_list:
+            if not default:
+                continue
+
+            if default.name not in providers_dict:
+                default.default = True
+                providers_list.append(default)
+            else:
+                providers_dict[default.name].default = True
+                providers_dict[default.name].name = default.name
+                providers_dict[default.name].url = default.url
+                providers_dict[default.name].needs_auth = default.needs_auth
+                providers_dict[default.name].search_mode = default.search_mode
+                providers_dict[default.name].search_fallback = default.search_fallback
+                providers_dict[default.name].enable_daily = default.enable_daily
+                providers_dict[default.name].enable_backlog = default.enable_backlog
+                providers_dict[default.name].enable_manualsearch = default.enable_manualsearch
+
+        return [provider for provider in providers_list if provider]
+
+    def image_name(self):
+        """
+        Checks if we have an image for this provider already.
+        Returns found image or the default newznab image
+        """
+        if ek(os.path.isfile,
+              ek(os.path.join, sickbeard.PROG_DIR, 'gui', sickbeard.GUI_NAME, 'images', 'providers',
+                 self.get_id() + '.png')):
+            return self.get_id() + '.png'
+        return 'newznab.png'
+
+    @staticmethod
+    def _make_provider(config):
+        if not config:
+            return None
+
+        try:
+            values = config.split('|')
+            # Pad values with None for each missing value
+            values.extend([None for x in range(len(values), 10)])
+
+            (name, url, key, category_ids, enabled,
+             search_mode, search_fallback,
+             enable_daily, enable_backlog, enable_manualsearch
+             ) = values
+
+        except ValueError:
+            logger.log('Skipping Newznab provider string: {config!r}, incorrect format'.format
+                       (config=config), logger.ERROR)
+            return None
+
+        new_provider = NewznabProvider(
+            name, url, key=key, catIDs=category_ids,
+            search_mode=search_mode or 'eponly',
+            search_fallback=search_fallback or 0,
+            enable_daily=enable_daily or 0,
+            enable_backlog=enable_backlog or 0,
+            enable_manualsearch=enable_manualsearch or 0)
+        new_provider.enabled = enabled == '1'
+
+        return new_provider
+
+    def set_caps(self, data):
+        if not data:
+            return
+
+        def _parse_cap(tag):
+            elm = data.find(tag)
+            return elm.get('supportedparams', 'True') if elm and elm.get('available') else ''
+
+        self.cap_tv_search = _parse_cap('tv-search')
+        # self.cap_search = _parse_cap('search')
+        # self.cap_movie_search = _parse_cap('movie-search')
+        # self.cap_audio_search = _parse_cap('audio-search')
+
+        # self.caps = any([self.cap_tv_search, self.cap_search, self.cap_movie_search, self.cap_audio_search])
+        self.caps = any([self.cap_tv_search])
+
+    def get_newznab_categories(self, just_caps=False):
+        """
+        Uses the newznab provider url and apikey to get the capabilities.
+        Makes use of the default newznab caps param. e.a. http://yournewznab/api?t=caps&apikey=skdfiw7823sdkdsfjsfk
+        Returns a tuple with (succes or not, array with dicts [{'id': '5070', 'name': 'Anime'},
+        {'id': '5080', 'name': 'Documentary'}, {'id': '5020', 'name': 'Foreign'}...etc}], error message)
+        """
+        return_categories = []
+
+        if not self._check_auth():
+            return False, return_categories, 'Provider requires auth and your key is not set'
+
+        url_params = {'t': 'caps'}
+        if self.needs_auth and self.key:
+            url_params['apikey'] = self.key
+
+        data = self.get_url(urljoin(self.url, 'api'), params=url_params, returns='text')
+        if not data:
+            error_string = 'Error getting caps xml for [{0}]'.format(self.name)
+            logger.log(error_string, logger.WARNING)
+            return False, return_categories, error_string
+
+        with BS4Parser(data, 'html5lib') as html:
+            if not html.find('categories'):
+                error_string = 'Error parsing caps xml for [{0}]'.format(self.name)
+                logger.log(error_string, logger.DEBUG)
+                return False, return_categories, error_string
+
+            self.set_caps(html.find('searching'))
+            if just_caps:
+                return
+
+            for category in html('category'):
+                if 'TV' in category.get('name', '') and category.get('id', ''):
+                    return_categories.append({'id': category['id'], 'name': category['name']})
+                    for subcat in category('subcat'):
+                        if subcat.get('name', '') and subcat.get('id', ''):
+                            return_categories.append({'id': subcat['id'], 'name': subcat['name']})
+
+            return True, return_categories, ''
+
+    @staticmethod
+    def _get_default_providers():
+        # name|url|key|catIDs|enabled|search_mode|search_fallback|enable_daily|enable_backlog|enable_manualsearch
+        return 'NZB.Cat|https://nzb.cat/||5030,5040,5010|0|eponly|0|0|0|0!!!' + \
+            'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0|0!!!' + \
+            'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0|0!!!' + \
+            'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0|0!!!' + \
+            'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0'
+

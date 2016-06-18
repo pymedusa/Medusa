@@ -60,11 +60,6 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         # Cache
         self.cache = tvcache.TVCache(self, min_time=15)  # only poll Torrentz every 15 minutes max
 
-    @staticmethod
-    def _split_description(description):
-        match = re.findall(r'[0-9]+', description)
-        return int(match[0]) * 1024 ** 2, int(match[1]), int(match[2])
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
         results = []
 
@@ -134,6 +129,11 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
             results += items
 
         return results
+
+    @staticmethod
+    def _split_description(description):
+        match = re.findall(r'[0-9]+', description)
+        return int(match[0]) * 1024 ** 2, int(match[1]), int(match[2])
 
 
 provider = TorrentzProvider()

@@ -56,35 +56,6 @@ class HDBitsProvider(TorrentProvider):
         # Cache
         self.cache = HDBitsCache(self, min_time=15)  # only poll HDBits every 15 minutes max
 
-    def _check_auth(self):
-
-        if not self.username or not self.passkey:
-            raise AuthException('Your authentication credentials for ' + self.name + ' are missing, check your config.')
-
-        return True
-
-    def _check_auth_from_data(self, parsed_json):
-
-        if 'status' in parsed_json and 'message' in parsed_json:
-            if parsed_json.get('status') == 5:
-                logger.log('Invalid username or password. Check your settings', logger.WARNING)
-
-        return True
-
-    def _get_season_search_strings(self, ep_obj):
-        season_search_string = [self._make_post_data_json(show=ep_obj.show, season=ep_obj)]
-        return season_search_string
-
-    def _get_episode_search_strings(self, ep_obj, add_string=''):
-        episode_search_string = [self._make_post_data_json(show=ep_obj.show, episode=ep_obj)]
-        return episode_search_string
-
-    def _get_title_and_url(self, item):
-        title = item.get('name', '').replace(' ', '.')
-        url = self.urls['download'] + '?' + urlencode({'id': item['id'], 'passkey': self.passkey})
-
-        return title, url
-
     def search(self, search_strings, age=0, ep_obj=None):
 
         # FIXME
@@ -110,6 +81,27 @@ class HDBitsProvider(TorrentProvider):
         # FIXME SORTING
         return results
 
+    def _check_auth(self):
+
+        if not self.username or not self.passkey:
+            raise AuthException('Your authentication credentials for ' + self.name + ' are missing, check your config.')
+
+        return True
+
+    def _check_auth_from_data(self, parsed_json):
+
+        if 'status' in parsed_json and 'message' in parsed_json:
+            if parsed_json.get('status') == 5:
+                logger.log('Invalid username or password. Check your settings', logger.WARNING)
+
+        return True
+
+    def _get_title_and_url(self, item):
+        title = item.get('name', '').replace(' ', '.')
+        url = self.urls['download'] + '?' + urlencode({'id': item['id'], 'passkey': self.passkey})
+
+        return title, url
+
     def find_propers(self, search_date=None):
         results = []
 
@@ -129,6 +121,14 @@ class HDBitsProvider(TorrentProvider):
                             results.append(classes.Proper(title, url, result_date, self.show))
 
         return results
+
+    def _get_season_search_strings(self, ep_obj):
+        season_search_string = [self._make_post_data_json(show=ep_obj.show, season=ep_obj)]
+        return season_search_string
+
+    def _get_episode_search_strings(self, ep_obj, add_string=''):
+        episode_search_string = [self._make_post_data_json(show=ep_obj.show, episode=ep_obj)]
+        return episode_search_string
 
     def _make_post_data_json(self, show=None, episode=None, season=None, search_term=None):
 

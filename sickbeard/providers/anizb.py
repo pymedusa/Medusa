@@ -58,10 +58,6 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
         # Cache
         self.cache = tvcache.TVCache(self)
 
-    def _get_size(self, item):
-        """Override the default _get_size to prevent it from extracting using it the default tags"""
-        return try_int(item.get('size'))
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
         """Start searching for anime using the provided search_strings. Used for backlog and daily"""
         results = []
@@ -119,6 +115,10 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
                 results += items
 
             return results
+
+    def _get_size(self, item):
+        """Override the default _get_size to prevent it from extracting using it the default tags"""
+        return try_int(item.get('size'))
 
 
 provider = Anizb()

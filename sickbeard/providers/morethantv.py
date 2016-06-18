@@ -64,36 +64,6 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tvcache.TVCache(self)
 
-    def _check_auth(self):
-
-        if not self.username or not self.password:
-            raise AuthException('Your authentication credentials for {0} are missing,'
-                                ' check your config.'.format(self.name))
-
-        return True
-
-    def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-            'keeplogged': '1',
-            'login': 'Log in',
-        }
-
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-        if not response:
-            logger.log('Unable to connect to provider', logger.WARNING)
-            return False
-
-        if re.search('Your username or password was incorrect.', response):
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
-            return False
-
-        return True
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
         MoreThanTV search and parsing
@@ -208,6 +178,36 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             results += items
 
         return results
+
+    def login(self):
+        if any(dict_from_cookiejar(self.session.cookies).values()):
+            return True
+
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+            'keeplogged': '1',
+            'login': 'Log in',
+        }
+
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
+        if not response:
+            logger.log('Unable to connect to provider', logger.WARNING)
+            return False
+
+        if re.search('Your username or password was incorrect.', response):
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            return False
+
+        return True
+
+    def _check_auth(self):
+
+        if not self.username or not self.password:
+            raise AuthException('Your authentication credentials for {0} are missing,'
+                                ' check your config.'.format(self.name))
+
+        return True
 
 
 provider = MoreThanTVProvider()

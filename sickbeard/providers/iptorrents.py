@@ -64,43 +64,6 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # Only poll IPTorrents every 10 minutes max
 
-    def _check_auth(self):
-
-        if not self.username or not self.password:
-            raise AuthException('Your authentication credentials for {0} are missing,'
-                                ' check your config.'.format(self.name))
-
-        return True
-
-    def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-            'login': 'submit',
-        }
-
-        self.get_url(self.urls['login'], returns='text')
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-        if not response:
-            logger.log('Unable to connect to provider', logger.WARNING)
-            return False
-
-        # Invalid username and password combination
-        if re.search('Invalid username and password combination', response):
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
-            return False
-
-        # You tried too often, please try again after 2 hours!
-        if re.search('You tried too often', response):
-            logger.log('You tried too often, please try again after 2 hours!'
-                       ' Disable IPTorrents for at least 2 hours', logger.WARNING)
-            return False
-
-        return True
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         results = []
         if not self.login():
@@ -181,6 +144,43 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             results += items
 
         return results
+
+    def login(self):
+        if any(dict_from_cookiejar(self.session.cookies).values()):
+            return True
+
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+            'login': 'submit',
+        }
+
+        self.get_url(self.urls['login'], returns='text')
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
+        if not response:
+            logger.log('Unable to connect to provider', logger.WARNING)
+            return False
+
+        # Invalid username and password combination
+        if re.search('Invalid username and password combination', response):
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            return False
+
+        # You tried too often, please try again after 2 hours!
+        if re.search('You tried too often', response):
+            logger.log('You tried too often, please try again after 2 hours!'
+                       ' Disable IPTorrents for at least 2 hours', logger.WARNING)
+            return False
+
+        return True
+
+    def _check_auth(self):
+
+        if not self.username or not self.password:
+            raise AuthException('Your authentication credentials for {0} are missing,'
+                                ' check your config.'.format(self.name))
+
+        return True
 
 
 provider = IPTorrentsProvider()

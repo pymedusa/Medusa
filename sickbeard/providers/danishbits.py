@@ -62,31 +62,6 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # Only poll Danishbits every 10 minutes max
 
-    def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-            'keeplogged': 1,
-            'langlang': '',
-            'login': 'Login',
-        }
-
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-        if not response:
-            logger.log('Unable to connect to provider', logger.WARNING)
-            self.session.cookies.clear()
-            return False
-
-        if '<title>Login :: Danishbits.org</title>' in response:
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
-            self.session.cookies.clear()
-            return False
-
-        return True
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
         DanishBits search and parsing
@@ -199,6 +174,31 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             results += items
 
         return results
+
+    def login(self):
+        if any(dict_from_cookiejar(self.session.cookies).values()):
+            return True
+
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+            'keeplogged': 1,
+            'langlang': '',
+            'login': 'Login',
+        }
+
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
+        if not response:
+            logger.log('Unable to connect to provider', logger.WARNING)
+            self.session.cookies.clear()
+            return False
+
+        if '<title>Login :: Danishbits.org</title>' in response:
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            self.session.cookies.clear()
+            return False
+
+        return True
 
 
 provider = DanishbitsProvider()
