@@ -402,7 +402,7 @@ class TVCache(object):
                 cl.append([
                     b'SELECT * FROM [{0}] WHERE indexerid = ? AND season = ? AND episodes LIKE ? AND quality IN ({1})'.
                     format(self.providerID, ','.join([str(x) for x in epObj.wantedQuality])),
-                    [epObj.show.indexerid, epObj.season, b"%|{0}|%".format(epObj.episode)]])
+                    [epObj.show.indexerid, epObj.season, b'%|{0}|%'.format(epObj.episode)]])
 
             sql_results = cache_db_con.mass_action(cl, fetchall=True)
             sql_results = list(itertools.chain(*sql_results))
@@ -410,55 +410,55 @@ class TVCache(object):
         # for each cache entry
         for curResult in sql_results:
             # ignored/required words, and non-tv junk
-            if not show_name_helpers.filterBadReleases(curResult[b"name"]):
+            if not show_name_helpers.filterBadReleases(curResult[b'name']):
                 continue
 
             # get the show object, or if it's not one of our shows then ignore it
-            showObj = Show.find(sickbeard.showList, int(curResult[b"indexerid"]))
+            showObj = Show.find(sickbeard.showList, int(curResult[b'indexerid']))
             if not showObj:
                 continue
 
             # skip if provider is anime only and show is not anime
             if self.provider.anime_only and not showObj.is_anime:
-                logger.log("{0} is not an anime, skiping".format(showObj.name), logger.DEBUG)
+                logger.log('{0} is not an anime, skiping'.format(showObj.name), logger.DEBUG)
                 continue
 
             # get season and ep data (ignoring multi-eps for now)
-            curSeason = int(curResult[b"season"])
+            curSeason = int(curResult[b'season'])
             if curSeason == -1:
                 continue
 
-            curEp = curResult[b"episodes"].split("|")[1]
+            curEp = curResult[b'episodes'].split('|')[1]
             if not curEp:
                 continue
 
             curEp = int(curEp)
 
-            curQuality = int(curResult[b"quality"])
-            curReleaseGroup = curResult[b"release_group"]
-            curVersion = curResult[b"version"]
+            curQuality = int(curResult[b'quality'])
+            curReleaseGroup = curResult[b'release_group']
+            curVersion = curResult[b'version']
 
             # if the show says we want that episode then add it to the list
             if not showObj.wantEpisode(curSeason, curEp, curQuality, forced_search, downCurQuality):
-                logger.log("Ignoring {0}".format(curResult[b"name"]), logger.DEBUG)
+                logger.log('Ignoring {0}'.format(curResult[b'name']), logger.DEBUG)
                 continue
 
             epObj = showObj.getEpisode(curSeason, curEp)
 
             # build a result object
-            title = curResult[b"name"]
-            url = curResult[b"url"]
+            title = curResult[b'name']
+            url = curResult[b'url']
 
-            logger.log("Found result {0} at {1}".format(title, url))
+            logger.log('Found result {0} at {1}'.format(title, url))
 
             result = self.provider.get_result([epObj])
             result.show = showObj
             result.url = url
-            result.seeders = curResult[b"seeders"]
-            result.leechers = curResult[b"leechers"]
-            result.size = curResult[b"size"]
-            result.pubdate = curResult[b"pubdate"]
-            result.hash = curResult[b"hash"]
+            result.seeders = curResult[b'seeders']
+            result.leechers = curResult[b'leechers']
+            result.size = curResult[b'size']
+            result.pubdate = curResult[b'pubdate']
+            result.hash = curResult[b'hash']
             result.name = title
             result.quality = curQuality
             result.release_group = curReleaseGroup
