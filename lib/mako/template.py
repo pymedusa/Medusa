@@ -1,5 +1,5 @@
 # mako/template.py
-# Copyright (C) 2006-2015 the Mako authors and contributors <see AUTHORS file>
+# Copyright (C) 2006-2016 the Mako authors and contributors <see AUTHORS file>
 #
 # This module is part of Mako and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -474,6 +474,14 @@ class Template(object):
         """Return a def of this template as a :class:`.DefTemplate`."""
 
         return DefTemplate(self, getattr(self.module, "render_%s" % name))
+
+    def list_defs(self):
+        """return a list of defs in the template.
+
+        .. versionadded:: 1.0.4
+
+        """
+        return [i[7:] for i in dir(self.module) if i[:7] == 'render_']
 
     def _get_def_callable(self, name):
         return getattr(self.module, "render_%s" % name)
