@@ -1,31 +1,33 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # Rewrite: Dustyn Gibson (miigotu) <miigotu@gmail.com>
-
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-from requests.compat import urljoin
+
 import os
 import re
 import time
 import validators
-
 import sickbeard
+import traceback
+
+from requests.compat import urljoin
+
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 from sickbeard.common import cpu_presets
@@ -67,13 +69,188 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
         self.caps = False
         self.cap_tv_search = None
+        self.force_query = False
         # self.cap_search = None
         # self.cap_movie_search = None
         # self.cap_audio_search = None
 
         self.cache = tvcache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
 
-    def configStr(self):
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
+        """
+        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
+        Returns: list of results in dict form
+        """
+        results = []
+        if not self._check_auth():
+            return results
+
+        # For providers that don't have caps, or for which the t=caps is not working.
+        if not self.caps and all(provider not in self.url for provider in ['gingadaddy', 'usenet-crawler']):
+            self.get_newznab_categories(just_caps=True)
+            if not self.caps:
+                return results
+
+        for mode in search_strings:
+            self.torznab = False
+            search_params = {
+                't': 'tvsearch' if 'tvdbid' in str(self.cap_tv_search) and not self.force_query else 'search',
+                'limit': 100,
+                'offset': 0,
+                'cat': self.catIDs.strip(', ') or '5030,5040',
+                'maxage': sickbeard.USENET_RETENTION
+            }
+
+            if self.needs_auth and self.key:
+                search_params['apikey'] = self.key
+
+            if mode != 'RSS':
+                if search_params['t'] == 'tvsearch':
+                    search_params['tvdbid'] = ep_obj.show.indexerid
+
+                    if ep_obj.show.air_by_date or ep_obj.show.sports:
+                        date_str = str(ep_obj.airdate)
+                        search_params['season'] = date_str.partition('-')[0]
+                        search_params['ep'] = date_str.partition('-')[2].replace('-', '/')
+                    else:
+                        search_params['season'] = ep_obj.scene_season
+                        search_params['ep'] = ep_obj.scene_episode
+
+                if mode == 'Season':
+                    search_params.pop('ep', '')
+
+            items = []
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+
+            for search_string in search_strings[mode]:
+
+                if mode != 'RSS':
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
+
+                    if search_params['t'] != 'tvsearch':
+                        search_params['q'] = search_string
+
+                time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+
+                data = self.get_url(urljoin(self.url, 'api'), params=search_params, returns='text')
+                if not data:
+                    break
+
+                with BS4Parser(data, 'html5lib') as html:
+                    if not self._check_auth_from_data(html):
+                        break
+
+                    try:
+                        self.torznab = 'xmlns:torznab' in html.rss.attrs
+                    except AttributeError:
+                        self.torznab = False
+
+                    for item in html('item'):
+                        try:
+                            title = item.title.get_text(strip=True)
+                            download_url = None
+                            if item.link:
+                                if validators.url(item.link.get_text(strip=True), require_tld=False):
+                                    download_url = item.link.get_text(strip=True)
+                                elif validators.url(item.link.next.strip(), require_tld=False):
+                                    download_url = item.link.next.strip()
+
+                            if not download_url and item.enclosure:
+                                if validators.url(item.enclosure.get('url', '').strip(), require_tld=False):
+                                    download_url = item.enclosure.get('url', '').strip()
+
+                            if not (title and download_url):
+                                continue
+
+                            seeders = leechers = -1
+                            if 'gingadaddy' in self.url:
+                                size_regex = re.search(r'\d*.?\d* [KMGT]B', str(item.description))
+                                item_size = size_regex.group() if size_regex else -1
+                            else:
+                                item_size = item.size.get_text(strip=True) if item.size else -1
+                                for attr in item('newznab:attr') + item('torznab:attr'):
+                                    item_size = attr['value'] if attr['name'] == 'size' else item_size
+                                    seeders = try_int(attr['value']) if attr['name'] == 'seeders' else seeders
+                                    peers = try_int(attr['value']) if attr['name'] == 'peers' else None
+                                    leechers = peers - seeders if peers else leechers
+
+                            if not item_size or (self.torznab and (seeders is -1 or leechers is -1)):
+                                continue
+
+                            size = convert_size(item_size) or -1
+
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': None,
+                            }
+                            if mode != 'RSS':
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                           (title, seeders, leechers), logger.DEBUG)
+
+                            items.append(item)
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
+                            continue
+
+                # Since we arent using the search string,
+                # break out of the search string loop
+                if 'tvdbid' in search_params:
+                    break
+
+            results += items
+
+        # Reproces but now use force_query = True
+        if not results and not self.force_query:
+            self.force_query = True
+            return self.search(search_strings, ep_obj=ep_obj)
+
+        return results
+
+    def _check_auth(self):
+        """
+        Checks that user has set their api key if it is needed
+        Returns: True/False
+        """
+        if self.needs_auth and not self.key:
+            logger.log('Invalid api key. Check your settings', logger.WARNING)
+            return False
+
+        return True
+
+    def _check_auth_from_data(self, data):
+        """
+        Checks that the returned data is valid
+        Returns: _check_auth if valid otherwise False if there is an error
+        """
+        if data('categories') + data('item'):
+            return self._check_auth()
+
+        try:
+            err_desc = data.error.attrs['description']
+            if not err_desc:
+                raise
+        except (AttributeError, TypeError):
+            return self._check_auth()
+
+        logger.log(ss(err_desc))
+
+        return False
+
+    def _get_size(self, item):
+        """
+        Gets size info from a result item
+        Returns int size or -1
+        """
+        return try_int(item.get('size', -1), -1)
+
+    def config_string(self):
         """
         Generates a '|' delimited string of instance attributes, for saving to config.ini
         """
@@ -125,7 +302,6 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 providers_dict[default.name].enable_daily = default.enable_daily
                 providers_dict[default.name].enable_backlog = default.enable_backlog
                 providers_dict[default.name].enable_manualsearch = default.enable_manualsearch
-                providers_dict[default.name].catIDs = default.catIDs
 
         return [provider for provider in providers_list if provider]
 
@@ -139,6 +315,37 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                  self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'newznab.png'
+
+    @staticmethod
+    def _make_provider(config):
+        if not config:
+            return None
+
+        try:
+            values = config.split('|')
+            # Pad values with None for each missing value
+            values.extend([None for x in range(len(values), 10)])
+
+            (name, url, key, category_ids, enabled,
+             search_mode, search_fallback,
+             enable_daily, enable_backlog, enable_manualsearch
+             ) = values
+
+        except ValueError:
+            logger.log('Skipping Newznab provider string: {config!r}, incorrect format'.format
+                       (config=config), logger.ERROR)
+            return None
+
+        new_provider = NewznabProvider(
+            name, url, key=key, catIDs=category_ids,
+            search_mode=search_mode or 'eponly',
+            search_fallback=search_fallback or 0,
+            enable_daily=enable_daily or 0,
+            enable_backlog=enable_backlog or 0,
+            enable_manualsearch=enable_manualsearch or 0)
+        new_provider.enabled = enabled == '1'
+
+        return new_provider
 
     def set_caps(self, data):
         if not data:
@@ -174,13 +381,13 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
         data = self.get_url(urljoin(self.url, 'api'), params=url_params, returns='text')
         if not data:
-            error_string = 'Error getting caps xml for [{}]'.format(self.name)
+            error_string = 'Error getting caps xml for [{0}]'.format(self.name)
             logger.log(error_string, logger.WARNING)
             return False, return_categories, error_string
 
         with BS4Parser(data, 'html5lib') as html:
             if not html.find('categories'):
-                error_string = 'Error parsing caps xml for [{}]'.format(self.name)
+                error_string = 'Error parsing caps xml for [{0}]'.format(self.name)
                 logger.log(error_string, logger.DEBUG)
                 return False, return_categories, error_string
 
@@ -206,188 +413,3 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
             'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0|0!!!' + \
             'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0'
 
-    def _check_auth(self):
-        """
-        Checks that user has set their api key if it is needed
-        Returns: True/False
-        """
-        if self.needs_auth and not self.key:
-            logger.log('Invalid api key. Check your settings', logger.WARNING)
-            return False
-
-        return True
-
-    def _checkAuthFromData(self, data):
-        """
-        Checks that the returned data is valid
-        Returns: _check_auth if valid otherwise False if there is an error
-        """
-        if data('categories') + data('item'):
-            return self._check_auth()
-
-        try:
-            err_desc = data.error.attrs['description']
-            if not err_desc:
-                raise
-        except (AttributeError, TypeError):
-            return self._check_auth()
-
-        logger.log(ss(err_desc))
-
-        return False
-
-    @staticmethod
-    def _make_provider(config):
-        if not config:
-            return None
-
-        try:
-            values = config.split('|')
-            # Pad values with None for each missing value
-            values.extend([None for x in range(len(values), 10)])
-
-            (name, url, key, category_ids, enabled,
-             search_mode, search_fallback,
-             enable_daily, enable_backlog, enable_manualsearch
-             ) = values
-
-        except ValueError:
-            logger.log('Skipping Newznab provider string: {config!r}, incorrect format'.format
-                       (config=config), logger.ERROR)
-            return None
-
-        new_provider = NewznabProvider(
-            name, url, key=key, catIDs=category_ids,
-            search_mode=search_mode or 'eponly',
-            search_fallback=search_fallback or 0,
-            enable_daily=enable_daily or 0,
-            enable_backlog=enable_backlog or 0,
-            enable_manualsearch=enable_manualsearch or 0)
-        new_provider.enabled = enabled == '1'
-
-        return new_provider
-
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
-        """
-        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
-        Returns: list of results in dict form
-        """
-        results = []
-        if not self._check_auth():
-            return results
-
-        # gingadaddy has no caps.
-        if not self.caps and 'gingadaddy' not in self.url:
-            self.get_newznab_categories(just_caps=True)
-
-        if not self.caps and 'gingadaddy' not in self.url:
-            return results
-
-        for mode in search_strings:
-            torznab = False
-            search_params = {
-                't': 'tvsearch' if 'tvdbid' in str(self.cap_tv_search) else 'search',
-                'limit': 100,
-                'offset': 0,
-                'cat': self.catIDs.strip(', ') or '5030,5040',
-                'maxage': sickbeard.USENET_RETENTION
-            }
-
-            if self.needs_auth and self.key:
-                search_params['apikey'] = self.key
-
-            if mode != 'RSS':
-                if search_params['t'] == 'tvsearch':
-                    search_params['tvdbid'] = ep_obj.show.indexerid
-
-                    if ep_obj.show.air_by_date or ep_obj.show.sports:
-                        date_str = str(ep_obj.airdate)
-                        search_params['season'] = date_str.partition('-')[0]
-                        search_params['ep'] = date_str.partition('-')[2].replace('-', '/')
-                    else:
-                        search_params['season'] = ep_obj.scene_season
-                        search_params['ep'] = ep_obj.scene_episode
-
-                if mode == 'Season':
-                    search_params.pop('ep', '')
-
-            items = []
-            logger.log('Search Mode: {}'.format(mode), logger.DEBUG)
-            for search_string in search_strings[mode]:
-                if mode != 'RSS':
-                    logger.log('Search string: {}'.format(search_string.decode('utf-8')), logger.DEBUG)
-
-                    if search_params['t'] != 'tvsearch':
-                        search_params['q'] = search_string
-
-                time.sleep(cpu_presets[sickbeard.CPU_PRESET])
-
-                data = self.get_url(urljoin(self.url, 'api'), params=search_params, returns='text')
-                if not data:
-                    break
-
-                with BS4Parser(data, 'html5lib') as html:
-                    if not self._checkAuthFromData(html):
-                        break
-
-                    try:
-                        torznab = 'xmlns:torznab' in html.rss.attrs
-                    except AttributeError:
-                        torznab = False
-
-                    for item in html('item'):
-                        try:
-                            title = item.title.get_text(strip=True)
-                            download_url = None
-                            if item.link:
-                                if validators.url(item.link.get_text(strip=True), require_tld=False):
-                                    download_url = item.link.get_text(strip=True)
-                                elif validators.url(item.link.next.strip(), require_tld=False):
-                                    download_url = item.link.next.strip()
-
-                            if not download_url and item.enclosure:
-                                if validators.url(item.enclosure.get('url', '').strip(), require_tld=False):
-                                    download_url = item.enclosure.get('url', '').strip()
-
-                            if not (title and download_url):
-                                continue
-
-                            seeders = leechers = -1
-                            if 'gingadaddy' in self.url:
-                                size_regex = re.search(r'\d*.?\d* [KMGT]B', str(item.description))
-                                item_size = size_regex.group() if size_regex else -1
-                            else:
-                                item_size = item.size.get_text(strip=True) if item.size else -1
-                                for attr in item('newznab:attr') + item('torznab:attr'):
-                                    item_size = attr['value'] if attr['name'] == 'size' else item_size
-                                    seeders = try_int(attr['value']) if attr['name'] == 'seeders' else seeders
-                                    peers = try_int(attr['value']) if attr['name'] == 'peers' else None
-                                    leechers = peers - seeders if peers else leechers
-
-                            if not item_size or (torznab and (seeders is -1 or leechers is -1)):
-                                continue
-
-                            size = convert_size(item_size) or -1
-
-                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
-                            items.append(result)
-                        except StandardError:
-                            continue
-
-                # Since we arent using the search string,
-                # break out of the search string loop
-                if 'tvdbid' in search_params:
-                    break
-
-            if torznab:
-                results.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
-            results += items
-
-        return results
-
-    def _get_size(self, item):
-        """
-        Gets size info from a result item
-        Returns int size or -1
-        """
-        return try_int(item.get('size', -1), -1)

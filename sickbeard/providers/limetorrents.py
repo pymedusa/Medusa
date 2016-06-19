@@ -37,12 +37,14 @@ hash_regex = re.compile(r'(.*)([0-9a-f]{40})(.*)', re.I)
 
 
 class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """Search provider LimeTorrents."""
-
+    """LimeTorrents Torrent provider"""
     def __init__(self):
 
         # Provider Inits
         TorrentProvider.__init__(self, 'LimeTorrents')
+
+        # Credentials
+        self.public = True
 
         # URLs
         self.url = 'https://www.limetorrents.cc/'
@@ -53,34 +55,32 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             'rss': urljoin(self.url, '/browse-torrents/TV-shows/date/{page}/')
         }
 
-        # Credentials
-        self.public = True
+        # Proper Strings
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+
+        # Miscellaneous Options
         self.confirmed = False
 
         # Torrent Stats
         self.minseed = None
         self.minleech = None
 
-        # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
-
         # Cache
         self.cache = tvcache.TVCache(self, min_time=10)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches,too-many-locals
         """
-        Search the provider for results.
+        ABNormal search and parsing
 
-        :param search_strings: Search to perform
-        :param age: Not used for this provider
-        :param ep_obj: Not used for this provider
-
-        :return: A list of items found
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
         """
         results = []
 
         for mode in search_strings:
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
                 if mode == 'RSS':
@@ -156,8 +156,8 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
-                            logger.log("Discarding torrent because it doesn't meet the"
-                                       ' minimum seeders: {0}. Seeders: {1}'.format
+                            logger.log("Discarding torrent because it doesn't meet the "
+                                       "minimum seeders: {0}. Seeders: {1}".format
                                        (title, seeders), logger.DEBUG)
                         continue
 
@@ -168,7 +168,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'hash': torrent_hash
+                        'hash': torrent_hash,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
@@ -179,9 +179,6 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     logger.log('Failed parsing provider. Traceback: {0!r}'.format
                                (traceback.format_exc()), logger.ERROR)
                     continue
-
-            # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
 
         return items
 
