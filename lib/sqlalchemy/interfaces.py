@@ -1,5 +1,6 @@
 # sqlalchemy/interfaces.py
-# Copyright (C) 2007-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2007-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 # Copyright (C) 2007 Jason Kirtland jek@discorporate.us
 #
 # This module is part of SQLAlchemy and is released under
@@ -79,8 +80,9 @@ class PoolListener(object):
 
         """
 
-        listener = util.as_interface(listener, methods=('connect',
-                                'first_connect', 'checkout', 'checkin'))
+        listener = util.as_interface(listener,
+                                     methods=('connect', 'first_connect',
+                                              'checkout', 'checkin'))
         if hasattr(listener, 'connect'):
             event.listen(self, 'connect', listener.connect)
         if hasattr(listener, 'first_connect'):
@@ -205,7 +207,7 @@ class ConnectionProxy(object):
                 statement,
                 parameters,
                 context,
-                ):
+            ):
                 return statement, parameters
 
             return listener.cursor_execute(

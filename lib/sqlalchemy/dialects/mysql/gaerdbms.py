@@ -1,5 +1,6 @@
 # mysql/gaerdbms.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -8,12 +9,20 @@
     :name: Google Cloud SQL
     :dbapi: rdbms
     :connectstring: mysql+gaerdbms:///<dbname>?instance=<instancename>
-    :url: https://developers.google.com/appengine/docs/python/cloud-sql/developers-guide
+    :url: https://developers.google.com/appengine/docs/python/cloud-sql/\
+developers-guide
 
-    This dialect is based primarily on the :mod:`.mysql.mysqldb` dialect with minimal
-    changes.
+    This dialect is based primarily on the :mod:`.mysql.mysqldb` dialect with
+    minimal changes.
 
     .. versionadded:: 0.7.8
+
+    .. deprecated:: 1.0 This dialect is **no longer necessary** for
+        Google Cloud SQL; the MySQLdb dialect can be used directly.
+        Cloud SQL now recommends creating connections via the
+        mysql dialect using the URL format
+
+        ``mysql+mysqldb://root@/<dbname>?unix_socket=/cloudsql/<projectid>:<instancename>``
 
 
 Pooling
@@ -31,6 +40,7 @@ import os
 from .mysqldb import MySQLDialect_mysqldb
 from ...pool import NullPool
 import re
+from sqlalchemy.util import warn_deprecated
 
 
 def _is_dev_environment():
@@ -41,10 +51,18 @@ class MySQLDialect_gaerdbms(MySQLDialect_mysqldb):
 
     @classmethod
     def dbapi(cls):
+
+        warn_deprecated(
+            "Google Cloud SQL now recommends creating connections via the "
+            "MySQLdb dialect directly, using the URL format "
+            "mysql+mysqldb://root@/<dbname>?unix_socket=/cloudsql/"
+            "<projectid>:<instancename>"
+        )
+
         # from django:
         # http://code.google.com/p/googleappengine/source/
         #     browse/trunk/python/google/storage/speckle/
-        #     python/django/backend/base.py#118
+        # python/django/backend/base.py#118
         # see also [ticket:2649]
         # see also http://stackoverflow.com/q/14224679/34549
         from google.appengine.api import apiproxy_stub_map

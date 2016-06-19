@@ -1,26 +1,28 @@
 # ext/declarative/api.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 """Public API functions and helpers for declarative."""
 
 
-from ...schema import Table, MetaData
-from ...orm import synonym as _orm_synonym, mapper,\
-                                comparable_property,\
-                                interfaces, properties
+from ...schema import Table, MetaData, Column
+from ...orm import synonym as _orm_synonym, \
+    comparable_property,\
+    interfaces, properties, attributes
 from ...orm.util import polymorphic_union
 from ...orm.base import _mapper_or_none
-from ...util import OrderedDict
+from ...util import OrderedDict, hybridmethod, hybridproperty
+from ... import util
 from ... import exc
 import weakref
 
 from .base import _as_declarative, \
-                _declarative_constructor,\
-                _DeferredMapperConfig, _add_attribute
+    _declarative_constructor,\
+    _DeferredMapperConfig, _add_attribute
 from .clsregistry import _class_resolver
-from . import clsregistry
+
 
 def instrument_declarative(cls, registry, metadata):
     """Given a class, configure the class declaratively,
@@ -30,8 +32,8 @@ def instrument_declarative(cls, registry, metadata):
     """
     if '_decl_class_registry' in cls.__dict__:
         raise exc.InvalidRequestError(
-                            "Class %r already has been "
-                            "instrumented declaratively" % cls)
+            "Class %r already has been "
+            "instrumented declaratively" % cls)
     cls._decl_class_registry = registry
     cls.metadata = metadata
     _as_declarative(cls, cls.__name__, cls.__dict__)
@@ -155,12 +157,90 @@ class declared_attr(interfaces._MappedAttribute, property):
 
     """
 
-    def __init__(self, fget, *arg, **kw):
-        super(declared_attr, self).__init__(fget, *arg, **kw)
+    def __init__(self, fget, cascading=False):
+        super(declared_attr, self).__init__(fget)
         self.__doc__ = fget.__doc__
+        self._cascading = cascading
 
     def __get__(desc, self, cls):
-        return desc.fget(cls)
+        reg = cls.__dict__.get('_sa_declared_attr_reg', None)
+        if reg is None:
+            manager = attributes.manager_of_class(cls)
+            if manager is None:
+                util.warn(
+                    "Unmanaged access of declarative attribute %s from "
+                    "non-mapped class %s" %
+                    (desc.fget.__name__, cls.__name__))
+            return desc.fget(cls)
+
+        if reg is None:
+            return desc.fget(cls)
+        elif desc in reg:
+            return reg[desc]
+        else:
+            reg[desc] = obj = desc.fget(cls)
+            return obj
+
+    @hybridmethod
+    def _stateful(cls, **kw):
+        return _stateful_declared_attr(**kw)
+
+    @hybridproperty
+    def cascading(cls):
+        """Mark a :class:`.declared_attr` as cascading.
+
+        This is a special-use modifier which indicates that a column
+        or MapperProperty-based declared attribute should be configured
+        distinctly per mapped subclass, within a mapped-inheritance scenario.
+
+        Below, both MyClass as well as MySubClass will have a distinct
+        ``id`` Column object established::
+
+            class HasSomeAttribute(object):
+                @declared_attr.cascading
+                def some_id(cls):
+                    if has_inherited_table(cls):
+                        return Column(
+                            ForeignKey('myclass.id'), primary_key=True)
+                    else:
+                        return Column(Integer, primary_key=True)
+
+                    return Column('id', Integer, primary_key=True)
+
+            class MyClass(HasSomeAttribute, Base):
+                ""
+                # ...
+
+            class MySubClass(MyClass):
+                ""
+                # ...
+
+        The behavior of the above configuration is that ``MySubClass``
+        will refer to both its own ``id`` column as well as that of
+        ``MyClass`` underneath the attribute named ``some_id``.
+
+        .. seealso::
+
+            :ref:`declarative_inheritance`
+
+            :ref:`mixin_inheritance_columns`
+
+
+        """
+        return cls._stateful(cascading=True)
+
+
+class _stateful_declared_attr(declared_attr):
+    def __init__(self, **kw):
+        self.kw = kw
+
+    def _stateful(self, **kw):
+        new_kw = self.kw.copy()
+        new_kw.update(kw)
+        return _stateful_declared_attr(**new_kw)
+
+    def __call__(self, fn):
+        return declared_attr(fn, **self.kw)
 
 
 def declarative_base(bind=None, metadata=None, mapper=None, cls=object,
@@ -244,6 +324,7 @@ def declarative_base(bind=None, metadata=None, mapper=None, cls=object,
 
     return metaclass(name, bases, class_dict)
 
+
 def as_declarative(**kw):
     """
     Class decorator for :func:`.declarative_base`.
@@ -281,6 +362,7 @@ def as_declarative(**kw):
 
     return decorate
 
+
 class ConcreteBase(object):
     """A helper class for 'concrete' declarative mappings.
 
@@ -315,6 +397,15 @@ class ConcreteBase(object):
                             'polymorphic_identity':'manager',
                             'concrete':True}
 
+    .. seealso::
+
+        :class:`.AbstractConcreteBase`
+
+        :ref:`concrete_inheritance`
+
+        :ref:`inheritance_concrete_helpers`
+
+
     """
 
     @classmethod
@@ -322,7 +413,7 @@ class ConcreteBase(object):
         return polymorphic_union(OrderedDict(
             (mp.polymorphic_identity, mp.local_table)
             for mp in mappers
-         ), 'type', 'pjoin')
+        ), 'type', 'pjoin')
 
     @classmethod
     def __declare_first__(cls):
@@ -345,9 +436,11 @@ class AbstractConcreteBase(ConcreteBase):
     ``__declare_last__()`` function, which is essentially
     a hook for the :meth:`.after_configured` event.
 
-    :class:`.AbstractConcreteBase` does not produce a mapped
-    table for the class itself.  Compare to :class:`.ConcreteBase`,
-    which does.
+    :class:`.AbstractConcreteBase` does produce a mapped class
+    for the base class, however it is not persisted to any table; it
+    is instead mapped directly to the "polymorphic" selectable directly
+    and is only used for selecting.  Compare to :class:`.ConcreteBase`,
+    which does create a persisted table for the base class.
 
     Example::
 
@@ -361,20 +454,79 @@ class AbstractConcreteBase(ConcreteBase):
             employee_id = Column(Integer, primary_key=True)
             name = Column(String(50))
             manager_data = Column(String(40))
+
             __mapper_args__ = {
-                            'polymorphic_identity':'manager',
-                            'concrete':True}
+                'polymorphic_identity':'manager',
+                'concrete':True}
+
+    The abstract base class is handled by declarative in a special way;
+    at class configuration time, it behaves like a declarative mixin
+    or an ``__abstract__`` base class.   Once classes are configured
+    and mappings are produced, it then gets mapped itself, but
+    after all of its decscendants.  This is a very unique system of mapping
+    not found in any other SQLAlchemy system.
+
+    Using this approach, we can specify columns and properties
+    that will take place on mapped subclasses, in the way that
+    we normally do as in :ref:`declarative_mixins`::
+
+        class Company(Base):
+            __tablename__ = 'company'
+            id = Column(Integer, primary_key=True)
+
+        class Employee(AbstractConcreteBase, Base):
+            employee_id = Column(Integer, primary_key=True)
+
+            @declared_attr
+            def company_id(cls):
+                return Column(ForeignKey('company.id'))
+
+            @declared_attr
+            def company(cls):
+                return relationship("Company")
+
+        class Manager(Employee):
+            __tablename__ = 'manager'
+
+            name = Column(String(50))
+            manager_data = Column(String(40))
+
+            __mapper_args__ = {
+                'polymorphic_identity':'manager',
+                'concrete':True}
+
+    When we make use of our mappings however, both ``Manager`` and
+    ``Employee`` will have an independently usable ``.company`` attribute::
+
+        session.query(Employee).filter(Employee.company.has(id=5))
+
+    .. versionchanged:: 1.0.0 - The mechanics of :class:`.AbstractConcreteBase`
+       have been reworked to support relationships established directly
+       on the abstract base, without any special configurational steps.
+
+    .. seealso::
+
+        :class:`.ConcreteBase`
+
+        :ref:`concrete_inheritance`
+
+        :ref:`inheritance_concrete_helpers`
 
     """
 
-    __abstract__ = True
+    __no_table__ = True
 
     @classmethod
     def __declare_first__(cls):
-        if hasattr(cls, '__mapper__'):
+        cls._sa_decl_prepare_nocascade()
+
+    @classmethod
+    def _sa_decl_prepare_nocascade(cls):
+        if getattr(cls, '__mapper__', None):
             return
 
-        clsregistry.add_class(cls.__name__, cls)
+        to_map = _DeferredMapperConfig.config_for_cls(cls)
+
         # can't rely on 'self_and_descendants' here
         # since technically an immediate subclass
         # might not be mapped, but a subclass
@@ -388,11 +540,33 @@ class AbstractConcreteBase(ConcreteBase):
             if mn is not None:
                 mappers.append(mn)
         pjoin = cls._create_polymorphic_union(mappers)
-        cls.__mapper__ = m = mapper(cls, pjoin, polymorphic_on=pjoin.c.type)
+
+        # For columns that were declared on the class, these
+        # are normally ignored with the "__no_table__" mapping,
+        # unless they have a different attribute key vs. col name
+        # and are in the properties argument.
+        # In that case, ensure we update the properties entry
+        # to the correct column from the pjoin target table.
+        declared_cols = set(to_map.declared_columns)
+        for k, v in list(to_map.properties.items()):
+            if v in declared_cols:
+                to_map.properties[k] = pjoin.c[v.key]
+
+        to_map.local_table = pjoin
+
+        m_args = to_map.mapper_args_fn or dict
+
+        def mapper_args():
+            args = m_args()
+            args['polymorphic_on'] = pjoin.c.type
+            return args
+        to_map.mapper_args_fn = mapper_args
+
+        m = to_map.map()
 
         for scls in cls.__subclasses__():
             sm = _mapper_or_none(scls)
-            if sm.concrete and cls in scls.__bases__:
+            if sm and sm.concrete and cls in scls.__bases__:
                 sm._set_concrete_base(m)
 
 
@@ -477,7 +651,7 @@ class DeferredReflection(object):
             metadata = mapper.class_.metadata
             for rel in mapper._props.values():
                 if isinstance(rel, properties.RelationshipProperty) and \
-                    rel.secondary is not None:
+                        rel.secondary is not None:
                     if isinstance(rel.secondary, Table):
                         cls._reflect_table(rel.secondary, engine)
                     elif isinstance(rel.secondary, _class_resolver):
@@ -505,9 +679,9 @@ class DeferredReflection(object):
     @classmethod
     def _reflect_table(cls, table, engine):
         Table(table.name,
-            table.metadata,
-            extend_existing=True,
-            autoload_replace=False,
-            autoload=True,
-            autoload_with=engine,
-            schema=table.schema)
+              table.metadata,
+              extend_existing=True,
+              autoload_replace=False,
+              autoload=True,
+              autoload_with=engine,
+              schema=table.schema)

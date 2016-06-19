@@ -1,5 +1,6 @@
 # postgresql/pypostgresql.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -8,7 +9,8 @@
 .. dialect:: postgresql+pypostgresql
     :name: py-postgresql
     :dbapi: pypostgresql
-    :connectstring: postgresql+pypostgresql://user:password@host:port/dbname[?key=value&key=value...]
+    :connectstring: postgresql+pypostgresql://user:password@host:port/dbname\
+[?key=value&key=value...]
     :url: http://python.projects.pgfoundry.org/
 
 
@@ -62,6 +64,23 @@ class PGDialect_pypostgresql(PGDialect):
     def dbapi(cls):
         from postgresql.driver import dbapi20
         return dbapi20
+
+    _DBAPI_ERROR_NAMES = [
+        "Error",
+        "InterfaceError", "DatabaseError", "DataError",
+        "OperationalError", "IntegrityError", "InternalError",
+        "ProgrammingError", "NotSupportedError"
+    ]
+
+    @util.memoized_property
+    def dbapi_exception_translation_map(self):
+        if self.dbapi is None:
+            return {}
+
+        return dict(
+            (getattr(self.dbapi, name).__name__, name)
+            for name in self._DBAPI_ERROR_NAMES
+        )
 
     def create_connect_args(self, url):
         opts = url.translate_connect_args(username='user')

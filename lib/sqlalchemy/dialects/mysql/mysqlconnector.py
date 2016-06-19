@@ -1,5 +1,6 @@
 # mysql/mysqlconnector.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -8,17 +9,25 @@
 .. dialect:: mysql+mysqlconnector
     :name: MySQL Connector/Python
     :dbapi: myconnpy
-    :connectstring: mysql+mysqlconnector://<user>:<password>@<host>[:<port>]/<dbname>
+    :connectstring: mysql+mysqlconnector://<user>:<password>@\
+<host>[:<port>]/<dbname>
     :url: http://dev.mysql.com/downloads/connector/python/
 
 
+Unicode
+-------
+
+Please see :ref:`mysql_unicode` for current recommendations on unicode
+handling.
+
 """
 
-from .base import (MySQLDialect,
-    MySQLExecutionContext, MySQLCompiler, MySQLIdentifierPreparer,
-    BIT)
+from .base import (MySQLDialect, MySQLExecutionContext,
+                   MySQLCompiler, MySQLIdentifierPreparer,
+                   BIT)
 
 from ... import util
+import re
 
 
 class MySQLExecutionContext_mysqlconnector(MySQLExecutionContext):
@@ -29,18 +38,34 @@ class MySQLExecutionContext_mysqlconnector(MySQLExecutionContext):
 
 class MySQLCompiler_mysqlconnector(MySQLCompiler):
     def visit_mod_binary(self, binary, operator, **kw):
-        return self.process(binary.left, **kw) + " %% " + \
-                        self.process(binary.right, **kw)
+        if self.dialect._mysqlconnector_double_percents:
+            return self.process(binary.left, **kw) + " %% " + \
+                self.process(binary.right, **kw)
+        else:
+            return self.process(binary.left, **kw) + " % " + \
+                self.process(binary.right, **kw)
 
     def post_process_text(self, text):
-        return text.replace('%', '%%')
+        if self.dialect._mysqlconnector_double_percents:
+            return text.replace('%', '%%')
+        else:
+            return text
+
+    def escape_literal_column(self, text):
+        if self.dialect._mysqlconnector_double_percents:
+            return text.replace('%', '%%')
+        else:
+            return text
 
 
 class MySQLIdentifierPreparer_mysqlconnector(MySQLIdentifierPreparer):
 
     def _escape_identifier(self, value):
         value = value.replace(self.escape_quote, self.escape_to_quote)
-        return value.replace("%", "%%")
+        if self.dialect._mysqlconnector_double_percents:
+            return value.replace("%", "%%")
+        else:
+            return value
 
 
 class _myconnpyBIT(BIT):
@@ -53,8 +78,6 @@ class _myconnpyBIT(BIT):
 class MySQLDialect_mysqlconnector(MySQLDialect):
     driver = 'mysqlconnector'
 
-    if util.py2k:
-        supports_unicode_statements = False
     supports_unicode_binds = True
 
     supports_sane_rowcount = True
@@ -75,6 +98,10 @@ class MySQLDialect_mysqlconnector(MySQLDialect):
         }
     )
 
+    @util.memoized_property
+    def supports_unicode_statements(self):
+        return util.py3k or self._mysqlconnector_version_info > (2, 0)
+
     @classmethod
     def dbapi(cls):
         from mysql import connector
@@ -87,20 +114,38 @@ class MySQLDialect_mysqlconnector(MySQLDialect):
 
         util.coerce_kw_type(opts, 'buffered', bool)
         util.coerce_kw_type(opts, 'raise_on_warnings', bool)
+
+        # unfortunately, MySQL/connector python refuses to release a
+        # cursor without reading fully, so non-buffered isn't an option
         opts.setdefault('buffered', True)
-        opts.setdefault('raise_on_warnings', True)
 
         # FOUND_ROWS must be set in ClientFlag to enable
         # supports_sane_rowcount.
         if self.dbapi is not None:
             try:
                 from mysql.connector.constants import ClientFlag
-                client_flags = opts.get('client_flags', ClientFlag.get_default())
+                client_flags = opts.get(
+                    'client_flags', ClientFlag.get_default())
                 client_flags |= ClientFlag.FOUND_ROWS
                 opts['client_flags'] = client_flags
-            except:
+            except Exception:
                 pass
         return [[], opts]
+
+    @util.memoized_property
+    def _mysqlconnector_version_info(self):
+        if self.dbapi and hasattr(self.dbapi, '__version__'):
+            m = re.match(r'(\d+)\.(\d+)(?:\.(\d+))?',
+                         self.dbapi.__version__)
+            if m:
+                return tuple(
+                    int(x)
+                    for x in m.group(1, 2, 3)
+                    if x is not None)
+
+    @util.memoized_property
+    def _mysqlconnector_double_percents(self):
+        return not util.py3k and self._mysqlconnector_version_info < (2, 0)
 
     def _get_server_version_info(self, connection):
         dbapi_con = connection.connection

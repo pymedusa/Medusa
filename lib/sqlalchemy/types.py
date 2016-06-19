@@ -1,21 +1,22 @@
 # types.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-"""Compatiblity namespace for sqlalchemy.sql.types.
+"""Compatibility namespace for sqlalchemy.sql.types.
 
 """
 
 __all__ = ['TypeEngine', 'TypeDecorator', 'UserDefinedType',
-            'INT', 'CHAR', 'VARCHAR', 'NCHAR', 'NVARCHAR', 'TEXT', 'Text',
-            'FLOAT', 'NUMERIC', 'REAL', 'DECIMAL', 'TIMESTAMP', 'DATETIME',
-            'CLOB', 'BLOB', 'BINARY', 'VARBINARY', 'BOOLEAN', 'BIGINT',
-            'SMALLINT', 'INTEGER', 'DATE', 'TIME', 'String', 'Integer',
-            'SmallInteger', 'BigInteger', 'Numeric', 'Float', 'DateTime',
-            'Date', 'Time', 'LargeBinary', 'Binary', 'Boolean', 'Unicode',
-            'Concatenable', 'UnicodeText', 'PickleType', 'Interval', 'Enum']
+           'INT', 'CHAR', 'VARCHAR', 'NCHAR', 'NVARCHAR', 'TEXT', 'Text',
+           'FLOAT', 'NUMERIC', 'REAL', 'DECIMAL', 'TIMESTAMP', 'DATETIME',
+           'CLOB', 'BLOB', 'BINARY', 'VARBINARY', 'BOOLEAN', 'BIGINT',
+           'SMALLINT', 'INTEGER', 'DATE', 'TIME', 'String', 'Integer',
+           'SmallInteger', 'BigInteger', 'Numeric', 'Float', 'DateTime',
+           'Date', 'Time', 'LargeBinary', 'Binary', 'Boolean', 'Unicode',
+           'Concatenable', 'UnicodeText', 'PickleType', 'Interval', 'Enum']
 
 from .sql.type_api import (
     adapt_type,
@@ -50,6 +51,7 @@ from .sql.sqltypes import (
     Integer,
     Interval,
     LargeBinary,
+    MatchType,
     NCHAR,
     NVARCHAR,
     NullType,
@@ -74,4 +76,3 @@ from .sql.sqltypes import (
     VARCHAR,
     _type_map
     )
-

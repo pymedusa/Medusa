@@ -1,5 +1,6 @@
 # sqlalchemy/exc.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -11,8 +12,6 @@ raised as a result of DBAPI exceptions are all subclasses of
 :exc:`.DBAPIError`.
 
 """
-
-import traceback
 
 
 class SQLAlchemyError(Exception):
@@ -26,9 +25,11 @@ class ArgumentError(SQLAlchemyError):
 
     """
 
+
 class NoSuchModuleError(ArgumentError):
     """Raised when a dynamically-loaded module (usually a database dialect)
     of a particular name cannot be located."""
+
 
 class NoForeignKeysError(ArgumentError):
     """Raised when no foreign keys can be located between two selectables
@@ -51,8 +52,7 @@ class CircularDependencyError(SQLAlchemyError):
       or pre-deassociate one of the foreign key constrained values.
       The ``post_update`` flag described at :ref:`post_update` can resolve
       this cycle.
-    * In a :meth:`.MetaData.create_all`, :meth:`.MetaData.drop_all`,
-      :attr:`.MetaData.sorted_tables` operation, two :class:`.ForeignKey`
+    * In a :attr:`.MetaData.sorted_tables` operation, two :class:`.ForeignKey`
       or :class:`.ForeignKeyConstraint` objects mutually refer to each
       other.  Apply the ``use_alter=True`` flag to one or both,
       see :ref:`use_alter`.
@@ -60,7 +60,7 @@ class CircularDependencyError(SQLAlchemyError):
     """
     def __init__(self, message, cycles, edges, msg=None):
         if msg is None:
-            message += " Cycles: %r all edges: %r" % (cycles, edges)
+            message += " (%s)" % ", ".join(repr(s) for s in cycles)
         else:
             message = msg
         SQLAlchemyError.__init__(self, message)
@@ -69,11 +69,12 @@ class CircularDependencyError(SQLAlchemyError):
 
     def __reduce__(self):
         return self.__class__, (None, self.cycles,
-                            self.edges, self.args[0])
+                                self.edges, self.args[0])
 
 
 class CompileError(SQLAlchemyError):
     """Raised when an error occurs during SQL compilation"""
+
 
 class UnsupportedCompilationError(CompileError):
     """Raised when an operation is not supported by the given compiler.
@@ -85,8 +86,9 @@ class UnsupportedCompilationError(CompileError):
 
     def __init__(self, compiler, element_type):
         super(UnsupportedCompilationError, self).__init__(
-                    "Compiler %r can't render element of type %s" %
-                                (compiler, element_type))
+            "Compiler %r can't render element of type %s" %
+            (compiler, element_type))
+
 
 class IdentifierError(SQLAlchemyError):
     """Raised when a schema name is beyond the max character limit"""
@@ -159,7 +161,7 @@ class NoReferencedColumnError(NoReferenceError):
 
     def __reduce__(self):
         return self.__class__, (self.args[0], self.table_name,
-                            self.column_name)
+                                self.column_name)
 
 
 class NoSuchTableError(InvalidRequestError):
@@ -233,14 +235,16 @@ class StatementError(SQLAlchemyError):
 
     def __str__(self):
         from sqlalchemy.sql import util
-        params_repr = util._repr_params(self.params, 10)
 
+        details = [SQLAlchemyError.__str__(self)]
+        if self.statement:
+            details.append("[SQL: %r]" % self.statement)
+            if self.params:
+                params_repr = util._repr_params(self.params, 10)
+                details.append("[parameters: %r]" % params_repr)
         return ' '.join([
-                            "(%s)" % det for det in self.detail
-                        ] + [
-                            SQLAlchemyError.__str__(self),
-                             repr(self.statement), repr(params_repr)
-                        ])
+            "(%s)" % det for det in self.detail
+        ] + details)
 
     def __unicode__(self):
         return self.__str__()
@@ -271,48 +275,55 @@ class DBAPIError(StatementError):
 
     @classmethod
     def instance(cls, statement, params,
-                        orig,
-                        dbapi_base_err,
-                        connection_invalidated=False):
+                 orig, dbapi_base_err,
+                 connection_invalidated=False,
+                 dialect=None):
         # Don't ever wrap these, just return them directly as if
         # DBAPIError didn't exist.
-        if isinstance(orig, (KeyboardInterrupt, SystemExit, DontWrapMixin)):
+        if (isinstance(orig, BaseException) and
+                not isinstance(orig, Exception)) or \
+                isinstance(orig, DontWrapMixin):
             return orig
 
         if orig is not None:
             # not a DBAPI error, statement is present.
             # raise a StatementError
             if not isinstance(orig, dbapi_base_err) and statement:
-                msg = traceback.format_exception_only(
-                    orig.__class__, orig)[-1].strip()
                 return StatementError(
-                    "%s (original cause: %s)" % (str(orig), msg),
+                    "(%s.%s) %s" %
+                    (orig.__class__.__module__, orig.__class__.__name__,
+                     orig),
                     statement, params, orig
                 )
 
-            name, glob = orig.__class__.__name__, globals()
-            if name in glob and issubclass(glob[name], DBAPIError):
-                cls = glob[name]
+            glob = globals()
+            for super_ in orig.__class__.__mro__:
+                name = super_.__name__
+                if dialect:
+                    name = dialect.dbapi_exception_translation_map.get(
+                        name, name)
+                if name in glob and issubclass(glob[name], DBAPIError):
+                    cls = glob[name]
+                    break
 
         return cls(statement, params, orig, connection_invalidated)
 
     def __reduce__(self):
         return self.__class__, (self.statement, self.params,
-                    self.orig, self.connection_invalidated)
+                                self.orig, self.connection_invalidated)
 
     def __init__(self, statement, params, orig, connection_invalidated=False):
         try:
             text = str(orig)
-        except (KeyboardInterrupt, SystemExit):
-            raise
         except Exception as e:
             text = 'Error in str() of DB-API-generated exception: ' + str(e)
         StatementError.__init__(
-                self,
-                '(%s) %s' % (orig.__class__.__name__, text),
-                statement,
-                params,
-                orig
+            self,
+            '(%s.%s) %s' % (
+                orig.__class__.__module__, orig.__class__.__name__, text, ),
+            statement,
+            params,
+            orig
         )
         self.connection_invalidated = connection_invalidated
 

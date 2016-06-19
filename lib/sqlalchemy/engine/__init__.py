@@ -1,5 +1,6 @@
 # engine/__init__.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -9,7 +10,7 @@
 The engine package defines the basic components used to interface
 DB-API modules with higher-level statement construction,
 connection-management, execution and result contexts.  The primary
-"entry point" class into this package is the Engine and it's public
+"entry point" class into this package is the Engine and its public
 constructor ``create_engine()``.
 
 This package includes:
@@ -54,6 +55,7 @@ from .interfaces import (
     Connectable,
     Dialect,
     ExecutionContext,
+    ExceptionContext,
 
     # backwards compat
     Compiled,
@@ -67,20 +69,21 @@ from .base import (
     RootTransaction,
     Transaction,
     TwoPhaseTransaction,
-    )
+)
 
 from .result import (
+    BaseRowProxy,
     BufferedColumnResultProxy,
     BufferedColumnRow,
     BufferedRowResultProxy,
     FullyBufferedResultProxy,
     ResultProxy,
     RowProxy,
-    )
+)
 
 from .util import (
     connection_memoize
-    )
+)
 
 
 from . import util, strategies
@@ -246,6 +249,34 @@ def create_engine(*args, **kwargs):
         Microsoft SQL Server.   Set this to ``False`` to disable
         the automatic usage of RETURNING.
 
+    :param isolation_level: this string parameter is interpreted by various
+        dialects in order to affect the transaction isolation level of the
+        database connection.   The parameter essentially accepts some subset of
+        these string arguments: ``"SERIALIZABLE"``, ``"REPEATABLE_READ"``,
+        ``"READ_COMMITTED"``, ``"READ_UNCOMMITTED"`` and ``"AUTOCOMMIT"``.
+        Behavior here varies per backend, and
+        individual dialects should be consulted directly.
+
+        Note that the isolation level can also be set on a per-:class:`.Connection`
+        basis as well, using the
+        :paramref:`.Connection.execution_options.isolation_level`
+        feature.
+
+        .. seealso::
+
+            :attr:`.Connection.default_isolation_level` - view default level
+
+            :paramref:`.Connection.execution_options.isolation_level`
+            - set per :class:`.Connection` isolation level
+
+            :ref:`SQLite Transaction Isolation <sqlite_isolation_level>`
+
+            :ref:`Postgresql Transaction Isolation <postgresql_isolation_level>`
+
+            :ref:`MySQL Transaction Isolation <mysql_isolation_level>`
+
+            :ref:`session_transaction_isolation` - for the ORM
+
     :param label_length=None: optional integer value which limits
         the size of dynamically generated column labels to that many
         characters. If less than 6, labels are generated as
@@ -273,6 +304,17 @@ def create_engine(*args, **kwargs):
         parameter causes the import to be bypassed, and the given module to
         be used instead. Can be used for testing of DBAPIs as well as to
         inject "mock" DBAPI implementations into the :class:`.Engine`.
+
+    :param paramstyle=None: The `paramstyle <http://legacy.python.org/dev/peps/pep-0249/#paramstyle>`_
+        to use when rendering bound parameters.  This style defaults to the
+        one recommended by the DBAPI itself, which is retrieved from the
+        ``.paramstyle`` attribute of the DBAPI.  However, most DBAPIs accept
+        more than one paramstyle, and in particular it may be desirable
+        to change a "named" paramstyle into a "positional" one, or vice versa.
+        When this attribute is passed, it should be one of the values
+        ``"qmark"``, ``"numeric"``, ``"named"``, ``"format"`` or
+        ``"pyformat"``, and should correspond to a parameter style known
+        to be supported by the DBAPI in use.
 
     :param pool=None: an already-constructed instance of
         :class:`~sqlalchemy.pool.Pool`, such as a
@@ -331,7 +373,7 @@ def create_engine(*args, **kwargs):
         * the ``mock`` strategy, which dispatches all statement
           execution to a function passed as the argument ``executor``.
           See `example in the FAQ
-          <http://www.sqlalchemy.org/trac/wiki/FAQ#HowcanIgettheCREATETABLEDROPTABLEoutputasastring>`_.
+          <http://docs.sqlalchemy.org/en/latest/faq/metadata_schema.html#how-can-i-get-the-create-table-drop-table-output-as-a-string>`_.
 
     :param executor=None: a function taking arguments
         ``(sql, *multiparams, **params)``, to which the ``mock`` strategy will
@@ -347,14 +389,33 @@ def create_engine(*args, **kwargs):
 def engine_from_config(configuration, prefix='sqlalchemy.', **kwargs):
     """Create a new Engine instance using a configuration dictionary.
 
-    The dictionary is typically produced from a config file where keys
-    are prefixed, such as sqlalchemy.url, sqlalchemy.echo, etc.  The
-    'prefix' argument indicates the prefix to be searched for.
+    The dictionary is typically produced from a config file.
+    
+    The keys of interest to ``engine_from_config()`` should be prefixed, e.g.
+    ``sqlalchemy.url``, ``sqlalchemy.echo``, etc.  The 'prefix' argument
+    indicates the prefix to be searched for.  Each matching key (after the
+    prefix is stripped) is treated as though it were the corresponding keyword
+    argument to a :func:`.create_engine` call.
+
+    The only required key is (assuming the default prefix) ``sqlalchemy.url``,
+    which provides the :ref:`database URL <database_urls>`.
 
     A select set of keyword arguments will be "coerced" to their
-    expected type based on string values.  In a future release, this
-    functionality will be expanded and include dialect-specific
-    arguments.
+    expected type based on string values.    The set of arguments
+    is extensible per-dialect using the ``engine_config_types`` accessor.
+
+    :param configuration: A dictionary (typically produced from a config file,
+        but this is not a requirement).  Items whose keys start with the value
+        of 'prefix' will have that prefix stripped, and will then be passed to
+        :ref:`create_engine`.
+
+    :param prefix: Prefix to match and then strip from keys
+        in 'configuration'.
+
+    :param kwargs: Each keyword argument to ``engine_from_config()`` itself
+        overrides the corresponding item taken from the 'configuration'
+        dictionary.  Keyword arguments should *not* be prefixed.
+
     """
 
     options = dict((key[len(prefix):], configuration[key])
@@ -369,4 +430,4 @@ def engine_from_config(configuration, prefix='sqlalchemy.', **kwargs):
 __all__ = (
     'create_engine',
     'engine_from_config',
-    )
+)

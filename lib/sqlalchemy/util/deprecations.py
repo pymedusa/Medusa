@@ -1,5 +1,6 @@
 # util/deprecations.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -37,7 +38,7 @@ def deprecated(version, message=None, add_deprecation_to_docstring=True):
 
     if add_deprecation_to_docstring:
         header = ".. deprecated:: %s %s" % \
-                    (version, (message or ''))
+            (version, (message or ''))
     else:
         header = None
 
@@ -71,7 +72,7 @@ def pending_deprecation(version, message=None,
 
     if add_deprecation_to_docstring:
         header = ".. deprecated:: %s (pending) %s" % \
-                        (version, (message or ''))
+            (version, (message or ''))
     else:
         header = None
 
@@ -101,7 +102,7 @@ def _decorate_with_warning(func, wtype, message, docstring_header=None):
 
     @decorator
     def warned(fn, *args, **kwargs):
-        warnings.warn(wtype(message), stacklevel=3)
+        warnings.warn(message, wtype, stacklevel=3)
         return fn(*args, **kwargs)
 
     doc = func.__doc__ is not None and func.__doc__ or ''
@@ -116,6 +117,7 @@ def _decorate_with_warning(func, wtype, message, docstring_header=None):
 
 import textwrap
 
+
 def _dedent_docstring(text):
     split_text = text.split("\n", 1)
     if len(split_text) == 1:
@@ -126,6 +128,7 @@ def _dedent_docstring(text):
         return firstline + "\n" + textwrap.dedent(remaining)
     else:
         return textwrap.dedent(text)
+
 
 def inject_docstring_text(doctext, injecttext, pos):
     doctext = _dedent_docstring(doctext or "")

@@ -1,5 +1,6 @@
 # sql/types_api.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -11,13 +12,15 @@
 
 from .. import exc, util
 from . import operators
-from .visitors import Visitable
+from .visitors import Visitable, VisitableType
 
 # these are back-assigned by sqltypes.
 BOOLEANTYPE = None
 INTEGERTYPE = None
 NULLTYPE = None
 STRINGTYPE = None
+MATCHTYPE = None
+
 
 class TypeEngine(Visitable):
     """The ultimate base class for all SQL datatypes.
@@ -25,7 +28,8 @@ class TypeEngine(Visitable):
     Common subclasses of :class:`.TypeEngine` include
     :class:`.String`, :class:`.Integer`, and :class:`.Boolean`.
 
-    For an overview of the SQLAlchemy typing system, see :ref:`types_toplevel`.
+    For an overview of the SQLAlchemy typing system, see
+    :ref:`types_toplevel`.
 
     .. seealso::
 
@@ -42,13 +46,54 @@ class TypeEngine(Visitable):
 
 
         """
+        __slots__ = 'expr', 'type'
+
+        default_comparator = None
 
         def __init__(self, expr):
             self.expr = expr
+            self.type = expr.type
+
+        @util.dependencies('sqlalchemy.sql.default_comparator')
+        def operate(self, default_comparator, op, *other, **kwargs):
+            o = default_comparator.operator_lookup[op.__name__]
+            return o[0](self.expr, op, *(other + o[1:]), **kwargs)
+
+        @util.dependencies('sqlalchemy.sql.default_comparator')
+        def reverse_operate(self, default_comparator, op, other, **kwargs):
+            o = default_comparator.operator_lookup[op.__name__]
+            return o[0](self.expr, op, other,
+                        reverse=True, *o[1:], **kwargs)
+
+        def _adapt_expression(self, op, other_comparator):
+            """evaluate the return type of <self> <op> <othertype>,
+            and apply any adaptations to the given operator.
+
+            This method determines the type of a resulting binary expression
+            given two source types and an operator.   For example, two
+            :class:`.Column` objects, both of the type :class:`.Integer`, will
+            produce a :class:`.BinaryExpression` that also has the type
+            :class:`.Integer` when compared via the addition (``+``) operator.
+            However, using the addition operator with an :class:`.Integer`
+            and a :class:`.Date` object will produce a :class:`.Date`, assuming
+            "days delta" behavior by the database (in reality, most databases
+            other than Postgresql don't accept this particular operation).
+
+            The method returns a tuple of the form <operator>, <type>.
+            The resulting operator and type will be those applied to the
+            resulting :class:`.BinaryExpression` as the final operator and the
+            right-hand side of the expression.
+
+            Note that only a subset of operators make usage of
+            :meth:`._adapt_expression`,
+            including math operators and user-defined operators, but not
+            boolean comparison or special SQL keywords like MATCH or BETWEEN.
+
+            """
+            return op, other_comparator.type
 
         def __reduce__(self):
             return _reconstitute_comparator, (self.expr, )
-
 
     hashable = True
     """Flag, if False, means values from this type aren't hashable.
@@ -82,6 +127,33 @@ class TypeEngine(Visitable):
       customization of operators on a per-type level.
 
     """
+
+    def compare_against_backend(self, dialect, conn_type):
+        """Compare this type against the given backend type.
+
+        This function is currently not implemented for SQLAlchemy
+        types, and for all built in types will return ``None``.  However,
+        it can be implemented by a user-defined type
+        where it can be consumed by schema comparison tools such as
+        Alembic autogenerate.
+
+        A future release of SQLAlchemy will potentially impement this method
+        for builtin types as well.
+
+        The function should return True if this type is equivalent to the
+        given type; the type is typically reflected from the database
+        so should be database specific.  The dialect in use is also
+        passed.   It can also return False to assert that the type is
+        not equivalent.
+
+        :param dialect: a :class:`.Dialect` that is involved in the comparison.
+
+        :param conn_type: the type object reflected from the backend.
+
+        .. versionadded:: 1.0.3
+
+        """
+        return None
 
     def copy_value(self, value):
         return value
@@ -250,7 +322,7 @@ class TypeEngine(Visitable):
         The construction of :meth:`.TypeEngine.with_variant` is always
         from the "fallback" type to that which is dialect specific.
         The returned type is an instance of :class:`.Variant`, which
-        itself provides a :meth:`~sqlalchemy.types.Variant.with_variant`
+        itself provides a :meth:`.Variant.with_variant`
         that can be called repeatedly.
 
         :param type_: a :class:`.TypeEngine` that will be selected
@@ -262,8 +334,7 @@ class TypeEngine(Visitable):
         .. versionadded:: 0.7.2
 
         """
-        return Variant(self, {dialect_name: type_})
-
+        return Variant(self, {dialect_name: to_instance(type_)})
 
     @util.memoized_property
     def _type_affinity(self):
@@ -288,7 +359,6 @@ class TypeEngine(Visitable):
             return dialect._type_memos[self]['impl']
         except KeyError:
             return self._dialect_info(dialect)['impl']
-
 
     def _cached_literal_processor(self, dialect):
         """Return a dialect-specific literal processor for this type."""
@@ -351,7 +421,6 @@ class TypeEngine(Visitable):
         """
         return util.constructor_copy(self, cls, **kw)
 
-
     def coerce_compared_value(self, op, value):
         """Suggest a type for a 'coerced' Python value in an expression.
 
@@ -373,7 +442,7 @@ class TypeEngine(Visitable):
         """
         _coerced_type = _type_map.get(type(value), NULLTYPE)
         if _coerced_type is NULLTYPE or _coerced_type._type_affinity \
-            is self._type_affinity:
+                is self._type_affinity:
             return self
         else:
             return _coerced_type
@@ -410,14 +479,19 @@ class TypeEngine(Visitable):
     def __str__(self):
         if util.py2k:
             return unicode(self.compile()).\
-                        encode('ascii', 'backslashreplace')
+                encode('ascii', 'backslashreplace')
         else:
             return str(self.compile())
 
     def __repr__(self):
         return util.generic_repr(self)
 
-class UserDefinedType(TypeEngine):
+
+class VisitableCheckKWArg(util.EnsureKWArgType, VisitableType):
+    pass
+
+
+class UserDefinedType(util.with_metaclass(VisitableCheckKWArg, TypeEngine)):
     """Base for user defined types.
 
     This should be the base of new types.  Note that
@@ -430,7 +504,7 @@ class UserDefinedType(TypeEngine):
           def __init__(self, precision = 8):
               self.precision = precision
 
-          def get_col_spec(self):
+          def get_col_spec(self, **kw):
               return "MYTYPE(%s)" % self.precision
 
           def bind_processor(self, dialect):
@@ -450,19 +524,34 @@ class UserDefinedType(TypeEngine):
           Column('data', MyType(16))
           )
 
+    The ``get_col_spec()`` method will in most cases receive a keyword
+    argument ``type_expression`` which refers to the owning expression
+    of the type as being compiled, such as a :class:`.Column` or
+    :func:`.cast` construct.  This keyword is only sent if the method
+    accepts keyword arguments (e.g. ``**kw``) in its argument signature;
+    introspection is used to check for this in order to support legacy
+    forms of this function.
+
+    .. versionadded:: 1.0.0 the owning expression is passed to
+       the ``get_col_spec()`` method via the keyword argument
+       ``type_expression``, if it receives ``**kw`` in its signature.
+
     """
     __visit_name__ = "user_defined"
 
+    ensure_kwarg = 'get_col_spec'
 
     class Comparator(TypeEngine.Comparator):
+        __slots__ = ()
+
         def _adapt_expression(self, op, other_comparator):
             if hasattr(self.type, 'adapt_operator'):
                 util.warn_deprecated(
                     "UserDefinedType.adapt_operator is deprecated.  Create "
-                     "a UserDefinedType.Comparator subclass instead which "
-                     "generates the desired expression constructs, given a "
-                     "particular operator."
-                    )
+                    "a UserDefinedType.Comparator subclass instead which "
+                    "generates the desired expression constructs, given a "
+                    "particular operator."
+                )
                 return self.type.adapt_operator(op), self.type
             else:
                 return op, self.type
@@ -567,6 +656,26 @@ class TypeDecorator(TypeEngine):
             else:
                 return self
 
+    .. warning::
+
+       Note that the **behavior of coerce_compared_value is not inherited
+       by default from that of the base type**.
+       If the :class:`.TypeDecorator` is augmenting a
+       type that requires special logic for certain types of operators,
+       this method **must** be overridden.  A key example is when decorating
+       the :class:`.postgresql.JSON` and :class:`.postgresql.JSONB` types;
+       the default rules of :meth:`.TypeEngine.coerce_compared_value` should
+       be used in order to deal with operators like index operations::
+
+            class MyJsonType(TypeDecorator):
+                impl = postgresql.JSON
+
+                def coerce_compared_value(self, op, value):
+                    return self.impl.coerce_compared_value(op, value)
+
+       Without the above step, index operations such as ``mycol['foo']``
+       will cause the index value ``'foo'`` to be JSON encoded.
+
     """
 
     __visit_name__ = "type_decorator"
@@ -601,7 +710,8 @@ class TypeDecorator(TypeEngine):
     level to "IS <constant>" when compared using ``==`` (and same for
     ``IS NOT`` in conjunction with ``!=``.
 
-    For most SQLAlchemy types, this includes ``NoneType``, as well as ``bool``.
+    For most SQLAlchemy types, this includes ``NoneType``, as well as
+    ``bool``.
 
     :class:`.TypeDecorator` modifies this list to only include ``NoneType``,
     as typedecorator implementations that deal with boolean types are common.
@@ -617,22 +727,27 @@ class TypeDecorator(TypeEngine):
     """
 
     class Comparator(TypeEngine.Comparator):
+        __slots__ = ()
 
         def operate(self, op, *other, **kwargs):
             kwargs['_python_is_types'] = self.expr.type.coerce_to_is_types
             return super(TypeDecorator.Comparator, self).operate(
-                                                        op, *other, **kwargs)
+                op, *other, **kwargs)
 
         def reverse_operate(self, op, other, **kwargs):
             kwargs['_python_is_types'] = self.expr.type.coerce_to_is_types
             return super(TypeDecorator.Comparator, self).reverse_operate(
-                                                        op, other, **kwargs)
+                op, other, **kwargs)
 
     @property
     def comparator_factory(self):
-        return type("TDComparator",
-                    (TypeDecorator.Comparator, self.impl.comparator_factory),
-                    {})
+        if TypeDecorator.Comparator in self.impl.comparator_factory.__mro__:
+            return self.impl.comparator_factory
+        else:
+            return type("TDComparator",
+                        (TypeDecorator.Comparator,
+                         self.impl.comparator_factory),
+                        {})
 
     def _gen_dialect_impl(self, dialect):
         """
@@ -650,8 +765,8 @@ class TypeDecorator(TypeEngine):
         if not isinstance(tt, self.__class__):
             raise AssertionError('Type object %s does not properly '
                                  'implement the copy() method, it must '
-                                 'return an object of type %s' % (self,
-                                 self.__class__))
+                                 'return an object of type %s' %
+                                 (self, self.__class__))
         tt.impl = typedesc
         return tt
 
@@ -675,7 +790,7 @@ class TypeDecorator(TypeEngine):
 
         """
         adapted = dialect.type_descriptor(self)
-        if type(adapted) is not type(self):
+        if not isinstance(adapted, type(self)):
             return adapted
         elif isinstance(self.impl, TypeDecorator):
             return self.impl.type_engine(dialect)
@@ -795,16 +910,19 @@ class TypeDecorator(TypeEngine):
         """Provide a literal processing function for the given
         :class:`.Dialect`.
 
-        Subclasses here will typically override :meth:`.TypeDecorator.process_literal_param`
-        instead of this method directly.
+        Subclasses here will typically override
+        :meth:`.TypeDecorator.process_literal_param` instead of this method
+        directly.
 
-        By default, this method makes use of :meth:`.TypeDecorator.process_bind_param`
-        if that method is implemented, where :meth:`.TypeDecorator.process_literal_param`
-        is not.  The rationale here is that :class:`.TypeDecorator` typically deals
-        with Python conversions of data that are above the layer of database
-        presentation.  With the value converted by :meth:`.TypeDecorator.process_bind_param`,
-        the underlying type will then handle whether it needs to be presented to the
-        DBAPI as a bound parameter or to the database as an inline SQL value.
+        By default, this method makes use of
+        :meth:`.TypeDecorator.process_bind_param` if that method is
+        implemented, where :meth:`.TypeDecorator.process_literal_param` is
+        not.  The rationale here is that :class:`.TypeDecorator` typically
+        deals with Python conversions of data that are above the layer of
+        database presentation.  With the value converted by
+        :meth:`.TypeDecorator.process_bind_param`, the underlying type will
+        then handle whether it needs to be presented to the DBAPI as a bound
+        parameter or to the database as an inline SQL value.
 
         .. versionadded:: 0.9.0
 
@@ -902,7 +1020,7 @@ class TypeDecorator(TypeEngine):
         if self._has_result_processor:
             process_value = self.process_result_value
             impl_processor = self.impl.result_processor(dialect,
-                    coltype)
+                                                        coltype)
             if impl_processor:
                 def process(value):
                     return process_value(impl_processor(value), dialect)
@@ -1026,6 +1144,12 @@ class Variant(TypeDecorator):
         mapping[dialect_name] = type_
         return Variant(self.impl, mapping)
 
+    @property
+    def comparator_factory(self):
+        """express comparison behavior in terms of the base type"""
+        return self.impl.comparator_factory
+
+
 def _reconstitute_comparator(expression):
     return expression.comparator
 
@@ -1050,7 +1174,7 @@ def adapt_type(typeobj, colspecs):
         except KeyError:
             pass
     else:
-        # couldnt adapt - so just return the type itself
+        # couldn't adapt - so just return the type itself
         # (it may be a user-defined type)
         return typeobj
     # if we adapted the given generic type to a database-specific type,
@@ -1060,5 +1184,3 @@ def adapt_type(typeobj, colspecs):
     if (issubclass(typeobj.__class__, impltype)):
         return typeobj
     return typeobj.adapt(impltype)
-
-

@@ -1,5 +1,6 @@
 # orm/evaluator.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -13,18 +14,21 @@ class UnevaluatableError(Exception):
 
 _straight_ops = set(getattr(operators, op)
                     for op in ('add', 'mul', 'sub',
-                                'div',
-                                'mod', 'truediv',
+                               'div',
+                               'mod', 'truediv',
                                'lt', 'le', 'ne', 'gt', 'ge', 'eq'))
 
 
 _notimplemented_ops = set(getattr(operators, op)
-                      for op in ('like_op', 'notlike_op', 'ilike_op',
-                                 'notilike_op', 'between_op', 'in_op',
-                                 'notin_op', 'endswith_op', 'concat_op'))
+                          for op in ('like_op', 'notlike_op', 'ilike_op',
+                                     'notilike_op', 'between_op', 'in_op',
+                                     'notin_op', 'endswith_op', 'concat_op'))
 
 
 class EvaluatorCompiler(object):
+    def __init__(self, target_cls=None):
+        self.target_cls = target_cls
+
     def process(self, clause):
         meth = getattr(self, "visit_%s" % clause.__visit_name__, None)
         if not meth:
@@ -46,10 +50,17 @@ class EvaluatorCompiler(object):
 
     def visit_column(self, clause):
         if 'parentmapper' in clause._annotations:
-            key = clause._annotations['parentmapper'].\
-              _columntoproperty[clause].key
+            parentmapper = clause._annotations['parentmapper']
+            if self.target_cls and not issubclass(
+                    self.target_cls, parentmapper.class_):
+                raise UnevaluatableError(
+                    "Can't evaluate criteria against alternate class %s" %
+                    parentmapper.class_
+                )
+            key = parentmapper._columntoproperty[clause].key
         else:
             key = clause.key
+
         get_corresponding_attr = operator.attrgetter(key)
         return lambda obj: get_corresponding_attr(obj)
 
@@ -84,7 +95,7 @@ class EvaluatorCompiler(object):
 
     def visit_binary(self, clause):
         eval_left, eval_right = list(map(self.process,
-                                [clause.left, clause.right]))
+                                         [clause.left, clause.right]))
         operator = clause.operator
         if operator is operators.is_:
             def evaluate(obj):
@@ -101,8 +112,8 @@ class EvaluatorCompiler(object):
                 return operator(eval_left(obj), eval_right(obj))
         else:
             raise UnevaluatableError(
-                    "Cannot evaluate %s with operator %s" %
-                    (type(clause).__name__, clause.operator))
+                "Cannot evaluate %s with operator %s" %
+                (type(clause).__name__, clause.operator))
         return evaluate
 
     def visit_unary(self, clause):
@@ -115,9 +126,12 @@ class EvaluatorCompiler(object):
                 return not value
             return evaluate
         raise UnevaluatableError(
-                    "Cannot evaluate %s with operator %s" %
-                    (type(clause).__name__, clause.operator))
+            "Cannot evaluate %s with operator %s" %
+            (type(clause).__name__, clause.operator))
 
     def visit_bindparam(self, clause):
-        val = clause.value
+        if clause.callable:
+            val = clause.callable()
+        else:
+            val = clause.value
         return lambda obj: val

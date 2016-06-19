@@ -105,7 +105,7 @@ class ExtendedInstrumentationRegistry(InstrumentationFactory):
 
     def _check_conflicts(self, class_, factory):
         existing_factories = self._collect_management_factories_for(class_).\
-                                difference([factory])
+            difference([factory])
         if existing_factories:
             raise TypeError(
                 "multiple instrumentation implementations specified "
@@ -166,7 +166,13 @@ class ExtendedInstrumentationRegistry(InstrumentationFactory):
     def manager_of_class(self, cls):
         if cls is None:
             return None
-        return self._manager_finders.get(cls, _default_manager_getter)(cls)
+        try:
+            finder = self._manager_finders.get(cls, _default_manager_getter)
+        except TypeError:
+            # due to weakref lookup on invalid object
+            return None
+        else:
+            return finder(cls)
 
     def state_of(self, instance):
         if instance is None:
@@ -182,7 +188,7 @@ class ExtendedInstrumentationRegistry(InstrumentationFactory):
 
 
 orm_instrumentation._instrumentation_factory = \
-        _instrumentation_factory = ExtendedInstrumentationRegistry()
+    _instrumentation_factory = ExtendedInstrumentationRegistry()
 orm_instrumentation.instrumentation_finders = instrumentation_finders
 
 
@@ -316,7 +322,7 @@ class _ClassInstrumentationAdapter(ClassManager):
             return delegate(key, state, factory)
         else:
             return ClassManager.initialize_collection(self, key,
-                                                        state, factory)
+                                                      state, factory)
 
     def new_instance(self, state=None):
         instance = self.class_.__new__(self.class_)
@@ -392,6 +398,7 @@ def _reinstall_default_lookups():
             manager_of_class=_default_manager_getter
         )
     )
+    _instrumentation_factory._extended = False
 
 
 def _install_lookups(lookups):

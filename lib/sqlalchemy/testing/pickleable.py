@@ -1,5 +1,6 @@
 # testing/pickleable.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -62,8 +63,8 @@ class Foo(object):
 
     def __eq__(self, other):
         return other.data == self.data and \
-                other.stuff == self.stuff and \
-                other.moredata == self.moredata
+            other.stuff == self.stuff and \
+            other.moredata == self.moredata
 
 
 class Bar(object):
