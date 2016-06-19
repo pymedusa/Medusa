@@ -249,7 +249,7 @@ class IOLoop(Configurable):
             if IOLoop.current(instance=False) is None:
                 self.make_current()
         elif make_current:
-            if IOLoop.current(instance=False) is None:
+            if IOLoop.current(instance=False) is not None:
                 raise RuntimeError("current IOLoop already exists")
             self.make_current()
 
@@ -400,10 +400,12 @@ class IOLoop(Configurable):
     def run_sync(self, func, timeout=None):
         """Starts the `IOLoop`, runs the given function, and stops the loop.
 
-        If the function returns a `.Future`, the `IOLoop` will run
-        until the future is resolved.  If it raises an exception, the
-        `IOLoop` will stop and the exception will be re-raised to the
-        caller.
+        The function must return either a yieldable object or
+        ``None``. If the function returns a yieldable object, the
+        `IOLoop` will run until the yieldable is resolved (and
+        `run_sync()` will return the yieldable's result). If it raises
+        an exception, the `IOLoop` will stop and the exception will be
+        re-raised to the caller.
 
         The keyword-only argument ``timeout`` may be used to set
         a maximum duration for the function.  If the timeout expires,
@@ -418,12 +420,18 @@ class IOLoop(Configurable):
 
             if __name__ == '__main__':
                 IOLoop.current().run_sync(main)
+
+        .. versionchanged:: 4.3
+           Returning a non-``None``, non-yieldable value is now an error.
         """
         future_cell = [None]
 
         def run():
             try:
                 result = func()
+                if result is not None:
+                    from tornado.gen import convert_yielded
+                    result = convert_yielded(result)
             except Exception:
                 future_cell[0] = TracebackFuture()
                 future_cell[0].set_exc_info(sys.exc_info())
@@ -590,12 +598,21 @@ class IOLoop(Configurable):
         """
         try:
             ret = callback()
-            if ret is not None and is_future(ret):
+            if ret is not None:
+                from tornado import gen
                 # Functions that return Futures typically swallow all
                 # exceptions and store them in the Future.  If a Future
                 # makes it out to the IOLoop, ensure its exception (if any)
                 # gets logged too.
-                self.add_future(ret, lambda f: f.result())
+                try:
+                    ret = gen.convert_yielded(ret)
+                except gen.BadYieldError:
+                    # It's not unusual for add_callback to be used with
+                    # methods returning a non-None and non-yieldable
+                    # result, which should just be ignored.
+                    pass
+                else:
+                    self.add_future(ret, lambda f: f.result())
         except Exception:
             self.handle_callback_exception(callback)
 
@@ -909,38 +926,40 @@ class PollIOLoop(IOLoop):
         self._cancellations += 1
 
     def add_callback(self, callback, *args, **kwargs):
-        with self._callback_lock:
+        if thread.get_ident() != self._thread_ident:
+            # If we're not on the IOLoop's thread, we need to synchronize
+            # with other threads, or waking logic will induce a race.
+            with self._callback_lock:
+                if self._closing:
+                    return
+                list_empty = not self._callbacks
+                self._callbacks.append(functools.partial(
+                    stack_context.wrap(callback), *args, **kwargs))
+                if list_empty:
+                    # If we're not in the IOLoop's thread, and we added the
+                    # first callback to an empty list, we may need to wake it
+                    # up (it may wake up on its own, but an occasional extra
+                    # wake is harmless).  Waking up a polling IOLoop is
+                    # relatively expensive, so we try to avoid it when we can.
+                    self._waker.wake()
+        else:
             if self._closing:
-                raise RuntimeError("IOLoop is closing")
-            list_empty = not self._callbacks
+                return
+            # If we're on the IOLoop's thread, we don't need the lock,
+            # since we don't need to wake anyone, just add the
+            # callback. Blindly insert into self._callbacks. This is
+            # safe even from signal handlers because the GIL makes
+            # list.append atomic. One subtlety is that if the signal
+            # is interrupting another thread holding the
+            # _callback_lock block in IOLoop.start, we may modify
+            # either the old or new version of self._callbacks, but
+            # either way will work.
             self._callbacks.append(functools.partial(
                 stack_context.wrap(callback), *args, **kwargs))
-            if list_empty and thread.get_ident() != self._thread_ident:
-                # If we're in the IOLoop's thread, we know it's not currently
-                # polling.  If we're not, and we added the first callback to an
-                # empty list, we may need to wake it up (it may wake up on its
-                # own, but an occasional extra wake is harmless).  Waking
-                # up a polling IOLoop is relatively expensive, so we try to
-                # avoid it when we can.
-                self._waker.wake()
 
     def add_callback_from_signal(self, callback, *args, **kwargs):
         with stack_context.NullContext():
-            if thread.get_ident() != self._thread_ident:
-                # if the signal is handled on another thread, we can add
-                # it normally (modulo the NullContext)
-                self.add_callback(callback, *args, **kwargs)
-            else:
-                # If we're on the IOLoop's thread, we cannot use
-                # the regular add_callback because it may deadlock on
-                # _callback_lock.  Blindly insert into self._callbacks.
-                # This is safe because the GIL makes list.append atomic.
-                # One subtlety is that if the signal interrupted the
-                # _callback_lock block in IOLoop.start, we may modify
-                # either the old or new version of self._callbacks,
-                # but either way will work.
-                self._callbacks.append(functools.partial(
-                    stack_context.wrap(callback), *args, **kwargs))
+            self.add_callback(callback, *args, **kwargs)
 
 
 class _Timeout(object):

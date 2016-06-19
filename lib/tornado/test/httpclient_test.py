@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function, with_statement
 import base64
 import binascii
 from contextlib import closing
+import copy
 import functools
 import sys
 import threading
@@ -48,6 +49,7 @@ class PutHandler(RequestHandler):
 
 class RedirectHandler(RequestHandler):
     def prepare(self):
+        self.write('redirects can have bodies too')
         self.redirect(self.get_argument("url"),
                       status=int(self.get_argument("status", "302")))
 
@@ -371,6 +373,32 @@ Transfer-Encoding: chunked
                     "response=%r, value=%r, container=%r" %
                     (resp.body, value, container))
 
+    def test_multi_line_headers(self):
+        # Multi-line http headers are rare but rfc-allowed
+        # http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
+        sock, port = bind_unused_port()
+        with closing(sock):
+            def write_response(stream, request_data):
+                if b"HTTP/1." not in request_data:
+                    self.skipTest("requires HTTP/1.x")
+                stream.write(b"""\
+HTTP/1.1 200 OK
+X-XSS-Protection: 1;
+\tmode=block
+
+""".replace(b"\n", b"\r\n"), callback=stream.close)
+
+            def accept_callback(conn, address):
+                stream = IOStream(conn, io_loop=self.io_loop)
+                stream.read_until(b"\r\n\r\n",
+                                  functools.partial(write_response, stream))
+            netutil.add_accept_handler(sock, accept_callback, self.io_loop)
+            self.http_client.fetch("http://127.0.0.1:%d/" % port, self.stop)
+            resp = self.wait()
+            resp.rethrow()
+            self.assertEqual(resp.headers['X-XSS-Protection'], "1; mode=block")
+            self.io_loop.remove_handler(sock.fileno())
+
     def test_304_with_content_length(self):
         # According to the spec 304 responses SHOULD NOT include
         # Content-Length or other entity headers, but some servers do it
@@ -444,18 +472,32 @@ Transfer-Encoding: chunked
                               allow_nonstandard_methods=True)
         self.assertEqual(response.body, b'OTHER')
 
-    @gen_test
     def test_body_sanity_checks(self):
-        hello_url = self.get_url('/hello')
-        with self.assertRaises(ValueError) as context:
-            yield self.http_client.fetch(hello_url, body='data')
+        # These methods require a body.
+        for method in ('POST', 'PUT', 'PATCH'):
+            with self.assertRaises(ValueError) as context:
+                resp = self.fetch('/all_methods', method=method)
+                resp.rethrow()
+            self.assertIn('must not be None', str(context.exception))
 
-        self.assertTrue('must be None' in str(context.exception))
+            resp = self.fetch('/all_methods', method=method,
+                              allow_nonstandard_methods=True)
+            self.assertEqual(resp.code, 200)
 
-        with self.assertRaises(ValueError) as context:
-            yield self.http_client.fetch(hello_url, method='POST')
+        # These methods don't allow a body.
+        for method in ('GET', 'DELETE', 'OPTIONS'):
+            with self.assertRaises(ValueError) as context:
+                resp = self.fetch('/all_methods', method=method, body=b'asdf')
+                resp.rethrow()
+            self.assertIn('must be None', str(context.exception))
 
-        self.assertTrue('must not be None' in str(context.exception))
+            # In most cases this can be overridden, but curl_httpclient
+            # does not allow body with a GET at all.
+            if method != 'GET':
+                resp = self.fetch('/all_methods', method=method, body=b'asdf',
+                                  allow_nonstandard_methods=True)
+                resp.rethrow()
+                self.assertEqual(resp.code, 200)
 
     # This test causes odd failures with the combination of
     # curl_httpclient (at least with the version of libcurl available
@@ -605,3 +647,15 @@ class HTTPRequestTestCase(unittest.TestCase):
         request = HTTPRequest('http://example.com', if_modified_since=http_date)
         self.assertEqual(request.headers,
                          {'If-Modified-Since': format_timestamp(http_date)})
+
+
+class HTTPErrorTestCase(unittest.TestCase):
+    def test_copy(self):
+        e = HTTPError(403)
+        e2 = copy.copy(e)
+        self.assertIsNot(e, e2)
+        self.assertEqual(e.code, e2.code)
+
+    def test_str(self):
+        e = HTTPError(403)
+        self.assertEqual(str(e), "HTTP 403: Forbidden")
