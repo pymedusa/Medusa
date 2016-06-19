@@ -184,11 +184,32 @@ inc_top.mako
     clear: both;
 }
 
-#SubMenu {
+div#SubMenu.nav-tabs{
     padding-right: 20px;
     clear: both;
     font-size: 12px;
     float: right;
+    border-bottom: none;
+}
+
+#SubMenu ul {
+	list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+#SubMenu li {
+	display: inline;
+}
+
+div#navSelect {
+	margin-left: 15px;
+	width: 100%;
+}
+
+div#navSelect select {
+	width: 70%;
+    max-width:90%;
 }
 
 .upgrade-notification {
