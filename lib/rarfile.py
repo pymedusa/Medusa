@@ -74,7 +74,7 @@ For more details, refer to source.
 
 """
 
-__version__ = '2.7'
+__version__ = '2.8'
 
 # export only interesting items
 __all__ = ['is_rarfile', 'RarInfo', 'RarFile', 'RarExtFile']
@@ -97,7 +97,7 @@ try:
     try:
         from cryptography.hazmat.primitives.ciphers import algorithms, modes, Cipher
         from cryptography.hazmat.backends import default_backend
-        class AES_CBC_Decrypt:
+        class AES_CBC_Decrypt(object):
             block_size = 16
             def __init__(self, key, iv):
                 ciph = Cipher(algorithms.AES(key), modes.CBC(iv), default_backend())
@@ -106,7 +106,7 @@ try:
                 return self.dec.update(data)
     except ImportError:
         from Crypto.Cipher import AES
-        class AES_CBC_Decrypt:
+        class AES_CBC_Decrypt(object):
             block_size = 16
             def __init__(self, key, iv):
                 self.dec = AES.new(key, AES.MODE_CBC, iv)
@@ -508,7 +508,7 @@ class RarFile(object):
 
     def namelist(self):
         '''Return list of filenames in archive.'''
-        return [f.filename for f in self._info_list]
+        return [f.filename for f in self.infolist()]
 
     def infolist(self):
         '''Return RarInfo objects for all files/directories in archive.'''
@@ -636,7 +636,7 @@ class RarFile(object):
 
     def printdir(self):
         """Print archive file list to stdout."""
-        for f in self._info_list:
+        for f in self.infolist():
             print(f.filename)
 
     def extract(self, member, path=None, pwd=None):
@@ -683,10 +683,22 @@ class RarFile(object):
         """
         cmd = [UNRAR_TOOL] + list(TEST_ARGS)
         add_password_arg(cmd, self._password)
-        cmd.append(self.rarfile)
-        p = custom_popen(cmd)
-        output = p.communicate()[0]
-        check_returncode(p, output)
+        cmd.append('--')
+
+        if is_filelike(self.rarfile):
+            tmpname = membuf_tempfile(self.rarfile)
+            cmd.append(tmpname)
+        else:
+            tmpname = None
+            cmd.append(self.rarfile)
+
+        try:
+            p = custom_popen(cmd)
+            output = p.communicate()[0]
+            check_returncode(p, output)
+        finally:
+            if tmpname:
+                os.unlink(tmpname)
 
     def strerror(self):
         """Return error string if parsing failed,
@@ -758,7 +770,7 @@ class RarFile(object):
         if id != RAR_ID:
             if isinstance(self.rarfile, (str, unicode)):
                 raise NotRarFile("Not a Rar archive: {}".format(self.rarfile))
-            raise NonRarFile("Not a Rar archive")
+            raise NotRarFile("Not a Rar archive")
 
         volume = 0  # first vol (.rar) is 0
         more_vols = 0
@@ -1149,7 +1161,7 @@ class RarFile(object):
         if self._crc_check:
             crc = crc32(cmt)
             if crc < 0:
-                crc += (long(1) << 32)
+                crc += (1 << 32)
             if crc != inf.CRC:
                 return None
 
@@ -1157,23 +1169,7 @@ class RarFile(object):
 
     # write in-memory archive to temp file - needed for solid archives
     def _open_unrar_membuf(self, memfile, inf, psw):
-        memfile.seek(0, 0)
-
-        tmpfd, tmpname = mkstemp(suffix='.rar')
-        tmpf = os.fdopen(tmpfd, "wb")
-
-        try:
-            BSIZE = 32*1024
-            while True:
-                buf = memfile.read(BSIZE)
-                if not buf:
-                    break
-                tmpf.write(buf)
-            tmpf.close()
-        except:
-            tmpf.close()
-            os.unlink(tmpname)
-            raise
+        tmpname = membuf_tempfile(memfile)
         return self._open_unrar(tmpname, inf, psw, tmpname)
 
     # extract using unrar
@@ -1215,9 +1211,15 @@ class RarFile(object):
         # pasoword
         psw = psw or self._password
         add_password_arg(cmd, psw)
+        cmd.append('--')
 
         # rar file
-        cmd.append(self.rarfile)
+        if is_filelike(self.rarfile):
+            tmpname = membuf_tempfile(self.rarfile)
+            cmd.append(tmpname)
+        else:
+            tmpname = None
+            cmd.append(self.rarfile)
 
         # file list
         for fn in fnlist:
@@ -1230,15 +1232,19 @@ class RarFile(object):
             cmd.append(path + os.sep)
 
         # call
-        p = custom_popen(cmd)
-        output = p.communicate()[0]
-        check_returncode(p, output)
+        try:
+            p = custom_popen(cmd)
+            output = p.communicate()[0]
+            check_returncode(p, output)
+        finally:
+            if tmpname:
+                os.unlink(tmpname)
 
 ##
 ## Utility classes
 ##
 
-class UnicodeFilename:
+class UnicodeFilename(object):
     """Handle unicode filename decompression"""
 
     def __init__(self, name, encdata):
@@ -1315,7 +1321,7 @@ class RarExtFile(RawIOBase):
     name = None
 
     def __init__(self, rf, inf):
-        RawIOBase.__init__(self)
+        super(RarExtFile, self).__init__()
 
         # standard io.* properties
         self.name = inf.filename
@@ -1373,7 +1379,7 @@ class RarExtFile(RawIOBase):
             raise BadRarFile("Failed the read enough data")
         crc = self.CRC
         if crc < 0:
-            crc += (long(1) << 32)
+            crc += (1 << 32)
         if crc != self.inf.CRC:
             raise BadRarFile("Corrupt file - CRC check failed: " + self.inf.filename)
 
@@ -1383,7 +1389,7 @@ class RarExtFile(RawIOBase):
     def close(self):
         """Close open resources."""
 
-        RawIOBase.close(self)
+        super(RarExtFile, self).close()
 
         if self.fd:
             self.fd.close()
@@ -1496,7 +1502,7 @@ class PipeReader(RarExtFile):
         self.cmd = cmd
         self.proc = None
         self.tempfile = tempfile
-        RarExtFile.__init__(self, rf, inf)
+        super(PipeReader, self).__init__(rf, inf)
 
     def _close_proc(self):
         if not self.proc:
@@ -1512,7 +1518,7 @@ class PipeReader(RarExtFile):
         self.proc = None
 
     def _open(self):
-        RarExtFile._open(self)
+        super(PipeReader, self)._open()
 
         # stop old process
         self._close_proc()
@@ -1549,7 +1555,7 @@ class PipeReader(RarExtFile):
         """Close open resources."""
 
         self._close_proc()
-        RarExtFile.close(self)
+        super(PipeReader, self).close()
 
         if self.tempfile:
             try:
@@ -1580,7 +1586,7 @@ class DirectReader(RarExtFile):
     """Read uncompressed data directly from archive."""
 
     def _open(self):
-        RarExtFile._open(self)
+        super(DirectReader, self)._open()
 
         self.volfile = self.inf.volume_file
         self.fd = XFile(self.volfile, 0)
@@ -1694,7 +1700,7 @@ class DirectReader(RarExtFile):
         return got
 
 
-class HeaderDecrypt:
+class HeaderDecrypt(object):
     """File-like object that decrypts from another file"""
     def __init__(self, f, key, iv):
         self.f = f
@@ -1900,8 +1906,7 @@ def custom_popen(cmd):
         p = Popen(cmd, bufsize = 0,
                   stdout = PIPE, stdin = PIPE, stderr = STDOUT,
                   creationflags = creationflags)
-    except OSError:
-        ex = sys.exc_info()[1]
+    except OSError as ex:
         if ex.errno == errno.ENOENT:
             raise RarCannotExec("Unrar not installed? (rarfile.UNRAR_TOOL=%r)" % UNRAR_TOOL)
         raise
@@ -1954,6 +1959,26 @@ def check_returncode(p, out):
         msg = "%s [%d]" % (exc.__doc__, p.returncode)
 
     raise exc(msg)
+
+def membuf_tempfile(memfile):
+    memfile.seek(0, 0)
+
+    tmpfd, tmpname = mkstemp(suffix='.rar')
+    tmpf = os.fdopen(tmpfd, "wb")
+
+    try:
+        BSIZE = 32*1024
+        while True:
+            buf = memfile.read(BSIZE)
+            if not buf:
+                break
+            tmpf.write(buf)
+        tmpf.close()
+        return tmpname
+    except:
+        tmpf.close()
+        os.unlink(tmpname)
+        raise
 
 #
 # Check if unrar works
