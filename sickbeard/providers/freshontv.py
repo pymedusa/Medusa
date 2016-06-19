@@ -1,27 +1,29 @@
 # coding=utf-8
 # Author: Idan Gutman
 #
-
+# This file is part of Medusa.
 #
-# This file is part of SickRage.
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import unicode_literals
 
 import re
-from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
 import time
 import traceback
+
+from requests.compat import urljoin
+from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -31,92 +33,57 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+    """FreshOnTV Torrent provider"""
     def __init__(self):
 
-        TorrentProvider.__init__(self, "FreshOnTV")
+        # Provider Init
+        TorrentProvider.__init__(self, 'FreshOnTV')
 
-        self._uid = None
-        self._hash = None
+        # Credentials
         self.username = None
         self.password = None
-        self.minseed = None
-        self.minleech = None
-        self.freeleech = False
-
-        self.cache = tvcache.TVCache(self)
-
-        self.urls = {'base_url': 'https://freshon.tv/',
-                     'login': 'https://freshon.tv/login.php?action=makelogin',
-                     'detail': 'https://freshon.tv/details.php?id=%s',
-                     'search': 'https://freshon.tv/browse.php?incldead=%s&words=0&cat=0&search=%s',
-                     'download': 'https://freshon.tv/download.php?id=%s&type=torrent'}
-
-        self.url = self.urls['base_url']
-
+        self._uid = None
+        self._hash = None
         self.cookies = None
 
-    def _check_auth(self):
+        # URLs
+        self.url = 'https://freshon.tv'
+        self.urls = {
+            'base_url': self.url,
+            'login': urljoin(self.url, 'login.php'),
+            'detail': urljoin(self.url, 'details.php?id=%s'),
+            'search': urljoin(self.url, 'browse.php?incldead=%s&words=0&cat=0&search=%s'),
+            'download': urljoin(self.url, 'download.php?id=%s&type=torrent'),
+        }
 
-        if not self.username or not self.password:
-            logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
+        # Proper Strings
 
-        return True
+        # Miscellaneous Options
+        self.freeleech = False
 
-    def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
-        if self._uid and self._hash:
-            add_dict_to_cookiejar(self.session.cookies, self.cookies)
-        else:
-            login_params = {'username': self.username,
-                            'password': self.password,
-                            'login': 'submit'}
+        # Cache
+        self.cache = tvcache.TVCache(self)
 
-            response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-            if not response:
-                logger.log(u"Unable to connect to provider", logger.WARNING)
-                return False
-
-            if re.search('/logout.php', response):
-
-                try:
-                    if dict_from_cookiejar(self.session.cookies)['uid'] and dict_from_cookiejar(self.session.cookies)['pass']:
-                        self._uid = dict_from_cookiejar(self.session.cookies)['uid']
-                        self._hash = dict_from_cookiejar(self.session.cookies)['pass']
-
-                        self.cookies = {'uid': self._uid,
-                                        'pass': self._hash}
-                        return True
-                except Exception:
-                    logger.log(u"Unable to login to provider (cookie)", logger.WARNING)
-                    return False
-
-            else:
-                if re.search('Username does not exist in the userbase or the account is not confirmed yet.', response):
-                    logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
-
-                if re.search('DDoS protection by CloudFlare', response):
-                    logger.log(u"Unable to login to provider due to CloudFlare DDoS javascript check", logger.WARNING)
-
-                    return False
-
-    def search(self, search_params, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         results = []
         if not self.login():
             return results
 
         freeleech = '3' if self.freeleech else '0'
 
-        for mode in search_params:
+        for mode in search_strings:
             items = []
-            logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
-            for search_string in search_params[mode]:
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+
+            for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_url = self.urls['search'] % (freeleech, search_string)
 
@@ -125,12 +92,11 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                 max_page_number = 0
 
                 if not init_html:
-                    logger.log(u"No data returned from provider", logger.DEBUG)
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                try:
-                    with BS4Parser(init_html, 'html5lib') as init_soup:
-
+                with BS4Parser(init_html, 'html5lib') as init_soup:
+                    try:
                         # Check to see if there is more than 1 page of results
                         pager = init_soup.find('div', {'class': 'pager'})
                         if pager:
@@ -152,9 +118,10 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                         # limit RSS search
                         if max_page_number > 3 and mode == 'RSS':
                             max_page_number = 3
-                except Exception:
-                    logger.log(u"Failed parsing provider. Traceback: %s" % traceback.format_exc(), logger.ERROR)
-                    continue
+                    except Exception:
+                        logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                   (traceback.format_exc()), logger.ERROR)
+                        continue
 
                 data_response_list = [init_html]
 
@@ -163,8 +130,8 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                     for i in range(1, max_page_number):
 
                         time.sleep(1)
-                        page_search_url = search_url + '&page=' + str(i)
-                        # '.log(u"Search string: " + page_search_url, logger.DEBUG)
+                        page_search_url = search_url + '&page=' + unicode(i)
+                        # '.log('Search string: ' + page_search_url, logger.DEBUG)
                         page_html = self.get_url(page_search_url, returns='text')
 
                         if not page_html:
@@ -172,66 +139,119 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
                         data_response_list.append(page_html)
 
-                try:
+                for data_response in data_response_list:
 
-                    for data_response in data_response_list:
+                    with BS4Parser(data_response, 'html5lib') as html:
+                        torrent_rows = html('tr', class_=re.compile('torrent_[0-9]*'))
 
-                        with BS4Parser(data_response, 'html5lib') as html:
+                        # Continue only if a Release is found
+                        if not torrent_rows:
+                            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                            continue
 
-                            torrent_rows = html("tr", {"class": re.compile('torrent_[0-9]*')})
+                        for individual_torrent in torrent_rows:
 
-                            # Continue only if a Release is found
-                            if not torrent_rows:
-                                logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
-                                continue
-
-                            for individual_torrent in torrent_rows:
-
+                            try:
                                 # skip if torrent has been nuked due to poor quality
                                 if individual_torrent.find('img', alt='Nuked') is not None:
                                     continue
 
-                                try:
-                                    title = individual_torrent.find('a', {'class': 'torrent_name_link'})['title']
-                                except Exception:
-                                    logger.log(u"Unable to parse torrent title. Traceback: %s " % traceback.format_exc(), logger.WARNING)
-                                    continue
-
-                                try:
-                                    details_url = individual_torrent.find('a', {'class': 'torrent_name_link'})['href']
-                                    torrent_id = int((re.match('.*?([0-9]+)$', details_url).group(1)).strip())
-                                    download_url = self.urls['download'] % (str(torrent_id))
-                                    seeders = try_int(individual_torrent.find('td', {'class': 'table_seeders'}).find('span').text.strip(), 1)
-                                    leechers = try_int(individual_torrent.find('td', {'class': 'table_leechers'}).find('a').text.strip(), 0)
-                                    torrent_size = individual_torrent.find('td', {'class': 'table_size'}).get_text()
-                                    size = convert_size(torrent_size) or -1
-                                except Exception:
-                                    continue
-
+                                title = individual_torrent.find('a', class_='torrent_name_link')['title']
+                                details_url = individual_torrent.find('a', class_='torrent_name_link')['href']
+                                torrent_id = int((re.match('.*?([0-9]+)$', details_url).group(1)).strip())
+                                download_url = self.urls['download'] % (unicode(torrent_id))
                                 if not all([title, download_url]):
                                     continue
+
+                                seeders = try_int(individual_torrent.find('td', class_='table_seeders').find('span').get_text(strip=True), 1)
+                                leechers = try_int(individual_torrent.find('td', class_='table_leechers').find('a').get_text(strip=True), 0)
 
                                 # Filter unseeded torrent
                                 if seeders < min(self.minseed, 1):
                                     if mode != 'RSS':
-                                        logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                        logger.log("Discarding torrent because it doesn't meet the "
+                                                   "minimum seeders: {0}. Seeders: {1}".format
                                                    (title, seeders), logger.DEBUG)
                                     continue
 
-                                item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                                torrent_size = individual_torrent.find('td', class_='table_size').get_text(strip=True)
+                                torrent_size = re.split('(\d+.?\d+)', unicode(torrent_size), 1)
+                                torrent_size = '{0} {1}'.format(torrent_size[1], torrent_size[2])
+                                size = convert_size(torrent_size) or -1
+
+                                item = {
+                                    'title': title,
+                                    'link': download_url,
+                                    'size': size,
+                                    'seeders': seeders,
+                                    'leechers': leechers,
+                                    'pubdate': None,
+                                    'hash': None,
+                                }
                                 if mode != 'RSS':
-                                    logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
+                                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                               (title, seeders, leechers), logger.DEBUG)
 
                                 items.append(item)
+                            except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                                logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                           (traceback.format_exc()), logger.ERROR)
+                                continue
 
+                results += items
+
+            return results
+
+    def login(self):
+        if any(dict_from_cookiejar(self.session.cookies).values()):
+            return True
+
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+            'login': 'submit',
+            'action': 'makelogin',
+        }
+
+        if self._uid and self._hash:
+            add_dict_to_cookiejar(self.session.cookies, self.cookies)
+        else:
+            response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
+            if not response:
+                logger.log('Unable to connect to provider', logger.WARNING)
+                return False
+
+            if re.search('/logout.php', response):
+                try:
+                    if dict_from_cookiejar(self.session.cookies)['uid'] and \
+                            dict_from_cookiejar(self.session.cookies)['pass']:
+                        self._uid = dict_from_cookiejar(self.session.cookies)['uid']
+                        self._hash = dict_from_cookiejar(self.session.cookies)['pass']
+
+                        self.cookies = {'uid': self._uid,
+                                        'pass': self._hash}
+                        return True
                 except Exception:
-                    logger.log(u"Failed parsing provider. Traceback: %s" % traceback.format_exc(), logger.ERROR)
+                    logger.log('Unable to login to provider (cookie)', logger.WARNING)
 
-            # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
-            results += items
+                    return False
+            else:
+                if re.search('Username does not exist in the userbase or the account is not confirmed yet.', response) or \
+                    re.search('Username or password is incorrect. If you have an account here please use the'
+                              ' recovery system or try again.', response):
+                    logger.log('Invalid username or password. Check your settings', logger.WARNING)
 
-        return results
+                if re.search('DDoS protection by CloudFlare', response):
+                    logger.log('Unable to login to provider due to CloudFlare DDoS javascript check', logger.WARNING)
+
+                    return False
+
+    def _check_auth(self):
+
+        if not self.username or not self.password:
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+
+        return True
 
 
 provider = FreshOnTVProvider()
