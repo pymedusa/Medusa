@@ -1280,6 +1280,7 @@ class CMD_PostProcess(ApiCall):
             "return_data": {"desc": "Returns the result of the post-process"},
             "process_method": {"desc": "How should valid post-processed files be handled"},
             "is_priority": {"desc": "Replace the file even if it exists in a higher quality"},
+            "delete_files": {"desc": "Delete files and folders like auto processing"},
             "failed": {"desc": "Mark download as failed"},
             "type": {"desc": "The type of post-process being requested"},
         }
@@ -1294,6 +1295,7 @@ class CMD_PostProcess(ApiCall):
         self.process_method, args = self.check_params(args, kwargs, "process_method", False, False, "string",
                                                       ["copy", "symlink", "hardlink", "move"])
         self.is_priority, args = self.check_params(args, kwargs, "is_priority", False, False, "bool", [])
+        self.delete_files, args = self.check_params(args, kwargs, "delete_files", False, False, "bool", [])
         self.failed, args = self.check_params(args, kwargs, "failed", False, False, "bool", [])
         self.type, args = self.check_params(args, kwargs, "type", "auto", None, "string", ["auto", "manual"])
         # super, missing, help
@@ -1311,7 +1313,8 @@ class CMD_PostProcess(ApiCall):
             self.type = "manual"
 
         data = processTV.processDir(self.path, process_method=self.process_method, force=self.force_replace,
-                                    is_priority=self.is_priority, failed=self.failed, proc_type=self.type)
+                                    is_priority=self.is_priority, delete_on=self.delete_files, failed=self.failed,
+                                    proc_type=self.type)
 
         if not self.return_data:
             data = ""

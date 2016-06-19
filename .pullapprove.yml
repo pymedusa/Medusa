@@ -4,40 +4,14 @@ reject_regex: (^Rejected|^Fix it)
 reset_on_push: false
 reviewers:
   -
-    name: backend-devs
+    name: devs
     required: 1
     members:
       - duramato
       - fernandog
       - labrys
       - medariox
+      - ratoaq2
       - p0psicles
-      - adaur
-# # CONDITIONS REQUIRE PRO ACCOUNT
-#    conditions:
-#      branches:
-#        - master
-#        - beta
-#        - develop
-#      files:
-#        - "*.py"
-  -
-    name: gui-devs
-    required: 1
-    members:
-      - Labrys
       - OmgImAlexis
-      - p0psicles
-# # CONDITIONS REQUIRE PRO ACCOUNT
-#    conditions:
-#      branches:
-#        - master
-#        - beta
-#        - develop
-#      files:
-#        - "gui/"
-  -
-    name: support
-    required: 0
-    members:
-      - neoatomic
+      - adaur
