@@ -1,5 +1,5 @@
 import operator
-from .compat import py3k
+from ..util.compat import py3k
 
 
 class NoValue(object):
@@ -83,6 +83,9 @@ class CacheBackend(object):
             )
         )
 
+    def has_lock_timeout(self):
+        return False
+
     def get_mutex(self, key):
         """Return an optional mutexing object for the given key.
 
@@ -152,11 +155,20 @@ class CacheBackend(object):
     def set_multi(self, mapping):  # pragma NO COVERAGE
         """Set multiple values in the cache.
 
-        The key will be whatever was passed
+        ``mapping`` is a dict in which
+        the key will be whatever was passed
         to the registry, processed by the
         "key mangling" function, if any.
         The value will always be an instance
         of :class:`.CachedValue`.
+
+        When implementing a new :class:`.CacheBackend` or cutomizing via
+        :class:`.ProxyBackend`, be aware that when this method is invoked by
+        :meth:`.Region.get_or_create_multi`, the ``mapping`` values are the
+        same ones returned to the upstream caller. If the subclass alters the
+        values in any way, it must not do so 'in-place' on the ``mapping`` dict
+        -- that will have the undesirable effect of modifying the returned
+        values as well.
 
         .. versionadded:: 0.5.0
 

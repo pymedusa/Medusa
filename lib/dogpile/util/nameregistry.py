@@ -1,5 +1,6 @@
-from .util import threading
+from .compat import threading
 import weakref
+
 
 class NameRegistry(object):
     """Generates and return an object, keeping it as a

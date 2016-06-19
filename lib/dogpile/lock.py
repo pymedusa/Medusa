@@ -3,6 +3,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
 class NeedRegenerationException(Exception):
     """An exception that when raised in the 'with' block,
     forces the 'has_value' flag to False and incurs a
@@ -12,6 +13,7 @@ class NeedRegenerationException(Exception):
 
 NOT_REGENERATED = object()
 
+
 class Lock(object):
     """Dogpile lock class.
 
@@ -20,11 +22,6 @@ class Lock(object):
     the creator of a new value, while other threads/processes
     continue to return the previous version
     of that value.
-
-    .. versionadded:: 0.4.0
-        The :class:`.Lock` class was added as a single-use object
-        representing the dogpile API without dependence on
-        any shared state between multiple instances.
 
     :param mutex: A mutex object that provides ``acquire()``
      and ``release()`` methods.
@@ -52,17 +49,16 @@ class Lock(object):
      this to be used to defer invocation of the creator callable until some
      later time.
 
-     .. versionadded:: 0.4.1 added the async_creator argument.
-
     """
 
-    def __init__(self,
-            mutex,
-            creator,
-            value_and_created_fn,
-            expiretime,
-            async_creator=None,
-        ):
+    def __init__(
+        self,
+        mutex,
+        creator,
+        value_and_created_fn,
+        expiretime,
+        async_creator=None,
+    ):
         self.mutex = mutex
         self.creator = creator
         self.value_and_created_fn = value_and_created_fn
