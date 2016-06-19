@@ -51,10 +51,6 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         self.username = None
         self.password = None
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # URLs
         self.url = 'https://animebytes.tv/'
         self.urls = {
@@ -66,46 +62,23 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         # Proper Strings
         self.proper_strings = []
 
+        # Miscellaneous Options
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
         # Cache
         self.cache = tvcache.TVCache(self, min_time=30)
 
-    def login(self):
-        """Login to AnimeBytes, check of the session cookie"""
-        if (any(dict_from_cookiejar(self.session.cookies).values()) and
-                dict_from_cookiejar(self.session.cookies).get('session')):
-                    return True
-
-        # Get csrf_token
-        data = self.get_url(self.urls['login'], returns='text')
-        with BS4Parser(data, 'html5lib') as html:
-            csrf_token = html.find('input', {'name': 'csrf_token'}).get('value')
-
-        if not csrf_token:
-            logger.log("Unable to get csrf_token, can't login", logger.WARNING)
-            return False
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-            'csrf_token': csrf_token,
-            'login': 'Log In!',
-            'keeplogged_sent': 'true',
-        }
-
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-        if not response:
-            logger.log('Unable to connect to provider', logger.WARNING)
-            return False
-
-        if re.search('Login incorrect. Only perfect spellers may enter this system!', response):
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
-            self.session.cookies.clear()
-            return False
-
-        return True
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
-        """Start searching for anime using the provided search_strings. Used for backlog and daily"""
+        """
+        AnimeBytes search and parsing
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         _ = age
         _ = ep_obj
         results = []
@@ -173,16 +146,12 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
                                 show_table = row.find('table', class_='torrent_group')
                                 show_info = show_table.find_all('td')
 
-                                # A type of release used to determin how to parse the release
+                                # A type of release used to determine how to parse the release
                                 # For example a SINGLE_EP should be parsed like: show_name.episode.12.[source].[codec].[release_group]
                                 # A multi ep release shoiuld look like: show_name.episode.1-12.[source]..
                                 release_type = OTHER
 
                                 rows_to_skip = 0
-
-                                # Complete series don't have a description td
-#                                 if len(show_info) < 6:
-#                                     show_name = '{0}.{1}'.format(show_title, 'Complete Series')
 
                                 for index, info in enumerate(show_info):
 
@@ -316,9 +285,44 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
                                            (traceback.format_exc()), logger.ERROR)
                                 continue
 
-                results += items
+            results += items
 
-            return results
+        return results
+
+    def login(self):
+        """Login to AnimeBytes, check of the session cookie"""
+        if (any(dict_from_cookiejar(self.session.cookies).values()) and
+                dict_from_cookiejar(self.session.cookies).get('session')):
+                    return True
+
+        # Get csrf_token
+        data = self.get_url(self.urls['login'], returns='text')
+        with BS4Parser(data, 'html5lib') as html:
+            csrf_token = html.find('input', {'name': 'csrf_token'}).get('value')
+
+        if not csrf_token:
+            logger.log("Unable to get csrf_token, can't login", logger.WARNING)
+            return False
+
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+            'csrf_token': csrf_token,
+            'login': 'Log In!',
+            'keeplogged_sent': 'true',
+        }
+
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
+        if not response:
+            logger.log('Unable to connect to provider', logger.WARNING)
+            return False
+
+        if re.search('Login incorrect. Only perfect spellers may enter this system!', response):
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            self.session.cookies.clear()
+            return False
+
+        return True
 
     def _get_episode_search_strings(self, episode, add_string=''):
         """Method override because AnimeBytes doesnt support searching showname + episode number"""
