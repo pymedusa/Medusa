@@ -115,7 +115,8 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                         continue
 
                     torrents = html('tr')
-                    if not torrents:
+                    if not torrents or len(torrents) < 2:
+                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
 
                     # Skip column headers
