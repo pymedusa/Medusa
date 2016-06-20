@@ -111,7 +111,7 @@ class TVCache(object):
         self.minTime = kwargs.pop('min_time', 10)
         self.search_params = kwargs.pop('search_params', dict(RSS=['']))
 
-    def _getDB(self):
+    def _get_db(self):
         # init provider database if not done already
         if not self.provider_db:
             self.provider_db = CacheDBConnection(self.provider_id)
@@ -138,7 +138,7 @@ class TVCache(object):
             retention_period = now - (days * 86400)
             logger.log('Removing cache entries older than {x} days from {provider}'.format
                        (x=days, provider=self.provider_id))
-            cache_db_con = self._getDB()
+            cache_db_con = self._get_db()
             cache_db_con.action(
                 b'DELETE FROM [{provider}] '
                 b'WHERE time < ? '.format(provider=self.provider_id),
@@ -191,22 +191,42 @@ class TVCache(object):
                 # set updated
                 self.setLastUpdate()
 
-                cl = []
-                for item in data['entries'] or []:
-                    ci = self._parseItem(item)
-                    if ci is not None:
-                        cl.append(ci)
+                # get last 5 rss cache results
+                recent_results = self.provider.recent_results
+                found_recent_results = 0  # A counter that keeps track of the number of items that have been found in cache
 
-                cache_db_con = self._getDB()
+                cl = []
+                index = 0
+                for index, item in enumerate(data['entries'] or []):
+                    if item['link'] in {cache_item['link'] for cache_item in recent_results}:
+                        found_recent_results += 1
+
+                    if found_recent_results >= self.provider.stop_at:
+                        logger.log('Hit the old cached items, not parsing any more for: {0}'.format
+                                   (self.provider_id), logger.DEBUG)
+                        break
+                    try:
+                        ci = self._parseItem(item)
+                        if ci is not None:
+                            cl.append(ci)
+                    except UnicodeDecodeError as e:
+                        logger.log('Unicode decoding error, missed parsing item from provider {0}: {1!r}'.format
+                                   (self.provider.name, e), logger.WARNING)
+
+                cache_db_con = self._get_db()
                 if cl:
                     cache_db_con.mass_action(cl)
 
+                # finished processing, let's save the newest x (index) items and store these in cache with a max of 5 
+                # (overwritable per provider, throug hthe max_recent_items attribute.
+                self.provider.recent_results = data['entries'][0:min(index, self.provider.max_recent_items)]
+
         except AuthException as e:
-            logger.log('Authentication error: {0!r}'.format(ex(e)), logger.ERROR)
+            logger.log('Authentication error: {0!r}'.format(e), logger.ERROR)
         except Exception as e:
             logger.log('Error while searching {0}, skipping: {1!r}'.format(self.provider.name, e), logger.DEBUG)
 
-    def update_cache_manual_search(self, manual_data=None, episode_obj=None):
+    def update_cache_manual_search(self, manual_data=None):
 
         try:
             cl = []
@@ -220,7 +240,7 @@ class TVCache(object):
                        ' skipping: {1!r}'.format(self.provider.name, e), logger.WARNING)
 
         results = []
-        cache_db_con = self._getDB()
+        cache_db_con = self._get_db()
         if cl:
             logger.log('Mass updating cache table with manual results for provider: {0}'.
                        format(self.provider.name), logger.DEBUG)
@@ -265,7 +285,7 @@ class TVCache(object):
         return False
 
     def _getLastUpdate(self):
-        cache_db_con = self._getDB()
+        cache_db_con = self._get_db()
         sql_results = cache_db_con.select(b'SELECT time FROM lastUpdate WHERE provider = ?', [self.provider_id])
 
         if sql_results:
@@ -278,7 +298,7 @@ class TVCache(object):
         return datetime.datetime.fromtimestamp(lastTime)
 
     def _getLastSearch(self):
-        cache_db_con = self._getDB()
+        cache_db_con = self._get_db()
         sql_results = cache_db_con.select(b'SELECT time FROM lastSearch WHERE provider = ?', [self.provider_id])
 
         if sql_results:
@@ -294,7 +314,7 @@ class TVCache(object):
         if not toDate:
             toDate = datetime.datetime.today()
 
-        cache_db_con = self._getDB()
+        cache_db_con = self._get_db()
         cache_db_con.upsert(
             b'lastUpdate',
             {b'time': int(time.mktime(toDate.timetuple()))},
@@ -305,7 +325,7 @@ class TVCache(object):
         if not toDate:
             toDate = datetime.datetime.today()
 
-        cache_db_con = self._getDB()
+        cache_db_con = self._get_db()
         cache_db_con.upsert(
             b'lastSearch',
             {b'time': int(time.mktime(toDate.timetuple()))},
@@ -377,7 +397,7 @@ class TVCache(object):
         return neededEps[episode] if episode in neededEps else []
 
     def listPropers(self, date=None):
-        cache_db_con = self._getDB()
+        cache_db_con = self._get_db()
         sql = b"SELECT * FROM [{provider_id}] WHERE name LIKE '%.PROPER.%' OR name LIKE '%.REPACK.%'".format(provider_id=self.provider_id)
 
         if date is not None:
@@ -390,7 +410,7 @@ class TVCache(object):
         neededEps = {}
         cl = []
 
-        cache_db_con = self._getDB()
+        cache_db_con = self._get_db()
         if not episode:
             sql_results = cache_db_con.select(b'SELECT * FROM [{provider_id}]'.format(provider_id=self.provider_id))
         elif not isinstance(episode, list):
