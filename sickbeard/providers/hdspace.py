@@ -24,7 +24,6 @@ import re
 import traceback
 
 from requests.utils import dict_from_cookiejar
-from requests.compat import quote_plus
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -48,8 +47,8 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         self.url = 'https://hd-space.org'
         self.urls = {
             'base_url': self.url,
-            'login': 'https://hd-space.org/index.php',
-            'search': 'https://hd-space.org/index.php?page=torrents&search=%s&active=1&options=0',
+            'login': 'https://hd-space.org/index.php?page=login',
+            'search': 'https://hd-space.org/index.php?page=torrents&search={0}&active=1&options=0',
             'rss': 'https://hd-space.org/rss_torrents.php?feed=dl',
         }
 
@@ -92,9 +91,9 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
-                    search_url = self.urls['search'] % (quote_plus(search_string.replace('.', ' ')),)
+                    search_url = self.urls['search'].format(search_string)
                 else:
-                    search_url = self.urls['search'] % ''
+                    search_url = self.urls['search'].format('')
 
                 data = self.get_url(search_url, returns='text')
                 if not data or 'please try later' in data:
@@ -105,8 +104,7 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                 # We cut everything before the table that contains the data we are interested in thus eliminating
                 # the invalid html portions
                 try:
-                    data = data.split('<div id="information"></div>')[1]
-                    index = data.index('<table')
+                    index = data.index('<div id="information"')
                 except ValueError:
                     logger.log('Could not find main torrent table', logger.ERROR)
                     continue
@@ -180,7 +178,7 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         login_params = {
             'uid': self.username,
             'pwd': self.password,
-            'page': 'login',
+            'submit': 'Confirm',
         }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
@@ -188,7 +186,7 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
-        if re.search('Password Incorrect', response):
+        if re.search('Automatic log off after 15 minutes inactivity', response):
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
 
