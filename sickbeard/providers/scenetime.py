@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import re
 import traceback
 
-from requests.compat import urljoin, quote
+from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
@@ -45,11 +45,9 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         # URLs
         self.url = 'https://www.scenetime.com'
         self.urls = {
-            'base_url': self.url,
             'login': urljoin(self.url, 'takelogin.php'),
-            'detail': urljoin(self.url, 'details.php?id=%s'),
-            'search': urljoin(self.url, 'browse.php?search=%s%s'),
-            'download': urljoin(self.url, 'download.php/%s/%s'),
+            'search': urljoin(self.url, 'browse.php?search={0}{1}'),
+            'download': urljoin(self.url, 'download.php/{0}/{1}'),
         }
 
         # Proper Strings
@@ -87,7 +85,7 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
 
-                search_url = self.urls['search'] % (quote(search_string), self.categories)
+                search_url = self.urls['search'].format(search_string, self.categories)
 
                 data = self.get_url(search_url, returns='text')
                 if not data:
@@ -120,7 +118,7 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             link = cells[labels.index('Name')].find('a')
                             torrent_id = link['href'].replace('details.php?id=', '').split('&')[0]
                             title = link.get_text(strip=True)
-                            download_url = self.urls['download'] % (torrent_id, '%s.torrent' % title.replace(' ', '.'))
+                            download_url = self.urls['download'].format(torrent_id, '{0}.torrent'.format(title.replace(' ', '.')))
                             if not all([title, download_url]):
                                 continue
 
