@@ -34,61 +34,61 @@ from sickbeard.name_parser.parser import NameParser, InvalidNameException, Inval
 
 
 class CacheDBConnection(db.DBConnection):
-    def __init__(self, provider_name):
+    def __init__(self, provider_id):
         db.DBConnection.__init__(self, 'cache.db')
 
         # Create the table if it's not already there
         try:
-            if not self.hasTable(provider_name):
-                logger.log('Creating cache table for provider {0}'.format(provider_name), logger.DEBUG)
+            if not self.hasTable(provider_id):
+                logger.log('Creating cache table for provider {0}'.format(provider_id), logger.DEBUG)
                 self.action(
-                    b'CREATE TABLE [{provider_name}] (name TEXT, season NUMERIC, episodes TEXT, indexerid NUMERIC, '
-                    b'url TEXT, time NUMERIC, quality NUMERIC, release_group TEXT)'.format(provider_name=provider_name))
+                    b'CREATE TABLE [{provider_id}] (name TEXT, season NUMERIC, episodes TEXT, indexerid NUMERIC, '
+                    b'url TEXT, time NUMERIC, quality NUMERIC, release_group TEXT)'.format(provider_id=provider_id))
             else:
-                sql_results = self.select(b'SELECT url, COUNT(url) AS count FROM [{provider_name}] '
-                                          b'GROUP BY url HAVING count > 1'.format(provider_name=provider_name))
+                sql_results = self.select(b'SELECT url, COUNT(url) AS count FROM [{provider_id}] '
+                                          b'GROUP BY url HAVING count > 1'.format(provider_id=provider_id))
 
                 for cur_dupe in sql_results:
-                    self.action(b'DELETE FROM [{provider_name}] WHERE url = ?'.format(provider_name=provider_name), [cur_dupe[b'url']])
+                    self.action(b'DELETE FROM [{provider_id}] WHERE url = ?'.format(provider_id=provider_id), [cur_dupe[b'url']])
 
             # remove wrong old index
             self.action(b'DROP INDEX IF EXISTS idx_url')
 
             # add unique index to prevent further dupes from happening if one does not exist
-            logger.log(b'Creating UNIQUE URL index for {0}'.format(provider_name), logger.DEBUG)
+            logger.log(b'Creating UNIQUE URL index for {0}'.format(provider_id), logger.DEBUG)
             self.action(b'CREATE UNIQUE INDEX IF NOT EXISTS idx_url_{0}  ON [{1}] (url)'.
-                        format(provider_name, provider_name))
+                        format(provider_id, provider_id))
 
             # add release_group column to table if missing
-            if not self.hasColumn(provider_name, 'release_group'):
-                self.addColumn(provider_name, 'release_group', 'TEXT', '')
+            if not self.hasColumn(provider_id, 'release_group'):
+                self.addColumn(provider_id, 'release_group', 'TEXT', '')
 
             # add version column to table if missing
-            if not self.hasColumn(provider_name, 'version'):
-                self.addColumn(provider_name, 'version', 'NUMERIC', '-1')
+            if not self.hasColumn(provider_id, 'version'):
+                self.addColumn(provider_id, 'version', 'NUMERIC', '-1')
 
             # add seeders column to table if missing
-            if not self.hasColumn(provider_name, 'seeders'):
-                self.addColumn(provider_name, 'seeders', 'NUMERIC', '-1')
+            if not self.hasColumn(provider_id, 'seeders'):
+                self.addColumn(provider_id, 'seeders', 'NUMERIC', '-1')
 
             # add leechers column to table if missing
-            if not self.hasColumn(provider_name, 'leechers'):
-                self.addColumn(provider_name, 'leechers', 'NUMERIC', '-1')
+            if not self.hasColumn(provider_id, 'leechers'):
+                self.addColumn(provider_id, 'leechers', 'NUMERIC', '-1')
 
             # add size column to table if missing
-            if not self.hasColumn(provider_name, 'size'):
-                self.addColumn(provider_name, 'size', 'NUMERIC', '-1')
+            if not self.hasColumn(provider_id, 'size'):
+                self.addColumn(provider_id, 'size', 'NUMERIC', '-1')
 
             # add pubdate column to table if missing
-            if not self.hasColumn(provider_name, 'pubdate'):
-                self.addColumn(provider_name, 'pubdate', 'NUMERIC', '')
+            if not self.hasColumn(provider_id, 'pubdate'):
+                self.addColumn(provider_id, 'pubdate', 'NUMERIC', '')
 
             # add hash column to table if missing
-            if not self.hasColumn(provider_name, 'hash'):
-                self.addColumn(provider_name, 'hash', 'NUMERIC', '')
+            if not self.hasColumn(provider_id, 'hash'):
+                self.addColumn(provider_id, 'hash', 'NUMERIC', '')
 
         except Exception as e:
-            if str(e) != 'table [{provider_name}] already exists'.format(provider_name=provider_name):
+            if str(e) != 'table [{provider_id}] already exists'.format(provider_id=provider_id):
                 raise
 
         # Create the table if it's not already there
@@ -96,8 +96,8 @@ class CacheDBConnection(db.DBConnection):
             if not self.hasTable('lastUpdate'):
                 self.action(b'CREATE TABLE lastUpdate (provider TEXT, time NUMERIC)')
         except Exception as e:
-            logger.log('Error while searching {provider_name}, skipping: {e!r}'.
-                       format(provider_name=self.provider.name, e=e), logger.DEBUG)
+            logger.log('Error while searching {provider_id}, skipping: {e!r}'.
+                       format(provider_id=self.provider.name, e=e), logger.DEBUG)
             logger.log(traceback.format_exc(), logger.DEBUG)
             if str(e) != 'table lastUpdate already exists':
                 raise
