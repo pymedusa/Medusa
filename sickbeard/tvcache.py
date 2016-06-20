@@ -348,7 +348,7 @@ class TVCache(object):
 
         if season is not None and episodes is not None:
             # store episodes as a seperated string
-            episodeText = b'|{0}|'.format(b'|'.join({str(episode) for episode in episodes if episode}))
+            episodeText = '|{0}|'.format('|'.join({str(episode) for episode in episodes if episode}))
 
             # get the current timestamp
             curTimestamp = int(time.mktime(datetime.datetime.today().timetuple()))
