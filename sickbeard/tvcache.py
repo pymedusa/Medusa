@@ -371,7 +371,7 @@ class TVCache(object):
             episodeText = '|{0}|'.format('|'.join({str(episode) for episode in episodes if episode}))
 
             # get the current timestamp
-            curTimestamp = int(time.mktime(datetime.datetime.today().timetuple()))
+            cur_timestamp = int(time.mktime(datetime.datetime.today().timetuple()))
 
             # get quality of release
             quality = parse_result.quality
@@ -389,12 +389,12 @@ class TVCache(object):
             return [
                 b'INSERT OR REPLACE INTO [{provider_id}] (name, season, episodes, indexerid, url, time, quality, release_group, version, seeders, '
                 b'leechers, size, pubdate, hash) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(provider_id=self.provider_id),
-                [name, season, episodeText, parse_result.show.indexerid, url, curTimestamp, quality,
+                [name, season, episodeText, parse_result.show.indexerid, url, cur_timestamp, quality,
                  release_group, version, seeders, leechers, size, pubdate, torrent_hash]]
 
     def searchCache(self, episode, forced_search=False, downCurQuality=False):
-        neededEps = self.findNeededEpisodes(episode, forced_search, downCurQuality)
-        return neededEps[episode] if episode in neededEps else []
+        needed_eps = self.findNeededEpisodes(episode, forced_search, downCurQuality)
+        return needed_eps[episode] if episode in needed_eps else []
 
     def listPropers(self, date=None):
         cache_db_con = self._get_db()
@@ -407,7 +407,7 @@ class TVCache(object):
         return [x for x in propers_results if x[b'indexerid']]
 
     def findNeededEpisodes(self, episode, forced_search=False, downCurQuality=False):  # pylint:disable=too-many-locals, too-many-branches
-        neededEps = {}
+        needed_eps = {}
         cl = []
 
         cache_db_con = self._get_db()
@@ -418,80 +418,80 @@ class TVCache(object):
                 b'SELECT * FROM [{provider_id}] WHERE indexerid = ? AND season = ? AND episodes LIKE ?'.format(provider_id=self.provider_id),
                 [episode.show.indexerid, episode.season, b'%|{0}|%'.format(episode.episode)])
         else:
-            for epObj in episode:
+            for ep_obj in episode:
                 cl.append([
                     b'SELECT * FROM [{0}] WHERE indexerid = ? AND season = ? AND episodes LIKE ? AND quality IN ({1})'.
-                    format(self.provider_id, ','.join([str(x) for x in epObj.wantedQuality])),
-                    [epObj.show.indexerid, epObj.season, b'%|{0}|%'.format(epObj.episode)]])
+                    format(self.provider_id, ','.join([str(x) for x in ep_obj.wantedQuality])),
+                    [ep_obj.show.indexerid, ep_obj.season, b'%|{0}|%'.format(ep_obj.episode)]])
 
             sql_results = cache_db_con.mass_action(cl, fetchall=True)
             sql_results = list(itertools.chain(*sql_results))
 
         # for each cache entry
-        for curResult in sql_results:
+        for cur_result in sql_results:
             # ignored/required words, and non-tv junk
-            if not show_name_helpers.filterBadReleases(curResult[b'name']):
+            if not show_name_helpers.filterBadReleases(cur_result[b'name']):
                 continue
 
             # get the show object, or if it's not one of our shows then ignore it
-            showObj = Show.find(sickbeard.showList, int(curResult[b'indexerid']))
-            if not showObj:
+            show_obj = Show.find(sickbeard.showList, int(cur_result[b'indexerid']))
+            if not show_obj:
                 continue
 
             # skip if provider is anime only and show is not anime
-            if self.provider.anime_only and not showObj.is_anime:
-                logger.log('{0} is not an anime, skiping'.format(showObj.name), logger.DEBUG)
+            if self.provider.anime_only and not show_obj.is_anime:
+                logger.log('{0} is not an anime, skiping'.format(show_obj.name), logger.DEBUG)
                 continue
 
             # get season and ep data (ignoring multi-eps for now)
-            curSeason = int(curResult[b'season'])
-            if curSeason == -1:
+            cur_season = int(cur_result[b'season'])
+            if cur_season == -1:
                 continue
 
-            curEp = curResult[b'episodes'].split('|')[1]
-            if not curEp:
+            cur_ep = cur_result[b'episodes'].split('|')[1]
+            if not cur_ep:
                 continue
 
-            curEp = int(curEp)
+            cur_ep = int(cur_ep)
 
-            curQuality = int(curResult[b'quality'])
-            curReleaseGroup = curResult[b'release_group']
-            curVersion = curResult[b'version']
+            cur_quality = int(cur_result[b'quality'])
+            cur_release_group = cur_result[b'release_group']
+            cur_version = cur_result[b'version']
 
             # if the show says we want that episode then add it to the list
-            if not showObj.wantEpisode(curSeason, curEp, curQuality, forced_search, downCurQuality):
-                logger.log('Ignoring {0}'.format(curResult[b'name']), logger.DEBUG)
+            if not show_obj.wantEpisode(cur_season, cur_ep, cur_quality, forced_search, downCurQuality):
+                logger.log('Ignoring {0}'.format(cur_result[b'name']), logger.DEBUG)
                 continue
 
-            epObj = showObj.getEpisode(curSeason, curEp)
+            ep_obj = show_obj.getEpisode(cur_season, cur_ep)
 
             # build a result object
-            title = curResult[b'name']
-            url = curResult[b'url']
+            title = cur_result[b'name']
+            url = cur_result[b'url']
 
             logger.log('Found result {0} at {1}'.format(title, url))
 
-            result = self.provider.get_result([epObj])
-            result.show = showObj
+            result = self.provider.get_result([ep_obj])
+            result.show = show_obj
             result.url = url
-            result.seeders = curResult[b'seeders']
-            result.leechers = curResult[b'leechers']
-            result.size = curResult[b'size']
-            result.pubdate = curResult[b'pubdate']
-            result.hash = curResult[b'hash']
+            result.seeders = cur_result[b'seeders']
+            result.leechers = cur_result[b'leechers']
+            result.size = cur_result[b'size']
+            result.pubdate = cur_result[b'pubdate']
+            result.hash = cur_result[b'hash']
             result.name = title
-            result.quality = curQuality
-            result.release_group = curReleaseGroup
-            result.version = curVersion
+            result.quality = cur_quality
+            result.release_group = cur_release_group
+            result.version = cur_version
             result.content = None
 
             # add it to the list
-            if epObj not in neededEps:
-                neededEps[epObj] = [result]
+            if ep_obj not in needed_eps:
+                needed_eps[ep_obj] = [result]
             else:
-                neededEps[epObj].append(result)
+                needed_eps[ep_obj].append(result)
 
         # datetime stamp this search so cache gets cleared
         self.setLastSearch()
 
-        return neededEps
+        return needed_eps
