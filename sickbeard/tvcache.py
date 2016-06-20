@@ -34,61 +34,61 @@ from sickbeard.name_parser.parser import NameParser, InvalidNameException, Inval
 
 
 class CacheDBConnection(db.DBConnection):
-    def __init__(self, providerName):
+    def __init__(self, provider_name):
         db.DBConnection.__init__(self, 'cache.db')
 
         # Create the table if it's not already there
         try:
-            if not self.hasTable(providerName):
-                logger.log('Creating cache table for provider {0}'.format(providerName), logger.DEBUG)
+            if not self.hasTable(provider_name):
+                logger.log('Creating cache table for provider {0}'.format(provider_name), logger.DEBUG)
                 self.action(
                     b'CREATE TABLE [{provider_name}] (name TEXT, season NUMERIC, episodes TEXT, indexerid NUMERIC, '
-                    b'url TEXT, time NUMERIC, quality NUMERIC, release_group TEXT)'.format(provider_name=providerName))
+                    b'url TEXT, time NUMERIC, quality NUMERIC, release_group TEXT)'.format(provider_name=provider_name))
             else:
                 sql_results = self.select(b'SELECT url, COUNT(url) AS count FROM [{provider_name}] '
-                                          b'GROUP BY url HAVING count > 1'.format(provider_name=providerName))
+                                          b'GROUP BY url HAVING count > 1'.format(provider_name=provider_name))
 
                 for cur_dupe in sql_results:
-                    self.action(b'DELETE FROM [{provider_name}] WHERE url = ?'.format(provider_name=providerName), [cur_dupe[b'url']])
+                    self.action(b'DELETE FROM [{provider_name}] WHERE url = ?'.format(provider_name=provider_name), [cur_dupe[b'url']])
 
             # remove wrong old index
             self.action(b'DROP INDEX IF EXISTS idx_url')
 
             # add unique index to prevent further dupes from happening if one does not exist
-            logger.log(b'Creating UNIQUE URL index for {0}'.format(providerName), logger.DEBUG)
+            logger.log(b'Creating UNIQUE URL index for {0}'.format(provider_name), logger.DEBUG)
             self.action(b'CREATE UNIQUE INDEX IF NOT EXISTS idx_url_{0}  ON [{1}] (url)'.
-                        format(providerName, providerName))
+                        format(provider_name, provider_name))
 
             # add release_group column to table if missing
-            if not self.hasColumn(providerName, 'release_group'):
-                self.addColumn(providerName, 'release_group', 'TEXT', '')
+            if not self.hasColumn(provider_name, 'release_group'):
+                self.addColumn(provider_name, 'release_group', 'TEXT', '')
 
             # add version column to table if missing
-            if not self.hasColumn(providerName, 'version'):
-                self.addColumn(providerName, 'version', 'NUMERIC', '-1')
+            if not self.hasColumn(provider_name, 'version'):
+                self.addColumn(provider_name, 'version', 'NUMERIC', '-1')
 
             # add seeders column to table if missing
-            if not self.hasColumn(providerName, 'seeders'):
-                self.addColumn(providerName, 'seeders', 'NUMERIC', '-1')
+            if not self.hasColumn(provider_name, 'seeders'):
+                self.addColumn(provider_name, 'seeders', 'NUMERIC', '-1')
 
             # add leechers column to table if missing
-            if not self.hasColumn(providerName, 'leechers'):
-                self.addColumn(providerName, 'leechers', 'NUMERIC', '-1')
+            if not self.hasColumn(provider_name, 'leechers'):
+                self.addColumn(provider_name, 'leechers', 'NUMERIC', '-1')
 
             # add size column to table if missing
-            if not self.hasColumn(providerName, 'size'):
-                self.addColumn(providerName, 'size', 'NUMERIC', '-1')
+            if not self.hasColumn(provider_name, 'size'):
+                self.addColumn(provider_name, 'size', 'NUMERIC', '-1')
 
             # add pubdate column to table if missing
-            if not self.hasColumn(providerName, 'pubdate'):
-                self.addColumn(providerName, 'pubdate', 'NUMERIC', '')
+            if not self.hasColumn(provider_name, 'pubdate'):
+                self.addColumn(provider_name, 'pubdate', 'NUMERIC', '')
 
             # add hash column to table if missing
-            if not self.hasColumn(providerName, 'hash'):
-                self.addColumn(providerName, 'hash', 'NUMERIC', '')
+            if not self.hasColumn(provider_name, 'hash'):
+                self.addColumn(provider_name, 'hash', 'NUMERIC', '')
 
         except Exception as e:
-            if str(e) != 'table [{provider_name}] already exists'.format(provider_name=providerName):
+            if str(e) != 'table [{provider_name}] already exists'.format(provider_name=provider_name):
                 raise
 
         # Create the table if it's not already there
@@ -106,17 +106,17 @@ class CacheDBConnection(db.DBConnection):
 class TVCache(object):
     def __init__(self, provider, **kwargs):
         self.provider = provider
-        self.providerID = self.provider.get_id()
-        self.providerDB = None
+        self.provider_id = self.provider.get_id()
+        self.provider_db = None
         self.minTime = kwargs.pop('min_time', 10)
         self.search_params = kwargs.pop('search_params', dict(RSS=['']))
 
     def _getDB(self):
         # init provider database if not done already
-        if not self.providerDB:
-            self.providerDB = CacheDBConnection(self.providerID)
+        if not self.provider_db:
+            self.provider_db = CacheDBConnection(self.provider_id)
 
-        return self.providerDB
+        return self.provider_db
 
     def _clearCache(self):
         """
@@ -137,11 +137,11 @@ class TVCache(object):
             now = int(time.time())  # current timestamp
             retention_period = now - (days * 86400)
             logger.log('Removing cache entries older than {x} days from {provider}'.format
-                       (x=days, provider=self.providerID))
+                       (x=days, provider=self.provider_id))
             cache_db_con = self._getDB()
             cache_db_con.action(
                 b'DELETE FROM [{provider}] '
-                b'WHERE time < ? '.format(provider=self.providerID),
+                b'WHERE time < ? '.format(provider=self.provider_id),
                 [retention_period]
             )
 
@@ -266,7 +266,7 @@ class TVCache(object):
 
     def _getLastUpdate(self):
         cache_db_con = self._getDB()
-        sql_results = cache_db_con.select(b'SELECT time FROM lastUpdate WHERE provider = ?', [self.providerID])
+        sql_results = cache_db_con.select(b'SELECT time FROM lastUpdate WHERE provider = ?', [self.provider_id])
 
         if sql_results:
             lastTime = int(sql_results[0][b'time'])
@@ -279,7 +279,7 @@ class TVCache(object):
 
     def _getLastSearch(self):
         cache_db_con = self._getDB()
-        sql_results = cache_db_con.select(b'SELECT time FROM lastSearch WHERE provider = ?', [self.providerID])
+        sql_results = cache_db_con.select(b'SELECT time FROM lastSearch WHERE provider = ?', [self.provider_id])
 
         if sql_results:
             lastTime = int(sql_results[0][b'time'])
@@ -298,7 +298,7 @@ class TVCache(object):
         cache_db_con.upsert(
             b'lastUpdate',
             {b'time': int(time.mktime(toDate.timetuple()))},
-            {b'provider': self.providerID}
+            {b'provider': self.provider_id}
         )
 
     def setLastSearch(self, toDate=None):
@@ -309,7 +309,7 @@ class TVCache(object):
         cache_db_con.upsert(
             b'lastSearch',
             {b'time': int(time.mktime(toDate.timetuple()))},
-            {b'provider': self.providerID}
+            {b'provider': self.provider_id}
         )
 
     lastUpdate = property(_getLastUpdate)
@@ -364,11 +364,11 @@ class TVCache(object):
             # get version
             version = parse_result.version
 
-            logger.log('Added RSS item: [{0}] to cache: [{1}]'.format(name, self.providerID), logger.DEBUG)
+            logger.log('Added RSS item: [{0}] to cache: [{1}]'.format(name, self.provider_id), logger.DEBUG)
 
             return [
                 b'INSERT OR REPLACE INTO [{provider_id}] (name, season, episodes, indexerid, url, time, quality, release_group, version, seeders, '
-                b'leechers, size, pubdate, hash) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(provider_id=self.providerID),
+                b'leechers, size, pubdate, hash) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(provider_id=self.provider_id),
                 [name, season, episodeText, parse_result.show.indexerid, url, curTimestamp, quality,
                  release_group, version, seeders, leechers, size, pubdate, torrent_hash]]
 
@@ -378,7 +378,7 @@ class TVCache(object):
 
     def listPropers(self, date=None):
         cache_db_con = self._getDB()
-        sql = b"SELECT * FROM [{provider_id}] WHERE name LIKE '%.PROPER.%' OR name LIKE '%.REPACK.%'".format(provider_id=self.providerID)
+        sql = b"SELECT * FROM [{provider_id}] WHERE name LIKE '%.PROPER.%' OR name LIKE '%.REPACK.%'".format(provider_id=self.provider_id)
 
         if date is not None:
             sql += b' AND time >= {0}'.format(int(time.mktime(date.timetuple())))
@@ -392,16 +392,16 @@ class TVCache(object):
 
         cache_db_con = self._getDB()
         if not episode:
-            sql_results = cache_db_con.select(b'SELECT * FROM [{provider_id}]'.format(provider_id=self.providerID))
+            sql_results = cache_db_con.select(b'SELECT * FROM [{provider_id}]'.format(provider_id=self.provider_id))
         elif not isinstance(episode, list):
             sql_results = cache_db_con.select(
-                b'SELECT * FROM [{provider_id}] WHERE indexerid = ? AND season = ? AND episodes LIKE ?'.format(provider_id=self.providerID),
+                b'SELECT * FROM [{provider_id}] WHERE indexerid = ? AND season = ? AND episodes LIKE ?'.format(provider_id=self.provider_id),
                 [episode.show.indexerid, episode.season, b'%|{0}|%'.format(episode.episode)])
         else:
             for epObj in episode:
                 cl.append([
                     b'SELECT * FROM [{0}] WHERE indexerid = ? AND season = ? AND episodes LIKE ? AND quality IN ({1})'.
-                    format(self.providerID, ','.join([str(x) for x in epObj.wantedQuality])),
+                    format(self.provider_id, ','.join([str(x) for x in epObj.wantedQuality])),
                     [epObj.show.indexerid, epObj.season, b'%|{0}|%'.format(epObj.episode)]])
 
             sql_results = cache_db_con.mass_action(cl, fetchall=True)
