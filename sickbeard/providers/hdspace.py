@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 import re
 import traceback
 
+from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
@@ -46,10 +47,9 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # URLs
         self.url = 'https://hd-space.org'
         self.urls = {
-            'base_url': self.url,
-            'login': 'https://hd-space.org/index.php?page=login',
-            'search': 'https://hd-space.org/index.php?page=torrents&search={0}&active=1&options=0',
-            'rss': 'https://hd-space.org/rss_torrents.php?feed=dl',
+            'login': urljoin(self.url, 'index.php?page=login'),
+            'search': urljoin(self.url, 'index.php?page=torrents&search={0}&active=1&options=0'),
+            'rss': urljoin(self.url, 'rss_torrents.php?feed=dl'),
         }
 
         # Proper Strings
@@ -128,12 +128,12 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                         try:
                             dl_href = result.find('a', attrs={'href': re.compile(r'download.php.*')})['href']
                             title = re.search('f=(.*).torrent', dl_href).group(1).replace('+', '.')
-                            download_url = self.urls['base_url'] + dl_href
+                            download_url = urljoin(self.url, dl_href)
                             if not all([title, download_url]):
                                 continue
 
-                            seeders = int(result.find('span', attrs={'class': 'seedy'}).find('a').text)
-                            leechers = int(result.find('span', attrs={'class': 'leechy'}).find('a').text)
+                            seeders = try_int(result.find('span', attrs={'class': 'seedy'}).find('a').text, 1)
+                            leechers = try_int(result.find('span', attrs={'class': 'leechy'}).find('a').text, 0)
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
