@@ -55,7 +55,7 @@ class CacheDBConnection(db.DBConnection):
             self.action(b'DROP INDEX IF EXISTS idx_url')
 
             # add unique index to prevent further dupes from happening if one does not exist
-            logger.log(b'Creating UNIQUE URL index for {0}'.format(provider_id), logger.DEBUG)
+            logger.log('Creating UNIQUE URL index for {0}'.format(provider_id), logger.DEBUG)
             self.action(b'CREATE UNIQUE INDEX IF NOT EXISTS idx_url_{0}  ON [{1}] (url)'.
                         format(provider_id, provider_id))
 
