@@ -43,8 +43,10 @@ OTHER = 6
 
 
 class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+    """AnimeBytes Torrent provider"""
     def __init__(self):
-        """"Provider Init"""
+
+        # Provider Init
         TorrentProvider.__init__(self, 'AnimeBytes')
 
         # Credentials
@@ -253,7 +255,6 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
                                         items.append(item)
 
                                     # Determine episode, season and type
-
                                     if info.startswith('Episode'):
                                         # show_name = '{0}.{1}'.format(show_title, info)
                                         episode = re.match('^Episode.([0-9]+)', info).group(1)
