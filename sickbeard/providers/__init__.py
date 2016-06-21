@@ -25,7 +25,6 @@ from sickbeard.providers import btn, womble, thepiratebay, torrentleech, kat, ip
     omgwtfnzbs, scc, hdtorrents, torrentday, hdbits, hounddawgs, speedcd, nyaatorrents, bluetigers, xthor, abnormal, torrentbytes, cpasbien,\
     freshontv, morethantv, t411, tokyotoshokan, shazbat, rarbg, alpharatio, tntvillage, binsearch, torrentproject, extratorrent, \
     scenetime, btdigg, transmitthenet, tvchaosuk, bitcannon, pretome, gftracker, hdspace, newpct, elitetorrent, bitsnoop, danishbits, hd4free, limetorrents, \
-    norbits, ilovetorrents, sceneelite, anizb, bithdtv, zooqle
     norbits, ilovetorrents, anizb, bithdtv, zooqle, animebytes
 
 __all__ = [
