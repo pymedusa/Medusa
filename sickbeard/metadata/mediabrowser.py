@@ -21,7 +21,7 @@ import datetime
 import os
 import re
 
-from six import iteritems
+from six import iteritems, string_types
 
 import sickbeard
 from sickbeard import logger, helpers
@@ -360,7 +360,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
             zap2it_id = etree.SubElement(tv_node, 'Zap2ItId')
             zap2it_id.text = my_show['zap2it_id']
 
-        if getattr(my_show, 'genre', None) and isinstance(my_show['genre'], basestring):
+        if getattr(my_show, 'genre', None) and isinstance(my_show['genre'], string_types):
             genres = etree.SubElement(tv_node, 'Genres')
             for genre in my_show['genre'].split('|'):
                 if genre.strip():

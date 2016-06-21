@@ -19,18 +19,20 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import time
 import re
-import os.path
+import time
+
+import dateutil
+from six import string_types
+
 import sickbeard
 from sickbeard.name_parser import regexes
-
 from sickbeard import logger, helpers, scene_numbering, common, scene_exceptions, db
+from sickbeard.helpers import remove_non_release_groups
+
 from sickrage.helper.common import remove_extension
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
-from sickbeard.helpers import remove_non_release_groups
-import dateutil
 
 
 class NameParser(object):
@@ -106,7 +108,7 @@ class NameParser(object):
 
         matches = []
         bestResult = None
-        
+
         # Remove non release groups from filename
         name = remove_non_release_groups(name)
 
@@ -362,7 +364,7 @@ class NameParser(object):
 
     @staticmethod
     def _unicodify(obj, encoding="utf-8"):
-        if isinstance(obj, basestring):
+        if isinstance(obj, string_types):
             if not isinstance(obj, unicode):
                 obj = unicode(obj, encoding, 'replace')
         return obj

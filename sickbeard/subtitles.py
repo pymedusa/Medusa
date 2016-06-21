@@ -29,7 +29,7 @@ import time
 import traceback
 
 from babelfish import Language, language_converters
-from six import iteritems
+from six import iteritems, string_types
 from dogpile.cache.api import NO_VALUE
 from subliminal import (compute_score, ProviderPool, provider_manager, refine, refiner_manager, region, save_subtitles,
                         scan_video)
@@ -162,7 +162,7 @@ def needs_subtitles(subtitles):
     if not wanted:
         return False
 
-    if isinstance(subtitles, basestring):
+    if isinstance(subtitles, string_types):
         subtitles = {subtitle.strip() for subtitle in subtitles.split(',') if subtitle.strip()}
 
     if sickbeard.SUBTITLES_MULTI:
