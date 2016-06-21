@@ -274,7 +274,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                 logger.log('Adding item from search to cache: %s' % title, logger.DEBUG)
                 # pylint: disable=protected-access
                 # Access to a protected member of a client class
-                ci = self.cache._addCacheEntry(title, url, seeders, leechers, size, pubdate, torrent_hash, parse_result=parse_result)
+                ci = self.cache._addCacheEntry(title, url, seeders, leechers, size, pubdate, torrent_hash)
 
                 if ci is not None:
                     cl.append(ci)
