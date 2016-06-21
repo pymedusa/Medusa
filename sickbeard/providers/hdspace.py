@@ -48,19 +48,12 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         self.url = 'https://hd-space.org'
         self.urls = {
             'login': urljoin(self.url, 'index.php?page=login'),
-            'search': urljoin(self.url, 'index.php?page=torrents&search={0}&active=1&options=0'),
-            'rss': urljoin(self.url, 'rss_torrents.php?feed=dl'),
+            'search': urljoin(self.url, 'index.php'),
         }
 
         # Proper Strings
 
         # Miscellaneous Options
-        self.categories = [15, 21, 22, 24, 25, 40]  # HDTV/DOC 1080/720, bluray, remux
-        self.urls['search'] += '&category='
-        for cat in self.categories:
-            self.urls['search'] += str(cat) + '%%3B'
-            self.urls['rss'] += '&cat[]=' + str(cat)
-        self.urls['search'] = self.urls['search'][:-4]  # remove extra %%3B
 
         # Torrent Stats
         self.minseed = None
@@ -82,6 +75,15 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         if not self.login():
             return results
 
+        # Search Params
+        search_params = {
+            'page': 'torrents',
+            'search': '',
+            'active': 0,
+            'options': 0,
+            'category': '15;40;21;22;24;25;27;28',
+        }
+
         for mode in search_strings:
             items = []
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
@@ -91,12 +93,10 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
-                    search_url = self.urls['search'].format(search_string)
-                else:
-                    search_url = self.urls['search'].format('')
+                    search_params['search'] = search_string
 
-                data = self.get_url(search_url, returns='text')
-                if not data or 'please try later' in data:
+                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                if not response or not response.text or 'please try later' in response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
@@ -104,12 +104,12 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                 # We cut everything before the table that contains the data we are interested in thus eliminating
                 # the invalid html portions
                 try:
-                    index = data.index('<div id="information"')
+                    index = response.text.index('<div id="information"')
                 except ValueError:
                     logger.log('Could not find main torrent table', logger.ERROR)
                     continue
 
-                with BS4Parser(data[index:], 'html5lib') as html:
+                with BS4Parser(response.text[index:], 'html5lib') as html:
                     if not html:
                         logger.log('No html data parsed from provider', logger.DEBUG)
                         continue
@@ -121,8 +121,8 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                     # Skip column headers
                     for result in torrents[1:]:
+                        # Skip extraneous rows at the end
                         if len(result.contents) < 10:
-                            # skip extraneous rows at the end
                             continue
 
                         try:
