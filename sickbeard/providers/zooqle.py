@@ -118,11 +118,12 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
 
                             seeders = 1
                             leechers = 0
-                            peers = cells[6].find('div')
-                            if peers and peers.get('title'):
-                                peers = peers['title'].replace(',', '').split(' | ', 1)
-                                seeders = try_int(peers[0].strip('Seeders: '))
-                                leechers = try_int(peers[1].strip('Leechers: '))
+                            if len(cells) > 6:
+                                peers = cells[6].find('div')
+                                if peers and peers.get('title'):
+                                    peers = peers['title'].replace(',', '').split(' | ', 1)
+                                    seeders = try_int(peers[0].strip('Seeders: '))
+                                    leechers = try_int(peers[1].strip('Leechers: '))
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
