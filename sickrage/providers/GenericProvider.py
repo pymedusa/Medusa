@@ -188,7 +188,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             try:
                 parse_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]).parse(title)
             except (InvalidNameException, InvalidShowException) as error:
-                logger.log(u"{}".format(error), logger.DEBUG)
+                logger.log(u"{error}".format(error=error), logger.DEBUG)
                 continue
 
             show_object = parse_result.show
@@ -219,7 +219,9 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                             parse_result.season_number is not None,
                             parse_result.episode_numbers,
                             [ep for ep in episodes if (ep.season, ep.scene_season)[ep.show.is_scene] ==
-                             parse_result.season_number and (ep.episode, ep.scene_episode)[ep.show.is_scene] in parse_result.episode_numbers]
+                             parse_result.season_number and
+                             (ep.episode, ep.scene_episode)[ep.show.is_scene] in
+                             parse_result.episode_numbers]
                         ]):
 
                             logger.log(
