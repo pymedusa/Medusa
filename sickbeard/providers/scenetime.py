@@ -46,21 +46,20 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         self.url = 'https://www.scenetime.com'
         self.urls = {
             'login': urljoin(self.url, 'takelogin.php'),
-            'search': urljoin(self.url, 'browse.php?search={0}{1}'),
+            'search': urljoin(self.url, 'browse.php'),
             'download': urljoin(self.url, 'download.php/{0}/{1}'),
         }
 
         # Proper Strings
 
         # Miscellaneous Options
-        self.categories = '&c2=1&c43=13&c9=1&c63=1&c77=1&c79=1&c100=1&c101=1'
 
         # Torrent Stats
         self.minseed = None
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self)  # only poll SceneTime every 20 minutes max
+        self.cache = tvcache.TVCache(self, min_time=20)  # only poll SceneTime every 20 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
@@ -75,6 +74,19 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         if not self.login():
             return results
 
+        # Search Params
+        search_params = {
+            'c2': 1,  # TV/XviD
+            'c43': 1,  # TV/Packs
+            'c9': 1,  # TV-HD
+            'c63': 1,  # TV/Classic
+            'c77': 1,  # TV/SD
+            'c79': 1,  # Sports
+            'c100': 1,  # TV/Non-English
+            'c83': 1,  # TV/Web-Rip
+            'search': '',
+        }
+
         for mode in search_strings:
             items = []
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
@@ -84,15 +96,14 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
+                    search_params['search'] = search_string
 
-                search_url = self.urls['search'].format(search_string, self.categories)
-
-                data = self.get_url(search_url, returns='text')
-                if not data:
+                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                with BS4Parser(data, 'html5lib') as html:
+                with BS4Parser(response.text, 'html5lib') as html:
                     torrent_table = html.find('div', id='torrenttable')
                     torrent_rows = []
                     if torrent_table:
