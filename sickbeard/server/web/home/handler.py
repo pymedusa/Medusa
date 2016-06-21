@@ -9,7 +9,7 @@ import os
 import time
 
 import adba
-from libtrakt import TraktAPI
+from libtrakt.trakt import TraktApi
 from requests.compat import unquote_plus, quote_plus
 from six import iteritems
 from tornado.routes import route
@@ -431,11 +431,17 @@ class Home(WebRoot):
     @staticmethod
     def getTraktToken(trakt_pin=None):
 
-        trakt_api = TraktAPI(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
-        response = trakt_api.traktToken(trakt_pin)
+        trakt_settings = {"trakt_api_key": sickbeard.TRAKT_API_KEY,
+                          "trakt_api_secret": sickbeard.TRAKT_API_SECRET}
+        trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
+        (access_token, refresh_token) = trakt_api.get_token(sickbeard.TRAKT_REFRESH_TOKEN, trakt_pin=trakt_pin)
+        if access_token:
+            sickbeard.TRAKT_ACCESS_TOKEN = access_token
+            sickbeard.TRAKT_REFRESH_TOKEN = refresh_token
+        response = trakt_api.validate_account()
         if response:
-            return 'Trakt Authorized'
-        return 'Trakt Not Authorized!'
+            return "Trakt Authorized"
+        return "Trakt Not Authorized!"
 
     @staticmethod
     def testTrakt(username=None, blacklist_name=None):
