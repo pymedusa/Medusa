@@ -87,7 +87,7 @@ class BTNProvider(TorrentProvider):
             search_params.update(search_strings)
             logger.log('Search string: {0}'.format(search_strings), logger.DEBUG)
 
-        parsed_json = self._api_call(self.apikey, search_params)
+        parsed_json = self._api_call(self.api_key, search_params)
         if not parsed_json:
             logger.log('No data returned from provider', logger.DEBUG)
             return results
@@ -110,7 +110,7 @@ class BTNProvider(TorrentProvider):
 
                 # +1 because range(1,4) = 1, 2, 3
                 for page in range(1, pages_needed + 1):
-                    parsed_json = self._api_call(self.apikey, search_params, results_per_page, page * results_per_page)
+                    parsed_json = self._api_call(self.api_key, search_params, results_per_page, page * results_per_page)
                     # Note that these are individual requests and might time out individually.
                     # This would result in 'gaps' in the results. There is no way to fix this though.
                     if 'torrents' in parsed_json:
