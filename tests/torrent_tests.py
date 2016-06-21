@@ -35,7 +35,7 @@ from sickbeard.helpers import getURL, make_session
 from sickbeard.providers.bitcannon import BitCannonProvider
 from sickbeard.tv import TVEpisode, TVShow
 import tests.test_lib as test
-import urlparse
+from six.moves.urllib_parse import urljoin
 
 
 class TorrentBasicTests(test.SickbeardTestDBCase):
@@ -99,7 +99,7 @@ class TorrentBasicTests(test.SickbeardTestDBCase):
 
         for row in torrent_rows[1:]:
             try:
-                link = urlparse.urljoin(url, (row.find('div', {'class': 'torrentname'}).find_all('a')[1])['href'])
+                link = urljoin(url, (row.find('div', {'class': 'torrentname'}).find_all('a')[1])['href'])
                 _id = row.get('id')[-7:]
                 title = (row.find('div', {'class': 'torrentname'}).find_all('a')[1]).text \
                     or (row.find('div', {'class': 'torrentname'}).find_all('a')[2]).text

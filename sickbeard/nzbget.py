@@ -22,9 +22,9 @@ from __future__ import unicode_literals
 
 import datetime
 from base64 import standard_b64encode
-import xmlrpclib
 
 from six.moves.http_client import socket
+from six.moves.xmlrpc_client import ServerProxy, ProtocolError
 
 import sickbeard
 from sickbeard import logger
@@ -55,7 +55,7 @@ def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-sta
         sickbeard.NZBGET_PASSWORD,
         sickbeard.NZBGET_HOST)
 
-    nzbGetRPC = xmlrpclib.ServerProxy(url)
+    nzbGetRPC = ServerProxy(url)
     try:
         if nzbGetRPC.writelog('INFO', 'SickRage connected to drop off {} any moment now.'.format(nzb.name + '.nzb')):
             logger.log('Successful connected to NZBget', logger.DEBUG)
@@ -68,7 +68,7 @@ def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-sta
             logger.WARNING)
         return False
 
-    except xmlrpclib.ProtocolError as e:
+    except ProtocolError as e:
         if e.errmsg == 'Unauthorized':
             logger.log('NZBget username or password is incorrect.', logger.WARNING)
         else:
@@ -107,7 +107,8 @@ def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-sta
     logger.log('URL: ' + url, logger.DEBUG)
 
     try:
-        # Find out if nzbget supports priority (Version 9.0+), old versions beginning with a 0.x will use the old command
+        # Find out if nzbget supports priority (Version 9.0+),
+        # old versions beginning with a 0.x will use the old command
         nzbget_version_str = nzbGetRPC.version()
         nzbget_version = try_int(nzbget_version_str[:nzbget_version_str.find('.')])
         if nzbget_version == 0:

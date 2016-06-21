@@ -25,19 +25,19 @@ Custom Logger for SickRage
 from __future__ import unicode_literals
 
 import io
-import os
-import re
-import sys
+import locale
 import logging
-import logging.handlers
 from logging import NullHandler
+from logging.handlers import RotatingFileHandler
+import os
 import pkgutil
 import platform
-import locale
-import sickrage
-import subliminal
-import tornado
+import re
+import sys
 import traceback
+
+import tornado
+import subliminal
 
 from requests.compat import quote
 from github import Github, InputFileContent  # pylint: disable=import-error
@@ -45,8 +45,8 @@ from github import Github, InputFileContent  # pylint: disable=import-error
 import sickbeard
 from sickbeard import classes
 
-from sickrage.helper.encoding import ss
-from sickrage.helper.encoding import ek
+import sickrage
+from sickrage.helper.encoding import ss, ek
 from sickrage.helper.exceptions import ex
 from sickrage.helper.common import dateTimeFormat
 
@@ -276,7 +276,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         # rotating log file handler
         if self.file_logging:
 
-            rfh = logging.handlers.RotatingFileHandler(
+            rfh = RotatingFileHandler(
                 self.log_file, maxBytes=int(sickbeard.LOG_SIZE * 1048576), backupCount=sickbeard.LOG_NR,
                 encoding='utf-8')
             rfh.setFormatter(CensoredFormatter(file_log_pattern, dateTimeFormat))

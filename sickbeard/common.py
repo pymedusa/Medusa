@@ -30,6 +30,8 @@ import platform
 import re
 import uuid
 
+from six import PY3
+from six.moves import reduce
 from fake_useragent import (
     settings as UA_SETTINGS,
     UserAgent,
@@ -42,6 +44,9 @@ from sickbeard.numdict import NumDict
 from sickrage.helper.encoding import ek
 from sickrage.tagger.episode import EpisodeTags
 from sickrage.recompiled import tags
+
+if PY3:
+    long = int
 
 # If some provider has an issue with functionality of SR, other than user
 # agents, it's best to come talk to us rather than block.  It is no different

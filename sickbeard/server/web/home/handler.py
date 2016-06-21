@@ -3,20 +3,21 @@
 from __future__ import unicode_literals
 
 import ast
-import datetime
 from datetime import date
 import json
 import os
 import time
+
 import adba
 from libtrakt import TraktAPI
 from requests.compat import unquote_plus, quote_plus
 from tornado.routes import route
+
 import sickbeard
 from sickbeard import (
     clients, config, db, helpers, logger,
     notifiers, sab, search_queue,
-    subtitles, ui, show_name_helpers
+    subtitles, ui, show_name_helpers,
 )
 from sickbeard.blackandwhitelist import BlackAndWhiteList, short_group_names
 from sickbeard.common import (
@@ -27,6 +28,11 @@ from sickbeard.manual_search import (
     collectEpisodesFromSearchThread, get_provider_cache_results, getEpisode, update_finished_search_queue_item,
     SEARCH_STATUS_FINISHED, SEARCH_STATUS_SEARCHING, SEARCH_STATUS_QUEUED,
 )
+from sickbeard.scene_exceptions import (
+    get_scene_exceptions,
+    get_all_scene_exceptions,
+    update_scene_exceptions,
+)
 from sickbeard.scene_numbering import (
     get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
     get_scene_numbering, get_scene_numbering_for_show,
@@ -34,6 +40,8 @@ from sickbeard.scene_numbering import (
     set_scene_numbering,
 )
 from sickbeard.versionChecker import CheckVersion
+from sickbeard.server.web.core import WebRoot, PageTemplate
+
 from sickrage.helper.common import (
     try_int, enabled_providers,
 )
@@ -48,7 +56,6 @@ from sickrage.helper.exceptions import (
 from sickrage.show.Show import Show
 from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
-from sickbeard.server.web.core import WebRoot, PageTemplate
 
 
 @route('/home(/?.*)')
@@ -674,10 +681,10 @@ class Home(WebRoot):
         :return: A json with the scene exceptions per season.
         """
         return json.dumps({
-            'seasonExceptions': sickbeard.scene_exceptions.get_all_scene_exceptions(indexer_id),
+            'seasonExceptions': get_all_scene_exceptions(indexer_id),
             'xemNumbering': {tvdb_season_ep[0]: anidb_season_ep[0]
                              for (tvdb_season_ep, anidb_season_ep)
-                             in get_xem_numbering_for_show(indexer_id, indexer).iteritems()}
+                             in iteritems(get_xem_numbering_for_show(indexer_id, indexer))}
         })
 
     def displayShow(self, show=None):
@@ -834,7 +841,7 @@ class Home(WebRoot):
         if show_obj.is_anime:
             bwl = show_obj.release_groups
 
-        show_obj.exceptions = sickbeard.scene_exceptions.get_scene_exceptions(show_obj.indexerid)
+        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid)
 
         indexerid = int(show_obj.indexerid)
         indexer = int(show_obj.indexer)
@@ -1140,7 +1147,7 @@ class Home(WebRoot):
         if show_obj.is_anime:
             bwl = show_obj.release_groups
 
-        show_obj.exceptions = sickbeard.scene_exceptions.get_scene_exceptions(show_obj.indexerid)
+        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid)
 
         indexer_id = int(show_obj.indexerid)
         indexer = int(show_obj.indexer)
@@ -1212,7 +1219,7 @@ class Home(WebRoot):
 
     @staticmethod
     def sceneExceptions(show):
-        exceptions_list = sickbeard.scene_exceptions.get_all_scene_exceptions(show)
+        exceptions_list = get_all_scene_exceptions(show)
         if not exceptions_list:
             return 'No scene exceptions'
 
@@ -1250,7 +1257,7 @@ class Home(WebRoot):
             else:
                 return self._genericMessage('Error', error_string)
 
-        show_obj.exceptions = sickbeard.scene_exceptions.get_scene_exceptions(show_obj.indexerid)
+        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid)
 
         if try_int(quality_preset, None):
             preferred_qualities = []
@@ -1273,7 +1280,7 @@ class Home(WebRoot):
 
             with show_obj.lock:
                 show = show_obj
-                scene_exceptions = sickbeard.scene_exceptions.get_scene_exceptions(show_obj.indexerid)
+                scene_exceptions = get_scene_exceptions(show_obj.indexerid)
 
             if show_obj.is_anime:
                 return t.render(show=show, scene_exceptions=scene_exceptions, groups=groups, whitelist=whitelist,
@@ -1407,7 +1414,7 @@ class Home(WebRoot):
 
         if do_update_exceptions:
             try:
-                sickbeard.scene_exceptions.update_scene_exceptions(show_obj.indexerid, exceptions_list)  # @UndefinedVdexerid)
+                update_scene_exceptions(show_obj.indexerid, exceptions_list)  # @UndefinedVdexerid)
                 time.sleep(cpu_presets[sickbeard.CPU_PRESET])
             except CantUpdateShowException:
                 errors.append('Unable to force an update on scene exceptions of the show.')

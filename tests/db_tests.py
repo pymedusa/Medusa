@@ -82,7 +82,7 @@ class DBMultiTests(test.SickbeardTestDBCase):
         """
         Test multi-threaded selection from the database
         """
-        for _ in xrange(4):
+        for _ in range(4):
             thread = threading.Thread(target=self.select)
             thread.start()
 

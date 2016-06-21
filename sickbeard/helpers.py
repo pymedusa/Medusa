@@ -18,56 +18,49 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 # pylint:disable=too-many-lines
 
-import os
-import io
+import ast
+import base64
 import ctypes
+import datetime
+import errno
+import hashlib
+import io
+from itertools import izip, cycle
+import operator
+import os
+import platform
+import random
 import re
+import shutil
 import socket
+from socket import timeout as SocketTimeout
 import ssl
 import stat
 import tempfile
 import time
 import traceback
 import uuid
-import base64
+import xml.etree.ElementTree as ET
 import zipfile
-import datetime
-import errno
-import ast
-import operator
-import platform
-import sickbeard
-import adba
-import requests
-import certifi
-import hashlib
-import random
-from contextlib import closing
-from socket import timeout as SocketTimeout
 
+import adba
+from cachecontrol import CacheControl
+import certifi
+from contextlib2 import suppress, closing
+import requests
 from requests.compat import urlparse
+import shutil_custom
 from six.moves import http_client
 
-from sickbeard import logger, classes
+import sickbeard
+from sickbeard import db, logger, classes
 from sickbeard.common import USER_AGENT
-from sickbeard import db
+
 from sickrage.helper.common import (http_code_description, media_extensions, pretty_file_size,
                                     subtitle_extensions, episode_num, remove_strings)
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
-from cachecontrol import CacheControl
-# from httpcache import CachingHTTPAdapter
-
-from itertools import izip, cycle
-from contextlib2 import suppress
-
-import shutil
-import shutil_custom
-
-import xml.etree.ElementTree as ET
-
-shutil.copyfile = shutil_custom.copyfile_custom
 
 try:
     import urllib
@@ -79,6 +72,8 @@ try:
     from urllib.parse import splittype
 except ImportError:
     from urllib2 import splittype
+
+shutil.copyfile = shutil_custom.copyfile_custom
 
 
 def fixGlob(path):
