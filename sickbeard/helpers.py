@@ -50,7 +50,7 @@ from contextlib2 import suppress, closing
 import requests
 from requests.compat import urlparse
 import shutil_custom
-from six import iteritems
+from six import iteritems, text_type
 from six.moves import http_client
 
 import sickbeard
@@ -413,7 +413,7 @@ def link(src, dst):
     """
 
     if os.name == 'nt':
-        if ctypes.windll.kernel32.CreateHardLinkW(unicode(dst), unicode(src), 0) == 0:
+        if ctypes.windll.kernel32.CreateHardLinkW(text_type(dst), text_type(src), 0) == 0:
             raise ctypes.WinError()
     else:
         ek(os.link, src, dst)
@@ -445,7 +445,7 @@ def symlink(src, dst):
     """
 
     if os.name == 'nt':
-        if ctypes.windll.kernel32.CreateSymbolicLinkW(unicode(dst), unicode(src), 1 if ek(os.path.isdir, src) else 0) in [0, 1280]:
+        if ctypes.windll.kernel32.CreateSymbolicLinkW(text_type(dst), text_type(src), 1 if ek(os.path.isdir, src) else 0) in [0, 1280]:
             raise ctypes.WinError()
     else:
         ek(os.symlink, src, dst)
@@ -837,8 +837,8 @@ def create_https_certificates(ssl_cert, ssl_key):
     :return: True on success, False on failure
     """
 
-    # assert isinstance(ssl_key, unicode)
-    # assert isinstance(ssl_cert, unicode)
+    # assert isinstance(ssl_key, text_type)
+    # assert isinstance(ssl_cert, text_type)
 
     try:
         from OpenSSL import crypto  # @UnresolvedImport
@@ -1111,7 +1111,7 @@ def is_hidden_folder(folder):
 
     def has_hidden_attribute(filepath):
         try:
-            attrs = ctypes.windll.kernel32.GetFileAttributesW(unicode(filepath))
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(text_type(filepath))
             assert attrs != -1
             result = bool(attrs & 2)
         except (AttributeError, AssertionError):
@@ -1422,12 +1422,12 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
 
         if params and isinstance(params, (list, dict)):
             for param in params:
-                if isinstance(params[param], unicode):
+                if isinstance(params[param], text_type):
                     params[param] = params[param].encode('utf-8')
 
         if post_data and isinstance(post_data, (list, dict)):
             for param in post_data:
-                if isinstance(post_data[param], unicode):
+                if isinstance(post_data[param], text_type):
                     post_data[param] = post_data[param].encode('utf-8')
 
         resp = session.request(

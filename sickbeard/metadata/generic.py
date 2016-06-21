@@ -22,7 +22,7 @@ import os
 import io
 import re
 
-from six import iterkeys
+from six import iterkeys, text_type
 from tmdb_api.tmdb_api import TMDB
 
 import sickbeard
@@ -117,7 +117,7 @@ class GenericMetadata(object):
     @staticmethod
     def _check_exists(location):
         if location:
-            assert isinstance(location, unicode)
+            assert isinstance(location, text_type)
             result = ek(os.path.isfile, location)
             logger.log(u"Checking if " + location + " exists: " + str(result), logger.DEBUG)
             return result
@@ -174,7 +174,7 @@ class GenericMetadata(object):
         Returns the path where the episode thumbnail should be stored.
         ep_obj: a TVEpisode instance for which to create the thumbnail
         """
-        assert isinstance(ep_obj.location, unicode)
+        assert isinstance(ep_obj.location, text_type)
         if ek(os.path.isfile, ep_obj.location):
 
             tbn_filename = ep_obj.location.rpartition(".")
@@ -266,7 +266,7 @@ class GenericMetadata(object):
                 logger.DEBUG)
 
             nfo_file_path = self.get_show_file_path(show_obj)
-            assert isinstance(nfo_file_path, unicode)
+            assert isinstance(nfo_file_path, text_type)
 
             try:
                 with io.open(nfo_file_path, 'rb') as xmlFileObj:
@@ -398,7 +398,7 @@ class GenericMetadata(object):
             return False
 
         nfo_file_path = self.get_show_file_path(show_obj)
-        assert isinstance(nfo_file_path, unicode)
+        assert isinstance(nfo_file_path, text_type)
 
         nfo_file_dir = ek(os.path.dirname, nfo_file_path)
 
@@ -444,7 +444,7 @@ class GenericMetadata(object):
             return False
 
         nfo_file_path = self.get_episode_file_path(ep_obj)
-        assert isinstance(nfo_file_path, unicode)
+        assert isinstance(nfo_file_path, text_type)
         nfo_file_dir = ek(os.path.dirname, nfo_file_path)
 
         try:
@@ -683,7 +683,7 @@ class GenericMetadata(object):
         image_path: file location to save the image to
         """
 
-        assert isinstance(image_path, unicode)
+        assert isinstance(image_path, text_type)
 
         # don't bother overwriting it
         if ek(os.path.isfile, image_path):
@@ -894,7 +894,7 @@ class GenericMetadata(object):
 
         empty_return = (None, None, None)
 
-        assert isinstance(folder, unicode)
+        assert isinstance(folder, text_type)
 
         metadata_path = ek(os.path.join, folder, self._show_metadata_filename)
 

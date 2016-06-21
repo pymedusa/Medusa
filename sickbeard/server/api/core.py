@@ -33,7 +33,7 @@ import time
 import traceback
 
 from requests.compat import unquote_plus
-from six import iteritems
+from six import iteritems, text_type
 from tornado.web import RequestHandler
 
 import sickbeard
@@ -1401,7 +1401,7 @@ class CMD_SickBeardAddRootDir(ApiCall):
 
         root_dirs_new = [unquote_plus(x) for x in root_dirs]
         root_dirs_new.insert(0, index)
-        root_dirs_new = '|'.join(unicode(x) for x in root_dirs_new)
+        root_dirs_new = '|'.join(text_type(x) for x in root_dirs_new)
 
         sickbeard.ROOT_DIRS = root_dirs_new
         return _responds(RESULT_SUCCESS, _get_root_dirs(), msg="Root directories updated")
@@ -1504,7 +1504,7 @@ class CMD_SickBeardDeleteRootDir(ApiCall):
         root_dirs_new = [unquote_plus(x) for x in root_dirs_new]
         if root_dirs_new:
             root_dirs_new.insert(0, new_index)
-        root_dirs_new = "|".join(unicode(x) for x in root_dirs_new)
+        root_dirs_new = "|".join(text_type(x) for x in root_dirs_new)
 
         sickbeard.ROOT_DIRS = root_dirs_new
         # what if the root dir was not found?
@@ -1703,7 +1703,7 @@ class CMD_SickBeardSearchIndexers(ApiCall):
 
                 # found show
                 results = [{indexer_ids[_indexer]: int(my_show.data['id']),
-                            "name": unicode(my_show.data['seriesname']),
+                            "name": text_type(my_show.data['seriesname']),
                             "first_aired": my_show.data['firstaired'],
                             "indexer": int(_indexer)}]
                 break

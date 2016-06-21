@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from six import text_type
+
 from sickrage.helper.encoding import ss
 
 
@@ -33,7 +35,7 @@ def ex(e):
 
     for arg in e.args:
         if arg is not None:
-            if isinstance(arg, (str, unicode)):
+            if isinstance(arg, (str, text_type)):
                 fixed_arg = ss(arg)
             else:
                 try:
@@ -49,8 +51,8 @@ def ex(e):
                         message = u'{} : {}'.format(message, fixed_arg)
                     except UnicodeError:
                         message = u'{} : {}'.format(
-                            unicode(message, errors='replace'),
-                            unicode(fixed_arg, errors='replace'))
+                            text_type(message, errors='replace'),
+                            text_type(fixed_arg, errors='replace'))
 
     return message
 

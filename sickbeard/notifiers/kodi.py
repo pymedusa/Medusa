@@ -24,6 +24,7 @@ import json
 import time
 
 from requests.compat import urlencode, unquote, unquote_plus, quote
+from six import text_type
 from six.moves.urllib.request import Request, urlopen
 from six.moves.urllib.error import URLError
 from six.moves.http_client import BadStatusLine
@@ -215,7 +216,7 @@ class Notifier(object):
             return False
 
         for key in command:
-            if isinstance(command[key], unicode):
+            if isinstance(command[key], text_type):
                 command[key] = command[key].encode('utf-8')
 
         enc_command = urlencode(command)

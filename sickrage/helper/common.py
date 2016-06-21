@@ -20,10 +20,13 @@
 from __future__ import unicode_literals
 
 import re
-import sickbeard
 from fnmatch import fnmatch
 import logging
 import traceback
+
+from six import text_type
+
+import sickbeard
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +140,7 @@ def is_sync_file(filename):
     :return: ``True`` if the ``filename`` is a sync file, ``False`` otherwise
     """
 
-    if isinstance(filename, (str, unicode)):
+    if isinstance(filename, (str, text_type)):
         extension = filename.rpartition('.')[2].lower()
 
         return extension in sickbeard.SYNC_FILES.split(',') or \
@@ -154,7 +157,7 @@ def is_torrent_or_nzb_file(filename):
     :return: ``True`` if the ``filename`` is a NZB file or a torrent file, ``False`` otherwise
     """
 
-    if not isinstance(filename, (str, unicode)):
+    if not isinstance(filename, (str, text_type)):
         return False
 
     return filename.rpartition('.')[2].lower() in ['nzb', 'torrent']
@@ -247,7 +250,7 @@ def remove_extension(filename):
     :return: The ``filename`` without its extension.
     """
 
-    if isinstance(filename, (str, unicode)) and '.' in filename:
+    if isinstance(filename, (str, text_type)) and '.' in filename:
         basename, _, extension = filename.rpartition('.')
 
         if basename and extension.lower() in ['nzb', 'torrent'] + media_extensions:
@@ -264,7 +267,7 @@ def replace_extension(filename, new_extension):
     :return: The ``filename`` with the new extension
     """
 
-    if isinstance(filename, (str, unicode)) and '.' in filename:
+    if isinstance(filename, (str, text_type)) and '.' in filename:
         basename, _, _ = filename.rpartition('.')
 
         if basename:
@@ -280,7 +283,7 @@ def sanitize_filename(filename):
     :return: The ``filename``cleaned
     """
 
-    if isinstance(filename, (str, unicode)):
+    if isinstance(filename, (str, text_type)):
         filename = re.sub(r'[\\/\*]', '-', filename)
         filename = re.sub(r'[:"<>|?]', '', filename)
         filename = re.sub(r'™', '', filename)  # Trade Mark Sign unicode: \u2122
@@ -327,7 +330,7 @@ def episode_num(season=None, episode=None, **kwargs):
             return '{0:0>3}'.format(season or episode)
 
 def enabled_providers(search_type):
-    """ 
+    """
     Return providers based on search type: daily, backlog and manualsearch
     """
     return [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
@@ -350,5 +353,5 @@ def remove_strings(old_string, unwanted_strings):
     for item in unwanted_strings:
         old_string = old_string.replace(item, '')
     return old_string
-        
-    
+
+

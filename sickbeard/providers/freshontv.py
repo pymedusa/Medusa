@@ -24,6 +24,7 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
+from six import text_type
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -130,7 +131,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                     for i in range(1, max_page_number):
 
                         time.sleep(1)
-                        page_search_url = search_url + '&page=' + unicode(i)
+                        page_search_url = search_url + '&page=' + text_type(i)
                         # '.log('Search string: ' + page_search_url, logger.DEBUG)
                         page_html = self.get_url(page_search_url, returns='text')
 
@@ -159,7 +160,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                 title = individual_torrent.find('a', class_='torrent_name_link')['title']
                                 details_url = individual_torrent.find('a', class_='torrent_name_link')['href']
                                 torrent_id = int((re.match('.*?([0-9]+)$', details_url).group(1)).strip())
-                                download_url = self.urls['download'] % (unicode(torrent_id))
+                                download_url = self.urls['download'] % (text_type(torrent_id))
                                 if not all([title, download_url]):
                                     continue
 
@@ -175,7 +176,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                     continue
 
                                 torrent_size = individual_torrent.find('td', class_='table_size').get_text(strip=True)
-                                torrent_size = re.split('(\d+.?\d+)', unicode(torrent_size), 1)
+                                torrent_size = re.split('(\d+.?\d+)', text_type(torrent_size), 1)
                                 torrent_size = '{0} {1}'.format(torrent_size[1], torrent_size[2])
                                 size = convert_size(torrent_size) or -1
 

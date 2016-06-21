@@ -29,7 +29,7 @@ import time
 import traceback
 
 from babelfish import Language, language_converters
-from six import iteritems, string_types
+from six import iteritems, string_types, text_type
 from dogpile.cache.api import NO_VALUE
 from subliminal import (compute_score, ProviderPool, provider_manager, refine, refiner_manager, region, save_subtitles,
                         scan_video)
@@ -509,7 +509,7 @@ def get_subtitle_description(subtitle):
     :rtype: str
     """
     desc = None
-    sub_id = unicode(subtitle.id)
+    sub_id = text_type(subtitle.id)
     if hasattr(subtitle, 'filename') and subtitle.filename:
         desc = subtitle.filename.lower()
     elif hasattr(subtitle, 'name') and subtitle.name:
@@ -517,7 +517,7 @@ def get_subtitle_description(subtitle):
     if hasattr(subtitle, 'release') and subtitle.release:
         desc = subtitle.release.lower()
     if hasattr(subtitle, 'releases') and subtitle.releases:
-        desc = unicode(subtitle.releases).lower()
+        desc = text_type(subtitle.releases).lower()
 
     if not desc:
         desc = sub_id

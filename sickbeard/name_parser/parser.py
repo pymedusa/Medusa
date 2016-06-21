@@ -23,7 +23,7 @@ import re
 import time
 
 import dateutil
-from six import string_types
+from six import string_types, text_type
 
 import sickbeard
 from sickbeard.name_parser import regexes
@@ -365,8 +365,8 @@ class NameParser(object):
     @staticmethod
     def _unicodify(obj, encoding="utf-8"):
         if isinstance(obj, string_types):
-            if not isinstance(obj, unicode):
-                obj = unicode(obj, encoding, 'replace')
+            if not isinstance(obj, text_type):
+                obj = text_type(obj, encoding, 'replace')
         return obj
 
     @staticmethod
