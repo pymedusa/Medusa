@@ -22,6 +22,7 @@ import os
 import io
 import re
 
+from six import iterkeys
 from tmdb_api.tmdb_api import TMDB
 
 import sickbeard
@@ -33,7 +34,6 @@ from sickbeard.show_name_helpers import allPossibleShowNames
 from sickrage.helper.common import replace_extension
 from sickrage.helper.exceptions import ex
 from sickrage.helper.encoding import ek
-
 
 try:
     import xml.etree.cElementTree as etree
@@ -320,7 +320,7 @@ class GenericMetadata(object):
     def create_season_posters(self, show_obj):
         if self.season_posters and show_obj:
             result = []
-            for season, _ in show_obj.episodes.iteritems():  # @UnusedVariable
+            for season in iterkeys(show_obj.episodes):
                 if not self._has_season_poster(show_obj, season):
                     logger.log(u"Metadata provider " + self.name + " creating season posters for " + show_obj.name,
                                logger.DEBUG)
@@ -332,7 +332,7 @@ class GenericMetadata(object):
         if self.season_banners and show_obj:
             result = []
             logger.log(u"Metadata provider " + self.name + " creating season banners for " + show_obj.name, logger.DEBUG)
-            for season, _ in show_obj.episodes.iteritems():  # @UnusedVariable
+            for season in iterkeys(show_obj.episodes):  # @UnusedVariable
                 if not self._has_season_banner(show_obj, season):
                     result = result + [self.save_season_banners(show_obj, season)]
             return all(result)

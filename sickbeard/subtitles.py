@@ -18,27 +18,30 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+
 import datetime
 import logging
 import operator
 import os
 import re
-import sickbeard
 import subprocess
-import traceback
 import time
+import traceback
 
 from babelfish import Language, language_converters
+from six import iteritems
 from dogpile.cache.api import NO_VALUE
-from sickbeard.common import cpu_presets
-from sickrage.helper.common import dateTimeFormat, episode_num, subtitle_extensions
-from sickrage.helper.exceptions import ex
-from sickrage.show.Show import Show
 from subliminal import (compute_score, ProviderPool, provider_manager, refine, refiner_manager, region, save_subtitles,
                         scan_video)
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
+
+import sickbeard
+from sickbeard.common import cpu_presets
+from sickrage.helper.common import dateTimeFormat, episode_num, subtitle_extensions
+from sickrage.helper.exceptions import ex
+from sickrage.show.Show import Show
 
 from . import db, history, processTV
 from .helpers import isMediaFile, isRarFile, remove_non_release_groups
@@ -556,7 +559,7 @@ def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles
     payload = {'subtitles_dir': subtitles_dir, 'subtitles': subtitles, 'embedded_subtitles': embedded_subtitles,
                'release_name': release_name}
     cached_payload = region.get(key, expiration_time=VIDEO_EXPIRATION_TIME)
-    if cached_payload != NO_VALUE and {k: v for k, v in cached_payload.iteritems() if k != 'video'} == payload:
+    if cached_payload != NO_VALUE and {k: v for k, v in iteritems(cached_payload) if k != 'video'} == payload:
         logger.debug(u'Found cached video information under key %s', key)
         return cached_payload['video']
 
@@ -723,7 +726,7 @@ class SubtitlesFinder(object):
 
                 if not isMediaFile(filename):
                     continue
-                
+
                 filename = clear_non_release_groups(root, filename)
                 video_path = os.path.join(root, filename)
 

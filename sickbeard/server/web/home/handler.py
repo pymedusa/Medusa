@@ -11,6 +11,7 @@ import time
 import adba
 from libtrakt import TraktAPI
 from requests.compat import unquote_plus, quote_plus
+from six import iteritems
 from tornado.routes import route
 
 import sickbeard
@@ -999,7 +1000,7 @@ class Home(WebRoot):
 
         sql_episode = '' if manual_search_type == 'season' else episode
 
-        for provider, last_update in last_prov_updates.iteritems():
+        for provider, last_update in iteritems(last_prov_updates):
             table_exists = main_db_con.select(
                 b'SELECT name '
                 b'FROM sqlite_master '
@@ -1224,7 +1225,7 @@ class Home(WebRoot):
             return 'No scene exceptions'
 
         out = []
-        for season, names in iter(sorted(exceptions_list.iteritems())):
+        for season, names in iter(sorted(iteritems(exceptions_list))):
             if season == -1:
                 season = '*'
             out.append('S{season}: {names}'.format(season=season, names=', '.join(names)))
@@ -1726,7 +1727,7 @@ class Home(WebRoot):
             msg = 'Backlog was automatically started for the following seasons of <b>{show}</b>:<br>'.format(show=show_obj.name)
             msg += '<ul>'
 
-            for season, segment in segments.iteritems():
+            for season, segment in iteritems(segments):
                 cur_backlog_queue_item = search_queue.BacklogQueueItem(show_obj, segment)
                 sickbeard.searchQueueScheduler.action.add_item(cur_backlog_queue_item)
 
@@ -1748,7 +1749,7 @@ class Home(WebRoot):
             msg = 'Retrying Search was automatically started for the following season of <b>{show}</b>:<br>'.format(show=show_obj.name)
             msg += '<ul>'
 
-            for season, segment in segments.iteritems():
+            for season, segment in iteritems(segments):
                 cur_failed_queue_item = search_queue.FailedQueueItem(show_obj, segment)
                 sickbeard.searchQueueScheduler.action.add_item(cur_failed_queue_item)
 

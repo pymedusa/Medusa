@@ -23,6 +23,7 @@ import datetime
 import re
 
 from requests.compat import urlsplit
+from six import iteritems
 from six.moves.urllib.parse import uses_netloc, urlunsplit
 
 import sickbeard
@@ -599,7 +600,7 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
             config[cfg_name] = {}
             config[cfg_name][item_name] = helpers.encrypt(my_val, encryption_version)
 
-    if privacy_level >= censor_level or (cfg_name, item_name) in logger.censored_items.iteritems():
+    if privacy_level >= censor_level or (cfg_name, item_name) in iteritems(logger.censored_items):
         if not item_name.endswith('custom_url'):
             logger.censored_items[cfg_name, item_name] = my_val
 

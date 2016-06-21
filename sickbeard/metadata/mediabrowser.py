@@ -21,11 +21,11 @@ import datetime
 import os
 import re
 
+from six import iteritems
+
 import sickbeard
-
-from sickbeard.metadata import generic
-
 from sickbeard import logger, helpers
+from sickbeard.metadata import generic
 
 from sickrage.helper.common import dateFormat, replace_extension, episode_num
 from sickrage.helper.encoding import ek
@@ -568,7 +568,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
                 persons_dict['Writer'] += [x.strip() for x in my_ep['writer'].split('|') if x.strip()]
 
         # fill in Persons section with collected directors, guest starts and writers
-        for person_type, names in persons_dict.iteritems():
+        for person_type, names in iteritems(persons_dict):
             # remove doubles
             names = list(set(names))
             for cur_name in names:

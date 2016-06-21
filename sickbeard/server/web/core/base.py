@@ -14,6 +14,7 @@ from mako.lookup import TemplateLookup
 from mako.runtime import UNDEFINED
 from mako.template import Template as MakoTemplate
 from requests.compat import urljoin
+from six import iteritems
 from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
 from tornado.gen import coroutine
@@ -21,11 +22,13 @@ from tornado.ioloop import IOLoop
 from tornado.process import cpu_count
 from tornado.routes import route
 from tornado.web import RequestHandler, HTTPError, authenticated
+
 import sickbeard
 from sickbeard import (
     classes, db, helpers, logger, network_timezones, ui
 )
 from sickbeard.server.api.core import function_mapper
+
 from sickrage.helper.encoding import ek
 from sickrage.media.ShowBanner import ShowBanner
 from sickrage.media.ShowFanArt import ShowFanArt
@@ -258,7 +261,7 @@ class WebHandler(BaseHandler):
     def async_call(self, function):
         try:
             kwargs = self.request.arguments
-            for arg, value in kwargs.iteritems():
+            for arg, value in iteritems(kwargs):
                 if len(value) == 1:
                     kwargs[arg] = value[0]
 

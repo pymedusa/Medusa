@@ -50,6 +50,7 @@ from contextlib2 import suppress, closing
 import requests
 from requests.compat import urlparse
 import shutil_custom
+from six import iteritems
 from six.moves import http_client
 
 import sickbeard
@@ -173,7 +174,7 @@ def remove_non_release_groups(name, clean_proper=False):
     }
 
     _name = name
-    for remove_string, remove_type in removeWordsList.iteritems():
+    for remove_string, remove_type in iteritems(removeWordsList):
         if remove_type == 'search':
             _name = _name.replace(remove_string, '')
         elif remove_type == 'searchre':

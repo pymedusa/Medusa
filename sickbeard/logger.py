@@ -40,6 +40,7 @@ import tornado
 import subliminal
 
 from requests.compat import quote
+from six import itervalues
 from github import Github, InputFileContent  # pylint: disable=import-error
 
 import sickbeard
@@ -170,7 +171,7 @@ class CensoredFormatter(logging.Formatter, object):
                 msg = re.sub(ssl_error, SSL_ERROR_HELP_MSG, msg)
 
         # set of censored items
-        censored = {item for _, item in censored_items.iteritems() if item}
+        censored = {value for value in itervalues(censored_items) if value}
         # set of censored items and urlencoded counterparts
         censored = censored | {quote(item) for item in censored}
         # convert set items to unicode and typecast to list
