@@ -364,10 +364,10 @@ class NameParser(object):
 
     @staticmethod
     def _unicodify(obj, encoding="utf-8"):
-        if isinstance(obj, string_types):
-            if not isinstance(obj, text_type):
-                obj = text_type(obj, encoding, 'replace')
-        return obj
+        if isinstance(obj, string_types) and not isinstance(obj, text_type):
+            return text_type(obj, encoding, 'replace')
+        else:
+            return obj
 
     @staticmethod
     def _convert_number(org_number):
