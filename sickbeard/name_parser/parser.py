@@ -97,8 +97,8 @@ class NameParser(object):
             for cur_pattern_num, (cur_pattern_name, cur_pattern) in enumerate(regexItem):
                 try:
                     cur_regex = re.compile(cur_pattern, re.VERBOSE | re.IGNORECASE)
-                except re.error, errormsg:
-                    logger.log(u"WARNING: Invalid episode_pattern using %s regexs, %s. %s" % (dbg_str, errormsg, cur_pattern))
+                except re.error as msg:
+                    logger.log(u"WARNING: Invalid episode_pattern using %s regexs, %s. %s" % (dbg_str, msg, cur_pattern))
                 else:
                     self.compiled_regexes.append((cur_pattern_num, cur_pattern_name, cur_regex))
 
