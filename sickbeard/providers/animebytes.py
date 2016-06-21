@@ -183,7 +183,7 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
                                                                         torrent_audio=properties[4])
 
                                         last_field = re.match(r'(.*)\((.*)\)', properties[-1])
-                                        subs = last_field.group(1) if last_field else ''  # We're not doing anything with this for now
+                                        # subs = last_field.group(1) if last_field else ''  # We're not doing anything with this for now
                                         release_group = '-{0}'.format(last_field.group(2)) if last_field else ''
 
                                         # Construct title based on the release type
