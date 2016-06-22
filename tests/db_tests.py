@@ -25,6 +25,8 @@ Tests:
     DBMultiTests
 """
 
+from __future__ import print_function
+
 import os.path
 import sys
 import threading
@@ -87,10 +89,12 @@ class DBMultiTests(test.SickbeardTestDBCase):
             thread.start()
 
 if __name__ == '__main__':
-    print "=================="
-    print "STARTING - DB TESTS"
-    print "=================="
-    print "######################################################################"
+    print("""
+    ==================
+    STARTING - DB TESTS
+    ==================
+    ######################################################################
+    """)
     SUITE = unittest.TestLoader().loadTestsFromTestCase(DBBasicTests)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
 

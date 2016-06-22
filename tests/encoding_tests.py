@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import print_function
+
 """
 Test encoding
 """
@@ -51,10 +53,12 @@ class EncodingTests(unittest.TestCase):
                 ex(error)
 
 if __name__ == "__main__":
-    print "=================="
-    print "STARTING - ENCODING TESTS"
-    print "=================="
-    print "######################################################################"
+    print("""
+    ==================
+    STARTING - ENCODING TESTS
+    ==================
+    ######################################################################
+    """)
 
     SUITE = unittest.TestLoader().loadTestsFromTestCase(EncodingTests)
     unittest.TextTestRunner(verbosity=2).run(SUITE)

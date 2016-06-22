@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 """
 Test exception logging
 """
@@ -55,10 +57,12 @@ class IssueSubmitterBasicTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    print "=================="
-    print "STARTING - ISSUE SUBMITTER TESTS"
-    print "=================="
-    print "######################################################################"
+    print("""
+    ==================
+    STARTING - ISSUE SUBMITTER TESTS
+    ==================
+    ######################################################################
+    """)
 
     SUITE = unittest.TestLoader().loadTestsFromTestCase(IssueSubmitterBasicTests)
     unittest.TextTestRunner(verbosity=2).run(SUITE)

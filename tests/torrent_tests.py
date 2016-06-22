@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 """
 Test torrents
 """
@@ -94,7 +96,7 @@ class TorrentBasicTests(test.SickbeardTestDBCase):
 
         # Continue only if one Release is found
         if len(torrent_rows) < 2:
-            print "The data returned does not contain any torrents"
+            print("The data returned does not contain any torrents")
             return
 
         for row in torrent_rows[1:]:
@@ -112,12 +114,14 @@ class TorrentBasicTests(test.SickbeardTestDBCase):
             except (AttributeError, TypeError):
                 continue
 
-            print title
+            print(title)
 
 if __name__ == "__main__":
-    print "=================="
-    print "STARTING - Torrent Basic TESTS"
-    print "=================="
-    print "######################################################################"
+    print("""
+    ==================
+    STARTING - Torrent Basic TESTS
+    ==================
+    ######################################################################
+    """)
     SUITE = unittest.TestLoader().loadTestsFromTestCase(TorrentBasicTests)
     unittest.TextTestRunner(verbosity=2).run(SUITE)

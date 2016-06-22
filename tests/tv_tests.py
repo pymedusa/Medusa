@@ -21,6 +21,8 @@
 Test tv
 """
 
+from __future__ import print_function
+
 import os.path
 import sys
 import unittest
@@ -139,15 +141,17 @@ class TVTests(test.SickbeardTestDBCase):
 
 
 if __name__ == '__main__':
-    print "=================="
-    print "STARTING - TV TESTS"
-    print "=================="
-    print "######################################################################"
+    print("""
+    ==================
+    STARTING - TV TESTS
+    ==================
+    ######################################################################
+    """)
     SUITE = unittest.TestLoader().loadTestsFromTestCase(TVShowTests)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
-    print "######################################################################"
+    print("######################################################################")
     SUITE = unittest.TestLoader().loadTestsFromTestCase(TVEpisodeTests)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
-    print "######################################################################"
+    print("######################################################################")
     SUITE = unittest.TestLoader().loadTestsFromTestCase(TVTests)
     unittest.TextTestRunner(verbosity=2).run(SUITE)

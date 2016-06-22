@@ -3,6 +3,8 @@
 Tests for SickRage helpers
 """
 
+from __future__ import print_function
+
 import unittest
 
 from common_tests import CommonTests
