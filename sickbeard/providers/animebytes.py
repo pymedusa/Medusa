@@ -319,7 +319,7 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
-        if re.search('Login incorrect. Only perfect spellers may enter this system!', response):
+        if re.search('You will be banned for 6 hours after your login attempts run out.', response):
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
             self.session.cookies.clear()
             return False
