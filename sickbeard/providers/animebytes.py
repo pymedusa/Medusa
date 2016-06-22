@@ -65,6 +65,7 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         self.proper_strings = []
 
         # Miscellaneous Options
+        self.anime_only = True
 
         # Torrent Stats
         self.minseed = None
