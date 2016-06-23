@@ -142,7 +142,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                     elif error_code not in (8, 10, 12, 14, 20):
                         # 8, 10, 12, 14 = Cant find * in database. Are you sure this * exists?
                         # 20 = No results found
-                        logger.log('{0}. Error code: {1}'.format(error, error_code), logger.WARNING)
+                        logger.log('{0} Error code: {1}'.format(error, error_code), logger.WARNING)
                     continue
 
                 torrent_results = data.get('torrent_results')
