@@ -1,9 +1,4 @@
 from __future__ import absolute_import
-import requests
-import xml.etree.ElementTree as ET
-
-from .helper import date_to_date
-from .exceptions import GeneralError
 
 
 class Anime(object):  # pylint: disable=too-many-instance-attributes

@@ -14,10 +14,14 @@ import xml.etree.ElementTree as ET
 __version__ = "0.1.0"
 __author__ = "Dennis Lutter"
 
-ANIME_LIST_URL = "http://anidb.net/api/anime-titles.xml.gz"
+# Get this file directly from anidb batch import api
+ANIME_TITLES_URL = "http://anidb.net/api/anime-titles.xml.gz"
 
-ANIDB_URL = \
-    "http://api.anidb.net:9001/httpapi"
+# Get this file from ScudLee's managed anidb lists
+ANIME_LIST_URL = "https://raw.githubusercontent.com/ScudLee/anime-lists/master/anime-list.xml"
+
+# Url for the anidb http api
+ANIDB_URL = "http://api.anidb.net:9001/httpapi"
 
 # Request list Types
 REQUEST_CATEGORY_LIST = "categorylist"
@@ -41,10 +45,13 @@ class Anidb(object):
         self.session = session or requests.Session()
         self.session.headers.setdefault('user-agent', 'simpleanidb/{0}.{1}.{2}'.format(*__version__))
 
-        self.anime_list_path = os.path.join(
+        self.anime_titles_path = os.path.join(
             self._cache_dir, "anime-titles.xml.gz")
+        self.anime_list_path = os.path.join(
+            self._cache_dir, "anime-list.xml.gz")
         self.auto_download = auto_download
-        self._xml = None
+        self._xml_titles = self._xml = None
+        self._xml_list = None
         self.lang = lang
         if not lang:
             self.lang = "en"
@@ -68,24 +75,50 @@ class Anidb(object):
 
         return path
 
-    def search(self, term, autoload=False):
-        if not self._xml:
-            try:
-                self._xml = self._read_file(self.anime_list_path)
-            except IOError:
-                if self.auto_download:
-                    self.download_anime_list()
-                    self._xml = self._read_file(self.anime_list_path)
-                else:
-                    raise
+    def _load_xml(self, url):
+        local_file = os.path.join(self._cache_dir, url.split('/')[-1])
+        xml = None
+        try:
+            xml = self._read_file(local_file)
+        except IOError:
+            if self.auto_download:
+                self.download_anime_list(local_file, url)
+                xml = self._read_file(local_file)
+            else:
+                raise
+        return xml
 
-        term = term.lower()
+    def search(self, term=None, autoload=False, aid=None, tvdbid=None):
+        if not self._xml_list:
+            self._xml_list = self._load_xml(ANIME_LIST_URL)
+
+        if not self._xml_titles:
+            self._xml_titles = self._load_xml(ANIME_TITLES_URL)
+
         anime_ids = []
-        for anime in self._xml.findall("anime"):
-            for title in anime.findall("title"):
-                if term in title.text.lower():
-                    anime_ids.append((int(anime.get("aid")), anime))
-                    break
+        if term:
+            for anime in self._xml_titles.findall("anime"):
+                term = term.lower()
+                for title in anime.findall("title"):
+                    if term in title.text.lower():
+                        anime_ids.append((int(anime.get("aid")), anime))
+                        break
+        else:
+            if aid:
+                for anime in self._xml_list.findall("anime"):
+                    if aid == int(anime.attrib.get('anidbid')):
+                        anime_ids.append((int(anime.attrib.get('anidbid')), anime))
+                        break
+
+            elif tvdbid:
+                for anime in self._xml_list.findall("anime"):
+                    try:
+                        if tvdbid == int(anime.attrib.get('tvdbid')):
+                            anime_ids.append((int(anime.attrib.get('anidbid')), anime))
+                            break
+                    except:
+                        continue
+
         return [Anime(self, aid, autoload, xml_node) for aid, xml_node in anime_ids]
 
     def anime(self, aid):
@@ -95,13 +128,13 @@ class Anidb(object):
         f = open(path, 'rb')
         return etree.ElementTree(file=f)
 
-    def download_anime_list(self, force=False):
-        if not force and os.path.exists(self.anime_list_path):
+    def download_anime_list(self, anime_list_path, anidb_archive_url, force=False):
+        if not force and os.path.exists(anime_list_path):
             modified_date = datetime.fromtimestamp(
-                os.path.getmtime(self.anime_list_path))
+                os.path.getmtime(anime_list_path))
             if modified_date + timedelta(1) > datetime.now():
                 return False
-        return download_file(self.anime_list_path, ANIME_LIST_URL)
+        return download_file(anime_list_path, anidb_archive_url)
 
     def get_list(self, request_type):
         """Retrieve a lists of animes from anidb.info
