@@ -21,8 +21,7 @@ ANIME_TITLES_URL = "http://anidb.net/api/anime-titles.xml.gz"
 ANIME_LIST_URL = "https://raw.githubusercontent.com/ScudLee/anime-lists/master/anime-list.xml"
 
 # Url for the anidb http api
-ANIDB_URL = \
-    "http://api.anidb.net:9001/httpapi"
+ANIDB_URL = "http://api.anidb.net:9001/httpapi"
 
 # Request list Types
 REQUEST_CATEGORY_LIST = "categorylist"
