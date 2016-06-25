@@ -83,57 +83,56 @@ class BTNProvider(TorrentProvider):
             items = []
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
-            for search_string in search_strings[mode]:
+            if mode != 'RSS':
+                search_params = self._episode_search_params(ep_obj)
+                logger.log('Search string: {search}'.format
+                           (search=search_params), logger.DEBUG)
 
-                if mode != 'RSS':
-                    search_params = self._episode_search_params(ep_obj)
-                    logger.log('Search string: {search}'.format
-                               (search=search_params), logger.DEBUG)
+            if mode == 'Season':
+                search_params = self._season_search_params(ep_obj)
 
-                if mode == 'Season':
-                    search_params = self._season_search_params(ep_obj)
+            response = self._api_call(self.api_key, search_params)
+            if not response:
+                logger.log('No data returned from provider', logger.DEBUG)
+                return results
 
-                response = self._api_call(self.api_key, search_params)
-                if not response:
-                    logger.log('No data returned from provider', logger.DEBUG)
-                    return results
+            if not self._check_auth_from_data(response):
+                return results
 
-                if not self._check_auth_from_data(response):
-                    return results
+            found_torrents = response.get('torrents', {})
 
-                found_torrents = response.get('torrents', {})
+            for _, torrent_info in iteritems(found_torrents):
+                (title, download_url) = self._process_title_and_url(torrent_info)
 
-                for _, torrent_info in iteritems(found_torrents):
-                    (title, download_url) = self._get_title_url(torrent_info)
+                if not all([title, download_url]):
+                    continue
 
-                    if not all([title, download_url]):
-                        continue
+                seeders = torrent_info.get('Seeders', 1)
+                leechers = torrent_info.get('Leechers', 0)
 
-                    seeders = torrent_info.get('Seeders', 1)
-                    leechers = torrent_info.get('Leechers', 0)
+                # Filter unseeded torrent
 
-                    # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
-                        logger.log("Discarding torrent because it doesn't meet the "
-                                   "minimum seeders: {0}. Seeders: {1}".format
-                                   (title, seeders), logger.DEBUG)
-                        continue
+                if seeders < min(self.minseed, 1):
+                    logger.log("Discarding torrent because it doesn't meet the "
+                               "minimum seeders: {0}. Seeders: {1}".format
+                               (title, seeders), logger.DEBUG)
+                    continue
 
-                    size = torrent_info.get('Size') or -1
+                size = torrent_info.get('Size') or -1
 
-                    item = {
-                        'title': title,
-                        'link': download_url,
-                        'size': size,
-                        'seeders': seeders,
-                        'leechers': leechers,
-                        'pubdate': None,
-                        'hash': None,
-                    }
-                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                               (title, seeders, leechers), logger.DEBUG)
+                item = {
+                    'title': title,
+                    'link': download_url,
+                    'size': size,
+                    'seeders': seeders,
+                    'leechers': leechers,
+                    'pubdate': None,
+                    'hash': None,
+                }
+                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                           (title, seeders, leechers), logger.DEBUG)
 
-                    items.append(item)
+                items.append(item)
 
             results += items
 
@@ -142,20 +141,23 @@ class BTNProvider(TorrentProvider):
     def _check_auth(self):
 
         if not self.api_key:
-            logger.log('Missing or invalid api key. Check your settings', logger.WARNING)
+            logger.log('Missing API key. Check your settings', logger.WARNING)
             return False
 
         return True
 
-    def _check_auth_from_data(self, parsed_json):
+    @staticmethod
+    def _check_auth_from_data(parsed_json):
 
         if 'api-error' in parsed_json:
-            logger.log('Incorrect authentication credentials: {0}'.format(parsed_json['api-error']), logger.DEBUG)
+            logger.log('Incorrect authentication credentials: {0}'.format
+                       (parsed_json['api-error']), logger.DEBUG)
             return False
 
         return True
 
-    def _get_title_url(self, parsed_json):
+    @staticmethod
+    def _process_title_and_url(parsed_json):
 
         # The BTN API gives a lot of information in response,
         # however SickRage is built mostly around Scene or
@@ -189,7 +191,8 @@ class BTNProvider(TorrentProvider):
 
         return title, url
 
-    def _season_search_params(self, ep_obj):
+    @staticmethod
+    def _season_search_params(ep_obj):
 
         search_params = []
         current_params = {'category': 'Season'}
@@ -217,7 +220,8 @@ class BTNProvider(TorrentProvider):
 
         return search_params
 
-    def _episode_search_params(self, ep_obj):
+    @staticmethod
+    def _episode_search_params(ep_obj):
 
         if not ep_obj:
             return [{}]
@@ -266,7 +270,8 @@ class BTNProvider(TorrentProvider):
                 logger.log('You have exceeded the limit of 150 calls per hour,'
                            ' per API key which is unique to your user account', logger.WARNING)
             else:
-                logger.log('JSON-RPC protocol error while accessing provider. Error: {msg!r}'.format(msg=error), logger.ERROR)
+                logger.log('JSON-RPC protocol error while accessing provider. Error: {msg!r}'.format
+                           (msg=error), logger.ERROR)
             parsed_json = {'api-error': ex(error)}
             return parsed_json
 
@@ -275,13 +280,15 @@ class BTNProvider(TorrentProvider):
 
         except socket.error as error:
             # Note that sometimes timeouts are thrown as socket errors
-            logger.log('Socket error while accessing provider. Error: {msg}'.format(msg=error[1]), logger.WARNING)
+            logger.log('Socket error while accessing provider. Error: {msg}'.format
+                       (msg=error[1]), logger.WARNING)
 
         except Exception as error:
             errorstring = str(error)
             if errorstring.startswith('<') and errorstring.endswith('>'):
                 errorstring = errorstring[1:-1]
-            logger.log('Unknown error while accessing provider. Error: {msg}'.format(msg=errorstring), logger.WARNING)
+            logger.log('Unknown error while accessing provider. Error: {msg}'.format
+                       (msg=errorstring), logger.WARNING)
 
         return parsed_json
 
