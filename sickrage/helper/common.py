@@ -24,11 +24,14 @@ from fnmatch import fnmatch
 import logging
 import traceback
 
-from six import text_type
+from six import text_type, PY3
 
 import sickbeard
 
 logger = logging.getLogger(__name__)
+
+if PY3:
+    long = int
 
 dateFormat = '%Y-%m-%d'
 dateTimeFormat = '%Y-%m-%d %H:%M:%S'
