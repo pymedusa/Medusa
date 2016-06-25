@@ -114,7 +114,7 @@ def generator(cur_data, cur_name, cur_provider):
             # search_strings.update(season_strings[0])
             # search_strings.update({"RSS":['']})
 
-            # print search_strings
+            # print(search_strings)
 
             if not cur_provider.public:
                 continue
