@@ -70,7 +70,7 @@
 <div id="popularShows">
     <div id="container">
     % if not recommended_shows:
-        <div class="trakt_show" style="width:100%; margin-top:20px">
+        <div class="recommended_show" style="width:100%; margin-top:20px">
             <p class="red-text">Fetching of Recommender Data failed. Are you online?
             <strong>Exception:</strong>
             <p>${exception}</p>
@@ -89,11 +89,11 @@
                 <% cur_votes = cur_result.votes %>
             % endif
 
-            <div class="show-row" data-name="${cur_result.title}" data-rating="${cur_rating}" data-votes="${cur_votes}">
-                <div class="traktContainer">
-                    <div class="trakt-image">
-                        <a class="trakt-image" href="${anon_url(cur_result.image_href)}" target="_blank">
-                            <img alt="" class="trakt-image" src="${srRoot}/cache/${cur_result.image_src}" height="273px" width="186px" />
+            <div class="show-row" data-name="${cur_result.title}" data-rating="${cur_rating}" data-votes="${cur_votes}" data-anime="${cur_result.is_anime}">
+                <div class="recommendedContainer">
+                    <div class="recommended-image">
+                        <a class="recommended-image" href="${anon_url(cur_result.image_href)}" target="_blank">
+                            <img alt="" class="recommended-image" src="${srRoot}/cache/${cur_result.image_src}" height="273px" width="186px" />
                         </a>
                     </div>
 
@@ -102,9 +102,16 @@
                     </div>
 
                     <div class="clearfix">
-                        <p>${int(float(cur_rating)*10)}% <img src="${srRoot}/images/heart.png"></p>
+                        <p>${int(float(cur_rating)*10)}% <img src="${srRoot}/images/heart.png">
+	                        % if cur_result.is_anime and cur_result.ids.get('aid'):
+                                <a class="anidb-url" href='${anon_url("https://anidb.net/a{0}".format(cur_result.ids["aid"]))}'>
+                                    <img src="${srRoot}/images/anidb_inline_refl.png" class="anidb-inline" alt=""/>
+                                </a>
+                            % endif
+                        </p>
                         <i>${cur_votes} votes</i>
-                        <div class="traktShowTitleIcons">
+                        
+                        <div class="recommendedShowTitleIcons">
                             % if cur_result.show_in_list:
                                 <a href="${srRoot}/home/displayShow?show=${cur_result.indexer_id}" class="btn btn-xs">In List</a>
                             % else:

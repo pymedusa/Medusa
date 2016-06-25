@@ -34,7 +34,7 @@
     <br><br>
 
     <a href="${srRoot}/addShows/popularAnime" id="btnNewShow" class="btn btn-large">
-        <div class="button"><div class="add-list-icon-addimdb"></div></div>
+        <div class="button"><div class="add-list-icon-addanime"></div></div>
         <div class="buttontext">
             <h3>Add From Anidb's Hot Anime list</h3>
             <p>View Anidb's list of the most popular anime shows. The Anidb provides lists for Hot Anime or a random recommendation.</p>

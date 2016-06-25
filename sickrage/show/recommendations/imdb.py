@@ -1,15 +1,17 @@
 # coding=utf-8
 import re
 import os
-from bs4 import BeautifulSoup
 from datetime import date
+from bs4 import BeautifulSoup
 
 import sickbeard
 from sickbeard import helpers
-from sickrage.helper.encoding import ek
 from sickbeard import logger
+from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
+
 from .recommended import RecommendedShow
+from simpleanidb import Anidb
 
 
 class ImdbPopular(object):
@@ -20,6 +22,7 @@ class ImdbPopular(object):
         self.session = helpers.make_session()
         self.recommender = 'IMDB Popular'
         self.default_img_src = ''
+        self.anidb = Anidb()
 
         # Use akas.imdb.com, just like the imdb lib.
         self.url = 'http://akas.imdb.com/search/title'
@@ -41,7 +44,7 @@ class ImdbPopular(object):
                                    show_obj.get('imdb_tt'),
                                    show_obj.get('name'),
                                    1,
-                                   tvdb_id,
+                                   int(tvdb_id),
                                    **{'rating': show_obj.get('rating'),
                                       'votes': show_obj.get('votes'),
                                       'image_href': show_obj.get('imdb_url')}
@@ -49,6 +52,8 @@ class ImdbPopular(object):
 
         if show_obj.get('image_url_large'):
             rec_show.cache_image(show_obj.get('image_url_large'))
+
+        # rec_show.check_if_anime(self.anidb, int(tvdb_id))  # Disabled, as imdb doesn't have many anime shows anyway
 
         return rec_show
 

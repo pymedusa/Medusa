@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-from simpleanidb import (Anidb, REQUEST_CATEGORY_LIST, REQUEST_HOT, REQUEST_RANDOM_RECOMMENDATION)
+from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
 from sickbeard import logger, helpers
 from sickrage.helper.exceptions import ex
@@ -51,11 +51,17 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
                                    **{'rating': show_obj.rating_permanent,
                                       'votes': show_obj.count_permanent,
                                       'image_href': self.base_url.format(aid=show_obj.aid),
+                                      'ids': {'tvdb': tvdb_id,
+                                              'aid': show_obj.aid
+                                              }
                                       }
                                    )
 
         # Check cache or get and save image
         rec_show.cache_image(show_obj.picture.url)
+
+        # By default pre-configure the show option anime = True
+        rec_show.is_anime = True
 
         return rec_show
 

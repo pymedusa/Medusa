@@ -24,8 +24,8 @@ from sickrage.helper.common import try_int
 
 from libtrakt.trakt import TraktApi
 from libtrakt.exceptions import TraktAuthException, TraktException
+from simpleanidb import Anidb
 
-from sickrage.show.Show import Show
 from sickrage.helper.exceptions import ex
 from sickrage.helper.exceptions import MultipleShowObjectsException
 from .recommended import RecommendedShow
@@ -39,6 +39,7 @@ class TraktPopular(object):
         self.session = requests.Session()
         self.recommender = "Trakt Popular"
         self.default_img_src = 'http://www.trakt.tv/assets/placeholders/thumb/poster-2d5709c1b640929ca1ab60137044b152.png'
+        self.anidb = Anidb()
 
     def _create_recommended_show(self, show_obj):
         """creates the RecommendedShow object from the returned showobj"""
@@ -46,11 +47,16 @@ class TraktPopular(object):
                                    show_obj['show']['ids'], show_obj['show']['title'],
                                    1,  # indexer
                                    show_obj['show']['ids']['tvdb'],
-                                   rating=str(show_obj['show']['rating']),
-                                   votes=str(try_int(show_obj['show']['votes'], 0)),
-                                   image_href='http://www.trakt.tv/shows/%s' % show_obj['show']['ids']['slug'])
+                                   **{'rating': str(show_obj['show']['rating']),
+                                      'votes': str(try_int(show_obj['show']['votes'], 0)),
+                                      'image_href': 'http://www.trakt.tv/shows/{0}'.format(show_obj['show']['ids']['slug']),
+                                      'ids': show_obj['show']['ids']  # Adds like: {u'tmdb': 62126, u'tvdb': 304219, u'trakt': 79382, u'imdb': u'tt3322314', u'tvrage': None, u'slug': u'marvel-s-luke-cage'}
+                                      }
+                                   )
 
         rec_show.cache_image(show_obj['show']['images']['poster']['thumb'] or self.default_img_src)
+
+        rec_show.check_if_anime(self.anidb, show_obj['show']['ids']['tvdb'])
 
         return rec_show
 

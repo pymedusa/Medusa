@@ -860,31 +860,37 @@ ul#rootDirStaticList li input[type="checkbox"] {
 home_trendingShows.mako
 ========================================================================== */
 
-.traktShowTitleIcons {
+.recommendedShowTitleIcons {
     float: right;
     padding-right: 4px;
     padding-bottom: 4px;
 }
 
-.traktContainer p {
+.recommendedContainer p {
     padding-top: 2px;
 }
 
-.traktContainer p img {
+.recommendedContainer p img {
     position: relative;
     top: -2px;
 }
 
-.traktContainer p, .traktContainer i {
+.recommendedContainer .recommended-image img {
+	left: -4px;
+    position: relative;
+}
+
+.recommendedContainer p, .recommendedContainer i, .recommendedContainer a {
     white-space: nowrap;
     font-size: 12px;
     overflow: hidden;
 /*	text-shadow: 1px 1px 0px #000;*/
     padding-left: 4px;
     margin: 0;
+    text-decoration: none;
 }
 
-.traktContainer {
+.recommendedContainer {
     margin: 12px;
     width: 188px;
     background-color: rgb(223, 218, 207);
@@ -892,12 +898,21 @@ home_trendingShows.mako
     border-radius: 6px;
 }
 
-.trakt-image {
+.recommended-image {
     height: 273px;
     width: 186px;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
     border-bottom: 1px solid rgb(17, 17, 17);
+}
+
+.recommendedContainer .anidb-url {
+	float: right;
+	padding-right: 4px;
+}
+
+.anidb-inline {
+	height: 16px;
 }
 
 /* =======================================================================
@@ -3306,7 +3321,7 @@ span.token-input-delete-token {
 .nextline-block {display:block;
 }
 
-.trakt-image {
+.recommended-image {
     display: block;
     z-index: 0;
     background-image: url(/images/poster-dark.jpg);

@@ -63,6 +63,8 @@ class RecommendedShow(object):
         self.votes = show_attr.get('votes') or 0
         self.image_href = show_attr.get('image_href')
         self.image_src = show_attr.get('image_src')
+        self.ids = show_attr.get('ids', {})
+        self.is_anime = False
 
         # Check if the show is currently already in the db
         self.show_in_list = self.indexer_id in {show.indexerid for show in sickbeard.showList if show.indexerid}
@@ -89,5 +91,27 @@ class RecommendedShow(object):
         if not ek(os.path.isfile, full_path):
             helpers.download_file(image_url, full_path, session=self.session)
 
+    def check_if_anime(self, anidb, tvdbid):
+        """
+        Use the simpleanidb lib, to check the anime-lists.xml for an anime show mapping with this tvdbid.
+        The show if flagged as anime, through the is_anime attribute.
+
+        :param anidb: simpleanidb.Anidb() class instance, for reducing the amounts of objects that are instantiated
+        :param tvdbid: thetvdb id of the show, for which you want to try mapping to an anidb show
+        :return: Returns True, when the show can be mapped to anidb.net, False if not.
+        """
+        try:
+            anime = anidb.search(tvdbid=tvdbid)
+        except Exception:
+            return False
+        else:
+            if anime:
+                # flag the show as anime
+                self.is_anime = True
+                # Write the anidb aid to the dictionary of id's
+                self.ids['aid'] = anime[0].aid
+                return True
+        return False
+
     def __str__(self):
-        return 
+        return
