@@ -1226,10 +1226,9 @@ def extractZip(archive, targetDir):
 
             # copy file (taken from zipfile's extract)
             source = zip_file.open(member)
-            target = file(ek(os.path.join, targetDir, filename), "wb")
-            shutil.copyfileobj(source, target)
-            source.close()
-            target.close()
+            with open(ek(os.path.join, targetDir, filename), "wb") as target:
+                shutil.copyfileobj(source, target)
+                source.close()
         zip_file.close()
         return True
     except Exception as e:
