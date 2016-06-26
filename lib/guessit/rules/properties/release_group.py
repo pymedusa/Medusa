@@ -49,7 +49,7 @@ def clean_groupname(string):
 
 
 _scene_previous_names = ['video_codec', 'format', 'video_api', 'audio_codec', 'audio_profile', 'video_profile',
-                         'audio_channels', 'screen_size']
+                         'audio_channels', 'screen_size', 'other', 'container', 'language']
 
 _scene_previous_tags = ['release-group-prefix']
 
@@ -114,7 +114,7 @@ class SceneReleaseGroup(Rule):
                     last_hole.name = 'release_group'
                     last_hole.tags = ['scene']
 
-                    # if hole is insed a group marker with same value, remove [](){} ...
+                    # if hole is inside a group marker with same value, remove [](){} ...
                     group = matches.markers.at_match(last_hole, lambda marker: marker.name == 'group', 0)
                     if group:
                         group.formatter = clean_groupname
