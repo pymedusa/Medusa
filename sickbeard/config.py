@@ -536,7 +536,7 @@ def check_setting_int(config, cfg_name, item_name, def_val, silent=True):
         my_val = int(my_val)
 
         if str(my_val) == str(None):
-            raise
+            raise Exception
     except Exception:
         my_val = def_val
         try:
@@ -558,7 +558,7 @@ def check_setting_float(config, cfg_name, item_name, def_val, silent=True):
     try:
         my_val = float(config[cfg_name][item_name])
         if str(my_val) == str(None):
-            raise
+            raise Exception
     except Exception:
         my_val = def_val
         try:
@@ -591,7 +591,7 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
     try:
         my_val = helpers.decrypt(config[cfg_name][item_name], encryption_version)
         if str(my_val) == str(None):
-            raise
+            raise Exception
     except Exception:
         my_val = def_val
         try:
