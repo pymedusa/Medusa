@@ -1,0 +1,155 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Properties: This section contains additional properties to be guessed by guessit
+"""
+import re
+from string import upper
+
+import babelfish
+from guessit.rules.common import dash
+from guessit.rules.common.validators import seps, seps_surround
+from rebulk.rebulk import Rebulk
+from rebulk.rules import Rule, RemoveMatch
+
+
+def format_():
+    """
+    :return:
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
+    rebulk.defaults(name='format')
+
+    # https://github.com/guessit-io/guessit/issues/307
+    rebulk.regex('HDTV-?Mux', value='HDTV')
+    rebulk.regex('B[RD]-?Mux', 'Blu-?ray-?Mux', value='BluRay')
+    rebulk.regex('DVD-?Mux', value='DVD')
+    rebulk.regex('WEB-?Mux', 'DL-?WEB-?Mux', 'WEB-?DL-?Mux', 'DL-?Mux', value='WEB-DL')
+
+    # https://github.com/guessit-io/guessit/issues/315
+    rebulk.regex('WEB-?DL-?Rip', value='WEBRip')
+    rebulk.regex('WEB-?Cap', value='WEBCap')
+    rebulk.regex('DSR', 'DS-?Rip', 'SAT-?Rip', 'DTH-?Rip', value='DSRip')
+    rebulk.regex('LDTV', value='TV')
+    rebulk.regex('DVD\d', value='DVD')
+
+    return rebulk
+
+
+def screen_size():
+    """
+    :return:
+    :rtype: Rebulk
+    """
+
+    # https://github.com/guessit-io/guessit/issues/319
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE)
+    rebulk.defaults(name='screen_size', validator=seps_surround)
+    rebulk.regex(r'(?:\d{3,}(?:x|\*))?720phd', value='720p')
+    rebulk.regex(r'(?:\d{3,}(?:x|\*))?1080phd', value='1080p')
+
+    return rebulk
+
+
+def audio_codec():
+    """
+    :return:
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash]).string_defaults(ignore_case=True)
+    rebulk.defaults(name='audio_codec')
+
+    rebulk.regex('Dolby', value='DolbyDigital')
+
+    return rebulk
+
+
+def other():
+    """
+    https://github.com/guessit-io/guessit/issues/300
+    :return:
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
+    rebulk.defaults(name='other', validator=seps_surround)
+    rebulk.regex(r'Re-?Enc(?:oded)?', value='Re-Encoded')
+    rebulk.regex('DIRFIX', value='DirFix')
+    rebulk.regex('INTERNAL', value='Internal')
+    rebulk.regex(r'(?:HD)?iTunes(?:HD)?', value='iTunes')
+    rebulk.regex('HC', value='Hardcoded subtitles')
+
+    rebulk.rules(ValidateHardcodedSubs)
+
+    return rebulk
+
+
+def size():
+    """
+    https://github.com/guessit-io/guessit/issues/299
+    :return:
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
+    rebulk.defaults(name='size', validator=seps_surround)
+    rebulk.regex(r'(?:\d+\.)?\d+[mgt]b', formatter=upper)
+
+    return rebulk
+
+
+def language():
+    """
+    :return:
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
+    rebulk.defaults(name='language', validator=seps_surround)
+    rebulk.regex('SPANISH-?AUDIO', r'(?:Espa[nñ]ol-)?castellano', value=babelfish.Language('spa'))
+
+    return rebulk
+
+
+def subtitle_language():
+    """
+    Remove after https://github.com/guessit-io/guessit/pull/320 is merged
+    :return:
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
+    rebulk.defaults(name='subtitle_language', validator=seps_surround)
+    rebulk.regex('NL-?Subs?', 'NL-?Subbed', value=babelfish.Language('nld'))
+    rebulk.regex('RO-?Subs?', 'RO-?Subbed', value=babelfish.Language('ron'))
+    rebulk.regex('SWE-?Subs?', 'SWE-?Subbed', value=babelfish.Language('swe'))
+
+    return rebulk
+
+
+class ValidateHardcodedSubs(Rule):
+    priority = 32
+    consequence = RemoveMatch
+
+    def when(self, matches, context):
+        """
+        Removes other: Hardcoded subtitles if there's no neighbour subtitle_language matches
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        to_remove = []
+        for hc in matches.named('other', predicate=lambda match: match.value == 'Hardcoded subtitles'):
+            next_match = matches.next(hc, predicate=lambda match: match.name == 'subtitle_language', index=0)
+            if next_match and not matches.holes(hc.end, next_match.start,
+                                                predicate=lambda match: match.value.strip(seps)):
+                continue
+
+            previous_match = matches.previous(hc, predicate=lambda match: match.name == 'subtitle_language', index=0)
+            if previous_match and not matches.holes(previous_match.end, hc.start,
+                                                    predicate=lambda match: match.value.strip(seps)):
+                continue
+
+            to_remove.append(other)
+
+        return to_remove

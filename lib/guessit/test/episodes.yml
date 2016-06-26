@@ -992,7 +992,7 @@
 : other: Complete
   season: 1
   title: Something
-  episode_title: FlexGet  # 1.x guess this as release_group, but it's better to guess it as episode_title
+  release_group: FlexGet
 
 ? FlexGet.US.S2013E14.Title.Here.720p.HDTV.AAC5.1.x264-NOGRP
 : audio_channels: '5.1'
@@ -1777,3 +1777,70 @@
   title: Homeland
   type: episode
   video_codec: h264
+
+? Breaking.Bad.S01E01.2008.BluRay.VC1.1080P.5.1.WMV-NOVO
+: title: Breaking Bad
+  season: 1
+  episode: 1
+  year: 2008
+  format: BluRay
+  screen_size: 1080p
+  audio_channels: '5.1'
+  container: WMV
+  release_group: NOVO
+  type: episode
+
+? Cosmos.A.Space.Time.Odyssey.S01E02.HDTV.x264.PROPER-LOL
+: title: Cosmos A Space Time Odyssey
+  season: 1
+  episode: 2
+  format: HDTV
+  video_codec: h264
+  other: Proper
+  proper_count: 1
+  release_group: LOL
+  type: episode
+
+? Fear.The.Walking.Dead.S02E01.HDTV.x264.AAC.MP4-k3n
+: title: Fear The Walking Dead
+  season: 2
+  episode: 1
+  format: HDTV
+  video_codec: h264
+  audio_codec: AAC
+  container: MP4
+  release_group: k3n
+  type: episode
+
+? Elementary.S01E01.Pilot.DVDSCR.x264.PREAiR-NoGRP
+: title: Elementary
+  season: 1
+  episode: 1
+  episode_details: Pilot
+  episode_title: Pilot
+  format: DVD
+  video_codec: h264
+  other: [Screener, Preair]
+  release_group: NoGRP
+  type: episode
+
+? Once.Upon.a.Time.S05E19.HDTV.x264.REPACK-LOL[ettv]
+: title: Once Upon a Time
+  season: 5
+  episode: 19
+  format: HDTV
+  video_codec: h264
+  other: Proper
+  proper_count: 1
+  release_group: LOL[ettv]
+  type: episode
+
+? Show.Name.S01E03.WEB-DL.x264.HUN-nIk
+: title: Show Name
+  season: 1
+  episode: 3
+  format: WEB-DL
+  video_codec: h264
+  language: hu
+  release_group: nIk
+  type: episode
