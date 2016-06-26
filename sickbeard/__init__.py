@@ -42,23 +42,15 @@ from sickbeard.config import (
 from sickbeard import (
     searchBacklog, showUpdater, versionChecker, properFinder, auto_postprocessor, subtitles, traktChecker,
 )
-from sickbeard import db
-from sickbeard import helpers
-from sickbeard import scheduler
-from sickbeard import search_queue
-from sickbeard import show_queue
-from sickbeard import logger
-from sickbeard import naming
-from sickbeard import dailysearcher
+from sickbeard import db, helpers, scheduler, search_queue, show_queue, logger, naming, dailysearcher
 from sickbeard.indexers import indexer_api
-from sickbeard.indexers.indexer_exceptions import indexer_shownotfound, indexer_showincomplete, indexer_exception, \
-    indexer_error, indexer_episodenotfound, indexer_attributenotfound, indexer_seasonnotfound, indexer_userabort
-from sickbeard.common import SD
-from sickbeard.common import SKIPPED
-from sickbeard.common import WANTED
-from sickbeard.providers.rsstorrent import TorrentRssProvider
+from sickbeard.indexers.indexer_exceptions import (
+    indexer_shownotfound, indexer_showincomplete, indexer_exception, indexer_error, indexer_episodenotfound,
+    indexer_attributenotfound, indexer_seasonnotfound, indexer_userabort,
+)
+from sickbeard.common import SD, SKIPPED, WANTED
+from sickbeard.providers import NewznabProvider, TorrentRssProvider
 from sickbeard.databases import main_db, cache_db, failed_db
-from sickbeard.providers.newznab import NewznabProvider
 
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex

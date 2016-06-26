@@ -21,11 +21,24 @@ from os import sys
 from random import shuffle
 
 import sickbeard
-from sickbeard.providers import btn, womble, thepiratebay, torrentleech, kat, iptorrents, torrentz, \
-    omgwtfnzbs, scc, hdtorrents, torrentday, hdbits, hounddawgs, speedcd, nyaatorrents, bluetigers, xthor, abnormal, torrentbytes, cpasbien,\
-    freshontv, morethantv, t411, tokyotoshokan, shazbat, rarbg, alpharatio, tntvillage, binsearch, torrentproject, extratorrent, \
-    scenetime, btdigg, transmitthenet, tvchaosuk, bitcannon, pretome, gftracker, hdspace, newpct, elitetorrent, bitsnoop, danishbits, hd4free, limetorrents, \
-    norbits, ilovetorrents, anizb, bithdtv, zooqle, animebytes, torrentshack
+from sickbeard.providers.torrent import (
+    btn, thepiratebay, torrentleech, kat, iptorrents, torrentz, scc, hdtorrents, torrentday,
+    hdbits, hounddawgs, speedcd, nyaatorrents, bluetigers, xthor, abnormal, torrentbytes, cpasbien, freshontv,
+    morethantv, t411, tokyotoshokan, shazbat, rarbg, alpharatio, tntvillage, torrentproject,
+    extratorrent, scenetime, btdigg, transmitthenet, tvchaosuk, bitcannon, pretome, gftracker, hdspace,
+    newpct, elitetorrent, bitsnoop, danishbits, hd4free, limetorrents,  norbits, ilovetorrents, bithdtv,
+    zooqle, animebytes, torrentshack,
+)
+
+from sickbeard.providers.nzb import (
+    womble,
+    omgwtfnzbs,
+    binsearch,
+    anizb,
+)
+
+from .nzb.newznab import NewznabProvider
+from .torrent.rss.rsstorrent import TorrentRssProvider
 
 __all__ = [
     'womble', 'btn', 'thepiratebay', 'kat', 'torrentleech', 'scc', 'hdtorrents',
@@ -73,19 +86,25 @@ def makeProviderList():
 
 def getProviderModule(name):
     name = name.lower()
-    prefix = "sickbeard.providers."
-    if name in __all__ and prefix + name in sys.modules:
-        return sys.modules[prefix + name]
-    else:
-        raise Exception("Can't find " + prefix + name + " in " + "Providers")
+    prefixes = [
+        "sickbeard.providers.nzb.",
+        "sickbeard.providers.torrent.html.",
+        "sickbeard.providers.torrent.json.",
+        "sickbeard.providers.torrent.rss.",
+        "sickbeard.providers.torrent.xml.",
+    ]
+
+    for prefix in prefixes:
+        if name in __all__ and prefix + name in sys.modules:
+            return sys.modules[prefix + name]
+
+    raise Exception("Can't find " + prefix + name + " in " + "Providers")
 
 
 def getProviderClass(provider_id):
-    providerMatch = [x for x in
-                     sickbeard.providerList + sickbeard.newznabProviderList + sickbeard.torrentRssProviderList if
-                     x and x.get_id() == provider_id]
-
-    if len(providerMatch) != 1:
-        return None
-    else:
-        return providerMatch[0]
+    providers = {
+        x.get_id(): x
+        for x in sickbeard.providerList + sickbeard.newznabProviderList + sickbeard.torrentRssProviderList
+        if x
+    }
+    return providers[provider_id]
