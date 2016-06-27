@@ -8,7 +8,12 @@ __copyright__ = "(C) 2012 Science and Technology Facilities Council"
 __license__ = "BSD - see LICENSE file in top-level directory"
 __contact__ = "Philip.Kershaw@stfc.ac.uk"
 __revision__ = '$Id$'
-import urlparse
+import sys
+
+if sys.version_info[0] > 2:
+    import urllib.parse as urlparse_
+else:
+    import urlparse as urlparse_
 
 from OpenSSL import SSL
 
@@ -85,7 +90,7 @@ def set_peer_verification_for_url_hostname(ssl_context, url,
     '''Convenience routine to set peer verification callback based on
     ServerSSLCertVerification class'''
     if not if_verify_enabled or (ssl_context.get_verify_mode() & SSL.VERIFY_PEER):
-        urlObj = urlparse.urlparse(url)
+        urlObj = urlparse_.urlparse(url)
         hostname = urlObj.hostname
         server_ssl_cert_verif = ServerSSLCertVerification(hostname=hostname)
         verify_callback_ = server_ssl_cert_verif.get_verify_server_cert_func()
