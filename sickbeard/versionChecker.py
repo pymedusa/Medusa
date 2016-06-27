@@ -220,11 +220,11 @@ class CheckVersion(object):
 
             check_url = 'http://cdn.rawgit.com/{org}/{repo}/{commit}/sickbeard/databases/main_db.py'.format(
                 org=sickbeard.GIT_ORG, repo=sickbeard.GIT_REPO, commit=cur_hash)
-            response = helpers.getURL(check_url, session=self.session)
+            response = helpers.getURL(check_url, session=self.session, returns='response')
 
             if response.status_code == 404:
                 check_url.replace('main_db.py', 'mainDB.py')
-                response = helpers.getURL(check_url, session=self.session)
+                response = helpers.getURL(check_url, session=self.session, returns='response')
 
             match = re.search(r'MAX_DB_VERSION\s=\s(?P<version>\d{2,3})', response.text)
             new_branch_db_version = int(match.group('version'))
