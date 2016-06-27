@@ -40,9 +40,9 @@ from rebulk.rules import Rule, AppendMatch, RemoveMatch, RenameMatch
 
 
 simple_separator = ('.', 'and', ',.', '.,', '.,.', ',')
-range_separator = ('-', '~', '_-_', '.to.', 'to')
-season_range_separator = range_separator + ('_-_s', '-s', '.to.s')
-episode_range_separator = range_separator + ('_-_e', '-e', '.to.e')
+range_separator = ('-', '~', '_-_', 'to', '.to.')
+season_range_separator = range_separator + ('_-_s', '-s', '.to.s', '_to_s')
+episode_range_separator = range_separator + ('_-_e', '-e', '.to.e', '_to_e')
 
 
 class FixAnimeReleaseGroup(Rule):
