@@ -1,5 +1,6 @@
 # ext/mutable.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -402,6 +403,27 @@ class MutableBase(object):
         raise ValueError(msg % (key, type(value)))
 
     @classmethod
+    def _get_listen_keys(cls, attribute):
+        """Given a descriptor attribute, return a ``set()`` of the attribute
+        keys which indicate a change in the state of this attribute.
+
+        This is normally just ``set([attribute.key])``, but can be overridden
+        to provide for additional keys.  E.g. a :class:`.MutableComposite`
+        augments this set with the attribute keys associated with the columns
+        that comprise the composite value.
+
+        This collection is consulted in the case of intercepting the
+        :meth:`.InstanceEvents.refresh` and
+        :meth:`.InstanceEvents.refresh_flush` events, which pass along a list
+        of attribute names that have been refreshed; the list is compared
+        against this set to determine if action needs to be taken.
+
+        .. versionadded:: 1.0.5
+
+        """
+        return set([attribute.key])
+
+    @classmethod
     def _listen_on_attribute(cls, attribute, coerce, parent_cls):
         """Establish this type as a mutation listener for the given
         mapped descriptor.
@@ -413,6 +435,8 @@ class MutableBase(object):
 
         # rely on "propagate" here
         parent_cls = attribute.class_
+
+        listen_keys = cls._get_listen_keys(attribute)
 
         def load(state, *args):
             """Listen for objects loaded or refreshed.
@@ -427,6 +451,10 @@ class MutableBase(object):
                     val = cls.coerce(key, val)
                     state.dict[key] = val
                 val._parents[state.obj()] = key
+
+        def load_attrs(state, ctx, attrs):
+            if not attrs or listen_keys.intersection(attrs):
+                load(state)
 
         def set(target, value, oldvalue, initiator):
             """Listen for set/replace events on the target
@@ -461,15 +489,17 @@ class MutableBase(object):
                     val._parents[state.obj()] = key
 
         event.listen(parent_cls, 'load', load,
-            raw=True, propagate=True)
-        event.listen(parent_cls, 'refresh', load,
-            raw=True, propagate=True)
+                     raw=True, propagate=True)
+        event.listen(parent_cls, 'refresh', load_attrs,
+                     raw=True, propagate=True)
+        event.listen(parent_cls, 'refresh_flush', load_attrs,
+                     raw=True, propagate=True)
         event.listen(attribute, 'set', set,
-            raw=True, retval=True, propagate=True)
+                     raw=True, retval=True, propagate=True)
         event.listen(parent_cls, 'pickle', pickle,
-            raw=True, propagate=True)
+                     raw=True, propagate=True)
         event.listen(parent_cls, 'unpickle', unpickle,
-            raw=True, propagate=True)
+                     raw=True, propagate=True)
 
 
 class Mutable(MutableBase):
@@ -564,7 +594,6 @@ class Mutable(MutableBase):
         return sqltype
 
 
-
 class MutableComposite(MutableBase):
     """Mixin that defines transparent propagation of change
     events on a SQLAlchemy "composite" object to its
@@ -574,6 +603,10 @@ class MutableComposite(MutableBase):
 
     """
 
+    @classmethod
+    def _get_listen_keys(cls, attribute):
+        return set([attribute.key]).union(attribute.property._attribute_keys)
+
     def changed(self):
         """Subclasses should call this method whenever change events occur."""
 
@@ -581,16 +614,17 @@ class MutableComposite(MutableBase):
 
             prop = object_mapper(parent).get_property(key)
             for value, attr_name in zip(
-                                    self.__composite_values__(),
-                                    prop._attribute_keys):
+                    self.__composite_values__(),
+                    prop._attribute_keys):
                 setattr(parent, attr_name, value)
+
 
 def _setup_composite_listener():
     def _listen_for_type(mapper, class_):
         for prop in mapper.iterate_properties:
             if (hasattr(prop, 'composite_class') and
-                isinstance(prop.composite_class, type) and
-                 issubclass(prop.composite_class, MutableComposite)):
+                    isinstance(prop.composite_class, type) and
+                    issubclass(prop.composite_class, MutableComposite)):
                 prop.composite_class._listen_on_attribute(
                     getattr(class_, prop.key), False, class_)
     if not event.contains(Mapper, "mapper_configured", _listen_for_type):
@@ -601,6 +635,18 @@ _setup_composite_listener()
 class MutableDict(Mutable, dict):
     """A dictionary type that implements :class:`.Mutable`.
 
+    The :class:`.MutableDict` object implements a dictionary that will
+    emit change events to the underlying mapping when the contents of
+    the dictionary are altered, including when values are added or removed.
+
+    Note that :class:`.MutableDict` does **not** apply mutable tracking to  the
+    *values themselves* inside the dictionary. Therefore it is not a sufficient
+    solution for the use case of tracking deep changes to a *recursive*
+    dictionary structure, such as a JSON structure.  To support this use case,
+    build a subclass of  :class:`.MutableDict` that provides appropriate
+    coersion to the values placed in the dictionary so that they too are
+    "mutable", and emit events up to their parent structure.
+
     .. versionadded:: 0.8
 
     """
@@ -610,10 +656,29 @@ class MutableDict(Mutable, dict):
         dict.__setitem__(self, key, value)
         self.changed()
 
+    def setdefault(self, key, value):
+        result = dict.setdefault(self, key, value)
+        self.changed()
+        return result
+
     def __delitem__(self, key):
         """Detect dictionary del events and emit change events."""
         dict.__delitem__(self, key)
         self.changed()
+
+    def update(self, *a, **kw):
+        dict.update(self, *a, **kw)
+        self.changed()
+
+    def pop(self, *arg):
+        result = dict.pop(self, *arg)
+        self.changed()
+        return result
+
+    def popitem(self):
+        result = dict.popitem(self)
+        self.changed()
+        return result
 
     def clear(self):
         dict.clear(self)
@@ -621,10 +686,10 @@ class MutableDict(Mutable, dict):
 
     @classmethod
     def coerce(cls, key, value):
-        """Convert plain dictionary to MutableDict."""
-        if not isinstance(value, MutableDict):
+        """Convert plain dictionary to instance of this class."""
+        if not isinstance(value, cls):
             if isinstance(value, dict):
-                return MutableDict(value)
+                return cls(value)
             return Mutable.coerce(key, value)
         else:
             return value

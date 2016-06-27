@@ -16,7 +16,19 @@ Usage example (Python 2.4 or newer)::
         if n < 2: return 1
         else: return n * fn(n-1)
 
-    print fn(42)
+    print(fn(42))
+
+Or without imports, with some hack
+
+    $ python -m profilehooks yourmodule
+
+    @profile    # or @coverage
+    def fn(n):
+        if n < 2: return 1
+        else: return n * fn(n-1)
+
+    print(fn(42))
+
 
 Usage example (Python 2.3 or older)::
 
@@ -62,7 +74,7 @@ Caveats
   executed.  For this reason coverage analysis now uses trace.py which is
   slower, but more accurate.
 
-Copyright (c) 2004--2008 Marius Gedminas <marius@pov.lt>
+Copyright (c) 2004--2014 Marius Gedminas <marius@pov.lt>
 Copyright (c) 2007 Hanno Schlichting
 Copyright (c) 2008 Florian Schulze
 
@@ -88,19 +100,19 @@ Released under the MIT licence since December 2006:
 
 (Previously it was distributed under the GNU General Public Licence.)
 """
-# $Id: profilehooks.py 29 2010-08-13 16:29:20Z mg $
 
-__author__ = "Marius Gedminas (marius@gedmin.as)"
-__copyright__ = "Copyright 2004-2009 Marius Gedminas"
+__author__ = "Marius Gedminas <marius@gedmin.as>"
+__copyright__ = "Copyright 2004-2015 Marius Gedminas and contributors"
 __license__ = "MIT"
-__version__ = "1.4"
-__date__ = "2009-03-31"
+__version__ = '1.8.1'
+__date__ = "2015-11-21"
 
 
 import atexit
 import inspect
 import sys
 import re
+import os
 
 # For profiling
 from profile import Profile
@@ -134,17 +146,21 @@ import time
 # registry of available profilers
 AVAILABLE_PROFILERS = {}
 
+__all__ = ['coverage', 'coverage_with_hotshot', 'profile', 'timecall']
+
 
 def profile(fn=None, skip=0, filename=None, immediate=False, dirs=False,
             sort=None, entries=40,
-            profiler=('cProfile', 'profile', 'hotshot')):
+            profiler=('cProfile', 'profile', 'hotshot'),
+            stdout=True):
     """Mark `fn` for profiling.
 
     If `skip` is > 0, first `skip` calls to `fn` will not be profiled.
 
     If `immediate` is False, profiling results will be printed to
     sys.stdout on program termination.  Otherwise results will be printed
-    after each call.
+    after each call.  (If you don't want this, set stdout=False and specify a
+    `filename` to store profile data.)
 
     If `dirs` is False only the name of the file will be printed.
     Otherwise the full path is used.
@@ -170,7 +186,8 @@ def profile(fn=None, skip=0, filename=None, immediate=False, dirs=False,
     'profile', 'hotshot').
 
     If `filename` is specified, the profile stats will be stored in the
-    named file.  You can load them pstats.Stats(filename).
+    named file.  You can load them with pstats.Stats(filename) or use a
+    visualization tool like RunSnakeRun.
 
     Usage::
 
@@ -192,12 +209,12 @@ def profile(fn=None, skip=0, filename=None, immediate=False, dirs=False,
             ...
 
     """
-    if fn is None: # @profile() syntax -- we are a decorator maker
+    if fn is None:  # @profile() syntax -- we are a decorator maker
         def decorator(fn):
             return profile(fn, skip=skip, filename=filename,
                            immediate=immediate, dirs=dirs,
                            sort=sort, entries=entries,
-                           profiler=profiler)
+                           profiler=profiler, stdout=stdout)
         return decorator
     # @profile syntax -- we are a decorator.
     if isinstance(profiler, str):
@@ -208,14 +225,13 @@ def profile(fn=None, skip=0, filename=None, immediate=False, dirs=False,
             break
     else:
         raise ValueError('only these profilers are available: %s'
-                             % ', '.join(AVAILABLE_PROFILERS))
+                             % ', '.join(sorted(AVAILABLE_PROFILERS)))
     fp = profiler_class(fn, skip=skip, filename=filename,
                         immediate=immediate, dirs=dirs,
-                        sort=sort, entries=entries)
-    # fp = HotShotFuncProfile(fn, skip=skip, filename=filename, ...)
-         # or HotShotFuncProfile
+                        sort=sort, entries=entries, stdout=stdout)
     # We cannot return fp or fp.__call__ directly as that would break method
     # definitions, instead we need to return a plain function.
+
     def new_fn(*args, **kw):
         return fp(*args, **kw)
     new_fn.__doc__ = fn.__doc__
@@ -244,9 +260,10 @@ def coverage(fn):
             ...
 
     """
-    fp = TraceFuncCoverage(fn) # or HotShotFuncCoverage
+    fp = TraceFuncCoverage(fn)  # or HotShotFuncCoverage
     # We cannot return fp or fp.__call__ directly as that would break method
     # definitions, instead we need to return a plain function.
+
     def new_fn(*args, **kw):
         return fp(*args, **kw)
     new_fn.__doc__ = fn.__doc__
@@ -268,6 +285,7 @@ def coverage_with_hotshot(fn):
     fp = HotShotFuncCoverage(fn)
     # We cannot return fp or fp.__call__ directly as that would break method
     # definitions, instead we need to return a plain function.
+
     def new_fn(*args, **kw):
         return fp(*args, **kw)
     new_fn.__doc__ = fn.__doc__
@@ -286,7 +304,7 @@ class FuncProfile(object):
     Profile = Profile
 
     def __init__(self, fn, skip=0, filename=None, immediate=False, dirs=False,
-                 sort=None, entries=40):
+                 sort=None, entries=40, stdout=True):
         """Creates a profiler for a function.
 
         Every profiler has its own log file (the name of which is derived
@@ -299,6 +317,7 @@ class FuncProfile(object):
         self.skip = skip
         self.filename = filename
         self.immediate = immediate
+        self.stdout = stdout
         self.dirs = dirs
         self.sort = sort or ('cumulative', 'time', 'calls')
         if isinstance(self.sort, str):
@@ -332,25 +351,26 @@ class FuncProfile(object):
 
     def print_stats(self):
         """Print profile information to sys.stdout."""
-        funcname = self.fn.__name__
-        filename = self.fn.func_code.co_filename
-        lineno = self.fn.func_code.co_firstlineno
-        print
-        print "*** PROFILER RESULTS ***"
-        print "%s (%s:%s)" % (funcname, filename, lineno)
-        print "function called %d times" % self.ncalls,
-        if self.skipped:
-            print "(%d calls not profiled)" % self.skipped
-        else:
-            print
-        print
         stats = self.stats
         if self.filename:
             stats.dump_stats(self.filename)
-        if not self.dirs:
-            stats.strip_dirs()
-        stats.sort_stats(*self.sort)
-        stats.print_stats(self.entries)
+        if self.stdout:
+            funcname = self.fn.__name__
+            filename = self.fn.__code__.co_filename
+            lineno = self.fn.__code__.co_firstlineno
+            print("")
+            print("*** PROFILER RESULTS ***")
+            print("%s (%s:%s)" % (funcname, filename, lineno))
+            if self.skipped:
+                skipped = " (%d calls not profiled)" % self.skipped
+            else:
+                skipped = ""
+            print("function called %d times%s" % (self.ncalls, skipped))
+            print("")
+            if not self.dirs:
+                stats.strip_dirs()
+            stats.sort_stats(*self.sort)
+            stats.print_stats(self.entries)
 
     def reset_stats(self):
         """Reset accumulated profiler statistics."""
@@ -364,6 +384,7 @@ class FuncProfile(object):
 
         This function is registered as an atexit hook.
         """
+        # XXX: uh, why even register this as an atexit hook if immediate is True?
         if not self.immediate:
             self.print_stats()
 
@@ -383,13 +404,14 @@ if cProfile is not None:
 
 if hotshot is not None:
 
-    class HotShotFuncProfile(object):
+    class HotShotFuncProfile(FuncProfile):
         """Profiler for a function (uses hotshot)."""
 
         # This flag is shared between all instances
         in_profiler = False
 
-        def __init__(self, fn, skip=0, filename=None):
+        def __init__(self, fn, skip=0, filename=None, immediate=False,
+                     dirs=False, sort=None, entries=40, stdout=True):
             """Creates a profiler for a function.
 
             Every profiler has its own log file (the name of which is derived
@@ -401,17 +423,13 @@ if hotshot is not None:
             The log file is not removed and remains there to clutter the
             current working directory.
             """
-            self.fn = fn
-            self.filename = filename
-            if self.filename:
+            if filename:
                 self.logfilename = filename + ".raw"
             else:
-                self.logfilename = fn.__name__ + ".prof"
-            self.profiler = hotshot.Profile(self.logfilename)
-            self.ncalls = 0
-            self.skip = skip
-            self.skipped = 0
-            atexit.register(self.atexit)
+                self.logfilename = "%s.%d.prof" % (fn.__name__, os.getpid())
+            super(HotShotFuncProfile, self).__init__(
+                fn, skip=skip, filename=filename, immediate=immediate,
+                dirs=dirs, sort=sort, entries=entries, stdout=stdout)
 
         def __call__(self, *args, **kw):
             """Profile a singe call to the function."""
@@ -423,42 +441,31 @@ if hotshot is not None:
             if HotShotFuncProfile.in_profiler:
                 # handle recursive calls
                 return self.fn(*args, **kw)
+            if self.profiler is None:
+                self.profiler = hotshot.Profile(self.logfilename)
             try:
                 HotShotFuncProfile.in_profiler = True
                 return self.profiler.runcall(self.fn, *args, **kw)
             finally:
                 HotShotFuncProfile.in_profiler = False
+                if self.immediate:
+                    self.print_stats()
+                    self.reset_stats()
 
-        def atexit(self):
-            """Stop profiling and print profile information to sys.stderr.
-
-            This function is registered as an atexit hook.
-            """
-            self.profiler.close()
-            funcname = self.fn.__name__
-            filename = self.fn.func_code.co_filename
-            lineno = self.fn.func_code.co_firstlineno
-            print
-            print "*** PROFILER RESULTS ***"
-            print "%s (%s:%s)" % (funcname, filename, lineno)
-            print "function called %d times" % self.ncalls,
-            if self.skipped:
-                print "(%d calls not profiled)" % self.skipped
+        def print_stats(self):
+            if self.profiler is None:
+                self.stats = pstats.Stats(Profile())
             else:
-                print
-            print
-            stats = hotshot.stats.load(self.logfilename)
-            # hotshot.stats.load takes ages, and the .prof file eats megabytes, but
-            # a saved stats object is small and fast
-            if self.filename:
-                stats.dump_stats(self.filename)
-            # it is best to save before strip_dirs
-            stats.strip_dirs()
-            stats.sort_stats('cumulative', 'time', 'calls')
-            stats.print_stats(40)
+                self.profiler.close()
+                self.stats = hotshot.stats.load(self.logfilename)
+            super(HotShotFuncProfile, self).print_stats()
+
+        def reset_stats(self):
+            self.profiler = None
+            self.ncalls = 0
+            self.skipped = 0
 
     AVAILABLE_PROFILERS['hotshot'] = HotShotFuncProfile
-
 
     class HotShotFuncCoverage:
         """Coverage analysis for a function (uses _hotshot).
@@ -482,7 +489,7 @@ if hotshot is not None:
             current working directory.
             """
             self.fn = fn
-            self.logfilename = fn.__name__ + ".cprof"
+            self.logfilename = "%s.%d.cprof" % (fn.__name__, os.getpid())
             self.profiler = _hotshot.coverage(self.logfilename)
             self.ncalls = 0
             atexit.register(self.atexit)
@@ -490,7 +497,11 @@ if hotshot is not None:
         def __call__(self, *args, **kw):
             """Profile a singe call to the function."""
             self.ncalls += 1
-            return self.profiler.runcall(self.fn, args, kw)
+            old_trace = sys.gettrace()
+            try:
+                return self.profiler.runcall(self.fn, args, kw)
+            finally: # pragma: nocover
+                sys.settrace(old_trace)
 
         def atexit(self):
             """Stop profiling and print profile information to sys.stderr.
@@ -499,13 +510,13 @@ if hotshot is not None:
             """
             self.profiler.close()
             funcname = self.fn.__name__
-            filename = self.fn.func_code.co_filename
-            lineno = self.fn.func_code.co_firstlineno
-            print
-            print "*** COVERAGE RESULTS ***"
-            print "%s (%s:%s)" % (funcname, filename, lineno)
-            print "function called %d times" % self.ncalls
-            print
+            filename = self.fn.__code__.co_filename
+            lineno = self.fn.__code__.co_firstlineno
+            print("")
+            print("*** COVERAGE RESULTS ***")
+            print("%s (%s:%s)" % (funcname, filename, lineno))
+            print("function called %d times" % self.ncalls)
+            print("")
             fs = FuncSource(self.fn)
             reader = hotshot.log.LogReader(self.logfilename)
             for what, (filename, lineno, funcname), tdelta in reader:
@@ -522,7 +533,10 @@ if hotshot is not None:
                         lineno = fs.firstcodelineno
                     fs.mark(lineno)
             reader.close()
-            print fs
+            print(fs)
+            never_executed = fs.count_never_executed()
+            if never_executed:
+                print("%d lines were not executed." % never_executed)
 
 
 class TraceFuncCoverage:
@@ -552,19 +566,21 @@ class TraceFuncCoverage:
         current working directory.
         """
         self.fn = fn
-        self.logfilename = fn.__name__ + ".cprof"
+        self.logfilename = "%s.%d.cprof" % (fn.__name__, os.getpid())
         self.ncalls = 0
         atexit.register(self.atexit)
 
     def __call__(self, *args, **kw):
         """Profile a singe call to the function."""
         self.ncalls += 1
-        if TraceFuncCoverage.tracing:
+        if TraceFuncCoverage.tracing: # pragma: nocover
             return self.fn(*args, **kw)
+        old_trace = sys.gettrace()
         try:
             TraceFuncCoverage.tracing = True
             return self.tracer.runfunc(self.fn, *args, **kw)
-        finally:
+        finally: # pragma: nocover
+            sys.settrace(old_trace)
             TraceFuncCoverage.tracing = False
 
     def atexit(self):
@@ -573,22 +589,22 @@ class TraceFuncCoverage:
         This function is registered as an atexit hook.
         """
         funcname = self.fn.__name__
-        filename = self.fn.func_code.co_filename
-        lineno = self.fn.func_code.co_firstlineno
-        print
-        print "*** COVERAGE RESULTS ***"
-        print "%s (%s:%s)" % (funcname, filename, lineno)
-        print "function called %d times" % self.ncalls
-        print
+        filename = self.fn.__code__.co_filename
+        lineno = self.fn.__code__.co_firstlineno
+        print("")
+        print("*** COVERAGE RESULTS ***")
+        print("%s (%s:%s)" % (funcname, filename, lineno))
+        print("function called %d times" % self.ncalls)
+        print("")
         fs = FuncSource(self.fn)
         for (filename, lineno), count in self.tracer.counts.items():
             if filename != fs.filename:
                 continue
             fs.mark(lineno, count)
-        print fs
+        print(fs)
         never_executed = fs.count_never_executed()
         if never_executed:
-            print "%d lines were not executed." % never_executed
+            print("%d lines were not executed." % never_executed)
 
 
 class FuncSource:
@@ -599,20 +615,28 @@ class FuncSource:
     def __init__(self, fn):
         self.fn = fn
         self.filename = inspect.getsourcefile(fn)
-        self.source, self.firstlineno = inspect.getsourcelines(fn)
         self.sourcelines = {}
-        self.firstcodelineno = self.firstlineno
-        self.find_source_lines()
+        self.source = []
+        self.firstlineno = self.firstcodelineno = 0
+        try:
+            self.source, self.firstlineno = inspect.getsourcelines(fn)
+            self.firstcodelineno = self.firstlineno
+            self.find_source_lines()
+        except IOError:
+            self.filename = None
 
     def find_source_lines(self):
         """Mark all executable source lines in fn as executed 0 times."""
+        if self.filename is None:
+            return
         strs = trace.find_strings(self.filename)
-        lines = trace.find_lines_from_code(self.fn.func_code, strs)
-        self.firstcodelineno = sys.maxint
+        lines = trace.find_lines_from_code(self.fn.__code__, strs)
         for lineno in lines:
-            self.firstcodelineno = min(self.firstcodelineno, lineno)
             self.sourcelines.setdefault(lineno, 0)
-        if self.firstcodelineno == sys.maxint:
+        if lines:
+            self.firstcodelineno = min(lines)
+        else:  # pragma: nocover
+            # This branch cannot be reached, I'm just being paranoid.
             self.firstcodelineno = self.firstlineno
 
     def mark(self, lineno, count=1):
@@ -635,6 +659,8 @@ class FuncSource:
 
     def __str__(self):
         """Return annotated source code for the function."""
+        if self.filename is None:
+            return "cannot show coverage data since co_filename is None"
         lines = []
         lineno = self.firstlineno
         for line in self.source:
@@ -642,7 +668,10 @@ class FuncSource:
             if counter is None:
                 prefix = ' ' * 7
             elif counter == 0:
-                if self.blank_rx.match(line):
+                if self.blank_rx.match(line):  # pragma: nocover
+                    # This is an workaround for an ancient bug I can't
+                    # reproduce, perhaps because it was fixed, or perhaps
+                    # because I can't remember all the details.
                     prefix = ' ' * 7
                 else:
                     prefix = '>' * 6 + ' '
@@ -653,7 +682,7 @@ class FuncSource:
         return ''.join(lines)
 
 
-def timecall(fn=None, immediate=True, timer=time.time):
+def timecall(fn=None, immediate=True, timer=None):
     """Wrap `fn` and print its execution time.
 
     Example::
@@ -675,14 +704,17 @@ def timecall(fn=None, immediate=True, timer=time.time):
         @timecall(timer=time.clock)
 
     """
-    if fn is None: # @timecall() syntax -- we are a decorator maker
+    if fn is None:  # @timecall() syntax -- we are a decorator maker
         def decorator(fn):
             return timecall(fn, immediate=immediate, timer=timer)
         return decorator
     # @timecall syntax -- we are a decorator.
+    if timer is None:
+        timer = time.time
     fp = FuncTimer(fn, immediate=immediate, timer=timer)
     # We cannot return fp or fp.__call__ directly as that would break method
     # definitions, instead we need to return a plain function.
+
     def new_fn(*args, **kw):
         return fp(*args, **kw)
     new_fn.__doc__ = fn.__doc__
@@ -716,18 +748,45 @@ class FuncTimer(object):
             self.totaltime += duration
             if self.immediate:
                 funcname = fn.__name__
-                filename = fn.func_code.co_filename
-                lineno = fn.func_code.co_firstlineno
-                print >> sys.stderr, "\n  %s (%s:%s):\n    %.3f seconds\n" % (
-                                        funcname, filename, lineno, duration)
+                filename = fn.__code__.co_filename
+                lineno = fn.__code__.co_firstlineno
+                sys.stderr.write("\n  %s (%s:%s):\n    %.3f seconds\n\n" % (
+                    funcname, filename, lineno, duration
+                ))
+                sys.stderr.flush()
+
     def atexit(self):
         if not self.ncalls:
             return
         funcname = self.fn.__name__
-        filename = self.fn.func_code.co_filename
-        lineno = self.fn.func_code.co_firstlineno
-        print ("\n  %s (%s:%s):\n"
-               "    %d calls, %.3f seconds (%.3f seconds per call)\n" % (
-                                funcname, filename, lineno, self.ncalls,
-                                self.totaltime, self.totaltime / self.ncalls))
+        filename = self.fn.__code__.co_filename
+        lineno = self.fn.__code__.co_firstlineno
+        print("\n  %s (%s:%s):\n"
+              "    %d calls, %.3f seconds (%.3f seconds per call)\n" % (
+                  funcname, filename, lineno, self.ncalls,
+                  self.totaltime, self.totaltime / self.ncalls)
+              )
 
+if __name__ == '__main__':
+
+    local = dict((name, globals()[name]) for name in __all__)
+    message = """********
+Injected `profilehooks`
+--------
+{}
+********
+""".format("\n".join(local.keys()))
+
+    def interact_():
+        from code import interact
+        interact(message, local=local)
+
+    def run_():
+        from runpy import run_module
+        print(message)
+        run_module(sys.argv[1], init_globals=local)
+
+    if len(sys.argv) == 1:
+        interact_()
+    else:
+        run_()

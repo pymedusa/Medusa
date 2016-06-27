@@ -1,5 +1,6 @@
 # orm/descriptor_props.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -38,7 +39,7 @@ class DescriptorProperty(MapperProperty):
 
             if hasattr(prop, 'get_history'):
                 def get_history(self, state, dict_,
-                        passive=attributes.PASSIVE_OFF):
+                                passive=attributes.PASSIVE_OFF):
                     return prop.get_history(state, dict_, passive)
 
         if self.descriptor is None:
@@ -62,16 +63,15 @@ class DescriptorProperty(MapperProperty):
                 fdel=fdel,
             )
 
-        proxy_attr = attributes.\
-                    create_proxied_attribute(self.descriptor)\
-                    (
-                        self.parent.class_,
-                        self.key,
-                        self.descriptor,
-                        lambda: self._comparator_factory(mapper),
-                        doc=self.doc,
-                        original_property=self
-                    )
+        proxy_attr = attributes.create_proxied_attribute(
+            self.descriptor)(
+                self.parent.class_,
+                self.key,
+                self.descriptor,
+                lambda: self._comparator_factory(mapper),
+                doc=self.doc,
+                original_property=self
+            )
         proxy_attr.impl = _ProxyImpl(self.key)
         mapper.class_manager.instrument_attribute(self.key, proxy_attr)
 
@@ -89,11 +89,12 @@ class CompositeProperty(DescriptorProperty):
         :ref:`mapper_composite`
 
     """
+
     def __init__(self, class_, *attrs, **kwargs):
         """Return a composite column-based property for use with a Mapper.
 
-        See the mapping documentation section :ref:`mapper_composite` for a full
-        usage example.
+        See the mapping documentation section :ref:`mapper_composite` for a
+        full usage example.
 
         The :class:`.MapperProperty` returned by :func:`.composite`
         is the :class:`.CompositeProperty`.
@@ -117,13 +118,14 @@ class CompositeProperty(DescriptorProperty):
           A group name for this property when marked as deferred.
 
         :param deferred:
-          When True, the column property is "deferred", meaning that it does not
-          load immediately, and is instead loaded when the attribute is first
-          accessed on an instance.  See also :func:`~sqlalchemy.orm.deferred`.
+          When True, the column property is "deferred", meaning that it does
+          not load immediately, and is instead loaded when the attribute is
+          first accessed on an instance.  See also
+          :func:`~sqlalchemy.orm.deferred`.
 
         :param comparator_factory:  a class which extends
-          :class:`.CompositeProperty.Comparator` which provides custom SQL clause
-          generation for comparison operations.
+          :class:`.CompositeProperty.Comparator` which provides custom SQL
+          clause generation for comparison operations.
 
         :param doc:
           optional string that will be applied as the doc on the
@@ -137,10 +139,11 @@ class CompositeProperty(DescriptorProperty):
         :param extension:
           an :class:`.AttributeExtension` instance,
           or list of extensions, which will be prepended to the list of
-          attribute listeners for the resulting descriptor placed on the class.
-          **Deprecated.**  Please see :class:`.AttributeEvents`.
+          attribute listeners for the resulting descriptor placed on the
+          class.  **Deprecated.**  Please see :class:`.AttributeEvents`.
 
         """
+        super(CompositeProperty, self).__init__()
 
         self.attrs = attrs
         self.composite_class = class_
@@ -148,13 +151,12 @@ class CompositeProperty(DescriptorProperty):
         self.deferred = kwargs.get('deferred', False)
         self.group = kwargs.get('group', None)
         self.comparator_factory = kwargs.pop('comparator_factory',
-                                            self.__class__.Comparator)
+                                             self.__class__.Comparator)
         if 'info' in kwargs:
             self.info = kwargs.pop('info')
 
         util.set_creation_order(self)
         self._create_descriptor()
-
 
     def instrument_class(self, mapper):
         super(CompositeProperty, self).instrument_class(mapper)
@@ -240,16 +242,17 @@ class CompositeProperty(DescriptorProperty):
         props = []
         for attr in self.attrs:
             if isinstance(attr, str):
-                prop = self.parent.get_property(attr, _configure_mappers=False)
+                prop = self.parent.get_property(
+                    attr, _configure_mappers=False)
             elif isinstance(attr, schema.Column):
                 prop = self.parent._columntoproperty[attr]
             elif isinstance(attr, attributes.InstrumentedAttribute):
                 prop = attr.property
             else:
                 raise sa_exc.ArgumentError(
-                        "Composite expects Column objects or mapped "
-                        "attributes/attribute names as arguments, got: %r"
-                        % (attr,))
+                    "Composite expects Column objects or mapped "
+                    "attributes/attribute names as arguments, got: %r"
+                    % (attr,))
             props.append(prop)
         return props
 
@@ -267,8 +270,8 @@ class CompositeProperty(DescriptorProperty):
             if self.deferred:
                 prop.deferred = self.deferred
                 prop.strategy_class = prop._strategy_lookup(
-                                                ("deferred", True),
-                                                ("instrument", True))
+                    ("deferred", True),
+                    ("instrument", True))
             prop.group = self.group
 
     def _setup_event_handlers(self):
@@ -287,11 +290,11 @@ class CompositeProperty(DescriptorProperty):
                 if k not in dict_:
                     return
 
-            #assert self.key not in dict_
+            # assert self.key not in dict_
             dict_[self.key] = self.composite_class(
-                    *[state.dict[key] for key in
-                    self._attribute_keys]
-                )
+                *[state.dict[key] for key in
+                  self._attribute_keys]
+            )
 
         def expire_handler(state, keys):
             if keys is None or set(self._attribute_keys).intersection(keys):
@@ -308,15 +311,15 @@ class CompositeProperty(DescriptorProperty):
             state.dict.pop(self.key, None)
 
         event.listen(self.parent, 'after_insert',
-            insert_update_handler, raw=True)
+                     insert_update_handler, raw=True)
         event.listen(self.parent, 'after_update',
-            insert_update_handler, raw=True)
+                     insert_update_handler, raw=True)
         event.listen(self.parent, 'load',
-            load_handler, raw=True, propagate=True)
+                     load_handler, raw=True, propagate=True)
         event.listen(self.parent, 'refresh',
-            load_handler, raw=True, propagate=True)
+                     load_handler, raw=True, propagate=True)
         event.listen(self.parent, 'expire',
-            expire_handler, raw=True, propagate=True)
+                     expire_handler, raw=True, propagate=True)
 
         # TODO: need a deserialize hook here
 
@@ -367,13 +370,13 @@ class CompositeProperty(DescriptorProperty):
         def __init__(self, property, expr):
             self.property = property
             super(CompositeProperty.CompositeBundle, self).__init__(
-                        property.key, *expr)
+                property.key, *expr)
 
         def create_row_processor(self, query, procs, labels):
-            def proc(row, result):
-                return self.property.composite_class(*[proc(row, result) for proc in procs])
+            def proc(row):
+                return self.property.composite_class(
+                    *[proc(row) for proc in procs])
             return proc
-
 
     class Comparator(PropComparator):
         """Produce boolean, comparison, and other operators for
@@ -394,7 +397,6 @@ class CompositeProperty(DescriptorProperty):
 
         """
 
-
         __hash__ = None
 
         @property
@@ -402,20 +404,22 @@ class CompositeProperty(DescriptorProperty):
             return self.__clause_element__()
 
         def __clause_element__(self):
-            return expression.ClauseList(group=False, *self._comparable_elements)
+            return expression.ClauseList(
+                group=False, *self._comparable_elements)
 
         def _query_clause_element(self):
-            return CompositeProperty.CompositeBundle(self.prop, self.__clause_element__())
+            return CompositeProperty.CompositeBundle(
+                self.prop, self.__clause_element__())
 
         @util.memoized_property
         def _comparable_elements(self):
             if self._adapt_to_entity:
                 return [
-                        getattr(
-                                self._adapt_to_entity.entity,
-                                prop.key
-                        ) for prop in self.prop._comparable_elements
-                        ]
+                    getattr(
+                        self._adapt_to_entity.entity,
+                        prop.key
+                    ) for prop in self.prop._comparable_elements
+                ]
             else:
                 return self.prop._comparable_elements
 
@@ -468,11 +472,12 @@ class ConcreteInheritedProperty(DescriptorProperty):
         return comparator_callable
 
     def __init__(self):
+        super(ConcreteInheritedProperty, self).__init__()
         def warn():
             raise AttributeError("Concrete %s does not implement "
-                "attribute %r at the instance level.  Add this "
-                "property explicitly to %s." %
-                (self.parent, self.key, self.parent))
+                                 "attribute %r at the instance level.  Add "
+                                 "this property explicitly to %s." %
+                                 (self.parent, self.key, self.parent))
 
         class NoninheritedConcreteProp(object):
             def __set__(s, obj, value):
@@ -492,8 +497,8 @@ class ConcreteInheritedProperty(DescriptorProperty):
 class SynonymProperty(DescriptorProperty):
 
     def __init__(self, name, map_column=None,
-                            descriptor=None, comparator_factory=None,
-                            doc=None):
+                 descriptor=None, comparator_factory=None,
+                 doc=None, info=None):
         """Denote an attribute name as a synonym to a mapped property,
         in that the attribute will mirror the value and expression behavior
         of another attribute.
@@ -522,11 +527,16 @@ class SynonymProperty(DescriptorProperty):
                     job_status = synonym("_job_status", map_column=True)
 
           The above class ``MyClass`` will now have the ``job_status``
-          :class:`.Column` object mapped to the attribute named ``_job_status``,
-          and the attribute named ``job_status`` will refer to the synonym
-          itself.  This feature is typically used in conjunction with the
-          ``descriptor`` argument in order to link a user-defined descriptor
-          as a "wrapper" for an existing column.
+          :class:`.Column` object mapped to the attribute named
+          ``_job_status``, and the attribute named ``job_status`` will refer
+          to the synonym itself.  This feature is typically used in
+          conjunction with the ``descriptor`` argument in order to link a
+          user-defined descriptor as a "wrapper" for an existing column.
+
+        :param info: Optional data dictionary which will be populated into the
+            :attr:`.InspectionAttr.info` attribute of this object.
+
+            .. versionadded:: 1.0.0
 
         :param comparator_factory: A subclass of :class:`.PropComparator`
           that will provide custom comparison behavior at the SQL expression
@@ -547,12 +557,15 @@ class SynonymProperty(DescriptorProperty):
             more complicated attribute-wrapping schemes than synonyms.
 
         """
+        super(SynonymProperty, self).__init__()
 
         self.name = name
         self.map_column = map_column
         self.descriptor = descriptor
         self.comparator_factory = comparator_factory
         self.doc = doc or (descriptor and descriptor.__doc__) or None
+        if info:
+            self.info = info
 
         util.set_creation_order(self)
 
@@ -579,12 +592,12 @@ class SynonymProperty(DescriptorProperty):
                 raise sa_exc.ArgumentError(
                     "Can't compile synonym '%s': no column on table "
                     "'%s' named '%s'"
-                     % (self.name, parent.mapped_table.description, self.key))
+                    % (self.name, parent.mapped_table.description, self.key))
             elif parent.mapped_table.c[self.key] in \
                     parent._columntoproperty and \
                     parent._columntoproperty[
-                                            parent.mapped_table.c[self.key]
-                                        ].key == self.name:
+                parent.mapped_table.c[self.key]
+            ].key == self.name:
                 raise sa_exc.ArgumentError(
                     "Can't call map_column=True for synonym %r=%r, "
                     "a ColumnProperty already exists keyed to the name "
@@ -593,9 +606,9 @@ class SynonymProperty(DescriptorProperty):
                 )
             p = properties.ColumnProperty(parent.mapped_table.c[self.key])
             parent._configure_property(
-                                    self.name, p,
-                                    init=init,
-                                    setparent=True)
+                self.name, p,
+                init=init,
+                setparent=True)
             p._mapped_by_synonym = self.key
 
         self.parent = parent
@@ -605,7 +618,8 @@ class SynonymProperty(DescriptorProperty):
 class ComparableProperty(DescriptorProperty):
     """Instruments a Python property for use in query expressions."""
 
-    def __init__(self, comparator_factory, descriptor=None, doc=None):
+    def __init__(
+            self, comparator_factory, descriptor=None, doc=None, info=None):
         """Provides a method of applying a :class:`.PropComparator`
         to any Python descriptor attribute.
 
@@ -645,7 +659,8 @@ class ComparableProperty(DescriptorProperty):
                 id = Column(Integer, primary_key=True)
                 word = Column(String)
                 word_insensitive = comparable_property(lambda prop, mapper:
-                                CaseInsensitiveComparator(mapper.c.word, mapper)
+                                CaseInsensitiveComparator(
+                                    mapper.c.word, mapper)
                             )
 
 
@@ -666,13 +681,19 @@ class ComparableProperty(DescriptorProperty):
           The like-named descriptor will be automatically retrieved from the
           mapped class if left blank in a ``properties`` declaration.
 
+        :param info: Optional data dictionary which will be populated into the
+            :attr:`.InspectionAttr.info` attribute of this object.
+
+            .. versionadded:: 1.0.0
+
         """
+        super(ComparableProperty, self).__init__()
         self.descriptor = descriptor
         self.comparator_factory = comparator_factory
         self.doc = doc or (descriptor and descriptor.__doc__) or None
+        if info:
+            self.info = info
         util.set_creation_order(self)
 
     def _comparator_factory(self, mapper):
         return self.comparator_factory(self, mapper)
-
-

@@ -1,5 +1,6 @@
 # sql/__init__.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -37,6 +38,7 @@ from .expression import (
     false,
     False_,
     func,
+    funcfilter,
     insert,
     intersect,
     intersect_all,
@@ -62,9 +64,10 @@ from .expression import (
     union,
     union_all,
     update,
-    )
+)
 
 from .visitors import ClauseVisitor
+
 
 def __go(lcls):
     global __all__
@@ -73,7 +76,7 @@ def __go(lcls):
     import inspect as _inspect
 
     __all__ = sorted(name for name, obj in lcls.items()
-                 if not (name.startswith('_') or _inspect.ismodule(obj)))
+                     if not (name.startswith('_') or _inspect.ismodule(obj)))
 
     from .annotation import _prepare_annotations, Annotated
     from .elements import AnnotatedColumnElement, ClauseList
@@ -87,4 +90,3 @@ def __go(lcls):
     from . import naming
 
 __go(locals())
-

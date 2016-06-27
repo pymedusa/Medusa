@@ -1,12 +1,12 @@
 from __future__ import with_statement
-from dogpile.core import Lock, NeedRegenerationException
-from dogpile.core.nameregistry import NameRegistry
+from .. import Lock, NeedRegenerationException
+from ..util import NameRegistry
 from . import exception
-from .util import function_key_generator, PluginLoader, \
-    memoized_property, coerce_string_conf, function_multi_key_generator
+from ..util import PluginLoader, memoized_property, coerce_string_conf
+from .util import function_key_generator, function_multi_key_generator
 from .api import NO_VALUE, CachedValue
 from .proxy import ProxyBackend
-from . import compat
+from ..util import compat
 import time
 import datetime
 from numbers import Number
@@ -169,10 +169,7 @@ class CacheRegion(object):
         self.name = name
         self.function_key_generator = function_key_generator
         self.function_multi_key_generator = function_multi_key_generator
-        if key_mangler:
-            self.key_mangler = key_mangler
-        else:
-            self.key_mangler = None
+        self.key_mangler = self._user_defined_key_mangler = key_mangler
         self._hard_invalidated = None
         self._soft_invalidated = None
         self.async_creation_runner = async_creation_runner
@@ -183,7 +180,8 @@ class CacheRegion(object):
             arguments=None,
             _config_argument_dict=None,
             _config_prefix=None,
-            wrap=None
+            wrap=None,
+            replace_existing_backend=False,
     ):
         """Configure a :class:`.CacheRegion`.
 
@@ -223,12 +221,20 @@ class CacheRegion(object):
 
             :ref:`changing_backend_behavior`
 
+        :param replace_existing_backend: if True, the existing cache backend
+         will be replaced.  Without this flag, an exception is raised if
+         a backend is already configured.
+
+         .. versionadded:: 0.5.7
+
+
          """
 
-        if "backend" in self.__dict__:
+        if "backend" in self.__dict__ and not replace_existing_backend:
             raise exception.RegionAlreadyConfigured(
                 "This region is already "
-                "configured with backend: %s"
+                "configured with backend: %s.  "
+                "Specify replace_existing_backend=True to replace."
                 % self.backend)
         backend_cls = _backend_loader.load(backend)
         if _config_argument_dict:
@@ -248,7 +254,7 @@ class CacheRegion(object):
             raise exception.ValidationError(
                 'expiration_time is not a number or timedelta.')
 
-        if self.key_mangler is None:
+        if not self._user_defined_key_mangler:
             self.key_mangler = self.backend.key_mangler
 
         self._lock_registry = NameRegistry(self._create_mutex)
@@ -666,6 +672,13 @@ class CacheRegion(object):
         and :meth:`.Region.set_multi` to get and set values from the
         backend.
 
+        If you are using a :class:`.CacheBackend` or :class:`.ProxyBackend`
+        that modifies values, take note this function invokes
+        ``.set_multi()`` for newly generated values using the same values it
+        returns to the calling function. A correct implementation of
+        ``.set_multi()`` will not modify values in-place on the submitted
+        ``mapping`` dict.
+
         :param keys: Sequence of keys to be retrieved.
 
         :param creator: function which accepts a sequence of keys and
@@ -1061,6 +1074,7 @@ class CacheRegion(object):
             decorate.invalidate = invalidate
             decorate.refresh = refresh
             decorate.get = get
+            decorate.original = fn
 
             return decorate
         return decorator

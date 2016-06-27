@@ -1,5 +1,6 @@
 # sql/functions.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -8,11 +9,11 @@
 
 """
 from . import sqltypes, schema
-from .base import Executable
+from .base import Executable, ColumnCollection
 from .elements import ClauseList, Cast, Extract, _literal_as_binds, \
-        literal_column, _type_from_args, ColumnElement, _clone,\
-        Over, BindParameter
-from .selectable import FromClause, Select
+    literal_column, _type_from_args, ColumnElement, _clone,\
+    Over, BindParameter, FunctionFilter
+from .selectable import FromClause, Select, Alias
 
 from . import operators
 from .visitors import VisitableType
@@ -57,21 +58,33 @@ class FunctionElement(Executable, ColumnElement, FromClause):
         """
         args = [_literal_as_binds(c, self.name) for c in clauses]
         self.clause_expr = ClauseList(
-                                operator=operators.comma_op,
-                                 group_contents=True, *args).\
-                                 self_group()
+            operator=operators.comma_op,
+            group_contents=True, *args).\
+            self_group()
 
     def _execute_on_connection(self, connection, multiparams, params):
         return connection._execute_function(self, multiparams, params)
 
     @property
     def columns(self):
-        """Fulfill the 'columns' contract of :class:`.ColumnElement`.
+        """The set of columns exported by this :class:`.FunctionElement`.
 
-        Returns a single-element list consisting of this object.
+        Function objects currently have no result column names built in;
+        this method returns a single-element column collection with
+        an anonymously named column.
+
+        An interim approach to providing named columns for a function
+        as a FROM clause is to build a :func:`.select` with the
+        desired columns::
+
+            from sqlalchemy.sql import column
+
+            stmt = select([column('x'), column('y')]).\
+                select_from(func.myfunction())
+
 
         """
-        return [self]
+        return ColumnCollection(self.label(None))
 
     @util.memoized_property
     def clauses(self):
@@ -103,6 +116,35 @@ class FunctionElement(Executable, ColumnElement, FromClause):
         """
         return Over(self, partition_by=partition_by, order_by=order_by)
 
+    def filter(self, *criterion):
+        """Produce a FILTER clause against this function.
+
+        Used against aggregate and window functions,
+        for database backends that support the "FILTER" clause.
+
+        The expression::
+
+            func.count(1).filter(True)
+
+        is shorthand for::
+
+            from sqlalchemy import funcfilter
+            funcfilter(func.count(1), True)
+
+        .. versionadded:: 1.0.0
+
+        .. seealso::
+
+            :class:`.FunctionFilter`
+
+            :func:`.funcfilter`
+
+
+        """
+        if not criterion:
+            return self
+        return FunctionFilter(self, *criterion)
+
     @property
     def _from_objects(self):
         return self.clauses._from_objects
@@ -114,6 +156,38 @@ class FunctionElement(Executable, ColumnElement, FromClause):
         self.clause_expr = clone(self.clause_expr, **kw)
         self._reset_exported()
         FunctionElement.clauses._reset(self)
+
+    def alias(self, name=None, flat=False):
+        """Produce a :class:`.Alias` construct against this
+        :class:`.FunctionElement`.
+
+        This construct wraps the function in a named alias which
+        is suitable for the FROM clause, in the style accepted for example
+        by Postgresql.
+
+        e.g.::
+
+            from sqlalchemy.sql import column
+
+            stmt = select([column('data_view')]).\\
+                select_from(SomeTable).\\
+                select_from(func.unnest(SomeTable.data).alias('data_view')
+            )
+
+        Would produce:
+
+        .. sourcecode:: sql
+
+            SELECT data_view
+            FROM sometable, unnest(sometable.data) AS data_view
+
+        .. versionadded:: 0.9.8 The :meth:`.FunctionElement.alias` method
+           is now supported.  Previously, this method's behavior was
+           undefined and did not behave consistently across versions.
+
+        """
+
+        return Alias(self, name)
 
     def select(self):
         """Produce a :func:`~.expression.select` construct
@@ -159,7 +233,7 @@ class FunctionElement(Executable, ColumnElement, FromClause):
 
     def _bind_param(self, operator, obj):
         return BindParameter(None, obj, _compared_to_operator=operator,
-                                _compared_to_type=self.type, unique=True)
+                             _compared_to_type=self.type, unique=True)
 
 
 class _FunctionGenerator(object):
@@ -211,13 +285,13 @@ func = _FunctionGenerator()
    :data:`.func` is a special object instance which generates SQL
    functions based on name-based attributes, e.g.::
 
-        >>> print func.count(1)
+        >>> print(func.count(1))
         count(:param_1)
 
    The element is a column-oriented SQL element like any other, and is
    used in that way::
 
-        >>> print select([func.count(table.c.id)])
+        >>> print(select([func.count(table.c.id)]))
         SELECT count(sometable.id) FROM sometable
 
    Any name can be given to :data:`.func`. If the function name is unknown to
@@ -225,13 +299,13 @@ func = _FunctionGenerator()
    which SQLAlchemy is aware of, the name may be interpreted as a *generic
    function* which will be compiled appropriately to the target database::
 
-        >>> print func.current_timestamp()
+        >>> print(func.current_timestamp())
         CURRENT_TIMESTAMP
 
    To call functions which are present in dot-separated packages,
    specify them in the same manner::
 
-        >>> print func.stats.yield_curve(5, 10)
+        >>> print(func.stats.yield_curve(5, 10))
         stats.yield_curve(:yield_curve_1, :yield_curve_2)
 
    SQLAlchemy can be made aware of the return type of functions to enable
@@ -240,8 +314,8 @@ func = _FunctionGenerator()
    treated as a string in expressions, specify
    :class:`~sqlalchemy.types.Unicode` as the type:
 
-        >>> print func.my_string(u'hi', type_=Unicode) + ' ' + \
-        ... func.my_string(u'there', type_=Unicode)
+        >>> print(func.my_string(u'hi', type_=Unicode) + ' ' +
+        ...       func.my_string(u'there', type_=Unicode))
         my_string(:my_string_1) || :my_string_2 || my_string(:my_string_3)
 
    The object returned by a :data:`.func` call is usually an instance of
@@ -251,7 +325,7 @@ func = _FunctionGenerator()
    method of a :class:`.Connection` or :class:`.Engine`, where it will be
    wrapped inside of a SELECT statement first::
 
-        print connection.execute(func.current_timestamp()).scalar()
+        print(connection.execute(func.current_timestamp()).scalar())
 
    In a few exception cases, the :data:`.func` accessor
    will redirect a name to a built-in expression such as :func:`.cast`
@@ -267,9 +341,20 @@ func = _FunctionGenerator()
    calculate their return type automatically. For a listing of known generic
    functions, see :ref:`generic_functions`.
 
+   .. note::
+
+        The :data:`.func` construct has only limited support for calling
+        standalone "stored procedures", especially those with special
+        parameterization concerns.
+
+        See the section :ref:`stored_procedures` for details on how to use
+        the DBAPI-level ``callproc()`` method for fully traditional stored
+        procedures.
+
 """
 
 modifier = _FunctionGenerator(group=False)
+
 
 class Function(FunctionElement):
     """Describe a named SQL function.
@@ -305,9 +390,10 @@ class Function(FunctionElement):
 
     def _bind_param(self, operator, obj):
         return BindParameter(self.name, obj,
-                                _compared_to_operator=operator,
-                                _compared_to_type=self.type,
-                                unique=True)
+                             _compared_to_operator=operator,
+                             _compared_to_type=self.type,
+                             unique=True)
+
 
 class _GenericMeta(VisitableType):
     def __init__(cls, clsname, bases, clsdict):
@@ -403,8 +489,8 @@ class GenericFunction(util.with_metaclass(_GenericMeta, Function)):
         self.packagenames = []
         self._bind = kwargs.get('bind', None)
         self.clause_expr = ClauseList(
-                operator=operators.comma_op,
-                group_contents=True, *parsed_args).self_group()
+            operator=operators.comma_op,
+            group_contents=True, *parsed_args).self_group()
         self.type = sqltypes.to_instance(
             kwargs.pop("type_", None) or getattr(self, 'type', None))
 
@@ -414,7 +500,7 @@ register_function("extract", Extract)
 
 class next_value(GenericFunction):
     """Represent the 'next value', given a :class:`.Sequence`
-    as it's single argument.
+    as its single argument.
 
     Compiles into the appropriate function on each backend,
     or will raise NotImplementedError if used on a backend
@@ -426,7 +512,7 @@ class next_value(GenericFunction):
 
     def __init__(self, seq, **kw):
         assert isinstance(seq, schema.Sequence), \
-                "next_value() accepts a Sequence object as input."
+            "next_value() accepts a Sequence object as input."
         self._bind = kw.get('bind', None)
         self.sequence = seq
 

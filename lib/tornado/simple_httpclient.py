@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 from __future__ import absolute_import, division, print_function, with_statement
 
-from tornado.concurrent import is_future
 from tornado.escape import utf8, _unicode
+from tornado import gen
 from tornado.httpclient import HTTPResponse, HTTPError, AsyncHTTPClient, main, _RequestProxy
 from tornado import httputil
 from tornado.http1connection import HTTP1Connection, HTTP1ConnectionParameters
@@ -391,7 +391,9 @@ class _HTTPConnection(httputil.HTTPMessageDelegate):
             self.connection.write(self.request.body)
         elif self.request.body_producer is not None:
             fut = self.request.body_producer(self.connection.write)
-            if is_future(fut):
+            if fut is not None:
+                fut = gen.convert_yielded(fut)
+
                 def on_body_written(fut):
                     fut.result()
                     self.connection.finish()
@@ -427,7 +429,10 @@ class _HTTPConnection(httputil.HTTPMessageDelegate):
         if self.final_callback:
             self._remove_timeout()
             if isinstance(value, StreamClosedError):
-                value = HTTPError(599, "Stream closed")
+                if value.real_error is None:
+                    value = HTTPError(599, "Stream closed")
+                else:
+                    value = value.real_error
             self._run_callback(HTTPResponse(self.request, 599, error=value,
                                             request_time=self.io_loop.time() - self.start_time,
                                             ))
@@ -459,9 +464,12 @@ class _HTTPConnection(httputil.HTTPMessageDelegate):
         if self.request.expect_100_continue and first_line.code == 100:
             self._write_body(False)
             return
-        self.headers = headers
         self.code = first_line.code
         self.reason = first_line.reason
+        self.headers = headers
+
+        if self._should_follow_redirect():
+            return
 
         if self.request.header_callback is not None:
             # Reassemble the start line.
@@ -470,14 +478,17 @@ class _HTTPConnection(httputil.HTTPMessageDelegate):
                 self.request.header_callback("%s: %s\r\n" % (k, v))
             self.request.header_callback('\r\n')
 
+    def _should_follow_redirect(self):
+        return (self.request.follow_redirects and
+                self.request.max_redirects > 0 and
+                self.code in (301, 302, 303, 307))
+
     def finish(self):
         data = b''.join(self.chunks)
         self._remove_timeout()
         original_request = getattr(self.request, "original_request",
                                    self.request)
-        if (self.request.follow_redirects and
-            self.request.max_redirects > 0 and
-                self.code in (301, 302, 303, 307)):
+        if self._should_follow_redirect():
             assert isinstance(self.request, _RequestProxy)
             new_request = copy.copy(self.request.request)
             new_request.url = urlparse.urljoin(self.request.url,
@@ -524,6 +535,9 @@ class _HTTPConnection(httputil.HTTPMessageDelegate):
         self.stream.close()
 
     def data_received(self, chunk):
+        if self._should_follow_redirect():
+            # We're going to follow a redirect so just discard the body.
+            return
         if self.request.streaming_callback is not None:
             self.request.streaming_callback(chunk)
         else:

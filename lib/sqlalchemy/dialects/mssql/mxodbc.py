@@ -1,5 +1,6 @@
 # mssql/mxodbc.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -46,8 +47,8 @@ from ... import types as sqltypes
 from ...connectors.mxodbc import MxODBCConnector
 from .pyodbc import MSExecutionContext_pyodbc, _MSNumeric_pyodbc
 from .base import (MSDialect,
-                                            MSSQLStrictCompiler,
-                                            _MSDateTime, _MSDate, _MSTime)
+                   MSSQLStrictCompiler,
+                   _MSDateTime, _MSDate, _MSTime)
 
 
 class _MSNumeric_mxodbc(_MSNumeric_pyodbc):
@@ -81,7 +82,7 @@ class MSExecutionContext_mxodbc(MSExecutionContext_pyodbc):
     SELECT SCOPE_IDENTITY in cases where OUTPUT clause
     does not work (tables with insert triggers).
     """
-    #todo - investigate whether the pyodbc execution context
+    # todo - investigate whether the pyodbc execution context
     #       is really only being used in cases where OUTPUT
     #       won't work.
 
@@ -90,7 +91,7 @@ class MSDialect_mxodbc(MxODBCConnector, MSDialect):
 
     # this is only needed if "native ODBC" mode is used,
     # which is now disabled by default.
-    #statement_compiler = MSSQLStrictCompiler
+    # statement_compiler = MSSQLStrictCompiler
 
     execution_ctx_cls = MSExecutionContext_mxodbc
 

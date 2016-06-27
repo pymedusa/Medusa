@@ -1,4 +1,5 @@
-# Copyright (C) 2013-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2013-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -7,6 +8,7 @@ from .base import ischema_names
 from ... import types as sqltypes
 
 __all__ = ('INT4RANGE', 'INT8RANGE', 'NUMRANGE')
+
 
 class RangeOperators(object):
     """
@@ -93,6 +95,7 @@ class RangeOperators(object):
             """
             return self.expr.op('+')(other)
 
+
 class INT4RANGE(RangeOperators, sqltypes.TypeEngine):
     """Represent the Postgresql INT4RANGE type.
 
@@ -103,6 +106,7 @@ class INT4RANGE(RangeOperators, sqltypes.TypeEngine):
     __visit_name__ = 'INT4RANGE'
 
 ischema_names['int4range'] = INT4RANGE
+
 
 class INT8RANGE(RangeOperators, sqltypes.TypeEngine):
     """Represent the Postgresql INT8RANGE type.
@@ -115,6 +119,7 @@ class INT8RANGE(RangeOperators, sqltypes.TypeEngine):
 
 ischema_names['int8range'] = INT8RANGE
 
+
 class NUMRANGE(RangeOperators, sqltypes.TypeEngine):
     """Represent the Postgresql NUMRANGE type.
 
@@ -125,6 +130,7 @@ class NUMRANGE(RangeOperators, sqltypes.TypeEngine):
     __visit_name__ = 'NUMRANGE'
 
 ischema_names['numrange'] = NUMRANGE
+
 
 class DATERANGE(RangeOperators, sqltypes.TypeEngine):
     """Represent the Postgresql DATERANGE type.
@@ -137,6 +143,7 @@ class DATERANGE(RangeOperators, sqltypes.TypeEngine):
 
 ischema_names['daterange'] = DATERANGE
 
+
 class TSRANGE(RangeOperators, sqltypes.TypeEngine):
     """Represent the Postgresql TSRANGE type.
 
@@ -147,6 +154,7 @@ class TSRANGE(RangeOperators, sqltypes.TypeEngine):
     __visit_name__ = 'TSRANGE'
 
 ischema_names['tsrange'] = TSRANGE
+
 
 class TSTZRANGE(RangeOperators, sqltypes.TypeEngine):
     """Represent the Postgresql TSTZRANGE type.

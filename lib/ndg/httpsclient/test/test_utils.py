@@ -23,17 +23,17 @@ class TestUtilsModule(unittest.TestCase):
     '''Test ndg.httpsclient.utils module'''
 
     def test01_configuration(self):
-        config = Configuration(SSL.Context(SSL.SSLv3_METHOD), True)
-        self.assert_(config.ssl_context)
-        self.assertEquals(config.debug, True)
+        config = Configuration(SSL.Context(SSL.TLSv1_METHOD), True)
+        self.assertTrue(config.ssl_context)
+        self.assertEqual(config.debug, True)
 
     def test02_fetch_from_url(self):
-        config = Configuration(SSL.Context(SSL.SSLv3_METHOD), True)
+        config = Configuration(SSL.Context(SSL.TLSv1_METHOD), True)
         res = fetch_from_url(Constants.TEST_URI, config)
-        self.assert_(res)
+        self.assertTrue(res)
         
     def test03_open_url(self):
-        config = Configuration(SSL.Context(SSL.SSLv3_METHOD), True)
+        config = Configuration(SSL.Context(SSL.TLSv1_METHOD), True)
         res = open_url(Constants.TEST_URI, config)
         self.assertEqual(res[0], 200, 
                          'open_url for %r failed' % Constants.TEST_URI)
@@ -57,5 +57,6 @@ class TestUtilsModule(unittest.TestCase):
         else:
             del os.environ['no_proxy']
     
+
 if __name__ == "__main__":
     unittest.main()

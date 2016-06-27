@@ -1,5 +1,6 @@
 # orm/exc.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -120,7 +121,7 @@ class ObjectDeletedError(sa_exc.InvalidRequestError):
     def __init__(self, base, state, msg=None):
         if not msg:
             msg = "Instance '%s' has been deleted, or its "\
-             "row is otherwise not present." % base.state_str(state)
+                "row is otherwise not present." % base.state_str(state)
 
         sa_exc.InvalidRequestError.__init__(self, msg)
 
@@ -148,6 +149,7 @@ def _safe_cls_name(cls):
         if cls_name is None:
             cls_name = repr(cls)
     return cls_name
+
 
 @util.dependencies("sqlalchemy.orm.base")
 def _default_unmapped(base, cls):

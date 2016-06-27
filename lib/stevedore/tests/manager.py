@@ -3,13 +3,9 @@
 Extension manager used only for testing.
 """
 
-import logging
 import warnings
 
 from stevedore import extension
-
-
-LOG = logging.getLogger(__name__)
 
 
 class TestExtensionManager(extension.ExtensionManager):

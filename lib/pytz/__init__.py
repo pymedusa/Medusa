@@ -9,8 +9,8 @@ on how to use these modules.
 '''
 
 # The IANA (nee Olson) database is updated several times a year.
-OLSON_VERSION = '2016c'
-VERSION = '2016.3'  # Switching to pip compatible version numbering.
+OLSON_VERSION = '2016d'
+VERSION = '2016.4'  # Switching to pip compatible version numbering.
 __version__ = VERSION
 
 OLSEN_VERSION = OLSON_VERSION # Old releases had this misspelling
@@ -804,6 +804,7 @@ all_timezones = \
  'Asia/Thimbu',
  'Asia/Thimphu',
  'Asia/Tokyo',
+ 'Asia/Tomsk',
  'Asia/Ujung_Pandang',
  'Asia/Ulaanbaatar',
  'Asia/Ulan_Bator',
@@ -930,6 +931,7 @@ all_timezones = \
  'Europe/Jersey',
  'Europe/Kaliningrad',
  'Europe/Kiev',
+ 'Europe/Kirov',
  'Europe/Lisbon',
  'Europe/Ljubljana',
  'Europe/London',
@@ -1360,6 +1362,7 @@ common_timezones = \
  'Asia/Tehran',
  'Asia/Thimphu',
  'Asia/Tokyo',
+ 'Asia/Tomsk',
  'Asia/Ulaanbaatar',
  'Asia/Urumqi',
  'Asia/Ust-Nera',
@@ -1418,6 +1421,7 @@ common_timezones = \
  'Europe/Jersey',
  'Europe/Kaliningrad',
  'Europe/Kiev',
+ 'Europe/Kirov',
  'Europe/Lisbon',
  'Europe/Ljubljana',
  'Europe/London',

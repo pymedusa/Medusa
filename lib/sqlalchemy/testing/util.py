@@ -1,5 +1,6 @@
 # testing/util.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -60,8 +61,8 @@ def round_decimal(value, prec):
 
     # can also use shift() here but that is 2.6 only
     return (value * decimal.Decimal("1" + "0" * prec)
-                    ).to_integral(decimal.ROUND_FLOOR) / \
-                        pow(10, prec)
+            ).to_integral(decimal.ROUND_FLOOR) / \
+        pow(10, prec)
 
 
 class RandomSet(set):
@@ -137,7 +138,7 @@ def function_named(fn, name):
         fn.__name__ = name
     except TypeError:
         fn = types.FunctionType(fn.__code__, fn.__globals__, name,
-                          fn.__defaults__, fn.__closure__)
+                                fn.__defaults__, fn.__closure__)
     return fn
 
 
@@ -145,6 +146,10 @@ def run_as_contextmanager(ctx, fn, *arg, **kw):
     """Run the given function under the given contextmanager,
     simulating the behavior of 'with' to support older
     Python versions.
+
+    This is not necessary anymore as we have placed 2.6
+    as minimum Python version, however some tests are still using
+    this structure.
 
     """
 
@@ -180,6 +185,7 @@ def provide_metadata(fn, *args, **kw):
     """Provide bound MetaData for a single test, dropping afterwards."""
 
     from . import config
+    from . import engines
     from sqlalchemy import schema
 
     metadata = schema.MetaData(config.db)
@@ -189,17 +195,86 @@ def provide_metadata(fn, *args, **kw):
     try:
         return fn(*args, **kw)
     finally:
-        metadata.drop_all()
+        engines.drop_all_tables(metadata, config.db)
         self.metadata = prev_meta
+
+
+def force_drop_names(*names):
+    """Force the given table names to be dropped after test complete,
+    isolating for foreign key cycles
+
+    """
+    from . import config
+    from sqlalchemy import inspect
+
+    @decorator
+    def go(fn, *args, **kw):
+
+        try:
+            return fn(*args, **kw)
+        finally:
+            drop_all_tables(
+                config.db, inspect(config.db), include_names=names)
+    return go
 
 
 class adict(dict):
     """Dict keys available as attributes.  Shadows."""
+
     def __getattribute__(self, key):
         try:
             return self[key]
         except KeyError:
             return dict.__getattribute__(self, key)
 
-    def get_all(self, *keys):
+    def __call__(self, *keys):
         return tuple([self[key] for key in keys])
+
+    get_all = __call__
+
+
+def drop_all_tables(engine, inspector, schema=None, include_names=None):
+    from sqlalchemy import Column, Table, Integer, MetaData, \
+        ForeignKeyConstraint
+    from sqlalchemy.schema import DropTable, DropConstraint
+
+    if include_names is not None:
+        include_names = set(include_names)
+
+    with engine.connect() as conn:
+        for tname, fkcs in reversed(
+                inspector.get_sorted_table_and_fkc_names(schema=schema)):
+            if tname:
+                if include_names is not None and tname not in include_names:
+                    continue
+                conn.execute(DropTable(
+                    Table(tname, MetaData(), schema=schema)
+                ))
+            elif fkcs:
+                if not engine.dialect.supports_alter:
+                    continue
+                for tname, fkc in fkcs:
+                    if include_names is not None and \
+                            tname not in include_names:
+                        continue
+                    tb = Table(
+                        tname, MetaData(),
+                        Column('x', Integer),
+                        Column('y', Integer),
+                        schema=schema
+                    )
+                    conn.execute(DropConstraint(
+                        ForeignKeyConstraint(
+                            [tb.c.x], [tb.c.y], name=fkc)
+                    ))
+
+
+def teardown_events(event_cls):
+    @decorator
+    def decorate(fn, *arg, **kw):
+        try:
+            return fn(*arg, **kw)
+        finally:
+            event_cls._clear()
+    return decorate
+

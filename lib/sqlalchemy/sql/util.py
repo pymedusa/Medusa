@@ -1,5 +1,6 @@
 # sql/util.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -15,13 +16,14 @@ from itertools import chain
 from collections import deque
 
 from .elements import BindParameter, ColumnClause, ColumnElement, \
-            Null, UnaryExpression, literal_column, Label
+    Null, UnaryExpression, literal_column, Label, _label_reference, \
+    _textual_label_reference
 from .selectable import ScalarSelect, Join, FromClause, FromGrouping
 from .schema import Column
 
 join_condition = util.langhelpers.public_factory(
-                            Join._join_condition,
-                            ".sql.util.join_condition")
+    Join._join_condition,
+    ".sql.util.join_condition")
 
 # names that are still being imported from the outside
 from .annotation import _shallow_annotate, _deep_annotate, _deep_deannotate
@@ -94,11 +96,11 @@ def visit_binary_product(fn, expr):
 
     def visit(element):
         if isinstance(element, ScalarSelect):
-            # we dont want to dig into correlated subqueries,
+            # we don't want to dig into correlated subqueries,
             # those are just column elements by themselves
             yield element
         elif element.__visit_name__ == 'binary' and \
-            operators.is_comparison(element.operator):
+                operators.is_comparison(element.operator):
             stack.insert(0, element)
             for l in visit(element.left):
                 for r in visit(element.right):
@@ -134,7 +136,7 @@ def find_tables(clause, check_columns=False,
 
     if include_crud:
         _visitors['insert'] = _visitors['update'] = \
-                    _visitors['delete'] = lambda ent: tables.append(ent.table)
+            _visitors['delete'] = lambda ent: tables.append(ent.table)
 
     if check_columns:
         def visit_column(column):
@@ -147,7 +149,6 @@ def find_tables(clause, check_columns=False,
     return tables
 
 
-
 def unwrap_order_by(clause):
     """Break up an 'order by' expression into individual column-expressions,
     without DESC/ASC/NULLS FIRST/NULLS LAST"""
@@ -158,14 +159,28 @@ def unwrap_order_by(clause):
         t = stack.popleft()
         if isinstance(t, ColumnElement) and \
             (
-                not isinstance(t, UnaryExpression) or \
+                not isinstance(t, UnaryExpression) or
                 not operators.is_ordering_modifier(t.modifier)
-            ):
+        ):
+            if isinstance(t, _label_reference):
+                t = t.element
+            if isinstance(t, (_textual_label_reference)):
+                continue
             cols.add(t)
         else:
             for c in t.get_children():
                 stack.append(c)
     return cols
+
+
+def unwrap_label_reference(element):
+    def replace(elem):
+        if isinstance(elem, (_label_reference, _textual_label_reference)):
+            return elem.element
+
+    return visitors.replacement_traverse(
+        element, {}, replace
+    )
 
 
 def clause_is_present(clause, search):
@@ -183,6 +198,7 @@ def clause_is_present(clause, search):
     else:
         return False
 
+
 def surface_selectables(clause):
     stack = [clause]
     while stack:
@@ -193,14 +209,16 @@ def surface_selectables(clause):
         elif isinstance(elem, FromGrouping):
             stack.append(elem.element)
 
+
 def selectables_overlap(left, right):
     """Return True if left/right have some overlapping selectable"""
 
     return bool(
-                set(surface_selectables(left)).intersection(
-                        surface_selectables(right)
-                    )
-            )
+        set(surface_selectables(left)).intersection(
+            surface_selectables(right)
+        )
+    )
+
 
 def bind_values(clause):
     """Return an ordered list of "bound" values in the given clause.
@@ -236,24 +254,23 @@ class _repr_params(object):
     display to the given number of 'multi' parameter sets.
 
     """
+
     def __init__(self, params, batches):
         self.params = params
         self.batches = batches
 
     def __repr__(self):
         if isinstance(self.params, (list, tuple)) and \
-            len(self.params) > self.batches and \
-            isinstance(self.params[0], (list, dict, tuple)):
+                len(self.params) > self.batches and \
+                isinstance(self.params[0], (list, dict, tuple)):
             msg = " ... displaying %i of %i total bound parameter sets ... "
             return ' '.join((
-                        repr(self.params[:self.batches - 2])[0:-1],
-                        msg % (self.batches, len(self.params)),
-                        repr(self.params[-2:])[1:]
-                    ))
+                repr(self.params[:self.batches - 2])[0:-1],
+                msg % (self.batches, len(self.params)),
+                repr(self.params[-2:])[1:]
+            ))
         else:
             return repr(self.params)
-
-
 
 
 def adapt_criterion_to_null(crit, nulls):
@@ -264,14 +281,14 @@ def adapt_criterion_to_null(crit, nulls):
 
     def visit_binary(binary):
         if isinstance(binary.left, BindParameter) \
-            and binary.left._identifying_key in nulls:
+                and binary.left._identifying_key in nulls:
             # reverse order if the NULL is on the left side
             binary.left = binary.right
             binary.right = Null()
             binary.operator = operators.is_
             binary.negate = operators.isnot
         elif isinstance(binary.right, BindParameter) \
-            and binary.right._identifying_key in nulls:
+                and binary.right._identifying_key in nulls:
             binary.right = Null()
             binary.operator = operators.is_
             binary.negate = operators.isnot
@@ -319,9 +336,9 @@ def reduce_columns(columns, *clauses, **kw):
     \**kw may specify 'ignore_nonexistent_tables' to ignore foreign keys
     whose tables are not yet configured, or columns that aren't yet present.
 
-    This function is primarily used to determine the most minimal "primary key"
-    from a selectable, by reducing the set of primary key columns present
-    in the the selectable to just those that are not repeated.
+    This function is primarily used to determine the most minimal "primary
+    key" from a selectable, by reducing the set of primary key columns present
+    in the selectable to just those that are not repeated.
 
     """
     ignore_nonexistent_tables = kw.pop('ignore_nonexistent_tables', False)
@@ -352,21 +369,21 @@ def reduce_columns(columns, *clauses, **kw):
                     else:
                         raise
                 if fk_col.shares_lineage(c) and \
-                    (not only_synonyms or \
-                    c.name == col.name):
+                    (not only_synonyms or
+                     c.name == col.name):
                     omit.add(col)
                     break
 
     if clauses:
         def visit_binary(binary):
             if binary.operator == operators.eq:
-                cols = util.column_set(chain(*[c.proxy_set
-                            for c in columns.difference(omit)]))
+                cols = util.column_set(
+                    chain(*[c.proxy_set for c in columns.difference(omit)]))
                 if binary.left in cols and binary.right in cols:
                     for c in reversed(columns):
                         if c.shares_lineage(binary.right) and \
-                            (not only_synonyms or \
-                            c.name == binary.left.name):
+                            (not only_synonyms or
+                             c.name == binary.left.name):
                             omit.add(c)
                             break
         for clause in clauses:
@@ -377,7 +394,7 @@ def reduce_columns(columns, *clauses, **kw):
 
 
 def criterion_as_pairs(expression, consider_as_foreign_keys=None,
-                        consider_as_referenced_keys=None, any_operator=False):
+                       consider_as_referenced_keys=None, any_operator=False):
     """traverse an expression and locate binary criterion pairs."""
 
     if consider_as_foreign_keys and consider_as_referenced_keys:
@@ -386,37 +403,37 @@ def criterion_as_pairs(expression, consider_as_foreign_keys=None,
                                 "'consider_as_referenced_keys'")
 
     def col_is(a, b):
-        #return a is b
+        # return a is b
         return a.compare(b)
 
     def visit_binary(binary):
         if not any_operator and binary.operator is not operators.eq:
             return
         if not isinstance(binary.left, ColumnElement) or \
-                    not isinstance(binary.right, ColumnElement):
+                not isinstance(binary.right, ColumnElement):
             return
 
         if consider_as_foreign_keys:
             if binary.left in consider_as_foreign_keys and \
-                        (col_is(binary.right, binary.left) or
-                        binary.right not in consider_as_foreign_keys):
+                (col_is(binary.right, binary.left) or
+                 binary.right not in consider_as_foreign_keys):
                 pairs.append((binary.right, binary.left))
             elif binary.right in consider_as_foreign_keys and \
-                        (col_is(binary.left, binary.right) or
-                        binary.left not in consider_as_foreign_keys):
+                (col_is(binary.left, binary.right) or
+                 binary.left not in consider_as_foreign_keys):
                 pairs.append((binary.left, binary.right))
         elif consider_as_referenced_keys:
             if binary.left in consider_as_referenced_keys and \
-                        (col_is(binary.right, binary.left) or
-                        binary.right not in consider_as_referenced_keys):
+                (col_is(binary.right, binary.left) or
+                 binary.right not in consider_as_referenced_keys):
                 pairs.append((binary.left, binary.right))
             elif binary.right in consider_as_referenced_keys and \
-                        (col_is(binary.left, binary.right) or
-                        binary.left not in consider_as_referenced_keys):
+                (col_is(binary.left, binary.right) or
+                 binary.left not in consider_as_referenced_keys):
                 pairs.append((binary.right, binary.left))
         else:
             if isinstance(binary.left, Column) and \
-                        isinstance(binary.right, Column):
+                    isinstance(binary.right, Column):
                 if binary.left.references(binary.right):
                     pairs.append((binary.right, binary.left))
                 elif binary.right.references(binary.left):
@@ -424,36 +441,6 @@ def criterion_as_pairs(expression, consider_as_foreign_keys=None,
     pairs = []
     visitors.traverse(expression, {}, {'binary': visit_binary})
     return pairs
-
-
-
-class AliasedRow(object):
-    """Wrap a RowProxy with a translation map.
-
-    This object allows a set of keys to be translated
-    to those present in a RowProxy.
-
-    """
-    def __init__(self, row, map):
-        # AliasedRow objects don't nest, so un-nest
-        # if another AliasedRow was passed
-        if isinstance(row, AliasedRow):
-            self.row = row.row
-        else:
-            self.row = row
-        self.map = map
-
-    def __contains__(self, key):
-        return self.map[key] in self.row
-
-    def has_key(self, key):
-        return key in self
-
-    def __getitem__(self, key):
-        return self.row[self.map[key]]
-
-    def keys(self):
-        return self.row.keys()
 
 
 class ClauseAdapter(visitors.ReplacingCloningVisitor):
@@ -482,45 +469,38 @@ class ClauseAdapter(visitors.ReplacingCloningVisitor):
       s.c.col1 == table2.c.col1
 
     """
+
     def __init__(self, selectable, equivalents=None,
-                        include=None, exclude=None,
-                        include_fn=None, exclude_fn=None,
-                        adapt_on_names=False):
-        self.__traverse_options__ = {'stop_on': [selectable]}
+                 include_fn=None, exclude_fn=None,
+                 adapt_on_names=False, anonymize_labels=False):
+        self.__traverse_options__ = {
+            'stop_on': [selectable],
+            'anonymize_labels': anonymize_labels}
         self.selectable = selectable
-        if include:
-            assert not include_fn
-            self.include_fn = lambda e: e in include
-        else:
-            self.include_fn = include_fn
-        if exclude:
-            assert not exclude_fn
-            self.exclude_fn = lambda e: e in exclude
-        else:
-            self.exclude_fn = exclude_fn
+        self.include_fn = include_fn
+        self.exclude_fn = exclude_fn
         self.equivalents = util.column_dict(equivalents or {})
         self.adapt_on_names = adapt_on_names
 
     def _corresponding_column(self, col, require_embedded,
                               _seen=util.EMPTY_SET):
         newcol = self.selectable.corresponding_column(
-                                    col,
-                                    require_embedded=require_embedded)
+            col,
+            require_embedded=require_embedded)
         if newcol is None and col in self.equivalents and col not in _seen:
             for equiv in self.equivalents[col]:
-                newcol = self._corresponding_column(equiv,
-                                require_embedded=require_embedded,
-                                _seen=_seen.union([col]))
+                newcol = self._corresponding_column(
+                    equiv, require_embedded=require_embedded,
+                    _seen=_seen.union([col]))
                 if newcol is not None:
                     return newcol
         if self.adapt_on_names and newcol is None:
             newcol = self.selectable.c.get(col.name)
         return newcol
 
-    magic_flag = False
     def replace(self, col):
-        if not self.magic_flag and isinstance(col, FromClause) and \
-            self.selectable.is_derived_from(col):
+        if isinstance(col, FromClause) and \
+                self.selectable.is_derived_from(col):
             return self.selectable
         elif not isinstance(col, ColumnElement):
             return None
@@ -535,60 +515,102 @@ class ClauseAdapter(visitors.ReplacingCloningVisitor):
 class ColumnAdapter(ClauseAdapter):
     """Extends ClauseAdapter with extra utility functions.
 
-    Provides the ability to "wrap" this ClauseAdapter
-    around another, a columns dictionary which returns
-    adapted elements given an original, and an
-    adapted_row() factory.
+    Key aspects of ColumnAdapter include:
+
+    * Expressions that are adapted are stored in a persistent
+      .columns collection; so that an expression E adapted into
+      an expression E1, will return the same object E1 when adapted
+      a second time.   This is important in particular for things like
+      Label objects that are anonymized, so that the ColumnAdapter can
+      be used to present a consistent "adapted" view of things.
+
+    * Exclusion of items from the persistent collection based on
+      include/exclude rules, but also independent of hash identity.
+      This because "annotated" items all have the same hash identity as their
+      parent.
+
+    * "wrapping" capability is added, so that the replacement of an expression
+      E can proceed through a series of adapters.  This differs from the
+      visitor's "chaining" feature in that the resulting object is passed
+      through all replacing functions unconditionally, rather than stopping
+      at the first one that returns non-None.
+
+    * An adapt_required option, used by eager loading to indicate that
+      We don't trust a result row column that is not translated.
+      This is to prevent a column from being interpreted as that
+      of the child row in a self-referential scenario, see
+      inheritance/test_basic.py->EagerTargetingTest.test_adapt_stringency
 
     """
+
     def __init__(self, selectable, equivalents=None,
-                        chain_to=None, include=None,
-                        exclude=None, adapt_required=False):
-        ClauseAdapter.__init__(self, selectable, equivalents, include, exclude)
+                 chain_to=None, adapt_required=False,
+                 include_fn=None, exclude_fn=None,
+                 adapt_on_names=False,
+                 allow_label_resolve=True,
+                 anonymize_labels=False):
+        ClauseAdapter.__init__(self, selectable, equivalents,
+                               include_fn=include_fn, exclude_fn=exclude_fn,
+                               adapt_on_names=adapt_on_names,
+                               anonymize_labels=anonymize_labels)
+
         if chain_to:
             self.chain(chain_to)
         self.columns = util.populate_column_dict(self._locate_col)
+        if self.include_fn or self.exclude_fn:
+            self.columns = self._IncludeExcludeMapping(self, self.columns)
         self.adapt_required = adapt_required
+        self.allow_label_resolve = allow_label_resolve
+        self._wrap = None
+
+    class _IncludeExcludeMapping(object):
+        def __init__(self, parent, columns):
+            self.parent = parent
+            self.columns = columns
+
+        def __getitem__(self, key):
+            if (
+                self.parent.include_fn and not self.parent.include_fn(key)
+            ) or (
+                self.parent.exclude_fn and self.parent.exclude_fn(key)
+            ):
+                if self.parent._wrap:
+                    return self.parent._wrap.columns[key]
+                else:
+                    return key
+            return self.columns[key]
 
     def wrap(self, adapter):
         ac = self.__class__.__new__(self.__class__)
-        ac.__dict__ = self.__dict__.copy()
-        ac._locate_col = ac._wrap(ac._locate_col, adapter._locate_col)
-        ac.adapt_clause = ac._wrap(ac.adapt_clause, adapter.adapt_clause)
-        ac.adapt_list = ac._wrap(ac.adapt_list, adapter.adapt_list)
+        ac.__dict__.update(self.__dict__)
+        ac._wrap = adapter
         ac.columns = util.populate_column_dict(ac._locate_col)
+        if ac.include_fn or ac.exclude_fn:
+            ac.columns = self._IncludeExcludeMapping(ac, ac.columns)
+
         return ac
 
-    adapt_clause = ClauseAdapter.traverse
+    def traverse(self, obj):
+        return self.columns[obj]
+
+    adapt_clause = traverse
     adapt_list = ClauseAdapter.copy_and_process
 
-    def _wrap(self, local, wrapped):
-        def locate(col):
-            col = local(col)
-            return wrapped(col)
-        return locate
-
     def _locate_col(self, col):
-        c = self._corresponding_column(col, True)
-        if c is None:
-            c = self.adapt_clause(col)
 
-            # anonymize labels in case they have a hardcoded name
-            if isinstance(c, Label):
-                c = c.label(None)
+        c = ClauseAdapter.traverse(self, col)
 
-        # adapt_required used by eager loading to indicate that
-        # we don't trust a result row column that is not translated.
-        # this is to prevent a column from being interpreted as that
-        # of the child row in a self-referential scenario, see
-        # inheritance/test_basic.py->EagerTargetingTest.test_adapt_stringency
+        if self._wrap:
+            c2 = self._wrap._locate_col(c)
+            if c2 is not None:
+                c = c2
+
         if self.adapt_required and c is col:
             return None
 
-        return c
+        c._allow_label_resolve = self.allow_label_resolve
 
-    def adapted_row(self, row):
-        return AliasedRow(row, self.columns)
+        return c
 
     def __getstate__(self):
         d = self.__dict__.copy()
@@ -598,4 +620,3 @@ class ColumnAdapter(ClauseAdapter):
     def __setstate__(self, state):
         self.__dict__.update(state)
         self.columns = util.PopulateDict(self._locate_col)
-

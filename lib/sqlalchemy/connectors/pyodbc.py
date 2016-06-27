@@ -1,5 +1,6 @@
 # connectors/pyodbc.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -25,7 +26,7 @@ class PyODBCConnector(Connector):
     supports_native_decimal = True
     default_paramstyle = 'named'
 
-    # for non-DSN connections, this should
+    # for non-DSN connections, this *may* be used to
     # hold the desired driver name
     pyodbc_driver_name = None
 
@@ -65,19 +66,30 @@ class PyODBCConnector(Connector):
             connectors = [util.unquote_plus(keys.pop('odbc_connect'))]
         else:
             dsn_connection = 'dsn' in keys or \
-                            ('host' in keys and 'database' not in keys)
+                ('host' in keys and 'database' not in keys)
             if dsn_connection:
-                connectors = ['dsn=%s' % (keys.pop('host', '') or \
-                            keys.pop('dsn', ''))]
+                connectors = ['dsn=%s' % (keys.pop('host', '') or
+                                          keys.pop('dsn', ''))]
             else:
                 port = ''
-                if 'port' in keys and not 'port' in query:
+                if 'port' in keys and 'port' not in query:
                     port = ',%d' % int(keys.pop('port'))
 
-                connectors = ["DRIVER={%s}" %
-                                keys.pop('driver', self.pyodbc_driver_name),
-                              'Server=%s%s' % (keys.pop('host', ''), port),
-                              'Database=%s' % keys.pop('database', '')]
+                connectors = []
+                driver = keys.pop('driver', self.pyodbc_driver_name)
+                if driver is None:
+                    util.warn(
+                        "No driver name specified; "
+                        "this is expected by PyODBC when using "
+                        "DSN-less connections")
+                else:
+                    connectors.append("DRIVER={%s}" % driver)
+
+                connectors.extend(
+                    [
+                        'Server=%s%s' % (keys.pop('host', ''), port),
+                        'Database=%s' % keys.pop('database', '')
+                    ])
 
             user = keys.pop("user", None)
             if user:
@@ -92,7 +104,7 @@ class PyODBCConnector(Connector):
             # you query a cp1253 encoded database from a latin1 client...
             if 'odbc_autotranslate' in keys:
                 connectors.append("AutoTranslate=%s" %
-                                    keys.pop("odbc_autotranslate"))
+                                  keys.pop("odbc_autotranslate"))
 
             connectors.extend(['%s=%s' % (k, v) for k, v in keys.items()])
         return [[";".join(connectors)], connect_args]
@@ -100,7 +112,7 @@ class PyODBCConnector(Connector):
     def is_disconnect(self, e, connection, cursor):
         if isinstance(e, self.dbapi.ProgrammingError):
             return "The cursor's connection has been closed." in str(e) or \
-                            'Attempt to use a closed connection.' in str(e)
+                'Attempt to use a closed connection.' in str(e)
         elif isinstance(e, self.dbapi.Error):
             return '[08S01]' in str(e)
         else:
@@ -116,9 +128,9 @@ class PyODBCConnector(Connector):
 
         _sql_driver_name = dbapi_con.getinfo(pyodbc.SQL_DRIVER_NAME)
         self.freetds = bool(re.match(r".*libtdsodbc.*\.so", _sql_driver_name
-                            ))
+                                     ))
         self.easysoft = bool(re.match(r".*libessqlsrv.*\.so", _sql_driver_name
-                            ))
+                                      ))
 
         if self.freetds:
             self.freetds_driver_version = dbapi_con.getinfo(
@@ -141,6 +153,7 @@ class PyODBCConnector(Connector):
         # run other initialization which asks for user name, etc.
         super(PyODBCConnector, self).initialize(connection)
 
+
     def _dbapi_version(self):
         if not self.dbapi:
             return ()
@@ -148,9 +161,9 @@ class PyODBCConnector(Connector):
 
     def _parse_dbapi_version(self, vers):
         m = re.match(
-                r'(?:py.*-)?([\d\.]+)(?:-(\w+))?',
-                vers
-            )
+            r'(?:py.*-)?([\d\.]+)(?:-(\w+))?',
+            vers
+        )
         if not m:
             return ()
         vers = tuple([int(x) for x in m.group(1).split(".")])

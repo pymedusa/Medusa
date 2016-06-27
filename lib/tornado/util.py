@@ -13,7 +13,6 @@ and `.Resolver`.
 from __future__ import absolute_import, division, print_function, with_statement
 
 import array
-import inspect
 import os
 import sys
 import zlib
@@ -23,6 +22,13 @@ try:
     xrange  # py2
 except NameError:
     xrange = range  # py3
+
+# inspect.getargspec() raises DeprecationWarnings in Python 3.5.
+# The two functions have compatible interfaces for the parts we need.
+try:
+    from inspect import getfullargspec as getargspec  # py3
+except ImportError:
+    from inspect import getargspec  # py2
 
 
 class ObjectDict(dict):
@@ -284,10 +290,25 @@ class ArgReplacer(object):
     def __init__(self, func, name):
         self.name = name
         try:
-            self.arg_pos = inspect.getargspec(func).args.index(self.name)
+            self.arg_pos = self._getargnames(func).index(name)
         except ValueError:
             # Not a positional parameter
             self.arg_pos = None
+
+    def _getargnames(self, func):
+        try:
+            return getargspec(func).args
+        except TypeError:
+            if hasattr(func, 'func_code'):
+                # Cython-generated code has all the attributes needed
+                # by inspect.getargspec, but the inspect module only
+                # works with ordinary functions. Inline the portion of
+                # getargspec that we need here. Note that for static
+                # functions the @cython.binding(True) decorator must
+                # be used (for methods it works out of the box).
+                code = func.func_code
+                return code.co_varnames[:code.co_argcount]
+            raise
 
     def get_old_value(self, args, kwargs, default=None):
         """Returns the old value of the named argument without replacing it.
