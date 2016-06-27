@@ -32,8 +32,8 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
+from six import iteritems
 import sickbeard
-
 from sickbeard.common import Quality
 from sickbeard.tv import TVShow
 from sickrage.helper.exceptions import MultipleShowObjectsException
@@ -82,7 +82,7 @@ class ShowTests(unittest.TestCase):
         }
 
         for tests in test_cases, unicode_test_cases:
-            for ((use_shows, indexer_id), result) in tests.iteritems():
+            for ((use_shows, indexer_id), result) in iteritems(tests):
                 if use_shows:
                     self.assertEqual(Show.find(shows, indexer_id), result)
                 else:

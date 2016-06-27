@@ -33,8 +33,8 @@ import time
 import traceback
 
 from requests.compat import unquote_plus
-
-from tornado.web import RequestHandler  # pylint: disable=import-error
+from six import iteritems, text_type
+from tornado.web import RequestHandler
 
 import sickbeard
 from sickbeard import (
@@ -102,7 +102,7 @@ class ApiHandler(RequestHandler):
 
     def get(self, *args, **kwargs):
         kwargs = self.request.arguments
-        for arg, value in kwargs.iteritems():
+        for arg, value in iteritems(kwargs):
             if len(value) == 1:
                 kwargs[arg] = value[0]
 
@@ -658,7 +658,7 @@ class CMD_ComingEpisodes(ApiCall):
         grouped_coming_episodes = ComingEpisodes.get_coming_episodes(self.type, self.sort, True, self.paused)
         data = {section: [] for section in grouped_coming_episodes.keys()}
 
-        for section, coming_episodes in grouped_coming_episodes.iteritems():
+        for section, coming_episodes in iteritems(grouped_coming_episodes):
             for coming_episode in coming_episodes:
                 data[section].append({
                     'airdate': coming_episode['airdate'],
@@ -902,7 +902,7 @@ class CMD_EpisodeSetStatus(ApiCall):
 
         extra_msg = ""
         if start_backlog:
-            for season, segment in segments.iteritems():
+            for season, segment in iteritems(segments):
                 cur_backlog_queue_item = search_queue.BacklogQueueItem(show_obj, segment)
                 sickbeard.searchQueueScheduler.action.add_item(cur_backlog_queue_item)  # @UndefinedVariable
 
@@ -1401,7 +1401,7 @@ class CMD_SickBeardAddRootDir(ApiCall):
 
         root_dirs_new = [unquote_plus(x) for x in root_dirs]
         root_dirs_new.insert(0, index)
-        root_dirs_new = '|'.join(unicode(x) for x in root_dirs_new)
+        root_dirs_new = '|'.join(text_type(x) for x in root_dirs_new)
 
         sickbeard.ROOT_DIRS = root_dirs_new
         return _responds(RESULT_SUCCESS, _get_root_dirs(), msg="Root directories updated")
@@ -1504,7 +1504,7 @@ class CMD_SickBeardDeleteRootDir(ApiCall):
         root_dirs_new = [unquote_plus(x) for x in root_dirs_new]
         if root_dirs_new:
             root_dirs_new.insert(0, new_index)
-        root_dirs_new = "|".join(unicode(x) for x in root_dirs_new)
+        root_dirs_new = "|".join(text_type(x) for x in root_dirs_new)
 
         sickbeard.ROOT_DIRS = root_dirs_new
         # what if the root dir was not found?
@@ -1703,7 +1703,7 @@ class CMD_SickBeardSearchIndexers(ApiCall):
 
                 # found show
                 results = [{indexer_ids[_indexer]: int(my_show.data['id']),
-                            "name": unicode(my_show.data['seriesname']),
+                            "name": text_type(my_show.data['seriesname']),
                             "first_aired": my_show.data['firstaired'],
                             "indexer": int(_indexer)}]
                 break

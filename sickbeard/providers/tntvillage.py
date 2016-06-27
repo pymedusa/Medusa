@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import re
 import traceback
 
-from urlparse import parse_qs
+from six.moves.urllib_parse import parse_qs
 
 from requests.utils import dict_from_cookiejar
 from requests.compat import urljoin

@@ -27,6 +27,8 @@ Classes:
 
 # TODO: Implement skipped tests
 
+from __future__ import print_function
+
 import os.path
 import sys
 import unittest
@@ -474,9 +476,11 @@ class OverviewTests(unittest.TestCase):
         self.assertEqual(overview.overviewStrings[overview.SNATCHED], "snatched")
 
 if __name__ == '__main__':
-    print "======================="
-    print "STARTING - COMMON TESTS"
-    print "======================="
+    print("""
+    =======================
+    STARTING - COMMON TESTS
+    =======================
+    """)
 
     SUITE = unittest.TestLoader().loadTestsFromTestCase(QualityStringTests)
     unittest.TextTestRunner(verbosity=2).run(SUITE)

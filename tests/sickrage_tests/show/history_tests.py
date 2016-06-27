@@ -30,6 +30,7 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
+from six import iteritems
 from sickbeard.common import Quality
 from sickrage.show.History import History
 
@@ -62,7 +63,7 @@ class HistoryTests(unittest.TestCase):
         }
 
         for tests in test_cases, unicode_test_cases:
-            for (action, result) in tests.iteritems():
+            for (action, result) in iteritems(tests):
                 self.assertEqual(History._get_actions(action), result)  # pylint: disable=protected-access
 
 if __name__ == '__main__':

@@ -23,14 +23,16 @@ import time
 import datetime
 import itertools
 import traceback
+
+from six import text_type
+
 import sickbeard
-from sickbeard import db
-from sickbeard import logger
+from sickbeard import db, logger, show_name_helpers
+from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
 from sickbeard.rssfeeds import getFeed
-from sickbeard import show_name_helpers
+
 from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.Show import Show
-from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
 
 
 class CacheDBConnection(db.DBConnection):
@@ -217,7 +219,7 @@ class TVCache(object):
                 if cl:
                     cache_db_con.mass_action(cl)
 
-                # finished processing, let's save the newest x (index) items and store these in cache with a max of 5 
+                # finished processing, let's save the newest x (index) items and store these in cache with a max of 5
                 # (overwritable per provider, throug hthe max_recent_items attribute.
                 self.provider.recent_results = data['entries'][0:min(index, self.provider.max_recent_items)]
 
@@ -376,7 +378,7 @@ class TVCache(object):
             # get quality of release
             quality = parse_result.quality
 
-            assert isinstance(name, unicode)
+            assert isinstance(name, text_type)
 
             # get release group
             release_group = parse_result.release_group

@@ -17,10 +17,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+
 import threading
+
+from six import iteritems
+
 import sickbeard
-from sickbeard import db
-from sickbeard import logger
+from sickbeard import db, logger
+from sickbeard.scene_exceptions import (
+    retrieve_exceptions, get_scene_seasons, get_scene_exceptions,
+)
+from sickbeard.helpers import full_sanitizeSceneName
 
 nameCache = {}
 nameCacheLock = threading.Lock()
@@ -36,7 +43,7 @@ def addNameToCache(name, indexer_id=0):
     cache_db_con = db.DBConnection('cache.db')
 
     # standardize the name we're using to account for small differences in providers
-    name = sickbeard.helpers.full_sanitizeSceneName(name)
+    name = full_sanitizeSceneName(name)
     if name not in nameCache:
         nameCache[name] = int(indexer_id)
         cache_db_con.action("INSERT OR REPLACE INTO scene_names (indexer_id, name) VALUES (?, ?)", [indexer_id, name])
@@ -49,7 +56,7 @@ def retrieveNameFromCache(name):
     :param name: The show name to look up.
     :return: the TVDB id that resulted from the cache lookup or None if the show wasn't found in the cache
     """
-    name = sickbeard.helpers.full_sanitizeSceneName(name)
+    name = full_sanitizeSceneName(name)
     if name in nameCache:
         return int(nameCache[name])
 
@@ -61,7 +68,7 @@ def clearCache(indexerid=0):
     cache_db_con = db.DBConnection('cache.db')
     cache_db_con.action("DELETE FROM scene_names WHERE indexer_id = ? OR indexer_id = ?", (indexerid, 0))
 
-    toRemove = [key for key, value in nameCache.iteritems() if value == 0 or value == indexerid]
+    toRemove = [key for key, value in iteritems(nameCache) if value == 0 or value == indexerid]
     for key in toRemove:
         del nameCache[key]
 
@@ -70,7 +77,7 @@ def saveNameCacheToDb():
     """Commit cache to database file"""
     cache_db_con = db.DBConnection('cache.db')
 
-    for name, indexer_id in nameCache.iteritems():
+    for name, indexer_id in iteritems(nameCache):
         cache_db_con.action("INSERT OR REPLACE INTO scene_names (indexer_id, name) VALUES (?, ?)", [indexer_id, name])
 
 
@@ -80,7 +87,7 @@ def buildNameCache(show=None):
     :param show: Specify show to build name cache for, if None, just do all shows
     """
     with nameCacheLock:
-        sickbeard.scene_exceptions.retrieve_exceptions()
+        retrieve_exceptions()
 
     if not show:
         # logger.log(u"Building internal name cache for all shows", logger.INFO)
@@ -89,11 +96,11 @@ def buildNameCache(show=None):
     else:
         # logger.log(u"Building internal name cache for " + show.name, logger.DEBUG)
         clearCache(show.indexerid)
-        for curSeason in [-1] + sickbeard.scene_exceptions.get_scene_seasons(show.indexerid):
-            for name in set(sickbeard.scene_exceptions.get_scene_exceptions(show.indexerid, season=curSeason) + [show.name]):
-                name = sickbeard.helpers.full_sanitizeSceneName(name)
+        for curSeason in [-1] + get_scene_seasons(show.indexerid):
+            for name in set(get_scene_exceptions(show.indexerid, season=curSeason) + [show.name]):
+                name = full_sanitizeSceneName(name)
                 if name in nameCache:
                     continue
 
                 nameCache[name] = int(show.indexerid)
-        logger.log(u"Internal name cache for " + show.name + " set to: [ " + u', '.join([key for key, value in nameCache.iteritems() if value == show.indexerid]) + " ]", logger.DEBUG)
+        logger.log(u"Internal name cache for " + show.name + " set to: [ " + u', '.join([key for key, value in iteritems(nameCache) if value == show.indexerid]) + " ]", logger.DEBUG)

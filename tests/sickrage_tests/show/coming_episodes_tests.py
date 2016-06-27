@@ -32,6 +32,7 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
+from six import iteritems
 from sickrage.show.ComingEpisodes import ComingEpisodes
 
 
@@ -105,7 +106,7 @@ class ComingEpisodesTests(unittest.TestCase):
         }
 
         for tests in test_cases, unicode_test_cases:
-            for (sort, result) in tests.iteritems():
+            for (sort, result) in iteritems(tests):
                 self.assertEqual(ComingEpisodes._get_sort(sort), result)  # pylint: disable=protected-access
 
 

@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import print_function
+
 """
 Test encoding
 """
@@ -14,6 +16,7 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from six import text_type
 import sickbeard
 from sickbeard import ek, ex
 from sickrage.helper.common import sanitize_filename
@@ -45,15 +48,17 @@ class EncodingTests(unittest.TestCase):
         for test in strings:
             try:
                 show_dir = ek(os.path.join, root_dir, sanitize_filename(test))
-                self.assertTrue(isinstance(show_dir, unicode))
+                self.assertTrue(isinstance(show_dir, text_type))
             except Exception as error:  # pylint: disable=broad-except
                 ex(error)
 
 if __name__ == "__main__":
-    print "=================="
-    print "STARTING - ENCODING TESTS"
-    print "=================="
-    print "######################################################################"
+    print("""
+    ==================
+    STARTING - ENCODING TESTS
+    ==================
+    ######################################################################
+    """)
 
     SUITE = unittest.TestLoader().loadTestsFromTestCase(EncodingTests)
     unittest.TextTestRunner(verbosity=2).run(SUITE)

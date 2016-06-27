@@ -23,6 +23,7 @@
 Test snatching
 """
 
+from __future__ import print_function
 import os.path
 import sys
 import unittest
@@ -136,10 +137,12 @@ def generator(tvdb_id, show_name, cur_data, force_search):
     return do_test
 
 if __name__ == '__main__':
-    print "=================="
-    print "STARTING - Snatch TESTS"
-    print "=================="
-    print "######################################################################"
+    print("""
+    ==================
+    STARTING - Snatch TESTS
+    ==================
+    ######################################################################
+    """)
     # create the test methods
     cur_tvdb_id = 1
     for forceSearch in (True, False):

@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import print_function
+
 """
 Test Feed Parser
 """
@@ -30,10 +32,12 @@ class FeedParserTests(unittest.TestCase):
             self.assertTrue(title and url)
 
 if __name__ == "__main__":
-    print "=================="
-    print "STARTING - FEED PARSER TESTS"
-    print "=================="
-    print "######################################################################"
+    print("""
+    ==================
+    STARTING - FEED PARSER TESTS
+    ==================
+    ######################################################################
+    """)
     SUITE = unittest.TestLoader().loadTestsFromTestCase(FeedParserTests)
     TEST_RESULTS = unittest.TextTestRunner(verbosity=2).run(SUITE)
 

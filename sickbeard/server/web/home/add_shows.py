@@ -6,10 +6,13 @@ import datetime
 import json
 import os
 import re
+
 from libtrakt import TraktAPI
 from libtrakt.exceptions import traktException
 from requests.compat import unquote_plus
+from six import iteritems
 from tornado.routes import route
+
 import sickbeard
 from sickbeard import (
     classes, config, db, helpers, logger, ui,
@@ -19,6 +22,9 @@ from sickbeard.common import Quality
 from sickbeard.helpers import get_showname_from_indexer
 from sickbeard.imdbPopular import imdb_popular
 from sickbeard.indexers.indexer_exceptions import indexer_exception
+from sickbeard.server.web.core import PageTemplate
+from sickbeard.server.web.home.handler import Home
+
 from sickrage.helper.common import (
     sanitize_filename, try_int,
 )
@@ -28,8 +34,6 @@ from sickrage.helper.exceptions import (
     MultipleShowObjectsException,
 )
 from sickrage.show.Show import Show
-from sickbeard.server.web.core import PageTemplate
-from sickbeard.server.web.home.handler import Home
 
 
 @route('/addShows(/?.*)')
@@ -91,7 +95,7 @@ class HomeAddShows(Home):
                 except indexer_exception as msg:
                     logger.log(u'Error searching for show: {error}'.format(error=msg))
 
-        for i, shows in results.iteritems():
+        for i, shows in iteritems(results):
             final_results.extend({(sickbeard.indexerApi(i).name, i, sickbeard.indexerApi(i).config['show_url'], int(show['id']),
                                    show['seriesname'], show['firstaired']) for show in shows})
 

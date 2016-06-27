@@ -20,6 +20,8 @@
 
 # pylint: disable=line-too-long
 
+from __future__ import print_function
+
 """
 Test searches
 """
@@ -92,8 +94,8 @@ def generator(cur_data, cur_name, cur_provider):
             cur_string = ''
             for cur_string in season_strings, episode_strings:
                 if not all([isinstance(cur_string, list), isinstance(cur_string[0], dict)]):
-                    print " %s is using a wrong string format!" % cur_provider.name
-                    print cur_string
+                    print(" %s is using a wrong string format!" % cur_provider.name)
+                    print(cur_string)
                     fail = True
                     continue
 
@@ -104,48 +106,50 @@ def generator(cur_data, cur_name, cur_provider):
                 assert season_strings == cur_data["s_strings"]
                 assert episode_strings == cur_data["e_strings"]
             except AssertionError:
-                print " %s is using a wrong string format!" % cur_provider.name
-                print cur_string
+                print (" %s is using a wrong string format!" % cur_provider.name)
+                print (cur_string)
                 continue
 
             search_strings = episode_strings[0]
             # search_strings.update(season_strings[0])
             # search_strings.update({"RSS":['']})
 
-            # print search_strings
+            # print(search_strings)
 
             if not cur_provider.public:
                 continue
 
             items = cur_provider.search(search_strings)  # pylint: disable=protected-access
             if not items:
-                print "No results from cur_provider?"
+                print("No results from cur_provider?")
                 continue
 
             title, url = cur_provider._get_title_and_url(items[0])  # pylint: disable=protected-access
             for word in show.name.split(" "):
                 if not word.lower() in title.lower():
-                    print "Show cur_name not in title: %s. URL: %s" % (title, url)
+                    print("Show cur_name not in title: %s. URL: %s" % (title, url))
                     continue
 
             if not url:
-                print "url is empty"
+                print("url is empty")
                 continue
 
             quality = cur_provider.get_quality(items[0])
             size = cur_provider._get_size(items[0])  # pylint: disable=protected-access
 
             if not show.quality & quality:
-                print "Quality not in common.ANY, %r %s" % (quality, size)
+                print("Quality not in common.ANY, %r %s" % (quality, size))
                 continue
 
     return do_test
 
 if __name__ == '__main__':
-    print "=================="
-    print "STARTING - Search TESTS"
-    print "=================="
-    print "######################################################################"
+    print("""
+    ==================
+    STARTING - Search TESTS
+    ==================
+    ######################################################################
+    """)
     # create the test methods
     for forceSearch in (True, False):
         for name, data in TESTS.items():

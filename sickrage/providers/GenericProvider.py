@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import re
 import sickbeard
 
+from collections import defaultdict
 from base64 import b16encode, b32decode
 from datetime import datetime
 from itertools import chain
@@ -160,21 +161,22 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             return results
 
         if items_list:
-            items = {}
-            unknown_items = []
-
+            # categorize the items into lists by quality
+            items = defaultdict(list)
             for item in items_list:
-                quality = self.get_quality(item, anime=show.is_anime)
+                items[self.get_quality(item, anime=show.is_anime)].append(item)
 
-                if quality == Quality.UNKNOWN:
-                    unknown_items.append(item)
-                else:
-                    if quality not in items:
-                        items[quality] = []
-                    items[quality].append(item)
+            # temporarily remove the list of items with unknown quality
+            unknown_items = items.pop(Quality.UNKNOWN, [])
 
-            items_list = list(chain(*[v for (_, v) in sorted(items.iteritems(), reverse=True)]))
-            items_list += unknown_items
+            # make a generator to sort the remaining items by descending quality
+            items_list = (items[quality] for quality in sorted(items, reverse=True))
+
+            # unpack all of the quality lists into a single sorted list
+            items_list = list(chain(*items_list))
+
+            # extend the list with the unknown qualities, now sorted at the bottom of the list
+            items_list.extend(unknown_items)
 
         cl = []
 

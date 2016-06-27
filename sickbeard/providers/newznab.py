@@ -235,7 +235,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         try:
             err_desc = data.error.attrs['description']
             if not err_desc:
-                raise
+                raise Exception
         except (AttributeError, TypeError):
             return self._check_auth()
 

@@ -3,6 +3,8 @@
 Tests for SickRage providers
 """
 
+from __future__ import print_function
+
 import unittest
 
 from generic_provider_tests import GenericProviderTests

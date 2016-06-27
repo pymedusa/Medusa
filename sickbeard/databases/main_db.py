@@ -21,16 +21,16 @@
 import datetime
 
 import warnings
-import sickbeard
 import os.path
 
-from sickbeard import db, common, helpers, logger
+from six import iteritems
 
+import sickbeard
+from sickbeard import db, common, helpers, logger, subtitles
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
+
 from sickrage.helper.common import dateTimeFormat, episode_num
 from sickrage.helper.encoding import ek
-
-from sickbeard import subtitles
 
 MIN_DB_VERSION = 9  # oldest db version we support migrating from
 MAX_DB_VERSION = 43
@@ -238,7 +238,7 @@ class MainSanityCheck(db.DBSanityCheck):
             '': 'Unknown',
         }
 
-        for old_status, new_status in status_map.iteritems():
+        for old_status, new_status in iteritems(status_map):
             self.connection.action("UPDATE tv_shows SET status = ? WHERE LOWER(status) = ?", [new_status, old_status])
 
     def fix_episode_statuses(self):
