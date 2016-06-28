@@ -520,9 +520,9 @@ class FixWrongTitleDueToFilmTitle(Rule):
         return to_remove, to_append, to_rename, to_rename_ep
 
 
-class CreateExtendedTitleWithAlternativeTitles(Rule):
+class CreateAliasWithAlternativeTitles(Rule):
     """
-    ExtendedTitle: 'extended_title' - post processor to add alternative titles the existing title.
+    'alias' - post processor to create aliases using alternative titles.
 
     e.g.: [SuperGroup].Show.Name.-.Still+Name.-.11.[1080p]
 
@@ -551,7 +551,7 @@ class CreateExtendedTitleWithAlternativeTitles(Rule):
                 "Still",
                 "Name"
             ],
-            "extended_title": "Show Name - Still+Name"
+            "alias": "Show Name - Still+Name"
             "episode": 11,
             "screen_size": "1080p",
             "type": "episode"
@@ -589,9 +589,9 @@ class CreateExtendedTitleWithAlternativeTitles(Rule):
                 continue
 
             previous = title
-            extended_title = copy.copy(title)
-            extended_title.name = 'extended_title'
-            extended_title.value = title.value
+            alias = copy.copy(title)
+            alias.name = 'alias'
+            alias.value = title.value
 
             # extended title is the concatenation between title and all alternative titles
             for alternative_title in alternative_titles:
@@ -599,17 +599,17 @@ class CreateExtendedTitleWithAlternativeTitles(Rule):
                 # if the separator is a dash, add an extra space before and after
                 separators = [' ' + h.value + ' ' if h.value == '-' else h.value for h in holes]
                 separator = ' '.join(separators) if separators else ' '
-                extended_title.value += separator + alternative_title.value
+                alias.value += separator + alternative_title.value
 
                 previous = alternative_title
 
-            extended_title.end = previous.end
-            return extended_title
+            alias.end = previous.end
+            return alias
 
 
-class CreateExtendedTitleWithCountryOrYear(Rule):
+class CreateAliasWithCountryOrYear(Rule):
     """
-    ExtendedTitle: 'extended_title' - post processor to add country or year to the existing title.
+    'alias' - post processor to create alias using country or year in addition to the existing title.
 
     e.g.: Show.Name.US.S03.720p.BluRay.x264-SuperGroup
 
@@ -632,7 +632,7 @@ class CreateExtendedTitleWithCountryOrYear(Rule):
         For: Show.Name.US.S03.720p.BluRay.x264-SuperGroup
         GuessIt found: {
             "title": "Show Name",
-            "extended_title": "Show Name US"
+            "alias": "Show Name US"
             "country": "UNITED STATES",
             "season": 3,
             "screen_size": "720p",
@@ -671,12 +671,12 @@ class CreateExtendedTitleWithCountryOrYear(Rule):
             next_match = matches.next(after_title, index=0, predicate=
                                       lambda match: match.name in ('season', 'episode', 'date'))
             if next_match:
-                extended_title = copy.copy(title)
-                extended_title.name = 'extended_title'
-                extended_title.value = extended_title.value + ' ' + re.sub(r'\W*', '', str(after_title.raw))
-                extended_title.end = after_title.end
-                extended_title.raw_end = after_title.raw_end
-                return extended_title
+                alias = copy.copy(title)
+                alias.name = 'alias'
+                alias.value = alias.value + ' ' + re.sub(r'\W*', '', str(after_title.raw))
+                alias.end = after_title.end
+                alias.raw_end = after_title.raw_end
+                return alias
 
 
 class FixWrongTitlesWithCompleteKeyword(Rule):
@@ -2186,8 +2186,8 @@ def rules():
         AbsoluteEpisodeNumbers,
         PartsAsEpisodeNumbers,
         ExpectedTitlePostProcessor,
-        CreateExtendedTitleWithAlternativeTitles,
-        CreateExtendedTitleWithCountryOrYear,
+        CreateAliasWithAlternativeTitles,
+        CreateAliasWithCountryOrYear,
         EnhanceReleaseGroupDetection,
         ReleaseGroupPostProcessor,
         FixMultipleTitles

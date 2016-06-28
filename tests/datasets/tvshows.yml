@@ -669,7 +669,7 @@
 # anime_ep_name
 
 # anime_WarB3asT
-# Both parsers work only with show_type = 'anime' 
+# Both parsers work only with show_type = 'anime'
 ? 003. Show Name - Ep Name.mkv
 : options: {show_type: anime}
   title: Show Name
@@ -689,7 +689,7 @@
   type: episode
 
 # anime_bare
-# Both parsers work only with show_type = 'anime' 
+# Both parsers work only with show_type = 'anime'
 ? One Piece - 102
 : options: {show_type: anime}
   title: One Piece
@@ -982,13 +982,13 @@
   release_group: ZT
   type: episode
 
-# CreateExtendedTitleWithCountryOrYear (Country)
+# CreateAliasWithCountryOrYear (Country)
 ? - Show.Name.US.S03.720p.BluRay.x264-SuperGroup
   - /Show.Name/Show.Name.US.S03.720p.BluRay.x264-SuperGroup
   - /Show Name - US/Season 3/Show.Name.US.S03.720p.BluRay.x264-SuperGroup
   - /Show Name/Season 3/Show.Name.US.S03.720p.BluRay.x264-SuperGroup
 : title: Show Name
-  extended_title: Show Name US
+  alias: Show Name US
   country: US
   season: 3
   screen_size: 720p
@@ -997,10 +997,10 @@
   release_group: SuperGroup
   type: episode
 
-# CreateExtendedTitleWithCountryOrYear (Country inside brackets)
+# CreateAliasWithCountryOrYear (Country inside brackets)
 ? Show.Name.(US).S03.720p.BluRay.x264-SuperGroup
 : title: Show Name
-  extended_title: Show Name US
+  alias: Show Name US
   country: US
   season: 3
   screen_size: 720p
@@ -1009,10 +1009,10 @@
   release_group: SuperGroup
   type: episode
 
-# CreateExtendedTitleWithCountryOrYear (Country followed by episode)
+# CreateAliasWithCountryOrYear (Country followed by episode)
 ? Show.Name.US.E03.720p.BluRay.x264-SuperGroup
 : title: Show Name
-  extended_title: Show Name US
+  alias: Show Name US
   country: US
   episode: 3
   screen_size: 720p
@@ -1021,10 +1021,10 @@
   release_group: SuperGroup
   type: episode
 
-# CreateExtendedTitleWithCountryOrYear (Country followed by date)
+# CreateAliasWithCountryOrYear (Country followed by date)
 ? Show.Name.US.2012.12.12.720p.BluRay.x264-SuperGroup
 : title: Show Name
-  extended_title: Show Name US
+  alias: Show Name US
   country: US
   date: 2012-12-12
   screen_size: 720p
@@ -1033,10 +1033,10 @@
   release_group: SuperGroup
   type: episode
 
-# CreateExtendedTitleWithCountryOrYear (Year)
+# CreateAliasWithCountryOrYear (Year)
 ? Show.Name.2002.S03.720p.BluRay.x264-SuperGroup
 : title: Show Name
-  extended_title: Show Name 2002
+  alias: Show Name 2002
   year: 2002
   season: 3
   screen_size: 720p
@@ -1045,10 +1045,10 @@
   release_group: SuperGroup
   type: episode
 
-# CreateExtendedTitleWithCountryOrYear (Year inside brackets)
+# CreateAliasWithCountryOrYear (Year inside brackets)
 ? Show.Name.(2002).S03.720p.BluRay.x264-SuperGroup
 : title: Show Name
-  extended_title: Show Name 2002
+  alias: Show Name 2002
   year: 2002
   season: 3
   screen_size: 720p
@@ -1057,7 +1057,7 @@
   release_group: SuperGroup
   type: episode
 
-# CreateExtendedTitleWithCountryOrYear (negative country scenario)
+# CreateAliasWithCountryOrYear (negative country scenario)
 ? Show.Name.S03.US.720p.BluRay.x264-SuperGroup
 : title: Show Name
   country: US
@@ -1068,7 +1068,7 @@
   release_group: SuperGroup
   type: episode
 
-# CreateExtendedTitleWithCountryOrYear (negative country scenario)
+# CreateAliasWithCountryOrYear (negative country scenario)
 ? Show.Name.S03.(US).720p.BluRay.x264-SuperGroup
 : title: Show Name
   country: US
@@ -1079,7 +1079,7 @@
   release_group: SuperGroup
   type: episode
 
-# CreateExtendedTitleWithCountryOrYear (negative year scenario)
+# CreateAliasWithCountryOrYear (negative year scenario)
 ? Show.Name.S03.2005.720p.BluRay.x264-SuperGroup
 : title: Show Name
   year: 2005
@@ -1090,7 +1090,7 @@
   release_group: SuperGroup
   type: episode
 
-# CreateExtendedTitleWithCountryOrYear (negative year scenario)
+# CreateAliasWithCountryOrYear (negative year scenario)
 ? Show.Name.S03.(2005).720p.BluRay.x264-SuperGroup
 : title: Show Name
   year: 2005
@@ -1270,7 +1270,7 @@
   video_codec: h265
   screen_size: 1080p
   format: HDTV
-  type: episode 
+  type: episode
 
 # https://github.com/guessit-io/guessit/issues/295 (negative scenario: xvid)
 ? Some.Show.S02E14.XviD.HDTV
@@ -1279,7 +1279,7 @@
   episode: 14
   video_codec: XviD
   format: HDTV
-  type: episode 
+  type: episode
 
 # https://github.com/guessit-io/guessit/issues/306
 ? - Show.Name.-.Season.3.-.720p.BluRay.-.x264.-.Group
@@ -1606,23 +1606,23 @@
 # https://github.com/guessit-io/guessit/issues/294
 ? Show.Name.S02E04.WEBRip.x264-NF69-={TRASH}=-
 : title: Show Name
-  season: 2 
+  season: 2
   episode: 4
   format: WEBRip
   video_codec: h264
-  release_group: NF69 
+  release_group: NF69
   type: episode
 
 # https://github.com/guessit-io/guessit/issues/294  (and episode_title has the word: special)
 ? Show.Name.S02E05.F1.Special.720p.HDTV.x264-C4TV
 : title: Show Name
-  season: 2 
+  season: 2
   episode: 5
   episode_details: Special
   screen_size: 720p
   format: HDTV
   video_codec: h264
-  release_group: C4TV 
+  release_group: C4TV
   type: episode
 
 # Corner case with absolute numbering
@@ -1683,33 +1683,33 @@
   screen_size: 1080p
   type: episode
 
-# CreateExtendedTitleWithAlternativeTitles (separated by +)
+# CreateAliasWithAlternativeTitles (separated by +)
 ? - "[SuperGroup].Show.Name.-.Still+Name.-.11.[1080p]"
   - /Shows/Show Name - Still+Name/[SuperGroup].Show.Name.-.Still+Name.-.11.[1080p]
   - /Shows/Show Name/[SuperGroup].Show.Name.-.Still+Name.-.11.[1080p]
 : title: Show Name
   alternative_title: [Still, Name]
-  extended_title: "Show Name - Still+Name"
+  alias: "Show Name - Still+Name"
   absolute_episode: 11
   screen_size: 1080p
   release_group: SuperGroup
   type: episode
 
-# CreateExtendedTitleWithAlternativeTitles (separated by -)
+# CreateAliasWithAlternativeTitles (separated by -)
 ? "[SuperGroup].Show.Name.-.Still.-.Name.-.11.[1080p]"
 : title: Show Name
   alternative_title: [Still, Name]
-  extended_title: "Show Name - Still - Name"
+  alias: "Show Name - Still - Name"
   absolute_episode: 11
   screen_size: 1080p
   release_group: SuperGroup
   type: episode
 
-# CreateExtendedTitleWithAlternativeTitles (separated by space)
+# CreateAliasWithAlternativeTitles (separated by space)
 ? "[SuperGroup].Show.Name.-.Still.Name.-.11.[1080p]"
 : title: Show Name
   alternative_title: Still Name
-  extended_title: "Show Name - Still Name"
+  alias: "Show Name - Still Name"
   absolute_episode: 11
   screen_size: 1080p
   release_group: SuperGroup
@@ -2115,7 +2115,7 @@
 # Italian releases
 ? Show Name (2014) S02e23 [Mux - XviD - Ita Eng Mp3 - Sub Ita Eng] DLMux By Pir8 [CURA] Supereroi SEASON FINALE
 : title: Show Name
-  extended_title: Show Name 2014
+  alias: Show Name 2014
   year: 2014
   season: 2
   episode: 23
@@ -2193,7 +2193,7 @@
 ? Show.Name.-.Alternative.-.02.(1280x720.HEVC.AAC)
 : title: Show Name
   alternative_title: Alternative
-  extended_title: Show Name - Alternative
+  alias: Show Name - Alternative
   absolute_episode: 2
   screen_size: 720p
   video_codec: h265
@@ -2373,7 +2373,7 @@
 : title: Show Name
   season: 1
   format: DVD
-  subtitle_language: nl 
+  subtitle_language: nl
   release_group: QoQ
   type: episode
 

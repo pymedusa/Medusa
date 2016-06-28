@@ -111,7 +111,7 @@ class GuessitNameParser(object):
 
         result = {
             'original_name': name,
-            'series_name': guess.get('extended_title') or guess.get('title'),
+            'series_name': guess.get('alias') or guess.get('title'),
             'season_number': single_or_list(guess.get('season'), self.allow_multi_season),
             'release_group': guess.get('release_group'),
             'air_date': guess.get('date'),
