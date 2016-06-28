@@ -7,7 +7,7 @@ import re
 from string import upper
 
 import babelfish
-from guessit.rules.common import dash
+from guessit.rules.common import dash, alt_dash
 from guessit.rules.common.validators import seps, seps_surround
 from rebulk.rebulk import Rebulk
 from rebulk.rules import Rule, RemoveMatch
@@ -78,6 +78,8 @@ def other():
     rebulk.regex('INTERNAL', value='Internal')
     rebulk.regex(r'(?:HD)?iTunes(?:HD)?', value='iTunes')
     rebulk.regex('HC', value='Hardcoded subtitles')
+    rebulk.regex('dublado', value='Dubbed')
+    rebulk.regex(r'Legenda(?:s|do)', value='Subtitles')
 
     rebulk.rules(ValidateHardcodedSubs)
 
@@ -104,7 +106,7 @@ def language():
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
     rebulk.defaults(name='language', validator=seps_surround)
-    rebulk.regex('SPANISH-?AUDIO', r'(?:Espa[nñ]ol-)?castellano', value=babelfish.Language('spa'))
+    rebulk.regex('SPANISH-?AUDIO', r'(?:Espa[.]ol-)?castellano', value=babelfish.Language('spa'))
 
     return rebulk
 
@@ -115,11 +117,15 @@ def subtitle_language():
     :return:
     :rtype: Rebulk
     """
-    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE | re.UNICODE, abbreviations=[alt_dash])
     rebulk.defaults(name='subtitle_language', validator=seps_surround)
-    rebulk.regex('NL-?Subs?', 'NL-?Subbed', value=babelfish.Language('nld'))
-    rebulk.regex('RO-?Subs?', 'RO-?Subbed', value=babelfish.Language('ron'))
-    rebulk.regex('SWE-?Subs?', 'SWE-?Subbed', value=babelfish.Language('swe'))
+    rebulk.regex(r'NL@?Subs?', 'NL@?Subbed', value=babelfish.Language('nld'))
+    rebulk.regex(r'RO@?Subs?', 'RO@?Subbed', value=babelfish.Language('ron'))
+    rebulk.regex(r'SWE@?Subs?', 'SWE@?Subbed', value=babelfish.Language('swe'))
+    rebulk.regex(r'Legenda(?:s|do)?@PT-?BR', value=babelfish.Language('por', 'BR'))
+    rebulk.regex(r'Legenda(?:s|do)?@PT(?!-?BR)', value=babelfish.Language('por'))
+    rebulk.regex('Subtitulado@ESP(?:a[nñ]ol)?@Spanish', 'Subtitulado@ESP(?:a[nñ]ol)?', value=babelfish.Language('spa'),
+                 conflict_solver=lambda match, other: other if other.name == 'language' else '__default__')
 
     return rebulk
 

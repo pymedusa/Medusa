@@ -2462,3 +2462,62 @@
   release_group: GROUP
   type: episode
 
+# Legendado PT-BR
+? - Show.Name.S06E05.1080p.WEBRip.Legendado.PT-BR
+  - Show.Name.S06E05.1080p.WEBRip.Legendas.PT-BR
+  - Show.Name.S06E05.1080p.WEBRip.Legenda.PT-BR
+: title: Show Name
+  season: 6
+  episode: 5
+  screen_size: 1080p
+  format: WEBRip
+  subtitle_language: pt-BR
+  type: episode
+
+# Legendado PT
+? Show.Name.S06E05.1080p.WEBRip.Legendado.PT
+: title: Show Name
+  season: 6
+  episode: 5
+  screen_size: 1080p
+  format: WEBRip
+  subtitle_language: pt
+  type: episode
+
+# Dublado
+? Show.Name.S02E03.720p.HDTV.x264-Belex.-.Dual.Audio.-.Dublado
+: title: Show Name
+  season: 2
+  episode: 3
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: Belex
+  other: [DualAudio, Dubbed]
+  type: episode
+
+# Legendas
+? Show.Name.S05.1080p.BluRay.x264-Belex.-.Dual.Audio.+.Legendas
+: title: Show Name
+  season: 5
+  screen_size: 1080p
+  format: BluRay
+  video_codec: h264
+  release_group: Belex
+  other: [DualAudio, Subtitles]
+  type: episode
+
+# Subtitulado (it seems regex with ñ doesn't work with rebulk)
+? - Show.Name.S01E03.HDTV.Subtitulado.Esp.SC
+  - Show.Name.S01E03.HDTV.Subtitulado.Esp.Spanish.SC
+  - Show.Name.S01E03.HDTV.Subtitulado.Espanol.SC
+  - Show.Name.S01E03.HDTV.Subtitulado.Espanol.Spanish.SC
+#  - Show.Name.S01E03.HDTV.Subtitulado.Español.SC
+#  - Show.Name.S01E03.HDTV.Subtitulado.Español.Spanish.SC
+: title: Show Name
+  season: 1
+  episode: 3
+  format: HDTV
+  subtitle_language: es
+  release_group: SC
+  type: episode
