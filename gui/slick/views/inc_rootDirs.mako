@@ -1,5 +1,6 @@
 <%
     import sickbeard
+
     if sickbeard.ROOT_DIRS:
         backend_pieces = sickbeard.ROOT_DIRS.split('|')
         backend_default = 'rd-' + backend_pieces[0]
@@ -8,7 +9,9 @@
         backend_default = ''
         backend_dirs = []
 %>
+
 <span id="sampleRootDir"></span>
+
 <input type="hidden" id="whichDefaultRootDir" value="${backend_default}" />
 <div class="rootdir-selectbox">
     <select name="rootDir" id="rootDirs" size="6">
@@ -23,4 +26,4 @@
     <input class="btn" type="button" id="deleteRootDir" value="Delete" />
     <input class="btn" type="button" id="defaultRootDir" value="Set as Default *" />
 </div>
-<input type="text" style="display: none;" id="rootDirText"/>
+<input type="text" style="display: none" id="rootDirText" autocapitalize="off" />

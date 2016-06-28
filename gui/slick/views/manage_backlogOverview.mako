@@ -13,13 +13,16 @@
 </%block>
 <%block name="content">
 <div id="content960">
+
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
 % else:
     <h1 class="title">${title}</h1>
 % endif
+
 <%
     showQualSnatched = lambda x: Quality.splitQuality(x.quality)[1]
+
     totalWanted = totalQual = totalQualSnatched = 0
     backLogShows = sorted([x for x in sickbeard.showList if showCounts[x.indexerid][Overview.QUAL] + showCounts[x.indexerid][Overview.WANTED] + (0, showCounts[x.indexerid][Overview.SNATCHED])[len(showQualSnatched(x)) > 0]], key=lambda x: x.name)
     for curShow in backLogShows:
@@ -28,17 +31,21 @@
         if showQualSnatched(curShow):
             totalQualSnatched += showCounts[x.indexerid][Overview.SNATCHED]
 %>
+
 <div class="h2footer pull-right">
     % if totalWanted > 0:
     <span class="listing-key wanted">Wanted: <b>${totalWanted}</b></span>
     % endif
+
     % if totalQualSnatched > 0:
     <span class="listing-key snatched">Snatched (Allowed): <b>${totalQualSnatched}</b></span>
     % endif
+
     % if totalQual > 0:
     <span class="listing-key qual">Allowed: <b>${totalQual}</b></span>
     % endif
-</div><br />
+</div><br>
+
 <div class="float-left">
 Jump to Show:
     <select id="pickShow" class="form-control form-control-inline input-sm">
@@ -47,6 +54,7 @@ Jump to Show:
     % endfor
     </select>
 </div>
+
 <table class="sickbeardTable" cellspacing="0" border="0" cellpadding="0">
 % for curShow in backLogShows:
     % if not showQualSnatched(curShow) and not showCounts[curShow.indexerid][Overview.WANTED] + showCounts[curShow.indexerid][Overview.QUAL]:
@@ -54,27 +62,33 @@ Jump to Show:
     % endif
     <tr class="seasonheader" id="show-${curShow.indexerid}">
         <td colspan="3" class="align-left" style="position: relative;">
-            <h2 style="display: inline-block;"><a href="/home/displayShow?show=${curShow.indexerid}">${curShow.name}</a></h2>
+            <h2 style="display: inline-block;"><a href="${srRoot}/home/displayShow?show=${curShow.indexerid}">${curShow.name}</a></h2>
             <div style="position: absolute; bottom: 10px; right: 0;">
                 % if showCounts[curShow.indexerid][Overview.WANTED] > 0:
                 <span class="listing-key wanted">Wanted: <b>${showCounts[curShow.indexerid][Overview.WANTED]}</b></span>
                 % endif
+
                 % if showQualSnatched(curShow) and showCounts[curShow.indexerid][Overview.SNATCHED] > 0:
                     <span class="listing-key snatched">Snatched (Allowed): <b>${showCounts[curShow.indexerid][Overview.SNATCHED]}</b></span>
                 % endif
+
                 % if showCounts[curShow.indexerid][Overview.QUAL] > 0:
                 <span class="listing-key qual">Allowed: <b>${showCounts[curShow.indexerid][Overview.QUAL]}</b></span>
                 % endif
-                <a class="btn btn-inline forceBacklog" href="/manage/backlogShow?indexer_id=${curShow.indexerid}"><i class="icon-play-circle icon-white"></i> Force Backlog</a>
+
+                <a class="btn btn-inline forceBacklog" href="${srRoot}/manage/backlogShow?indexer_id=${curShow.indexerid}"><i class="icon-play-circle icon-white"></i> Force Backlog</a>
             </div>
         </td>
     </tr>
+
     <tr class="seasoncols"><th>Episode</th><th>Name</th><th class="nowrap">Airdate</th></tr>
+
     % for curResult in showSQLResults[curShow.indexerid]:
         <%
             whichStr = episode_num(curResult['season'], curResult['episode']) or episode_num(curResult['season'], curResult['episode'], numbering='absolute')
             if whichStr not in showCats[curShow.indexerid] or showCats[curShow.indexerid][whichStr] not in (Overview.QUAL, Overview.WANTED, Overview.SNATCHED):
                 continue
+
             if not showQualSnatched(curShow) and showCats[curShow.indexerid][whichStr] == Overview.SNATCHED:
                 continue
         %>

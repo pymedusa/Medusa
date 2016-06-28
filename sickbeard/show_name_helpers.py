@@ -53,9 +53,6 @@ def containsAtLeastOneWord(name, words):
 
     Returns: False if the name doesn't contain any word of words list, or the found word from the list.
     """
-    if not (name and words):
-        return False
-
     if isinstance(words, string_types):
         words = words.split(',')
     items = [(re.compile(r'(^|[\W_])%s($|[\W_])' % word.strip(), re.I), word.strip()) for word in words]
@@ -66,10 +63,9 @@ def containsAtLeastOneWord(name, words):
             # If word is a regex like "dub(bed)?" or "sub(bed|ed|pack|s)"
             # then return just the matched word: "dub" and not full regex
             if word in resultFilters:
-                return subs_word.replace(".", "")
+                return subs_word.replace(".","")
             else:
                 return word
-
     return False
 
 

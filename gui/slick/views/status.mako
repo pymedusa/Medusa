@@ -11,6 +11,7 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
+
 <%
     schedulerList = {
         'Daily Search': 'dailySearchScheduler',
@@ -47,9 +48,9 @@
            <tr>
                <td>${schedulerName}</td>
                % if service.isAlive():
-               <td style="background-color:rgb(0, 128, 0);">${service.isAlive()}</td>
+               <td style="background-color:green">${service.isAlive()}</td>
                % else:
-               <td style="background-color:rgb(255, 0, 0);">${service.isAlive()}</td>
+               <td style="background-color:red">${service.isAlive()}</td>
                % endif
                % if scheduler == 'backlogSearchScheduler':
                    <% searchQueue = getattr(sickbeard, 'searchQueueScheduler') %>

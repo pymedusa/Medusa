@@ -4,34 +4,34 @@ inc_top.mako
 
 .ui-dialog,
 .ui-dialog-buttonpane {
-    background: rgb(42, 42, 42) !important;
+    background: #2a2a2a !important;
 }
 
 .ui-widget-content {
-    background: rgb(96, 96, 96);
-    border: 1px solid rgb(17, 17, 17);
-    color: rgb(255, 255, 255);
+    background: #606060;
+    border: 1px solid #111;
+    color: #fff;
 }
 
 .ui-widget-content a {
-    color: rgb(255, 255, 255);
+    color: #fff;
 }
 
 .ui-widget-content a:hover {
-    color: rgb(9, 162, 255);
+    color: #09A2FF;
     text-decoration: none;
 }
 
 .ui-widget-header {
-    background: rgb(61, 61, 61);
-    border: 1px solid rgb(17, 17, 17);
-    color: rgb(255, 255, 255);
+    background: #3d3d3d;
+    border: 1px solid #111;
+    color: #fff;
 }
 
 .ui-state-default,
 .ui-widget-content .ui-state-default,
 .ui-widget-header .ui-state-default {
-    border: 1px solid rgb(17, 17, 17);
+    border: 1px solid #111;
 }
 
 .ui-state-hover,
@@ -40,13 +40,13 @@ inc_top.mako
 .ui-state-focus,
 .ui-widget-content .ui-state-focus,
 .ui-widget-header .ui-state-focus {
-    background: rgb(61, 61, 61);
+    background: #3d3d3d;
 }
 
 .ui-state-active,
 .ui-widget-content .ui-state-active,
 .ui-widget-header .ui-state-active {
-    background: rgb(61, 61, 61);
+    background: #3d3d3d;
 }
 
 .ui-icon,
@@ -59,31 +59,31 @@ inc_top.mako
 }
 
 .ui-widget-overlay {
-    background: rgb(0, 0, 0) url("../css/lib/images/ui-bg_flat_0_000000_40x100.png") 50% 50% repeat-x;
+    background: #000000 url("../css/lib/images/ui-bg_flat_0_000000_40x100.png") 50% 50% repeat-x;
 }
 
 .ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited {
-    color: rgb(255, 255, 255);
+    color: #fff;
     text-decoration: none;
 }
 
 .ui-dialog .ui-dialog-titlebar-close {
-    background: rgb(51, 51, 51);
+    background: #333;
 }
 
 .ui-tabs {
-    padding: 0;
+    padding: 0px;
     background: none;
-    border-width: 0;
+    border-width: 0px;
 }
 
 .ui-tabs .ui-tabs-panel {
-    background-color: rgb(61, 61, 61) !important;
-    border: 1px solid rgb(17, 17, 17) !important;
+    background-color: #3d3d3d !important;
+    border: 1px solid #111 !important;
 }
 
 .ui-tabs-nav > :not(.ui-tabs-active){
-    background: rgb(51, 51, 51);
+    background: #333;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
 }
@@ -95,13 +95,13 @@ inc_bottom.mako
 .footer {
     width: 100%;
     padding: 20px 0;
-    color: rgb(255, 255, 255);
+    color: #fff;
     text-align: center;
     font-size: 12px;
 }
 
 .footerhighlight {
-    color: rgb(9, 162, 255);
+    color: #09A2FF;
     display: inline;
 }
 
@@ -110,9 +110,10 @@ home.mako
 ========================================================================== */
 
 .imgbanner .banner {
-    border: 1px solid rgb(17, 17, 17);
+    border: 1px solid #111;
     overflow: hidden;
     height: 66px;
+    overflow: hidden;
     border-radius: 8px;
     vertical-align: top;
     width: 360px;
@@ -127,7 +128,7 @@ home.mako
     border-radius: 3px;
     vertical-align: middle;
     width: 45px;
-    border: 1px solid rgb(17, 17, 17);
+    border: 1px solid #111;
     margin-right: 5px;
 }
 
@@ -138,10 +139,10 @@ home.mako
     height: 100%;
     overflow: visible;
     text-align: center;
-    text-shadow: 0 0 0.1em rgb(0, 0, 0);
+    text-shadow: 0 0 0.1em #000;
     vertical-align: middle;
     font-size: 12px;
-    color: rgb(255, 255, 255);
+    color: #fff;
 }
 
 .loading-spinner {
@@ -149,8 +150,8 @@ home.mako
 }
 
 .show-container {
-    background-color: rgb(51, 51, 51);
-    border-color: rgb(51, 51, 51);
+    background-color: #333;
+    border-color: #333;
 }
 
 .show-title:after {
@@ -184,26 +185,26 @@ home.mako
 }
 
 td.tvShow a {
-    color: rgb(255, 255, 255);
+    color: #fff;
     text-decoration: none;
 }
 
 td.tvShow a:hover {
     cursor: pointer;
-    color: rgb(9, 162, 255);
+    color: #09A2FF;
 }
 
 .popover {
     margin-left: -50px;
-    background-color: rgb(51, 51, 51);
+    background-color: #333;
 }
 
 .popover-content {
-    background-color: rgb(51, 51, 51);
+    background-color: #333;
 }
 
 .popover.bottom .arrow:after {
-    border-bottom-color: rgb(51, 51, 51);
+    border-bottom-color: #333;
 }
 
 /* =======================================================================
@@ -219,8 +220,8 @@ home_newShow.mako
     padding: 8px;
     overflow: hidden;
     font-size: 14px;
-    background-color: rgb(61, 61, 61);
-    border: 1px solid rgb(17, 17, 17);
+    background-color: #3d3d3d;
+    border: 1px solid #111;
 }
 
 /* =======================================================================
@@ -232,7 +233,7 @@ ul#rootDirStaticList li {
     margin: 2px;
     list-style: none outside none;
     cursor: pointer;
-    background: rgb(61, 61, 61);
+    background: #3d3d3d;
 }
 
 /* =======================================================================
@@ -242,8 +243,8 @@ home_trendingShows.mako
 .traktContainer {
     margin: 12px;
     width: 188px;
-    background-color: rgb(51, 51, 51);
-    border: 1px solid rgb(17, 17, 17);
+    background-color: #333;
+    border: 1px solid #111;
     border-radius: 6px;
 }
 
@@ -264,24 +265,24 @@ h1.title {
     line-height: 30px;
     text-align: left;
     text-rendering: optimizelegibility;
-    border-bottom: 1px solid rgb(85, 85, 85);
+    border-bottom: 1px solid #555;
 }
 
 ul.tags li {
     margin-right: 4px;
     margin-bottom: 5px;
     padding: 3px 4px 3px 25px;
-    background: url(../images/tag.png) no-repeat scroll 5px 4px rgb(21, 82, 143);
+    background: url(../images/tag.png) no-repeat scroll 5px 4px #15528F;
     border-radius: 3px;
-    border: 1px solid rgb(17, 17, 17);
-    color: rgb(255, 255, 255);
+    border: 1px solid #111;
+    color: #FFF;
     font: 14px/18px "Open Sans", "Helvetica Neue", Helvetica, Arial, Geneva, sans-serif;
-    text-shadow: 0 1px rgba(0, 0, 0, 0.8);
+    text-shadow: 0px 1px rgba(0, 0, 0, 0.8);
     float: left;
 }
 
 .tvshowImg {
-    border: 1px solid rgb(17, 17, 17);
+    border: 1px solid #111;
     border-radius: 5px;
     height: 311px;
     width: auto;
@@ -290,8 +291,8 @@ ul.tags li {
 
 #summary {
     padding: 10px;
-    background-color: rgb(61, 61, 61);
-    border: 1px solid rgb(17, 17, 17);
+    background-color: #3d3d3d;
+    border: 1px solid #111;
     width: 100%;
     height: 250px;
     overflow: auto;
@@ -306,27 +307,27 @@ ul.tags li {
     text-align: center;
     border: none;
     empty-cells: show;
-    color: rgb(0, 0, 0);
+    color: #000;
 }
 
 .sickbeardTable th{
-    color: rgb(255, 255, 255);
+    color: #fff;
     text-align: center;
-    background-color: rgb(21, 82, 143);
+    background-color: #15528F;
     white-space: nowrap;
 }
 
 .sickbeardTable th,
 .sickbeardTable td {
-    border-top: 1px solid rgb(34, 34, 34);
-    border-left: 1px solid rgb(34, 34, 34);
+    border-top: 1px solid #222;
+    border-left: 1px solid #222;
     padding: 4px;
 }
 
 th.row-seasonheader {
     border: none;
-    background-color: rgb(34, 34, 34);
-    color: rgb(255, 255, 255);
+    background-color: #222;
+    color: #fff;
     padding-top: 15px;
     text-align: left;
 }
@@ -355,54 +356,54 @@ h2.day, h2.network {
     line-height: 36px;
     font-weight: bold;
     letter-spacing: 1px;
-    color: rgb(255, 255, 255);
+    color: #FFF;
     text-align: center;
-    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
-    background-color: rgb(21, 82, 143);
+    text-shadow: -1px -1px 0px rgba(0, 0, 0, 0.3);
+    background-color: #15528F;
 }
 
 .tvshowDiv {
     display: block;
     clear: both;
-    border: 1px solid rgb(204, 204, 204);
+    border: 1px solid #ccc;
     margin: auto;
-    padding: 0;
+    padding: 0px;
     text-align: left;
     width: 750px;
     border-radius: 5px;
-    background: rgb(255, 255, 255);
+    background: #fff;
     cursor: default;
     overflow: hidden;
-    color: rgb(0, 0, 0);
+    color: #000;
 }
 
 .tvshowDiv a:hover {
-    color: rgb(9, 162, 255);
+    color: #09A2FF;
 }
 
 #showListTable td.tvShow a {
-    color: rgb(0, 0, 0);
+    color: #000;
 }
 
 #showListTable td.tvShow a:hover {
     cursor: pointer;
-    color: rgb(9, 162, 255);
+    color: #09A2FF;
 }
 
 table.cal-odd {
-    background-color: rgb(51, 51, 51);
+    background-color: #333;
 }
 
 table.cal-even {
-    background-color: rgb(61, 61, 61);
+    background-color: #3d3d3d;
 }
 
 .calendarShow .text .airtime {
-    color: rgb(255, 255, 255);
+    color:#fff
 }
 
 .calendarShow .text .episode-title {
-    color: rgb(170, 170, 170);
+    color:#aaa
 }
 
 /* =======================================================================
@@ -411,14 +412,14 @@ config*.mako
 
 .component-group {
     padding: 15px 15px 25px;
-    border-bottom: 1px dotted rgb(85, 85, 85);
+    border-bottom: 1px dotted #555;
     min-height: 200px;
 }
 
 .component-group-desc p {
     width: 90%;
     margin: 10px 0;
-    color: rgb(221, 221, 221);
+    color: #ddd;
 }
 
 #provider_order_list li,
@@ -426,16 +427,16 @@ config*.mako
     padding: 5px;
     margin: 5px 0;
     font-size: 14px;
-    background: rgb(51, 51, 51) !important;
-    color: rgb(255, 255, 255);
+    background: #333 !important;
+    color: #fff;
 }
 
 #provider_order_list .ui-state-default.torrent-provider {
-    background-color: rgb(85, 85, 85) !important;
+    background-color: #555 !important;
 }
 
 #provider_order_list .ui-state-default.nzb-provider {
-    background-color: rgb(34, 34, 34) !important;
+    background-color: #222 !important;
 }
 
 /* =======================================================================
@@ -444,16 +445,16 @@ config_postProcessing.mako
 
 #config div.example {
     padding: 10px;
-    background-color: rgb(51, 51, 51);
-    border: 1px solid rgb(17, 17, 17);
+    background-color: #333333;
+    border: 1px solid #111;
 }
 
 .Key {
     width: 100%;
     padding: 6px;
     font-size: 13px;
-    background-color: rgb(61, 61, 61);
-    border: 1px solid rgb(17, 17, 17);
+    background-color: #3d3d3d;
+    border: 1px solid #111;
     border-collapse: collapse;
     border-spacing: 0;
 }
@@ -461,17 +462,17 @@ config_postProcessing.mako
 .Key th, .tableHeader {
     padding: 3px 9px;
     margin: 0;
-    color: rgb(255, 255, 255);
+    color: #fff;
     text-align: center;
-    background: rgb(21, 82, 143);
+    background: #15528F;
 }
 
 .Key tr {
-    border-bottom: 1px solid rgb(17, 17, 17);
+    border-bottom: 1px solid #111;
 }
 
 .Key tr.even {
-    background-color: rgb(51, 51, 51);
+    background-color: #333;
 }
 
 /* =======================================================================
@@ -481,14 +482,14 @@ config_notifications.mako
 div.metadata_options {
     padding: 7px;
     overflow: auto;
-    background: rgb(51, 51, 51);
-    color: rgb(255, 255, 255);
-    border: 1px solid rgb(17, 17, 17);
+    background: #333;
+    color: #fff;
+    border: 1px solid #111;
 }
 
 div.metadata_options label:hover {
-    color: rgb(255, 255, 255);
-    background-color: rgb(21, 82, 143);
+    color: #fff;
+    background-color: #15528F;
     cursor: pointer;
 }
 
@@ -496,13 +497,13 @@ div.metadata_options label {
     display: block;
     padding-left: 7px;
     line-height: 20px;
-    color: rgb(255, 255, 255);
+    color: #fff;
 }
 
 div.metadata_example label {
     display: block;
     line-height: 21px;
-    color: rgb(255, 255, 255);
+    color: #fff;
     cursor: pointer;
 }
 
@@ -512,7 +513,7 @@ manage*.mako
 
 .separator {
     font-size: 90%;
-    color: rgb(255, 255, 255);
+    color: #fff;
 }
 
 a.whitelink {
@@ -524,8 +525,8 @@ Global
 
 span.path {
     padding: 3px 6px;
-    color: rgb(9, 162, 255);
-    background-color: rgb(51, 51, 51);
+    color: #09A2FF;
+    background-color: #333;
 }
 
 /* =======================================================================
@@ -536,71 +537,71 @@ body {
     padding-top: 60px;
     overflow-y: scroll;
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    color: rgb(255, 255, 255);
-    background-color: rgb(34, 34, 34);
+    color: #fff;
+    background-color: #222;
 }
 
 /* navbar styling */
 .navbar-default {
-    background-color: rgb(21, 82, 143);
+    background-color: #15528F;
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#297AB8', endColorstr='#15528F');
-    background: -webkit-gradient(linear, left top, left bottom, from(rgb(41, 122, 184)), to(rgb(21, 82, 143)));
-    background: -moz-linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
-    border-color: rgb(62, 63, 58);
+    background: -webkit-gradient(linear, left top, left bottom, from(#297AB8), to(#15528F));
+    background: -moz-linear-gradient(top,  #297AB8,  #15528F);
+    border-color: #3e3f3a;
 }
 
 .navbar-default .navbar-nav > li > a:hover,
 .navbar-default .navbar-nav > li > a:focus {
-    background-color: rgb(18, 68, 119);
+    background-color: #124477;
 }
 
 .navbar-default .navbar-nav > .active > a,
 .navbar-default .navbar-nav > .active > a:hover,
 .navbar-default .navbar-nav > .active > a:focus {
-    color: rgb(255, 255, 255);
-    background-color: rgb(18, 68, 119);
+    color: #ffffff;
+    background-color: #124477;
 }
 
 .navbar-default .navbar-toggle:hover,
 .navbar-default .navbar-toggle:focus {
-    background-color: rgb(18, 68, 119);
+    background-color: #124477;
 }
 
 .navbar-default .navbar-toggle .icon-bar {
-    background-color: rgb(18, 68, 119);
+    background-color: #124477;
 }
 
 .navbar-default .navbar-nav > .open > a,
 .navbar-default .navbar-nav > .open > a:hover,
 .navbar-default .navbar-nav > .open > a:focus {
-    background-color: rgb(18, 68, 119);
-    color: rgb(255, 255, 255);
+    background-color: #124477;
+    color: #ffffff;
 }
 
 @media (max-width: 767px) {
     .navbar-default .navbar-nav .open .dropdown-menu > .active > a,
     .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
     .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
-        color: rgb(255, 255, 255);
-        background-color: rgb(18, 68, 119);
+        color: #ffffff;
+        background-color: #124477;
     }
 }
 
 .dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
-    color: rgb(255, 255, 255);
+    color: #fff;
     text-decoration: none;
-    background-color: rgb(21, 82, 143);
+    background-color: #15528F;
 }
 
 .dropdown-menu > li > a {
     padding: 4px 36px 4px 20px;
-    color: rgb(255, 255, 255);
+    color: #fff;
 }
 
 .dropdown-menu {
-    background-color: rgb(51, 51, 51);
+    background-color: #333;
     border: 1px solid rgba(0, 0, 0, 0.15);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.176);
 }
 
 .btn {
@@ -612,25 +613,25 @@ body {
     font-size: 12px;
     line-height: 16px;
     *line-height: 20px;
-    color: rgb(255, 255, 255);
+    color: #fff;
     text-align: center;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
     vertical-align: middle;
     cursor: pointer;
-    background-color: rgb(38, 114, 182);
-    *background-color: rgb(38, 114, 182);
-    background-image: -ms-linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(41, 122, 184)), to(rgb(21, 82, 143)));
-    background-image: -webkit-linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
-    background-image: -o-linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
-    background-image: linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
-    background-image: -moz-linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
+    background-color: #2672B6;
+    *background-color: #2672B6;
+    background-image: -ms-linear-gradient(top, #297AB8, #15528F);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#297AB8), to(#15528F));
+    background-image: -webkit-linear-gradient(top, #297AB8, #15528F);
+    background-image: -o-linear-gradient(top, #297AB8, #15528F);
+    background-image: linear-gradient(top, #297AB8, #15528F);
+    background-image: -moz-linear-gradient(top, #297AB8, #15528F);
     background-repeat: repeat-x;
-    border: 1px solid rgb(17, 17, 17);
+    border: 1px solid #111;
     *border: 0;
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-    border-color: rgb(17, 17, 17) rgb(17, 17, 17) rgb(17, 17, 17);
-    border-bottom-color: rgb(17, 17, 17);
+    border-color: #111 #111 #111;
+    border-bottom-color: #111;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     border-radius: 4px;
@@ -647,22 +648,22 @@ body {
 .btn.active,
 .btn.disabled,
 .btn[disabled] {
-    background-color: rgb(38, 114, 182);
-    *background-color: rgb(38, 114, 182);
-    color: rgb(255, 255, 255);
+    background-color: #2672B6;
+    *background-color: #2672B6;
+    color: #fff;
 }
 
 .btn:active,
 .btn.active {
-    background-color: rgb(204, 204, 204) \9;
-    color: rgb(255, 255, 255);
+    background-color: #cccccc \9;
+    color: #fff;
 }
 
 .btn:hover {
-    color: rgb(255, 255, 255);
+    color: #fff;
     text-decoration: none;
-    background-color: rgb(38, 114, 182);
-    *background-color: rgb(38, 114, 182);
+    background-color: #2672B6;
+    *background-color: #2672B6;
     background-position: 0 -150px;
     -webkit-transition: background-position 0.0s linear;
     -moz-transition: background-position 0.0s linear;
@@ -672,18 +673,18 @@ body {
 }
 
 .btn:focus {
-    outline: thin dotted rgb(51, 51, 51);
+    outline: thin dotted #333;
     outline: 5px auto -webkit-focus-ring-color;
     outline-offset: -2px;
-    color: rgb(255, 255, 255);
+    color: #fff;
 }
 
 .btn.active,
 .btn:active {
-    background-color: rgb(38, 114, 182);
-    background-color: rgb(38, 114, 182) \9;
+    background-color: #2672B6;
+    background-color: #2672B6 \9;
     background-image: none;
-    color: rgb(255, 255, 255);
+    color: #fff;
     outline: 0;
     -webkit-box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
     -moz-box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -693,7 +694,7 @@ body {
 .btn.disabled,
 .btn[disabled] {
     cursor: default;
-    background-color: rgb(21, 82, 143);
+    background-color: #15528F;
     background-image: none;
     opacity: 0.65;
     filter: alpha(opacity=65);
@@ -709,16 +710,16 @@ body {
         right: 12px;
         display: inline-block;
         border-right: 6px solid transparent;
-        border-bottom: 6px solid rgb(51, 51, 51);
+        border-bottom: 6px solid #333;
         border-left: 6px solid transparent;
         content: "";
     }
 }
 
 pre {
-    color: rgb(255, 255, 255);
-    background-color: rgb(61, 61, 61);
-    border-color: rgb(17, 17, 17);
+    color: #fff;
+    background-color: #3d3d3d;
+    border-color: #111;
 }
 
 /* =======================================================================
@@ -729,11 +730,11 @@ browser.css overrides
     margin: 2px 0;
     list-style-type: none;
     cursor: pointer;
-    background: rgb(51, 51, 51) !important;
+    background: #333 !important;
 }
 
 .fileBrowserDialog ul li a:hover {
-    color: rgb(9, 162, 255);
+    color: #09a2ff;
     background: none !important;
 }
 
@@ -742,25 +743,25 @@ formWizard.css
 ========================================================================== */
 
 legend.legendStep {
-    color: rgb(255, 255, 255);
-    margin-bottom: 0;
+    color: #ffffff;
+    margin-bottom: 0px;
 }
 
 div.stepsguide .step p {
     margin: 12px 0;
-    border-bottom: 4px solid rgb(35, 175, 220);
+    border-bottom: 4px solid #23AFDC;
 }
 
 div.stepsguide .disabledstep p {
-    border-bottom: 4px solid rgb(17, 120, 179);
+    border-bottom: 4px solid #1178B3;
 }
 
 div.formpaginate .prev, div.formpaginate .next {
     padding: 3px 6px;
-    color: rgb(255, 255, 255);
+    color: #fff;
     cursor: hand;
     cursor: pointer;
-    background: rgb(34, 101, 161);
+    background: #2265A1;
     -webkit-border-radius: 6px;
         -moz-border-radius: 6px;
             border-radius: 6px;
@@ -771,25 +772,25 @@ pnotify.css
 ========================================================================== */
 
 .ui-pnotify-container {
-    border: 1px solid rgb(17, 17, 17);
-    background-image: -moz-linear-gradient(rgb(51, 51, 51), rgb(61, 61, 61)) !important;
-    background-image: linear-gradient(rgb(51, 51, 51), rgb(61, 61, 61)) !important;
-    background-image: -webkit-linear-gradient(rgb(51, 51, 51), rgb(61, 61, 61)) !important;
-    background-image: -o-linear-gradient(rgb(51, 51, 51), rgb(61, 61, 61)) !important;
-    filter: progid:dximagetransform.microsoft.gradient(startColorstr=rgb(51, 51, 51), endColorstr=rgb(61, 61, 61)) !important;
-    -ms-filter: progid:dximagetransform.microsoft.gradient(startColorstr=rgb(51, 51, 51), endColorstr=rgb(61, 61, 61)) !important;
-    -moz-box-shadow: 0 0 2px rgb(0, 0, 0);
-    -webkit-box-shadow: 0 0 2px rgb(0, 0, 0);
-    -o-box-shadow: 0 0 2px rgb(0, 0, 0);
-    box-shadow: 0 0 2px rgb(0, 0, 0);
+    border: 1px solid #111;
+    background-image: -moz-linear-gradient(#333, #3d3d3d) !important;
+    background-image: linear-gradient(#333, #3d3d3d) !important;
+    background-image: -webkit-linear-gradient(#333, #3d3d3d) !important;
+    background-image: -o-linear-gradient(#333, #3d3d3d) !important;
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr=#333, endColorstr=#3d3d3d) !important;
+    -ms-filter: progid:dximagetransform.microsoft.gradient(startColorstr=#333, endColorstr=#3d3d3d) !important;
+    -moz-box-shadow: 0px 0px 2px #000;
+    -webkit-box-shadow: 0px 0px 2px #000;
+    -o-box-shadow: 0px 0px 2px #000;
+    box-shadow: 0px 0px 2px #000;
 }
 
 .ui-pnotify-title {
-    color: rgb(255, 255, 255);
+    color: #ffffff;
 }
 
 .ui-pnotify-text {
-    color: rgb(255, 255, 255);
+    color: #ffffff;
 }
 
 /* =======================================================================
@@ -800,60 +801,60 @@ tablesorter.css
     width: 100%;
     margin-right: auto;
     margin-left: auto;
-    color: rgb(255, 255, 255);
+    color: #fff;
     text-align: left;
-    background-color: rgb(51, 51, 51);
+    background-color: #333;
     border-spacing: 0;
 }
 
 .tablesorter th,
 .tablesorter td {
     padding: 4px;
-    border-top: rgb(34, 34, 34) 1px solid;
-    border-left: rgb(34, 34, 34) 1px solid;
+    border-top: #222 1px solid;
+    border-left: #222 1px solid;
     vertical-align: middle;
 }
 
 .tablesorter th {
-    color: rgb(255, 255, 255);
+    color: #fff;
     text-align: center;
     text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
-    background-color: rgb(21, 82, 143);
+    background-color: #15528F;
     border-collapse: collapse;
     font-weight: normal;
 }
 
 .tablesorter thead .tablesorter-headerDesc {
-    background-color: rgb(41, 122, 184);
+    background-color: #297AB8;
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
     /* background-image: url(../images/tablesorter/asc.gif); */
 }
 
 .tablesorter thead .tablesorter-headerAsc {
-    background-color: rgb(41, 122, 184);
+    background-color: #297AB8;
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
     /* background-image: url(../images/tablesorter/desc.gif); */
 }
 
 thead.tablesorter-stickyHeader {
-    border-top: 2px solid rgb(34, 34, 34);
-    border-bottom: 2px solid rgb(34, 34, 34);
+    border-top: 2px solid #222;
+    border-bottom: 2px solid #222;
 }
 
 /* Zebra Widget - row alternating colors */
 .tablesorter tr.odd, .sickbeardTable tr.odd {
-    background-color: rgb(51, 51, 51);
+    background-color: #333333;
 }
 
 .tablesorter tr.even, .sickbeardTable tr.even {
-    background-color: rgb(46, 46, 46);
+    background-color: #2e2e2e;
 }
 
 .tablesorter tr.tablesorter-filter-row,
 .tablesorter tr.tablesorter-filter-row td {
     text-align: center;
-    background: rgb(51, 51, 51);
-    border-bottom: 1px solid rgb(17, 17, 17);
+    background: #333;
+    border-bottom: 1px solid #111;
 }
 
 /* hidden filter row */
@@ -880,7 +881,7 @@ thead.tablesorter-stickyHeader {
 }
 
 #showListTable  tbody {
-    color: rgb(0, 0, 0);
+    color: #000;
 }
 
 /* =======================================================================
@@ -888,11 +889,11 @@ token-input.css
 ========================================================================== */
 
 div.token-input-dropdown {
-    background-color: rgb(255, 255, 255);
-    color: rgb(0, 0, 0);
-    border-left-color: rgb(204, 204, 204);
-    border-right-color: rgb(204, 204, 204);
-    border-bottom-color: rgb(204, 204, 204);
+    background-color: #fff;
+    color: #000;
+    border-left-color: #ccc;
+    border-right-color: #ccc;
+    border-bottom-color: #ccc;
 }
 
 /* =======================================================================
@@ -900,29 +901,29 @@ jquery.confirm.css
 ========================================================================== */
 
 #confirmBox{
-    background: rgb(34, 34, 34);
+    background: #222;
     width: 460px;
     position: fixed;
     left: 50%;
     top: 50%;
     margin: -130px 0 0 -230px;
-    border: 1px solid rgb(17, 17, 17);
-    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.175);
+    border: 1px solid #111;
+    box-shadow: 0px 0px 12px 0px rgba(0, 0, 0, 0.175);
 }
 
 #confirmBox h1 {
-    background-color: rgb(21, 82, 143);
-    border-bottom: 1px solid rgb(17, 17, 17);
-    color: rgb(255, 255, 255);
+    background-color: #15528F;
+    border-bottom: 1px solid #111;
+    color: #fff;
     margin: 0;
     font-size: 22px;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
+    text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.75);
 }
 
 #confirmBox p {
     padding-top: 20px;
-    color: rgb(255, 255, 255);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
+    color: #fff;
+    text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.75);
 }
 
 /* =======================================================================
@@ -930,17 +931,17 @@ bootstrap modal
 ========================================================================== */
 
 .modal-content {
-    background-color: rgb(61, 61, 61);
+    background-color: #3D3D3D;
 }
 
 .modal-body {
-    background-color: rgb(61, 61, 61);
+    background-color: #3D3D3D;
 }
 
 .modal-header {
     padding:9px 15px;
-    border-bottom:1px solid rgb(238, 238, 238);
-    background-color: rgb(21, 82, 143);
+    border-bottom:1px solid #eee;
+    background-color: #15528F;
     -webkit-border-top-left-radius: 5px;
     -webkit-border-top-right-radius: 5px;
     -moz-border-radius-topleft: 5px;
@@ -954,13 +955,13 @@ bootstrap panel
 ========================================================================== */
 
 .panel-default {
-    background-color: rgb(61, 61, 61);
-    border-color: rgb(17, 17, 17);
+    background-color: #3D3D3D;
+    border-color: #111111;
 }
 
 .panel-heading {
-    background-color: rgb(61, 61, 61) !important;
-    color: rgb(255, 255, 255) !important;
+    background-color: #3D3D3D !important;
+    color: #FFFFFF !important;
 }
 
 
@@ -974,22 +975,22 @@ new #confirmBox
     left: 50%;
     top: 50%;
     margin: -130px 0 0 -230px;
-    border: 1px solid rgb(17, 17, 17);
-    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.175);
-    border-radius: 0;
+    border: 1px solid #111;
+    box-shadow: 0px 0px 12px 0px rgba(0, 0, 0, 0.175);
+    border-radius: 0px;
 }
 
 .modal-content {
-    border-radius: 0;
+    border-radius: 0px;
 }
 
 .modal-header {
     border-bottom: none;
-    border-radius: 0;
+    border-radius: 0px;
 }
 
 .modal-body, .modal-content{
-    background: rgb(34, 34, 34);
+    background: #222;
 }
 
 .modal-footer {
@@ -1006,7 +1007,7 @@ new #confirmBox
 }
 
 .modal-header .close {
-    display: none;
+    display: none
 }
 
 .modal-footer button {
@@ -1014,11 +1015,11 @@ new #confirmBox
     padding: 2px 15px;
     text-decoration: none;
     display: inline-block;
-    color: rgb(255, 255, 255);
+    color: #fff;
     text-align:center;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
+    text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.75);
     background-clip: padding-box;
-    border: 1px solid rgb(17, 17, 17);
+    border: 1px solid #111;
     border-radius: 3px;
     cursor: pointer;
     -webkit-box-sizing: border-box;
@@ -1037,17 +1038,17 @@ new #confirmBox
 }
 
 .modal-footer button.confirm {
-    background-color: rgb(63, 118, 54);
+    background-color: #3F7636;
 }
 
 .modal-footer button.confirm:hover {
-    background-color: rgb(72, 135, 62);
+    background-color: #48873E;
 }
 
 .modal-footer button.cancel {
-    background-color: rgb(141, 45, 43);
+    background-color: #8D2D2B;
 }
 
 .modal-footer button.cancel:hover {
-    background-color: rgb(161, 51, 49);
+    background-color: #A13331;
 }

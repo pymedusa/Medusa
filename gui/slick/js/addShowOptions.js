@@ -2,10 +2,10 @@ $(document).ready(function () {
     $('#saveDefaultsButton').click(function () {
         var anyQualArray = [];
         var bestQualArray = [];
-        $('#allowed_qualities option:selected').each(function (i, d) {
+        $('#anyQualities option:selected').each(function (i, d) {
             anyQualArray.push($(d).val());
         });
-        $('#preferred_qualities option:selected').each(function (i, d) {
+        $('#bestQualities option:selected').each(function (i, d) {
             bestQualArray.push($(d).val());
         });
 
@@ -28,7 +28,7 @@ $(document).ready(function () {
         });
     });
 
-    $('#statusSelect, #qualityPreset, #flatten_folders, #allowed_qualities, #preferred_qualities, #subtitles, #scene, #anime, #statusSelectAfter').change(function () {
+    $('#statusSelect, #qualityPreset, #flatten_folders, #anyQualities, #bestQualities, #subtitles, #scene, #anime, #statusSelectAfter').change(function () {
         $('#saveDefaultsButton').attr('disabled', false);
     });
 
