@@ -13,6 +13,18 @@ from rebulk.rebulk import Rebulk
 from rebulk.rules import Rule, RemoveMatch
 
 
+def blacklist():
+    """
+    :return:
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
+    rebulk.defaults(name='other', private=True)
+    rebulk.regex('DownRev', 'small-size')
+
+    return rebulk
+
+
 def format_():
     """
     :return:
@@ -48,6 +60,8 @@ def screen_size():
     rebulk.defaults(name='screen_size', validator=seps_surround)
     rebulk.regex(r'(?:\d{3,}(?:x|\*))?720phd', value='720p')
     rebulk.regex(r'(?:\d{3,}(?:x|\*))?1080phd', value='1080p')
+
+    rebulk.regex('NetflixUHD', value='4k')
 
     return rebulk
 
@@ -113,20 +127,26 @@ def language():
 
 def subtitle_language():
     """
-    Remove after https://github.com/guessit-io/guessit/pull/320 is merged
     :return:
     :rtype: Rebulk
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE | re.UNICODE, abbreviations=[alt_dash])
     rebulk.defaults(name='subtitle_language', validator=seps_surround)
+
+    # Remove after https://github.com/guessit-io/guessit/pull/320 is merged
     rebulk.regex(r'NL@?Subs?', 'NL@?Subbed', value=babelfish.Language('nld'))
     rebulk.regex(r'RO@?Subs?', 'RO@?Subbed', value=babelfish.Language('ron'))
     rebulk.regex(r'SWE@?Subs?', 'SWE@?Subbed', value=babelfish.Language('swe'))
+
+    # special handling
     rebulk.regex(r'Legenda(?:s|do)?@PT-?BR', value=babelfish.Language('por', 'BR'))
     rebulk.regex(r'Legenda(?:s|do)?@PT(?!-?BR)', value=babelfish.Language('por'))
     rebulk.regex('Subtitulado@ESP(?:a[nñ]ol)?@Spanish', 'Subtitulado@ESP(?:a[nñ]ol)?', value=babelfish.Language('spa'),
                  conflict_solver=lambda match, other: other if other.name == 'language' else '__default__')
-    rebulk.regex('Subtitles', 'Legenda(?:s|do)', 'Subbed', value='und', formatter=babelfish.Language)
+
+    # undefined language
+    rebulk.regex('Subtitles', 'Legenda(?:s|do)', 'Subbed', 'Sub(?:title)?s?@Latino',
+                 value='und', formatter=babelfish.Language)
 
     return rebulk
 

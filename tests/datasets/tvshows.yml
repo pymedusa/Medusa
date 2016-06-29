@@ -2561,3 +2561,22 @@
   screen_size: 1080p
   release_group: RH
   type: episode
+
+# Hebsubs
+? Show.Name.S05E05.HDTV.XviD-AFG.HebSubs-DownRev
+: title: Show Name
+  season: 5
+  episode: 5
+  format: HDTV
+  video_codec: XviD
+  release_group: AFG
+  subtitle_language: he
+  type: episode
+
+# NetflixUHD
+? Show.Name.S01E06.NetflixUHD
+: title: Show Name
+  season: 1
+  episode: 6
+  screen_size: 4k
+  type: episode
