@@ -51,13 +51,14 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         self.url = 'https://freshon.tv'
         self.urls = {
             'base_url': self.url,
-            'login': urljoin(self.url, 'login.php'),
+            'login': urljoin(self.url, 'login.php?action=makelogin'),
             'detail': urljoin(self.url, 'details.php?id=%s'),
             'search': urljoin(self.url, 'browse.php?incldead=%s&words=0&cat=0&search=%s'),
             'download': urljoin(self.url, 'download.php?id=%s&type=torrent'),
         }
 
         # Proper Strings
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
         # Miscellaneous Options
         self.freeleech = False
@@ -210,8 +211,6 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         login_params = {
             'username': self.username,
             'password': self.password,
-            'login': 'submit',
-            'action': 'makelogin',
         }
 
         if self._uid and self._hash:
