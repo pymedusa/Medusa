@@ -2493,7 +2493,8 @@
   format: HDTV
   video_codec: h264
   release_group: Belex
-  other: [DualAudio, Dubbed]
+  other: DualAudio
+  language: und
   type: episode
 
 # Legendas
@@ -2504,7 +2505,8 @@
   format: BluRay
   video_codec: h264
   release_group: Belex
-  other: [DualAudio, Subtitles]
+  other: DualAudio
+  subtitle_language: und
   type: episode
 
 # Subtitulado (it seems regex with ñ doesn't work with rebulk)
@@ -2520,4 +2522,42 @@
   format: HDTV
   subtitle_language: es
   release_group: SC
+  type: episode
+
+# Subtitles/Subbed
+? - Show.Name.S02E08.720p.WEB-DL.Subtitles
+  - Show.Name.S02E08.Subbed.720p.WEB-DL
+: title: Show Name
+  season: 2
+  episode: 8
+  screen_size: 720p
+  format: WEB-DL
+  subtitle_language: und
+  type: episode
+
+# Dubbed
+? - Show.Name.s01e01.german.Dubbed
+: title: Show Name
+  season: 1
+  episode: 1
+  language: de
+  type: episode
+
+# Dubbed
+? "[AnimeRG].Show.Name.-.03.[Eng.Dubbed].[720p].[WEB-DL].[JRR]"
+: title: Show Name
+  absolute_episode: 3
+  language: en
+  screen_size: 720p
+  format: WEB-DL
+  release_group: AnimeRG
+  type: episode
+
+# Dubbed
+? "[RH].Show.Name.-.03.[English.Dubbed].[1080p]"
+: title: Show Name
+  absolute_episode: 3
+  language: en
+  screen_size: 1080p
+  release_group: RH
   type: episode

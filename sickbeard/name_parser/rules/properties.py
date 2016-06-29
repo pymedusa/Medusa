@@ -78,8 +78,6 @@ def other():
     rebulk.regex('INTERNAL', value='Internal')
     rebulk.regex(r'(?:HD)?iTunes(?:HD)?', value='iTunes')
     rebulk.regex('HC', value='Hardcoded subtitles')
-    rebulk.regex('dublado', value='Dubbed')
-    rebulk.regex(r'Legenda(?:s|do)', value='Subtitles')
 
     rebulk.rules(ValidateHardcodedSubs)
 
@@ -107,6 +105,8 @@ def language():
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
     rebulk.defaults(name='language', validator=seps_surround)
     rebulk.regex('SPANISH-?AUDIO', r'(?:Espa[.]ol-)?castellano', value=babelfish.Language('spa'))
+    rebulk.regex('german-dubbed', 'dubbed-german', value=babelfish.Language('deu'))
+    rebulk.regex('dublado', value='und', formatter=babelfish.Language)
 
     return rebulk
 
@@ -126,6 +126,7 @@ def subtitle_language():
     rebulk.regex(r'Legenda(?:s|do)?@PT(?!-?BR)', value=babelfish.Language('por'))
     rebulk.regex('Subtitulado@ESP(?:a[nñ]ol)?@Spanish', 'Subtitulado@ESP(?:a[nñ]ol)?', value=babelfish.Language('spa'),
                  conflict_solver=lambda match, other: other if other.name == 'language' else '__default__')
+    rebulk.regex('Subtitles', 'Legenda(?:s|do)', 'Subbed', value='und', formatter=babelfish.Language)
 
     return rebulk
 
