@@ -389,8 +389,8 @@ class TVCache(object):
             logger.log('Added RSS item: [{0}] to cache: [{1}]'.format(name, self.provider_id), logger.DEBUG)
 
             return [
-                b'INSERT OR REPLACE INTO [{provider_id}] (name, season, episodes, indexerid, url, time, quality, release_group, version, seeders, '
-                b'leechers, size, pubdate, hash) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(provider_id=self.provider_id),
+                b'INSERT OR REPLACE INTO [{provider_id}] (name, season, episodes, indexerid, url, time, quality, release_group, version, '
+                b'seeders, leechers, size, pubdate, hash) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(provider_id=self.provider_id),
                 [name, season, episodeText, parse_result.show.indexerid, url, cur_timestamp, quality,
                  release_group, version, seeders, leechers, size, pubdate, torrent_hash]]
 
@@ -400,7 +400,8 @@ class TVCache(object):
 
     def listPropers(self, date=None):
         cache_db_con = self._get_db()
-        sql = b"SELECT * FROM [{provider_id}] WHERE name LIKE '%.PROPER.%' OR name LIKE '%.REPACK.%'".format(provider_id=self.provider_id)
+        sql = b"SELECT * FROM [{provider_id}] WHERE name LIKE '%.PROPER.%' OR name LIKE '%.REPACK.%' OR "
+        b"name LIKE '%.REAL.%'".format(provider_id=self.provider_id)
 
         if date is not None:
             sql += b' AND time >= {0}'.format(int(time.mktime(date.timetuple())))
