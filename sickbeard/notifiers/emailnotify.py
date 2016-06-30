@@ -55,7 +55,7 @@ class Notifier(object):
         msg[b'Date'] = formatdate(localtime=True)
         return self._sendmail(host, port, smtp_from, use_tls, user, pwd, [to], msg, True)
 
-    def notify_snatch(self, ep_name, title='Snatched:'):  # pylint: disable=unused-argument
+    def notify_snatch(self, ep_name, is_proper, title='Snatched:'):  # pylint: disable=unused-argument
         """
         Send a notification that an episode was snatched
 

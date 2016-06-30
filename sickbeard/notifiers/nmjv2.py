@@ -35,7 +35,7 @@ except ImportError:
 
 
 class Notifier(object):
-    def notify_snatch(self, ep_name):  # pylint: disable=unused-argument
+    def notify_snatch(self, ep_name, is_proper):  # pylint: disable=unused-argument
         return False
         # Not implemented: Start the scanner when snatched does not make any sense
 

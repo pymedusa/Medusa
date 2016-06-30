@@ -37,11 +37,11 @@ class Notifier(object):
             force=True
         )
 
-    def notify_snatch(self, ep_name):
+    def notify_snatch(self, ep_name, is_proper):
         if sickbeard.PUSHALOT_NOTIFY_ONSNATCH:
             self._sendPushalot(
                 pushalot_authorizationtoken=None,
-                event=common.notifyStrings[common.NOTIFY_SNATCH],
+                event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
                 message=ep_name
             )
 

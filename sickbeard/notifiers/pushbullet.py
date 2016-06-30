@@ -46,11 +46,11 @@ class Notifier(object):
         headers = {'Access-Token': pushbullet_api}
         return helpers.getURL(urljoin(self.url, 'devices'), session=self.session, headers=headers, returns='text') or {}
 
-    def notify_snatch(self, ep_name):
+    def notify_snatch(self, ep_name, is_proper):
         if sickbeard.PUSHBULLET_NOTIFY_ONSNATCH:
             self._sendPushbullet(
                 pushbullet_api=None,
-                event=common.notifyStrings[common.NOTIFY_SNATCH] + ' : ' + ep_name,
+                event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]] + ' : ' + ep_name,
                 message=ep_name
             )
 

@@ -29,9 +29,9 @@ from sickrage.helper.exceptions import ex
 
 
 class Notifier(object):
-    def notify_snatch(self, ep_name):
+    def notify_snatch(self, ep_name, is_proper):
         if sickbeard.SYNOLOGYNOTIFIER_NOTIFY_ONSNATCH:
-            self._send_synologyNotifier(ep_name, common.notifyStrings[common.NOTIFY_SNATCH])
+            self._send_synologyNotifier(ep_name, common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]])
 
     def notify_download(self, ep_name):
         if sickbeard.SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD:

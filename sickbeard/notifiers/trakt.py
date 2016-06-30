@@ -31,7 +31,7 @@ class Notifier(object):
     A "notifier" for trakt.tv which keeps track of what has and hasn't been added to your library.
     """
 
-    def notify_snatch(self, ep_name):
+    def notify_snatch(self, ep_name, is_proper):
         pass
 
     def notify_download(self, ep_name):

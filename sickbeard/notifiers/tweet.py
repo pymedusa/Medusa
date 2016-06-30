@@ -38,9 +38,9 @@ class Notifier(object):
     AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
     SIGNIN_URL = 'https://api.twitter.com/oauth/authenticate'
 
-    def notify_snatch(self, ep_name):
+    def notify_snatch(self, ep_name, is_proper):
         if sickbeard.TWITTER_NOTIFY_ONSNATCH:
-            self._notifyTwitter(common.notifyStrings[common.NOTIFY_SNATCH] + ': ' + ep_name)
+            self._notifyTwitter(common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]] + ': ' + ep_name)
 
     def notify_download(self, ep_name):
         if sickbeard.TWITTER_NOTIFY_ONDOWNLOAD:
