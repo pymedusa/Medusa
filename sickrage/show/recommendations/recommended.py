@@ -51,8 +51,8 @@ class RecommendedShow(object):
 
         self.show_id = show_id
         self.title = title
-        self.indexer = indexer
-        self.indexer_id = indexer_id
+        self.indexer = int(indexer)
+        self.indexer_id = int(indexer_id)
 
         self.rating = show_attr.get('rating') or 0
 
