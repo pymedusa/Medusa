@@ -849,6 +849,10 @@ class SubtitlesFinder(object):
                              ep_to_sub['show_name'], ep_num)
                 continue
 
+            if sickbeard.SUBTITLES_STOP_AT_FIRST and ep_to_sub['subtitles']:
+                logger.debug(u'Episode already has one subtitle, skipping %s %s', ep_to_sub['show_name'], ep_num)
+                continue
+
             if not needs_subtitles(ep_to_sub['subtitles']):
                 logger.debug(u'Episode already has all needed subtitles, skipping %s %s', ep_to_sub['show_name'], ep_num)
                 continue

@@ -63,6 +63,15 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     </label>
                                 </div>
                                 <div class="field-pair">
+                                    <label class="clearfix" for="subtitles_stop_at_first">
+                                        <span class="component-title">Download only one language (any)</span>
+                                        <span class="component-desc">
+                                            <input type="checkbox" name="subtitles_stop_at_first" id="subtitles_stop_at_first" ${('', 'checked="checked"')[bool(sickbeard.SUBTITLES_STOP_AT_FIRST)]}/>
+                                            <p>Stop download subtitles after first download</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
                                     <label>
                                         <span class="component-title">Subtitle Directory</span>
                                         <input type="text" value="${sickbeard.SUBTITLES_DIR}" id="subtitles_dir" name="subtitles_dir" class="form-control input-sm input350">
@@ -147,7 +156,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     </label>
                                 </div>
                                 <div class="field-pair">
-                                    <label class="clearfix" for="embedded_subtitles_all">
+                                    <label class="clearfix" for="embedded_subtitles_unknown_lang">
                                         <span class="component-title">Unknown language</span>
                                         <span class="component-desc">
                                             <input type="checkbox" name="embedded_subtitles_unknown_lang" id="embedded_subtitles_unknown_lang" ${('', 'checked="checked"')[bool(sickbeard.EMBEDDED_SUBTITLES_UNKNOWN_LANG)]}/>
