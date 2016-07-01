@@ -41,8 +41,6 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Credentials
         self.username = None
         self.password = None
-        self._uid = None
-        self._hash = None
 
         # URLs
         self.url = 'https://classic.torrentday.com'
@@ -57,8 +55,12 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Miscellaneous Options
         self.freeleech = False
         self.cookies = None
+
         self.categories = {'Season': {'c14': 1}, 'Episode': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1},
                            'RSS': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1, 'c14': 1}}
+
+        # Ingest cookies from config, if provided by user in UI
+        self.cookies_ingest = ''
 
         # Torrent Stats
         self.minseed = None
@@ -153,12 +155,12 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return results
 
     def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
+        if dict_from_cookiejar(self.session.cookies).get('uid') and dict_from_cookiejar(self.session.cookies).get('pass'):
             return True
 
-        if self._uid and self._hash:
-            add_dict_to_cookiejar(self.session.cookies, self.cookies)
-        else:
+        if self.cookies_ingest:
+            if 'uid' in self.cookies_ingest and 'pass' in self.cookies_ingest:
+                add_dict_to_cookiejar(self.session.cookies, self.split_cookies(self.cookies_ingest))
 
             login_params = {
                 'username': self.username,
@@ -167,27 +169,18 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 'submit.y': 0,
             }
 
-            response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-            if not response:
+            response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+            if response.status_code not in [200]:
                 logger.log('Unable to connect to provider', logger.WARNING)
                 return False
 
-            if re.search('You tried too often', response):
+            if re.search('You tried too often', response.text):
                 logger.log('Too many login access attempts', logger.WARNING)
                 return False
 
-            try:
-                if dict_from_cookiejar(self.session.cookies)['uid'] and dict_from_cookiejar(self.session.cookies)['pass']:
-                    self._uid = dict_from_cookiejar(self.session.cookies)['uid']
-                    self._hash = dict_from_cookiejar(self.session.cookies)['pass']
-                    self.cookies = {'uid': self._uid,
-                                    'pass': self._hash}
-                    return True
-            except Exception:
-                pass
-
-            logger.log('Unable to obtain cookie', logger.WARNING)
-            return False
+            if dict_from_cookiejar(self.session.cookies).get('uid') not in response.text:
+                logger.log('Failed to login, check your cookies', logger.WARNING)
+                return False
 
 
 provider = TorrentDayProvider()

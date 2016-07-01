@@ -408,6 +408,23 @@ $('#config-components').tabs();
                         </div>
                         % endif
 
+                        % if hasattr(curTorrentProvider, 'cookies_ingest'):
+                        <div class="field-pair">
+                            <label for="${curTorrentProvider.get_id()}_torrent_ingest">
+                                <span class="component-title">Cookies:</span>
+                                <span class="component-desc">
+                                    <input type="text" name="${curTorrentProvider.get_id()}_cookies_ingest" id="${curTorrentProvider.get_id()}_cookies_ingest" value="${curTorrentProvider.cookies_ingest}" class="form-control input-sm input350" autocapitalize="off" autocomplete="no" />
+                                </span>
+                            </label>
+                            <label>
+                                <span class="component-title">&nbsp;</span>
+                                <span class="component-desc">
+                                    <p>eg. uid=xx;pass=yy</p>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
+
                         % if hasattr(curTorrentProvider, 'passkey'):
                         <div class="field-pair">
                             <label for="${curTorrentProvider.get_id()}_passkey">

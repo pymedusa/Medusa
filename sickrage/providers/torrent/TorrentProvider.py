@@ -17,11 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import sickbeard
-
+import traceback
 from datetime import datetime
 from feedparser.util import FeedParserDict
 from hachoir_parser import createParser
+
+import sickbeard
 from sickbeard import logger
 from sickbeard.classes import Proper, TorrentSearchResult
 from sickbeard.common import Quality
@@ -192,3 +193,12 @@ class TorrentProvider(GenericProvider):
             hash = None
 
         return hash
+
+    @staticmethod
+    def split_cookies(cookie):
+        try:
+            return {k.strip(): v.strip() for k, v in [cookie.split('=') for cookie in cookie.split(';')]}
+        except Exception:
+            logger.log('Could not parse cookie! Check your input!'.format
+                       (traceback.format_exc()), logger.WARNING)
+            return {}
