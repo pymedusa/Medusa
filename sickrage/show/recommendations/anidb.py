@@ -16,13 +16,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals
 
 from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
 from sickbeard import logger, helpers
 from sickrage.helper.exceptions import ex
 from .recommended import RecommendedShow
-from adba.aniDBtvDBmaper import TvDBMap
 
 
 class AnidbPopular(object):  # pylint: disable=too-few-public-methods
@@ -33,11 +33,12 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         self.session = helpers.make_session()
         self.recommender = "Anidb Popular"
         self.base_url = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
+        self.anidb = Anidb()
 
     def _create_recommended_show(self, show_obj):
         """creates the RecommendedShow object from the returned showobj"""
         try:
-            tvdb_id = TvDBMap().get_tvdb_for_anidb(show_obj.aid)
+            tvdb_id = self.anidb.aid_to_tvdb_id(show_obj.aid)
         except Exception:
             tvdb_id = None
             logger.log("Couldn't map aid [{0}] to tvdbid ".format(show_obj.aid), logger.WARNING)
@@ -73,13 +74,13 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         try:
             shows = Anidb().get_list(list_type)
         except GeneralError, e:
-            logger.log(u'Could not connect to Anidb service: %s' % ex(e), logger.WARNING)
+            logger.log('Could not connect to Anidb service: {0!r}'.format(e), logger.WARNING)
 
         for show in shows:
             try:
                 result.append(self._create_recommended_show(show))
-            except Exception, e:
-                logger.log(u'Could not parse Anidb show, with exception: %s' % ex(e), logger.WARNING)
+            except Exception as e:
+                logger.log('Could not parse Anidb show, with exception: {0!r}'.format(e), logger.WARNING)
 
         return result
 

@@ -16,6 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals
 
 import requests
 import sickbeard
@@ -47,8 +48,8 @@ class TraktPopular(object):
                                    show_obj['show']['ids'], show_obj['show']['title'],
                                    1,  # indexer
                                    show_obj['show']['ids']['tvdb'],
-                                   **{'rating': str(show_obj['show']['rating']),
-                                      'votes': str(try_int(show_obj['show']['votes'], 0)),
+                                   **{'rating': show_obj['show']['rating'],
+                                      'votes': try_int(show_obj['show']['votes'], '0'),
                                       'image_href': 'http://www.trakt.tv/shows/{0}'.format(show_obj['show']['ids']['slug']),
                                       'ids': show_obj['show']['ids']  # Adds like: {u'tmdb': 62126, u'tvdb': 304219, u'trakt': 79382, u'imdb': u'tt3322314', u'tvrage': None, u'slug': u'marvel-s-luke-cage'}
                                       }
@@ -56,7 +57,11 @@ class TraktPopular(object):
 
         rec_show.cache_image(show_obj['show']['images']['poster']['thumb'] or self.default_img_src)
 
-        rec_show.check_if_anime(self.anidb, show_obj['show']['ids']['tvdb'])
+        # As the method below requires allot of resources, i've only enabled it when
+        # the shows language or country is 'jp' (japanese). Looks a litle bit akward,
+        # but alternative is allot of resource used
+        if 'jp' in [show_obj['show']['country'], show_obj['show']['language']]:
+            rec_show.check_if_anime(self.anidb, show_obj['show']['ids']['tvdb'])
 
         return rec_show
 

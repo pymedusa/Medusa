@@ -24,7 +24,7 @@
                 <span class="component-title">Configure Show Options</span>
                 <span class="component-desc">
                     <input type="checkbox" class="enabler" name="configure_show_options" id="configure_show_options" />
-                    <p>If you don't want to use the default show options, you can change them here! Leaving it as it is, the show will be added as an anime anyhow.</p>
+                    <p>Recommended shows will be added using your default options. Use this option if you want to change the options for that show.</p>
                 </span>
             </label>
         </div>
@@ -90,10 +90,10 @@
             % endif
 
             <div class="show-row" data-name="${cur_result.title}" data-rating="${cur_rating}" data-votes="${cur_votes}" data-anime="${cur_result.is_anime}">
-                <div class="recommendedContainer">
+                <div class="recommendedContainer default-poster">
                     <div class="recommended-image">
-                        <a class="recommended-image" href="${anon_url(cur_result.image_href)}" target="_blank">
-                            <img alt="" class="recommended-image" src="${srRoot}/cache/${cur_result.image_src}" height="273px" width="186px" />
+                        <a href="${anon_url(cur_result.image_href)}" target="_blank">
+                            <img alt="" class="recommended-image ${('', 'show-in-list')[cur_result.show_in_list]}" src="${srRoot}/cache/${cur_result.image_src}" height="273px" width="186px" />
                         </a>
                     </div>
 
@@ -101,7 +101,7 @@
                         ${cur_result.title}
                     </div>
 
-                    <div class="clearfix">
+                    <div class="clearfix show-attributes">
                         <p>${int(float(cur_rating)*10)}% <img src="${srRoot}/images/heart.png">
 	                        % if cur_result.is_anime and cur_result.ids.get('aid'):
                                 <a class="anidb-url" href='${anon_url("https://anidb.net/a{0}".format(cur_result.ids["aid"]))}'>

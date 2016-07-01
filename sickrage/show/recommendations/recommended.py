@@ -1,8 +1,7 @@
 # coding=utf-8
 #
-
-#
-# This file is part of SickRage.
+# Git: https://github.com/PyMedusa/SickRage.git
+# This file is part of Medusa.
 #
 # SickRage is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,17 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Recommend shows based on lists from indexers
-"""
+from __future__ import unicode_literals
 
 import os
 import posixpath
 
 import sickbeard
 from sickbeard import helpers
-
-from sickrage.helper.encoding import ek
 
 
 class RecommendedShow(object):
@@ -51,7 +46,7 @@ class RecommendedShow(object):
         :param default_img_src: a default image when no poster available
         """
         self.recommender = rec_show_prov.recommender
-        self.cache_subfolder = rec_show_prov.cache_subfolder or u'recommended'
+        self.cache_subfolder = rec_show_prov.cache_subfolder or 'recommended'
         self.default_img_src = getattr(rec_show_prov, 'default_img_src', '')
 
         self.show_id = show_id
@@ -60,7 +55,12 @@ class RecommendedShow(object):
         self.indexer_id = indexer_id
 
         self.rating = show_attr.get('rating') or 0
-        self.votes = show_attr.get('votes') or 0
+
+        self.votes = show_attr.get('votes')
+        if self.votes and not isinstance(self.votes, int):
+            trans_mapping = {ord(c): None for c in ['.', ',']}
+            self.votes = int(self.votes.decode('utf-8').translate(trans_mapping))
+
         self.image_href = show_attr.get('image_href')
         self.image_src = show_attr.get('image_src')
         self.ids = show_attr.get('ids', {})
@@ -79,17 +79,18 @@ class RecommendedShow(object):
         if not self.cache_subfolder:
             return
 
-        self.image_src = ek(posixpath.join, u'images', self.cache_subfolder, ek(os.path.basename, image_url))
+        path = os.path.abspath(os.path.join(sickbeard.CACHE_DIR, 'images', self.cache_subfolder))
 
-        path = ek(os.path.abspath, ek(os.path.join, sickbeard.CACHE_DIR, u'images', self.cache_subfolder))
+        if not os.path.exists(path):
+            os.makedirs(path)
 
-        if not ek(os.path.exists, path):
-            ek(os.makedirs, path)
+        full_path = os.path.join(path, os.path.basename(image_url))
 
-        full_path = ek(os.path.join, path, ek(os.path.basename, image_url))
+        self.image_src = posixpath.join('images', self.cache_subfolder, os.path.basename(image_url))
 
-        if not ek(os.path.isfile, full_path):
-            helpers.download_file(image_url, full_path, session=self.session)
+        if not os.path.isfile(full_path):
+            if not helpers.download_file(image_url, full_path, session=self.session):
+                self.image_src = posixpath.join('images', self.cache_subfolder, os.path.basename(self.default_img_src))
 
     def check_if_anime(self, anidb, tvdbid):
         """
@@ -101,7 +102,7 @@ class RecommendedShow(object):
         :return: Returns True, when the show can be mapped to anidb.net, False if not.
         """
         try:
-            anime = anidb.search(tvdbid=tvdbid)
+            anime = anidb.tvdb_id_to_aid(tvdbid=tvdbid)
         except Exception:
             return False
         else:
@@ -109,7 +110,7 @@ class RecommendedShow(object):
                 # flag the show as anime
                 self.is_anime = True
                 # Write the anidb aid to the dictionary of id's
-                self.ids['aid'] = anime[0].aid
+                self.ids['aid'] = anime[0]
                 return True
         return False
 

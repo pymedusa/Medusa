@@ -612,6 +612,10 @@ span.show-option {
     margin: 4px 4px 0 4px;
 }
 
+.show-attributes {
+	margin: 4px 4px 0px 4px;
+}
+
 .show-title:after {
     content: "";
     pointer-events: none;
@@ -875,9 +879,19 @@ home_trendingShows.mako
     top: -2px;
 }
 
-.recommendedContainer .recommended-image img {
+.recommendedContainer {
 	left: -4px;
     position: relative;
+}
+
+div.recommended-image {
+	background-color: #DFDACF;
+}
+
+.show-in-list {
+	-webkit-filter: grayscale(100%);
+    filter: grayscale(100%);
+    opacity: 0.8;
 }
 
 .recommendedContainer p, .recommendedContainer i, .recommendedContainer a {
@@ -885,7 +899,6 @@ home_trendingShows.mako
     font-size: 12px;
     overflow: hidden;
 /*	text-shadow: 1px 1px 0px #000;*/
-    padding-left: 4px;
     margin: 0;
     text-decoration: none;
 }
@@ -914,6 +927,13 @@ home_trendingShows.mako
 .anidb-inline {
 	height: 16px;
 }
+
+.recommendedContainer .default-poster {
+    display: block;
+    z-index: 0;
+    background-image: url(/images/poster-dark.jpg)
+}
+
 
 /* =======================================================================
 home_postprocess.mako
@@ -3321,12 +3341,7 @@ span.token-input-delete-token {
 .nextline-block {display:block;
 }
 
-.recommended-image {
-    display: block;
-    z-index: 0;
     background-image: url(/images/poster-dark.jpg);
-}
-
 /* =======================================================================
 jquery.confirm.css
 ========================================================================== */

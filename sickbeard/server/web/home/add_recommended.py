@@ -15,5 +15,5 @@ class HomeAddRecommended(Home):
 
     def index(self):
         t = PageTemplate(rh=self, filename="addRecommended.mako")
-        return t.render(title='Add From Recommended', header='Add From Recommended',
+        return t.render(title='Add Recommended Shows', header='Add Recommended Shows',
                         topmenu='home', controller="addShows", action="index")
