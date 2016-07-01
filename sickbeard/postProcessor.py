@@ -1,22 +1,22 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
-
+#
 # Git: https://github.com/PyMedusa/SickRage.git
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 # pylint: disable=too-many-lines
 
 import glob
@@ -28,6 +28,7 @@ import stat
 
 import adba
 from babelfish import language_converters
+from guessit import guessit
 from six import text_type
 
 import sickbeard
@@ -532,8 +533,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         self.release_group = parse_result.release_group
 
         # remember whether it's a proper
-        if parse_result.extra_info:
-            self.is_proper = re.search(r'(^|[\. _-])(proper|repack)([\. _-]|$)', parse_result.extra_info, re.I) is not None
+        if parse_result.original_name:
+            self.is_proper = guessit(parse_result.original_name).get('proper_count')
 
         # if the result is complete then remember that for later
         # if the result is complete then set release name
