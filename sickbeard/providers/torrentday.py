@@ -103,6 +103,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     jdata = response.json()
                 except ValueError:  # also catches JSONDecodeError if simplejson is installed
                     logger.log('Data returned from provider is not json', logger.ERROR)
+                    self.session.cookies.clear()
                     continue
 
                 torrents = jdata.get('Fs', [dict()])[0].get('Cn', {}).get('torrents', [])
