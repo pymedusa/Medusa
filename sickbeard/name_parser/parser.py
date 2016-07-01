@@ -475,8 +475,7 @@ class NameParser(object):
                                        name, file_name_result or dir_name_result))
 
         # Only use guessit to detect proper when we are sure that we have a valid match
-        if guessit(name).get('proper_count'):
-            final_result.proper = True
+        final_result.proper = guessit(name).get('proper_count')
 
         if cache_result:
             name_parser_cache.add(name, final_result)
@@ -577,7 +576,7 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
 
     @property
     def is_proper(self):
-        return self.proper
+        return bool(self.proper)
 
 
 class NameParserCache(object):
