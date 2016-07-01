@@ -27,7 +27,7 @@ from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
 
 from sickbeard import logger, tvcache
 
-from sickrage.helper.common import convert_size, try_int
+from sickrage.helper.common import convert_size
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
@@ -178,7 +178,9 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 logger.log('Too many login access attempts', logger.WARNING)
                 return False
 
-            if dict_from_cookiejar(self.session.cookies).get('uid') not in response.text:
+            if dict_from_cookiejar(self.session.cookies).get('uid') in response.text:
+                return True
+            else:
                 logger.log('Failed to login, check your cookies', logger.WARNING)
                 return False
 
