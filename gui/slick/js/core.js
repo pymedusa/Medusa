@@ -3241,7 +3241,7 @@ var SICKRAGE = {
                     // Whe're going to add this show, let's remove the anchor and button desc, so it can't be added twice!
                     if ( $(this).attr('disabled') === 'disabled' ) { return false; }
 
-                    $(this).html('Being Added').attr('disabled', 'disabled');
+                    $(this).html('Added').attr('disabled', 'disabled');
                     
                     var anyQualArray = [];
                     var bestQualArray = [];
