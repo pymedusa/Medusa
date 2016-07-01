@@ -199,6 +199,6 @@ class TorrentProvider(GenericProvider):
         try:
             return {k.strip(): v.strip() for k, v in [cookie.split('=') for cookie in cookie.split(';')]}
         except Exception:
-            logger.log('Could not parse cookie! Check your input!'.format
+            logger.log('Could not parse cookie! Check your input! Exception: {0}'.format
                        (traceback.format_exc()), logger.WARNING)
             return {}
