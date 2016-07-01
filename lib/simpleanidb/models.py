@@ -1,4 +1,6 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
+
+from simpleanidb.helper import date_to_date
 
 
 class Anime(object):  # pylint: disable=too-many-instance-attributes
@@ -29,7 +31,7 @@ class Anime(object):  # pylint: disable=too-many-instance-attributes
             self.load()
 
     def __repr__(self):
-        return "<Anime:{0} loaded:{1}>".format(self.aid, self.loaded)
+        return '<Anime:{0} loaded:{1}>'.format(self.aid, self.loaded)
 
     @property
     def loaded(self):
@@ -42,57 +44,57 @@ class Anime(object):  # pylint: disable=too-many-instance-attributes
         http://api.anidb.net:9001/httpapi?request=anime&client={str}&clientver={int}&protover=1&aid={int}
         """
         params = {
-            "request": "anime",
-            "client": "adbahttp",
-            "clientver": 100,
-            "protover": 1,
-            "aid": self.aid
+            'request': 'anime',
+            'client': 'adbahttp',
+            'clientver': 100,
+            'protover': 1,
+            'aid': self.aid
         }
 
-        self._xml = self.anidb._get_url("http://api.anidb.net:9001/httpapi", params=params)
+        self._xml = self.anidb._get_url('http://api.anidb.net:9001/httpapi', params=params)
 
         self.fill_from_xml(self._xml)
         self._loaded = True
 
     def fill_from_xml(self, xml):  # pylint: disable=too-many-branches
-        if xml.find("titles") is not None:
-            self.titles = [Title(self, n) for n in xml.find("titles")]
+        if xml.find('titles') is not None:
+            self.titles = [Title(self, n) for n in xml.find('titles')]
         else:
-            self.titles = [Title(self, n) for n in xml.findall("title")]
+            self.titles = [Title(self, n) for n in xml.findall('title')]
             # return # returning from here will result in not loading attribute information for anime lists like hot_animes
-        self.synonyms = [t for t in self.titles if t.type == "synonym"]
-        if xml.find("episodes") is not None:
-            self.all_episodes = sorted([Episode(self, n) for n in xml.find("episodes")])
+        self.synonyms = [t for t in self.titles if t.type == 'synonym']
+        if xml.find('episodes') is not None:
+            self.all_episodes = sorted([Episode(self, n) for n in xml.find('episodes')])
             self.episodes = {e.number: e for e in self.all_episodes if e.type == 1}
-        if xml.find("picture") is not None:
-            self.picture = Picture(self, xml.find("picture"))
-        if xml.find("ratings") is not None:
-            if xml.find("ratings").find("permanent") is not None:
-                self.rating_permanent = xml.find("ratings").find("permanent").text
-                self.count_permanent = xml.find("ratings").find("permanent").get('count', 0)
-            if xml.find("ratings").find("temporary") is not None:
-                self.rating_temporary = xml.find("ratings").find("temporary").text
-                self.count_temporary = xml.find("ratings").find("temporary").get('count', 0)
-            if xml.find("ratings").find("review") is not None:
-                self.rating_review = xml.find("ratings").find("review").text
-        if xml.find("categories") is not None:
-            self.categories = [Category(self, c) for c in xml.find("categories")]
-        if xml.find("tags") is not None:
-            self.tags = sorted([Tag(self, t) for t in xml.find("tags") if t.text.strip()])
-        if xml.find("startdate") is not None:
-            self.start_date = date_to_date(xml.find("startdate").text)
-        if xml.find("enddate") is not None:
-            self.end_date = date_to_date(xml.find("enddate").text)
-        if xml.find("description") is not None:
-            self.description = xml.find("description").text
+        if xml.find('picture') is not None:
+            self.picture = Picture(self, xml.find('picture'))
+        if xml.find('ratings') is not None:
+            if xml.find('ratings').find('permanent') is not None:
+                self.rating_permanent = xml.find('ratings').find('permanent').text
+                self.count_permanent = xml.find('ratings').find('permanent').get('count', '0')
+            if xml.find('ratings').find('temporary') is not None:
+                self.rating_temporary = xml.find('ratings').find('temporary').text
+                self.count_temporary = xml.find('ratings').find('temporary').get('count', '0')
+            if xml.find('ratings').find('review') is not None:
+                self.rating_review = xml.find('ratings').find('review').text
+        if xml.find('categories') is not None:
+            self.categories = [Category(self, c) for c in xml.find('categories')]
+        if xml.find('tags') is not None:
+            self.tags = sorted([Tag(self, t) for t in xml.find('tags') if t.text.strip()])
+        if xml.find('startdate') is not None:
+            self.start_date = date_to_date(xml.find('startdate').text)
+        if xml.find('enddate') is not None:
+            self.end_date = date_to_date(xml.find('enddate').text)
+        if xml.find('description') is not None:
+            self.description = xml.find('description').text
 
     @property
     def title(self):
-        return self.get_title("main")
+        return self.get_title('main')
 
     def get_title(self, title_type=None, lang=None):
         if not title_type:
-            title_type = "main"
+            title_type = 'main'
         for t in self.titles:
             if t.type == title_type:
                 return t
@@ -124,7 +126,7 @@ class BaseAttribute(object):  # pylint: disable=too-few-public-methods
         """
         for attr in attrs:
             value = self._xml.attrib.get(attr)
-            setattr(self, attr, value is not None and value.lower() == "true")
+            setattr(self, attr, value is not None and value.lower() == 'true')
 
     def _texts(self, *attrs):
         """Set the text values of the given attributes.
@@ -139,7 +141,7 @@ class BaseAttribute(object):  # pylint: disable=too-few-public-methods
         return self._xml.text
 
     def __repr__(self):
-        return u"<{0}: {1}>".format(
+        return '<{0}: {1}>'.format(
             self.__class__.__name__,
             unicode(self)
         )
@@ -175,9 +177,9 @@ class Title(BaseAttribute):  # pylint: disable=too-few-public-methods
 
     def __init__(self, anime, xml_node):
         super(Title, self).__init__(anime, xml_node)
-        # apperently xml:lang is "{http://www.w3.org/XML/1998/namespace}lang"
-        self.lang = self._xml.attrib["{http://www.w3.org/XML/1998/namespace}lang"]
-        self.type = self._xml.attrib.get("type")
+        # apperently xml:lang is '{http://www.w3.org/XML/1998/namespace}lang'
+        self.lang = self._xml.attrib['{http://www.w3.org/XML/1998/namespace}lang']
+        self.type = self._xml.attrib.get('type')
 
 
 class Picture(BaseAttribute):  # pylint: disable=too-few-public-methods
@@ -187,7 +189,7 @@ class Picture(BaseAttribute):  # pylint: disable=too-few-public-methods
 
     @property
     def url(self):
-        return "http://img7.anidb.net/pics/anime/{0}".format(self._xml.text)
+        return 'http://img7.anidb.net/pics/anime/{0}'.format(self._xml.text)
 
 
 class Episode(BaseAttribute):
@@ -198,8 +200,8 @@ class Episode(BaseAttribute):
         self._texts('airdate', 'length', 'epno')
         self.airdate = date_to_date(self.airdate)
 
-        self.titles = [Title(self, n) for n in self._xml.findall("title")]
-        self.type = int(self._xml.find("epno").attrib["type"])
+        self.titles = [Title(self, n) for n in self._xml.findall('title')]
+        self.type = int(self._xml.find('epno').attrib['type'])
         self.number = self.epno or 0
         if self.type == 1:
             self.number = int(self.number)
@@ -216,7 +218,7 @@ class Episode(BaseAttribute):
                 return t
 
     def __str__(self):
-        return u"{0}: {1}".format(self.number, self.title)
+        return '{0}: {1}'.format(self.number, self.title)
 
     def __cmp__(self, other):
         if self.type > other.type:
