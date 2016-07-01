@@ -23,7 +23,7 @@ from sickbeard import logger
 from sickrage.helper.exceptions import ex
 
 from libtrakt.trakt import TraktApi
-from libtrakt.exceptions import TraktException, TraktServerBusy, TraktAuthException
+from libtrakt.exceptions import (TraktException, TraktServerBusy, TraktAuthException)
 
 
 class Notifier(object):
@@ -46,7 +46,8 @@ class Notifier(object):
     def notify_login(self, ipaddress=""):
         pass
 
-    def update_library(self, ep_obj):
+    @staticmethod
+    def update_library(ep_obj):
         """
         Sends a request to trakt indicating that the given episode is part of our library.
 
@@ -95,10 +96,11 @@ class Notifier(object):
                 # update library
                 trakt_api.request("sync/collection", data, method='POST')
 
-            except (TraktException, TraktAuthException, TraktServerBusy) as e:
-                logger.log(u"Could not connect to Trakt service: %s" % ex(e), logger.WARNING)
+            except (TraktException, TraktAuthException, TraktServerBusy) as trakt_ex:
+                logger.log('Could not connect to Trakt service: {0}'.format(ex(trakt_ex)), logger.WARNING)
 
-    def update_watchlist(self, show_obj=None, s=None, e=None, data_show=None, data_episode=None, update="add"):
+    @staticmethod
+    def update_watchlist(show_obj=None, s=None, e=None, data_show=None, data_episode=None, update="add"):
 
         """
         Sends a request to trakt indicating that the given episode is part of our library.
@@ -179,7 +181,8 @@ class Notifier(object):
 
         return True
 
-    def trakt_show_data_generate(self, data):
+    @staticmethod
+    def trakt_show_data_generate(data):
 
         showList = []
         for indexer, indexerid, title, year in data:
@@ -195,7 +198,8 @@ class Notifier(object):
 
         return post_data
 
-    def trakt_episode_data_generate(self, data):
+    @staticmethod
+    def trakt_episode_data_generate(data):
 
         # Find how many unique season we have
         uniqueSeasons = []
@@ -216,7 +220,8 @@ class Notifier(object):
 
         return post_data
 
-    def test_notify(self, username, blacklist_name=None):
+    @staticmethod
+    def test_notify(username, blacklist_name=None):
         """
         Sends a test notification to trakt with the given authentication info and returns a boolean
         representing success.

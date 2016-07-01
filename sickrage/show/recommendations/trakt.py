@@ -65,7 +65,8 @@ class TraktPopular(object):
 
         return rec_show
 
-    def fetch_and_refresh_token(self, trakt_api, path):
+    @staticmethod
+    def fetch_and_refresh_token(trakt_api, path):
         try:
             library_shows = trakt_api.request(path) or []
             if trakt_api.access_token_refreshed:

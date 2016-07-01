@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
 from sickbeard import logger, helpers
-from sickrage.helper.exceptions import ex
 from .recommended import RecommendedShow
 
 
