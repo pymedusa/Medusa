@@ -1,22 +1,22 @@
 # coding=utf-8
-
+#
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import re
@@ -24,6 +24,7 @@ import time
 
 import dateutil
 from six import string_types, text_type
+from guessit import guessit
 
 import sickbeard
 from sickbeard.name_parser import regexes
@@ -466,12 +467,16 @@ class NameParser(object):
 
         if not final_result.show:
             raise InvalidShowException(u"Unable to match {0} to a show in your database. Parser result: {1}".format(
-                                         name, file_name_result or dir_name_result))
+                                       name, file_name_result or dir_name_result))
 
         # if there's no useful info in it then raise an exception
         if final_result.season_number is None and not final_result.episode_numbers and final_result.air_date is None and not final_result.ab_episode_numbers and not final_result.series_name:
             raise InvalidNameException(u"Unable to parse {0} to a valid episode. Parser result: {1}".format(
-                                         name, file_name_result or dir_name_result))
+                                       name, file_name_result or dir_name_result))
+
+        # Only use guessit to detect proper when we are sure that we have a valid match
+        if guessit(name).get('proper_count'):
+            final_result.proper = True
 
         if cache_result:
             name_parser_cache.add(name, final_result)
@@ -483,8 +488,8 @@ class NameParser(object):
 class ParseResult(object):  # pylint: disable=too-many-instance-attributes
     def __init__(self, original_name, series_name=None, season_number=None,  # pylint: disable=too-many-arguments
                  episode_numbers=None, extra_info=None, release_group=None,
-                 air_date=None, ab_episode_numbers=None, show=None,
-                 score=None, quality=None, version=None):
+                 air_date=None, ab_episode_numbers=None, show=None, score=None,
+                 quality=None, version=None, proper=None):
 
         self.original_name = original_name
 
@@ -569,6 +574,10 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
         if self.ab_episode_numbers:
             return True
         return False
+
+    @property
+    def is_proper(self):
+        return self.proper
 
 
 class NameParserCache(object):
