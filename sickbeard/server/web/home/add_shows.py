@@ -7,8 +7,6 @@ import json
 import os
 import re
 
-from libtrakt import TraktAPI
-from libtrakt.exceptions import traktException
 from requests.compat import unquote_plus
 from six import iteritems
 from tornado.routes import route
@@ -32,9 +30,6 @@ from sickbeard.indexers.indexer_exceptions import indexer_exception
 from sickbeard.server.web.core import PageTemplate
 from sickbeard.server.web.home.handler import Home
 
-from sickrage.helper.common import (
-    sanitize_filename, try_int,
-)
 from sickrage.helper.encoding import ek
 
 from sickrage.show.Show import Show
