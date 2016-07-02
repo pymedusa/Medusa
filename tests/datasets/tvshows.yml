@@ -1035,6 +1035,19 @@
   release_group: SuperGroup
   type: episode
 
+# CreateAliasWithCountryOrYear (United Kingdom - isocode GB)
+? Show.Name.UK.S05E01.720p.HDTV.x264-ABC
+: title: Show Name
+  country: GB
+  alias: Show Name UK
+  season: 5
+  episode: 1
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: ABC
+  type: episode
+
 # CreateAliasWithCountryOrYear (Year)
 ? Show.Name.2002.S03.720p.BluRay.x264-SuperGroup
 : title: Show Name

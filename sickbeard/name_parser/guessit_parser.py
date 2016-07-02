@@ -73,7 +73,7 @@ class GuessitNameParser(object):
 
     allowed_countries = {
         'us',
-        'uk',
+        'gb',
     }
 
     allow_multi_season = False
