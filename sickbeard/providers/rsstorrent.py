@@ -23,8 +23,6 @@ import os
 import re
 import sickbeard
 
-from requests.utils import add_dict_to_cookiejar
-
 from bencode import bdecode
 
 from sickbeard import helpers, logger, tvcache
@@ -52,6 +50,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.enable_daily = enable_daily
         self.enable_manualsearch = enable_manualsearch
         self.enable_backlog = enable_backlog
+        self.enable_cookies = True
         self.cookies = cookies
         self.titleTAG = titleTAG
 
@@ -116,7 +115,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         if not config:
             return None
 
-        cookies = None
+        cookies = ''
         enable_backlog = 0
         enable_daily = 0
         enable_manualsearch = 0
@@ -152,11 +151,14 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
     def validate_rss(self):  # pylint: disable=too-many-return-statements
 
         try:
-            if self.cookies:
-                cookie_validator = re.compile(r'^(\w+=\w+)(;\w+=\w+)*$')
-                if not cookie_validator.match(self.cookies):
-                    return False, 'Cookie is not correctly formatted: {0}'.format(self.cookies)
-                add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
+            add_cookie = self.add_cookies_from_ui()
+            if not add_cookie:
+                return add_cookie
+#             if self.cookies:
+#                 cookie_validator = re.compile(r'^(\w+=\w+)(;\w+=\w+)*$')
+#                 if not cookie_validator.match(self.cookies):
+#                     return False, 'Cookie is not correctly formatted: {0}'.format(self.cookies)
+#                 add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
 
             # pylint: disable=protected-access
             # Access to a protected member of a client class
@@ -206,7 +208,5 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
 class TorrentRssCache(tvcache.TVCache):
     def _getRSSData(self):
-        if self.provider.cookies:
-            add_dict_to_cookiejar(self.provider.session.cookies, dict(x.rsplit('=', 1) for x in self.provider.cookies.split(';')))
-
+        self.provider.add_cookies_from_ui()
         return self.getRSSFeed(self.provider.url)

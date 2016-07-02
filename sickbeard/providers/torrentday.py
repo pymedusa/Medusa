@@ -54,13 +54,11 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         # Miscellaneous Options
         self.freeleech = False
-        self.cookies = None
+        self.enable_cookies = True
+        self.cookies = ''
 
         self.categories = {'Season': {'c14': 1}, 'Episode': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1},
                            'RSS': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1, 'c14': 1}}
-
-        # Ingest cookies from config, if provided by user in UI
-        self.cookies_ingest = ''
 
         # Torrent Stats
         self.minseed = None
@@ -159,9 +157,9 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         if dict_from_cookiejar(self.session.cookies).get('uid') and dict_from_cookiejar(self.session.cookies).get('pass'):
             return True
 
-        if self.cookies_ingest:
-            if 'uid' in self.cookies_ingest and 'pass' in self.cookies_ingest:
-                add_dict_to_cookiejar(self.session.cookies, self.split_cookies(self.cookies_ingest))
+        if self.cookies:
+            if 'uid' in self.cookies and 'pass' in self.cookies:
+                self.add_cookies_from_ui()
 
             login_params = {
                 'username': self.username,

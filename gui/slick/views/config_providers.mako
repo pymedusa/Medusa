@@ -408,12 +408,12 @@ $('#config-components').tabs();
                         </div>
                         % endif
 
-                        % if hasattr(curTorrentProvider, 'cookies_ingest'):
+                        % if curTorrentProvider.enable_cookies:
                         <div class="field-pair">
-                            <label for="${curTorrentProvider.get_id()}_torrent_ingest">
+                            <label for="${curTorrentProvider.get_id()}_cookies">
                                 <span class="component-title">Cookies:</span>
                                 <span class="component-desc">
-                                    <input type="text" name="${curTorrentProvider.get_id()}_cookies_ingest" id="${curTorrentProvider.get_id()}_cookies_ingest" value="${curTorrentProvider.cookies_ingest}" class="form-control input-sm input350" autocapitalize="off" autocomplete="no" />
+                                    <input type="text" name="${curTorrentProvider.get_id()}_cookies" id="${curTorrentProvider.get_id()}_cookies" value="${curTorrentProvider.cookies}" class="form-control input-sm input350" autocapitalize="off" autocomplete="no" />
                                 </span>
                             </label>
                             <label>
@@ -783,11 +783,11 @@ $('#config-components').tabs();
                         <div class="field-pair">
                             <label for="torrentrss_cookies">
                                 <span class="component-title">Cookies:</span>
-                                <input type="text" id="torrentrss_cookies" class="form-control input-sm input350" autocapitalize="off" />
+                                <input type="text" id="torrentrss_cookies" class="form-control input-sm input350" autocapitalize="off" disabled="disabled"/>
                             </label>
                             <label>
                                 <span class="component-title">&nbsp;</span>
-                                <span class="component-desc">eg. uid=xx;pass=yy</span>
+                                <span class="component-desc">eg. uid=xx;pass=yy, please use "Provider options" to reconfigure!</span>
                             </label>
                         </div>
                         <div class="field-pair">

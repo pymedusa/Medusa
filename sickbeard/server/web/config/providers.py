@@ -494,11 +494,11 @@ class ConfigProviders(Config):
                 except (AttributeError, KeyError):
                     curTorrentProvider.subtitle = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'cookies_ingest'):
+            if curTorrentProvider.enable_cookies:
                 try:
-                    curTorrentProvider.cookies_ingest = str(kwargs['{id}_cookies_ingest'.format(id=curTorrentProvider.get_id())]).strip()
+                    curTorrentProvider.cookies = str(kwargs['{id}_cookies'.format(id=curTorrentProvider.get_id())]).strip()
                 except (AttributeError, KeyError):
-                    curTorrentProvider.cookies_ingest = None  # these exceptions are actually catching unselected checkboxes
+                    pass  # I don't want to configure a default value here, as it can also be configured intially as a custom rss torrent provider
 
         for curNzbProvider in [prov for prov in sickbeard.providers.sortedProviderList() if
                                prov.provider_type == GenericProvider.NZB]:

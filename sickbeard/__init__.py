@@ -1395,9 +1395,9 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             if hasattr(curTorrentProvider, 'subtitle'):
                 curTorrentProvider.subtitle = bool(check_setting_int(CFG, curTorrentProvider.get_id().upper(),
                                                                      curTorrentProvider.get_id() + '_subtitle', 0))
-            if hasattr(curTorrentProvider, 'cookies_ingest'):
-                curTorrentProvider.cookies_ingest = check_setting_str(CFG, curTorrentProvider.get_id().upper(),
-                                                                      curTorrentProvider.get_id() + '_cookies_ingest', '', censor_log='low')
+            if curTorrentProvider.enable_cookies:
+                curTorrentProvider.cookies = check_setting_str(CFG, curTorrentProvider.get_id().upper(),
+                                                               curTorrentProvider.get_id() + '_cookies', '', censor_log='low')
 
         for curNzbProvider in [curProvider for curProvider in providers.sortedProviderList() if
                                curProvider.provider_type == GenericProvider.NZB]:
@@ -1924,9 +1924,9 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
         if hasattr(curTorrentProvider, 'subtitle'):
             new_config[curTorrentProvider.get_id().upper()][curTorrentProvider.get_id() + '_subtitle'] = int(
                 curTorrentProvider.subtitle)
-        if hasattr(curTorrentProvider, 'cookies_ingest'):
+        if hasattr(curTorrentProvider, 'cookies'):
             new_config[curTorrentProvider.get_id().upper()][
-                curTorrentProvider.get_id() + '_cookies_ingest'] = curTorrentProvider.cookies_ingest
+                curTorrentProvider.get_id() + '_cookies'] = curTorrentProvider.cookies
 
     for curNzbProvider in [curProvider for curProvider in providers.sortedProviderList() if
                            curProvider.provider_type == GenericProvider.NZB]:

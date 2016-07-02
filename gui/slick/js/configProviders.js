@@ -283,7 +283,7 @@ $(document).ready(function(){
         } else {
             $('#torrentrss_name').attr("disabled", "disabled");
             $('#torrentrss_url').removeAttr("disabled");
-            $('#torrentrss_cookies').removeAttr("disabled");
+            $('#torrentrss_cookies').attr("disabled", "disabled");
             $('#torrentrss_titleTAG').removeAttr("disabled");
             $('#torrentrss_delete').removeAttr("disabled");
         }
