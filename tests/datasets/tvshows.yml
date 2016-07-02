@@ -1116,6 +1116,21 @@
   release_group: SuperGroup
   type: episode
 
+# CreateAliasWithCountryOrYear (negative year as season scenario)
+? Show.Name.S2016E01.Episode.Name.1080i.HDTV.DD2.0.H.264-GroupName
+: title: Show Name
+  season: 2016
+  year: 2016
+  episode: 1
+  episode_title: Episode Name
+  screen_size: 1080i
+  format: HDTV
+  audio_codec: DolbyDigital
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: GroupName
+  type: episode
+
 # AnimeWithSeasonAbsoluteEpisodeNumbers
 ? - "[Group].Show.Name.S2.-.19.[1080p]"
   - /Show.Name.S2/[Group].Show.Name.S2.-.19.[1080p]

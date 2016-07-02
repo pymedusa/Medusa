@@ -667,6 +667,10 @@ class CreateAliasWithCountryOrYear(Rule):
             if not after_title:
                 continue
 
+            # skip if season == year. E.g.: Show.Name.S2016E01
+            if matches.conflicting(after_title, predicate=lambda match: match.name == 'season', index=0):
+                continue
+
             # Only add country or year if the next match is season, episode or date
             next_match = matches.next(after_title, index=0, predicate=
                                       lambda match: match.name in ('season', 'episode', 'date'))
