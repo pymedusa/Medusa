@@ -6,13 +6,14 @@ Abstract pattern class definition along with various implementations (regexp, st
 # pylint: disable=super-init-not-called,wrong-import-position
 
 from abc import ABCMeta, abstractmethod, abstractproperty
+
 import six
 
-from .remodule import re, REGEX_AVAILABLE
-from .match import Match
-from .utils import find_all, is_iterable
-from .loose import call, ensure_list, ensure_dict
 from . import debug
+from .loose import call, ensure_list, ensure_dict
+from .match import Match
+from .remodule import re, REGEX_AVAILABLE
+from .utils import find_all, is_iterable
 
 
 @six.add_metaclass(ABCMeta)
@@ -255,7 +256,11 @@ class Pattern(object):
         defined = ""
         if self.defined_at:
             defined = "@%s" % (self.defined_at,)
-        return "<%s%s:%s>" % (self.__class__.__name__, defined, self.patterns)
+        return "<%s%s:%s>" % (self.__class__.__name__, defined, self.__repr__patterns__)
+
+    @property
+    def __repr__patterns__(self):
+        return self.patterns
 
 
 class StringPattern(Pattern):
@@ -318,6 +323,10 @@ class RePattern(Pattern):
     @property
     def patterns(self):
         return self._patterns
+
+    @property
+    def __repr__patterns__(self):
+        return [pattern.pattern for pattern in self.patterns]
 
     @property
     def match_options(self):
