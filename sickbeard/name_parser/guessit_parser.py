@@ -65,10 +65,12 @@ class GuessitNameParser(object):
         'it',
         'jp',
         'nl',
+        'pl',
         'pt',
         'ro',
         'ru',
         'sv',
+        'uk',
     }
 
     allowed_countries = {
