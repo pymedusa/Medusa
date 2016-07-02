@@ -74,7 +74,7 @@ def audio_codec():
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash]).string_defaults(ignore_case=True)
     rebulk.defaults(name='audio_codec')
 
-    rebulk.regex('Dolby', value='DolbyDigital')
+    #rebulk.regex('Dolby', value='DolbyDigital')
 
     return rebulk
 
@@ -132,11 +132,6 @@ def subtitle_language():
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE | re.UNICODE, abbreviations=[alt_dash])
     rebulk.defaults(name='subtitle_language', validator=seps_surround)
-
-    # Remove after https://github.com/guessit-io/guessit/pull/320 is merged
-    rebulk.regex(r'NL@?Subs?', 'NL@?Subbed', value=babelfish.Language('nld'))
-    rebulk.regex(r'RO@?Subs?', 'RO@?Subbed', value=babelfish.Language('ron'))
-    rebulk.regex(r'SWE@?Subs?', 'SWE@?Subbed', value=babelfish.Language('swe'))
 
     # special handling
     rebulk.regex(r'Legenda(?:s|do)?@PT-?BR', value=babelfish.Language('por', 'BR'))
