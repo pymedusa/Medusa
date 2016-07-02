@@ -1844,3 +1844,14 @@
   language: hu
   release_group: nIk
   type: episode
+
+? Game.of.Thrones.S6.Ep5.X265.Dolby.2.0.KTM3.mp4
+: audio_channels: '2.0'
+  audio_codec: DolbyDigital
+  container: mp4
+  episode: 5
+  release_group: KTM3
+  season: 6
+  title: Game of Thrones
+  type: episode
+  video_codec: h265
