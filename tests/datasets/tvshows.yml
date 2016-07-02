@@ -1583,6 +1583,28 @@
   release_group: Group
   type: episode
 
+# subtitle language (polish)
+? Show.Name.S01E03.PL.SUBBED.480p.WEBRiP.x264
+: title: Show Name
+  season: 1
+  episode: 3
+  subtitle_language: pl
+  screen_size: 480p
+  format: WEBRip
+  video_codec: h264
+  type: episode
+
+# subtitle language (ukranian)
+? Show.Name.s10e15(233).480p.BDRip-AVC.Ukr.hurtom
+: title: Show Name
+  season: 10
+  episode: 15
+  screen_size: 480p
+  format: BluRay
+  language: uk
+  release_group: hurtom
+  type: episode
+
 # ReleaseGroupPostProcessor
 ? Some.Show.S02E14.1080p.HDTV.X264...Group
 : title: Some Show

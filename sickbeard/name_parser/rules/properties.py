@@ -9,8 +9,10 @@ from string import upper
 import babelfish
 from guessit.rules.common import dash, alt_dash
 from guessit.rules.common.validators import seps, seps_surround
+from guessit.rules.properties.language import SubtitleSuffixLanguageRule
+from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
-from rebulk.rules import Rule, RemoveMatch
+from rebulk.rules import Rule, RemoveMatch, CustomRule
 
 
 def blacklist():
@@ -62,19 +64,6 @@ def screen_size():
     rebulk.regex(r'(?:\d{3,}(?:x|\*))?1080phd', value='1080p')
 
     rebulk.regex('NetflixUHD', value='4k')
-
-    return rebulk
-
-
-def audio_codec():
-    """
-    :return:
-    :rtype: Rebulk
-    """
-    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash]).string_defaults(ignore_case=True)
-    rebulk.defaults(name='audio_codec')
-
-    #rebulk.regex('Dolby', value='DolbyDigital')
 
     return rebulk
 
@@ -141,7 +130,9 @@ def subtitle_language():
 
     # undefined language
     rebulk.regex('Subtitles', 'Legenda(?:s|do)', 'Subbed', 'Sub(?:title)?s?@Latino',
-                 value='und', formatter=babelfish.Language)
+                 value='und', formatter=babelfish.Language, tags='subtitle.undefined')
+
+    rebulk.rules(RemoveSubtitleUndefined)
 
     return rebulk
 
@@ -172,6 +163,36 @@ class ValidateHardcodedSubs(Rule):
                                                     predicate=lambda match: match.value.strip(seps)):
                 continue
 
-            to_remove.append(other)
+            to_remove.append(hc)
+
+        return to_remove
+
+
+class RemoveSubtitleUndefined(Rule):
+    priority = POST_PROCESS - 1000
+    consequence = RemoveMatch
+
+    def when(self, matches, context):
+        """
+        Removes subtitle undefined if there's a subtitle language as a neighbor
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        to_remove = []
+        for und in matches.tagged('subtitle.undefined'):
+            next_match = matches.next(und, predicate=lambda match: match.name == 'subtitle_language', index=0)
+            if not next_match or matches.holes(und.end, next_match.start,
+                                               predicate=lambda match: match.value.strip(seps)):
+                previous_match = matches.previous(und,
+                                                  predicate=lambda match: match.name == 'subtitle_language', index=0)
+                if not previous_match or matches.holes(previous_match.end, und.start,
+                                                       predicate=lambda match: match.value.strip(seps)):
+                    continue
+
+            to_remove.append(und)
 
         return to_remove
