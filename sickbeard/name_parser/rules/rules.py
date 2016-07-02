@@ -821,74 +821,6 @@ class FixTvChaosUkWorkaround(Rule):
         return to_remove
 
 
-class FixTitlesContainsNumber(Rule):
-    """
-    There are shows where the title contains a number and the part after the number is incorrectly detected as
-    episode title.
-
-    e.g.: [Group].Show.Name.2.The.Big.Show.-.11.[1080p]
-
-    guessit -t episode "[Group].Show.Name.2.The.Big.Show.-.11.[1080p]"
-
-    without this fix:
-        For: [Group].Show.Name.2.The.Big.Show.-.11.[1080p]
-        GuessIt found: {
-            "release_group": "Group",
-            "title": "Show Name",
-            "episode_title": "The Big Show",
-            "episode": 11,
-            "screen_size": "1080p",
-            "type": "episode"
-        }
-
-
-    with this fix:
-        For: [Group].Show.Name.2.The.Big.Show.-.11.[1080p]
-        GuessIt found: {
-            "release_group": "Group",
-            "title": "Show Name 2 The Big Show",
-            "episode": 11,
-            "screen_size": "1080p",
-            "type": "episode"
-        }
-    """
-    priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch]
-
-    def when(self, matches, context):
-        """
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        fileparts = matches.markers.named('path')
-        for filepart in marker_sorted(fileparts, matches):
-            title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
-            if not title:
-                continue
-
-            # and after the title there's an episode_title match...
-            episode_title = matches.next(title, index=0, predicate=
-                                         lambda match: match.name == 'episode_title' and match.end <= filepart.end)
-
-            if not episode_title:
-                continue
-
-            holes = matches.holes(start=title.end, end=episode_title.start)
-            number = holes[0] if len(holes) == 1 else None
-            # and between the title and episode_title, there's one hole...
-            if number and number.raw.isdigit():
-                # join all three matches into one new title
-                new_title = copy.copy(title)
-                new_title.value = ' '.join([new_title.value, number.value, episode_title.value])
-                new_title.end = episode_title.end
-
-                # remove the old title and episode title; and append the new title
-                return [title, episode_title], [new_title]
-
-
 class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
     """
     There are animes where the title contains the season number.
@@ -1167,76 +1099,6 @@ class PartsAsEpisodeNumbers(Rule):
             return matches.named('part')
 
 
-class FixSeasonEpisodeDetection(Rule):
-    """
-    Work-around for https://github.com/guessit-io/guessit/issues/295
-    TODO: Remove when this bug is fixed
-
-    e.g.: "Some.Show.S02E14.X264.1080p.HDTV"
-
-    guessit -t episode "Some.Show.S02E14.X264.1080p.HDTV"
-
-    without the fix:
-        For: Some.Show.S02E14.X264.1080p.HDTV
-        GuessIt found: {
-            "title": "Some Show",
-            "season": [
-                2,
-                14
-            ],
-            "video_codec": "h264",
-            "screen_size": "1080p",
-            "format": "HDTV",
-            "type": "episode"
-        }
-
-    with the fix:
-        For: Some.Show.S02E14.X264.1080p.HDTV
-        GuessIt found: {
-            "title": "Some Show",
-            "season": 2,
-            "episode": 14,
-            "video_codec": "h264",
-            "screen_size": "1080p",
-            "format": "HDTV",
-            "type": "episode"
-        }
-
-    """
-    priority = POST_PROCESS
-    consequence = RenameMatch('episode')
-    codec_names = ('h264', 'h265')
-
-    def when(self, matches, context):
-        """
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        to_rename = []
-
-        fileparts = matches.markers.named('path')
-        for filepart in marker_sorted(fileparts, matches):
-            seasons = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'season')
-            # bug happens when there are 2 seasons...
-            if not seasons or len(seasons) != 2:
-                continue
-
-            # ... and no episodes
-            if not matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'episode'):
-                second_season = seasons[-1]
-                next_match = matches.range(second_season.end, filepart.end, index=0)
-                # guessit gets confused when the next match is x264 or x265
-                if next_match and next_match.name == 'video_codec' and next_match.value in self.codec_names:
-                    # rename the second season to episode
-                    episode = second_season
-                    to_rename.append(episode)
-
-        return to_rename
-
-
 class FixSeasonNotDetected(Rule):
     """
     Work-around for https://github.com/guessit-io/guessit/issues/306
@@ -1411,91 +1273,6 @@ class FixWrongSeasonRangeDetectionDueToEpisode(Rule):
                     break
 
         return to_remove, to_append, to_rename
-
-
-class FixWrongSeasonAndReleaseGroup(Rule):
-    """
-    Work-around for https://github.com/guessit-io/guessit/issues/303
-    TODO: Remove when this bug is fixed
-
-    e.g.: Show.Name.S06E04.1080i.HDTV.DD5.1.H264.BS666.rartv
-
-    guessit -t episode "Show.Name.S06E04.1080i.HDTV.DD5.1.H264.BS666.rartv"
-
-    without this fix:
-        For: Show.Name.S06E04.1080i.HDTV.DD5.1.H264.BS666.rartv
-        GuessIt found: {
-            "title": "Show Name",
-            "season": [
-                6,
-                666
-            ],
-            "episode": 4,
-            "screen_size": "1080i",
-            "format": "HDTV",
-            "audio_codec": "DolbyDigital",
-            "audio_channels": "5.1",
-            "video_codec": "h264",
-            "release_group": "B",
-            "type": "episode"
-        }
-
-    with this fix:
-        For: Show.Name.S06E04.1080i.HDTV.DD5.1.H264.BS666
-        GuessIt found: {
-            "title": "Show Name",
-            "season": 6,
-            "episode": 4,
-            "screen_size": "1080i",
-            "format": "HDTV",
-            "audio_codec": "DolbyDigital",
-            "audio_channels": "5.1",
-            "video_codec": "h264",
-            "release_group": "BS666",
-            "type": "episode"
-        }
-
-    """
-    priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch]
-    previous_properties = ('video_codec', 'format', 'release_group')
-
-    def when(self, matches, context):
-        """
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        to_remove = []
-        to_append = []
-
-        fileparts = matches.markers.named('path')
-        for filepart in marker_sorted(fileparts, matches):
-            seasons = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'season')
-            # only when there are 2 seasons
-            last_season = seasons[-1] if len(seasons) == 2 else None
-            previous = matches.previous(last_season, index=-1) if last_season else None
-            if previous and previous.start >= filepart.start:
-                holes = matches.holes(start=previous.end, end=last_season.start)
-                hole = holes[0] if len(holes) == 1 else None
-                # there's only 1 hole before the season
-                if not hole:
-                    continue
-
-                prefix = previous.value if previous.name == 'release_group' else ''
-                correct_release_group = prefix + hole.raw + last_season.raw
-
-                if matches.previous(last_season, predicate=lambda match: match.name in self.previous_properties):
-                    new_release_group = copy.copy(previous)
-                    new_release_group.value = correct_release_group
-
-                    to_remove.append(last_season)
-                    to_remove.append(previous)
-                    to_append.append(new_release_group)
-
-        return to_remove, to_append
 
 
 class FixSeasonRangeDetection(Rule):
@@ -1768,86 +1545,6 @@ class FixEpisodeRangeWithSeasonDetection(Rule):
                             to_append.append(new_episode)
 
         return to_remove, to_append
-
-
-class FixWrongEpisodeDetectionInSeasonRange(Rule):
-    """
-    Work-around for https://github.com/guessit-io/guessit/issues/304
-    TODO: Remove when this bug is fixed
-
-    e.g.: "Show.season_1-10.(DVDrip)"
-
-    guessit -t episode "Show.season_1-10.(DVDrip)"
-
-    without the fix:
-        For: Show.season_1-10.(DVDrip)
-        GuessIt found: {
-            "title": "Show",
-            "season": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10
-            ],
-            "episode": 10,
-            "format": "DVD",
-            "type": "episode"
-        }
-
-
-    with the fix:
-        For: Show.season_1-10.(DVDrip)
-        GuessIt found: {
-            "title": "Show",
-            "season": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10
-            ],
-            "format": "DVD",
-            "type": "episode"
-        }
-
-    """
-    priority = POST_PROCESS
-    consequence = RemoveMatch
-
-    def when(self, matches, context):
-        """
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        to_remove = []
-
-        fileparts = matches.markers.named('path')
-        for filepart in marker_sorted(fileparts, matches):
-            seasons = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'season')
-            episodes = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'episode')
-            # bug happens when there are more than 1 season and exactly 1 episode
-            if seasons and episodes and len(seasons) > 1 and len(episodes) == 1:
-                episode = episodes[0]
-                conflict = matches.at_match(episode, predicate=
-                                            lambda match: not match.private and match.name == 'season')
-                if conflict:
-                    to_remove.append(episode)
-
-        return to_remove
 
 
 class ExpectedTitlePostProcessor(Rule):
@@ -2173,13 +1870,9 @@ def rules():
         FixWrongTitleDueToFilmTitle,
         FixSeasonNotDetected,
         FixWrongSeasonRangeDetectionDueToEpisode,
-        FixWrongSeasonAndReleaseGroup,
-        FixSeasonEpisodeDetection,
         FixSeasonRangeDetection,
         FixEpisodeRangeDetection,
         FixEpisodeRangeWithSeasonDetection,
-        FixWrongEpisodeDetectionInSeasonRange,
-        FixTitlesContainsNumber,
         FixWrongTitlesWithCompleteKeyword,
         AnimeWithSeasonAbsoluteEpisodeNumbers,
         AnimeAbsoluteEpisodeNumbers,

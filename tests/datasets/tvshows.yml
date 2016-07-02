@@ -414,7 +414,9 @@
 
 # anime_french_fansub (FixTitlesContainsNumber)
 ? Show Name Online 2 - The Show 04 vostfr FHD
-: title: Show Name Online 2 The Show
+: title: Show Name Online 2
+  alternative_title: The Show
+  alias: Show Name Online 2 - The Show
   absolute_episode: 4
   subtitle_language: fr
   release_group: FHD
