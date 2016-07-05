@@ -152,7 +152,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         try:
             add_cookie = self.add_cookies_from_ui()
-            if not add_cookie:
+            if not add_cookie.get('result'):
                 return add_cookie
 
             # pylint: disable=protected-access
