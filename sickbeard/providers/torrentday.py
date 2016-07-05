@@ -23,11 +23,11 @@ import traceback
 
 from requests.compat import urljoin
 from requests.exceptions import RequestException
-from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
+from requests.utils import dict_from_cookiejar
 
-from sickbeard import logger, tvcache
+from sickbeard import logger, tvcache, ui
 
-from sickrage.helper.common import convert_size, try_int
+from sickrage.helper.common import convert_size
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
@@ -41,8 +41,6 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Credentials
         self.username = None
         self.password = None
-        self._uid = None
-        self._hash = None
 
         # URLs
         self.url = 'https://classic.torrentday.com'
@@ -56,7 +54,9 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         # Miscellaneous Options
         self.freeleech = False
-        self.cookies = None
+        self.enable_cookies = True
+        self.cookies = ''
+
         self.categories = {'Season': {'c14': 1}, 'Episode': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1},
                            'RSS': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1, 'c14': 1}}
 
@@ -101,6 +101,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     jdata = response.json()
                 except ValueError:  # also catches JSONDecodeError if simplejson is installed
                     logger.log('Data returned from provider is not json', logger.ERROR)
+                    self.session.cookies.clear()
                     continue
 
                 torrents = jdata.get('Fs', [dict()])[0].get('Cn', {}).get('torrents', [])
@@ -153,12 +154,11 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return results
 
     def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
+        if dict_from_cookiejar(self.session.cookies).get('uid') and dict_from_cookiejar(self.session.cookies).get('pass'):
             return True
 
-        if self._uid and self._hash:
-            add_dict_to_cookiejar(self.session.cookies, self.cookies)
-        else:
+        if self.cookies:
+            self.add_cookies_from_ui()
 
             login_params = {
                 'username': self.username,
@@ -167,27 +167,22 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 'submit.y': 0,
             }
 
-            response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-            if not response:
+            response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+            if response.status_code != 200:
                 logger.log('Unable to connect to provider', logger.WARNING)
                 return False
 
-            if re.search('You tried too often', response):
+            if re.search('You tried too often', response.text):
                 logger.log('Too many login access attempts', logger.WARNING)
                 return False
 
-            try:
-                if dict_from_cookiejar(self.session.cookies)['uid'] and dict_from_cookiejar(self.session.cookies)['pass']:
-                    self._uid = dict_from_cookiejar(self.session.cookies)['uid']
-                    self._hash = dict_from_cookiejar(self.session.cookies)['pass']
-                    self.cookies = {'uid': self._uid,
-                                    'pass': self._hash}
+            if (dict_from_cookiejar(self.session.cookies).get('uid') and 
+                    dict_from_cookiejar(self.session.cookies).get('uid') in response.text):
                     return True
-            except Exception:
-                pass
-
-            logger.log('Unable to obtain cookie', logger.WARNING)
-            return False
+            else:
+                logger.log('Failed to login, check your cookies', logger.WARNING)
+                self.session.cookies.clear()
+                return False
 
 
 provider = TorrentDayProvider()
