@@ -577,3 +577,6 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                                          'No Cookies added from ui for provider: {0}'.format(self.name))
                 return {'result': False,
                         'message': 'No Cookies added from ui for provider: {0}'.format(self.name)}
+
+        return {'result': False,
+                'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
