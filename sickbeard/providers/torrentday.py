@@ -23,9 +23,9 @@ import traceback
 
 from requests.compat import urljoin
 from requests.exceptions import RequestException
-from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
+from requests.utils import dict_from_cookiejar
 
-from sickbeard import logger, tvcache
+from sickbeard import logger, tvcache, ui
 
 from sickrage.helper.common import convert_size
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
@@ -158,8 +158,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             return True
 
         if self.cookies:
-            if 'uid' in self.cookies and 'pass' in self.cookies:
-                self.add_cookies_from_ui()
+            self.add_cookies_from_ui()
 
             login_params = {
                 'username': self.username,
@@ -169,7 +168,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             }
 
             response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
-            if response.status_code not in [200]:
+            if response.status_code != 200:
                 logger.log('Unable to connect to provider', logger.WARNING)
                 return False
 
@@ -177,10 +176,12 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 logger.log('Too many login access attempts', logger.WARNING)
                 return False
 
-            if dict_from_cookiejar(self.session.cookies).get('uid') in response.text:
-                return True
+            if (dict_from_cookiejar(self.session.cookies).get('uid') and 
+                    dict_from_cookiejar(self.session.cookies).get('uid') in response.text):
+                    return True
             else:
                 logger.log('Failed to login, check your cookies', logger.WARNING)
+                self.session.cookies.clear()
                 return False
 
 

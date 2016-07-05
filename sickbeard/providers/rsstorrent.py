@@ -154,40 +154,40 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             add_cookie = self.add_cookies_from_ui()
             if not add_cookie:
                 return add_cookie
-#             if self.cookies:
-#                 cookie_validator = re.compile(r'^(\w+=\w+)(;\w+=\w+)*$')
-#                 if not cookie_validator.match(self.cookies):
-#                     return False, 'Cookie is not correctly formatted: {0}'.format(self.cookies)
-#                 add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
 
             # pylint: disable=protected-access
             # Access to a protected member of a client class
             data = self.cache._getRSSData()['entries']
             if not data:
-                return False, 'No items found in the RSS feed {0}'.format(self.url)
+                return {'result': False,
+                        'message': 'No items found in the RSS feed {0}'.format(self.url)}
 
             title, url = self._get_title_and_url(data[0])
 
             if not title:
-                return False, 'Unable to get title from first item'
+                return {'result': False,
+                        'message': 'Unable to get title from first item'}
 
             if not url:
-                return False, 'Unable to get torrent url from first item'
+                return {'result': False,
+                        'message': 'Unable to get torrent url from first item'}
 
             if url.startswith('magnet:') and re.search(r'urn:btih:([\w]{32,40})', url):
-                return True, 'RSS feed Parsed correctly'
+                return {'result': True,
+                        'message': 'RSS feed Parsed correctly'}
             else:
                 torrent_file = self.get_url(url, returns='content')
                 try:
                     bdecode(torrent_file)
                 except Exception as error:
                     self.dump_html(torrent_file)
-                    return False, 'Torrent link is not a valid torrent file: {0}'.format(ex(error))
+                    return {'result': False,
+                            'message': 'Torrent link is not a valid torrent file: {0}'.format(ex(error))}
 
-            return True, 'RSS feed Parsed correctly'
+            return {'result': True, 'message': 'RSS feed Parsed correctly'}
 
         except Exception as error:
-            return False, 'Error when trying to load RSS: {0}'.format(ex(error))
+            return {'result': False, 'message': 'Error when trying to load RSS: {0}'.format(ex(error))}
 
     @staticmethod
     def dump_html(data):

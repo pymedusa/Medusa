@@ -152,11 +152,11 @@ class ConfigProviders(Config):
         if temp_provider.get_id() in provider_dict:
             return json.dumps({'error': 'Exists as {name}'.format(name=provider_dict[temp_provider.get_id()].name)})
         else:
-            (succ, err_msg) = temp_provider.validate_rss()
-            if succ:
+            validate = temp_provider.validate_rss()
+            if validate['result']:
                 return json.dumps({'success': temp_provider.get_id()})
             else:
-                return json.dumps({'error': err_msg})
+                return json.dumps({'error': validate['message']})
 
     @staticmethod
     def saveTorrentRssProvider(name, url, cookies, titleTAG):

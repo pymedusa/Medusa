@@ -28,7 +28,7 @@ from itertools import chain
 from os.path import join
 from random import shuffle
 
-from sickbeard import logger
+from sickbeard import logger, ui
 from sickbeard.classes import Proper, SearchResult
 from sickbeard.common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
 from sickbeard.db import DBConnection
@@ -81,7 +81,6 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         # Use and configure the attribute enable_cookies to show or hide the cookies input field per provider
         self.enable_cookies = False
         self.cookies = ''
-        self.rss_cookies = ''
 
         # Paramaters for reducting the daily search results parsing
         self.max_recent_items = 5
@@ -555,15 +554,26 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
     def add_cookies_from_ui(self):
         """
         Adds the cookies configured from UI to the providers requests session
-        :return: A tuple with the the (success result, and a descriptive message in str)
+        :return: A dict with the the keys result as bool and message as string
         """
 
         # This is the generic attribute used to manually add cookies for provider authentication
-        if self.enable_cookies and self.cookies:
-            cookie_validator = re.compile(r'^(\w+=\w+)(;\w+=\w+)*$')
-            if not cookie_validator.match(self.cookies):
-                return False, 'Cookie is not correctly formatted: {0}'.format(self.cookies)
-            add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
-            return True, 'torrent cookie'
+        if self.enable_cookies:
+            if self.cookies:
+                cookie_validator = re.compile(r'^(\w+=\w+)(;\w+=\w+)*$')
+                if not cookie_validator.match(self.cookies):
+                    ui.notifications.message('Failed to validate cookie for provider {provider}'.format(provider=self.name),
+                                             'Cookie is not correctly formatted: {0}'.format(self.cookies))
+                    return {'result': False,
+                            'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
 
-        return False, 'No Cookies added from ui for provider: {0}'.format(self.name)
+                # cookie_validator got at least one cookie key/value pair, let's return success
+                add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
+                return {'result': True,
+                        'message': ''}
+
+            else:  # Else is not needed, but placed it here for readability
+                ui.notifications.message('Failed to validate cookie for provider {provider}'.format(provider=self.name),
+                                         'No Cookies added from ui for provider: {0}'.format(self.name))
+                return {'result': False,
+                        'message': 'No Cookies added from ui for provider: {0}'.format(self.name)}
