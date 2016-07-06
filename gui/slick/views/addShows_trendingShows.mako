@@ -21,7 +21,7 @@
                 <span class="component-title">Configure Show Options</span>
                 <span class="component-desc">
                     <input type="checkbox" class="enabler" name="configure_show_options" id="configure_show_options" />
-                    <p>If you don't want to use the default show options, you can change them here! Leaving it as it is, the show will be added as an anime anyhow.</p>
+                    <p>Recommended shows will be added using your default options. Use this option if you want to change the options for that show.</p>
                 </span>
             </label>
         </div>

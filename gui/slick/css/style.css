@@ -861,7 +861,7 @@ ul#rootDirStaticList li input[type="checkbox"] {
 }
 
 /* =======================================================================
-home_trendingShows.mako
+home_recommendedShows.mako
 ========================================================================== */
 
 .recommendedShowTitleIcons {
@@ -870,16 +870,16 @@ home_trendingShows.mako
     padding-bottom: 4px;
 }
 
-.recommendedContainer p {
+.recommended-container p {
     padding-top: 2px;
 }
 
-.recommendedContainer p img {
+.recommended-container p img {
     position: relative;
     top: -2px;
 }
 
-.recommendedContainer {
+.recommended-container {
 	left: -4px;
     position: relative;
 }
@@ -888,13 +888,26 @@ div.recommended-image {
 	background-color: #DFDACF;
 }
 
-.show-in-list {
-	-webkit-filter: grayscale(100%);
+.show-in-list div.recommended-image {
+    opacity: 0.4;
+    zoom: 1;  /* needed to trigger "hasLayout" in IE if no width or height is set */
+    -webkit-filter: grayscale(100%);
     filter: grayscale(100%);
-    opacity: 0.8;
 }
 
-.recommendedContainer p, .recommendedContainer i, .recommendedContainer a {
+.show-in-list div#check-overlay {
+    opacity: 0.8;
+    background-image: url(/images/green-check.png);
+    background-repeat: no-repeat;
+    background-position: 90% 5%;
+    background-size: 100px;
+    position: absolute;
+    height: 273px;
+    width: 187px;
+    top: 0px;
+}
+
+.recommended-container p, .recommended-container i, .recommended-container a {
     white-space: nowrap;
     font-size: 12px;
     overflow: hidden;
@@ -903,7 +916,7 @@ div.recommended-image {
     text-decoration: none;
 }
 
-.recommendedContainer {
+.recommended-container {
     margin: 12px;
     width: 188px;
     background-color: rgb(223, 218, 207);
@@ -919,7 +932,7 @@ div.recommended-image {
     border-bottom: 1px solid rgb(17, 17, 17);
 }
 
-.recommendedContainer .anidb-url {
+.recommended-container .anidb-url {
 	float: right;
 	padding-right: 4px;
 }
@@ -928,7 +941,7 @@ div.recommended-image {
 	height: 16px;
 }
 
-.recommendedContainer .default-poster {
+.recommended-container .default-poster {
     display: block;
     z-index: 0;
     background-image: url(/images/poster-dark.jpg)

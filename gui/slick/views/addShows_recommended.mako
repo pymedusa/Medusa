@@ -90,12 +90,13 @@
             % endif
 
             <div class="show-row" data-name="${cur_result.title}" data-rating="${cur_rating}" data-votes="${cur_votes}" data-anime="${cur_result.is_anime}">
-                <div class="recommendedContainer default-poster">
+                <div class="recommended-container default-poster ${('', 'show-in-list')[cur_result.show_in_list]}">
                     <div class="recommended-image">
                         <a href="${anon_url(cur_result.image_href)}" target="_blank">
-                            <img alt="" class="recommended-image ${('', 'show-in-list')[cur_result.show_in_list]}" src="${srRoot}/cache/${cur_result.image_src}" height="273px" width="186px" />
+                            <img alt="" class="recommended-image" src="${srRoot}/cache/${cur_result.image_src}" height="273px" width="186px"/>
                         </a>
                     </div>
+                    <div id="check-overlay"></div>
 
                     <div class="show-title">
                         ${cur_result.title}
