@@ -183,7 +183,7 @@ def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branc
             except Exception:
                 # Without this, when notification fail, it crashes the snatch thread and Medusa will
                 # keep snatching until notification is sent
-                logger.log(u"Failed to send snatch notification", logger.DEBUG)
+                logger.log(u"Failed to send snatch notification. Error: {0}".format(e), logger.DEBUG)
 
             trakt_data.append((curEpObj.season, curEpObj.episode))
 
