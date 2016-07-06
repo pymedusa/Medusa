@@ -12,10 +12,9 @@ from string import upper
 import babelfish
 from guessit.rules.common import dash, alt_dash
 from guessit.rules.common.validators import seps, seps_surround
-from guessit.rules.properties.language import SubtitleSuffixLanguageRule
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
-from rebulk.rules import Rule, RemoveMatch, CustomRule
+from rebulk.rules import Rule, RemoveMatch
 
 
 def blacklist():
@@ -98,7 +97,7 @@ def size():
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
     rebulk.defaults(name='size', validator=seps_surround)
-    rebulk.regex(r'(?:\d+\.)?\d+[mgt]b', formatter=upper)
+    rebulk.regex(r'(?:\d+\.)?\d+[mgt]b', formatter=upper, tags=['release-group-prefix'])
 
     return rebulk
 
