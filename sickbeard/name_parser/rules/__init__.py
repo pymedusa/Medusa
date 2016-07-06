@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Guessit customization
-"""
+"""Guessit customization."""
 from guessit.api import default_api
 from sickbeard.name_parser.rules.properties import (blacklist, format_, language, other, size, screen_size,
                                                     subtitle_language)

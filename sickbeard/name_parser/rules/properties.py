@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Properties: This section contains additional properties to be guessed by guessit
-"""
+"""Properties: This section contains additional properties to be guessed by guessit."""
 
 from __future__ import unicode_literals
 
@@ -18,7 +16,9 @@ from rebulk.rules import Rule, RemoveMatch
 
 
 def blacklist():
-    """
+    """Blacklisted patterns.
+
+    All blacklisted patterns should use `other` property and be private.
     :return:
     :rtype: Rebulk
     """
@@ -30,7 +30,8 @@ def blacklist():
 
 
 def format_():
-    """
+    """Format property.
+
     :return:
     :rtype: Rebulk
     """
@@ -54,11 +55,11 @@ def format_():
 
 
 def screen_size():
-    """
+    """Screen size property.
+
     :return:
     :rtype: Rebulk
     """
-
     # https://github.com/guessit-io/guessit/issues/319
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE)
     rebulk.defaults(name='screen_size', validator=seps_surround)
@@ -71,14 +72,17 @@ def screen_size():
 
 
 def other():
-    """
-    https://github.com/guessit-io/guessit/issues/300
+    """Other property.
+
     :return:
     :rtype: Rebulk
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
     rebulk.defaults(name='other', validator=seps_surround)
+
+    # https://github.com/guessit-io/guessit/issues/300
     rebulk.regex(r'Re-?Enc(?:oded)?', value='Re-Encoded')
+
     rebulk.regex('DIRFIX', value='DirFix')
     rebulk.regex('INTERNAL', value='Internal')
     rebulk.regex(r'(?:HD)?iTunes(?:HD)?', value='iTunes')
@@ -90,8 +94,9 @@ def other():
 
 
 def size():
-    """
-    https://github.com/guessit-io/guessit/issues/299
+    """Size property.
+
+    Remove when https://github.com/guessit-io/guessit/issues/299 is fixed.
     :return:
     :rtype: Rebulk
     """
@@ -103,7 +108,8 @@ def size():
 
 
 def language():
-    """
+    """Language property.
+
     :return:
     :rtype: Rebulk
     """
@@ -117,7 +123,8 @@ def language():
 
 
 def subtitle_language():
-    """
+    """Subtitle language property.
+
     :return:
     :rtype: Rebulk
     """
@@ -140,12 +147,13 @@ def subtitle_language():
 
 
 class ValidateHardcodedSubs(Rule):
+    """Validate HC matches."""
+
     priority = 32
     consequence = RemoveMatch
 
     def when(self, matches, context):
-        """
-        Removes other: Hardcoded subtitles if there's no neighbour subtitle_language matches
+        """Remove `other: Hardcoded subtitles` if there's no subtitle_language matches as a neighbour.
 
         :param matches:
         :type matches: rebulk.match.Matches
@@ -171,12 +179,13 @@ class ValidateHardcodedSubs(Rule):
 
 
 class RemoveSubtitleUndefined(Rule):
+    """Remove subtitle undefined when there's an actual subtitle language."""
+
     priority = POST_PROCESS - 1000
     consequence = RemoveMatch
 
     def when(self, matches, context):
-        """
-        Removes subtitle undefined if there's a subtitle language as a neighbor
+        """Remove subtitle undefined if there's a subtitle language as a neighbor.
 
         :param matches:
         :type matches: rebulk.match.Matches

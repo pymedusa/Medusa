@@ -1,19 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+"""Guessit Name Parser."""
 from __future__ import unicode_literals
 
-"""
-Guessit Name Parser
-"""
 import guessit
 import six
 
 
 class GuessitNameParser(object):
-    """
-    Guessit Name Parser
-    """
+    """Guessit Name Parser."""
 
     expected_titles = {
         # guessit doesn't add dots for this show
@@ -85,8 +80,7 @@ class GuessitNameParser(object):
     allow_multi_season = False
 
     def guess(self, name, show_type=None):
-        """
-        Given a release name, it guesses the episode information
+        """Guess the episode information from a given release name.
 
         :param name: the release name
         :type name: str
@@ -103,7 +97,8 @@ class GuessitNameParser(object):
         return guessit.guessit(name, options=options)
 
     def parse(self, name, show_type=None):
-        """
+        """Guess the episode information from a given release name.
+
         Same as self.guess(..) method but returns a dictionary with keys and values according to ParseResult
         :param name:
         :type name: str
@@ -130,6 +125,15 @@ class GuessitNameParser(object):
 
 
 def single_or_list(value, allow_multi):
+    """Return a single value or a list.
+
+    If value is a list with more than one element and allow_multi is False then it returns None.
+    :param value:
+    :type value: list
+    :param allow_multi: if False, multiple values will return None
+    :type allow_multi: bool
+    :rtype: list
+    """
     if not isinstance(value, list):
         return value
 
@@ -138,15 +142,21 @@ def single_or_list(value, allow_multi):
 
 
 def ensure_list(value):
+    """Return a list.
+
+    When value is not a list, return a list containing the single value.
+    :param value:
+    :rtype: list
+    """
     return sorted(value) if isinstance(value, list) else [value] if value is not None else []
 
 
 def normalize(strings):
-    """Normalize string as expected by guessit
+    """Normalize string as expected by guessit.
 
-    Remove when https://github.com/guessit-io/guessit/issues/326 is fixed
+    Remove when https://github.com/guessit-io/guessit/issues/326 is fixed.
     :param strings:
-    :return: list of str
+    :rtype: list of str
     """
     result = []
     for string in strings:

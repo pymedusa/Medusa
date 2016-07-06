@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-from __future__ import unicode_literals
-
-"""
-Rules: This section contains rules that enhances guessit behaviour
+"""Rules: This section contains rules that enhances guessit behavior.
 
 Coding guidelines:
 For each rule:
@@ -22,13 +18,14 @@ For each rule:
 Rebulk API is really powerful. It's always good to spend some time reading about it: https://github.com/Toilal/rebulk
 
 The main idea about the rules in this section is to navigate between the `matches` and `holes` and change the matches
-according to our needs
+according to our needs.
 
 * Our rules should run only after all standard and default guessit rules have finished (not before that!).
 ** Adding several dependencies to our rules will make an implicit execution order. It could be hard to debug. Better to
 have a fixed execution order, that's why the rules() method should add the rules in the correct order (explicit).
-*** Rebulk API relies on the match.value, if you change them you'll get exceptions
+*** Rebulk API relies on the match.value, if you change them you'll get exceptions.
 """
+from __future__ import unicode_literals
 
 import copy
 import re
@@ -50,9 +47,10 @@ episode_range_separator = range_separator + ('_-_e', '-e', '.to.e', '_to_e')
 
 
 class FixAnimeReleaseGroup(Rule):
-    """
+    """Choose the correct Anime release group.
+
     Anime release group is at the beginning and inside square brackets. If this pattern is found at the start of the
-    filepart, use it as a release group
+    filepart, use it as a release group.
 
     guessit -t episode "[RealGroup].Show.Name.-.462.[720p].[10bit].[SOMEPERSON].[Something]"
 
@@ -80,13 +78,15 @@ class FixAnimeReleaseGroup(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
     release_group_re = re.compile(r'^\[(?P<release_group>\w+(\-\w+)?)\]$', flags=re.IGNORECASE)
     blacklist = ('private', 'req')
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -122,8 +122,9 @@ class FixAnimeReleaseGroup(Rule):
 
 
 class SpanishNewpctReleaseName(Rule):
-    """
-    This rule is to handle the newpct release name style
+    """Detect newpct release names.
+
+    This rule is to handle the newpct release name style.
 
     e.g.: Show.Name.-.Temporada.1.720p.HDTV.x264[Cap.102]SPANISH.AUDIO-NEWPCT
 
@@ -163,6 +164,7 @@ class SpanishNewpctReleaseName(Rule):
         }
 
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
     season_re = re.compile(r'^tem(p|porada)?\W*\d*$', flags=re.IGNORECASE)
@@ -171,7 +173,8 @@ class SpanishNewpctReleaseName(Rule):
                             r'(_((?P<end_season>\d{1,2})(?P<end_episode>\d{2})))?.*\]', flags=re.IGNORECASE)
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -249,8 +252,9 @@ class SpanishNewpctReleaseName(Rule):
 
 
 class FixSeasonAndEpisodeConflicts(Rule):
-    """
-    - Fix release group conflict with episode and or season
+    """Fix season and episode conflict.
+
+    - Fix release group conflict with episode and or season.
     - Certain release names contains a conflicting screen_size (e.g.: 720 without p). It confuses guessit: the guessed
     season and episode needs to be removed.
     Bug: https://github.com/guessit-io/guessit/issues/308
@@ -290,11 +294,13 @@ class FixSeasonAndEpisodeConflicts(Rule):
         }
 
     """
+
     priority = POST_PROCESS
     consequence = RemoveMatch
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -315,10 +321,11 @@ class FixSeasonAndEpisodeConflicts(Rule):
 
 
 class FixInvalidTitleOrAlternativeTitle(Rule):
-    """
+    """Fix invalid title/alternative title due to absolute episode numbers range.
+
     Some release names have season/episode defined twice (relative and absolute), and one of them becomes an
     alternative_title or a suffix in the title. This fix will remove the invalid alternative_title or the
-    invalid title's suffix
+    invalid title's suffix.
 
     e.g.: "Show Name - 313-314 - s16e03-04"
 
@@ -354,13 +361,15 @@ class FixInvalidTitleOrAlternativeTitle(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
     absolute_re = re.compile(r'([\W|_]*)(?P<absolute_episode_start>\d{3,4})\-(?P<absolute_episode_end>\d{3,4})\W*$')
     properties = ('title', 'alternative_title', 'episode_title')
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -420,7 +429,8 @@ class FixInvalidTitleOrAlternativeTitle(Rule):
 
 
 class FixWrongTitleDueToFilmTitle(Rule):
-    """
+    """Fix release_group detection due to film title.
+
     Work-around for https://github.com/guessit-io/guessit/issues/294
     TODO: Remove when this bug is fixed
 
@@ -458,12 +468,14 @@ class FixWrongTitleDueToFilmTitle(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch, RenameMatch('title'), RenameMatch('episode')]
     blacklist = ('special', 'season', 'multi')
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -525,7 +537,8 @@ class FixWrongTitleDueToFilmTitle(Rule):
 
 
 class CreateAliasWithAlternativeTitles(Rule):
-    """
+    """Create alias property using alternative titles.
+
     'alias' - post processor to create aliases using alternative titles.
 
     e.g.: [SuperGroup].Show.Name.-.Still+Name.-.11.[1080p]
@@ -561,12 +574,14 @@ class CreateAliasWithAlternativeTitles(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = AppendMatch
     blacklist = ('temporada', 'temp', 'tem')
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -612,7 +627,8 @@ class CreateAliasWithAlternativeTitles(Rule):
 
 
 class CreateAliasWithCountryOrYear(Rule):
-    """
+    """Create alias property using country or year information.
+
     'alias' - post processor to create alias using country or year in addition to the existing title.
 
     e.g.: Show.Name.US.S03.720p.BluRay.x264-SuperGroup
@@ -646,12 +662,14 @@ class CreateAliasWithCountryOrYear(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = AppendMatch
     affected_names = ('country', 'year')
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -688,7 +706,8 @@ class CreateAliasWithCountryOrYear(Rule):
 
 
 class FixWrongTitlesWithCompleteKeyword(Rule):
-    """
+    """Fix wrong titles due to COMPLETE keyword.
+
     Guessit bug: https://github.com/guessit-io/guessit/issues/310
 
     e.g.: Show.Name.COMPLETE.SERIES.DVDRip.XviD-GROUP
@@ -716,12 +735,14 @@ class FixWrongTitlesWithCompleteKeyword(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
     complete_re = re.compile(r'(\W+The)?\W+complete(\W+(series|seasons?))?\W*$', flags=re.IGNORECASE)
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -764,7 +785,8 @@ class FixWrongTitlesWithCompleteKeyword(Rule):
 
 
 class FixTvChaosUkWorkaround(Rule):
-    """
+    """Fix TV Chaos UK workaround.
+
     Medusa adds .hdtv.x264 to tv chaos uk releases. The video_codec might conflict with existing video_codec in the
     original release name.
 
@@ -795,11 +817,13 @@ class FixTvChaosUkWorkaround(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = RemoveMatch
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -830,7 +854,8 @@ class FixTvChaosUkWorkaround(Rule):
 
 
 class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
-    """
+    """Add season to title for specific anime patterns.
+
     There are animes where the title contains the season number.
 
     Medusa rule:
@@ -862,11 +887,13 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -920,8 +947,9 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
 
 
 class AnimeAbsoluteEpisodeNumbers(Rule):
-    """
-    Medusa rule: If it's an anime, prefer absolute episode numbers
+    """Move episode numbers to absolute episode numbers for animes.
+
+    Medusa rule: If it's an anime, prefer absolute episode numbers.
 
     e.g.: [Group].Show.Name.-.102.[720p]
 
@@ -948,11 +976,13 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -987,7 +1017,8 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
 
 
 class AbsoluteEpisodeNumbers(Rule):
-    """
+    """Move episode numbers to absolute episode numbers for animes without season.
+
     Medusa absolute episode numbers rule. For animes without season, prefer absolute numbers.
 
     e.g.: Show.Name.10.720p
@@ -1013,13 +1044,15 @@ class AbsoluteEpisodeNumbers(Rule):
         }
 
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, RenameMatch('absolute_episode')]
     non_words_re = re.compile(r'\W')
     episode_words = ('e', 'episode', 'ep')
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -1060,8 +1093,9 @@ class AbsoluteEpisodeNumbers(Rule):
 
 
 class PartsAsEpisodeNumbers(Rule):
-    """
-    Medusa rule: Parts are treated as episodes
+    """Move part to episode.
+
+    Medusa rule: Parts are treated as episodes.
 
     e.g.: Show.Name.Part.3.720p.HDTV.x264-Group
 
@@ -1091,11 +1125,13 @@ class PartsAsEpisodeNumbers(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = RenameMatch('episode')
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -1108,7 +1144,8 @@ class PartsAsEpisodeNumbers(Rule):
 
 
 class FixSeasonNotDetected(Rule):
-    """
+    """Fix when season is not detected.
+
     Work-around for https://github.com/guessit-io/guessit/issues/306
     TODO: Remove file_title when this bug is fixed
 
@@ -1141,12 +1178,14 @@ class FixSeasonNotDetected(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     season_re = re.compile(r'\b(season|series)\W*$', flags=re.IGNORECASE)
     consequence = [RemoveMatch, AppendMatch, RenameMatch('season')]
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -1183,7 +1222,8 @@ class FixSeasonNotDetected(Rule):
 
 
 class FixWrongSeasonRangeDetectionDueToEpisode(Rule):
-    """
+    """Fix season range detection.
+
     e.g.: Show.Name.-.Season.1.to.3.-.Mp4.1080p
           Show.Name.-.Season.1-3.-.Mp4.1080p
 
@@ -1211,13 +1251,14 @@ class FixWrongSeasonRangeDetectionDueToEpisode(Rule):
             "screen_size": "1080p",
             "type": "episode"
         }
-
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch, RenameMatch('season')]
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -1284,7 +1325,8 @@ class FixWrongSeasonRangeDetectionDueToEpisode(Rule):
 
 
 class FixSeasonRangeDetection(Rule):
-    """
+    """Fix season range detection.
+
     Work-around for https://github.com/guessit-io/guessit/issues/287
     TODO: Remove when this bug is fixed
 
@@ -1316,11 +1358,13 @@ class FixSeasonRangeDetection(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -1362,7 +1406,8 @@ class FixSeasonRangeDetection(Rule):
 
 
 class FixEpisodeRangeDetection(Rule):
-    """
+    """Fix episode range detection.
+
     Work-around for https://github.com/guessit-io/guessit/issues/287
     TODO: Remove when this bug is fixed
 
@@ -1396,12 +1441,14 @@ class FixEpisodeRangeDetection(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch, RenameMatch('episode')]
     separator_re = re.compile(r'(?P<separator>[^\d]+)\d+')
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -1469,7 +1516,8 @@ class FixEpisodeRangeDetection(Rule):
 
 
 class FixEpisodeRangeWithSeasonDetection(Rule):
-    """
+    """Fix episode range detection when together with season.
+
     Work-around for https://github.com/guessit-io/guessit/issues/287
     TODO: Remove when this if this scenario is fixed upstream
 
@@ -1504,11 +1552,13 @@ class FixEpisodeRangeWithSeasonDetection(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -1556,8 +1606,9 @@ class FixEpisodeRangeWithSeasonDetection(Rule):
 
 
 class ExpectedTitlePostProcessor(Rule):
-    """
-    Expected title post processor to replace dots with spaces (needed when expected title is a regex)
+    r"""Post process the title when it matches an expected title.
+
+    Expected title post processor to replace dots with spaces (needed when expected title is a regex).
 
     e.g.: Show.Net.S01E06.720p
 
@@ -1583,11 +1634,13 @@ class ExpectedTitlePostProcessor(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -1612,8 +1665,9 @@ class ExpectedTitlePostProcessor(Rule):
 
 
 class FixMultipleTitles(Rule):
-    """
-    Probably a guessit bug, guessit might return more than one title instead of alternative_titles
+    """Fix multiple titles.
+
+    Probably a guessit bug, guessit might return more than one title instead of alternative_titles.
     bug: https://github.com/guessit-io/guessit/issues/309
 
     e.g.: /shows/Show.Name.S01E05.WEBRip.x264-GROUP__gYDfLA/Show.Name.S01E05.WEBRip.x264-GROUP
@@ -1646,13 +1700,14 @@ class FixMultipleTitles(Rule):
             "release_group": "GROUP",
             "type": "episode"
         }
-
     """
+
     priority = POST_PROCESS
     consequence = RemoveMatch
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -1668,7 +1723,8 @@ class FixMultipleTitles(Rule):
 
 
 class EnhanceReleaseGroupDetection(Rule):
-    """
+    """Enhance release group detection.
+
     Some release groups are not detected when there's when they appear after subtitle_language or size.
     Bug: https://github.com/guessit-io/guessit/issues/313
 
@@ -1702,12 +1758,14 @@ class EnhanceReleaseGroupDetection(Rule):
             "type": "episode"
         }
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
     scene_previous_names = ['subtitle_language', 'size']
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -1747,9 +1805,9 @@ class EnhanceReleaseGroupDetection(Rule):
 
 
 class ReleaseGroupPostProcessor(Rule):
-    """
-    Release Group post processor
-    Removes invalid parts from the release group property
+    """Post process release group.
+
+    Removes invalid parts from the release group property.
 
     e.g.: Some.Show.S02E14.1080p.HDTV.X264-GROUP[TRASH]
 
@@ -1781,8 +1839,8 @@ class ReleaseGroupPostProcessor(Rule):
             "release_group": "GROUP",
             "type": "episode"
         }
-
     """
+
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
     regexes = [
@@ -1829,7 +1887,8 @@ class ReleaseGroupPostProcessor(Rule):
     ]
 
     def when(self, matches, context):
-        """
+        """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
@@ -1857,13 +1916,12 @@ class ReleaseGroupPostProcessor(Rule):
 
 
 def rules():
-    """
-    Returns all custom rules to be applied to guessit default api.
+    """Return all custom rules to be applied to guessit default api.
 
     IMPORTANT! The order is important.
-    Certain rules needs to be executed first, and others should be executed at the end
+    Certain rules needs to be executed first, and others should be executed at the end.
     DO NOT define priority or dependency in each rule, it can become a mess. Better to just define the correct order
-    in this method
+    in this method.
 
     Builder for rebulk object.
     :return: Created Rebulk object

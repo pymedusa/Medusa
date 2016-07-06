@@ -1,10 +1,8 @@
 # coding=utf-8
+"""Guessit name parser tests."""
 
 from __future__ import unicode_literals
 
-"""
-Guessit name parser tests
-"""
 import os
 import unittest
 import yaml
@@ -21,8 +19,8 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 
 
 def construct_mapping(self, node, deep=False):
-    """
-    Custom yaml map constructor to allow lists to be key of a map
+    """Custom yaml map constructor to allow lists to be key of a map.
+
     :param self:
     :param node:
     :param deep:
@@ -50,9 +48,8 @@ yaml.Loader.add_constructor('tag:yaml.org,2002:map', construct_mapping)
 
 
 class GuessitTests(unittest.TestCase):
-    """
-    Guessit Tests :-)
-    """
+    """Guessit Tests."""
+
     files = {
         'tvshows': 'tvshows.yml',
     }
@@ -74,7 +71,8 @@ class GuessitTests(unittest.TestCase):
 
     @parameterized.expand(parameters)
     def test_guess(self, scenario_name, release_name, expected):
-        """
+        """Test the given release name.
+
         :param scenario_name:
         :type scenario_name: str
         :param release_name: the input release name
