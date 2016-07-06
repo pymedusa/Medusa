@@ -736,7 +736,8 @@ class SubtitlesFinder(object):
 
                 release_name = os.path.splitext(filename)[0]
                 found_subtitles = download_best_subs(video_path, root, release_name, languages, subtitles=False,
-                                                     embedded_subtitles=bool(not sickbeard.EMBEDDED_SUBTITLES_ALL), provider_pool=pool)
+                                                     embedded_subtitles=bool(not sickbeard.EMBEDDED_SUBTITLES_ALL),
+                                                     provider_pool=pool)
                 downloaded_languages = {s.language.opensubtitles for s in found_subtitles}
 
                 # Don't run post processor unless at least one file has all of the needed subtitles
