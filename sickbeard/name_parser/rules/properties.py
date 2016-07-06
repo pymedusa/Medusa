@@ -3,6 +3,9 @@
 """
 Properties: This section contains additional properties to be guessed by guessit
 """
+
+from __future__ import unicode_literals
+
 import re
 from string import upper
 
