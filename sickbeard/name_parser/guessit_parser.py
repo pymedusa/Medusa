@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 Guessit Name Parser
 """
 import guessit
+import six
 
 
 class GuessitNameParser(object):
@@ -94,9 +95,11 @@ class GuessitNameParser(object):
         :return: the guessed properties
         :rtype: dict
         """
-        options = dict(type='episode', implicit=True, expected_title=self.expected_titles, show_type=show_type,
-                       expected_group=self.expected_groups, episode_prefer_number=show_type == 'anime',
-                       allowed_languages=self.allowed_languages, allowed_countries=self.allowed_countries)
+        options = dict(type='episode', implicit=True, show_type=show_type, episode_prefer_number=show_type == 'anime',
+                       expected_title=normalize(self.expected_titles),
+                       expected_group=normalize(self.expected_groups),
+                       allowed_languages=normalize(self.allowed_languages),
+                       allowed_countries=normalize(self.allowed_countries))
         return guessit.guessit(name, options=options)
 
     def parse(self, name, show_type=None):
@@ -136,5 +139,23 @@ def single_or_list(value, allow_multi):
 
 def ensure_list(value):
     return sorted(value) if isinstance(value, list) else [value] if value is not None else []
+
+
+def normalize(strings):
+    """Normalize string as expected by guessit
+
+    Remove when https://github.com/guessit-io/guessit/issues/326 is fixed
+    :param strings:
+    :return: list of str
+    """
+    result = []
+    for string in strings:
+        if six.PY2 and isinstance(string, six.text_type):
+            string = string.encode('utf-8')
+        elif six.PY3 and isinstance(string, six.binary_type):
+            string = string.decode('ascii')
+        result.append(string)
+    return result
+
 
 parser = GuessitNameParser()
