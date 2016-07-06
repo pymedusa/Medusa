@@ -45,6 +45,7 @@ from sickbeard.name_parser.parser import NameParser, InvalidNameException, Inval
 class ProperFinder(object):  # pylint: disable=too-few-public-methods
     def __init__(self):
         self.amActive = False
+        self.processed_propers = []
 
     def run(self, force=False):  # pylint: disable=unused-argument
         """
@@ -169,7 +170,15 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         sorted_propers = sorted(propers.values(), key=operator.attrgetter('date'), reverse=True)
         final_propers = []
 
+        # Keep only last 100 items of processed propers:
+        self.processed_propers = self.processed_propers[-100:]
+
         for cur_proper in sorted_propers:
+
+            if cur_proper.name in self.processed_propers:
+                logger.log(u'Proper already processed. Skipping: {0}'.format(cur_proper.name), logger.DEBUG)
+                continue
+
             try:
                 parse_result = NameParser(False).parse(cur_proper.name)
             except (InvalidNameException, InvalidShowException) as error:
@@ -186,11 +195,13 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             if not parse_result.series_name:
                 logger.log('Ignoring invalid show: {name}'.format
                            (name=cur_proper.name), logger.DEBUG)
+                self.processed_propers.append(cur_proper.name)
                 continue
 
             if not parse_result.episode_numbers:
                 logger.log('Ignoring full season instead of episode: {name}'.format
                            (name=cur_proper.name), logger.DEBUG)
+                self.processed_propers.append(cur_proper.name)
                 continue
 
             logger.log('Successful match! Matched {original_name} to show {new_name}'.format
@@ -217,6 +228,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             if not best_result:
                 logger.log('Rejected proper due to release filters: {name}'.format
                            (name=cur_proper.name))
+                self.processed_propers.append(cur_proper.name)
                 continue
 
             # only get anime proper if it has release group and version
@@ -224,6 +236,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 if not best_result.release_group and best_result.version == -1:
                     logger.log('Ignoring proper without release group and version: {name}'.format
                                (name=best_result.name))
+                    self.processed_propers.append(cur_proper.name)
                     continue
 
             # check if we actually want this proper (if it's the right quality)
@@ -233,6 +246,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             if not sql_results:
                 logger.log('Ignoring proper with incorrect quality: {name}'.format
                            (name=best_result.name))
+                self.processed_propers.append(cur_proper.name)
                 continue
 
             # only keep the proper if we have already retrieved the same quality ep (don't get better/worse ones)
@@ -240,6 +254,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             if old_status not in (DOWNLOADED, SNATCHED) or old_quality != best_result.quality:
                 logger.log('Ignoring proper because quality is different or episode is already archived: {name}'.format
                            (name=best_result.name))
+                self.processed_propers.append(cur_proper.name)
                 continue
 
             # check if we actually want this proper (if it's the right release group and a higher version)
@@ -258,11 +273,13 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 else:
                     logger.log('Ignoring proper with the same or lower version: {name}'.format
                                (name=best_result.name))
+                    self.processed_propers.append(cur_proper.name)
                     continue
 
                 if old_release_group != best_result.release_group:
                     logger.log('Ignoring proper from release group {new} instead of current group {old}'.format
                                (new=best_result.release_group, old=old_release_group))
+                    self.processed_propers.append(cur_proper.name)
                     continue
 
             # if the show is in our list and there hasn't been a proper already added for that particular episode then add it to our list of propers
@@ -270,6 +287,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     operator.attrgetter('indexerid', 'season', 'episode'), final_propers):
                 logger.log('Found a desired proper: {name}'.format(name=best_result.name))
                 final_propers.append(best_result)
+
+            self.processed_propers.append(cur_proper.name)
 
         return final_propers
 
