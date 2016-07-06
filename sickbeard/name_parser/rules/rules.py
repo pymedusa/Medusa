@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+from __future__ import unicode_literals
+
 """
 Rules: This section contains rules that enhances guessit behaviour
 
@@ -26,6 +29,7 @@ according to our needs
 have a fixed execution order, that's why the rules() method should add the rules in the correct order (explicit).
 *** Rebulk API relies on the match.value, if you change them you'll get exceptions
 """
+
 import copy
 import re
 
