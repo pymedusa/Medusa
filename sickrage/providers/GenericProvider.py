@@ -136,10 +136,10 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         )
 
         for sql_result in sql_results:
-            show_obj = Show.find(sickbeard.showList, int(sql_result[1])) if sql_result[1] else None
+            show_obj = Show.find(sickbeard.showList, int(sql_result[b'showid'])) if sql_result[b'showid'] else None
 
             if show_obj:
-                episode_obj = show_obj.getEpisode(sql_result[2], sql_result[3])
+                episode_obj = show_obj.getEpisode(sql_result[b'season'], sql_result[b'episode'])
 
                 for term in self.proper_strings:
                     search_strings = self._get_episode_search_strings(episode_obj, add_string=term)
