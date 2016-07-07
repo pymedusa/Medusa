@@ -129,7 +129,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                                (search=search_string), logger.DEBUG)
 
                     # If its a PROPER search, need to change param to 'search' so it searches using 'q' param
-                    if 'PROPER' in search_string:
+                    if any(proper_string in search_string for proper_string in proper_strings):
                         search_params['t'] = 'search'
 
                     if search_params['t'] != 'tvsearch':
