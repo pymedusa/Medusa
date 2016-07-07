@@ -39,6 +39,8 @@ from sickbeard.tvcache import TVCache
 from sickrage.helper.common import replace_extension, sanitize_filename
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
+from sickrage.show.Show import Show
+
 from requests.utils import add_dict_to_cookiejar
 
 # Keep a list of per provider of recent provider search results
@@ -122,10 +124,36 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         return False
 
     def find_propers(self, search_date=None):
-        results = self.cache.listPropers(search_date)
+        results = []
+        db = DBConnection()
+        placeholder = ','.join([str(x) for x in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST])
+        sql_results = db.select(
+            'SELECT s.show_name, e.showid, e.season, e.episode, e.status, e.airdate'
+            ' FROM tv_episodes AS e'
+            ' INNER JOIN tv_shows AS s ON (e.showid = s.indexer_id)'
+            ' WHERE e.airdate >= ' + str(search_date.toordinal()) +
+            ' AND e.status IN (' + placeholder + ')'
+        )
 
-        return [Proper(x[b'name'], x[b'url'], datetime.fromtimestamp(x[b'time']), self.show, x[b'seeders'],
-                       x[b'leechers'], x[b'size'], x[b'pubdate'], x[b'hash']) for x in results]
+        for sql_result in sql_results:
+            show_obj = Show.find(sickbeard.showList, int(sql_result[1])) if sql_result[1] else None
+
+            if show_obj:
+                episode_obj = show_obj.getEpisode(sql_result[2], sql_result[3])
+
+                for term in self.proper_strings:
+                    search_strings = self._get_episode_search_strings(episode_obj, add_string=term)
+
+                    for item in self.search(search_strings[0], ep_obj=episode_obj):
+                        title, url = self._get_title_and_url(item)
+                        seeders, leechers = self._get_result_info(item)
+                        size = self._get_size(item)
+                        pubdate = self._get_pubdate(item)
+                        torrent_hash = self._get_hash(item)
+
+                        results.append(Proper(title, url, datetime.today(), show_obj, seeders, leechers, size, pubdate, torrent_hash))
+
+        return results
 
     def find_search_results(self, show, episodes, search_mode, forced_search=False,
                             download_current_quality=False, manual_search=False,
