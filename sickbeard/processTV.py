@@ -41,6 +41,7 @@ from unrar2.rar_exceptions import IncorrectRARPassword
 
 import shutil
 import shutil_custom
+from enzyme import MKV
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -564,12 +565,16 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
 
             # This feature prevents PP for files that do not have subtitle associated with the video file
             if sickbeard.POSTPONE_IF_NO_SUBS and subtitles_enabled(cur_video_file):
-                associatedFiles = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
-                if not [associatedFile for associatedFile in associatedFiles if associatedFile[-3:] in subtitle_extensions]:
-                    result.output += logHelper(u"No subtitles associated. Postponing the post-process of this file: %s" % cur_video_file, logger.DEBUG)
-                    continue
+                # If user don't want to ignore embedded subtitles and video has at least one, don't post pone PP
+                if not sickbeard.EMBEDDED_SUBTITLES_ALL and sickbeard.EMBEDDED_SUBTITLES_UNKNOWN_LANG and 'und' in has_embedded_subtitles(cur_video_file_path):
+                    result.output += logHelper(u"Found embedded unknown subtitles and we don't want to ignore them. Continuing the post-process of this file: %s" % cur_video_file)
                 else:
-                    result.output += logHelper(u"Found subtitles associated. Continuing the post-process of this file: %s" % cur_video_file)
+                    associatedFiles = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
+                    if not [associatedFile for associatedFile in associatedFiles if associatedFile[-3:] in subtitle_extensions]:
+                        result.output += logHelper(u"No subtitles associated. Postponing the post-process of this file: %s" % cur_video_file, logger.DEBUG)
+                        continue
+                    else:
+                        result.output += logHelper(u"Found subtitles associated. Continuing the post-process of this file: %s" % cur_video_file)
 
             result.result = processor.process()
             process_fail_message = u""
@@ -665,3 +670,25 @@ def subtitles_enabled(video):
     else:
         logger.log(u'Empty indexer ID for: {}'.format(video), logger.WARNING)
         return
+ 
+def has_embedded_subtitles(video):
+    """
+    Check if video file has enmbedded subtitles
+    
+    :param video: video filename to be checked
+    """
+    
+    extension = os.path.splitext(video)[1]
+    if extension == '.mkv':
+        with open(video, 'rb') as f:
+            mkv = MKV(f)
+            if mkv.subtitle_tracks:
+                embedded_subtitle_languages = set()
+                for st in mkv.subtitle_tracks:
+                    if st.language:
+                        embedded_subtitle_languages.add(st.language)
+                    elif st.name:
+                        embedded_subtitle_languages.add(st.name)
+                    else:
+                        embedded_subtitle_languages.add('und')
+    return embedded_subtitle_languages if embedded_subtitle_languages else False
