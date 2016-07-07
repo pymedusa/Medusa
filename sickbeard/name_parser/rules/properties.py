@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Properties: This section contains additional properties to be guessed by guessit."""
-
-from __future__ import unicode_literals
-
 import re
 from string import upper
 
@@ -102,7 +99,7 @@ def size():
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
     rebulk.defaults(name='size', validator=seps_surround)
-    rebulk.regex(r'(?:\d+\.)?\d+[mgt]b', formatter=upper, tags=['release-group-prefix'])
+    rebulk.regex(r'\d+[mgt]b', r'\d+\.\d+[mgt]b', formatter=upper, tags=['release-group-prefix'])
 
     return rebulk
 

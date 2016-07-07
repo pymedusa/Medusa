@@ -2632,3 +2632,27 @@
   episode: 6
   screen_size: 4k
   type: episode
+
+# Corner case for size
+? Show.Name.S01E10.480p.HDTV.x264.160MB-Micromkv
+: title: Show Name
+  season: 1
+  episode: 10
+  screen_size: 480p
+  format: HDTV
+  video_codec: h264
+  size: 160MB
+  release_group: Micromkv
+  type: episode
+
+# Blacklist Small-Size
+? Show.Name.S01E01.HDTV.x264.{133MB}{SMALL.SIZE}{POOLSTAR}
+: title: Show Name
+  season: 1
+  episode: 1
+  format: HDTV
+  video_codec: h264
+  size: 133MB
+  release_group: POOLSTAR
+  type: episode
+
