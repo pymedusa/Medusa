@@ -22,9 +22,9 @@ import json
 import logging
 import requests
 import certifi
-from libtrakt.exceptions import (TraktConnectionException, TraktMissingTokenException, TraktAuthException,
-                                 TraktUnavailableException, TraktResourceNotExistException, TraktException,
-                                 TraktTimeoutException, TraktTooManyRedirects)
+from exceptions import (TraktConnectionException, TraktMissingTokenException, TraktAuthException,
+                        TraktUnavailableException, TraktResourceNotExistException, TraktException,
+                        TraktTimeoutException, TraktTooManyRedirects)
 
 # from model import RecommendedShow  # Next step is to map all results to show objects, so it can use one template
 

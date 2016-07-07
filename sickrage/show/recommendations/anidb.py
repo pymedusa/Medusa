@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
+import sickbeard
 from sickbeard import logger, helpers
 from .recommended import RecommendedShow
 
@@ -32,7 +33,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         self.session = helpers.make_session()
         self.recommender = "Anidb Popular"
         self.base_url = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
-        self.anidb = Anidb()
+        self.anidb = Anidb(cache_dir=sickbeard.CACHE_DIR)
 
     def _create_recommended_show(self, show_obj):
         """creates the RecommendedShow object from the returned showobj"""
@@ -71,7 +72,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         result = []
 
         try:
-            shows = Anidb().get_list(list_type)
+            shows = self.anidb.get_list(list_type)
         except GeneralError, e:
             logger.log('Could not connect to Anidb service: {0!r}'.format(e), logger.WARNING)
 

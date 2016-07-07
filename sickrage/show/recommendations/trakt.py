@@ -40,7 +40,7 @@ class TraktPopular(object):
         self.session = requests.Session()
         self.recommender = "Trakt Popular"
         self.default_img_src = 'http://www.trakt.tv/assets/placeholders/thumb/poster-2d5709c1b640929ca1ab60137044b152.png'
-        self.anidb = Anidb()
+        self.anidb = Anidb(cache_dir=sickbeard.CACHE_DIR)
 
     def _create_recommended_show(self, show_obj):
         """creates the RecommendedShow object from the returned showobj"""

@@ -24,7 +24,7 @@ class ImdbPopular(object):
         self.session = helpers.make_session()
         self.recommender = 'IMDB Popular'
         self.default_img_src = ''
-        self.anidb = Anidb()
+        self.anidb = Anidb(cache_dir=sickbeard.CACHE_DIR)
 
         # Use akas.imdb.com, just like the imdb lib.
         self.url = 'http://akas.imdb.com/search/title'

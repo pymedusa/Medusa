@@ -18,6 +18,9 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+
+from __future__ import unicode_literals
+
 import sickbeard
 from sickbeard import logger
 from sickrage.helper.exceptions import ex
@@ -43,7 +46,7 @@ class Notifier(object):
     def notify_git_update(self, new_version):
         pass
 
-    def notify_login(self, ipaddress=""):
+    def notify_login(self, ipaddress=''):
         pass
 
     @staticmethod
@@ -56,9 +59,11 @@ class Notifier(object):
 
         trakt_id = sickbeard.indexerApi(ep_obj.show.indexer).config['trakt_id']
         # Create a trakt settings dict
-        trakt_settings = {"trakt_api_secret": sickbeard.TRAKT_API_SECRET, "trakt_api_key": sickbeard.TRAKT_API_KEY,
-                           "trakt_access_token": sickbeard.TRAKT_ACCESS_TOKEN, "trakt_api_url": sickbeard.TRAKT_API_URL,
-                           "trakt_auth_url": sickbeard.TRAKT_OAUTH_URL}
+        trakt_settings = {'trakt_api_secret': sickbeard.TRAKT_API_SECRET,
+                          'trakt_api_key': sickbeard.TRAKT_API_KEY,
+                          'trakt_access_token': sickbeard.TRAKT_ACCESS_TOKEN,
+                          'trakt_api_url': sickbeard.TRAKT_API_URL,
+                          'trakt_auth_url': sickbeard.TRAKT_OAUTH_URL}
         trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
 
         if sickbeard.USE_TRAKT:
@@ -81,7 +86,7 @@ class Notifier(object):
 
                 if sickbeard.TRAKT_SYNC_WATCHLIST:
                     if sickbeard.TRAKT_REMOVE_SERIESLIST:
-                        trakt_api.request("sync/watchlist/remove", data, method='POST')
+                        trakt_api.request('sync/watchlist/remove', data, method='POST')
 
                 # Add Season and Episode + Related Episodes
                 data['shows'][0]['seasons'] = [{'number': ep_obj.season, 'episodes': []}]
@@ -91,16 +96,16 @@ class Notifier(object):
 
                 if sickbeard.TRAKT_SYNC_WATCHLIST:
                     if sickbeard.TRAKT_REMOVE_WATCHLIST:
-                        trakt_api.request("sync/watchlist/remove", data, method='POST')
+                        trakt_api.request('sync/watchlist/remove', data, method='POST')
 
                 # update library
-                trakt_api.request("sync/collection", data, method='POST')
+                trakt_api.request('sync/collection', data, method='POST')
 
             except (TraktException, TraktAuthException, TraktServerBusy) as trakt_ex:
                 logger.log('Could not connect to Trakt service: {0}'.format(ex(trakt_ex)), logger.WARNING)
 
     @staticmethod
-    def update_watchlist(show_obj=None, s=None, e=None, data_show=None, data_episode=None, update="add"):
+    def update_watchlist(show_obj=None, s=None, e=None, data_show=None, data_episode=None, update='add'):
 
         """
         Sends a request to trakt indicating that the given episode is part of our library.
@@ -139,7 +144,9 @@ class Notifier(object):
                 elif data_show is not None:
                     data.update(data_show)
                 else:
-                    logger.log(u"there's a coding problem contact developer. It's needed to be provided at lest one of the two: data_show or show_obj", logger.WARNING)
+                    logger.log("There's a coding problem contact developer. "
+                               "It's needed to be provided at least one of the two: data_show or show_obj",
+                               logger.WARNING)
                     return False
 
                 if data_episode is not None:
@@ -169,14 +176,14 @@ class Notifier(object):
 
                     data['shows'][0].update(season)
 
-                trakt_url = "sync/watchlist"
-                if update == "remove":
-                    trakt_url += "/remove"
+                trakt_url = 'sync/watchlist'
+                if update == 'remove':
+                    trakt_url += '/remove'
 
                 trakt_api.request(trakt_url, data, method='POST')
 
-            except (TraktException, TraktAuthException, TraktServerBusy) as e:
-                logger.log(u"Could not connect to Trakt service: %s" % ex(e), logger.WARNING)
+            except (TraktException, TraktAuthException, TraktServerBusy) as trakt_ex:
+                logger.log('Could not connect to Trakt service: {0}'.format(ex(trakt_ex)), logger.WARNING)
                 return False
 
         return True
@@ -238,15 +245,15 @@ class Notifier(object):
             trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
             trakt_api.validate_account()
             if blacklist_name and blacklist_name is not None:
-                trakt_lists = trakt_api.request("users/" + username + "/lists")
+                trakt_lists = trakt_api.request('users/' + username + '/lists')
                 found = False
                 for trakt_list in trakt_lists:
                     if trakt_list['ids']['slug'] == blacklist_name:
-                        return "Test notice sent successfully to Trakt"
+                        return 'Test notice sent successfully to Trakt'
                 if not found:
                     return "Trakt blacklist doesn't exists"
             else:
-                return "Test notice sent successfully to Trakt"
-        except (TraktException, TraktAuthException, TraktServerBusy) as e:
-            logger.log(u"Could not connect to Trakt service: %s" % ex(e), logger.WARNING)
-            return "Test notice failed to Trakt: %s" % ex(e)
+                return 'Test notice sent successfully to Trakt'
+        except (TraktException, TraktAuthException, TraktServerBusy) as trakt_ex:
+            logger.log('Could not connect to Trakt service: {0}'.format(ex(trakt_ex)), logger.WARNING)
+            return 'Test notice failed to Trakt: {0}'.format(ex(trakt_ex))
