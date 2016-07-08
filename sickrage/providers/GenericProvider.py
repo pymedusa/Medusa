@@ -126,13 +126,13 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
     def find_propers(self, search_date=None):
         results = []
         db = DBConnection()
-        placeholder = ','.join([str(x) for x in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST])
+        search_qualitities = ','.join([str(x) for x in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST])
         sql_results = db.select(
-            'SELECT s.show_name, e.showid, e.season, e.episode, e.status, e.airdate'
-            ' FROM tv_episodes AS e'
-            ' INNER JOIN tv_shows AS s ON (e.showid = s.indexer_id)'
-            ' WHERE e.airdate >= ' + str(search_date.toordinal()) +
-            ' AND e.status IN (' + placeholder + ')'
+            b'SELECT s.show_name, e.showid, e.season, e.episode, e.status, e.airdate'
+            b' FROM tv_episodes AS e'
+            b' INNER JOIN tv_shows AS s ON (e.showid = s.indexer_id)'
+            b' WHERE e.airdate >= ?'
+            b' AND e.status IN (?)', [str(search_date.toordinal()), search_qualitities]
         )
 
         for sql_result in sql_results:
