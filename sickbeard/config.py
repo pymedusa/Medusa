@@ -552,6 +552,13 @@ def check_setting_int(config, cfg_name, item_name, def_val, silent=True):
 
 
 ################################################################################
+# Check_setting_bool                                                           #
+################################################################################
+def check_setting_bool(config, cfg_name, item_name, def_val, silent=True):
+    return bool(check_setting_int(config=config, cfg_name=cfg_name, item_name=item_name, def_val=def_val, silent=silent))
+
+
+################################################################################
 # Check_setting_float                                                          #
 ################################################################################
 def check_setting_float(config, cfg_name, item_name, def_val, silent=True):
@@ -608,6 +615,57 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
         logger.log(item_name + " -> " + my_val, logger.DEBUG)
 
     return my_val
+
+
+################################################################################
+# Check_setting                                                                #
+################################################################################
+def check_setting(config, section, attr_type, attr, default=None, silent=True, **kwargs):
+    """
+    Check setting from config file
+    """
+    func = {
+        'string': check_setting_str,
+        'int': check_setting_int,
+        'float': check_setting_float,
+        'bool': check_setting_bool,
+    }
+    return func[attr_type](config, section, attr, default, silent, **kwargs)
+
+
+################################################################################
+# Check_setting                                                                #
+################################################################################
+def check_provider_setting(config, provider, attr_type, attr, default=None, silent=True, **kwargs):
+    """
+    Check setting from config file
+    """
+    name = provider.get_id()
+    section = name.upper()
+    attr = '{name}_{attr}'.format(name=name, attr=attr)
+    return check_setting(config, section, attr_type, attr, default, silent, **kwargs)
+
+
+################################################################################
+# Load Provider Setting                                                        #
+################################################################################
+def load_provider_setting(config, provider, attr_type, attr, default=None, silent=True, **kwargs):
+    if hasattr(provider, attr):
+        value = check_provider_setting(config, provider, attr_type, attr, default, silent, **kwargs)
+        setattr(provider, attr, value)
+
+
+################################################################################
+# Load Provider Setting                                                        #
+################################################################################
+def save_provider_setting(config, provider, attr, **kwargs):
+    if hasattr(provider, attr):
+        section = kwargs.pop('section', provider.get_id().upper())
+        setting = '{name}_{attr}'.format(name=provider.get_id(), attr=attr)
+        value = kwargs.pop('value', getattr(provider, attr))
+        if value in [True, False]:
+            value = int(value)
+        config[section][setting] = value
 
 
 class ConfigMigrator(object):
