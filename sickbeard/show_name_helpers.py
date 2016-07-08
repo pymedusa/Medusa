@@ -91,7 +91,7 @@ def filterBadReleases(name, parse=True):
     # if any of the bad strings are in the name then say no
     word = containsAtLeastOneWord(name, resultFilters)
     if word:
-        logger.log(u"Unwanted scene release: {0}. Contain unwanted word: {1}. Ignoring it".format(name, word), logger.DEBUG)
+        logger.log(u"Unwanted scene release: {0}. Contains unwanted word: {1}. Ignoring it".format(name, word), logger.DEBUG)
         return False
     return True
 
