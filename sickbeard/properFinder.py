@@ -78,7 +78,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             hours, remainder = divmod(run_in.seconds, 3600)
             minutes, seconds = divmod(remainder, 60)
             run_at = ', next check in approx. {0}'.format(
-                '{0}h, {1}m' % (hours, minutes) if 0 < hours else '{0}m, {1}s'.format(minutes, seconds))
+                '{0}h, {1}m'.format(hours, minutes) if 0 < hours else '{0}m, {1}s'.format(minutes, seconds))
 
         logger.log('Completed the search for new propers{0}'.format(run_at))
 
