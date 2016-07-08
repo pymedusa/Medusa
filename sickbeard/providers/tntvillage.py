@@ -220,7 +220,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         bad_words = ['[cura]', 'hot', 'season', 'stagione', 'series', 'premiere', 'finale', 'fine',
                      'full', 'Completa', 'supereroi', 'commedia', 'drammatico', 'poliziesco', 'azione',
-                     'giallo', 'politico', 'sitcom', 'funzionante']
+                     'giallo', 'politico', 'sitcom', 'fantasy', 'funzionante']
 
         formatted_info = ''
         for info_part in result_info:
