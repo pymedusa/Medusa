@@ -16,6 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+"""TVShow and TVEpisode classes."""
 
 import os.path
 import datetime
@@ -79,8 +80,18 @@ def _dirty_setter(attr_name):
 
 
 class TVShow(object):
+    """Represent a TV Show."""
 
     def __init__(self, indexer, indexerid, lang=''):
+        """Instantiate a TVShow with database information based on indexerid.
+
+        :param indexer:
+        :type indexer: int
+        :param indexerid:
+        :type indexerid: int
+        :param lang:
+        :type lang: str
+        """
         self._indexerid = int(indexerid)
         self._indexer = int(indexer)
         self._name = ''
@@ -149,25 +160,49 @@ class TVShow(object):
 
     @property
     def is_anime(self):
+        """Whether this show is an anime or not.
+
+        :return:
+        :rtype: bool
+        """
         return int(self.anime) > 0
 
     @property
     def is_sports(self):
+        """Whether this is a sport show or not.
+
+        :return:
+        :rtype: bool
+        """
         return int(self.sports) > 0
 
     @property
     def is_scene(self):
+        """Whether this is a scene show or not.
+
+        :return:
+        :rtype: bool
+        """
         return int(self.scene) > 0
 
     @property
     def network_logo_name(self):
+        """Return the network logo name.
+
+        :return:
+        :rtype: str
+        """
         return self.network.replace(u'\u00C9', 'e').replace(u'\u00E9', 'e').lower()
 
     @property
     def is_recently_deleted(self):
-        """
+        """Whether the show was recently deleted.
+
         A property that checks if this show has been recently deleted, or was attempted to be deleted.
-        Can be used to suppress some error messages, when the TVobject was used, just after a removal.
+        Can be used to suppress some error messages, when the TVShow was used, just after a removal.
+
+        :return:
+        :rtype: bool
         """
         return self.indexerid in sickbeard.RECENTLY_DELETED
 
@@ -188,9 +223,8 @@ class TVShow(object):
 
     location = property(__get_location, __set_location)
 
-    # delete references to anything that's not in the internal lists
     def flush_episodes(self):
-
+        """Delete references to anything that's not in the internal lists."""
         for cur_season in self.episodes:
             for cur_ep in self.episodes[cur_season]:
                 my_ep = self.episodes[cur_season][cur_ep]
@@ -198,7 +232,15 @@ class TVShow(object):
                 del my_ep
 
     def get_all_episodes(self, season=None, has_location=False):
+        """Retrieve all episodes for this show given the specified filter.
 
+        :param season:
+        :type season: int
+        :param has_location:
+        :type has_location: bool
+        :return:
+        :rtype: list of TVEpisode
+        """
         sql_selection = b'SELECT season, episode, '
 
         # subselection to detect multi-episodes early, share_location > 0
@@ -258,6 +300,21 @@ class TVShow(object):
         return ep_list
 
     def get_episode(self, season=None, episode=None, filepath=None, no_create=False, absolute_number=None):
+        """Return TVEpisode given the specified filter.
+
+        :param season:
+        :type season: int
+        :param episode:
+        :type episode: int
+        :param filepath:
+        :type filepath: str
+        :param no_create:
+        :type no_create: bool
+        :param absolute_number:
+        :type absolute_number: int
+        :return:
+        :rtype: TVEpisode
+        """
         season = try_int(season, None)
         episode = try_int(episode, None)
         absolute_number = try_int(absolute_number, None)
@@ -303,7 +360,13 @@ class TVShow(object):
         return self.episodes[season][episode]
 
     def should_update(self, update_date=datetime.date.today()):
+        """Whether the show information should be updated.
 
+        :param update_date:
+        :type update_date: datetime.date
+        :return:
+        :rtype: bool
+        """
         # if show is not 'Ended' always update (status 'Continuing')
         if self.status == 'Continuing':
             return True
@@ -376,7 +439,11 @@ class TVShow(object):
         return result
 
     def write_metadata(self, show_only=False):
+        """Write show metadata files.
 
+        :param show_only:
+        :type show_only: bool
+        """
         if not ek(os.path.isdir, self._location):
             logger.log(str(self.indexerid) + u": Show dir doesn't exist, skipping NFO generation")
             return
@@ -418,7 +485,7 @@ class TVShow(object):
             cur_ep.create_meta_files()
 
     def update_metadata(self):
-
+        """Update show metadata files."""
         if not ek(os.path.isdir, self._location):
             logger.log(str(self.indexerid) + u": Show dir doesn't exist, skipping NFO generation")
             return
@@ -439,9 +506,8 @@ class TVShow(object):
 
         return result
 
-    # find all media files in the show folder and create episodes for as many as possible
     def load_episodes_from_dir(self):
-
+        """Find all media files in the show folder and create episodes for as many as possible."""
         if not ek(os.path.isdir, self._location):
             logger.log(str(self.indexerid) + u": Show dir doesn't exist, not loading episodes from disk", logger.DEBUG)
             return
@@ -501,7 +567,11 @@ class TVShow(object):
             main_db_con.mass_action(sql_l)
 
     def load_episodes_from_db(self):
+        """Load episodes from database.
 
+        :return:
+        :rtype: dict(int -> dict(int -> bool))
+        """
         logger.log(u'Loading all episodes from the DB', logger.DEBUG)
         scanned_eps = {}
 
@@ -588,7 +658,13 @@ class TVShow(object):
         return scanned_eps
 
     def load_episodes_from_indexer(self, cache=True):
+        """Load episodes from indexer.
 
+        :param cache:
+        :type cache: bool
+        :return:
+        :rtype: dict(int -> dict(int -> bool))
+        """
         indexer_api_params = sickbeard.indexerApi(self.indexer).api_params.copy()
 
         if not cache:
@@ -674,9 +750,14 @@ class TVShow(object):
         return fanart_result or poster_result or banner_result or season_posters_result or \
             season_banners_result or season_all_poster_result or season_all_banner_result
 
-    # make a TVEpisode object from a media file
     def make_ep_from_file(self, filepath):
+        """Make a TVEpisode object from a media file.
 
+        :param filepath:
+        :type filepath: str
+        :return:
+        :rtype: TVEpisode
+        """
         if not ek(os.path.isfile, filepath):
             logger.log(u"{0}: That isn't even a real file dude... {1}".format
                        (self.indexerid, filepath))
@@ -891,7 +972,12 @@ class TVShow(object):
         return True
 
     def load_from_indexer(self, cache=True, tvapi=None):
+        """Load show from indexer.
 
+        :param cache:
+        :type cache: bool
+        :param tvapi:
+        """
         if self.indexer == INDEXER_TVRAGE:
             return
 
@@ -989,6 +1075,11 @@ class TVShow(object):
                    self.indexerid, self.imdb_info), logger.DEBUG)
 
     def next_episode(self):
+        """Return the next episode air date.
+
+        :return:
+        :rtype: datetime.date
+        """
         logger.log(u'{0}: Finding the episode which airs next'.format(self.indexerid), logger.DEBUG)
 
         cur_date = datetime.date.today().toordinal()
@@ -1023,7 +1114,11 @@ class TVShow(object):
         return self.nextaired
 
     def delete_show(self, full=False):
+        """Delete the tv show from the database.
 
+        :param full:
+        :type full: bool
+        """
         sql_l = [[b'DELETE FROM tv_episodes WHERE showid = ?', [self.indexerid]],
                  [b'DELETE FROM tv_shows WHERE indexer_id = ?', [self.indexerid]],
                  [b'DELETE FROM imdb_info WHERE indexer_id = ?', [self.indexerid]],
@@ -1085,13 +1180,18 @@ class TVShow(object):
             notifiers.trakt_notifier.update_watchlist(self, update='remove')
 
     def populate_cache(self):
+        """Populate image caching."""
         cache_inst = image_cache.ImageCache()
 
         logger.log(u'Checking & filling cache for show ' + self.name, logger.DEBUG)
         cache_inst.fill_cache(self)
 
     def refresh_dir(self):
+        """Refresh show using its location.
 
+        :return:
+        :rtype: bool
+        """
         # make sure the show dir is where we think it is unless dirs are created on the fly
         if not ek(os.path.isdir, self._location) and not sickbeard.CREATE_MISSING_SHOW_DIRS:
             return False
@@ -1164,6 +1264,11 @@ class TVShow(object):
             main_db_con.mass_action(sql_l)
 
     def download_subtitles(self, force=False):
+        """Download subtitles.
+
+        :param force:
+        :type force: bool
+        """
         if not ek(os.path.isdir, self._location):
             logger.log(u"{0}: Show dir doesn't exist, can't download subtitles".format(self.indexerid), logger.DEBUG)
             return
@@ -1185,7 +1290,7 @@ class TVShow(object):
             logger.log(traceback.format_exc(), logger.ERROR)
 
     def save_to_db(self):
-
+        """Save to database."""
         if not self.dirty:
             return
 
@@ -1231,6 +1336,11 @@ class TVShow(object):
             main_db_con.upsert('imdb_info', new_value_dict, control_value_dict)
 
     def __str__(self):
+        """String representation.
+
+        :return:
+        :rtype: str
+        """
         to_return = ''
         to_return += 'indexerid: ' + str(self.indexerid) + '\n'
         to_return += 'indexer: ' + str(self.indexer) + '\n'
@@ -1253,6 +1363,11 @@ class TVShow(object):
         return to_return
 
     def __unicode__(self):
+        """Unicode representation.
+
+        :return:
+        :rtype: unicode
+        """
         to_return = u''
         to_return += u'indexerid: {0}\n'.format(self.indexerid)
         to_return += u'indexer: {0}\n'.format(self.indexer)
@@ -1280,7 +1395,21 @@ class TVShow(object):
                           if quality and quality in Quality.qualityStrings]) or 'None'
 
     def want_episode(self, season, episode, quality, forced_search=False, download_current_quality=False):
+        """Whether or not the episode with the specified quality is wanted.
 
+        :param season:
+        :type season: int
+        :param episode:
+        :type episode: int
+        :param quality:
+        :type quality: int
+        :param forced_search:
+        :type forced_search: bool
+        :param download_current_quality:
+        :type download_current_quality: bool
+        :return:
+        :rtype: bool
+        """
         # if the quality isn't one we want under any circumstances then just say no
         allowed_qualities, preferred_qualities = Quality.splitQuality(self.quality)
         logger.log(u'Any,Best = [ %s ] [ %s ] Found = [ %s ]' %
@@ -1367,13 +1496,13 @@ class TVShow(object):
         return False
 
     def get_overview(self, ep_status):
-        """
-        Get the Overview status from the Episode status
+        """Get the Overview status from the Episode status.
 
         :param ep_status: an Episode status
+        :type ep_status: int
         :return: an Overview status
+        :rtype: int
         """
-
         ep_status = try_int(ep_status) or UNKNOWN
 
         if ep_status == WANTED:
@@ -1406,18 +1535,36 @@ class TVShow(object):
             logger.log(u'Could not parse episode status into a valid overview status: %s' % ep_status, logger.ERROR)
 
     def __getstate__(self):
+        """Get threading lock state.
+
+        :return:
+        :rtype: dict(str -> threading.Lock)
+        """
         d = dict(self.__dict__)
         del d['lock']
         return d
 
     def __setstate__(self, d):
+        """Set threading lock state."""
         d['lock'] = threading.Lock()
         self.__dict__.update(d)
 
 
 class TVEpisode(object):
+    """Represent a TV Show episode."""
 
     def __init__(self, show, season, episode, filepath=''):
+        """Instantiate a TVEpisode with database information.
+
+        :param show:
+        :type show: TVShow
+        :param season:
+        :type season: int
+        :param episode:
+        :type episode: int
+        :param filepath:
+        :type filepath: str
+        """
         self._name = ''
         self._season = season
         self._episode = episode
@@ -1498,6 +1645,11 @@ class TVEpisode(object):
             self.save_to_db()
 
     def download_subtitles(self, force=False):
+        """Download subtitles.
+
+        :param force:
+        :type force: bool
+        """
         if not ek(os.path.isfile, self.location):
             logger.log(u"Episode file doesn't exist, can't download subtitles for {} {}".format
                        (self.show.name, episode_num(self.season, self.episode) or
@@ -1526,7 +1678,11 @@ class TVEpisode(object):
         return new_subtitles
 
     def check_for_meta_files(self):
+        """Whether metadata files has changed.
 
+        :return:
+        :rtype: bool
+        """
         oldhasnfo = self.hasnfo
         oldhastbn = self.hastbn
 
@@ -1580,7 +1736,15 @@ class TVEpisode(object):
                             u"Couldn't find episode {ep}".format(ep=episode_num(season, episode)))
 
     def load_from_db(self, season, episode):
+        """Load episode information from database.
 
+        :param season:
+        :type season: int
+        :param episode:
+        :type episode: int
+        :return:
+        :rtype: bool
+        """
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             b'SELECT '
@@ -1663,7 +1827,19 @@ class TVEpisode(object):
             return True
 
     def load_from_indexer(self, season=None, episode=None, cache=True, tvapi=None, cached_season=None):
+        """Load episode information from indexer.
 
+        :param season:
+        :type season: int
+        :param episode:
+        :type episode: int
+        :param cache:
+        :type cache: bool
+        :param tvapi:
+        :param cached_season:
+        :return:
+        :rtype: bool
+        """
         if season is None:
             season = self.season
         if episode is None:
@@ -1900,7 +2076,11 @@ class TVEpisode(object):
                 self.hastbn = False
 
     def __str__(self):
+        """String representation.
 
+        :return:
+        :rtype: unicode
+        """
         result = u''
         result += u'%r - S%02rE%02r - %r\n' % (self.show.name, self.season, self.episode, self.name)
         result += u'location: %r\n' % self.location
@@ -1915,7 +2095,7 @@ class TVEpisode(object):
         return result
 
     def create_meta_files(self):
-
+        """Create episode metadata files."""
         if not ek(os.path.isdir, self.show._location):
             logger.log(str(self.show.indexerid) + u': The show dir is missing, not bothering to try to create metadata')
             return
@@ -1945,7 +2125,7 @@ class TVEpisode(object):
         return result
 
     def delete_episode(self):
-
+        """Delete episode from database."""
         logger.log(u'Deleting {show} {ep} from the DB'.format
                    (show=self.show.name, ep=episode_num(self.season, self.episode)), logger.DEBUG)
 
@@ -1964,9 +2144,7 @@ class TVEpisode(object):
         raise EpisodeDeletedException()
 
     def get_sql(self):
-        """
-        Creates SQL queue for this episode if any of its data has been changed since the last save.
-        """
+        """Create SQL queue for this episode if any of its data has been changed since the last save."""
         try:
             if not self.dirty:
                 logger.log(str(self.show.indexerid) + u': Not creating SQL queue - record is not dirty', logger.DEBUG)
@@ -2099,10 +2277,7 @@ class TVEpisode(object):
                        (repr(e)), logger.ERROR)
 
     def save_to_db(self):
-        """
-        Saves this episode to the database if any of its data has been changed since the last save.
-        """
-
+        """Save this episode to the database if any of its data has been changed since the last save."""
         if not self.dirty:
             return
 
@@ -2134,19 +2309,24 @@ class TVEpisode(object):
         main_db_con.upsert('tv_episodes', new_value_dict, control_value_dict)
 
     def full_path(self):
+        """Return episode full path.
+
+        :return:
+        :rtype: str
+        """
         if self.location is None or self.location == '':
             return None
         else:
             return ek(os.path.join, self.show.location, self.location)
 
     def pretty_name(self):
-        """
-        Returns the name of this episode in a "pretty" human-readable format. Used for logging
-        and notifications and such.
+        """Return the name of this episode in a "pretty" human-readable format.
 
-        Returns: A string representing the episode's name and season/ep numbers
-        """
+        Used for logging and notifications and such.
 
+        :return: A string representing the episode's name and season/ep numbers
+        :rtype: str
+        """
         if self.show.anime and not self.show.scene:
             return self._format_pattern('%SN - %AB - %EN')
         elif self.show.air_by_date:
@@ -2155,12 +2335,14 @@ class TVEpisode(object):
         return self._format_pattern('%SN - S%0SE%0E - %EN')
 
     def __ep_name(self):
-        """
-        Returns the name of the episode to use during renaming. Combines the names of related episodes.
+        """Return the name of the episode to use during renaming.
+
+        Combines the names of related episodes.
         Eg. "Ep Name (1)" and "Ep Name (2)" becomes "Ep Name"
             "Ep Name" and "Other Ep Name" becomes "Ep Name & Other Ep Name"
+        :return:
+        :rtype: str
         """
-
         multi_name_regex = r'(.*) \(\d{1,2}\)'
 
         self.relatedEps = sorted(self.relatedEps, key=lambda rel: rel.episode)
@@ -2193,13 +2375,13 @@ class TVEpisode(object):
         return good_name
 
     def __replace_map(self):
-        """
-        Generates a replacement map for this episode which maps all possible custom naming patterns to the correct
-        value for this episode.
+        """Generate a replacement map for this episode.
 
-        Returns: A dict with patterns as the keys and their replacement values as the values.
-        """
+        Maps all possible custom naming patterns to the correct value for this episode.
 
+        :return: A dict with patterns as the keys and their replacement values as the values.
+        :rtype: dict (str -> str)
+        """
         ep_name = self.__ep_name()
 
         def dot(name):
@@ -2311,10 +2493,15 @@ class TVEpisode(object):
 
     @staticmethod
     def __format_string(pattern, replace_map):
-        """
-        Replaces all template strings with the correct value
-        """
+        """Replace all template strings with the correct value.
 
+        :param pattern:
+        :type pattern: str
+        :param replace_map:
+        :type replace_map: dict (str -> str)
+        :return:
+        :rtype: str
+        """
         result_name = pattern
 
         # do the replacements
@@ -2326,10 +2513,17 @@ class TVEpisode(object):
         return result_name
 
     def _format_pattern(self, pattern=None, multi=None, anime_type=None):
-        """
-        Manipulates an episode naming pattern and then fills the template in
-        """
+        """Manipulate an episode naming pattern and then fills the template in.
 
+        :param pattern:
+        :type pattern: str
+        :param multi:
+        :type multi: bool
+        :param anime_type:
+        :type anime_type: int
+        :return:
+        :rtype: str
+        """
         if pattern is None:
             pattern = sickbeard.NAMING_PATTERN
 
@@ -2490,10 +2684,11 @@ class TVEpisode(object):
         return result_name
 
     def proper_path(self):
-        """
-        Figures out the path where this episode SHOULD live according to the renaming rules, relative from the show dir
-        """
+        """Figure out the path where this episode SHOULD be according to the renaming rules, relative from the show dir.
 
+        :return:
+        :rtype: str
+        """
         anime_type = sickbeard.NAMING_ANIME
         if not self.show.is_anime:
             anime_type = 3
@@ -2511,10 +2706,15 @@ class TVEpisode(object):
         return result
 
     def formatted_dir(self, pattern=None, multi=None):
-        """
-        Just the folder name of the episode
-        """
+        """Just the folder name of the episode.
 
+        :param pattern:
+        :type pattern: str
+        :param multi:
+        :type multi: bool
+        :return:
+        :rtype: str
+        """
         if pattern is None:
             # we only use ABD if it's enabled, this is an ABD show, AND this is not a multi-ep
             if self.show.air_by_date and sickbeard.NAMING_CUSTOM_ABD and not self.relatedEps:
@@ -2535,10 +2735,17 @@ class TVEpisode(object):
             return self._format_pattern(os.sep.join(name_groups[:-1]), multi)
 
     def formatted_filename(self, pattern=None, multi=None, anime_type=None):
-        """
-        Just the filename of the episode, formatted based on the naming settings
-        """
+        """Just the filename of the episode, formatted based on the naming settings.
 
+        :param pattern:
+        :type pattern: str
+        :param multi:
+        :type multi: bool
+        :param anime_type:
+        :type anime_type: int
+        :return:
+        :rtype: str
+        """
         if pattern is None:
             # we only use ABD if it's enabled, this is an ABD show, AND this is not a multi-ep
             if self.show.air_by_date and sickbeard.NAMING_CUSTOM_ABD and not self.relatedEps:
@@ -2556,11 +2763,7 @@ class TVEpisode(object):
         return sanitize_filename(self._format_pattern(name_groups[-1], multi, anime_type))
 
     def rename(self):
-        """
-        Renames an episode file and all related files to the location and filename as specified
-        in the naming settings.
-        """
-
+        """Rename an episode file and all related files to the location and filename as specified in naming settings."""
         if not ek(os.path.isfile, self.location):
             logger.log(u"Can't perform rename on " + self.location + u" when it doesn't exist, skipping",
                        logger.WARNING)
@@ -2645,10 +2848,9 @@ class TVEpisode(object):
             main_db_con.mass_action(sql_l)
 
     def airdate_modify_stamp(self):
-        """
-        Make the modify date and time of a file reflect the show air date and time.
-        Note: Also called from postProcessor
+        """Make the modify date and time of a file reflect the show air date and time.
 
+        Note: Also called from postProcessor
         """
         if not all([sickbeard.AIRDATE_EPISODES, self.airdate, self.location,
                     self.show, self.show.airs, self.show.network]):
@@ -2692,10 +2894,16 @@ class TVEpisode(object):
                        (self.show.indexerid, ek(os.path.basename, self.location)), logger.WARNING)
 
     def __getstate__(self):
+        """Get threading lock state.
+
+        :return:
+        :rtype: dict(str -> threading.Lock)
+        """
         d = dict(self.__dict__)
         del d['lock']
         return d
 
     def __setstate__(self, d):
+        """Set threading lock state."""
         d['lock'] = threading.Lock()
         self.__dict__.update(d)
