@@ -2187,7 +2187,7 @@ class TVEpisode(object):
 
         multi_name_regex = r'(.*) \(\d{1,2}\)'
 
-        self.relatedEps = sorted(self.relatedEps, key=lambda x: x.episode)
+        self.relatedEps = sorted(self.relatedEps, key=lambda rel: rel.episode)
 
         if not self.relatedEps:
             good_name = self.name
