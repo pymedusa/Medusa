@@ -56,9 +56,9 @@ from sickrage.show.Show import Show
 
 
 try:
-    import xml.etree.cElementTree as etree
+    import xml.etree.cElementTree as ETree
 except ImportError:
-    import xml.etree.ElementTree as etree
+    import xml.etree.ElementTree as ETree
 
 try:
     from send2trash import send2trash
@@ -1838,7 +1838,7 @@ class TVEpisode(object):
 
             if ek(os.path.isfile, nfo_file):
                 try:
-                    show_xml = etree.ElementTree(file=nfo_file)
+                    show_xml = ETree.ElementTree(file=nfo_file)
                 except (SyntaxError, ValueError) as e:
                     logger.log(u'Error loading the NFO, backing up the NFO and skipping for now: ' + ex(e),
                                logger.ERROR)
