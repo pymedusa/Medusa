@@ -359,7 +359,7 @@ class GenericMetadata(object):
 
         ep_obj: a TVEpisode object for which to grab the thumb URL
         """
-        all_eps = [ep_obj] + ep_obj.relatedEps
+        all_eps = [ep_obj] + ep_obj.related_episodes
 
         # validate show
         if not helpers.validateShow(ep_obj.show):
@@ -494,7 +494,7 @@ class GenericMetadata(object):
         if not result:
             return False
 
-        for cur_ep in [ep_obj] + ep_obj.relatedEps:
+        for cur_ep in [ep_obj] + ep_obj.related_episodes:
             cur_ep.hastbn = True
 
         return True

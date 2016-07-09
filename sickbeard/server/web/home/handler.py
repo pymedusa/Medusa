@@ -1790,7 +1790,7 @@ class Home(WebRoot):
         ep_obj_rename_list = []
         for ep_obj in ep_obj_list:
             has_already = False
-            for check in ep_obj.relatedEps + [ep_obj]:
+            for check in ep_obj.related_episodes + [ep_obj]:
                 if check in ep_obj_rename_list:
                     has_already = True
                     break
@@ -1854,12 +1854,12 @@ class Home(WebRoot):
             )
 
             root_ep_obj = show_obj.get_episode(ep_info[0], ep_info[1])
-            root_ep_obj.relatedEps = []
+            root_ep_obj.related_episodes = []
 
             for cur_related_ep in related_eps_result:
                 related_ep_obj = show_obj.get_episode(cur_related_ep[b'season'], cur_related_ep[b'episode'])
-                if related_ep_obj not in root_ep_obj.relatedEps:
-                    root_ep_obj.relatedEps.append(related_ep_obj)
+                if related_ep_obj not in root_ep_obj.related_episodes:
+                    root_ep_obj.related_episodes.append(related_ep_obj)
 
             root_ep_obj.rename()
 

@@ -423,7 +423,7 @@ class TVCache(object):
             for ep_obj in episode:
                 cl.append([
                     b'SELECT * FROM [{0}] WHERE indexerid = ? AND season = ? AND episodes LIKE ? AND quality IN ({1})'.
-                    format(self.provider_id, ','.join([str(x) for x in ep_obj.wantedQuality])),
+                    format(self.provider_id, ','.join([str(x) for x in ep_obj.wanted_quality])),
                     [ep_obj.show.indexerid, ep_obj.season, b'%|{0}|%'.format(ep_obj.episode)]])
 
             sql_results = cache_db_con.mass_action(cl, fetchall=True)

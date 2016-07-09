@@ -603,10 +603,10 @@ class QueueItemRename(ShowQueueItem):
         for cur_ep_obj in ep_obj_list:
             # Only want to rename if we have a location
             if cur_ep_obj.location:
-                if cur_ep_obj.relatedEps:
+                if cur_ep_obj.related_episodes:
                     # do we have one of multi-episodes in the rename list already
                     have_already = False
-                    for cur_related_ep in cur_ep_obj.relatedEps + [cur_ep_obj]:
+                    for cur_related_ep in cur_ep_obj.related_episodes + [cur_ep_obj]:
                         if cur_related_ep in ep_obj_rename_list:
                             have_already = True
                             break

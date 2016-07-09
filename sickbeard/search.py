@@ -397,7 +397,7 @@ def wantedEpisodes(show, fromDate):
                 continue
 
         epObj = show.get_episode(result["season"], result["episode"])
-        epObj.wantedQuality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
+        epObj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
         wanted.append(epObj)
 
     return wanted

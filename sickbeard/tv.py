@@ -275,9 +275,10 @@ class TVShow(object):
             if not cur_ep:
                 continue
 
-            cur_ep.relatedEps = []
+            cur_ep.related_episodes = []
             if cur_ep.location:
-                # if there is a location, check if it's a multi-episode (share_location > 0) and put them in relatedEps
+                # if there is a location, check if it's a multi-episode (share_location > 0)
+                # and put them in related_episodes
                 if cur_result[b'share_location'] > 0:
                     related_eps_result = main_db_con.select(
                         b'SELECT '
@@ -293,8 +294,8 @@ class TVShow(object):
                         [self.indexerid, cur_ep.season, cur_ep.location, cur_ep.episode])
                     for cur_related_ep in related_eps_result:
                         related_ep = self.get_episode(cur_related_ep[b'season'], cur_related_ep[b'episode'])
-                        if related_ep and related_ep not in cur_ep.relatedEps:
-                            cur_ep.relatedEps.append(related_ep)
+                        if related_ep and related_ep not in cur_ep.related_episodes:
+                            cur_ep.related_episodes.append(related_ep)
             ep_list.append(cur_ep)
 
         return ep_list
@@ -822,9 +823,9 @@ class TVShow(object):
             if root_ep is None:
                 root_ep = cur_ep
             else:
-                if cur_ep not in root_ep.relatedEps:
+                if cur_ep not in root_ep.related_episodes:
                     with root_ep.lock:
-                        root_ep.relatedEps.append(cur_ep)
+                        root_ep.related_episodes.append(cur_ep)
 
             # if it's a new file then
             if not same_file:
@@ -1593,9 +1594,9 @@ class TVEpisode(object):
         self._indexer = int(self.show.indexer)
         self.lock = threading.Lock()
         self._specify_episode(self.season, self.episode)
-        self.relatedEps = []
+        self.related_episodes = []
         self.check_for_meta_files()
-        self.wantedQuality = []
+        self.wanted_quality = []
 
     name = property(lambda self: self._name, _dirty_setter('_name'))
     season = property(lambda self: self._season, _dirty_setter('_season'))
@@ -2345,15 +2346,15 @@ class TVEpisode(object):
         """
         multi_name_regex = r'(.*) \(\d{1,2}\)'
 
-        self.relatedEps = sorted(self.relatedEps, key=lambda rel: rel.episode)
+        self.related_episodes = sorted(self.related_episodes, key=lambda rel: rel.episode)
 
-        if not self.relatedEps:
+        if not self.related_episodes:
             good_name = self.name
         else:
             single_name = True
             cur_good_name = None
 
-            for cur_name in [self.name] + [x.name for x in self.relatedEps]:
+            for cur_name in [self.name] + [x.name for x in self.related_episodes]:
                 match = re.match(multi_name_regex, cur_name)
                 if not match:
                     single_name = False
@@ -2369,7 +2370,7 @@ class TVEpisode(object):
                 good_name = cur_good_name
             else:
                 good_name = self.name
-                for rel_ep in self.relatedEps:
+                for rel_ep in self.related_episodes:
                     good_name += ' & ' + rel_ep.name
 
         return good_name
@@ -2622,11 +2623,11 @@ class TVEpisode(object):
 
             # start with the ep string, eg. E03
             ep_string = self.__format_string(ep_format.upper(), replace_map)
-            for other_ep in self.relatedEps:
+            for other_ep in self.related_episodes:
 
                 # for limited extend we only append the last ep
                 if multi in (NAMING_LIMITED_EXTEND, NAMING_LIMITED_EXTEND_E_PREFIXED) and \
-                        other_ep != self.relatedEps[-1]:
+                        other_ep != self.related_episodes[-1]:
                     continue
 
                 elif multi == NAMING_DUPLICATE:
@@ -2657,7 +2658,7 @@ class TVEpisode(object):
                     elif anime_type == 2:  # total anime freak only need the absolute number ! (note: =)
                         ep_string = '%(#)03d' % {'#': cur_absolute_number}
 
-                    for rel_ep in self.relatedEps:
+                    for rel_ep in self.related_episodes:
                         if rel_ep.absolute_number != 0:
                             ep_string += '-' + '%(#)03d' % {'#': rel_ep.absolute_number}
                         else:
@@ -2717,9 +2718,9 @@ class TVEpisode(object):
         """
         if pattern is None:
             # we only use ABD if it's enabled, this is an ABD show, AND this is not a multi-ep
-            if self.show.air_by_date and sickbeard.NAMING_CUSTOM_ABD and not self.relatedEps:
+            if self.show.air_by_date and sickbeard.NAMING_CUSTOM_ABD and not self.related_episodes:
                 pattern = sickbeard.NAMING_ABD_PATTERN
-            elif self.show.sports and sickbeard.NAMING_CUSTOM_SPORTS and not self.relatedEps:
+            elif self.show.sports and sickbeard.NAMING_CUSTOM_SPORTS and not self.related_episodes:
                 pattern = sickbeard.NAMING_SPORTS_PATTERN
             elif self.show.anime and sickbeard.NAMING_CUSTOM_ANIME:
                 pattern = sickbeard.NAMING_ANIME_PATTERN
@@ -2748,9 +2749,9 @@ class TVEpisode(object):
         """
         if pattern is None:
             # we only use ABD if it's enabled, this is an ABD show, AND this is not a multi-ep
-            if self.show.air_by_date and sickbeard.NAMING_CUSTOM_ABD and not self.relatedEps:
+            if self.show.air_by_date and sickbeard.NAMING_CUSTOM_ABD and not self.related_episodes:
                 pattern = sickbeard.NAMING_ABD_PATTERN
-            elif self.show.sports and sickbeard.NAMING_CUSTOM_SPORTS and not self.relatedEps:
+            elif self.show.sports and sickbeard.NAMING_CUSTOM_SPORTS and not self.related_episodes:
                 pattern = sickbeard.NAMING_SPORTS_PATTERN
             elif self.show.anime and sickbeard.NAMING_CUSTOM_ANIME:
                 pattern = sickbeard.NAMING_ANIME_PATTERN
@@ -2830,17 +2831,17 @@ class TVEpisode(object):
         with self.lock:
             if result:
                 self.location = absolute_proper_path + file_ext
-                for rel_ep in self.relatedEps:
+                for rel_ep in self.related_episodes:
                     rel_ep.location = absolute_proper_path + file_ext
 
         # in case something changed with the metadata just do a quick check
-        for cur_ep in [self] + self.relatedEps:
+        for cur_ep in [self] + self.related_episodes:
             cur_ep.check_for_meta_files()
 
         # save any changes to the databas
         sql_l = []
         with self.lock:
-            for rel_ep in [self] + self.relatedEps:
+            for rel_ep in [self] + self.related_episodes:
                 sql_l.append(rel_ep.get_sql())
 
         if sql_l:

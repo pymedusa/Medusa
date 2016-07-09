@@ -102,7 +102,7 @@ class TVShow(object):  # pylint: disable=too-few-public-methods
 
 class TVEpisode(tv.TVEpisode):  # pylint: disable=too-many-instance-attributes
     def __init__(self, season, episode, absolute_number, name):  # pylint: disable=super-init-not-called
-        self.relatedEps = []
+        self.related_episodes = []
         self._name = name
         self._season = season
         self._episode = episode
@@ -229,14 +229,14 @@ def validate_name(pattern, multi=None, anime_type=None,  # pylint: disable=too-m
             logger.log(u"Air date incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
     elif anime_type != 3:
-        if len(result.ab_episode_numbers) and result.ab_episode_numbers != [x.absolute_number for x in [ep] + ep.relatedEps]:
+        if len(result.ab_episode_numbers) and result.ab_episode_numbers != [x.absolute_number for x in [ep] + ep.related_episodes]:
             logger.log(u"Absolute numbering incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
     else:
         if result.season_number != ep.season:
             logger.log(u"Season number incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
-        if result.episode_numbers != [x.episode for x in [ep] + ep.relatedEps]:
+        if result.episode_numbers != [x.episode for x in [ep] + ep.related_episodes]:
             logger.log(u"Episode numbering incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
 
@@ -276,7 +276,7 @@ def generate_sample_ep(multi=None, abd=False, sports=False, anime_type=None):
             secondEp._status = Quality.compositeStatus(DOWNLOADED, Quality.HDTV)
             secondEp._release_name = ep._release_name
 
-            ep.relatedEps.append(secondEp)
+            ep.related_episodes.append(secondEp)
         else:
             ep._release_name = 'Show.Name.S02E03E04E05.HDTV.XviD-RLSGROUP'
 
@@ -288,8 +288,8 @@ def generate_sample_ep(multi=None, abd=False, sports=False, anime_type=None):
             thirdEp._status = Quality.compositeStatus(DOWNLOADED, Quality.HDTV)
             thirdEp._release_name = ep._release_name
 
-            ep.relatedEps.append(secondEp)
-            ep.relatedEps.append(thirdEp)
+            ep.related_episodes.append(secondEp)
+            ep.related_episodes.append(thirdEp)
 
     return ep
 
