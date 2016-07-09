@@ -2211,8 +2211,8 @@ class TVEpisode(object):
                 good_name = cur_good_name
             else:
                 good_name = self.name
-                for relEp in self.relatedEps:
-                    good_name += ' & ' + relEp.name
+                for rel_ep in self.relatedEps:
+                    good_name += ' & ' + rel_ep.name
 
         return good_name
 
@@ -2487,11 +2487,11 @@ class TVEpisode(object):
                     elif anime_type == 2:  # total anime freak only need the absolute number ! (note: =)
                         ep_string = '%(#)03d' % {'#': cur_absolute_number}
 
-                    for relEp in self.relatedEps:
-                        if relEp.absolute_number != 0:
-                            ep_string += '-' + '%(#)03d' % {'#': relEp.absolute_number}
+                    for rel_ep in self.relatedEps:
+                        if rel_ep.absolute_number != 0:
+                            ep_string += '-' + '%(#)03d' % {'#': rel_ep.absolute_number}
                         else:
-                            ep_string += '-' + '%(#)03d' % {'#': relEp.episode}
+                            ep_string += '-' + '%(#)03d' % {'#': rel_ep.episode}
 
             regex_replacement = None
             if anime_type == 2:
