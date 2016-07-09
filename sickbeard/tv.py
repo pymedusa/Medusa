@@ -69,7 +69,7 @@ except ImportError:
 shutil.copyfile = shutil_custom.copyfile_custom
 
 
-def dirty_setter(attr_name):
+def _dirty_setter(attr_name):
     def wrapper(self, val):
         if getattr(self, attr_name) != val:
             setattr(self, attr_name, val)
@@ -120,32 +120,32 @@ class TVShow(object):
 
         self._load_from_db()
 
-    name = property(lambda self: self._name, dirty_setter('_name'))
-    indexerid = property(lambda self: self._indexerid, dirty_setter('_indexerid'))
-    indexer = property(lambda self: self._indexer, dirty_setter('_indexer'))
-    imdbid = property(lambda self: self._imdbid, dirty_setter('_imdbid'))
-    network = property(lambda self: self._network, dirty_setter('_network'))
-    genre = property(lambda self: self._genre, dirty_setter('_genre'))
-    classification = property(lambda self: self._classification, dirty_setter('_classification'))
-    runtime = property(lambda self: self._runtime, dirty_setter('_runtime'))
-    imdb_info = property(lambda self: self._imdb_info, dirty_setter('_imdb_info'))
-    quality = property(lambda self: self._quality, dirty_setter('_quality'))
-    flatten_folders = property(lambda self: self._flatten_folders, dirty_setter('_flatten_folders'))
-    status = property(lambda self: self._status, dirty_setter('_status'))
-    airs = property(lambda self: self._airs, dirty_setter('_airs'))
-    startyear = property(lambda self: self._startyear, dirty_setter('_startyear'))
-    paused = property(lambda self: self._paused, dirty_setter('_paused'))
-    air_by_date = property(lambda self: self._air_by_date, dirty_setter('_air_by_date'))
-    subtitles = property(lambda self: self._subtitles, dirty_setter('_subtitles'))
-    dvdorder = property(lambda self: self._dvdorder, dirty_setter('_dvdorder'))
-    lang = property(lambda self: self._lang, dirty_setter('_lang'))
-    last_update_indexer = property(lambda self: self._last_update_indexer, dirty_setter('_last_update_indexer'))
-    sports = property(lambda self: self._sports, dirty_setter('_sports'))
-    anime = property(lambda self: self._anime, dirty_setter('_anime'))
-    scene = property(lambda self: self._scene, dirty_setter('_scene'))
-    rls_ignore_words = property(lambda self: self._rls_ignore_words, dirty_setter('_rls_ignore_words'))
-    rls_require_words = property(lambda self: self._rls_require_words, dirty_setter('_rls_require_words'))
-    default_ep_status = property(lambda self: self._default_ep_status, dirty_setter('_default_ep_status'))
+    name = property(lambda self: self._name, _dirty_setter('_name'))
+    indexerid = property(lambda self: self._indexerid, _dirty_setter('_indexerid'))
+    indexer = property(lambda self: self._indexer, _dirty_setter('_indexer'))
+    imdbid = property(lambda self: self._imdbid, _dirty_setter('_imdbid'))
+    network = property(lambda self: self._network, _dirty_setter('_network'))
+    genre = property(lambda self: self._genre, _dirty_setter('_genre'))
+    classification = property(lambda self: self._classification, _dirty_setter('_classification'))
+    runtime = property(lambda self: self._runtime, _dirty_setter('_runtime'))
+    imdb_info = property(lambda self: self._imdb_info, _dirty_setter('_imdb_info'))
+    quality = property(lambda self: self._quality, _dirty_setter('_quality'))
+    flatten_folders = property(lambda self: self._flatten_folders, _dirty_setter('_flatten_folders'))
+    status = property(lambda self: self._status, _dirty_setter('_status'))
+    airs = property(lambda self: self._airs, _dirty_setter('_airs'))
+    startyear = property(lambda self: self._startyear, _dirty_setter('_startyear'))
+    paused = property(lambda self: self._paused, _dirty_setter('_paused'))
+    air_by_date = property(lambda self: self._air_by_date, _dirty_setter('_air_by_date'))
+    subtitles = property(lambda self: self._subtitles, _dirty_setter('_subtitles'))
+    dvdorder = property(lambda self: self._dvdorder, _dirty_setter('_dvdorder'))
+    lang = property(lambda self: self._lang, _dirty_setter('_lang'))
+    last_update_indexer = property(lambda self: self._last_update_indexer, _dirty_setter('_last_update_indexer'))
+    sports = property(lambda self: self._sports, _dirty_setter('_sports'))
+    anime = property(lambda self: self._anime, _dirty_setter('_anime'))
+    scene = property(lambda self: self._scene, _dirty_setter('_scene'))
+    rls_ignore_words = property(lambda self: self._rls_ignore_words, _dirty_setter('_rls_ignore_words'))
+    rls_require_words = property(lambda self: self._rls_require_words, _dirty_setter('_rls_require_words'))
+    default_ep_status = property(lambda self: self._default_ep_status, _dirty_setter('_default_ep_status'))
 
     @property
     def is_anime(self):
@@ -171,22 +171,22 @@ class TVShow(object):
         """
         return self.indexerid in sickbeard.RECENTLY_DELETED
 
-    def _get_location(self):
+    def __get_location(self):
         # no dir check needed if missing show dirs are created during post-processing
         if sickbeard.CREATE_MISSING_SHOW_DIRS or ek(os.path.isdir, self._location):
             return self._location
 
         raise ShowDirectoryNotFoundException("Show folder doesn't exist, you shouldn't be using it")
 
-    def _set_location(self, new_location):
+    def __set_location(self, new_location):
         logger.log(u'Setter sets location to ' + new_location, logger.DEBUG)
         # Don't validate dir if user wants to add shows without creating a dir
         if sickbeard.ADD_SHOWS_WO_DIR or ek(os.path.isdir, new_location):
-            dirty_setter('_location')(self, new_location)
+            _dirty_setter('_location')(self, new_location)
         else:
             raise NoNFOException('Invalid folder for the show!')
 
-    location = property(_get_location, _set_location)
+    location = property(__get_location, __set_location)
 
     # delete references to anything that's not in the internal lists
     def flush_episodes(self):
@@ -361,7 +361,7 @@ class TVShow(object):
 
         return False
 
-    def _write_show_nfo(self):
+    def __write_show_nfo(self):
 
         result = False
 
@@ -381,14 +381,14 @@ class TVShow(object):
             logger.log(str(self.indexerid) + u": Show dir doesn't exist, skipping NFO generation")
             return
 
-        self._get_images()
+        self.__get_images()
 
-        self._write_show_nfo()
+        self.__write_show_nfo()
 
         if not show_only:
-            self._write_episode_nfos()
+            self.__write_episode_nfos()
 
-    def _write_episode_nfos(self):
+    def __write_episode_nfos(self):
 
         if not ek(os.path.isdir, self._location):
             logger.log(str(self.indexerid) + u": Show dir doesn't exist, skipping NFO generation")
@@ -423,9 +423,9 @@ class TVShow(object):
             logger.log(str(self.indexerid) + u": Show dir doesn't exist, skipping NFO generation")
             return
 
-        self._update_show_nfo()
+        self.__update_show_nfo()
 
-    def _update_show_nfo(self):
+    def __update_show_nfo(self):
 
         result = False
 
@@ -656,7 +656,7 @@ class TVShow(object):
 
         return scanned_eps
 
-    def _get_images(self):
+    def __get_images(self):
         fanart_result = poster_result = banner_result = False
         season_posters_result = season_banners_result = season_all_poster_result = season_all_banner_result = False
 
@@ -859,7 +859,7 @@ class TVShow(object):
             try:
                 self.location = sql_results[0][b'location']
             except Exception:
-                dirty_setter('_location')(self, sql_results[0][b'location'])
+                _dirty_setter('_location')(self, sql_results[0][b'location'])
 
             if not self.lang:
                 self.lang = sql_results[0][b'lang']
@@ -1275,7 +1275,7 @@ class TVShow(object):
         return to_return
 
     @staticmethod
-    def _qualities_to_string(qualities=None):
+    def __qualities_to_string(qualities=None):
         return ', '.join([Quality.qualityStrings[quality] for quality in qualities or []
                           if quality and quality in Quality.qualityStrings]) or 'None'
 
@@ -1284,9 +1284,9 @@ class TVShow(object):
         # if the quality isn't one we want under any circumstances then just say no
         allowed_qualities, preferred_qualities = Quality.splitQuality(self.quality)
         logger.log(u'Any,Best = [ %s ] [ %s ] Found = [ %s ]' %
-                   (self._qualities_to_string(allowed_qualities),
-                    self._qualities_to_string(preferred_qualities),
-                    self._qualities_to_string([quality])), logger.DEBUG)
+                   (self.__qualities_to_string(allowed_qualities),
+                    self.__qualities_to_string(preferred_qualities),
+                    self.__qualities_to_string([quality])), logger.DEBUG)
 
         if quality not in allowed_qualities + preferred_qualities or quality is UNKNOWN:
             logger.log(u"Don't want this quality, ignoring found result for {name} {ep} with quality {quality}".format
@@ -1450,38 +1450,38 @@ class TVEpisode(object):
         self.check_for_meta_files()
         self.wantedQuality = []
 
-    name = property(lambda self: self._name, dirty_setter('_name'))
-    season = property(lambda self: self._season, dirty_setter('_season'))
-    episode = property(lambda self: self._episode, dirty_setter('_episode'))
-    absolute_number = property(lambda self: self._absolute_number, dirty_setter('_absolute_number'))
-    description = property(lambda self: self._description, dirty_setter('_description'))
-    subtitles = property(lambda self: self._subtitles, dirty_setter('_subtitles'))
-    subtitles_searchcount = property(lambda self: self._subtitles_searchcount, dirty_setter('_subtitles_searchcount'))
-    subtitles_lastsearch = property(lambda self: self._subtitles_lastsearch, dirty_setter('_subtitles_lastsearch'))
-    airdate = property(lambda self: self._airdate, dirty_setter('_airdate'))
-    hasnfo = property(lambda self: self._hasnfo, dirty_setter('_hasnfo'))
-    hastbn = property(lambda self: self._hastbn, dirty_setter('_hastbn'))
-    status = property(lambda self: self._status, dirty_setter('_status'))
-    indexer = property(lambda self: self._indexer, dirty_setter('_indexer'))
-    indexerid = property(lambda self: self._indexerid, dirty_setter('_indexerid'))
-    file_size = property(lambda self: self._file_size, dirty_setter('_file_size'))
-    release_name = property(lambda self: self._release_name, dirty_setter('_release_name'))
-    is_proper = property(lambda self: self._is_proper, dirty_setter('_is_proper'))
-    version = property(lambda self: self._version, dirty_setter('_version'))
-    release_group = property(lambda self: self._release_group, dirty_setter('_release_group'))
+    name = property(lambda self: self._name, _dirty_setter('_name'))
+    season = property(lambda self: self._season, _dirty_setter('_season'))
+    episode = property(lambda self: self._episode, _dirty_setter('_episode'))
+    absolute_number = property(lambda self: self._absolute_number, _dirty_setter('_absolute_number'))
+    description = property(lambda self: self._description, _dirty_setter('_description'))
+    subtitles = property(lambda self: self._subtitles, _dirty_setter('_subtitles'))
+    subtitles_searchcount = property(lambda self: self._subtitles_searchcount, _dirty_setter('_subtitles_searchcount'))
+    subtitles_lastsearch = property(lambda self: self._subtitles_lastsearch, _dirty_setter('_subtitles_lastsearch'))
+    airdate = property(lambda self: self._airdate, _dirty_setter('_airdate'))
+    hasnfo = property(lambda self: self._hasnfo, _dirty_setter('_hasnfo'))
+    hastbn = property(lambda self: self._hastbn, _dirty_setter('_hastbn'))
+    status = property(lambda self: self._status, _dirty_setter('_status'))
+    indexer = property(lambda self: self._indexer, _dirty_setter('_indexer'))
+    indexerid = property(lambda self: self._indexerid, _dirty_setter('_indexerid'))
+    file_size = property(lambda self: self._file_size, _dirty_setter('_file_size'))
+    release_name = property(lambda self: self._release_name, _dirty_setter('_release_name'))
+    is_proper = property(lambda self: self._is_proper, _dirty_setter('_is_proper'))
+    version = property(lambda self: self._version, _dirty_setter('_version'))
+    release_group = property(lambda self: self._release_group, _dirty_setter('_release_group'))
 
-    def _set_location(self, new_location):
+    def __set_location(self, new_location):
         logger.log(u'Setter sets location to ' + new_location, logger.DEBUG)
 
         # self._location = newLocation
-        dirty_setter('_location')(self, new_location)
+        _dirty_setter('_location')(self, new_location)
 
         if new_location and ek(os.path.isfile, new_location):
             self.file_size = ek(os.path.getsize, new_location)
         else:
             self.file_size = 0
 
-    location = property(lambda self: self._location, _set_location)
+    location = property(lambda self: self._location, __set_location)
 
     def refresh_subtitles(self):
         """Look for subtitles files and refresh the subtitles property."""
@@ -1562,7 +1562,7 @@ class TVEpisode(object):
             # only load from NFO if we didn't load from DB
             if ek(os.path.isfile, self.location):
                 try:
-                    self._load_from_nfo(self.location)
+                    self.__load_from_nfo(self.location)
                 except NoNFOException:
                     logger.log(u'{id}: There was an error loading the NFO for episode {ep}'.format
                                (id=self.show.indexerid, ep=episode_num(season, episode)), logger.ERROR)
@@ -1813,7 +1813,7 @@ class TVEpisode(object):
             logger.log(u'6 Status changes from ' + str(self.status) + u' to ' + str(UNKNOWN), logger.DEBUG)
             self.status = UNKNOWN
 
-    def _load_from_nfo(self, location):
+    def __load_from_nfo(self, location):
 
         if not ek(os.path.isdir, self.show._location):
             logger.log(
@@ -1920,13 +1920,13 @@ class TVEpisode(object):
             logger.log(str(self.show.indexerid) + u': The show dir is missing, not bothering to try to create metadata')
             return
 
-        self._create_nfo()
-        self._create_thumbnail()
+        self.__create_nfo()
+        self.__create_thumbnail()
 
         if self.check_for_meta_files():
             self.save_to_db()
 
-    def _create_nfo(self):
+    def __create_nfo(self):
 
         result = False
 
@@ -1935,7 +1935,7 @@ class TVEpisode(object):
 
         return result
 
-    def _create_thumbnail(self):
+    def __create_thumbnail(self):
 
         result = False
 
@@ -2154,7 +2154,7 @@ class TVEpisode(object):
 
         return self._format_pattern('%SN - S%0SE%0E - %EN')
 
-    def _ep_name(self):
+    def __ep_name(self):
         """
         Returns the name of the episode to use during renaming. Combines the names of related episodes.
         Eg. "Ep Name (1)" and "Ep Name (2)" becomes "Ep Name"
@@ -2192,7 +2192,7 @@ class TVEpisode(object):
 
         return good_name
 
-    def _replace_map(self):
+    def __replace_map(self):
         """
         Generates a replacement map for this episode which maps all possible custom naming patterns to the correct
         value for this episode.
@@ -2200,7 +2200,7 @@ class TVEpisode(object):
         Returns: A dict with patterns as the keys and their replacement values as the values.
         """
 
-        ep_name = self._ep_name()
+        ep_name = self.__ep_name()
 
         def dot(name):
             return helpers.sanitizeSceneName(name)
@@ -2310,7 +2310,7 @@ class TVEpisode(object):
         }
 
     @staticmethod
-    def _format_string(pattern, replace_map):
+    def __format_string(pattern, replace_map):
         """
         Replaces all template strings with the correct value
         """
@@ -2342,7 +2342,7 @@ class TVEpisode(object):
         else:
             anime_type = 3
 
-        replace_map = self._replace_map()
+        replace_map = self.__replace_map()
 
         result_name = pattern
 
@@ -2427,7 +2427,7 @@ class TVEpisode(object):
                 continue
 
             # start with the ep string, eg. E03
-            ep_string = self._format_string(ep_format.upper(), replace_map)
+            ep_string = self.__format_string(ep_format.upper(), replace_map)
             for other_ep in self.relatedEps:
 
                 # for limited extend we only append the last ep
@@ -2448,7 +2448,7 @@ class TVEpisode(object):
                 if multi == NAMING_LIMITED_EXTEND_E_PREFIXED:
                     ep_string += 'E'
 
-                ep_string += other_ep._format_string(ep_format.upper(), other_ep._replace_map())
+                ep_string += other_ep.__format_string(ep_format.upper(), other_ep.__replace_map())
 
             if anime_type != 3:
                 if self.absolute_number == 0:
@@ -2483,7 +2483,7 @@ class TVEpisode(object):
                 # cur_name_group_result = cur_name_group.replace(ep_format, ep_string)
                 result_name = result_name.replace(cur_name_group, cur_name_group_result)
 
-        result_name = self._format_string(result_name, replace_map)
+        result_name = self.__format_string(result_name, replace_map)
 
         logger.log(u'formatting pattern: ' + pattern + u' -> ' + result_name, logger.DEBUG)
 
