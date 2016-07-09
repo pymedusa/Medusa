@@ -171,22 +171,22 @@ class TVShow(object):
         """
         return self.indexerid in sickbeard.RECENTLY_DELETED
 
-    def _getLocation(self):
+    def _get_location(self):
         # no dir check needed if missing show dirs are created during post-processing
         if sickbeard.CREATE_MISSING_SHOW_DIRS or ek(os.path.isdir, self._location):
             return self._location
 
         raise ShowDirectoryNotFoundException("Show folder doesn't exist, you shouldn't be using it")
 
-    def _setLocation(self, newLocation):
-        logger.log(u'Setter sets location to ' + newLocation, logger.DEBUG)
+    def _set_location(self, new_location):
+        logger.log(u'Setter sets location to ' + new_location, logger.DEBUG)
         # Don't validate dir if user wants to add shows without creating a dir
-        if sickbeard.ADD_SHOWS_WO_DIR or ek(os.path.isdir, newLocation):
-            dirty_setter('_location')(self, newLocation)
+        if sickbeard.ADD_SHOWS_WO_DIR or ek(os.path.isdir, new_location):
+            dirty_setter('_location')(self, new_location)
         else:
             raise NoNFOException('Invalid folder for the show!')
 
-    location = property(_getLocation, _setLocation)
+    location = property(_get_location, _set_location)
 
     # delete references to anything that's not in the internal lists
     def flushEpisodes(self):
