@@ -416,7 +416,7 @@ class QueueItemAdd(ShowQueueItem):
 
         try:
             newShow = TVShow(self.indexer, self.indexer_id, self.lang)
-            newShow.loadFromIndexer()
+            newShow.load_from_indexer()
 
             self.show = newShow
 
@@ -483,7 +483,7 @@ class QueueItemAdd(ShowQueueItem):
             logger.log(u"Error loading IMDb info: " + ex(e), logger.ERROR)
 
         try:
-            self.show.saveToDB()
+            self.show.save_to_db()
         except Exception as e:
             logger.log(u"Error saving the show to the database: " + ex(e), logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
@@ -494,7 +494,7 @@ class QueueItemAdd(ShowQueueItem):
         sickbeard.showList.append(self.show)
 
         try:
-            self.show.loadEpisodesFromIndexer()
+            self.show.load_episodes_from_indexer()
         except Exception as e:
             logger.log(
                 u"Error with " + sickbeard.indexerApi(self.show.indexer).name + ", not creating episode list: " + ex(e),
@@ -505,7 +505,7 @@ class QueueItemAdd(ShowQueueItem):
         name_cache.buildNameCache(self.show)
 
         try:
-            self.show.loadEpisodesFromDir()
+            self.show.load_episodes_from_dir()
         except Exception as e:
             logger.log(u"Error searching dir for episodes: " + ex(e), logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
@@ -516,11 +516,11 @@ class QueueItemAdd(ShowQueueItem):
             logger.log(u"Launching backlog for this show since its episodes are WANTED")
             sickbeard.backlogSearchScheduler.action.searchBacklog([self.show])
 
-        self.show.writeMetadata()
-        self.show.updateMetadata()
-        self.show.populateCache()
+        self.show.write_metadata()
+        self.show.update_metadata()
+        self.show.populate_cache()
 
-        self.show.flushEpisodes()
+        self.show.flush_episodes()
 
         if sickbeard.USE_TRAKT:
             # if there are specific episodes that need to be added by trakt
@@ -569,11 +569,11 @@ class QueueItemRefresh(ShowQueueItem):
 
         logger.log(u"Performing refresh on " + self.show.name)
 
-        self.show.refreshDir()
-        self.show.writeMetadata()
+        self.show.refresh_dir()
+        self.show.write_metadata()
         if self.force:
-            self.show.updateMetadata()
-        self.show.populateCache()
+            self.show.update_metadata()
+        self.show.populate_cache()
 
         # Load XEM data to DB for show
         sickbeard.scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
@@ -599,7 +599,7 @@ class QueueItemRename(ShowQueueItem):
 
         ep_obj_rename_list = []
 
-        ep_obj_list = self.show.getAllEpisodes(has_location=True)
+        ep_obj_list = self.show.get_all_episodes(has_location=True)
         for cur_ep_obj in ep_obj_list:
             # Only want to rename if we have a location
             if cur_ep_obj.location:
@@ -649,7 +649,7 @@ class QueueItemUpdate(ShowQueueItem):
 
         logger.log(u"Retrieving show info from " + sickbeard.indexerApi(self.show.indexer).name + "", logger.DEBUG)
         try:
-            self.show.loadFromIndexer(cache=not self.force)
+            self.show.load_from_indexer(cache=not self.force)
         except sickbeard.indexer_error as e:
             logger.log(u"Unable to contact " + sickbeard.indexerApi(self.show.indexer).name + ", aborting: " + ex(e),
                        logger.WARNING)
@@ -670,19 +670,19 @@ class QueueItemUpdate(ShowQueueItem):
 
         # have to save show before reading episodes from db
         try:
-            self.show.saveToDB()
+            self.show.save_to_db()
         except Exception as e:
             logger.log(u"Error saving show info to the database: " + ex(e), logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
 
         # get episode list from DB
         logger.log(u"Loading all episodes from the database", logger.DEBUG)
-        DBEpList = self.show.loadEpisodesFromDB()
+        DBEpList = self.show.load_episodes_from_db()
 
         # get episode list from TVDB
         logger.log(u"Loading all episodes from " + sickbeard.indexerApi(self.show.indexer).name + "", logger.DEBUG)
         try:
-            IndexerEpList = self.show.loadEpisodesFromIndexer(cache=not self.force)
+            IndexerEpList = self.show.load_episodes_from_indexer(cache=not self.force)
         except sickbeard.indexer_exception as e:
             logger.log(u"Unable to get info from " + sickbeard.indexerApi(
                 self.show.indexer).name + ", the show info will not be refreshed: " + ex(e), logger.ERROR)
@@ -695,8 +695,8 @@ class QueueItemUpdate(ShowQueueItem):
             # for each ep we found on the Indexer delete it from the DB list
             for curSeason in IndexerEpList:
                 for curEpisode in IndexerEpList[curSeason]:
-                    curEp = self.show.getEpisode(curSeason, curEpisode)
-                    curEp.saveToDB()
+                    curEp = self.show.get_episode(curSeason, curEpisode)
+                    curEp.save_to_db()
 
                     if curSeason in DBEpList and curEpisode in DBEpList[curSeason]:
                         del DBEpList[curSeason][curEpisode]
@@ -706,15 +706,15 @@ class QueueItemUpdate(ShowQueueItem):
                 for curEpisode in DBEpList[curSeason]:
                     logger.log(u"Permanently deleting episode " + str(curSeason) + "x" + str(
                         curEpisode) + " from the database", logger.INFO)
-                    curEp = self.show.getEpisode(curSeason, curEpisode)
+                    curEp = self.show.get_episode(curSeason, curEpisode)
                     try:
-                        curEp.deleteEpisode()
+                        curEp.delete_episode()
                     except EpisodeDeletedException:
                         pass
 
         # save show again, in case episodes have changed
         try:
-            self.show.saveToDB()
+            self.show.save_to_db()
         except Exception as e:
             logger.log(u"Error saving show info to the database: " + ex(e), logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
@@ -743,7 +743,7 @@ class QueueItemRemove(ShowQueueItem):
     def run(self):
         ShowQueueItem.run(self)
         logger.log(u"Removing %s" % self.show.name)
-        self.show.deleteShow(full=self.full)
+        self.show.delete_show(full=self.full)
 
         if sickbeard.USE_TRAKT:
             try:

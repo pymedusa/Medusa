@@ -478,7 +478,7 @@ class SickRage(object):
         for sql_show in sql_results:
             try:
                 cur_show = TVShow(sql_show[b'indexer'], sql_show[b'indexer_id'])
-                cur_show.nextEpisode()
+                cur_show.next_episode()
                 sickbeard.showList.append(cur_show)
             except Exception as error:  # pylint: disable=broad-except
                 logger.log('There was an error creating the show in {}: Error {}'.format

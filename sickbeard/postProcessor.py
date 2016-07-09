@@ -753,7 +753,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
             # now that we've figured out which episode this file is just load it manually
             try:
-                curEp = show.getEpisode(season, cur_episode)
+                curEp = show.get_episode(season, cur_episode)
                 if not curEp:
                     raise EpisodeNotFoundException()
             except EpisodeNotFoundException as e:
@@ -1070,7 +1070,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 raise EpisodePostProcessingFailedException("Unable to create the show directory: " + ep_obj.show._location)  # pylint: disable=protected-access
 
             # get metadata for the show (but not episode because it hasn't been fully processed)
-            ep_obj.show.writeMetadata(True)
+            ep_obj.show.write_metadata(True)
 
         # update the ep info before we rename so the quality & release name go into the name properly
         sql_l = []
@@ -1175,7 +1175,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             for cur_ep in [ep_obj] + ep_obj.relatedEps:
                 with cur_ep.lock:
                     cur_ep.location = ek(os.path.join, dest_path, new_file_name)
-                    cur_ep.refreshSubtitles()
+                    cur_ep.refresh_subtitles()
                     cur_ep.download_subtitles(force=True)
 
         # now that processing has finished, we can put the info in the DB. If we do it earlier, then when processing fails, it won't try again.
@@ -1194,11 +1194,11 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 
-        cur_ep.airdateModifyStamp()
+        cur_ep.airdate_modify_stamp()
 
         # generate nfo/tbn
         try:
-            ep_obj.createMetaFiles()
+            ep_obj.create_meta_files()
         except Exception:
             logger.log(u"Could not create/update meta files. Continuing with postProcessing...")
 

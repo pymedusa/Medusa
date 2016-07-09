@@ -1589,7 +1589,7 @@ def saveAll():
     # write all shows
     logger.log(u"Saving all shows to the database")
     for show in showList:
-        show.saveToDB()
+        show.save_to_db()
 
     # save config
     logger.log(u"Saving config file to disk")

@@ -762,7 +762,7 @@ class Home(WebRoot):
                 })
                 submenu.append({
                     'title': 'Remove',
-                    'path': 'home/deleteShow?show={show}'.format(show=show_obj.indexerid),
+                    'path': 'home/delete_show?show={show}'.format(show=show_obj.indexerid),
                     'class': 'removeshow',
                     'confirm': True,
                     'icon': 'ui-icon ui-icon-trash',
@@ -816,7 +816,7 @@ class Home(WebRoot):
         ep_cats = {}
 
         for cur_result in sql_results:
-            cur_ep_cat = show_obj.getOverview(cur_result[b'status'])
+            cur_ep_cat = show_obj.get_overview(cur_result[b'status'])
             if cur_ep_cat:
                 ep_cats['{season}x{episode}'.format(season=cur_result[b'season'], episode=cur_result[b'episode'])] = cur_ep_cat
                 ep_counts[cur_ep_cat] += 1
@@ -951,7 +951,7 @@ class Home(WebRoot):
         ep_objs = []
         for episode in episodes:
             if episode:
-                ep_objs.append(show_obj.getEpisode(int(cached_result[b'season']), int(episode)))
+                ep_objs.append(show_obj.get_episode(int(cached_result[b'season']), int(episode)))
 
         # Create the queue item
         snatch_queue_item = search_queue.ManualSnatchQueueItem(show_obj, ep_objs, provider, cached_result)
@@ -1085,7 +1085,7 @@ class Home(WebRoot):
                 })
                 submenu.append({
                     'title': 'Remove',
-                    'path': 'home/deleteShow?show={show}'.format(show=show_obj.indexerid),
+                    'path': 'home/delete_show?show={show}'.format(show=show_obj.indexerid),
                     'class': 'removeshow',
                     'confirm': True,
                     'icon': 'ui-icon ui-icon-trash',
@@ -1395,7 +1395,7 @@ class Home(WebRoot):
                         except CantRefreshShowException as msg:
                             errors.append('Unable to refresh this show:{error}'.format(error=msg))
                             # grab updated info from TVDB
-                            # show_obj.loadEpisodesFromIndexer()
+                            # show_obj.load_episodes_from_indexer()
                             # rescan the episodes in the new folder
                     except NoNFOException:
                         errors.append('The folder at <tt>{location}</tt> doesn\'t contain a tvshow.nfo - '
@@ -1403,7 +1403,7 @@ class Home(WebRoot):
                                       (location=location))
 
             # save it to the DB
-            show_obj.saveToDB()
+            show_obj.save_to_db()
 
         # force the update
         if do_update:
@@ -1658,7 +1658,7 @@ class Home(WebRoot):
                                (season=ep_info[0], episode=ep_info[1]), logger.DEBUG)
                     continue
 
-                ep_obj = show_obj.getEpisode(ep_info[0], ep_info[1])
+                ep_obj = show_obj.get_episode(ep_info[0], ep_info[1])
 
                 if not ep_obj:
                     return self._genericMessage('Error', 'Episode couldn\'t be retrieved')
@@ -1785,7 +1785,7 @@ class Home(WebRoot):
         except ShowDirectoryNotFoundException:
             return self._genericMessage('Error', 'Can\'t rename episodes when the show dir is missing.')
 
-        ep_obj_list = show_obj.getAllEpisodes(has_location=True)
+        ep_obj_list = show_obj.get_all_episodes(has_location=True)
         ep_obj_list = [x for x in ep_obj_list if x.location]
         ep_obj_rename_list = []
         for ep_obj in ep_obj_list:
@@ -1853,11 +1853,11 @@ class Home(WebRoot):
                 [ep_result[0][b'location'], ep_info[1]]
             )
 
-            root_ep_obj = show_obj.getEpisode(ep_info[0], ep_info[1])
+            root_ep_obj = show_obj.get_episode(ep_info[0], ep_info[1])
             root_ep_obj.relatedEps = []
 
             for cur_related_ep in related_eps_result:
-                related_ep_obj = show_obj.getEpisode(cur_related_ep[b'season'], cur_related_ep[b'episode'])
+                related_ep_obj = show_obj.get_episode(cur_related_ep[b'season'], cur_related_ep[b'episode'])
                 if related_ep_obj not in root_ep_obj.relatedEps:
                     root_ep_obj.relatedEps.append(related_ep_obj)
 

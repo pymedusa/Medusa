@@ -196,7 +196,7 @@ def split_result(obj):
 
         want_ep = True
         for ep_num in parsed_obj.episode_numbers:
-            if not obj.extraInfo[0].wantEpisode(season, ep_num, obj.quality):
+            if not obj.extraInfo[0].want_episode(season, ep_num, obj.quality):
                 logger.log(u"Ignoring result: " + new_nzb, logger.DEBUG)
                 want_ep = False
                 break
@@ -204,7 +204,7 @@ def split_result(obj):
             continue
 
         # get all the associated episode objects
-        ep_obj_list = [obj.extraInfo[0].getEpisode(season, ep) for ep in parsed_obj.episode_numbers]
+        ep_obj_list = [obj.extraInfo[0].get_episode(season, ep) for ep in parsed_obj.episode_numbers]
 
         # make a result
         cur_obj = classes.NZBDataSearchResult(ep_obj_list)

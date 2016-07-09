@@ -396,7 +396,7 @@ def wantedEpisodes(show, fromDate):
             elif cur_quality in allowed_qualities:
                 continue
 
-        epObj = show.getEpisode(result["season"], result["episode"])
+        epObj = show.get_episode(result["season"], result["episode"])
         epObj.wantedQuality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
         wanted.append(epObj)
 
@@ -455,14 +455,14 @@ def searchForNeededEpisodes():
         # pick a single result for each episode, respecting existing results
         for curEp in curFoundResults:
             if not curEp.show or curEp.show.paused:
-                logger.log(u"Skipping %s because the show is paused " % curEp.prettyName(), logger.DEBUG)
+                logger.log(u"Skipping %s because the show is paused " % curEp.pretty_name(), logger.DEBUG)
                 continue
 
             bestResult = pickBestResult(curFoundResults[curEp], curEp.show)
 
             # if all results were rejected move on to the next episode
             if not bestResult:
-                logger.log(u"All found results for " + curEp.prettyName() + u" were rejected.", logger.DEBUG)
+                logger.log(u"All found results for " + curEp.pretty_name() + u" were rejected.", logger.DEBUG)
                 continue
 
             # if it's already in the list (from another provider) and the newly found quality is no better then skip it
@@ -668,7 +668,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
             anyWanted = False
             for curEpNum in allEps:
                 for season in {x.season for x in episodes}:
-                    if not show.wantEpisode(season, curEpNum, seasonQual, downCurQuality):
+                    if not show.want_episode(season, curEpNum, seasonQual, downCurQuality):
                         allWanted = False
                     else:
                         anyWanted = True
@@ -682,7 +682,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
                 epObjs = []
                 for curEpNum in allEps:
                     for season in {x.season for x in episodes}:
-                        epObjs.append(show.getEpisode(season, curEpNum))
+                        epObjs.append(show.get_episode(season, curEpNum))
                 bestSeasonResult.episodes = epObjs
 
                 # Remove provider from thread name before return results
@@ -725,7 +725,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
                     epObjs = []
                     for curEpNum in allEps:
                         for season in {x.season for x in episodes}:
-                            epObjs.append(show.getEpisode(season, curEpNum))
+                            epObjs.append(show.get_episode(season, curEpNum))
                     bestSeasonResult.episodes = epObjs
 
                     if MULTI_EP_RESULT in foundResults[cur_provider.name]:

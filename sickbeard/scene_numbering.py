@@ -223,7 +223,7 @@ def set_scene_numbering(indexer_id, indexer, season=None, episode=None,  # pylin
 
     # Reload data from DB so that cache and db are in sync
     show = Show.find(sickbeard.showList, indexer_id)
-    show.flushEpisodes()
+    show.flush_episodes()
 
 
 def find_xem_numbering(indexer_id, indexer, season, episode):

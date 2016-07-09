@@ -293,7 +293,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     continue
 
                 # get the episode object
-                ep_obj = cur_proper.show.getEpisode(cur_proper.season, cur_proper.episode)
+                ep_obj = cur_proper.show.get_episode(cur_proper.season, cur_proper.episode)
 
                 # make the result object
                 result = cur_proper.provider.get_result([ep_obj])

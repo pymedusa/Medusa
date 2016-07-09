@@ -168,7 +168,7 @@ class BacklogSearcher(object):
                 elif cur_quality in allowed_qualities:
                     continue
 
-            ep_obj = show.getEpisode(sql_result["season"], sql_result["episode"])
+            ep_obj = show.get_episode(sql_result["season"], sql_result["episode"])
 
             if ep_obj.season not in wanted:
                 wanted[ep_obj.season] = [ep_obj]

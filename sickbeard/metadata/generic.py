@@ -254,7 +254,7 @@ class GenericMetadata(object):
 
     def create_episode_metadata(self, ep_obj):
         if self.episode_metadata and ep_obj and not self._has_episode_metadata(ep_obj):
-            logger.log(u"Metadata provider " + self.name + " creating episode metadata for " + ep_obj.prettyName(),
+            logger.log(u"Metadata provider " + self.name + " creating episode metadata for " + ep_obj.pretty_name(),
                        logger.DEBUG)
             return self.write_ep_file(ep_obj)
         return False
@@ -312,7 +312,7 @@ class GenericMetadata(object):
 
     def create_episode_thumb(self, ep_obj):
         if self.episode_thumbnails and ep_obj and not self._has_episode_thumb(ep_obj):
-            logger.log(u"Metadata provider " + self.name + " creating episode thumbnail for " + ep_obj.prettyName(),
+            logger.log(u"Metadata provider " + self.name + " creating episode thumbnail for " + ep_obj.pretty_name(),
                        logger.DEBUG)
             return self.save_thumbnail(ep_obj)
         return False
