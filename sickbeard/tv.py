@@ -578,8 +578,8 @@ class TVShow(object):
                 scanned_eps[cur_season][cur_episode] = True
             except EpisodeDeletedException:
                 logger.log(u'{id}: Tried loading {show} {ep} from the DB that should have been deleted, '
-                           u'skipping it'.format(id=cur_show_id, show=cur_show_name, ep=episode_num(cur_season, cur_episode)),
-                           logger.DEBUG)
+                           u'skipping it'.format(id=cur_show_id, show=cur_show_name,
+                                                 ep=episode_num(cur_season, cur_episode)), logger.DEBUG)
                 continue
 
         logger.log(u'{id}: Finished loading all episodes for {show} from the DB'.format
@@ -774,16 +774,16 @@ class TVShow(object):
                 if old_status == SNATCHED and old_quality <= new_quality:
                     logger.log(u'{0}: This ep used to be snatched with quality {1} but a file exists with quality {2} '
                                u'so setting the status to DOWNLOADED'.format
-                               (self.indexerid, Quality.qualityStrings[old_quality], Quality.qualityStrings[new_quality]),
-                               logger.DEBUG)
+                               (self.indexerid, Quality.qualityStrings[old_quality],
+                                Quality.qualityStrings[new_quality]), logger.DEBUG)
                     new_status = DOWNLOADED
 
                 # if it was snatched proper and we found a higher quality one then allow the status change
                 elif old_status == SNATCHED_PROPER and old_quality < new_quality:
                     logger.log(u'{0}: This ep used to be snatched proper with quality {1} '
                                u'but a file exists with quality {2} so setting the status to DOWNLOADED'.format
-                               (self.indexerid, Quality.qualityStrings[old_quality], Quality.qualityStrings[new_quality]),
-                               logger.DEBUG)
+                               (self.indexerid, Quality.qualityStrings[old_quality],
+                                Quality.qualityStrings[new_quality]), logger.DEBUG)
                     new_status = DOWNLOADED
 
                 elif old_status not in (SNATCHED, SNATCHED_PROPER):
@@ -1854,8 +1854,8 @@ class TVEpisode(object):
                         logger.log(u'{id}: NFO has an <episodedetails> block for a different episode - '
                                    u'wanted {ep_wanted} but got {ep_found}'.format
                                    (id=self.show.indexerid, ep_wanted=episode_num(self.season, self.episode),
-                                    ep_found=episode_num(ep_details.findtext('season'), ep_details.findtext('episode'))),
-                                   logger.DEBUG)
+                                    ep_found=episode_num(ep_details.findtext('season'),
+                                                         ep_details.findtext('episode'))), logger.DEBUG)
                         continue
 
                     if ep_details.findtext('title') is None or ep_details.findtext('aired') is None:
