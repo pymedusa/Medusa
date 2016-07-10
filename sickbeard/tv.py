@@ -2680,7 +2680,7 @@ class TVEpisode(TVObject):
                 else:
                     cur_absolute_number = self.absolute_number
 
-                if self.season != 0:  # dont set absolute numbers if we are on specials !
+                if self.season != 0:  # don't set absolute numbers if we are on specials !
                     if anime_type == 1:  # this crazy person wants both ! (note: +=)
                         ep_string += sep + '%(#)03d' % {
                             '#': cur_absolute_number}
@@ -2867,7 +2867,7 @@ class TVEpisode(TVObject):
         for cur_ep in [self] + self.related_episodes:
             cur_ep.check_for_meta_files()
 
-        # save any changes to the databas
+        # save any changes to the database
         sql_l = []
         with self.lock:
             for rel_ep in [self] + self.related_episodes:
