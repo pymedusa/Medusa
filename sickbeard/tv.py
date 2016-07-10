@@ -1694,13 +1694,13 @@ class TVEpisode(object):
         if ek(os.path.isfile, self.location):
             for cur_provider in sickbeard.metadata_provider_dict.values():
                 if cur_provider.episode_metadata:
-                    new_result = cur_provider._has_episode_metadata(self)
+                    new_result = cur_provider.has_episode_metadata(self)
                 else:
                     new_result = False
                 cur_nfo = new_result or cur_nfo
 
                 if cur_provider.episode_thumbnails:
-                    new_result = cur_provider._has_episode_thumb(self)
+                    new_result = cur_provider.has_episode_thumb(self)
                 else:
                     new_result = False
                 cur_tbn = new_result or cur_tbn

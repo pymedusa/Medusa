@@ -126,7 +126,7 @@ class GenericMetadata(object):
     def _has_show_metadata(self, show_obj):
         return self._check_exists(self.get_show_file_path(show_obj))
 
-    def _has_episode_metadata(self, ep_obj):
+    def has_episode_metadata(self, ep_obj):
         return self._check_exists(self.get_episode_file_path(ep_obj))
 
     def _has_fanart(self, show_obj):
@@ -138,7 +138,7 @@ class GenericMetadata(object):
     def _has_banner(self, show_obj):
         return self._check_exists(self.get_banner_path(show_obj))
 
-    def _has_episode_thumb(self, ep_obj):
+    def has_episode_thumb(self, ep_obj):
         return self._check_exists(self.get_episode_thumb_path(ep_obj))
 
     def _has_season_poster(self, show_obj, season):
@@ -253,7 +253,7 @@ class GenericMetadata(object):
         return False
 
     def create_episode_metadata(self, ep_obj):
-        if self.episode_metadata and ep_obj and not self._has_episode_metadata(ep_obj):
+        if self.episode_metadata and ep_obj and not self.has_episode_metadata(ep_obj):
             logger.log(u"Metadata provider " + self.name + " creating episode metadata for " + ep_obj.pretty_name(),
                        logger.DEBUG)
             return self.write_ep_file(ep_obj)
@@ -311,7 +311,7 @@ class GenericMetadata(object):
         return False
 
     def create_episode_thumb(self, ep_obj):
-        if self.episode_thumbnails and ep_obj and not self._has_episode_thumb(ep_obj):
+        if self.episode_thumbnails and ep_obj and not self.has_episode_thumb(ep_obj):
             logger.log(u"Metadata provider " + self.name + " creating episode thumbnail for " + ep_obj.pretty_name(),
                        logger.DEBUG)
             return self.save_thumbnail(ep_obj)
