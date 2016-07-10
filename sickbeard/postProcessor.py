@@ -1122,7 +1122,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             dest_path = ek(os.path.dirname, proper_absolute_path)
         except ShowDirectoryNotFoundException:
             raise EpisodePostProcessingFailedException(
-                u"Unable to post-process an episode if the show dir doesn't exist, quitting")
+                u"Unable to post-process an episode if the show dir '{dir}' doesn't exist, quitting".format(
+                    dir=ep_obj.show.raw_location))
 
         self._log(u"Destination folder for this episode: " + dest_path, logger.DEBUG)
 

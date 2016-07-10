@@ -93,7 +93,7 @@ class TVObject(object):
         if not key.startswith('_') and key not in self.__ignored_properties:
             self.__dirty = self.__dict__.get(key) != value
 
-        self.__dict__[key] = value
+        super(TVObject, self).__setattr__(key, value)
 
     @property
     def dirty(self):
@@ -247,11 +247,11 @@ class TVShow(TVObject):
         raise ShowDirectoryNotFoundException("Show folder doesn't exist, you shouldn't be using it")
 
     @location.setter
-    def location(self, new_location):
-        logger.log(u'Setter sets location to ' + new_location, logger.DEBUG)
+    def location(self, value):
+        logger.log(u'Setter sets location to ' + value, logger.DEBUG)
         # Don't validate dir if user wants to add shows without creating a dir
-        if sickbeard.ADD_SHOWS_WO_DIR or self.is_location_valid(new_location):
-            self._location = new_location
+        if sickbeard.ADD_SHOWS_WO_DIR or self.is_location_valid(value):
+            self._location = value
         else:
             raise ShowDirectoryNotFoundException('Invalid folder for the show!')
 
