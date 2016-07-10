@@ -939,8 +939,14 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
                 absolute_episode = copy.copy(episode_title)
                 absolute_episode.name = 'absolute_episode'
                 absolute_episode.value = int(episode_title.value)
+
+                # always keep episode (subliminal needs it)
+                episode = copy.copy(absolute_episode)
+                episode.name = 'episode'
+
                 to_remove.append(episode_title)
                 to_append.append(absolute_episode)
+                to_append.append(episode)
                 return to_remove, to_append
 
 
@@ -1009,8 +1015,13 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
                 absolute_episode.name = 'absolute_episode'
                 # raw value contains the season and episode altogether
                 absolute_episode.value = int(episode.parent.raw if episode.parent else episode.raw)
+
+                # always keep episode (subliminal needs it)
+                corrected_episode = copy.copy(absolute_episode)
+                corrected_episode.name = 'episode'
+
                 to_remove = [season, episode]
-                to_append = [absolute_episode]
+                to_append = [absolute_episode, corrected_episode]
                 return to_remove, to_append
 
 
@@ -1044,7 +1055,7 @@ class AbsoluteEpisodeNumbers(Rule):
     """
 
     priority = POST_PROCESS
-    consequence = [RemoveMatch, RenameMatch('absolute_episode')]
+    consequence = [RemoveMatch, AppendMatch]
     non_words_re = re.compile(r'\W')
     episode_words = ('e', 'episode', 'ep')
 
@@ -1061,7 +1072,7 @@ class AbsoluteEpisodeNumbers(Rule):
         if context.get('show_type') != 'regular' and not matches.named('season') and not matches.tagged('newpct'):
             episodes = matches.named('episode')
             to_remove = []
-            to_rename = []
+            to_append = []
             for episode in episodes:
                 # And there's no episode count
                 if matches.named('episode_count'):
@@ -1085,9 +1096,11 @@ class AbsoluteEpisodeNumbers(Rule):
                         to_remove.append(episode)
                         continue
 
-                to_rename.append(episode)
+                absolute_episode = copy.copy(episode)
+                absolute_episode.name = 'absolute_episode'
+                to_append.append(absolute_episode)
 
-            return to_remove, to_rename
+            return to_remove, to_append
 
 
 class PartsAsEpisodeNumbers(Rule):

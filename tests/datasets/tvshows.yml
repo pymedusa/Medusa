@@ -316,6 +316,7 @@
 ? "[HorribleSubs] Show Name - 01 [720p]"
 : title: Show Name
   absolute_episode: 1
+  episode: 1
   screen_size: 720p
   release_group: HorribleSubs
   type: episode
@@ -326,6 +327,7 @@
 ? "[SomeGroup-Fansub]_Show_Name_727_[VOSTFR][HD_1280x720]"
 : title: Show Name
   absolute_episode: 727
+  episode: 727
   release_group: SomeGroup
   screen_size: 720p
   subtitle_language: fr
@@ -336,6 +338,7 @@
 ? "[SomeGroup-Fansub]_Show_Name_269_[VOSTFR]_[720p]_[1921E00C]"
 : title: Show Name
   absolute_episode: 269
+  episode: 269
   screen_size: 720p
   subtitle_language: fr
   crc32: 1921E00C
@@ -346,6 +349,7 @@
 ? "[GROUP]Show_Name_726_[VOSTFR]_[V1]_[8bit]_[720p]_[2F7B3FA2]"
 : title: Show Name
   absolute_episode: 726
+  episode: 726
   screen_size: 720p
   subtitle_language: fr
   crc32: 2F7B3FA2
@@ -360,6 +364,7 @@
 : options: {show_type: anime}
   title: Show Name
   absolute_episode: 445
+  episode: 445
   screen_size: 720p
   subtitle_language: fr
 # TODO: Fix
@@ -374,6 +379,7 @@
 : options: {show_type: anime}
   title: Show Name Super
   absolute_episode: 15
+  episode: 15
   subtitle_language: fr
   screen_size: 720p
 # TODO: Fix
@@ -386,6 +392,7 @@
 ? "[Z-Team][DBSuper.pw] Show Name Super - 028 (VOSTFR)(720p AAC)(MP4)"
 : title: Show Name Super
   absolute_episode: 28
+  episode: 28
   subtitle_language: fr
   screen_size: 720p
   release_group: Z-Team
@@ -397,6 +404,7 @@
 ? "[SnF] Show Name - 24 VOSTFR [720p][41761A60]"
 : title: Show Name
   absolute_episode: 24
+  episode: 24
   subtitle_language: fr
   screen_size: 720p
   release_group: SnF
@@ -407,6 +415,7 @@
 ? "[Y-F] Very long Show Name Here - 03 Vostfr HD 8bits"
 : title: Very long Show Name Here
   absolute_episode: 3
+  episode: 3
   subtitle_language: fr
   release_group: Y-F
   other: HD
@@ -418,6 +427,7 @@
   alternative_title: The Show
   alias: Show Name Online 2 - The Show
   absolute_episode: 4
+  episode: 4
   subtitle_language: fr
   release_group: FHD
   type: episode
@@ -428,6 +438,7 @@
 : options: {show_type: anime}
   title: Show Name
   absolute_episode: 804
+  episode: 804
   subtitle_language: fr
   other: HD
   type: episode
@@ -436,6 +447,7 @@
 ? Show Name 04 vostfr [1080p]
 : title: Show Name
   absolute_episode: 4
+  episode: 4
   subtitle_language: fr
   screen_size: 1080p
   type: episode
@@ -444,6 +456,7 @@
 ? Show Name 04 vostfr [720p]
 : title: Show Name
   absolute_episode: 4
+  episode: 4
   subtitle_language: fr
   screen_size: 720p
   type: episode
@@ -452,6 +465,7 @@
 ? "[Group Name] Show Name.13-16"
 : title: Show Name
   absolute_episode: [13, 14, 15, 16]
+  episode: [13, 14, 15, 16]
   release_group: Group Name
   type: episode
 
@@ -459,6 +473,7 @@
 ? "[Group Name] Show Name - 13-16"
 : title: Show Name
   absolute_episode: [13, 14, 15, 16]
+  episode: [13, 14, 15, 16]
   release_group: Group Name
   type: episode
 
@@ -466,30 +481,35 @@
 ? Show Name 13-16
 : title: Show Name
   absolute_episode: [13, 14, 15, 16]
+  episode: [13, 14, 15, 16]
   type: episode
 
 # anime_standard
 ? Show Name.13
 : title: Show Name
   absolute_episode: 13
+  episode: 13
   type: episode
 
 # anime_standard
 ? Show Name - 13
 : title: Show Name
   absolute_episode: 13
+  episode: 13
   type: episode
 
 # anime_standard
 ? Show Name 13
 : title: Show Name
   absolute_episode: 13
+  episode: 13
   type: episode
 
 # anime_standard_round
 ? "[Group-Subs]_Show_Name_-_12_(1280x720_H.264_AAC)_[379759DB]"
 : title: Show Name
   absolute_episode: 12
+  episode: 12
   screen_size: 720p
   video_codec: h264
   audio_codec: AAC
@@ -501,6 +521,7 @@
 ? "[SomeGroup-Subs] Show Name - 02-03 (CX 1280x720 x264 AAC)"
 : title: Show Name
   absolute_episode: [2, 3]
+  episode: [2, 3]
   screen_size: 720p
   video_codec: h264
   audio_codec: AAC
@@ -511,6 +532,7 @@
 ? "[AAA] Show Name 312v1 [720p/MKV]"
 : title: Show Name
   absolute_episode: 312
+  episode: 312
   version: 1
   screen_size: 720p
   container: MKV
@@ -522,6 +544,7 @@
 : title: Show Name
   episode_title: IS # Probably this is not correct, but it doesn't hurt
   absolute_episode: 7
+  episode: 7
   screen_size: 720p
   video_codec: h264
   crc32: EB7838FC
@@ -533,6 +556,7 @@
 : title: Show Name
   episode_title: IS # Probably this is not correct, but it doesn't hurt
   absolute_episode: 7
+  episode: 7
   screen_size: 720p
   video_codec: h264
   crc32: EB7838FC
@@ -545,6 +569,7 @@
 : title: Show Name
   episode_title: IS # Probably this is not correct, but it doesn't hurt
   absolute_episode: 7
+  episode: 7
   screen_size: 720p
   video_codec: h264
   crc32: EB7838FC
@@ -556,6 +581,7 @@
 ? "[Group-Shikkaku] A Very Long Show Name Here - 10 [LQ][h264][720p] [8853B21C]"
 : title: A Very Long Show Name Here
   absolute_episode: 10
+  episode: 10
   video_codec: h264
   screen_size: 720p
   crc32: 8853B21C
@@ -676,6 +702,7 @@
 : options: {show_type: anime}
   title: Show Name
   absolute_episode: 3
+  episode: 3
   episode_title: Ep Name
   container: mkv
   mimetype: video/x-matroska
@@ -685,6 +712,7 @@
 ? 003-005. Show Name - Ep Name.mkv
 : title: Show Name
   absolute_episode: [3, 4, 5]
+  episode: [3, 4, 5]
   episode_title: Ep Name
   container: mkv
   mimetype: video/x-matroska
@@ -696,12 +724,14 @@
 : options: {show_type: anime}
   title: One Piece
   absolute_episode: 102
+  episode: 102
   type: episode
 
 # anime_bare
 ? "[ABC]_Show_Name_001.mkv"
 : title: Show Name
   absolute_episode: 1
+  episode: 1
   container: mkv
   mimetype: video/x-matroska
   release_group: ABC
@@ -711,6 +741,7 @@
 ? "[SuperGroup].Show.Name.-.06.[720.Hi10p][1F5578AC]"
 : title: Show Name
   absolute_episode: 6
+  episode: 6
   screen_size: 720p
   video_profile: 10bit
   crc32: 1F5578AC
@@ -721,6 +752,7 @@
 ? "[SuperGroup].Show.Name.-.06.[1080.Hi10p][1F5578AC]"
 : title: Show Name
   absolute_episode: 6
+  episode: 6
   screen_size: 1080p
   video_profile: 10bit
   crc32: 1F5578AC
@@ -815,6 +847,7 @@
 ? "[Group].Pan.de.Peace!.-.08.[1080p]"
 : title: Pan de Peace!
   absolute_episode: 8
+  episode: 8
   screen_size: 1080p
   release_group: Group
   type: episode
@@ -1137,6 +1170,7 @@
   - /Show Name S2/[Group].Show.Name.S2.-.19.[1080p]
 : title: Show Name S2
   absolute_episode: 19
+  episode: 19
   screen_size: 1080p
   release_group: Group
   type: episode
@@ -1145,6 +1179,7 @@
 ? "[Group].Show.Name.G2.-.19.[1080p]"
 : title: Show Name G2
   absolute_episode: 19
+  episode: 19
   screen_size: 1080p
   release_group: Group
   type: episode
@@ -1163,6 +1198,7 @@
 ? "[Group].Show.Name.-.102.[720p]"
 : title: Show Name
   absolute_episode: 102
+  episode: 102
   screen_size: 720p
   release_group: Group
   type: episode
@@ -1181,6 +1217,7 @@
 ? Show.Name.10.720p
 : title: Show Name
   absolute_episode: 10
+  episode: 10
   screen_size: 720p
   type: episode
 
@@ -1681,6 +1718,7 @@
 ? "[SuperGroup].Show.Name.-.462.[1080p]"
 : title: Show Name
   absolute_episode: 462
+  episode: 462
   screen_size: 1080p
   release_group: SuperGroup
   type: episode
@@ -1743,6 +1781,7 @@
   alternative_title: [Still, Name]
   alias: "Show Name - Still+Name"
   absolute_episode: 11
+  episode: 11
   screen_size: 1080p
   release_group: SuperGroup
   type: episode
@@ -1753,6 +1792,7 @@
   alternative_title: [Still, Name]
   alias: "Show Name - Still - Name"
   absolute_episode: 11
+  episode: 11
   screen_size: 1080p
   release_group: SuperGroup
   type: episode
@@ -1763,6 +1803,7 @@
   alternative_title: Still Name
   alias: "Show Name - Still Name"
   absolute_episode: 11
+  episode: 11
   screen_size: 1080p
   release_group: SuperGroup
   type: episode
@@ -1771,6 +1812,7 @@
 ? "[Group].Show.Name.2.The.Big.Show.-.11.[1080p]"
 : title: Show Name 2 The Big Show
   absolute_episode: 11
+  episode: 11
   screen_size: 1080p
   release_group: Group
   type: episode
@@ -1851,6 +1893,7 @@
 ? "[GroupName].Show.Name.-.02.5.(Special).[BD.1080p]"
 : title: Show Name
   absolute_episode: 2
+  episode: 2
   episode_details: Special
   screen_size: 1080p
   format: BluRay
@@ -1862,6 +1905,7 @@
 ? "[AnimeRG].Show.Name.-.462.[720p].[10bit].[JRR].[Shippuden]"
 : title: Show Name
   absolute_episode: 462
+  episode: 462
   screen_size: 720p
   video_profile: 10bit
   release_group: AnimeRG
@@ -1872,6 +1916,7 @@
 ? "/somefoldername/[AnimeRG].Show.Name.-.462.[720p].[10bit].[JRR].[Shippuden]"
 : title: Show Name
   absolute_episode: 462
+  episode: 462
   screen_size: 720p
   video_profile: 10bit
   release_group: AnimeRG
@@ -1882,6 +1927,7 @@
 ? "/Show.Name/[AnimeRG].Show.Name.-.462.[720p].[10bit].[JRR].[Shippuden]"
 : title: Show Name
   absolute_episode: 462
+  episode: 462
   screen_size: 720p
   video_profile: 10bit
   release_group: AnimeRG
@@ -2247,6 +2293,7 @@
   alternative_title: Alternative
   alias: Show Name - Alternative
   absolute_episode: 2
+  episode: 2
   screen_size: 720p
   video_codec: h265
   audio_codec: AAC
@@ -2599,6 +2646,7 @@
 ? "[AnimeRG].Show.Name.-.03.[Eng.Dubbed].[720p].[WEB-DL].[JRR]"
 : title: Show Name
   absolute_episode: 3
+  episode: 3
   language: en
   screen_size: 720p
   format: WEB-DL
@@ -2609,6 +2657,7 @@
 ? "[RH].Show.Name.-.03.[English.Dubbed].[1080p]"
 : title: Show Name
   absolute_episode: 3
+  episode: 3
   language: en
   screen_size: 1080p
   release_group: RH

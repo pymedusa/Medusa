@@ -523,6 +523,9 @@ class NameParser(object):
             'ab_episode_numbers': ensure_list(guess.get('absolute_episode'))
         }
 
+        if adapted['episode_numbers'] is not None and adapted['episode_numbers'] == adapted['ab_episode_numbers']:
+            adapted['episode_numbers'] = None
+
         result = ParseResult(name)
         for key, value in adapted.items():
             setattr(result, key, value)
