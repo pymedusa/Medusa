@@ -5,15 +5,16 @@ from __future__ import unicode_literals
 
 import os
 import unittest
-import yaml
-
 from io import open
-from nose_parameterized import parameterized
-from sickbeard.name_parser.guessit_parser import parser
-from six import iteritems
+
+import yaml
 from yaml.constructor import ConstructorError
 from yaml.nodes import MappingNode, SequenceNode
 
+import guessit
+from nose_parameterized import parameterized
+from sickbeard.name_parser.guessit_parser import guessit as pre_configured_guessit
+from six import iteritems
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
@@ -64,10 +65,14 @@ class GuessitTests(unittest.TestCase):
             expected = {k: v for k, v in iteritems(expected)}
 
             if not isinstance(release_names, tuple):
-                release_names = (release_names, )
+                release_names = (release_names,)
 
             for release_name in release_names:
                 parameters.append([scenario_name, release_name, expected])
+
+    def test_pre_configured_guessit(self):
+        """Assert that guessit.guessit() uses the pre-configured hook."""
+        self.assertEqual(pre_configured_guessit, guessit.guessit)
 
     @parameterized.expand(parameters)
     def test_guess(self, scenario_name, release_name, expected):
@@ -82,7 +87,7 @@ class GuessitTests(unittest.TestCase):
         """
         self.maxDiff = None
         options = expected.pop('options', {})
-        actual = parser.guess(release_name, show_type=options.get('show_type'))
+        actual = guessit.guessit(release_name, options=options)
         actual = {k: v for k, v in iteritems(actual)}
 
         def format_param(param):
@@ -109,13 +114,3 @@ class GuessitTests(unittest.TestCase):
         else:
             print('Testing {scenario}: {release_name}'.format(scenario=scenario_name, release_name=release_name))
             self.assertEqual(expected, actual)
-
-    # for debugging purposes
-    # def dump(self, scenario_name, release_name, values):
-    #    print('')
-    #    print('# {scenario_name}'.format(scenario_name=scenario_name))
-    #    print('? {release_name}'.format(release_name=release_name))
-    #    start = ':'
-    #    for k, v in iteritems(values):
-    #        print('{start} {k}: {v}'.format(start=start, k=k, v=v))
-    #        start = ' '

@@ -20,18 +20,19 @@
 
 from __future__ import unicode_literals
 
+import guessit
 import os
 import re
 import time
 
 import dateutil
+
 from six import string_types, text_type
 
 import sickbeard
 from sickbeard.name_parser import regexes
 from sickbeard import logger, helpers, scene_numbering, common, scene_exceptions, db
 from sickbeard.helpers import remove_non_release_groups
-from sickbeard.name_parser.guessit_parser import parser as guessit_parser
 
 from sickrage.helper.common import remove_extension
 from sickrage.helper.encoding import ek
@@ -48,7 +49,7 @@ class NameParser(object):
     ANIME_REGEX = 2
 
     def __init__(self, file_name=True, showObj=None, tryIndexers=False,  # pylint: disable=too-many-arguments
-                 naming_pattern=False, parse_method=None, use_guessit=True):
+                 naming_pattern=False, parse_method=None, use_guessit=True, allow_multi_season=False):
 
         self.file_name = file_name
         self.showObj = showObj
@@ -56,6 +57,7 @@ class NameParser(object):
 
         self.naming_pattern = naming_pattern
         self.use_guessit = use_guessit
+        self.allow_multi_season = allow_multi_season
 
         if (self.showObj and not self.showObj.is_anime) or parse_method == 'normal':
             self._compile_regexes(self.NORMAL_REGEX)
@@ -121,11 +123,8 @@ class NameParser(object):
         bestResult = None
 
         if self.use_guessit:
-            guess = guessit_parser.parse(name, show_type=self.show_type)
-            result = ParseResult(guess['original_name'])
-            for key, value in guess.iteritems():
-                setattr(result, key, value)
-
+            guess = guessit.guessit(name, dict(show_type=self.show_type))
+            result = self.to_parse_result(name, guess)
             matches.append(result)
 
         # Remove non release groups from filename
@@ -500,6 +499,62 @@ class NameParser(object):
 
         logger.log('Parsed {0} into {1}'.format(name, str(final_result).decode('utf-8', 'xmlcharrefreplace')), logger.DEBUG)
         return final_result
+
+    def to_parse_result(self, name, guess):
+        """Guess the episode information from a given release name.
+
+        Uses guessit and returns a dictionary with keys and values according to ParseResult
+        :param name:
+        :type name: str
+        :param guess:
+        :type guess: dict
+        :return:
+        :rtype: dict
+        """
+
+        adapted = {
+            'series_name': guess.get('alias') or guess.get('title'),
+            'season_number': single_or_list(guess.get('season'), self.allow_multi_season),
+            'release_group': guess.get('release_group'),
+            'air_date': guess.get('date'),
+            'version': guess.get('version', -1),
+            'extra_info': ' '.join(ensure_list(guess.get('other'))) if guess.get('other') else None,
+            'episode_numbers': ensure_list(guess.get('episode')),
+            'ab_episode_numbers': ensure_list(guess.get('absolute_episode'))
+        }
+
+        result = ParseResult(name)
+        for key, value in adapted.items():
+            setattr(result, key, value)
+
+        return result
+
+
+def single_or_list(value, allow_multi):
+    """Return a single value or a list.
+
+    If value is a list with more than one element and allow_multi is False then it returns None.
+    :param value:
+    :type value: list
+    :param allow_multi: if False, multiple values will return None
+    :type allow_multi: bool
+    :rtype: list
+    """
+    if not isinstance(value, list):
+        return value
+
+    if allow_multi:
+        return sorted(value)
+
+
+def ensure_list(value):
+    """Return a list.
+
+    When value is not a list, return a list containing the single value.
+    :param value:
+    :rtype: list
+    """
+    return sorted(value) if isinstance(value, list) else [value] if value is not None else []
 
 
 class ParseResult(object):  # pylint: disable=too-many-instance-attributes
