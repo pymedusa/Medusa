@@ -2055,7 +2055,7 @@ class TVEpisode(TVObject):
                                    u'you need to delete it or fix it: ' + ex(e), logger.ERROR)
                     raise NoNFOException('Error in NFO format')
 
-                for ep_details in show_xml.getiterator('episodedetails'):
+                for ep_details in list(show_xml.iter('episodedetails')):
                     if ep_details.findtext('season') is None or int(ep_details.findtext('season')) != self.season or \
                        ep_details.findtext('episode') is None or int(ep_details.findtext('episode')) != self.episode:
                         logger.log(u'{id}: NFO has an <episodedetails> block for a different episode - '
