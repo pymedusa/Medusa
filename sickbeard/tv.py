@@ -70,16 +70,61 @@ except ImportError:
 shutil.copyfile = shutil_custom.copyfile_custom
 
 
-def _dirty_setter(attr_name):
-    def wrapper(self, val):
-        if getattr(self, attr_name) != val:
-            setattr(self, attr_name, val)
-            self.dirty = True
+class TVObject(object):
+    """Base class for TVShow and TVEpisode."""
 
-    return wrapper
+    def __init__(self, ignored_properties):
+        """Constructor with ignore_properties.
+
+        :param ignored_properties:
+        :type ignored_properties: set(str)
+        """
+        self.__ignored_properties = ignored_properties | {'lock'}
+        self.__dirty = True
+        self.lock = threading.Lock()
+
+    def __setattr__(self, key, value):
+        """Set the corresponding attribute and use the dirty flag if the new value is different from the old value.
+
+        :param key:
+        :type key: str
+        :param value:
+        """
+        if not key.startswith('_') and key not in self.__ignored_properties:
+            self.__dirty = self.__dict__.get(key) != value
+
+        self.__dict__[key] = value
+
+    @property
+    def dirty(self):
+        """Return the dirty flag.
+
+        :return:
+        :rtype: bool
+        """
+        return self.__dirty
+
+    def reset_dirty(self):
+        """Reset the dirty flag."""
+        self.__dirty = False
+
+    def __getstate__(self):
+        """Get threading lock state.
+
+        :return:
+        :rtype: dict(str -> threading.Lock)
+        """
+        d = dict(self.__dict__)
+        del d['lock']
+        return d
+
+    def __setstate__(self, d):
+        """Set threading lock state."""
+        d['lock'] = threading.Lock()
+        self.__dict__.update(d)
 
 
-class TVShow(object):
+class TVShow(TVObject):
     """Represent a TV Show."""
 
     def __init__(self, indexer, indexerid, lang=''):
@@ -92,35 +137,35 @@ class TVShow(object):
         :param lang:
         :type lang: str
         """
-        self._indexerid = int(indexerid)
-        self._indexer = int(indexer)
-        self._name = ''
-        self._imdbid = ''
-        self._network = ''
-        self._genre = ''
-        self._classification = ''
-        self._runtime = 0
-        self._imdb_info = {}
-        self._quality = int(sickbeard.QUALITY_DEFAULT)
-        self._flatten_folders = int(sickbeard.FLATTEN_FOLDERS_DEFAULT)
-        self._status = 'Unknown'
-        self._airs = ''
-        self._startyear = 0
-        self._paused = 0
-        self._air_by_date = 0
-        self._subtitles = int(sickbeard.SUBTITLES_DEFAULT)
-        self._dvdorder = 0
-        self._lang = lang
-        self._last_update_indexer = 1
-        self._sports = 0
-        self._anime = 0
-        self._scene = 0
-        self._rls_ignore_words = ''
-        self._rls_require_words = ''
-        self._default_ep_status = SKIPPED
-        self.dirty = True
+        super(TVShow, self).__init__({'episodes', 'nextaired', 'release_groups'})
+
+        self.indexerid = int(indexerid)
+        self.indexer = int(indexer)
+        self.name = ''
+        self.imdbid = ''
+        self.network = ''
+        self.genre = ''
+        self.classification = ''
+        self.runtime = 0
+        self.imdb_info = {}
+        self.quality = int(sickbeard.QUALITY_DEFAULT)
+        self.flatten_folders = int(sickbeard.FLATTEN_FOLDERS_DEFAULT)
+        self.status = 'Unknown'
+        self.airs = ''
+        self.startyear = 0
+        self.paused = 0
+        self.air_by_date = 0
+        self.subtitles = int(sickbeard.SUBTITLES_DEFAULT)
+        self.dvdorder = 0
+        self.lang = lang
+        self.last_update_indexer = 1
+        self.sports = 0
+        self.anime = 0
+        self.scene = 0
+        self.rls_ignore_words = ''
+        self.rls_require_words = ''
+        self.default_ep_status = SKIPPED
         self._location = ''
-        self.lock = threading.Lock()
         self.episodes = {}
         self.nextaired = ''
         self.release_groups = None
@@ -130,33 +175,6 @@ class TVShow(object):
             raise MultipleShowObjectsException("Can't create a show if it already exists")
 
         self._load_from_db()
-
-    name = property(lambda self: self._name, _dirty_setter('_name'))
-    indexerid = property(lambda self: self._indexerid, _dirty_setter('_indexerid'))
-    indexer = property(lambda self: self._indexer, _dirty_setter('_indexer'))
-    imdbid = property(lambda self: self._imdbid, _dirty_setter('_imdbid'))
-    network = property(lambda self: self._network, _dirty_setter('_network'))
-    genre = property(lambda self: self._genre, _dirty_setter('_genre'))
-    classification = property(lambda self: self._classification, _dirty_setter('_classification'))
-    runtime = property(lambda self: self._runtime, _dirty_setter('_runtime'))
-    imdb_info = property(lambda self: self._imdb_info, _dirty_setter('_imdb_info'))
-    quality = property(lambda self: self._quality, _dirty_setter('_quality'))
-    flatten_folders = property(lambda self: self._flatten_folders, _dirty_setter('_flatten_folders'))
-    status = property(lambda self: self._status, _dirty_setter('_status'))
-    airs = property(lambda self: self._airs, _dirty_setter('_airs'))
-    startyear = property(lambda self: self._startyear, _dirty_setter('_startyear'))
-    paused = property(lambda self: self._paused, _dirty_setter('_paused'))
-    air_by_date = property(lambda self: self._air_by_date, _dirty_setter('_air_by_date'))
-    subtitles = property(lambda self: self._subtitles, _dirty_setter('_subtitles'))
-    dvdorder = property(lambda self: self._dvdorder, _dirty_setter('_dvdorder'))
-    lang = property(lambda self: self._lang, _dirty_setter('_lang'))
-    last_update_indexer = property(lambda self: self._last_update_indexer, _dirty_setter('_last_update_indexer'))
-    sports = property(lambda self: self._sports, _dirty_setter('_sports'))
-    anime = property(lambda self: self._anime, _dirty_setter('_anime'))
-    scene = property(lambda self: self._scene, _dirty_setter('_scene'))
-    rls_ignore_words = property(lambda self: self._rls_ignore_words, _dirty_setter('_rls_ignore_words'))
-    rls_require_words = property(lambda self: self._rls_require_words, _dirty_setter('_rls_require_words'))
-    default_ep_status = property(lambda self: self._default_ep_status, _dirty_setter('_default_ep_status'))
 
     @property
     def is_anime(self):
@@ -206,22 +224,46 @@ class TVShow(object):
         """
         return self.indexerid in sickbeard.RECENTLY_DELETED
 
-    def __get_location(self):
+    @property
+    def raw_location(self):
+        """Return the raw location without executing any validation.
+
+        :return:
+        :rtype: str
+        """
+        return self._location
+
+    @property
+    def location(self):
+        """Return the location.
+
+        :return:
+        :rtype: str
+        """
         # no dir check needed if missing show dirs are created during post-processing
-        if sickbeard.CREATE_MISSING_SHOW_DIRS or ek(os.path.isdir, self._location):
+        if sickbeard.CREATE_MISSING_SHOW_DIRS or self.is_location_valid():
             return self._location
 
         raise ShowDirectoryNotFoundException("Show folder doesn't exist, you shouldn't be using it")
 
-    def __set_location(self, new_location):
+    @location.setter
+    def location(self, new_location):
         logger.log(u'Setter sets location to ' + new_location, logger.DEBUG)
         # Don't validate dir if user wants to add shows without creating a dir
-        if sickbeard.ADD_SHOWS_WO_DIR or ek(os.path.isdir, new_location):
-            _dirty_setter('_location')(self, new_location)
+        if sickbeard.ADD_SHOWS_WO_DIR or self.is_location_valid(new_location):
+            self._location = new_location
         else:
-            raise NoNFOException('Invalid folder for the show!')
+            raise ShowDirectoryNotFoundException('Invalid folder for the show!')
 
-    location = property(__get_location, __set_location)
+    def is_location_valid(self, location=None):
+        """Return whether the location is valid.
+
+        :param location:
+        :type location: str
+        :return:
+        :rtype: bool
+        """
+        return ek(os.path.isdir, location or self._location)
 
     def flush_episodes(self):
         """Delete references to anything that's not in the internal lists."""
@@ -429,7 +471,7 @@ class TVShow(object):
 
         result = False
 
-        if not ek(os.path.isdir, self._location):
+        if not self.is_location_valid():
             logger.log(str(self.indexerid) + u": Show dir doesn't exist, skipping NFO generation")
             return False
 
@@ -445,7 +487,7 @@ class TVShow(object):
         :param show_only:
         :type show_only: bool
         """
-        if not ek(os.path.isdir, self._location):
+        if not self.is_location_valid():
             logger.log(str(self.indexerid) + u": Show dir doesn't exist, skipping NFO generation")
             return
 
@@ -458,7 +500,7 @@ class TVShow(object):
 
     def __write_episode_nfos(self):
 
-        if not ek(os.path.isdir, self._location):
+        if not self.is_location_valid():
             logger.log(str(self.indexerid) + u": Show dir doesn't exist, skipping NFO generation")
             return
 
@@ -487,7 +529,7 @@ class TVShow(object):
 
     def update_metadata(self):
         """Update show metadata files."""
-        if not ek(os.path.isdir, self._location):
+        if not self.is_location_valid():
             logger.log(str(self.indexerid) + u": Show dir doesn't exist, skipping NFO generation")
             return
 
@@ -497,7 +539,7 @@ class TVShow(object):
 
         result = False
 
-        if not ek(os.path.isdir, self._location):
+        if not self.is_location_valid():
             logger.log(str(self.indexerid) + u": Show dir doesn't exist, skipping NFO generation")
             return False
 
@@ -509,15 +551,15 @@ class TVShow(object):
 
     def load_episodes_from_dir(self):
         """Find all media files in the show folder and create episodes for as many as possible."""
-        if not ek(os.path.isdir, self._location):
+        if not self.is_location_valid():
             logger.log(str(self.indexerid) + u": Show dir doesn't exist, not loading episodes from disk", logger.DEBUG)
             return
 
-        logger.log(str(self.indexerid) + u': Loading all episodes from the show directory ' + self._location,
+        logger.log(str(self.indexerid) + u': Loading all episodes from the show directory ' + self.location,
                    logger.DEBUG)
 
         # get file list
-        media_files = helpers.listMediaFiles(self._location)
+        media_files = helpers.listMediaFiles(self.location)
         logger.log(u'%s: Found files: %s' %
                    (self.indexerid, media_files), logger.DEBUG)
 
@@ -528,7 +570,7 @@ class TVShow(object):
 
             logger.log(str(self.indexerid) + u': Creating episode from ' + media_file, logger.DEBUG)
             try:
-                cur_episode = self.make_ep_from_file(ek(os.path.join, self._location, media_file))
+                cur_episode = self.make_ep_from_file(ek(os.path.join, self.location, media_file))
             except (ShowNotFoundException, EpisodeNotFoundException) as e:
                 logger.log(u'Episode ' + media_file + u' returned an exception: ' + ex(e), logger.ERROR)
                 continue
@@ -937,11 +979,7 @@ class TVShow(object):
             self.quality = int(sql_results[0][b'quality'] or UNKNOWN)
             self.flatten_folders = int(sql_results[0][b'flatten_folders'] or 0)
             self.paused = int(sql_results[0][b'paused'] or 0)
-
-            try:
-                self.location = sql_results[0][b'location']
-            except Exception:
-                _dirty_setter('_location')(self, sql_results[0][b'location'])
+            self._location = sql_results[0][b'location']  # skip location validation
 
             if not self.lang:
                 self.lang = sql_results[0][b'lang']
@@ -969,7 +1007,7 @@ class TVShow(object):
         else:
             self.imdb_info = dict(zip(sql_results[0].keys(), sql_results[0]))
 
-        self.dirty = False
+        self.reset_dirty()
         return True
 
     def load_from_indexer(self, cache=True, tvapi=None):
@@ -1150,30 +1188,28 @@ class TVShow(object):
         # remove entire show folder
         if full:
             try:
-                logger.log(u'Attempt to %s show folder %s' % (action, self._location))
+                logger.log(u'Attempt to %s show folder %s' % (action, self.location))
                 # check first the read-only attribute
                 file_attribute = ek(os.stat, self.location)[0]
                 if not file_attribute & stat.S_IWRITE:
                     # File is read-only, so make it writeable
-                    logger.log(u'Attempting to make writeable the read only folder %s' % self._location, logger.DEBUG)
+                    logger.log(u'Attempting to make writeable the read only folder %s' % self.location, logger.DEBUG)
                     try:
                         ek(os.chmod, self.location, stat.S_IWRITE)
                     except Exception:
-                        logger.log(u'Unable to change permissions of %s' % self._location, logger.WARNING)
+                        logger.log(u'Unable to change permissions of %s' % self.location, logger.WARNING)
 
                 if sickbeard.TRASH_REMOVE_SHOW:
                     send2trash(self.location)
                 else:
                     ek(shutil.rmtree, self.location)
 
-                logger.log(u'%s show folder %s' %
-                           (('Deleted', 'Trashed')[sickbeard.TRASH_REMOVE_SHOW],
-                            self._location))
+                logger.log(u'%s show folder %s' % (('Deleted', 'Trashed')[sickbeard.TRASH_REMOVE_SHOW], self.location))
 
             except ShowDirectoryNotFoundException:
-                logger.log(u'Show folder does not exist, no need to %s %s' % (action, self._location), logger.WARNING)
+                logger.log(u'Show folder does not exist, no need to %s %s' % (action, self.location), logger.WARNING)
             except OSError as e:
-                logger.log(u'Unable to %s %s: %s / %s' % (action, self._location, repr(e), str(e)), logger.WARNING)
+                logger.log(u'Unable to %s %s: %s / %s' % (action, self.location, repr(e), str(e)), logger.WARNING)
 
         if sickbeard.USE_TRAKT and sickbeard.TRAKT_SYNC_WATCHLIST:
             logger.log(u'Removing show: indexerid ' + str(self.indexerid) +
@@ -1194,7 +1230,7 @@ class TVShow(object):
         :rtype: bool
         """
         # make sure the show dir is where we think it is unless dirs are created on the fly
-        if not ek(os.path.isdir, self._location) and not sickbeard.CREATE_MISSING_SHOW_DIRS:
+        if not sickbeard.CREATE_MISSING_SHOW_DIRS and not self.is_location_valid():
             return False
 
         # load from dir
@@ -1270,7 +1306,7 @@ class TVShow(object):
         :param force:
         :type force: bool
         """
-        if not ek(os.path.isdir, self._location):
+        if not self.is_location_valid():
             logger.log(u"{0}: Show dir doesn't exist, can't download subtitles".format(self.indexerid), logger.DEBUG)
             return
 
@@ -1300,7 +1336,7 @@ class TVShow(object):
         control_value_dict = {'indexer_id': self.indexerid}
         new_value_dict = {'indexer': self.indexer,
                           'show_name': self.name,
-                          'location': self._location,
+                          'location': self.raw_location,  # skip location validation
                           'network': self.network,
                           'genre': self.genre,
                           'classification': self.classification,
@@ -1346,7 +1382,7 @@ class TVShow(object):
         to_return += 'indexerid: ' + str(self.indexerid) + '\n'
         to_return += 'indexer: ' + str(self.indexer) + '\n'
         to_return += 'name: ' + self.name + '\n'
-        to_return += 'location: ' + self._location + '\n'
+        to_return += 'location: ' + self.raw_location + '\n'  # skip location validation
         if self.network:
             to_return += 'network: ' + self.network + '\n'
         if self.airs:
@@ -1373,7 +1409,7 @@ class TVShow(object):
         to_return += u'indexerid: {0}\n'.format(self.indexerid)
         to_return += u'indexer: {0}\n'.format(self.indexer)
         to_return += u'name: {0}\n'.format(self.name)
-        to_return += u'location: {0}\n'.format(self._location)
+        to_return += u'location: {0}\n'.format(self.raw_location)  # skip location validation
         if self.network:
             to_return += u'network: {0}\n'.format(self.network)
         if self.airs:
@@ -1551,7 +1587,7 @@ class TVShow(object):
         self.__dict__.update(d)
 
 
-class TVEpisode(object):
+class TVEpisode(TVObject):
     """Represent a TV Show episode."""
 
     def __init__(self, show, season, episode, filepath=''):
@@ -1566,70 +1602,62 @@ class TVEpisode(object):
         :param filepath:
         :type filepath: str
         """
-        self._name = ''
-        self._season = season
-        self._episode = episode
-        self._absolute_number = 0
-        self._description = ''
-        self._subtitles = list()
-        self._subtitles_searchcount = 0
-        self._subtitles_lastsearch = str(datetime.datetime.min)
-        self._airdate = datetime.date.fromordinal(1)
-        self._hasnfo = False
-        self._hastbn = False
-        self._status = UNKNOWN
-        self._indexerid = 0
-        self._file_size = 0
-        self._release_name = ''
-        self._is_proper = False
-        self._version = 0
-        self._release_group = ''
-        # setting any of the above sets the dirty flag
-        self.dirty = True
+        super(TVEpisode, self).__init__({'show', 'scene_season', 'scene_episode', 'scene_absolute_number',
+                                         'related_episodes', 'wanted_quality'})
         self.show = show
+        self.name = ''
+        self.season = season
+        self.episode = episode
+        self.absolute_number = 0
+        self.description = ''
+        self.subtitles = list()
+        self.subtitles_searchcount = 0
+        self.subtitles_lastsearch = str(datetime.datetime.min)
+        self.airdate = datetime.date.fromordinal(1)
+        self.hasnfo = False
+        self.hastbn = False
+        self.status = UNKNOWN
+        self.indexerid = 0
+        self.file_size = 0
+        self.release_name = ''
+        self.is_proper = False
+        self.version = 0
+        self.release_group = ''
+        self._location = filepath
         self.scene_season = 0
         self.scene_episode = 0
         self.scene_absolute_number = 0
-        self._location = filepath
-        self._indexer = int(self.show.indexer)
-        self.lock = threading.Lock()
-        self._specify_episode(self.season, self.episode)
         self.related_episodes = []
-        self.check_for_meta_files()
         self.wanted_quality = []
+        self.indexer = int(self.show.indexer) if show else 0
+        if show:
+            self._specify_episode(self.season, self.episode)
+            self.check_for_meta_files()
 
-    name = property(lambda self: self._name, _dirty_setter('_name'))
-    season = property(lambda self: self._season, _dirty_setter('_season'))
-    episode = property(lambda self: self._episode, _dirty_setter('_episode'))
-    absolute_number = property(lambda self: self._absolute_number, _dirty_setter('_absolute_number'))
-    description = property(lambda self: self._description, _dirty_setter('_description'))
-    subtitles = property(lambda self: self._subtitles, _dirty_setter('_subtitles'))
-    subtitles_searchcount = property(lambda self: self._subtitles_searchcount, _dirty_setter('_subtitles_searchcount'))
-    subtitles_lastsearch = property(lambda self: self._subtitles_lastsearch, _dirty_setter('_subtitles_lastsearch'))
-    airdate = property(lambda self: self._airdate, _dirty_setter('_airdate'))
-    hasnfo = property(lambda self: self._hasnfo, _dirty_setter('_hasnfo'))
-    hastbn = property(lambda self: self._hastbn, _dirty_setter('_hastbn'))
-    status = property(lambda self: self._status, _dirty_setter('_status'))
-    indexer = property(lambda self: self._indexer, _dirty_setter('_indexer'))
-    indexerid = property(lambda self: self._indexerid, _dirty_setter('_indexerid'))
-    file_size = property(lambda self: self._file_size, _dirty_setter('_file_size'))
-    release_name = property(lambda self: self._release_name, _dirty_setter('_release_name'))
-    is_proper = property(lambda self: self._is_proper, _dirty_setter('_is_proper'))
-    version = property(lambda self: self._version, _dirty_setter('_version'))
-    release_group = property(lambda self: self._release_group, _dirty_setter('_release_group'))
+    @property
+    def location(self):
+        """Return the location.
 
-    def __set_location(self, new_location):
-        logger.log(u'Setter sets location to ' + new_location, logger.DEBUG)
+        :return:
+        :rtype: location
+        """
+        return self._location
 
-        # self._location = newLocation
-        _dirty_setter('_location')(self, new_location)
+    @location.setter
+    def location(self, value):
+        logger.log(u'Setter sets location to ' + value, logger.DEBUG)
+        self._location = value
+        self.file_size = ek(os.path.getsize, value) if value and self.is_location_valid(value) else 0
 
-        if new_location and ek(os.path.isfile, new_location):
-            self.file_size = ek(os.path.getsize, new_location)
-        else:
-            self.file_size = 0
+    def is_location_valid(self, location=None):
+        """Whether the location is a valid file.
 
-    location = property(lambda self: self._location, __set_location)
+        :param location:
+        :type location: str
+        :return:
+        :rtype: bool
+        """
+        return ek(os.path.isfile, location or self._location)
 
     def refresh_subtitles(self):
         """Look for subtitles files and refresh the subtitles property."""
@@ -1651,7 +1679,7 @@ class TVEpisode(object):
         :param force:
         :type force: bool
         """
-        if not ek(os.path.isfile, self.location):
+        if not self.is_location_valid():
             logger.log(u"Episode file doesn't exist, can't download subtitles for {} {}".format
                        (self.show.name, episode_num(self.season, self.episode) or
                         episode_num(self.season, self.episode, numbering='absolute')), logger.DEBUG)
@@ -1691,7 +1719,7 @@ class TVEpisode(object):
         cur_tbn = False
 
         # check for nfo and tbn
-        if ek(os.path.isfile, self.location):
+        if self.is_location_valid():
             for cur_provider in sickbeard.metadata_provider_dict.values():
                 if cur_provider.episode_metadata:
                     new_result = cur_provider.has_episode_metadata(self)
@@ -1717,7 +1745,7 @@ class TVEpisode(object):
 
         if not sql_results:
             # only load from NFO if we didn't load from DB
-            if ek(os.path.isfile, self.location):
+            if self.is_location_valid():
                 try:
                     self.__load_from_nfo(self.location)
                 except NoNFOException:
@@ -1782,7 +1810,7 @@ class TVEpisode(object):
             self.status = int(sql_results[0][b'status'] or -1)
 
             # don't overwrite my location
-            if sql_results[0][b'location'] and sql_results[0][b'location']:
+            if sql_results[0][b'location']:
                 self.location = ek(os.path.normpath, sql_results[0][b'location'])
             if sql_results[0][b'file_size']:
                 self.file_size = int(sql_results[0][b'file_size'])
@@ -1824,7 +1852,7 @@ class TVEpisode(object):
             if sql_results[0][b'release_group'] is not None:
                 self.release_group = sql_results[0][b'release_group']
 
-            self.dirty = False
+            self.reset_dirty()
             return True
 
     def load_from_indexer(self, season=None, episode=None, cache=True, tvapi=None, cached_season=None):
@@ -1950,10 +1978,10 @@ class TVEpisode(object):
             return False
 
         # don't update show status if show dir is missing, unless it's missing on purpose
-        if not ek(os.path.isdir, self.show._location) and \
+        if not self.show.is_location_valid() and \
                 not sickbeard.CREATE_MISSING_SHOW_DIRS and not sickbeard.ADD_SHOWS_WO_DIR:
             logger.log(u'The show dir %s is missing, not bothering to change the episode statuses '
-                       u"since it'd probably be invalid" % self.show._location)
+                       u"since it'd probably be invalid" % self.show.raw_location)
             return
 
         if self.location:
@@ -1992,7 +2020,7 @@ class TVEpisode(object):
 
     def __load_from_nfo(self, location):
 
-        if not ek(os.path.isdir, self.show._location):
+        if not self.show.is_location_valid():
             logger.log(
                 str(self.show.indexerid) + u': The show dir is missing, not bothering to try loading the episode NFO')
             return
@@ -2097,7 +2125,7 @@ class TVEpisode(object):
 
     def create_meta_files(self):
         """Create episode metadata files."""
-        if not ek(os.path.isdir, self.show._location):
+        if not self.show.is_location_valid():
             logger.log(str(self.show.indexerid) + u': The show dir is missing, not bothering to try to create metadata')
             return
 
@@ -2427,8 +2455,8 @@ class TVEpisode(object):
             rel_grp['location'] = release_group(self.show, self.location)
             if not rel_grp['location']:
                 del rel_grp['location']
-        if hasattr(self, '_release_group'):  # from the release group field in db
-            rel_grp['database'] = self._release_group.strip('.- []{}')
+        if hasattr(self, 'release_group'):  # from the release group field in db
+            rel_grp['database'] = self.release_group.strip('.- []{}')
             if not rel_grp['database']:
                 del rel_grp['database']
         if hasattr(self, 'release_name'):  # from the release name field in db
@@ -2543,14 +2571,14 @@ class TVEpisode(object):
 
         # if there's no release group in the db, let the user know we replaced it
         if replace_map['%RG'] and replace_map['%RG'] != 'SickRage':
-            if not hasattr(self, '_release_group'):
+            if not hasattr(self, 'release_group'):
                 logger.log(u"Episode has no release group, replacing it with '" +
                            replace_map['%RG'] + u"'", logger.DEBUG)
-                self._release_group = replace_map['%RG']  # if release_group is not in the db, put it there
-            elif not self._release_group:
+                self.release_group = replace_map['%RG']  # if release_group is not in the db, put it there
+            elif not self.release_group:
                 logger.log(u"Episode has no release group, replacing it with '" +
                            replace_map['%RG'] + u"'", logger.DEBUG)
-                self._release_group = replace_map['%RG']  # if release_group is not in the db, put it there
+                self.release_group = replace_map['%RG']  # if release_group is not in the db, put it there
 
         # if there's no release name then replace it with a reasonable facsimile
         if not replace_map['%RN']:
@@ -2765,7 +2793,7 @@ class TVEpisode(object):
 
     def rename(self):
         """Rename an episode file and all related files to the location and filename as specified in naming settings."""
-        if not ek(os.path.isfile, self.location):
+        if not self.is_location_valid():
             logger.log(u"Can't perform rename on " + self.location + u" when it doesn't exist, skipping",
                        logger.WARNING)
             return
@@ -2893,18 +2921,3 @@ class TVEpisode(object):
         except Exception:
             logger.log(u"{}: Failed to modify date of '{}'".format
                        (self.show.indexerid, ek(os.path.basename, self.location)), logger.WARNING)
-
-    def __getstate__(self):
-        """Get threading lock state.
-
-        :return:
-        :rtype: dict(str -> threading.Lock)
-        """
-        d = dict(self.__dict__)
-        del d['lock']
-        return d
-
-    def __setstate__(self, d):
-        """Set threading lock state."""
-        d['lock'] = threading.Lock()
-        self.__dict__.update(d)

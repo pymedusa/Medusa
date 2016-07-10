@@ -1397,7 +1397,7 @@ class Home(WebRoot):
                             # grab updated info from TVDB
                             # show_obj.load_episodes_from_indexer()
                             # rescan the episodes in the new folder
-                    except NoNFOException:
+                    except ShowDirectoryNotFoundException:
                         errors.append('The folder at <tt>{location}</tt> doesn\'t contain a tvshow.nfo - '
                                       'copy your files to that folder before you change the directory in Medusa.'.format
                                       (location=location))
