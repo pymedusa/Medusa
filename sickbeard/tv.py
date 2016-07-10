@@ -43,6 +43,7 @@ from sickbeard.common import (
 )
 from sickbeard.indexers.indexer_config import INDEXER_TVRAGE
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
+from sickbeard.scene_numbering import get_scene_absolute_numbering, get_scene_numbering, xem_refresh
 
 from sickrage.helper.common import (
     dateTimeFormat, remove_extension, replace_extension, sanitize_filename, try_int, episode_num,
@@ -1820,21 +1821,21 @@ class TVEpisode(TVObject):
             self.indexerid = int(sql_results[0][b'indexerid'])
             self.indexer = int(sql_results[0][b'indexer'])
 
-            sickbeard.scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
+            xem_refresh(self.show.indexerid, self.show.indexer)
 
             self.scene_season = try_int(sql_results[0][b'scene_season'], 0)
             self.scene_episode = try_int(sql_results[0][b'scene_episode'], 0)
             self.scene_absolute_number = try_int(sql_results[0][b'scene_absolute_number'], 0)
 
             if self.scene_absolute_number == 0:
-                self.scene_absolute_number = sickbeard.scene_numbering.get_scene_absolute_numbering(
+                self.scene_absolute_number = get_scene_absolute_numbering(
                     self.show.indexerid,
                     self.show.indexer,
                     self.absolute_number
                 )
 
             if self.scene_season == 0 or self.scene_episode == 0:
-                self.scene_season, self.scene_episode = sickbeard.scene_numbering.get_scene_numbering(
+                self.scene_season, self.scene_episode = get_scene_numbering(
                     self.show.indexerid,
                     self.show.indexer,
                     self.season, self.episode
@@ -1936,15 +1937,15 @@ class TVEpisode(TVObject):
         self.season = season
         self.episode = episode
 
-        sickbeard.scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
+        xem_refresh(self.show.indexerid, self.show.indexer)
 
-        self.scene_absolute_number = sickbeard.scene_numbering.get_scene_absolute_numbering(
+        self.scene_absolute_number = get_scene_absolute_numbering(
             self.show.indexerid,
             self.show.indexer,
             self.absolute_number
         )
 
-        self.scene_season, self.scene_episode = sickbeard.scene_numbering.get_scene_numbering(
+        self.scene_season, self.scene_episode = get_scene_numbering(
             self.show.indexerid,
             self.show.indexer,
             self.season, self.episode
@@ -2071,15 +2072,15 @@ class TVEpisode(TVObject):
                     self.episode = int(ep_details.findtext('episode'))
                     self.season = int(ep_details.findtext('season'))
 
-                    sickbeard.scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
+                    xem_refresh(self.show.indexerid, self.show.indexer)
 
-                    self.scene_absolute_number = sickbeard.scene_numbering.get_scene_absolute_numbering(
+                    self.scene_absolute_number = get_scene_absolute_numbering(
                         self.show.indexerid,
                         self.show.indexer,
                         self.absolute_number
                     )
 
-                    self.scene_season, self.scene_episode = sickbeard.scene_numbering.get_scene_numbering(
+                    self.scene_season, self.scene_episode = get_scene_numbering(
                         self.show.indexerid,
                         self.show.indexer,
                         self.season, self.episode
