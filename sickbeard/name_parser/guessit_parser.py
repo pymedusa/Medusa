@@ -76,7 +76,7 @@ allowed_countries = {
 }
 
 
-def guessit(name, options):
+def guessit(name, options=None):
     """Guess the episode information from a given release name.
 
     :param name: the release name
@@ -86,7 +86,7 @@ def guessit(name, options):
     :return: the guessed properties
     :rtype: dict
     """
-    final_options = dict(options)
+    final_options = dict(options) if options else dict()
     final_options.update(dict(type='episode', implicit=True,
                               episode_prefer_number=options.get('show_type') == 'anime',
                               expected_title=normalize(expected_titles),
