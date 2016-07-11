@@ -193,7 +193,7 @@ var SICKRAGE = {
                     $(this).prop('checked', $(bulkCheck).prop('checked'));
                 });
             });
-            
+
             $('.enabler').each(function() {
                 if (!$(this).prop('checked')) {
                     $('#content_' + $(this).attr('id')).hide();
@@ -3227,22 +3227,22 @@ var SICKRAGE = {
                     }
                 });
             };
-            
+
             /*
              * Add's shows by by indexer and indexer_id with a number of optional parameters
              * The show can be added as an anime show, by providing the data attribute: data-isanime="1"
              */
             $.initAddShowById = function(){
-                
+
                 $(document.body).on('click', 'a[data-add-show]', function(e){
                     e.preventDefault();
-                    
+
                     var url = $(this).attr('href');
                     // Whe're going to add this show, let's remove the anchor and button desc, so it can't be added twice!
                     if ( $(this).attr('disabled') === 'disabled' ) { return false; }
 
                     $(this).html('Added').attr('disabled', 'disabled');
-                    
+
                     var anyQualArray = [];
                     var bestQualArray = [];
                     $('#anyQualities option:selected').each(function (i, d) {
@@ -3251,11 +3251,11 @@ var SICKRAGE = {
                     $('#bestQualities option:selected').each(function (i, d) {
                         bestQualArray.push($(d).val());
                     });
-                    
+
                     // If we are going to add an anime, let's by default configure it as one
                     var anime = $('#anime').prop('checked');
                     var configureShowOptions = $('#configure_show_options').prop('checked');
-                    
+
                     /* Let's disable this for now, generates more questions then it saves the user time
                     if ( !configureShowOptions && $(this).data("isanime") ) {
                         anime = true;
@@ -3319,17 +3319,12 @@ var SICKRAGE = {
                     $('span.next').click();
                 });
             };
-        },
-        index: function() {
-
-        },
-        newShow: function() {
-            function updateBlackWhiteList(showName) {
+            $.updateBlackWhiteList = function (showName) {
                 $('#white').children().remove();
                 $('#black').children().remove();
                 $('#pool').children().remove();
 
-                if ($('#anime').prop('checked')) {
+                if ($('#anime').prop('checked') && showName) {
                     $('#blackwhitelist').show();
                     if (showName) {
                         $.getJSON(srRoot + '/home/fetch_releasegroups', {
@@ -3348,7 +3343,12 @@ var SICKRAGE = {
                 } else {
                     $('#blackwhitelist').hide();
                 }
-            }
+            };
+        },
+        index: function() {
+
+        },
+        newShow: function() {
 
             function updateSampleText() {
                 // if something's selected then we have some behavior to figure out
@@ -3362,7 +3362,7 @@ var SICKRAGE = {
                 } else {
                     showName = '';
                 }
-                updateBlackWhiteList(showName);
+                $.updateBlackWhiteList(showName);
                 var sampleText = 'Adding show <b>' + showName + '</b> into <b>';
 
                 // if we have a root dir selected, figure out the path
@@ -3625,6 +3625,8 @@ var SICKRAGE = {
             });
         },
         recommendedShows: function() {
+            // Cleanest way of not showing the black/whitelist, when there isn't a show to show it for
+            $.updateBlackWhiteList(undefined);
             $('#recommendedShows').loadRemoteShows(
                 '/addShows/getRecommendedShows/',
                 'Loading recommended shows...',
@@ -3636,6 +3638,8 @@ var SICKRAGE = {
         },
 
         trendingShows: function(){
+            // Cleanest way of not showing the black/whitelist, when there isn't a show to show it for
+            $.updateBlackWhiteList(undefined);
             $('#trendingShows').loadRemoteShows(
                 '/addShows/getTrendingShows/?traktList=' + $('#traktList').val(),
                 'Loading trending shows...',
@@ -3651,7 +3655,7 @@ var SICKRAGE = {
                     'Trakt timed out, refresh page to try again'
                 );
             });
-            
+
             $.initAddShowById();
         },
         popularShows: function() {
