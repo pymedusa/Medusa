@@ -677,13 +677,13 @@ def has_embedded_subtitles(video):
     
     :param video: video filename to be checked
     """
-    
+
+    embedded_subtitle_languages = set()
     extension = os.path.splitext(video)[1]
     if extension == '.mkv':
         with open(video, 'rb') as f:
             mkv = MKV(f)
             if mkv.subtitle_tracks:
-                embedded_subtitle_languages = set()
                 for st in mkv.subtitle_tracks:
                     if st.language:
                         embedded_subtitle_languages.add(st.language)
