@@ -88,7 +88,7 @@ def guessit(name, options=None):
     """
     final_options = dict(options) if options else dict()
     final_options.update(dict(type='episode', implicit=True,
-                              episode_prefer_number=options.get('show_type') == 'anime',
+                              episode_prefer_number=final_options.get('show_type') == 'anime',
                               expected_title=normalize(expected_titles),
                               expected_group=normalize(expected_groups),
                               allowed_languages=normalize(allowed_languages),
