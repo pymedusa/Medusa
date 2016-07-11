@@ -35,7 +35,7 @@ from sickrage.helper.exceptions import CantRefreshShowException, CantRemoveShowE
 from sickrage.helper.exceptions import EpisodeDeletedException, ex, MultipleShowObjectsException
 from sickrage.helper.exceptions import ShowDirectoryNotFoundException
 from sickbeard.helpers import get_showname_from_indexer
-from libtrakt.trakt import TraktApi as TraktAPI
+from traktor import TraktApi
 from sickrage.helper.encoding import ek
 from sickbeard.helpers import makeDir, chmodAsParent
 from sickrage.helper.common import sanitize_filename
@@ -393,7 +393,7 @@ class QueueItemAdd(ShowQueueItem):
             if sickbeard.USE_TRAKT:
 
                 trakt_id = sickbeard.indexerApi(self.indexer).config['trakt_id']
-                trakt_api = TraktAPI(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
+                trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
 
                 title = self.showDir.split("/")[-1]
                 data = {

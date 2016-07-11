@@ -9,7 +9,7 @@ import os
 import time
 
 import adba
-from libtrakt.trakt import TraktApi
+from traktor import TraktApi
 from requests.compat import unquote_plus, quote_plus
 from six import iteritems
 from tornado.routes import route

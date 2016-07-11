@@ -20,8 +20,8 @@
 import os
 import traceback
 import datetime
-from libtrakt.exceptions import TraktException # pylint: disable=import-error
-from libtrakt.trakt import TraktApi # pylint: disable=import-error
+from traktor import TraktException
+from traktor import TraktApi
 
 import sickbeard
 from sickbeard import logger

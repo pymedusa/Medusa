@@ -23,8 +23,7 @@ import sickbeard
 from sickbeard import logger
 from sickrage.helper.common import try_int
 
-from libtrakt.trakt import TraktApi
-from libtrakt.exceptions import TraktAuthException, TraktException
+from traktor import (TraktApi, AuthException, TraktException)
 from simpleanidb import Anidb
 
 from sickrage.helper.exceptions import ex
@@ -72,7 +71,7 @@ class TraktPopular(object):
             if trakt_api.access_token_refreshed:
                 sickbeard.TRAKT_ACCESS_TOKEN = trakt_api.access_token
                 sickbeard.TRAKT_REFRESH_TOKEN = trakt_api.refresh_token
-        except TraktAuthException:
+        except AuthException:
             return []
 
         return library_shows

@@ -20,7 +20,7 @@ from sickbeard.common import Quality
 from sickbeard.helpers import get_showname_from_indexer
 
 from sickrage.show.recommendations.trakt import TraktPopular
-from libtrakt.trakt import TraktApi
+from traktor import TraktApi
 from simpleanidb import REQUEST_HOT
 from sickrage.show.recommendations.anidb import AnidbPopular
 from sickrage.show.recommendations.imdb import ImdbPopular
