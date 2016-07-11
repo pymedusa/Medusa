@@ -670,7 +670,7 @@ def subtitles_enabled(video):
     else:
         logger.log(u'Empty indexer ID for: {}'.format(video), logger.WARNING)
         return
- 
+
 def has_embedded_subtitles(video):
     """
     Check if video file has enmbedded subtitles
