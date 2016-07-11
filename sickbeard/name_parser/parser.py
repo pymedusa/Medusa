@@ -519,12 +519,10 @@ class NameParser(object):
             'air_date': guess.get('date'),
             'version': guess.get('version', -1),
             'extra_info': ' '.join(ensure_list(guess.get('other'))) if guess.get('other') else None,
-            'episode_numbers': ensure_list(guess.get('episode')),
+            'episode_numbers': ensure_list(guess.get('episode'))
+            if guess.get('episode') != guess.get('absolute_episode') else [],
             'ab_episode_numbers': ensure_list(guess.get('absolute_episode'))
         }
-
-        if adapted['episode_numbers'] is not None and adapted['episode_numbers'] == adapted['ab_episode_numbers']:
-            adapted['episode_numbers'] = None
 
         result = ParseResult(name)
         for key, value in adapted.items():
