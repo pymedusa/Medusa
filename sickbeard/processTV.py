@@ -39,9 +39,11 @@ from unrar2.rar_exceptions import InvalidRARArchive
 from unrar2.rar_exceptions import InvalidRARArchiveUsage
 from unrar2.rar_exceptions import IncorrectRARPassword
 
+from subliminal import (refine, scan_video)
+
 import shutil
 import shutil_custom
-from enzyme import MKV
+
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -671,24 +673,13 @@ def subtitles_enabled(video):
         logger.log(u'Empty indexer ID for: {}'.format(video), logger.WARNING)
         return
 
-def has_embedded_subtitles(video):
+def has_embedded_subtitles(video_path):
     """
     Check if video file has enmbedded subtitles
-    
+
     :param video: video filename to be checked
     """
 
-    embedded_subtitle_languages = set()
-    extension = os.path.splitext(video)[1]
-    if extension == '.mkv':
-        with open(video, 'rb') as f:
-            mkv = MKV(f)
-            if mkv.subtitle_tracks:
-                for st in mkv.subtitle_tracks:
-                    if st.language:
-                        embedded_subtitle_languages.add(st.language)
-                    elif st.name:
-                        embedded_subtitle_languages.add(st.name)
-                    else:
-                        embedded_subtitle_languages.add('und')
-    return embedded_subtitle_languages
+    subliminal_video = scan_video(video_path)
+    refine(subliminal_video, episode_refiners=('metadata',))
+    return subliminal_video.subtitle_languages
