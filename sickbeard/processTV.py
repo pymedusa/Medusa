@@ -691,4 +691,4 @@ def has_embedded_subtitles(video):
                         embedded_subtitle_languages.add(st.name)
                     else:
                         embedded_subtitle_languages.add('und')
-    return embedded_subtitle_languages if embedded_subtitle_languages else False
+    return embedded_subtitle_languages
