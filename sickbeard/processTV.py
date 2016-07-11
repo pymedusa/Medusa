@@ -568,7 +568,7 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
             # This feature prevents PP for files that do not have subtitle associated with the video file
             if sickbeard.POSTPONE_IF_NO_SUBS and subtitles_enabled(cur_video_file):
                 # If user don't want to ignore embedded subtitles and video has at least one, don't post pone PP
-                if not sickbeard.EMBEDDED_SUBTITLES_ALL and sickbeard.EMBEDDED_SUBTITLES_UNKNOWN_LANG and 'und' in has_embedded_subtitles(cur_video_file_path):
+                if not sickbeard.EMBEDDED_SUBTITLES_ALL and sickbeard.EMBEDDED_SUBTITLES_UNKNOWN_LANG and 'und' in get_embedded_subtitles(cur_video_file_path):
                     result.output += logHelper(u"Found embedded unknown subtitles and we don't want to ignore them. Continuing the post-process of this file: %s" % cur_video_file)
                 else:
                     associatedFiles = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
@@ -673,7 +673,7 @@ def subtitles_enabled(video):
         logger.log(u'Empty indexer ID for: {}'.format(video), logger.WARNING)
         return
 
-def has_embedded_subtitles(video_path):
+def get_embedded_subtitles(video_path):
     """
     Check if video file has enmbedded subtitles
 
