@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 
 import os
 import unittest
-from io import open
 
 import yaml
 from yaml.constructor import ConstructorError
@@ -58,7 +57,7 @@ class GuessitTests(unittest.TestCase):
     parameters = []
 
     for scenario_name, file_name in iteritems(files):
-        with open(os.path.join(__location__, 'datasets', file_name), 'r', encoding='utf-8') as stream:
+        with open(os.path.join(__location__, 'datasets', file_name), 'r') as stream:
             data = yaml.load(stream)
 
         for release_names, expected in iteritems(data):
