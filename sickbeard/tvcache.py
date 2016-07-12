@@ -400,9 +400,9 @@ class TVCache(object):
 
     def listPropers(self, date=None):
         cache_db_con = self._get_db()
-        sql = b"SELECT * FROM [{provider_id}] WHERE name LIKE '%.PROPER.%' OR name LIKE '%.REPACK.%'".format(provider_id=self.provider_id)
+        sql = b"SELECT * FROM [{provider_id}] WHERE (name LIKE '%.PROPER.%' OR name LIKE '%.REPACK.%' OR name LIKE '%.REAL.%')".format(provider_id=self.provider_id)
 
-        if date is not None:
+        if date:
             sql += b' AND time >= {0}'.format(int(time.mktime(date.timetuple())))
 
         propers_results = cache_db_con.select(sql)
