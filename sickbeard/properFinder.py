@@ -65,7 +65,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         self.amActive = True
 
-        propers = self._getProperList()
+        propers = self._get_proper_results()
 
         if propers:
             self._downloadPropers(propers)
@@ -84,17 +84,33 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         self.amActive = False
 
-    def _getProperList(self):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    def _get_proper_results(self):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements # getProperList
         """
-        Walk providers for propers
+        Retrieve a list of recently aired episodes, and search for these episodes in the different providers.
         """
         propers = {}
-
-        search_date = datetime.datetime.today() - datetime.timedelta(days=2)
 
         # for each provider get a list of the
         original_thread_name = threading.currentThread().name
         providers = enabled_providers('backlog')
+
+        # Get the recently aired (last 2 days) shows from db
+        search_date = datetime.datetime.today() - datetime.timedelta(days=2)
+        main_db_con = db.DBConnection()
+        search_qualities = ",".join(set(str(x) for x in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST))
+        recently_aired = main_db_con.select(
+            b'SELECT s.show_name, e.showid, e.season, e.episode, e.status, e.airdate'
+            b' FROM tv_episodes AS e'
+            b' INNER JOIN tv_shows AS s ON (e.showid = s.indexer_id)'
+            b' WHERE e.airdate >= ?'
+            b' AND e.status IN ({0})'.format(search_qualities), [search_date.toordinal()]
+        )
+
+        if not recently_aired:
+            logger.log('No recently aired new episodes, nothing to search for')
+            return []
+
+        # Loop through the providers, and search for releases
         for cur_provider in providers:
             threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name, provider=cur_provider.name)
 
@@ -102,7 +118,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                        (provider=cur_provider.name))
 
             try:
-                cur_propers = cur_provider.find_propers(search_date)
+                cur_propers = cur_provider.find_propers(recently_aired)
             except AuthException as e:
                 logger.log('Authentication error: {error}'.format
                            (error=ex(e)), logger.DEBUG)
@@ -339,7 +355,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             main_db_con.action(b'INSERT INTO info (last_backlog, last_indexer, last_proper_search) VALUES (?,?,?)',
                                [0, 0, str(when)])
         else:
-            main_db_con.action(b'UPDATE info SET last_proper_search=' + str(when))
+            main_db_con.action(b'UPDATE info SET last_proper_search={0}'.format(when))
 
     @staticmethod
     def _get_lastProperSearch():

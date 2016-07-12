@@ -123,23 +123,14 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         return False
 
-    def find_propers(self, search_date=None):
+    def find_propers(self, proper_candidates):
         results = []
-        db = DBConnection()
-        search_qualitities = ','.join([str(x) for x in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST])
-        sql_results = db.select(
-            b'SELECT s.show_name, e.showid, e.season, e.episode, e.status, e.airdate'
-            b' FROM tv_episodes AS e'
-            b' INNER JOIN tv_shows AS s ON (e.showid = s.indexer_id)'
-            b' WHERE e.airdate >= ?'
-            b' AND e.status IN (?)', [str(search_date.toordinal()), search_qualitities]
-        )
 
-        for sql_result in sql_results:
-            show_obj = Show.find(sickbeard.showList, int(sql_result[b'showid'])) if sql_result[b'showid'] else None
+        for proper_candidate in proper_candidates:
+            show_obj = Show.find(sickbeard.showList, int(proper_candidate[b'showid'])) if proper_candidate[b'showid'] else None
 
             if show_obj:
-                episode_obj = show_obj.getEpisode(sql_result[b'season'], sql_result[b'episode'])
+                episode_obj = show_obj.getEpisode(proper_candidate[b'season'], proper_candidate[b'episode'])
 
                 for term in self.proper_strings:
                     search_strings = self._get_episode_search_strings(episode_obj, add_string=term)
