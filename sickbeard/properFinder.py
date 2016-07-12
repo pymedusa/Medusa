@@ -84,7 +84,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         self.amActive = False
 
-    def _get_proper_results(self):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements # getProperList
+    def _get_proper_results(self):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """
         Retrieve a list of recently aired episodes, and search for these episodes in the different providers.
         """
