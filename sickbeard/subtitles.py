@@ -731,7 +731,8 @@ class SubtitlesFinder(object):
                 video_path = os.path.join(root, filename)
 
                 if processTV.subtitles_enabled(video_path) is False:
-                    logger.debug(u'Subtitle disabled for show: %s', filename)
+                    logger.debug(u'Subtitle disabled for show: %s. Running post-process to PP it', filename)
+                    run_post_process = True
                     continue
 
                 release_name = os.path.splitext(filename)[0]
@@ -744,7 +745,7 @@ class SubtitlesFinder(object):
                 # if user don't want to ignore embedded subtitles and wants to consider 'unknown' as wanted sub,
                 # and .mkv has one.
                 if not run_post_process and ((not needs_subtitles(downloaded_languages)) or
-                    (not sickbeard.EMBEDDED_SUBTITLES_ALL and sickbeard.EMBEDDED_SUBTITLES_UNKNOWN_LANG 
+                    (not sickbeard.EMBEDDED_SUBTITLES_ALL and sickbeard.EMBEDDED_SUBTITLES_UNKNOWN_LANG
                         and Language('und') in processTV.get_embedded_subtitles(video_path))):
                     run_post_process = True
 
