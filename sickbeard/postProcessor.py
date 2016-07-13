@@ -238,7 +238,9 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             # Add the extensions that the user doesn't allow to the 'extensions_to_delete' list
             if sickbeard.MOVE_ASSOCIATED_FILES:
                 allowed_extensions = sickbeard.ALLOWED_EXTENSIONS.split(",")
-                if not associated_file_path.rpartition('.')[2] in allowed_extensions:
+                found_extension = associated_file_path.rpartition('.')[2]
+                if not found_extension in allowed_extensions:
+                    self._log(u"Associated file extension not found in allowed extension {0}. Deleting it".format(found_extension), logger.WARNING)
                     if ek(os.path.isfile, associated_file_path):
                         extensions_to_delete.append(associated_file_path)
 
