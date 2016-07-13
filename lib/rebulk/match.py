@@ -770,6 +770,9 @@ class Match(object):
         name = ""
         tags = ""
         defined = ""
+        initiator = ""
+        if self.initiator.value != self.value:
+            initiator = "+initiator=" + self.initiator.value
         if self.private:
             flags += '+private'
         if self.name:
@@ -778,4 +781,4 @@ class Match(object):
             tags = "+tags=%s" % (self.tags,)
         if self.defined_at:
             defined += "@%s" % (self.defined_at,)
-        return "<%s:%s%s%s%s%s>" % (self.value, self.span, flags, name, tags, defined)
+        return "<%s:%s%s%s%s%s%s>" % (self.value, self.span, flags, name, tags, initiator, defined)

@@ -20,6 +20,7 @@ setup(
     tests_require=[
         'coveralls',
         'nose',
+        'nose-parameterized',
         'rednose',
         'mock',
     ],

@@ -22,7 +22,7 @@ def audio_codec():
     rebulk.defaults(name="audio_codec")
 
     rebulk.regex("MP3", "LAME", r"LAME(?:\d)+-?(?:\d)+", value="MP3")
-    rebulk.regex("DolbyDigital", "Dolby-Digital", "DD", value="DolbyDigital")
+    rebulk.regex("Dolby", "DolbyDigital", "Dolby-Digital", "DD", value="DolbyDigital")
     rebulk.regex("DolbyAtmos", "Dolby-Atmos", "Atmos", value="DolbyAtmos")
     rebulk.regex("AAC", value="AAC")
     rebulk.regex("AC3D?", value="AC3")
