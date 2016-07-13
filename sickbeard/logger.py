@@ -50,7 +50,6 @@ from sickrage.helper.common import dateTimeFormat
 
 from inspect import getargspec
 
-
 ADAPTER_MEMBERS = [attr for attr in dir(logging.LoggerAdapter) if not callable(attr) and not attr.startswith('__')]
 RESERVED_KEYWORDS = getargspec(logging.Logger._log).args[1:]
 
@@ -187,10 +186,10 @@ class CensoredFormatter(logging.Formatter, object):
         censored = censored | {quote(item) for item in censored}
         # convert set items to unicode and typecast to list
         censored = list({
-            item.decode(self.encoding, 'replace')
-            if not isinstance(item, text_type) else item
-            for item in censored
-        })
+                            item.decode(self.encoding, 'replace')
+                            if not isinstance(item, text_type) else item
+                            for item in censored
+                            })
         # sort the list in order of descending length so that entire item is censored
         # e.g. password and password_1 both get censored instead of getting ********_1
         censored.sort(key=len, reverse=True)
@@ -212,7 +211,7 @@ def list_modules(package):
     :rtype: list of str
     """
     return [modname for importer, modname, ispkg in pkgutil.walk_packages(
-        path=package.__path__, prefix=package.__name__+'.', onerror=lambda x: None)]
+        path=package.__path__, prefix=package.__name__ + '.', onerror=lambda x: None)]
 
 
 def get_loggers(package):
@@ -370,8 +369,10 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         submitter_result = ''
         issue_id = None
 
-        if not (sickbeard.GIT_USERNAME and sickbeard.GIT_PASSWORD and sickbeard.DEBUG and len(classes.ErrorViewer.errors) > 0):
-            submitter_result = 'Please set your GitHub username and password in the config and enable debug. Unable to submit issue ticket to GitHub!'
+        if not (sickbeard.GIT_USERNAME and sickbeard.GIT_PASSWORD and
+                sickbeard.DEBUG and len(classes.ErrorViewer.errors) > 0):
+            submitter_result = ('Please set your GitHub username and password in the config and enable debug. '
+                                'Unable to submit issue ticket to GitHub!')
             return submitter_result, issue_id
 
         try:
@@ -384,7 +385,8 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
             return submitter_result, issue_id
 
         if commits_behind is None or commits_behind > 0:
-            submitter_result = 'Please update SickRage, unable to submit issue ticket to GitHub with an outdated version!'
+            submitter_result = ('Please update SickRage, '
+                                'unable to submit issue ticket to GitHub with an outdated version!')
             return submitter_result, issue_id
 
         if self.submitter_running:
@@ -476,8 +478,10 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
                 reports = git.get_organization(gh_org).get_repo(gh_repo).get_issues(state='all')
 
                 def is_ascii_error(title):
-                    # [APP SUBMITTED]: 'ascii' codec can't encode characters in position 00-00: ordinal not in range(128)
-                    # [APP SUBMITTED]: 'charmap' codec can't decode byte 0x00 in position 00: character maps to <undefined>
+                    # [APP SUBMITTED]:
+                    #   'ascii' codec can't encode characters in position 00-00: ordinal not in range(128)
+                    # [APP SUBMITTED]:
+                    #   'charmap' codec can't decode byte 0x00 in position 00: character maps to <undefined>
                     return re.search(r'.* codec can\'t .*code .* in position .*:', title) is not None
 
                 def is_malformed_error(title):
@@ -489,9 +493,9 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
 
                 issue_found = False
                 for report in reports:
-                    if title_error.rsplit(' :: ')[-1] in report.title or \
-                        (malformed_error and is_malformed_error(report.title)) or \
-                            (ascii_error and is_ascii_error(report.title)):
+                    if title_error.rsplit(' :: ')[-1] in report.title or (
+                            malformed_error and is_malformed_error(report.title)) or (
+                            ascii_error and is_ascii_error(report.title)):
 
                         issue_id = report.number
                         if not report.raw_data['locked']:
@@ -500,7 +504,8 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
                             else:
                                 submitter_result = 'Failed to comment on found issue #%s!' % issue_id
                         else:
-                            submitter_result = 'Issue #%s is locked, check GitHub to find info about the error.' % issue_id
+                            submitter_result = ('Issue #%s is locked, '
+                                                'check GitHub to find info about the error.' % issue_id)
 
                         issue_found = True
                         break
@@ -626,6 +631,7 @@ def custom_get_logger(name=None):
     :return:
     """
     return StyleAdapter(standard_logger(name))
+
 
 # Keeps the standard logging.getLogger to be used by SylteAdapter
 standard_logger = logging.getLogger
