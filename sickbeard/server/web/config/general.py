@@ -68,7 +68,8 @@ class ConfigGeneral(Config):
                     calendar_unprotected=None, calendar_icons=None, debug=None, ssl_verify=None, no_restart=None, coming_eps_missed_range=None,
                     fuzzy_dating=None, trim_zero=None, date_preset=None, date_preset_na=None, time_preset=None,
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
-                    git_reset=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None, privacy_level='normal'):
+                    git_reset=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None,
+                    privacy_level='normal', use_legacy_name_parser=None):
 
         results = []
 
@@ -76,6 +77,7 @@ class ConfigGeneral(Config):
         sickbeard.DOWNLOAD_URL = download_url
         sickbeard.INDEXER_DEFAULT_LANGUAGE = indexerDefaultLang
         sickbeard.EP_DEFAULT_DELETED_STATUS = ep_default_deleted_status
+        sickbeard.USE_LEGACY_NAME_PARSER = config.checkbox_to_value(use_legacy_name_parser)
         sickbeard.SKIP_REMOVED_FILES = config.checkbox_to_value(skip_removed_files)
         sickbeard.LAUNCH_BROWSER = config.checkbox_to_value(launch_browser)
         config.change_SHOWUPDATE_HOUR(showupdate_hour)

@@ -56,7 +56,7 @@ class NameParser(object):
         self.tryIndexers = tryIndexers
 
         self.naming_pattern = naming_pattern
-        self.use_guessit = use_guessit
+        self.use_guessit = not sickbeard.USE_LEGACY_NAME_PARSER
         self.allow_multi_season = allow_multi_season
 
         if (self.showObj and not self.showObj.is_anime) or parse_method == 'normal':
