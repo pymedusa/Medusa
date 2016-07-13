@@ -884,7 +884,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         PROVIDER_ORDER = check_setting_str(CFG, 'General', 'provider_order', '').split()
 
-        USE_LEGACY_NAME_PARSER = bool(check_setting_int(CFG, 'General', 'use_legacy_name_parser', 1))
+        USE_LEGACY_NAME_PARSER = bool(check_setting_int(CFG, 'General', 'use_legacy_name_parser', 0))
 
         NAMING_PATTERN = check_setting_str(CFG, 'General', 'naming_pattern', 'Season %0S/%SN - S%0SE%0E - %EN')
         NAMING_ABD_PATTERN = check_setting_str(CFG, 'General', 'naming_abd_pattern', '%SN - %A.D - %EN')
