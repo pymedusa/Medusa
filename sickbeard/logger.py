@@ -510,4 +510,13 @@ class Wrapper(object):
             return getattr(self.instance, name)
 
 
+def log(*args, **kwargs):
+    """To avoid IDE warnings everywhere.
+
+    :param args:
+    :param kwargs:
+    """
+    _globals.instance.log(*args, **kwargs)
+
+
 _globals = sys.modules[__name__] = Wrapper(sys.modules[__name__])  # pylint: disable=invalid-name

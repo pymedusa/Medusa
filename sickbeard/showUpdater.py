@@ -109,7 +109,7 @@ class ShowUpdater(object):  # pylint: disable=too-few-public-methods
                     # else:
                     #     pi_list.append(sickbeard.showQueueScheduler.action.refreshShow(cur_show, True))
                 else:
-                    cur_show.nextEpisode()
+                    cur_show.next_episode()
 
                     if cur_show.should_update(update_date=update_date):
                         try:

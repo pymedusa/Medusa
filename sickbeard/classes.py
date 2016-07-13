@@ -107,7 +107,7 @@ class SearchResult(object):  # pylint: disable=too-few-public-methods, too-many-
         return my_string
 
     def fileName(self):
-        return u'{}.{}'.format(self.episodes[0].prettyName(), self.resultType)
+        return u'{}.{}'.format(self.episodes[0].pretty_name(), self.resultType)
 
 
 class NZBSearchResult(SearchResult):  # pylint: disable=too-few-public-methods

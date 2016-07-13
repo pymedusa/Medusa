@@ -55,7 +55,7 @@ class TorrentProvider(GenericProvider):
             show = Show.find(sickbeard.showList, int(result['showid']))
 
             if show:
-                episode = show.getEpisode(result['season'], result['episode'])
+                episode = show.get_episode(result['season'], result['episode'])
 
                 for term in self.proper_strings:
                     search_strings = self._get_episode_search_strings(episode, add_string=term)

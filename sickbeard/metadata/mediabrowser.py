@@ -407,7 +407,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         show_obj: a TVShow instance to create the NFO for
         """
 
-        eps_to_write = [ep_obj] + ep_obj.relatedEps
+        eps_to_write = [ep_obj] + ep_obj.related_episodes
 
         persons_dict = {
             'Director': [],
@@ -470,14 +470,14 @@ class MediaBrowserMetadata(generic.GenericMetadata):
                 episode_number = etree.SubElement(episode, 'EpisodeNumber')
                 episode_number.text = str(ep_obj.episode)
 
-                if ep_obj.relatedEps:
+                if ep_obj.related_episodes:
                     episode_number_end = etree.SubElement(episode, 'EpisodeNumberEnd')
                     episode_number_end.text = str(ep_to_write.episode)
 
                 season_number = etree.SubElement(episode, 'SeasonNumber')
                 season_number.text = str(ep_to_write.season)
 
-                if not ep_obj.relatedEps and getattr(my_ep, 'absolute_number', None):
+                if not ep_obj.related_episodes and getattr(my_ep, 'absolute_number', None):
                     absolute_number = etree.SubElement(episode, 'absolute_number')
                     absolute_number.text = str(my_ep['absolute_number'])
 
@@ -492,7 +492,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
                     overview = etree.SubElement(episode, 'Overview')
                     overview.text = ep_to_write.description
 
-                if not ep_obj.relatedEps:
+                if not ep_obj.related_episodes:
                     if getattr(my_ep, 'rating', None):
                         rating = etree.SubElement(episode, 'Rating')
                         rating.text = my_ep['rating']

@@ -875,7 +875,7 @@ class SubtitlesFinder(object):
                     logger.debug(u'Show with ID %s not found in the database', ep_to_sub['showid'])
                     continue
 
-                episode_object = show_object.getEpisode(ep_to_sub['season'], ep_to_sub['episode'])
+                episode_object = show_object.get_episode(ep_to_sub['season'], ep_to_sub['episode'])
                 if isinstance(episode_object, str):
                     logger.debug(u'%s %s not found in the database', ep_to_sub['show_name'], ep_num)
                     continue

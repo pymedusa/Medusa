@@ -66,9 +66,9 @@ def getEpisode(show, season=None, episode=None, absolute=None):
         return "Invalid show paramaters"
 
     if absolute:
-        ep_obj = show_obj.getEpisode(absolute_number=absolute)
+        ep_obj = show_obj.get_episode(absolute_number=absolute)
     elif season and episode:
-        ep_obj = show_obj.getEpisode(season, episode)
+        ep_obj = show_obj.get_episode(season, episode)
     else:
         return "Invalid paramaters"
 
@@ -95,7 +95,7 @@ def getEpisodes(search_thread, searchstatus):
         search_thread.segment = [search_thread.segment]
 
     for ep_obj in search_thread.segment:
-        ep = show_obj.getEpisode(ep_obj.season, ep_obj.episode)
+        ep = show_obj.get_episode(ep_obj.season, ep_obj.episode)
         results.append({
             'show': show_obj.indexerid,
             'episode': ep.episode,
@@ -104,7 +104,7 @@ def getEpisodes(search_thread, searchstatus):
             'searchstatus': searchstatus,
             'status': statusStrings[ep.status],
             'quality': getQualityClass(ep),
-            'overview': Overview.overviewStrings[show_obj.getOverview(ep.status)],
+            'overview': Overview.overviewStrings[show_obj.get_overview(ep.status)],
         })
 
     return results

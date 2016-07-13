@@ -310,7 +310,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         try:
             logger.log(u"Beginning {0} {1}search for: [{2}]".
                        format(('forced', 'manual')[bool(self.manual_search)],
-                              ('', 'season pack ')[bool(self.manual_search_type == 'season')], self.segment[0].prettyName()))
+                              ('', 'season pack ')[bool(self.manual_search_type == 'season')], self.segment[0].pretty_name()))
 
             search_result = search.searchProviders(self.show, self.segment, True, self.downCurQuality,
                                                    self.manual_search, self.manual_search_type)
@@ -334,14 +334,14 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                     ui.notifications.message("We have found season packs for {0}".format(self.show.name),
                                              "These should become visible in the manual select page.")
                 else:
-                    ui.notifications.message("We have found results for {0}".format(self.segment[0].prettyName()),
+                    ui.notifications.message("We have found results for {0}".format(self.segment[0].pretty_name()),
                                              "These should become visible in the manual select page.")
             else:
                 ui.notifications.message('No results were found')
                 logger.log(u"Unable to find {0} {1}results for: [{2}]".
                            format(('forced', 'manual')[bool(self.manual_search)],
                                   ('', 'season pack ')[bool(self.manual_search_type == 'season')],
-                                  self.segment[0].prettyName()))
+                                  self.segment[0].pretty_name()))
 
         except Exception:
             self.success = False
@@ -500,7 +500,7 @@ class FailedQueueItem(generic_queue.QueueItem):
         try:
             for epObj in self.segment:
 
-                logger.log(u"Marking episode as bad: [" + epObj.prettyName() + "]")
+                logger.log(u"Marking episode as bad: [" + epObj.pretty_name() + "]")
 
                 failed_history.markFailed(epObj)
 
@@ -510,7 +510,7 @@ class FailedQueueItem(generic_queue.QueueItem):
                     history.logFailed(epObj, release, provider)
 
                 failed_history.revertEpisode(epObj)
-                logger.log(u"Beginning failed download search for: [" + epObj.prettyName() + "]")
+                logger.log(u"Beginning failed download search for: [" + epObj.pretty_name() + "]")
 
             # If it is wanted, self.downCurQuality doesnt matter
             # if it isnt wanted, we need to make sure to not overwrite the existing ep that we reverted to!

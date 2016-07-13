@@ -753,7 +753,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
             # now that we've figured out which episode this file is just load it manually
             try:
-                curEp = show.getEpisode(season, cur_episode)
+                curEp = show.get_episode(season, cur_episode)
                 if not curEp:
                     raise EpisodeNotFoundException()
             except EpisodeNotFoundException as e:
@@ -763,9 +763,9 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             # associate all the episodes together under a single root episode
             if root_ep is None:
                 root_ep = curEp
-                root_ep.relatedEps = []
-            elif curEp not in root_ep.relatedEps:
-                root_ep.relatedEps.append(curEp)
+                root_ep.related_episodes = []
+            elif curEp not in root_ep.related_episodes:
+                root_ep.related_episodes.append(curEp)
 
         return root_ep
 
@@ -1036,14 +1036,14 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
         # try to find out if we have enough space to perform the copy or move action.
         if not helpers.isFileLocked(self.file_path, False):
-            if not verify_freespace(self.file_path, ep_obj.show._location, [ep_obj] + ep_obj.relatedEps):  # pylint: disable=protected-access
+            if not verify_freespace(self.file_path, ep_obj.show._location, [ep_obj] + ep_obj.related_episodes):  # pylint: disable=protected-access
                 self._log("Not enough space to continue PP, exiting", logger.WARNING)
                 return False
         else:
             self._log("Unable to determine needed filespace as the source file is locked for access")
 
         # delete the existing file (and company)
-        for cur_ep in [ep_obj] + ep_obj.relatedEps:
+        for cur_ep in [ep_obj] + ep_obj.related_episodes:
             try:
                 self._delete(cur_ep.location, associated_files=True)
 
@@ -1054,7 +1054,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 raise EpisodePostProcessingFailedException("Unable to delete the existing files")
 
             # set the status of the episodes
-            # for curEp in [ep_obj] + ep_obj.relatedEps:
+            # for curEp in [ep_obj] + ep_obj.related_episodes:
             #    curEp.status = common.Quality.compositeStatus(common.SNATCHED, new_ep_quality)
 
         # if the show directory doesn't exist then make it if allowed
@@ -1070,12 +1070,12 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 raise EpisodePostProcessingFailedException("Unable to create the show directory: " + ep_obj.show._location)  # pylint: disable=protected-access
 
             # get metadata for the show (but not episode because it hasn't been fully processed)
-            ep_obj.show.writeMetadata(True)
+            ep_obj.show.write_metadata(True)
 
         # update the ep info before we rename so the quality & release name go into the name properly
         sql_l = []
 
-        for cur_ep in [ep_obj] + ep_obj.relatedEps:
+        for cur_ep in [ep_obj] + ep_obj.related_episodes:
             with cur_ep.lock:
 
                 if self.release_name:
@@ -1122,7 +1122,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             dest_path = ek(os.path.dirname, proper_absolute_path)
         except ShowDirectoryNotFoundException:
             raise EpisodePostProcessingFailedException(
-                u"Unable to post-process an episode if the show dir doesn't exist, quitting")
+                u"Unable to post-process an episode if the show dir '{dir}' doesn't exist, quitting".format(
+                    dir=ep_obj.show.raw_location))
 
         self._log(u"Destination folder for this episode: " + dest_path, logger.DEBUG)
 
@@ -1172,10 +1173,10 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
         # download subtitles
         if sickbeard.USE_SUBTITLES and ep_obj.show.subtitles:
-            for cur_ep in [ep_obj] + ep_obj.relatedEps:
+            for cur_ep in [ep_obj] + ep_obj.related_episodes:
                 with cur_ep.lock:
                     cur_ep.location = ek(os.path.join, dest_path, new_file_name)
-                    cur_ep.refreshSubtitles()
+                    cur_ep.refresh_subtitles()
                     cur_ep.download_subtitles(force=True)
 
         # now that processing has finished, we can put the info in the DB. If we do it earlier, then when processing fails, it won't try again.
@@ -1185,7 +1186,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
         # put the new location in the database
         sql_l = []
-        for cur_ep in [ep_obj] + ep_obj.relatedEps:
+        for cur_ep in [ep_obj] + ep_obj.related_episodes:
             with cur_ep.lock:
                 cur_ep.location = ek(os.path.join, dest_path, new_file_name)
                 sql_l.append(cur_ep.get_sql())
@@ -1194,11 +1195,11 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 
-        cur_ep.airdateModifyStamp()
+        cur_ep.airdate_modify_stamp()
 
         # generate nfo/tbn
         try:
-            ep_obj.createMetaFiles()
+            ep_obj.create_meta_files()
         except Exception:
             logger.log(u"Could not create/update meta files. Continuing with postProcessing...")
 

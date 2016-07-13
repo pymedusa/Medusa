@@ -291,8 +291,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
             if not manual_search:
                 for episode_number in actual_episodes:
-                    if not show_object.wantEpisode(actual_season, episode_number, quality, forced_search,
-                                                   download_current_quality):
+                    if not show_object.want_episode(actual_season, episode_number, quality, forced_search,
+                                                    download_current_quality):
                         episode_wanted = False
                         break
 
@@ -304,7 +304,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
             episode_object = []
             for current_episode in actual_episodes:
-                episode_object.append(show_object.getEpisode(actual_season, current_episode))
+                episode_object.append(show_object.get_episode(actual_season, current_episode))
 
             result = self.get_result(episode_object)
             result.show = show_object

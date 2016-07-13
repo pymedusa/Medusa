@@ -113,11 +113,11 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
                 if end_time > cur_time:
                     continue
 
-            cur_ep = show.getEpisode(db_episode[b'season'], db_episode[b'episode'])
+            cur_ep = show.get_episode(db_episode[b'season'], db_episode[b'episode'])
             with cur_ep.lock:
                 cur_ep.status = show.default_ep_status if cur_ep.season else common.SKIPPED
                 logger.log('Setting status ({status}) for show airing today: {name} {special}'.format(
-                    name=cur_ep.prettyName(),
+                    name=cur_ep.pretty_name(),
                     status=common.statusStrings[cur_ep.status],
                     special='(specials are not supported)' if not cur_ep.season else ''
                 ))

@@ -702,7 +702,7 @@ class CMD_Episode(ApiCall):
         self.s, args = self.check_params(args, kwargs, "season", None, True, "int", [])
         self.e, args = self.check_params(args, kwargs, "episode", None, True, "int", [])
         # optional
-        self.fullPath, args = self.check_params(args, kwargs, "full_path", False, False, "bool", [])
+        self.full_path, args = self.check_params(args, kwargs, "full_path", False, False, "bool", [])
         # super, missing, help
         ApiCall.__init__(self, args, kwargs)
 
@@ -729,7 +729,7 @@ class CMD_Episode(ApiCall):
 
         if not show_path:  # show dir is broken ... episode path will be empty
             episode["location"] = ""
-        elif not self.fullPath:
+        elif not self.full_path:
             # using the length because lstrip() removes to much
             show_path_length = len(show_path) + 1  # the / or \ yeah not that nice i know
             episode["location"] = episode["location"][show_path_length:]
@@ -778,7 +778,7 @@ class CMD_EpisodeSearch(ApiCall):
             return _responds(RESULT_FAILURE, msg="Show not found")
 
         # retrieve the episode object and fail if we can't get one
-        ep_obj = show_obj.getEpisode(self.s, self.e)
+        ep_obj = show_obj.get_episode(self.s, self.e)
         if isinstance(ep_obj, str):
             return _responds(RESULT_FAILURE, msg="Episode not found")
 
@@ -843,13 +843,13 @@ class CMD_EpisodeSetStatus(ApiCall):
             raise ApiError("The status string could not be matched to a status. Report to Devs!")
 
         if self.e:
-            ep_obj = show_obj.getEpisode(self.s, self.e)
+            ep_obj = show_obj.get_episode(self.s, self.e)
             if not ep_obj:
                 return _responds(RESULT_FAILURE, msg="Episode not found")
             ep_list = [ep_obj]
         else:
             # get all episode numbers from self, season
-            ep_list = show_obj.getAllEpisodes(season=self.s)
+            ep_list = show_obj.get_all_episodes(season=self.s)
 
         def _ep_result(result_code, ep, msg=""):
             return {'season': ep.season, 'episode': ep.episode, 'status': statusStrings[ep.status],
@@ -946,7 +946,7 @@ class CMD_SubtitleSearch(ApiCall):
             return _responds(RESULT_FAILURE, msg="Show not found")
 
         # retrieve the episode object and fail if we can't get one
-        ep_obj = show_obj.getEpisode(self.s, self.e)
+        ep_obj = show_obj.get_episode(self.s, self.e)
         if isinstance(ep_obj, str):
             return _responds(RESULT_FAILURE, msg="Episode not found")
 
@@ -1167,7 +1167,7 @@ class CMD_Backlog(ApiCall):
 
             for curResult in sql_results:
 
-                cur_ep_cat = curShow.getOverview(curResult["status"])
+                cur_ep_cat = curShow.get_overview(curResult["status"])
                 if cur_ep_cat and cur_ep_cat in (Overview.WANTED, Overview.QUAL):
                     show_eps.append(curResult)
 

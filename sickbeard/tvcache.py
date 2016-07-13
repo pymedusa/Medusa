@@ -423,7 +423,7 @@ class TVCache(object):
             for ep_obj in episode:
                 cl.append([
                     b'SELECT * FROM [{0}] WHERE indexerid = ? AND season = ? AND episodes LIKE ? AND quality IN ({1})'.
-                    format(self.provider_id, ','.join([str(x) for x in ep_obj.wantedQuality])),
+                    format(self.provider_id, ','.join([str(x) for x in ep_obj.wanted_quality])),
                     [ep_obj.show.indexerid, ep_obj.season, b'%|{0}|%'.format(ep_obj.episode)]])
 
             sql_results = cache_db_con.mass_action(cl, fetchall=True)
@@ -461,11 +461,11 @@ class TVCache(object):
             cur_version = cur_result[b'version']
 
             # if the show says we want that episode then add it to the list
-            if not show_obj.wantEpisode(cur_season, cur_ep, cur_quality, forced_search, downCurQuality):
+            if not show_obj.want_episode(cur_season, cur_ep, cur_quality, forced_search, downCurQuality):
                 logger.log('Ignoring {0}'.format(cur_result[b'name']), logger.DEBUG)
                 continue
 
-            ep_obj = show_obj.getEpisode(cur_season, cur_ep)
+            ep_obj = show_obj.get_episode(cur_season, cur_ep)
 
             # build a result object
             title = cur_result[b'name']
