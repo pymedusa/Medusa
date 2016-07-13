@@ -51,7 +51,11 @@ from sickrage.helper.encoding import ss, ek
 from sickrage.helper.exceptions import ex
 from sickrage.helper.common import dateTimeFormat
 
-# pylint: disable=line-too-long
+from inspect import getargspec
+
+
+ADAPTER_MEMBERS = [attr for attr in dir(logging.LoggerAdapter) if not callable(attr) and not attr.startswith('__')]
+RESERVED_KEYWORDS = getargspec(logging.Logger._log).args[1:]
 
 # log levels
 CRITICAL = logging.CRITICAL
@@ -496,7 +500,34 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         return submitter_result, issue_id
 
 
-# pylint: disable=too-few-public-methods
+class BraceMessage(object):
+    """Log Message wrapper that applies new string format style."""
+
+    def __init__(self, fmt, args, kwargs):
+        self.fmt = fmt
+        self.args = args
+        self.kwargs = kwargs
+
+    def __str__(self):
+        return str(self.fmt).format(*self.args, **self.kwargs)
+
+
+class StyleAdapter(logging.LoggerAdapter):
+    """Logger Adapter with new string format style."""
+
+    def __init__(self, target_logger, extra=None):
+        super(StyleAdapter, self).__init__(target_logger, extra)
+
+    def __getattr__(self, name):
+        if name not in ADAPTER_MEMBERS:
+            return getattr(self.logger, name)
+
+        return getattr(self, name)
+
+    def process(self, msg, kwargs):
+        return BraceMessage(msg, (), kwargs), {k: kwargs[k] for k in RESERVED_KEYWORDS if k in kwargs}
+
+
 class Wrapper(object):
     instance = Logger()
 
@@ -518,5 +549,19 @@ def log(*args, **kwargs):
     """
     _globals.instance.log(*args, **kwargs)
 
+
+def custom_get_logger(name=None):
+    """Custom logging.getLogger function.
+
+    :param name:
+    :return:
+    """
+    return StyleAdapter(standard_logger(name))
+
+# Keeps the standard logging.getLogger to be used by SylteAdapter
+standard_logger = logging.getLogger
+
+# Replaces logging.getLogger with our custom one
+logging.getLogger = custom_get_logger
 
 _globals = sys.modules[__name__] = Wrapper(sys.modules[__name__])  # pylint: disable=invalid-name
