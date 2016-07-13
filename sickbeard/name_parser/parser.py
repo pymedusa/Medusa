@@ -49,7 +49,7 @@ class NameParser(object):
     ANIME_REGEX = 2
 
     def __init__(self, file_name=True, showObj=None, tryIndexers=False,  # pylint: disable=too-many-arguments
-                 naming_pattern=False, parse_method=None, use_guessit=True, allow_multi_season=False):
+                 naming_pattern=False, parse_method=None, allow_multi_season=False):
 
         self.file_name = file_name
         self.showObj = showObj
