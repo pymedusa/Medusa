@@ -17,10 +17,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
-
-"""
-Custom Logger for SickRage
-"""
+"""Custom Logger."""
 
 from __future__ import unicode_literals
 
@@ -97,11 +94,16 @@ level_mapping = {
 
 
 class ContextFilter(logging.Filter):
-    """
-    This is a filter which injects contextual information into the log, in our case: commit hash
-    """
+    """This is a filter which injects contextual information into the log, in our case: commit hash."""
 
     def filter(self, record):
+        """Filter to add commit hash to log record, adjust log level and to add exception traceback for errors.
+
+        :param record:
+        :type record: logging.LogRecord
+        :return:
+        :rtype: bool
+        """
         cur_commit_hash = sickbeard.CUR_COMMIT_HASH
         record.curhash = cur_commit_hash[:7] if cur_commit_hash and len(cur_commit_hash) > 6 else ''
 
@@ -122,11 +124,14 @@ class ContextFilter(logging.Filter):
 
 
 class UIViewHandler(logging.Handler):
+    """Log Handler to add errors and warnings to UI viewer."""
 
     def __init__(self):
+        """Default constructor."""
         super(UIViewHandler, self).__init__(WARNING)
 
     def emit(self, record):
+        """Add errors and warnings to the UI viewer."""
         # SSL errors might change the record.levelno to WARNING
         message = self.format(record)
 
@@ -141,18 +146,20 @@ class UIViewHandler(logging.Handler):
 
 
 class CensoredFormatter(logging.Formatter, object):
-    """
-    Censor information such as API keys, user names, and passwords from the Log
-    """
+    """Censor information such as API keys, user names, and passwords from the Log."""
+
     def __init__(self, fmt=None, datefmt=None, encoding='utf-8'):
+        """Constructor."""
         super(CensoredFormatter, self).__init__(fmt, datefmt)
         self.encoding = encoding
 
     def format(self, record):
-        """
-        Strips censored items from string
+        """Strip censored items from string.
 
         :param record: to censor
+        :type record: logging.LogRecord
+        :return:
+        :rtype: str
         """
         privacy_level = sickbeard.common.privacy_levels[sickbeard.PRIVACY_LEVEL]
         if not privacy_level:
@@ -197,43 +204,57 @@ class CensoredFormatter(logging.Formatter, object):
 
 
 def list_modules(package):
+    """Return all sub-modules for the specified package.
+
+    :param package:
+    :type package: module
+    :return:
+    :rtype: list of str
+    """
     return [modname for importer, modname, ispkg in pkgutil.walk_packages(
         path=package.__path__, prefix=package.__name__+'.', onerror=lambda x: None)]
 
 
 def get_loggers(package):
+    """Return all loggers for package and sub-packages.
+
+    :param package:
+    :type package: module
+    :return:
+    :rtype: list of logging.Logger
+    """
     return [logging.getLogger(modname) for modname in list_modules(package)]
 
 
 class Logger(object):  # pylint: disable=too-many-instance-attributes
-    """
-    Logger to create log entries
-    """
-    def __init__(self):
-        self.logger = logging.getLogger('sickrage')
+    """Custom Logger."""
 
+    def __init__(self):
+        """Default Constructor."""
+        self.logger = logging.getLogger('sickrage')
         self.loggers = [self.logger]
         self.loggers.extend(get_loggers(sickrage))
         self.loggers.extend(get_loggers(sickbeard))
         self.loggers.extend(get_loggers(subliminal))
         self.loggers.extend(get_loggers(tornado))
-
         self.console_logging = False
         self.file_logging = False
         self.debug_logging = False
         self.database_logging = False
         self.log_file = None
-
         self.submitter_running = False
 
     def init_logging(self, console_logging=False, file_logging=False, debug_logging=False, database_logging=False):
-        """
-        Initialize logging
+        """Initialize logging.
 
         :param console_logging: True if logging to console
+        :type console_logging: bool
         :param file_logging: True if logging to file
+        :type file_logging: bool
         :param debug_logging: True if debug logging is enabled
+        :type debug_logging: bool
         :param database_logging: True if logging database access
+        :type database_logging: bool
         """
         self.log_file = self.log_file or ek(os.path.join, sickbeard.LOG_DIR, 'sickrage.log')
         self.debug_logging = debug_logging
@@ -292,14 +313,15 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
 
     # TODO: Read the user configuration instead of using the initial config
     def get_default_level(self):
-        """Returns the default log level to be used based on the initial user configuration.
+        """Return the default log level to be used based on the initial user configuration.
+
         :return: the default log level
         :rtype: int
         """
         return DB if self.database_logging else DEBUG if self.debug_logging else INFO
 
     def reconfigure_levels(self):
-        """Reconfigures the log levels. Right now, only subliminal module is affected"""
+        """Adjust the log levels for some modules."""
         default_level = self.get_default_level()
         mapping = dict()
 
@@ -315,23 +337,27 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
 
     @staticmethod
     def shutdown():
-        """
-        Shut down the logger
-        """
+        """Shut down the logger."""
         logging.shutdown()
 
     def log(self, msg, level=INFO, *args, **kwargs):
-        """
-        Create log entry
+        """Create log entry.
 
         :param msg: to log
         :param level: of log, e.g. DEBUG, INFO, etc.
+        :type level: int
         :param args: to pass to logger
         :param kwargs: to pass to logger
         """
         self.logger.log(level, msg, *args, **kwargs)
 
     def log_error_and_exit(self, error_msg, *args, **kwargs):
+        """Create and error log entry and exit application.
+
+        :param error_msg: to log
+        :param args: to pass to logger
+        :param kwargs: to pass to logger
+        """
         self.log(error_msg, ERROR, *args, **kwargs)
 
         if not self.console_logging:
@@ -340,7 +366,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
             sys.exit(1)
 
     def submit_errors(self):  # pylint: disable=too-many-branches,too-many-locals
-
+        """Submit errors to github."""
         submitter_result = ''
         issue_id = None
 
@@ -504,11 +530,23 @@ class BraceMessage(object):
     """Log Message wrapper that applies new string format style."""
 
     def __init__(self, fmt, args, kwargs):
+        """Constructor.
+
+        :param fmt:
+        :type fmt: logging.Formatter
+        :param args:
+        :param kwargs:
+        """
         self.fmt = fmt
         self.args = args
         self.kwargs = kwargs
 
     def __str__(self):
+        """String representation.
+
+        :return:
+        :rtype: str
+        """
         return str(self.fmt).format(*self.args, **self.kwargs)
 
 
@@ -516,25 +554,56 @@ class StyleAdapter(logging.LoggerAdapter):
     """Logger Adapter with new string format style."""
 
     def __init__(self, target_logger, extra=None):
+        """Constructor.
+
+        :param target_logger:
+        :type target_logger: logging.Logger
+        :param extra:
+        :type extra: dict
+        """
         super(StyleAdapter, self).__init__(target_logger, extra)
 
     def __getattr__(self, name):
+        """Wrapper that delegates to the actual logger.
+
+        :param name:
+        :type name: str
+        :return:
+        """
         if name not in ADAPTER_MEMBERS:
             return getattr(self.logger, name)
 
         return getattr(self, name)
 
     def process(self, msg, kwargs):
+        """Enhance default process to use BraceMessage and remove unsupported keyword args for the actual logger method.
+
+        :param msg:
+        :param kwargs:
+        :return:
+        """
         return BraceMessage(msg, (), kwargs), {k: kwargs[k] for k in RESERVED_KEYWORDS if k in kwargs}
 
 
 class Wrapper(object):
+    """Wrapper that delegates all calls to the actual Logger instance."""
+
     instance = Logger()
 
     def __init__(self, wrapped):
+        """Constructor with the actual module instance.
+
+        :param wrapped:
+        """
         self.wrapped = wrapped
 
     def __getattr__(self, name):
+        """Delegate to the wrapped module instance or to Logger instance.
+
+        :param name:
+        :type name: str
+        :return:
+        """
         try:
             return getattr(self.wrapped, name)
         except AttributeError:
