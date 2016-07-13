@@ -568,7 +568,7 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
             processor = postProcessor.PostProcessor(cur_video_file_path, nzbName, process_method, is_priority)
 
             # This feature prevents PP for files that do not have subtitle associated with the video file
-            if sickbeard.POSTPONE_IF_NO_SUBS and subtitles_enabled(cur_video_file):
+            if sickbeard.POSTPONE_IF_NO_SUBS and subtitles_enabled(cur_video_file, nzbName):
                 # If user don't want to ignore embedded subtitles and video has at least one, don't post pone PP
                 if has_matching_unknown_subtitles(cur_video_file_path):
                     result.output += logHelper(u"Found embedded unknown subtitles and we don't want to ignore them. "
@@ -657,7 +657,7 @@ def process_failed(dirName, nzbName, result):
                                        (nzbName, dirName, process_fail_message), logger.WARNING)
 
 
-def subtitles_enabled(video):
+def subtitles_enabled(video, nzbName=None):
     """
     Parse video filename to a show to check if it has subtitle enabled
 
@@ -667,17 +667,16 @@ def subtitles_enabled(video):
     try:
         parse_result = NameParser().parse(video, cache_result=True)
     except (InvalidNameException, InvalidShowException):
-        logger.log(u'Not enough information to parse filename into a valid show. Consider add scene exceptions or improve naming for: {}'.format(video), logger.WARNING)
-        return
-
-    if parse_result.show.indexerid:
-        main_db_con = db.DBConnection()
-        sql_results = main_db_con.select("SELECT subtitles FROM tv_shows WHERE indexer_id = ? LIMIT 1", [parse_result.show.indexerid])
-        return bool(sql_results[0]["subtitles"]) if sql_results else False
-    else:
-        logger.log(u'Empty indexer ID for: {}'.format(video), logger.WARNING)
-        return
-
+        if nzbName:
+            logger.log(u'Try parsing from NZB name: {0}'.format(nzbName), logger.WARNING)
+            try:
+                parse_result = NameParser().parse(nzbName, cache_result=True) 
+            except (InvalidNameException, InvalidShowException):
+                logger.log(u'Not enough information to parse NZB name into a valid show', logger.WARNING)
+                return
+        else:    
+            logger.log(u'Not enough information to parse filename into a valid show. Consider add scene exceptions or improve naming for: {}'.format(video), logger.WARNING)
+            return
 
 def has_matching_unknown_subtitles(video_path):
     """Whether or not there's a valid unknown embedded subtitle for the specified video.
