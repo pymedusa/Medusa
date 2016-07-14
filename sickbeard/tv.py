@@ -1991,11 +1991,16 @@ class TVEpisode(TVObject):
                         status=statusStrings[self.status], location=self.location), logger.DEBUG)
 
         if not ek(os.path.isfile, self.location):
-            if self.airdate >= datetime.date.today() or self.airdate == datetime.date.fromordinal(1):
+            if (self.airdate >= datetime.date.today() or self.airdate == datetime.date.fromordinal(1)) and \
+                self.status in (UNAIRED, UNKNOWN, WANTED):
+                # Need to check if is UNAIRED otherwise code will step into second 'IF' and make episode as default_ep_status
+                # If is a leaked episode and user manually snatched, it will respect status
+                # If is a fake (manually snatched), when user set as FAILED, status will be WANTED
+                # and code below will make it UNAIRED again
                 logger.log(u'%s: Episode airs in the future or has no airdate, marking it %s' %
                            (self.show.indexerid, statusStrings[UNAIRED]), logger.DEBUG)
                 self.status = UNAIRED
-            elif self.status in [UNAIRED, UNKNOWN]:
+            elif self.status in (UNAIRED, UNKNOWN):
                 # Only do UNAIRED/UNKNOWN, it could already be snatched/ignored/skipped,
                 # or downloaded/archived to disconnected media
                 logger.log(u'Episode has already aired, marking it %s' %
