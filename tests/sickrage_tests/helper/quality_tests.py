@@ -30,6 +30,7 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
+from six import iteritems
 from sickbeard.common import ANY, HD, HD1080p, HD720p, Quality, SD
 from sickrage.helper.quality import get_quality_string
 
@@ -62,7 +63,7 @@ class QualityTests(unittest.TestCase):
             1000000: 'Custom',  # An invalid quality number to test the default case
         }
 
-        for (quality, result) in tests.iteritems():
+        for (quality, result) in iteritems(tests):
             self.assertEqual(get_quality_string(quality), result)
 
 

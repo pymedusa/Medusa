@@ -17,11 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import sickbeard
 
 from datetime import datetime
 from feedparser.util import FeedParserDict
 from hachoir_parser import createParser
+
+import sickbeard
 from sickbeard import logger
 from sickbeard.classes import Proper, TorrentSearchResult
 from sickbeard.common import Quality

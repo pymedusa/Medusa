@@ -1,26 +1,25 @@
 # coding=utf-8
 # Author: moparisthebest <admin@moparisthebest.com>
 #
-
+# This file is part of Medusa.
 #
-# This file is part of SickRage.
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
 import re
+
 from requests.compat import urljoin
 
 from sickbeard import logger, tvcache
@@ -29,21 +28,32 @@ from sickrage.providers.nzb.NZBProvider import NZBProvider
 
 
 class BinSearchProvider(NZBProvider):
-
+    """BinSearch Newznab provider"""
     def __init__(self):
 
+        # Provider Init
         NZBProvider.__init__(self, 'BinSearch')
 
-        self.url = 'https://www.binsearch.info'
-        self.urls = {'rss': urljoin(self.url, 'rss.php')}
-
+        # Credentials
         self.public = True
         self.supports_backlog = False
 
+        # URLs
+        self.url = 'https://www.binsearch.info'
+        self.urls = {
+            'rss': urljoin(self.url, 'rss.php')
+        }
+
+        # Proper Strings
+
+        # Miscellaneous Options
+
+        # Cache
         self.cache = BinSearchCache(self, min_time=30)  # only poll Binsearch every 30 minutes max
 
 
 class BinSearchCache(tvcache.TVCache):
+
     def __init__(self, provider_obj, **kwargs):
         kwargs.pop('search_params', None)  # does not use _getRSSData so strip param from kwargs...
         search_params = None  # ...and pass None instead
@@ -114,10 +124,11 @@ class BinSearchCache(tvcache.TVCache):
                     cl.append(ci)
 
         if cl:
-            cache_db_con = self._getDB()
+            cache_db_con = self._get_db()
             cache_db_con.mass_action(cl)
 
     def _checkAuth(self, data):
         return data if data['feed'] and data['feed']['title'] != 'Invalid Link' else None
+
 
 provider = BinSearchProvider()

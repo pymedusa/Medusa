@@ -1,25 +1,28 @@
 # coding=utf-8
 # Author: medariox <dariox@gmx.com>
 # based on Dustyn Gibson's <miigotu@gmail.com> work
-
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import unicode_literals
 
 import re
+import traceback
 
+from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
@@ -35,59 +38,40 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
     def __init__(self):
 
         # Provider Init
-        TorrentProvider.__init__(self, "GFTracker")
+        TorrentProvider.__init__(self, 'GFTracker')
 
         # Credentials
         self.username = None
         self.password = None
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # URLs
-        self.url = 'https://www.thegft.org/'
+        self.url = 'https://www.thegft.org'
         self.urls = {
-            'login': self.url + 'loginsite.php',
-            'search': self.url + 'browse.php',
+            'login': urljoin(self.url, 'loginsite.php'),
+            'search': urljoin(self.url, 'browse.php'),
         }
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
+        # Miscellaneous Options
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
         # Cache
         self.cache = tvcache.TVCache(self)
 
-    def _check_auth(self):
-
-        if not self.username or not self.password:
-            raise AuthException("Your authentication credentials for " + self.name + " are missing, check your config.")
-
-        return True
-
-    def login(self):
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-        }
-
-        # Initialize session with a GET to have cookies
-        self.get_url(self.url, returns='text')
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-        if not response:
-            logger.log(u"Unable to connect to provider", logger.WARNING)
-            return False
-
-        if re.search('Username or password incorrect', response):
-            logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
-            return False
-
-        return True
-
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        GFT search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
@@ -118,28 +102,27 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
         for mode in search_strings:
             items = []
-            logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_params['search'] = search_string
-
                 data = self.get_url(self.urls['search'], params=search_params, returns='text')
                 if not data:
-                    logger.log(u"No data returned from provider", logger.DEBUG)
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 with BS4Parser(data, 'html5lib') as html:
                     torrent_table = html.find('div', id='torrentBrowse')
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
-                    # Continue only if at least one Release is found
+                    # Continue only if at least one release is found
                     if len(torrent_rows) < 2:
-                        logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
+                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
 
                     labels = [process_column_header(label) for label in torrent_rows[0]('td')]
@@ -150,7 +133,9 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                         try:
                             cells = result('td')
 
-                            title = cells[labels.index('Name')].find('a').find_next('a')['title'] or cells[labels.index('Name')].find('a')['title']
+                            title_anchor = cells[labels.index('Name')].find('a').find_next('a') or \
+                                cells[labels.index('Name')].find('a')
+                            title = title_anchor.get('title') if title_anchor else None
                             download_url = self.url + cells[labels.index('DL')].find('a')['href']
                             if not all([title, download_url]):
                                 continue
@@ -162,28 +147,66 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log(u"Discarding torrent because it doesn't meet the"
-                                               u" minimum seeders: {0}. Seeders: {1})".format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
                             torrent_size = cells[labels.index('Size/Snatched')].get_text(strip=True).split('/', 1)[0]
                             size = convert_size(torrent_size, units=units) or -1
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': None,
+                            }
                             if mode != 'RSS':
-                                logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
                                            (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
-                        except StandardError:
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
                             continue
 
-            # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
 
         return results
+
+    def login(self):
+        if any(dict_from_cookiejar(self.session.cookies).values()):
+            return True
+
+        login_params = {
+            'username': self.username,
+            'password': self.password,
+        }
+
+        # Initialize session with a GET to have cookies
+        self.get_url(self.url, returns='text')
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
+        if not response:
+            logger.log('Unable to connect to provider', logger.WARNING)
+            return False
+
+        if re.search('Username or password incorrect', response):
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            return False
+
+        return True
+
+    def _check_auth(self):
+
+        if not self.username or not self.password:
+            raise AuthException('Your authentication credentials for {0} are missing,'
+                                ' check your config.'.format(self.name))
+
+        return True
 
 
 provider = GFTrackerProvider()

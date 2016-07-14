@@ -677,10 +677,12 @@ class HelpersMiscTests(unittest.TestCase):
         pass
 
 if __name__ == '__main__':
-    print("==================")
-    print("STARTING - Helpers TESTS")
-    print("==================")
-    print("######################################################################")
+    print("""
+    ==================
+    STARTING - Helpers TESTS
+    ==================
+    ######################################################################
+    """)
     for name, test_data in TEST_CASES.items():
         test_name = 'test_%s' % name
         test = generator(test_data)

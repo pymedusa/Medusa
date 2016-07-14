@@ -1,5 +1,6 @@
 # mysql/zxjdbc.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -9,8 +10,12 @@
 .. dialect:: mysql+zxjdbc
     :name: zxjdbc for Jython
     :dbapi: zxjdbc
-    :connectstring: mysql+zxjdbc://<user>:<password>@<hostname>[:<port>]/<database>
+    :connectstring: mysql+zxjdbc://<user>:<password>@<hostname>[:<port>]/\
+<database>
     :driverurl: http://dev.mysql.com/downloads/connector/j/
+
+    .. note:: Jython is not supported by current versions of SQLAlchemy.  The
+       zxjdbc dialect should be considered as experimental.
 
 Character Sets
 --------------
@@ -19,7 +24,7 @@ SQLAlchemy zxjdbc dialects pass unicode straight through to the
 zxjdbc/JDBC layer. To allow multiple character sets to be sent from the
 MySQL Connector/J JDBC driver, by default SQLAlchemy sets its
 ``characterEncoding`` connection property to ``UTF-8``. It may be
-overriden via a ``create_engine`` URL parameter.
+overridden via a ``create_engine`` URL parameter.
 
 """
 import re
@@ -82,7 +87,8 @@ class MySQLDialect_zxjdbc(ZxJDBCConnector, MySQLDialect):
             if opts.get(key, None):
                 return opts[key]
 
-        util.warn("Could not detect the connection character set.  Assuming latin1.")
+        util.warn("Could not detect the connection character set.  "
+                  "Assuming latin1.")
         return 'latin1'
 
     def _driver_kwargs(self):

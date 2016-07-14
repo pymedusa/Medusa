@@ -3,6 +3,8 @@
 Tests for SickRage show
 """
 
+from __future__ import print_function
+
 import unittest
 
 from coming_episodes_tests import ComingEpisodesTests

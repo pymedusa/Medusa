@@ -1,5 +1,5 @@
-# orm/strategy_options.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -15,17 +15,20 @@ from .. import exc as sa_exc, inspect
 from .base import _is_aliased_class, _class_to_mapper
 from . import util as orm_util
 from .path_registry import PathRegistry, TokenRegistry, \
-        _WILDCARD_TOKEN, _DEFAULT_TOKEN
+    _WILDCARD_TOKEN, _DEFAULT_TOKEN
+
 
 class Load(Generative, MapperOption):
     """Represents loader options which modify the state of a
-    :class:`.Query` in order to affect how various mapped attributes are loaded.
+    :class:`.Query` in order to affect how various mapped attributes are
+    loaded.
 
     .. versionadded:: 0.9.0 The :meth:`.Load` system is a new foundation for
        the existing system of loader options, including options such as
-       :func:`.orm.joinedload`, :func:`.orm.defer`, and others.   In particular,
-       it introduces a new method-chained system that replaces the need for
-       dot-separated paths as well as "_all()" options such as :func:`.orm.joinedload_all`.
+       :func:`.orm.joinedload`, :func:`.orm.defer`, and others.   In
+       particular, it introduces a new method-chained system that replaces the
+       need for dot-separated paths as well as "_all()" options such as
+       :func:`.orm.joinedload_all`.
 
     A :class:`.Load` object can be used directly or indirectly.  To use one
     directly, instantiate given the parent class.  This style of usage is
@@ -40,11 +43,12 @@ class Load(Generative, MapperOption):
         session.query(MyClass).options(myopt)
 
     The :class:`.Load` construct is invoked indirectly whenever one makes use
-    of the various loader options that are present in ``sqlalchemy.orm``, including
-    options such as :func:`.orm.joinedload`, :func:`.orm.defer`, :func:`.orm.subqueryload`,
-    and all the rest.  These constructs produce an "anonymous" form of the
-    :class:`.Load` object which tracks attributes and options, but is not linked
-    to a parent class until it is associated with a parent :class:`.Query`::
+    of the various loader options that are present in ``sqlalchemy.orm``,
+    including options such as :func:`.orm.joinedload`, :func:`.orm.defer`,
+    :func:`.orm.subqueryload`, and all the rest.  These constructs produce an
+    "anonymous" form of the :class:`.Load` object which tracks attributes and
+    options, but is not linked to a parent class until it is associated with a
+    parent :class:`.Query`::
 
         # produce "unbound" Load object
         myopt = joinedload("widgets")
@@ -54,11 +58,12 @@ class Load(Generative, MapperOption):
         session.query(MyClass).options(myopt)
 
     Whether the direct or indirect style is used, the :class:`.Load` object
-    returned now represents a specific "path" along the entities of a :class:`.Query`.
-    This path can be traversed using a standard method-chaining approach.
-    Supposing a class hierarchy such as ``User``, ``User.addresses -> Address``,
-    ``User.orders -> Order`` and ``Order.items -> Item``, we can specify a variety
-    of loader options along each element in the "path"::
+    returned now represents a specific "path" along the entities of a
+    :class:`.Query`.  This path can be traversed using a standard
+    method-chaining approach.  Supposing a class hierarchy such as ``User``,
+    ``User.addresses -> Address``, ``User.orders -> Order`` and
+    ``Order.items -> Item``, we can specify a variety of loader options along
+    each element in the "path"::
 
         session.query(User).options(
                     joinedload("addresses"),
@@ -66,11 +71,12 @@ class Load(Generative, MapperOption):
                 )
 
     Where above, the ``addresses`` collection will be joined-loaded, the
-    ``orders`` collection will be subquery-loaded, and within that subquery load
-    the ``items`` collection will be joined-loaded.
+    ``orders`` collection will be subquery-loaded, and within that subquery
+    load the ``items`` collection will be joined-loaded.
 
 
     """
+
     def __init__(self, entity):
         insp = inspect(entity)
         self.path = insp._path_registry
@@ -82,6 +88,7 @@ class Load(Generative, MapperOption):
         cloned.local_opts = {}
         return cloned
 
+    _merge_into_path = False
     strategy = None
     propagate_to_loaders = False
 
@@ -105,7 +112,7 @@ class Load(Generative, MapperOption):
         if raiseerr and not path.has_entity:
             if isinstance(path, TokenRegistry):
                 raise sa_exc.ArgumentError(
-                        "Wildcard token cannot be followed by another entity")
+                    "Wildcard token cannot be followed by another entity")
             else:
                 raise sa_exc.ArgumentError(
                     "Attribute '%s' of entity '%s' does not "
@@ -144,8 +151,9 @@ class Load(Generative, MapperOption):
 
             if not prop.parent.common_parent(path.mapper):
                 if raiseerr:
-                    raise sa_exc.ArgumentError("Attribute '%s' does not "
-                            "link from element '%s'" % (attr, path.entity))
+                    raise sa_exc.ArgumentError(
+                        "Attribute '%s' does not "
+                        "link from element '%s'" % (attr, path.entity))
                 else:
                     return None
 
@@ -154,13 +162,16 @@ class Load(Generative, MapperOption):
                 ext_info = inspect(ac)
 
                 path_element = ext_info.mapper
+                existing = path.entity_path[prop].get(
+                    self.context, "path_with_polymorphic")
                 if not ext_info.is_aliased_class:
                     ac = orm_util.with_polymorphic(
-                                ext_info.mapper.base_mapper,
-                                ext_info.mapper, aliased=True,
-                                _use_mapper_path=True)
-                path.entity_path[prop].set(self.context,
-                                    "path_with_polymorphic", inspect(ac))
+                        ext_info.mapper.base_mapper,
+                        ext_info.mapper, aliased=True,
+                        _use_mapper_path=True,
+                        _existing_alias=existing)
+                path.entity_path[prop].set(
+                    self.context, "path_with_polymorphic", inspect(ac))
                 path = path[prop][path_element]
             else:
                 path = path[prop]
@@ -169,13 +180,17 @@ class Load(Generative, MapperOption):
             path = path.entity_path
         return path
 
+    def __str__(self):
+        return "Load(strategy=%r)" % (self.strategy, )
+
     def _coerce_strat(self, strategy):
         if strategy is not None:
             strategy = tuple(sorted(strategy.items()))
         return strategy
 
     @_generative
-    def set_relationship_strategy(self, attr, strategy, propagate_to_loaders=True):
+    def set_relationship_strategy(
+            self, attr, strategy, propagate_to_loaders=True):
         strategy = self._coerce_strat(strategy)
 
         self.propagate_to_loaders = propagate_to_loaders
@@ -200,7 +215,15 @@ class Load(Generative, MapperOption):
             cloned._set_path_strategy()
 
     def _set_path_strategy(self):
-        if self.path.has_entity:
+        if self._merge_into_path:
+            # special helper for undefer_group
+            existing = self.path.get(self.context, "loader")
+            if existing:
+                existing.local_opts.update(self.local_opts)
+            else:
+                self.path.set(self.context, "loader", self)
+
+        elif self.path.has_entity:
             self.path.parent.set(self.context, "loader", self)
         else:
             self.path.set(self.context, "loader", self)
@@ -224,14 +247,15 @@ class Load(Generative, MapperOption):
 
                 if i == 0 and c_token.endswith(':' + _DEFAULT_TOKEN):
                     return to_chop
-                elif c_token != 'relationship:%s' % (_WILDCARD_TOKEN,) and c_token != p_token.key:
+                elif c_token != 'relationship:%s' % (_WILDCARD_TOKEN,) and \
+                        c_token != p_token.key:
                     return None
 
             if c_token is p_token:
                 continue
             else:
                 return None
-        return to_chop[i+1:]
+        return to_chop[i + 1:]
 
 
 class _UnboundLoad(Load):
@@ -244,6 +268,7 @@ class _UnboundLoad(Load):
     of freestanding options, e.g. ``joinedload('x.y.z')``.
 
     """
+
     def __init__(self):
         self.path = ()
         self._to_bind = set()
@@ -317,14 +342,15 @@ class _UnboundLoad(Load):
 
         return opt
 
-
     def _chop_path(self, to_chop, path):
         i = -1
-        for i, (c_token, (p_mapper, p_prop)) in enumerate(zip(to_chop, path.pairs())):
+        for i, (c_token, (p_mapper, p_prop)) in enumerate(
+                zip(to_chop, path.pairs())):
             if isinstance(c_token, util.string_types):
                 if i == 0 and c_token.endswith(':' + _DEFAULT_TOKEN):
                     return to_chop
-                elif c_token != 'relationship:%s' % (_WILDCARD_TOKEN,) and c_token != p_prop.key:
+                elif c_token != 'relationship:%s' % (
+                        _WILDCARD_TOKEN,) and c_token != p_prop.key:
                     return None
             elif isinstance(c_token, PropComparator):
                 if c_token.property is not p_prop:
@@ -333,7 +359,6 @@ class _UnboundLoad(Load):
             i += 1
 
         return to_chop[i:]
-
 
     def _bind_loader(self, query, context, raiseerr):
         start_path = self.path
@@ -348,20 +373,21 @@ class _UnboundLoad(Load):
             return None
 
         token = start_path[0]
+
         if isinstance(token, util.string_types):
             entity = self._find_entity_basestring(query, token, raiseerr)
         elif isinstance(token, PropComparator):
             prop = token.property
             entity = self._find_entity_prop_comparator(
-                                    query,
-                                    prop.key,
-                                    token._parententity,
-                                    raiseerr)
+                query,
+                prop.key,
+                token._parententity,
+                raiseerr)
 
         else:
             raise sa_exc.ArgumentError(
-                    "mapper option expects "
-                    "string key or list of attributes")
+                "mapper option expects "
+                "string key or list of attributes")
 
         if not entity:
             return
@@ -377,7 +403,7 @@ class _UnboundLoad(Load):
         path = loader.path
         for token in start_path:
             loader.path = path = loader._generate_path(
-                                        loader.path, token, None, raiseerr)
+                loader.path, token, None, raiseerr)
             if path is None:
                 return
 
@@ -389,12 +415,29 @@ class _UnboundLoad(Load):
             effective_path = loader.path
 
         # prioritize "first class" options over those
-        # that were "links in the chain", e.g. "x" and "y" in someload("x.y.z")
-        # versus someload("x") / someload("x.y")
-        if self._is_chain_link:
-            effective_path.setdefault(context, "loader", loader)
+        # that were "links in the chain", e.g. "x" and "y" in
+        # someload("x.y.z") versus someload("x") / someload("x.y")
+
+        if effective_path.is_token:
+            for path in effective_path.generate_for_superclasses():
+                if self._merge_into_path:
+                    # special helper for undefer_group
+                    existing = path.get(context, "loader")
+                    if existing:
+                        existing.local_opts.update(self.local_opts)
+                    else:
+                        path.set(context, "loader", loader)
+                elif self._is_chain_link:
+                    path.setdefault(context, "loader", loader)
+                else:
+                    path.set(context, "loader", loader)
         else:
-            effective_path.set(context, "loader", loader)
+            # only supported for the undefer_group() wildcard opt
+            assert not self._merge_into_path
+            if self._is_chain_link:
+                effective_path.setdefault(context, "loader", loader)
+            else:
+                effective_path.set(context, "loader", loader)
 
     def _find_entity_prop_comparator(self, query, token, mapper, raiseerr):
         if _is_aliased_class(mapper):
@@ -410,7 +453,7 @@ class _UnboundLoad(Load):
                     raise sa_exc.ArgumentError(
                         "Query has only expression-based entities - "
                         "can't find property named '%s'."
-                         % (token, )
+                        % (token, )
                     )
                 else:
                     raise sa_exc.ArgumentError(
@@ -418,7 +461,7 @@ class _UnboundLoad(Load):
                         "specified in this Query.  Note the full path "
                         "from root (%s) to target entity must be specified."
                         % (token, ",".join(str(x) for
-                            x in query._mapper_entities))
+                                           x in query._mapper_entities))
                     )
             else:
                 return None
@@ -428,9 +471,9 @@ class _UnboundLoad(Load):
             if len(list(query._mapper_entities)) != 1:
                 if raiseerr:
                     raise sa_exc.ArgumentError(
-                            "Wildcard loader can only be used with exactly "
-                            "one entity.  Use Load(ent) to specify "
-                            "specific entities.")
+                        "Wildcard loader can only be used with exactly "
+                        "one entity.  Use Load(ent) to specify "
+                        "specific entities.")
         elif token.endswith(_DEFAULT_TOKEN):
             raiseerr = False
 
@@ -444,11 +487,10 @@ class _UnboundLoad(Load):
                 raise sa_exc.ArgumentError(
                     "Query has only expression-based entities - "
                     "can't find property named '%s'."
-                     % (token, )
+                    % (token, )
                 )
             else:
                 return None
-
 
 
 class loader_option(object):
@@ -492,6 +534,7 @@ See :func:`.orm.%(name)s` for usage examples.
 """ % {"name": self.name}
         return self
 
+
 @loader_option()
 def contains_eager(loadopt, attr, alias=None):
     """Indicate that the given attribute should be eagerly loaded from
@@ -532,16 +575,19 @@ def contains_eager(loadopt, attr, alias=None):
             alias = info.selectable
 
     cloned = loadopt.set_relationship_strategy(
-            attr,
-            {"lazy": "joined"},
-            propagate_to_loaders=False
-        )
+        attr,
+        {"lazy": "joined"},
+        propagate_to_loaders=False
+    )
     cloned.local_opts['eager_from_alias'] = alias
     return cloned
 
+
 @contains_eager._add_unbound_fn
 def contains_eager(*keys, **kw):
-    return _UnboundLoad()._from_keys(_UnboundLoad.contains_eager, keys, True, kw)
+    return _UnboundLoad()._from_keys(
+        _UnboundLoad.contains_eager, keys, True, kw)
+
 
 @loader_option()
 def load_only(loadopt, *attrs):
@@ -558,11 +604,11 @@ def load_only(loadopt, *attrs):
         session.query(User).options(load_only("name", "fullname"))
 
     Example - given a relationship ``User.addresses -> Address``, specify
-    subquery loading for the ``User.addresses`` collection, but on each ``Address``
-    object load only the ``email_address`` attribute::
+    subquery loading for the ``User.addresses`` collection, but on each
+    ``Address`` object load only the ``email_address`` attribute::
 
         session.query(User).options(
-                subqueryload("addreses").load_only("email_address")
+                subqueryload("addresses").load_only("email_address")
         )
 
     For a :class:`.Query` that has multiple entities, the lead entity can be
@@ -578,16 +624,19 @@ def load_only(loadopt, *attrs):
 
     """
     cloned = loadopt.set_column_strategy(
-                attrs,
-                {"deferred": False, "instrument": True}
-            )
+        attrs,
+        {"deferred": False, "instrument": True}
+    )
     cloned.set_column_strategy("*",
-                    {"deferred": True, "instrument": True})
+                               {"deferred": True, "instrument": True},
+                               {"undefer_pks": True})
     return cloned
+
 
 @load_only._add_unbound_fn
 def load_only(*attrs):
     return _UnboundLoad().load_only(*attrs)
+
 
 @loader_option()
 def joinedload(loadopt, attr, innerjoin=None):
@@ -614,24 +663,59 @@ def joinedload(loadopt, attr, innerjoin=None):
 
         query(Order).options(joinedload(Order.user, innerjoin=True))
 
-     If the joined-eager load is chained onto an existing LEFT OUTER JOIN,
-     ``innerjoin=True`` will be bypassed and the join will continue to
-     chain as LEFT OUTER JOIN so that the results don't change.  As an alternative,
-     specify the value ``"nested"``.  This will instead nest the join
-     on the right side, e.g. using the form "a LEFT OUTER JOIN (b JOIN c)".
+     In order to chain multiple eager joins together where some may be
+     OUTER and others INNER, right-nested joins are used to link them::
 
-     .. versionadded:: 0.9.4 Added ``innerjoin="nested"`` option to support
-        nesting of eager "inner" joins.
+        query(A).options(
+            joinedload(A.bs, innerjoin=False).
+                joinedload(B.cs, innerjoin=True)
+        )
+
+     The above query, linking A.bs via "outer" join and B.cs via "inner" join
+     would render the joins as "a LEFT OUTER JOIN (b JOIN c)".   When using
+     SQLite, this form of JOIN is translated to use full subqueries as this
+     syntax is otherwise not directly supported.
+
+     The ``innerjoin`` flag can also be stated with the term ``"unnested"``.
+     This will prevent joins from being right-nested, and will instead
+     link an "innerjoin" eagerload to an "outerjoin" eagerload by bypassing
+     the "inner" join.   Using this form as follows::
+
+        query(A).options(
+            joinedload(A.bs, innerjoin=False).
+                joinedload(B.cs, innerjoin="unnested")
+        )
+
+     Joins will be rendered as "a LEFT OUTER JOIN b LEFT OUTER JOIN c", so that
+     all of "a" is matched rather than being incorrectly limited by a "b" that
+     does not contain a "c".
+
+     .. note:: The "unnested" flag does **not** affect the JOIN rendered
+        from a many-to-many association table, e.g. a table configured
+        as :paramref:`.relationship.secondary`, to the target table; for
+        correctness of results, these joins are always INNER and are
+        therefore right-nested if linked to an OUTER join.
+
+     .. versionadded:: 0.9.4 Added support for "nesting" of eager "inner"
+        joins.  See :ref:`feature_2976`.
+
+     .. versionchanged:: 1.0.0 ``innerjoin=True`` now implies
+        ``innerjoin="nested"``, whereas in 0.9 it implied
+        ``innerjoin="unnested"``.  In order to achieve the pre-1.0 "unnested"
+        inner join behavior, use the value ``innerjoin="unnested"``.
+        See :ref:`migration_3008`.
 
     .. note::
 
-        The joins produced by :func:`.orm.joinedload` are **anonymously aliased**.
-        The criteria by which the join proceeds cannot be modified, nor can the
-        :class:`.Query` refer to these joins in any way, including ordering.
+        The joins produced by :func:`.orm.joinedload` are **anonymously
+        aliased**.  The criteria by which the join proceeds cannot be
+        modified, nor can the :class:`.Query` refer to these joins in any way,
+        including ordering.
 
         To produce a specific SQL JOIN which is explicitly available, use
         :meth:`.Query.join`.   To combine explicit JOINs with eager loading
-        of collections, use :func:`.orm.contains_eager`; see :ref:`contains_eager`.
+        of collections, use :func:`.orm.contains_eager`; see
+        :ref:`contains_eager`.
 
     .. seealso::
 
@@ -645,8 +729,8 @@ def joinedload(loadopt, attr, innerjoin=None):
 
         :paramref:`.relationship.lazy`
 
-        :paramref:`.relationship.innerjoin` - :func:`.relationship`-level version
-        of the :paramref:`.joinedload.innerjoin` option.
+        :paramref:`.relationship.innerjoin` - :func:`.relationship`-level
+        version of the :paramref:`.joinedload.innerjoin` option.
 
     """
     loader = loadopt.set_relationship_strategy(attr, {"lazy": "joined"})
@@ -654,15 +738,17 @@ def joinedload(loadopt, attr, innerjoin=None):
         loader.local_opts['innerjoin'] = innerjoin
     return loader
 
+
 @joinedload._add_unbound_fn
 def joinedload(*keys, **kw):
     return _UnboundLoad._from_keys(
-            _UnboundLoad.joinedload, keys, False, kw)
+        _UnboundLoad.joinedload, keys, False, kw)
+
 
 @joinedload._add_unbound_all_fn
 def joinedload_all(*keys, **kw):
     return _UnboundLoad._from_keys(
-            _UnboundLoad.joinedload, keys, True, kw)
+        _UnboundLoad.joinedload, keys, True, kw)
 
 
 @loader_option()
@@ -699,13 +785,16 @@ def subqueryload(loadopt, attr):
     """
     return loadopt.set_relationship_strategy(attr, {"lazy": "subquery"})
 
+
 @subqueryload._add_unbound_fn
 def subqueryload(*keys):
     return _UnboundLoad._from_keys(_UnboundLoad.subqueryload, keys, False, {})
 
+
 @subqueryload._add_unbound_all_fn
 def subqueryload_all(*keys):
     return _UnboundLoad._from_keys(_UnboundLoad.subqueryload, keys, True, {})
+
 
 @loader_option()
 def lazyload(loadopt, attr):
@@ -722,13 +811,16 @@ def lazyload(loadopt, attr):
     """
     return loadopt.set_relationship_strategy(attr, {"lazy": "select"})
 
+
 @lazyload._add_unbound_fn
 def lazyload(*keys):
     return _UnboundLoad._from_keys(_UnboundLoad.lazyload, keys, False, {})
 
+
 @lazyload._add_unbound_all_fn
 def lazyload_all(*keys):
     return _UnboundLoad._from_keys(_UnboundLoad.lazyload, keys, True, {})
+
 
 @loader_option()
 def immediateload(loadopt, attr):
@@ -752,9 +844,11 @@ def immediateload(loadopt, attr):
     loader = loadopt.set_relationship_strategy(attr, {"lazy": "immediate"})
     return loader
 
+
 @immediateload._add_unbound_fn
 def immediateload(*keys):
-    return _UnboundLoad._from_keys(_UnboundLoad.immediateload, keys, False, {})
+    return _UnboundLoad._from_keys(
+        _UnboundLoad.immediateload, keys, False, {})
 
 
 @loader_option()
@@ -771,9 +865,11 @@ def noload(loadopt, attr):
 
     return loadopt.set_relationship_strategy(attr, {"lazy": "noload"})
 
+
 @noload._add_unbound_fn
 def noload(*keys):
     return _UnboundLoad._from_keys(_UnboundLoad.noload, keys, False, {})
+
 
 @loader_option()
 def defaultload(loadopt, attr):
@@ -795,13 +891,15 @@ def defaultload(loadopt, attr):
 
     """
     return loadopt.set_relationship_strategy(
-                attr,
-                None
-            )
+        attr,
+        None
+    )
+
 
 @defaultload._add_unbound_fn
 def defaultload(*keys):
     return _UnboundLoad._from_keys(_UnboundLoad.defaultload, keys, False, {})
+
 
 @loader_option()
 def defer(loadopt, key):
@@ -856,19 +954,21 @@ def defer(loadopt, key):
 
     """
     return loadopt.set_column_strategy(
-                (key, ),
-                {"deferred": True, "instrument": True}
-            )
+        (key, ),
+        {"deferred": True, "instrument": True}
+    )
 
 
 @defer._add_unbound_fn
 def defer(key, *addl_attrs):
-    return _UnboundLoad._from_keys(_UnboundLoad.defer, (key, ) + addl_attrs, False, {})
+    return _UnboundLoad._from_keys(
+        _UnboundLoad.defer, (key, ) + addl_attrs, False, {})
+
 
 @loader_option()
 def undefer(loadopt, key):
-    """Indicate that the given column-oriented attribute should be undeferred, e.g.
-    specified within the SELECT statement of the entity as a whole.
+    """Indicate that the given column-oriented attribute should be undeferred,
+    e.g. specified within the SELECT statement of the entity as a whole.
 
     The column being undeferred is typically set up on the mapping as a
     :func:`.deferred` attribute.
@@ -882,7 +982,8 @@ def undefer(loadopt, key):
         session.query(MyClass).options(undefer("col1"), undefer("col2"))
 
         # undefer all columns specific to a single class using Load + *
-        session.query(MyClass, MyOtherClass).options(Load(MyClass).undefer("*"))
+        session.query(MyClass, MyOtherClass).options(
+            Load(MyClass).undefer("*"))
 
     :param key: Attribute to be undeferred.
 
@@ -900,17 +1001,21 @@ def undefer(loadopt, key):
 
     """
     return loadopt.set_column_strategy(
-                (key, ),
-                {"deferred": False, "instrument": True}
-            )
+        (key, ),
+        {"deferred": False, "instrument": True}
+    )
+
 
 @undefer._add_unbound_fn
 def undefer(key, *addl_attrs):
-    return _UnboundLoad._from_keys(_UnboundLoad.undefer, (key, ) + addl_attrs, False, {})
+    return _UnboundLoad._from_keys(
+        _UnboundLoad.undefer, (key, ) + addl_attrs, False, {})
+
 
 @loader_option()
 def undefer_group(loadopt, name):
-    """Indicate that columns within the given deferred group name should be undeferred.
+    """Indicate that columns within the given deferred group name should be
+    undeferred.
 
     The columns being undeferred are set up on the mapping as
     :func:`.deferred` attributes and include a "group" name.
@@ -920,9 +1025,11 @@ def undefer_group(loadopt, name):
         session.query(MyClass).options(undefer_group("large_attrs"))
 
     To undefer a group of attributes on a related entity, the path can be
-    spelled out using relationship loader options, such as :func:`.orm.defaultload`::
+    spelled out using relationship loader options, such as
+    :func:`.orm.defaultload`::
 
-        session.query(MyClass).options(defaultload("someattr").undefer_group("large_attrs"))
+        session.query(MyClass).options(
+            defaultload("someattr").undefer_group("large_attrs"))
 
     .. versionchanged:: 0.9.0 :func:`.orm.undefer_group` is now specific to a
        particiular entity load path.
@@ -936,13 +1043,14 @@ def undefer_group(loadopt, name):
         :func:`.orm.undefer`
 
     """
+    loadopt._merge_into_path = True
     return loadopt.set_column_strategy(
-                            "*",
-                            None,
-                            {"undefer_group": name}
-                    )
+        "*",
+        None,
+        {"undefer_group_%s" % name: True}
+    )
+
 
 @undefer_group._add_unbound_fn
 def undefer_group(name):
     return _UnboundLoad().undefer_group(name)
-

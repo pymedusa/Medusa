@@ -24,8 +24,10 @@ import re
 import sqlite3
 import time
 import threading
-import sickbeard
 
+from six import text_type
+
+import sickbeard
 from sickbeard import logger
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
@@ -350,9 +352,9 @@ class DBConnection(object):
         """
         try:
             # Just revert to the old code for now, until we can fix unicode
-            return unicode(x, 'utf-8')
+            return text_type(x, 'utf-8')
         except:
-            return unicode(x, sickbeard.SYS_ENCODING, errors="ignore")
+            return text_type(x, sickbeard.SYS_ENCODING, errors="ignore")
 
     @staticmethod
     def _dict_factory(cursor, row):

@@ -173,6 +173,10 @@ try{% set y = 1/x %}
         template = Template('{{ 1 / 2 }}')
         self.assertEqual(template.generate(), '0')
 
+    def test_non_ascii_name(self):
+        loader = DictLoader({u("t\u00e9st.html"): "hello"})
+        self.assertEqual(loader.load(u("t\u00e9st.html")).generate(), b"hello")
+
 
 class StackTraceTest(unittest.TestCase):
     def test_error_line_number_expression(self):
@@ -262,6 +266,19 @@ three{%end%}
         except ZeroDivisionError:
             self.assertTrue("# c.html:1 (via b.html:1, a.html:1)" in
                             traceback.format_exc())
+
+
+class ParseErrorDetailTest(unittest.TestCase):
+    def test_details(self):
+        loader = DictLoader({
+            "foo.html": "\n\n{{",
+        })
+        with self.assertRaises(ParseError) as cm:
+            loader.load("foo.html")
+        self.assertEqual("Missing end expression }} at foo.html:3",
+                         str(cm.exception))
+        self.assertEqual("foo.html", cm.exception.filename)
+        self.assertEqual(3, cm.exception.lineno)
 
 
 class AutoEscapeTest(unittest.TestCase):
@@ -387,7 +404,7 @@ raw: {% raw name %}""",
         self.assertEqual(render("foo.py", ["not a string"]),
                          b"""s = "['not a string']"\n""")
 
-    def test_minimize_whitespace(self):
+    def test_manual_minimize_whitespace(self):
         # Whitespace including newlines is allowed within template tags
         # and directives, and this is one way to avoid long lines while
         # keeping extra whitespace out of the rendered output.
@@ -400,6 +417,62 @@ raw: {% raw name %}""",
                              })
         self.assertEqual(loader.load("foo.txt").generate(items=range(5)),
                          b"0, 1, 2, 3, 4")
+
+    def test_whitespace_by_filename(self):
+        # Default whitespace handling depends on the template filename.
+        loader = DictLoader({
+            "foo.html": "   \n\t\n asdf\t   ",
+            "bar.js": " \n\n\n\t qwer     ",
+            "baz.txt": "\t    zxcv\n\n",
+            "include.html": "  {% include baz.txt %} \n ",
+            "include.txt": "\t\t{% include foo.html %}    ",
+        })
+
+        # HTML and JS files have whitespace compressed by default.
+        self.assertEqual(loader.load("foo.html").generate(),
+                         b"\nasdf ")
+        self.assertEqual(loader.load("bar.js").generate(),
+                         b"\nqwer ")
+        # TXT files do not.
+        self.assertEqual(loader.load("baz.txt").generate(),
+                         b"\t    zxcv\n\n")
+
+        # Each file maintains its own status even when included in
+        # a file of the other type.
+        self.assertEqual(loader.load("include.html").generate(),
+                         b" \t    zxcv\n\n\n")
+        self.assertEqual(loader.load("include.txt").generate(),
+                         b"\t\t\nasdf     ")
+
+    def test_whitespace_by_loader(self):
+        templates = {
+            "foo.html": "\t\tfoo\n\n",
+            "bar.txt": "\t\tbar\n\n",
+        }
+        loader = DictLoader(templates, whitespace='all')
+        self.assertEqual(loader.load("foo.html").generate(), b"\t\tfoo\n\n")
+        self.assertEqual(loader.load("bar.txt").generate(), b"\t\tbar\n\n")
+
+        loader = DictLoader(templates, whitespace='single')
+        self.assertEqual(loader.load("foo.html").generate(), b" foo\n")
+        self.assertEqual(loader.load("bar.txt").generate(), b" bar\n")
+
+        loader = DictLoader(templates, whitespace='oneline')
+        self.assertEqual(loader.load("foo.html").generate(), b" foo ")
+        self.assertEqual(loader.load("bar.txt").generate(), b" bar ")
+
+    def test_whitespace_directive(self):
+        loader = DictLoader({
+            "foo.html": """\
+{% whitespace oneline %}
+    {% for i in range(3) %}
+        {{ i }}
+    {% end %}
+{% whitespace all %}
+    pre\tformatted
+"""})
+        self.assertEqual(loader.load("foo.html").generate(),
+                         b"  0  1  2  \n    pre\tformatted\n")
 
 
 class TemplateLoaderTest(unittest.TestCase):

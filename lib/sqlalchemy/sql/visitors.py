@@ -1,5 +1,6 @@
 # sql/visitors.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -29,10 +30,10 @@ import operator
 from .. import exc
 
 __all__ = ['VisitableType', 'Visitable', 'ClauseVisitor',
-    'CloningVisitor', 'ReplacingCloningVisitor', 'iterate',
-    'iterate_depthfirst', 'traverse_using', 'traverse',
-    'traverse_depthfirst',
-    'cloned_traverse', 'replacement_traverse']
+           'CloningVisitor', 'ReplacingCloningVisitor', 'iterate',
+           'iterate_depthfirst', 'traverse_using', 'traverse',
+           'traverse_depthfirst',
+           'cloned_traverse', 'replacement_traverse']
 
 
 class VisitableType(type):
@@ -50,6 +51,7 @@ class VisitableType(type):
 
     Classes having no __visit_name__ attribute will remain unaffected.
     """
+
     def __init__(cls, clsname, bases, clsdict):
         if clsname != 'Visitable' and \
                 hasattr(cls, '__visit_name__'):
@@ -91,7 +93,7 @@ def _generate_dispatch(cls):
                     return meth(self, **kw)
 
         _compiler_dispatch.__doc__ = \
-          """Look for an attribute named "visit_" + self.__visit_name__
+            """Look for an attribute named "visit_" + self.__visit_name__
             on the visitor, and call it with the same kw params.
             """
         cls._compiler_dispatch = _compiler_dispatch
@@ -211,12 +213,19 @@ def iterate(obj, opts):
     traversal is configured to be breadth-first.
 
     """
+    # fasttrack for atomic elements like columns
+    children = obj.get_children(**opts)
+    if not children:
+        return [obj]
+
+    traversal = deque()
     stack = deque([obj])
     while stack:
         t = stack.popleft()
-        yield t
+        traversal.append(t)
         for c in t.get_children(**opts):
             stack.append(c)
+    return iter(traversal)
 
 
 def iterate_depthfirst(obj, opts):
@@ -225,6 +234,11 @@ def iterate_depthfirst(obj, opts):
     traversal is configured to be depth-first.
 
     """
+    # fasttrack for atomic elements like columns
+    children = obj.get_children(**opts)
+    if not children:
+        return [obj]
+
     stack = deque([obj])
     traversal = deque()
     while stack:
@@ -296,7 +310,7 @@ def replacement_traverse(obj, opts, replace):
 
     def clone(elem, **kw):
         if id(elem) in stop_on or \
-            'no_replacement_traverse' in elem._annotations:
+                'no_replacement_traverse' in elem._annotations:
             return elem
         else:
             newelem = replace(elem)

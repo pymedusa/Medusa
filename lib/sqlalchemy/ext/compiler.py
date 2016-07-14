@@ -1,5 +1,6 @@
 # ext/compiler.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -57,7 +58,8 @@ invoked for the dialect in use::
 
     @compiles(AlterColumn, 'postgresql')
     def visit_alter_column(element, compiler, **kw):
-        return "ALTER TABLE %s ALTER COLUMN %s ..." % (element.table.name, element.column.name)
+        return "ALTER TABLE %s ALTER COLUMN %s ..." % (element.table.name,
+                                                       element.column.name)
 
 The second ``visit_alter_table`` will be invoked when any ``postgresql``
 dialect is used.
@@ -92,7 +94,8 @@ method which can be used for compilation of embedded attributes::
 
 Produces::
 
-    "INSERT INTO mytable (SELECT mytable.x, mytable.y, mytable.z FROM mytable WHERE mytable.x > :x_1)"
+    "INSERT INTO mytable (SELECT mytable.x, mytable.y, mytable.z
+                          FROM mytable WHERE mytable.x > :x_1)"
 
 .. note::
 
@@ -118,8 +121,18 @@ below where we generate a CHECK constraint that embeds a SQL expression::
     def compile_my_constraint(constraint, ddlcompiler, **kw):
         return "CONSTRAINT %s CHECK (%s)" % (
             constraint.name,
-            ddlcompiler.sql_compiler.process(constraint.expression)
+            ddlcompiler.sql_compiler.process(
+                constraint.expression, literal_binds=True)
         )
+
+Above, we add an additional flag to the process step as called by
+:meth:`.SQLCompiler.process`, which is the ``literal_binds`` flag.  This
+indicates that any SQL expression which refers to a :class:`.BindParameter`
+object or other "literal" object such as those which refer to strings or
+integers should be rendered **in-place**, rather than being referred to as
+a bound parameter;  when emitting DDL, bound parameters are typically not
+supported.
+
 
 .. _enabling_compiled_autocommit:
 
@@ -319,7 +332,7 @@ Example usage::
 -------------------
 
 The "GREATEST" function is given any number of arguments and returns the one
-that is of the highest value - it's equivalent to Python's ``max``
+that is of the highest value - its equivalent to Python's ``max``
 function.  A SQL standard version versus a CASE based version which only
 accommodates two arguments::
 
@@ -407,7 +420,7 @@ def compiles(class_, *specs):
 
             # TODO: why is the lambda needed ?
             setattr(class_, '_compiler_dispatch',
-                lambda *arg, **kw: existing(*arg, **kw))
+                    lambda *arg, **kw: existing(*arg, **kw))
             setattr(class_, '_compiler_dispatcher', existing)
 
         if specs:
@@ -443,6 +456,6 @@ class _dispatcher(object):
                 fn = self.specs['default']
             except KeyError:
                 raise exc.CompileError(
-                        "%s construct has no default "
-                        "compilation handler." % type(element))
+                    "%s construct has no default "
+                    "compilation handler." % type(element))
         return fn(element, compiler, **kw)

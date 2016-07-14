@@ -26,26 +26,22 @@ import re
 import subprocess
 import stat
 
-import sickbeard
+import adba
+from babelfish import language_converters
+from six import text_type
 
-from sickbeard import db
-from sickbeard import common
-from sickbeard import helpers
-from sickbeard import history
-from sickbeard import logger
-from sickbeard import notifiers
-from sickbeard import show_name_helpers
-from sickbeard import failed_history
+import sickbeard
+from sickbeard import (
+    db, common, helpers, history, logger, notifiers, show_name_helpers, failed_history,
+)
+from sickbeard.helpers import verify_freespace
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
+
 from sickrage.helper.common import remove_extension, replace_extension, subtitle_extensions
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import EpisodeNotFoundException, EpisodePostProcessingFailedException, ex
 from sickrage.helper.exceptions import ShowDirectoryNotFoundException
 from sickrage.show.Show import Show
-from babelfish import language_converters
-
-import adba
-from sickbeard.helpers import verify_freespace
 
 
 class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
@@ -846,7 +842,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             return
 
         file_path = self.file_path
-        if isinstance(file_path, unicode):
+        if isinstance(file_path, text_type):
             try:
                 file_path = file_path.encode(sickbeard.SYS_ENCODING)
             except UnicodeEncodeError:
@@ -854,7 +850,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 pass
 
         ep_location = ep_obj.location
-        if isinstance(ep_location, unicode):
+        if isinstance(ep_location, text_type):
             try:
                 ep_location = ep_location.encode(sickbeard.SYS_ENCODING)
             except UnicodeEncodeError:
@@ -862,7 +858,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 pass
 
         for curScriptName in sickbeard.EXTRA_SCRIPTS:
-            if isinstance(curScriptName, unicode):
+            if isinstance(curScriptName, text_type):
                 try:
                     curScriptName = curScriptName.encode(sickbeard.SYS_ENCODING)
                 except UnicodeEncodeError:

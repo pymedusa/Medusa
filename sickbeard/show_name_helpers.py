@@ -19,8 +19,10 @@
 
 import fnmatch
 import os
-
 import re
+from collections import namedtuple
+
+from six import string_types
 
 import sickbeard
 from sickbeard import common
@@ -28,7 +30,6 @@ from sickbeard.scene_exceptions import get_scene_exceptions
 from sickbeard import logger
 from sickrage.helper.encoding import ek
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
-from collections import namedtuple
 
 resultFilters = [
     "(dir|sub|nfo)fix",
@@ -52,14 +53,14 @@ def containsAtLeastOneWord(name, words):
 
     Returns: False if the name doesn't contain any word of words list, or the found word from the list.
     """
-    if isinstance(words, basestring):
+    if isinstance(words, string_types):
         words = words.split(',')
     items = [(re.compile(r'(^|[\W_])%s($|[\W_])' % word.strip(), re.I), word.strip()) for word in words]
     for regexp, word in items:
         if regexp.search(name):
             # subs_words = '.dub.' or '.dksub.' or else
             subs_word = regexp.search(name).group(0)
-            # If word is a regex like "dub(bed)?" or "sub(bed|ed|pack|s)" 
+            # If word is a regex like "dub(bed)?" or "sub(bed|ed|pack|s)"
             # then return just the matched word: "dub" and not full regex
             if word in resultFilters:
                 return subs_word.replace(".","")
@@ -90,7 +91,7 @@ def filterBadReleases(name, parse=True):
     # if any of the bad strings are in the name then say no
     word = containsAtLeastOneWord(name, resultFilters)
     if word:
-        logger.log(u"Unwanted scene release: {0}. Contain unwanted word: {1}. Ignoring it".format(name, word), logger.WARNING)
+        logger.log(u"Unwanted scene release: {0}. Contains unwanted word: {1}. Ignoring it".format(name, word), logger.DEBUG)
         return False
     return True
 
@@ -183,7 +184,7 @@ def show_words(showObj):
     """
 
     ShowWords = namedtuple('show_words', ['preferred_words', 'undesired_words', 'ignore_words', 'require_words'])
-    
+
     preferred_words = ",".join(sickbeard.PREFERRED_WORDS.split(',')) if sickbeard.PREFERRED_WORDS.split(',') else ''
     undesired_words = ",".join(sickbeard.UNDESIRED_WORDS.split(',')) if sickbeard.UNDESIRED_WORDS.split(',') else ''
 
@@ -201,5 +202,5 @@ def show_words(showObj):
 
     ignore_words = ",".join(final_ignore)
     require_words = ",".join(final_require)
-    
+
     return ShowWords(preferred_words, undesired_words, ignore_words, require_words)

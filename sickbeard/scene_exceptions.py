@@ -18,12 +18,14 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import adba
 import time
 import datetime
-import requests
 import threading
 import traceback
+
+import adba
+from six import iteritems
+
 import sickbeard
 from sickbeard import db, helpers, logger
 from sickbeard.indexers.indexer_config import INDEXER_TVDB
@@ -245,7 +247,7 @@ def retrieve_exceptions():  # pylint:disable=too-many-locals, too-many-branches
             continue
 
         for cur_exception_dict in exception_dict[cur_indexer_id]:
-            for ex in cur_exception_dict.iteritems():
+            for ex in iteritems(cur_exception_dict):
                 cur_exception, curSeason = ex
                 if cur_exception not in existing_exceptions:
                     queries.append(
@@ -315,7 +317,7 @@ def _xem_exceptions_fetcher():
             if parsedJSON['result'] == 'failure':
                 continue
 
-            for indexerid, names in parsedJSON['data'].iteritems():
+            for indexerid, names in iteritems(parsedJSON['data']):
                 try:
                     xem_exception_dict[int(indexerid)] = names
                 except Exception as error:

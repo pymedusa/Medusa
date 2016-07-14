@@ -18,6 +18,8 @@
 
 from __future__ import unicode_literals
 
+import traceback
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
@@ -85,19 +87,25 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                 if mode != 'RSS':
                     search_params['search'] = search_string
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 if mode == 'Season':
                     search_params['cat'] = 12
 
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                # Need the html.parser, as the html5parser has issues with this site.
-                with BS4Parser(response.text, 'html.parser') as html:
-                    torrent_table = html('table', width='750')[-1]  # Get the last table with a width of 750px.
-                    torrent_rows = torrent_table('tr') if torrent_table else []
+                with BS4Parser(response.text, 'html.parser') as html:  # Use html.parser, since html5parser has issues with this site.
+                    all_tables = html('table', width='750')  # Get the last table with a width of 750px.
+                    if all_tables:
+                        result_table = all_tables[-1]
+                    else:
+                        continue
+
+                    torrent_rows = result_table('tr') if result_table else []
 
                     # Continue only if at least one Release is found
                     if len(torrent_rows) < 2:
@@ -124,13 +132,12 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log('Discarding torrent because it doesn\'t meet the'
-                                               ' minimum seeders: {0}. Seeders: {1})'.format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
                             torrent_size = '{size} {unit}'.format(size=cells[6].contents[0], unit=cells[6].contents[1].get_text())
-
                             size = convert_size(torrent_size, units=units) or -1
 
                             item = {
@@ -147,33 +154,33 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                            (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
-                        except StandardError:
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
                             continue
 
-            # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
             results += items
 
         return results
 
     def login(self):
-        """Login method used for logging in before doing search and torrent downloads"""
+        """Login method used for logging in before doing search and torrent downloads."""
         if any(dict_from_cookiejar(self.session.cookies).values()):
             return True
 
         login_params = {
-            'username': self.username.encode('utf-8'),
-            'password': self.password.encode('utf-8'),
+            'username': self.username,
+            'password': self.password,
         }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
         if not response:
-            logger.log(u'Unable to connect to provider', logger.WARNING)
+            logger.log('Unable to connect to provider', logger.WARNING)
             self.session.cookies.clear()
             return False
 
         if '<h2>Login failed!</h2>' in response:
-            logger.log(u'Invalid username or password. Check your settings', logger.WARNING)
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
             self.session.cookies.clear()
             return False
 

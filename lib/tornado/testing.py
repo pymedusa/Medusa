@@ -34,18 +34,29 @@ from tornado.log import gen_log, app_log
 from tornado.stack_context import ExceptionStackContext
 from tornado.util import raise_exc_info, basestring_type
 import functools
+import inspect
 import logging
 import os
 import re
 import signal
 import socket
 import sys
-import types
 
 try:
     from cStringIO import StringIO  # py2
 except ImportError:
     from io import StringIO  # py3
+
+try:
+    from collections.abc import Generator as GeneratorType  # py35+
+except ImportError:
+    from types import GeneratorType
+
+if sys.version_info >= (3, 5):
+    iscoroutine = inspect.iscoroutine
+    iscoroutinefunction = inspect.iscoroutinefunction
+else:
+    iscoroutine = iscoroutinefunction = lambda f: False
 
 # Tornado's own test suite requires the updated unittest module
 # (either py27+ or unittest2) so tornado.test.util enforces
@@ -81,12 +92,13 @@ def get_unused_port():
     return port
 
 
-def bind_unused_port():
+def bind_unused_port(reuse_port=False):
     """Binds a server socket to an available port on localhost.
 
     Returns a tuple (socket, port).
     """
-    [sock] = netutil.bind_sockets(None, 'localhost', family=socket.AF_INET)
+    [sock] = netutil.bind_sockets(None, 'localhost', family=socket.AF_INET,
+                                  reuse_port=reuse_port)
     port = sock.getsockname()[1]
     return sock, port
 
@@ -118,9 +130,9 @@ class _TestMethodWrapper(object):
 
     def __call__(self, *args, **kwargs):
         result = self.orig_method(*args, **kwargs)
-        if isinstance(result, types.GeneratorType):
-            raise TypeError("Generator test methods should be decorated with "
-                            "tornado.testing.gen_test")
+        if isinstance(result, GeneratorType) or iscoroutine(result):
+            raise TypeError("Generator and coroutine test methods should be"
+                            " decorated with tornado.testing.gen_test")
         elif result is not None:
             raise ValueError("Return value from test method ignored: %r" %
                              result)
@@ -331,20 +343,29 @@ class AsyncHTTPTestCase(AsyncTestCase):
     Tests will typically use the provided ``self.http_client`` to fetch
     URLs from this server.
 
-    Example::
+    Example, assuming the "Hello, world" example from the user guide is in
+    ``hello.py``::
 
-        class MyHTTPTest(AsyncHTTPTestCase):
+        import hello
+
+        class TestHelloApp(AsyncHTTPTestCase):
             def get_app(self):
-                return Application([('/', MyHandler)...])
+                return hello.make_app()
 
             def test_homepage(self):
-                # The following two lines are equivalent to
-                #   response = self.fetch('/')
-                # but are shown in full here to demonstrate explicit use
-                # of self.stop and self.wait.
-                self.http_client.fetch(self.get_url('/'), self.stop)
-                response = self.wait()
-                # test contents of response
+                response = self.fetch('/')
+                self.assertEqual(response.code, 200)
+                self.assertEqual(response.body, 'Hello, world')
+
+    That call to ``self.fetch()`` is equivalent to ::
+
+        self.http_client.fetch(self.get_url('/'), self.stop)
+        response = self.wait()
+
+    which illustrates how AsyncTestCase can turn an asynchronous operation,
+    like ``http_client.fetch()``, into a synchronous operation. If you need
+    to do other asynchronous operations in tests, you'll probably need to use
+    ``stop()`` and ``wait()`` yourself.
     """
     def setUp(self):
         super(AsyncHTTPTestCase, self).setUp()
@@ -485,13 +506,16 @@ def gen_test(func=None, timeout=None):
         @functools.wraps(f)
         def pre_coroutine(self, *args, **kwargs):
             result = f(self, *args, **kwargs)
-            if isinstance(result, types.GeneratorType):
+            if isinstance(result, GeneratorType) or iscoroutine(result):
                 self._test_generator = result
             else:
                 self._test_generator = None
             return result
 
-        coro = gen.coroutine(pre_coroutine)
+        if iscoroutinefunction(f):
+            coro = pre_coroutine
+        else:
+            coro = gen.coroutine(pre_coroutine)
 
         @functools.wraps(coro)
         def post_coroutine(self, *args, **kwargs):
@@ -501,8 +525,8 @@ def gen_test(func=None, timeout=None):
                     timeout=timeout)
             except TimeoutError as e:
                 # run_sync raises an error with an unhelpful traceback.
-                # If we throw it back into the generator the stack trace
-                # will be replaced by the point where the test is stopped.
+                # Throw it back into the generator or coroutine so the stack
+                # trace is replaced by the point where the test is stopped.
                 self._test_generator.throw(e)
                 # In case the test contains an overly broad except clause,
                 # we may get back here.  In this case re-raise the original
@@ -575,10 +599,16 @@ class ExpectLog(logging.Filter):
     Useful to make tests of error conditions less noisy, while still
     leaving unexpected log entries visible.  *Not thread safe.*
 
+    The attribute ``logged_stack`` is set to true if any exception
+    stack trace was logged.
+
     Usage::
 
         with ExpectLog('tornado.application', "Uncaught exception"):
             error_response = self.fetch("/some_page")
+
+    .. versionchanged:: 4.3
+       Added the ``logged_stack`` attribute.
     """
     def __init__(self, logger, regex, required=True):
         """Constructs an ExpectLog context manager.
@@ -596,8 +626,11 @@ class ExpectLog(logging.Filter):
         self.regex = re.compile(regex)
         self.required = required
         self.matched = False
+        self.logged_stack = False
 
     def filter(self, record):
+        if record.exc_info:
+            self.logged_stack = True
         message = record.getMessage()
         if self.regex.match(message):
             self.matched = True
@@ -606,6 +639,7 @@ class ExpectLog(logging.Filter):
 
     def __enter__(self):
         self.logger.addFilter(self)
+        return self
 
     def __exit__(self, typ, value, tb):
         self.logger.removeFilter(self)

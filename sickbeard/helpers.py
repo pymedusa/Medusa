@@ -18,56 +18,50 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 # pylint:disable=too-many-lines
 
-import os
-import io
+import ast
+import base64
 import ctypes
+import datetime
+import errno
+import hashlib
+import io
+from itertools import izip, cycle
+import operator
+import os
+import platform
+import random
 import re
+import shutil
 import socket
+from socket import timeout as SocketTimeout
 import ssl
 import stat
 import tempfile
 import time
 import traceback
 import uuid
-import base64
+import xml.etree.ElementTree as ET
 import zipfile
-import datetime
-import errno
-import ast
-import operator
-import platform
-import sickbeard
-import adba
-import requests
-import certifi
-import hashlib
-import random
-from contextlib import closing
-from socket import timeout as SocketTimeout
 
+import adba
+from cachecontrol import CacheControl
+import certifi
+from contextlib2 import suppress, closing
+import requests
 from requests.compat import urlparse
+import shutil_custom
+from six import iteritems, text_type
 from six.moves import http_client
 
-from sickbeard import logger, classes
+import sickbeard
+from sickbeard import db, logger, classes
 from sickbeard.common import USER_AGENT
-from sickbeard import db
+
 from sickrage.helper.common import (http_code_description, media_extensions, pretty_file_size,
                                     subtitle_extensions, episode_num, remove_strings)
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
-from cachecontrol import CacheControl
-# from httpcache import CachingHTTPAdapter
-
-from itertools import izip, cycle
-from contextlib2 import suppress
-
-import shutil
-import shutil_custom
-
-import xml.etree.ElementTree as ET
-
-shutil.copyfile = shutil_custom.copyfile_custom
 
 try:
     import urllib
@@ -79,6 +73,8 @@ try:
     from urllib.parse import splittype
 except ImportError:
     from urllib2 import splittype
+
+shutil.copyfile = shutil_custom.copyfile_custom
 
 
 def fixGlob(path):
@@ -178,7 +174,7 @@ def remove_non_release_groups(name, clean_proper=False):
     }
 
     _name = name
-    for remove_string, remove_type in removeWordsList.iteritems():
+    for remove_string, remove_type in iteritems(removeWordsList):
         if remove_type == 'search':
             _name = _name.replace(remove_string, '')
         elif remove_type == 'searchre':
@@ -417,7 +413,7 @@ def link(src, dst):
     """
 
     if os.name == 'nt':
-        if ctypes.windll.kernel32.CreateHardLinkW(unicode(dst), unicode(src), 0) == 0:
+        if ctypes.windll.kernel32.CreateHardLinkW(text_type(dst), text_type(src), 0) == 0:
             raise ctypes.WinError()
     else:
         ek(os.link, src, dst)
@@ -449,7 +445,7 @@ def symlink(src, dst):
     """
 
     if os.name == 'nt':
-        if ctypes.windll.kernel32.CreateSymbolicLinkW(unicode(dst), unicode(src), 1 if ek(os.path.isdir, src) else 0) in [0, 1280]:
+        if ctypes.windll.kernel32.CreateSymbolicLinkW(text_type(dst), text_type(src), 1 if ek(os.path.isdir, src) else 0) in [0, 1280]:
             raise ctypes.WinError()
     else:
         ek(os.symlink, src, dst)
@@ -841,8 +837,8 @@ def create_https_certificates(ssl_cert, ssl_key):
     :return: True on success, False on failure
     """
 
-    # assert isinstance(ssl_key, unicode)
-    # assert isinstance(ssl_cert, unicode)
+    # assert isinstance(ssl_key, text_type)
+    # assert isinstance(ssl_cert, text_type)
 
     try:
         from OpenSSL import crypto  # @UnresolvedImport
@@ -1115,7 +1111,7 @@ def is_hidden_folder(folder):
 
     def has_hidden_attribute(filepath):
         try:
-            attrs = ctypes.windll.kernel32.GetFileAttributesW(unicode(filepath))
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(text_type(filepath))
             assert attrs != -1
             result = bool(attrs & 2)
         except (AttributeError, AssertionError):
@@ -1230,10 +1226,9 @@ def extractZip(archive, targetDir):
 
             # copy file (taken from zipfile's extract)
             source = zip_file.open(member)
-            target = file(ek(os.path.join, targetDir, filename), "wb")
-            shutil.copyfileobj(source, target)
-            source.close()
-            target.close()
+            with open(ek(os.path.join, targetDir, filename), "wb") as target:
+                shutil.copyfileobj(source, target)
+                source.close()
         zip_file.close()
         return True
     except Exception as e:
@@ -1426,12 +1421,12 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
 
         if params and isinstance(params, (list, dict)):
             for param in params:
-                if isinstance(params[param], unicode):
+                if isinstance(params[param], text_type):
                     params[param] = params[param].encode('utf-8')
 
         if post_data and isinstance(post_data, (list, dict)):
             for param in post_data:
-                if isinstance(post_data[param], unicode):
+                if isinstance(post_data[param], text_type):
                     post_data[param] = post_data[param].encode('utf-8')
 
         resp = session.request(

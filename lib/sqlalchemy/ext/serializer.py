@@ -1,5 +1,6 @@
 # ext/serializer.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -21,7 +22,8 @@ Usage is nearly the same as that of the standard Python pickle module::
 
     # ... define mappers
 
-    query = Session.query(MyClass).filter(MyClass.somedata=='foo').order_by(MyClass.sortkey)
+    query = Session.query(MyClass).
+        filter(MyClass.somedata=='foo').order_by(MyClass.sortkey)
 
     # pickle the query
     serialized = dumps(query)
@@ -69,7 +71,7 @@ def Serializer(*args, **kw):
     pickler = pickle.Pickler(*args, **kw)
 
     def persistent_id(obj):
-        #print "serializing:", repr(obj)
+        # print "serializing:", repr(obj)
         if isinstance(obj, QueryableAttribute):
             cls = obj.impl.class_
             key = obj.impl.key
@@ -78,11 +80,12 @@ def Serializer(*args, **kw):
             id = "mapper:" + b64encode(pickle.dumps(obj.class_))
         elif isinstance(obj, MapperProperty) and not obj.parent.non_primary:
             id = "mapperprop:" + b64encode(pickle.dumps(obj.parent.class_)) + \
-                                    ":" + obj.key
+                ":" + obj.key
         elif isinstance(obj, Table):
             id = "table:" + text_type(obj.key)
         elif isinstance(obj, Column) and isinstance(obj.table, Table):
-            id = "column:" + text_type(obj.table.key) + ":" + text_type(obj.key)
+            id = "column:" + \
+                text_type(obj.table.key) + ":" + text_type(obj.key)
         elif isinstance(obj, Session):
             id = "session:"
         elif isinstance(obj, Engine):
@@ -95,7 +98,7 @@ def Serializer(*args, **kw):
     return pickler
 
 our_ids = re.compile(
-            r'(mapperprop|mapper|table|column|session|attribute|engine):(.*)')
+    r'(mapperprop|mapper|table|column|session|attribute|engine):(.*)')
 
 
 def Deserializer(file, metadata=None, scoped_session=None, engine=None):

@@ -19,6 +19,8 @@
 
 # pylint: disable=line-too-long
 
+from __future__ import print_function
+
 """
 Test SNI and SSL
 """
@@ -50,19 +52,19 @@ def generator(_provider):
         :return: test to run
         """
         if not _provider.url:
-            print '%s has no url set, skipping' % _provider.name
+            print('%s has no url set, skipping' % _provider.name)
             return
 
         try:
             requests.head(_provider.url, verify=certifi.old_where(), timeout=10)
         except requests.exceptions.SSLError as error:
             if 'certificate verify failed' in str(error):
-                print 'Cannot verify certificate for %s' % _provider.name
+                print('Cannot verify certificate for %s' % _provider.name)
             else:
-                print 'SSLError on %s: %s' % (_provider.name, ex(error.message))
+                print('SSLError on %s: %s' % (_provider.name, ex(error.message)))
                 raise
         except requests.exceptions.Timeout:
-            print 'Provider timed out'
+            print('Provider timed out')
 
     return _connectivity_test
 
@@ -71,10 +73,12 @@ class SniTests(unittest.TestCase):
     pass
 
 if __name__ == "__main__":
-    print "=================="
-    print "STARTING - Provider Connectivity TESTS and SSL/SNI"
-    print "=================="
-    print "######################################################################"
+    print("""
+    ==================
+    STARTING - Provider Connectivity TESTS and SSL/SNI
+    ==================
+    ######################################################################
+    """)
     # Just checking all providers - we should make this error on non-existent urls.
     for provider in [p for p in providers.makeProviderList()]:
         test_name = 'test_%s' % provider.name

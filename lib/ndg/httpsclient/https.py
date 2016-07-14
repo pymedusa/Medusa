@@ -12,9 +12,18 @@ __contact__ = "Philip.Kershaw@stfc.ac.uk"
 __revision__ = '$Id$'
 import logging
 import socket
-from httplib import HTTPS_PORT
-from httplib import HTTPConnection
-from urllib2 import AbstractHTTPHandler
+import sys
+
+if sys.version_info[0] > 2:
+    from http.client import HTTPS_PORT
+    from http.client import HTTPConnection
+
+    from urllib.request import AbstractHTTPHandler
+else:
+    from httplib import HTTPS_PORT
+    from httplib import HTTPConnection
+
+    from urllib2 import AbstractHTTPHandler
 
 
 from OpenSSL import SSL
@@ -81,7 +90,8 @@ class HTTPSConnection(HTTPConnection):
 
     def close(self):
         """Close socket and shut down SSL connection"""
-        self.sock.close()
+        if hasattr(self.sock, "close"):
+            self.sock.close()
         
         
 class HTTPSContextHandler(AbstractHTTPHandler):
@@ -106,7 +116,7 @@ class HTTPSContextHandler(AbstractHTTPHandler):
                                 ssl_context)
             self.ssl_context = ssl_context
         else:
-            self.ssl_context = SSL.Context(SSL.SSLv23_METHOD)
+            self.ssl_context = SSL.Context(SSL.TLSv1_METHOD)
 
     def https_open(self, req):
         """Opens HTTPS request

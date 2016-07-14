@@ -19,16 +19,19 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import re
-try:
-    import xml.etree.cElementTree as etree
-except ImportError:
-    import xml.etree.ElementTree as etree
+
+from six import iteritems
 
 import sickbeard
 from sickbeard import logger, common
 from sickbeard.helpers import getURL, make_session
 
 from sickrage.helper.exceptions import ex
+
+try:
+    import xml.etree.cElementTree as etree
+except ImportError:
+    import xml.etree.ElementTree as etree
 
 
 class Notifier(object):
@@ -196,7 +199,7 @@ class Notifier(object):
             logger.log(u'PLEX: Updating all hosts with TV sections: ' + ', '.join(set(hosts_all)), logger.DEBUG)
 
         hosts_try = (hosts_match.copy(), hosts_all.copy())[not len(hosts_match)]
-        for section_key, cur_host in hosts_try.iteritems():
+        for section_key, cur_host in iteritems(hosts_try):
 
             url = 'http{}://{}/library/sections/{}/refresh'.format(('', 's')[sickbeard.PLEX_SERVER_HTTPS], cur_host, section_key)
             try:

@@ -25,6 +25,8 @@ Tests:
     DBMultiTests
 """
 
+from __future__ import print_function
+
 import os.path
 import sys
 import threading
@@ -82,15 +84,17 @@ class DBMultiTests(test.SickbeardTestDBCase):
         """
         Test multi-threaded selection from the database
         """
-        for _ in xrange(4):
+        for _ in range(4):
             thread = threading.Thread(target=self.select)
             thread.start()
 
 if __name__ == '__main__':
-    print "=================="
-    print "STARTING - DB TESTS"
-    print "=================="
-    print "######################################################################"
+    print("""
+    ==================
+    STARTING - DB TESTS
+    ==================
+    ######################################################################
+    """)
     SUITE = unittest.TestLoader().loadTestsFromTestCase(DBBasicTests)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
 

@@ -1,5 +1,6 @@
 # firebird/fdb.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -8,7 +9,8 @@
 .. dialect:: firebird+fdb
     :name: fdb
     :dbapi: pyodbc
-    :connectstring: firebird+fdb://user:password@host:port/path/to/db[?key=value&key=value...]
+    :connectstring: firebird+fdb://user:password@host:port/path/to/db\
+[?key=value&key=value...]
     :url: http://pypi.python.org/pypi/fdb/
 
     fdb is a kinterbasdb compatible DBAPI for Firebird.
@@ -22,8 +24,9 @@
 Arguments
 ----------
 
-The ``fdb`` dialect is based on the :mod:`sqlalchemy.dialects.firebird.kinterbasdb`
-dialect, however does not accept every argument that Kinterbasdb does.
+The ``fdb`` dialect is based on the
+:mod:`sqlalchemy.dialects.firebird.kinterbasdb` dialect, however does not
+accept every argument that Kinterbasdb does.
 
 * ``enable_rowcount`` - True by default, setting this to False disables
   the usage of "cursor.rowcount" with the
@@ -60,8 +63,8 @@ dialect, however does not accept every argument that Kinterbasdb does.
 
   .. seealso::
 
-    http://pythonhosted.org/fdb/usage-guide.html#retaining-transactions - information
-    on the "retaining" flag.
+    http://pythonhosted.org/fdb/usage-guide.html#retaining-transactions
+    - information on the "retaining" flag.
 
 """
 
@@ -72,14 +75,14 @@ from ... import util
 class FBDialect_fdb(FBDialect_kinterbasdb):
 
     def __init__(self, enable_rowcount=True,
-                            retaining=False, **kwargs):
+                 retaining=False, **kwargs):
         super(FBDialect_fdb, self).__init__(
-                            enable_rowcount=enable_rowcount,
-                            retaining=retaining, **kwargs)
+            enable_rowcount=enable_rowcount,
+            retaining=retaining, **kwargs)
 
     @classmethod
     def dbapi(cls):
-        return  __import__('fdb')
+        return __import__('fdb')
 
     def create_connect_args(self, url):
         opts = url.translate_connect_args(username='user')

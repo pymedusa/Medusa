@@ -32,6 +32,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 
 import sickbeard
 
+from six import iteritems
 from sickrage.media.GenericMedia import GenericMedia
 
 
@@ -108,7 +109,7 @@ class GenericMediaTests(unittest.TestCase):
         }
 
         for test in test_cases, unicode_test_cases:
-            for ((indexer_id, media_format), (expected_indexer_id, expected_media_format)) in test.iteritems():
+            for ((indexer_id, media_format), (expected_indexer_id, expected_media_format)) in iteritems(test):
                 generic_media = GenericMedia(indexer_id, media_format)
 
                 self.assertEqual(generic_media.indexer_id, expected_indexer_id)

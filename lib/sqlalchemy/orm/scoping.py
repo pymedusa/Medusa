@@ -1,5 +1,6 @@
 # orm/scoping.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -20,6 +21,12 @@ class scoped_session(object):
 
     """
 
+    session_factory = None
+    """The `session_factory` provided to `__init__` is stored in this
+    attribute and may be accessed at a later time.  This can be useful when
+    a new non-scoped :class:`.Session` or :class:`.Connection` to the
+    database is needed."""
+
     def __init__(self, session_factory, scopefunc=None):
         """Construct a new :class:`.scoped_session`.
 
@@ -37,6 +44,7 @@ class scoped_session(object):
 
         """
         self.session_factory = session_factory
+
         if scopefunc:
             self.registry = ScopedRegistry(session_factory, scopefunc)
         else:
@@ -44,12 +52,12 @@ class scoped_session(object):
 
     def __call__(self, **kw):
         """Return the current :class:`.Session`, creating it
-        using the session factory if not present.
+        using the :attr:`.scoped_session.session_factory` if not present.
 
         :param \**kw: Keyword arguments will be passed to the
-         session factory callable, if an existing :class:`.Session`
-         is not present.  If the :class:`.Session` is present and
-         keyword arguments have been passed,
+         :attr:`.scoped_session.session_factory` callable, if an existing
+         :class:`.Session` is not present.  If the :class:`.Session` is present
+         and keyword arguments have been passed,
          :exc:`~sqlalchemy.exc.InvalidRequestError` is raised.
 
         """
@@ -58,8 +66,8 @@ class scoped_session(object):
             if scope is not None:
                 if self.registry.has():
                     raise sa_exc.InvalidRequestError(
-                            "Scoped session is already present; "
-                            "no new arguments may be specified.")
+                        "Scoped session is already present; "
+                        "no new arguments may be specified.")
                 else:
                     sess = self.session_factory(**kw)
                     self.registry.set(sess)
@@ -96,8 +104,8 @@ class scoped_session(object):
 
         if self.registry.has():
             warn('At least one scoped session is already present. '
-                      ' configure() can not affect sessions that have '
-                      'already been created.')
+                 ' configure() can not affect sessions that have '
+                 'already been created.')
 
         self.session_factory.configure(**kwargs)
 

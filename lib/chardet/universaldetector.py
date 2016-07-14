@@ -29,7 +29,7 @@
 Module containing the UniversalDetector detector class, which is the primary
 class a user of ``chardet`` should use.
 
-:author: Mark Pilgrim (intial port to Python)
+:author: Mark Pilgrim (initial port to Python)
 :author: Shy Shalom (original C code)
 :author: Dan Blanchard (major refactoring for 3.0)
 :author: Ian Cordasco
@@ -122,12 +122,10 @@ class UniversalDetector(object):
             if byte_str.startswith(codecs.BOM_UTF8):
                 # EF BB BF  UTF-8 with BOM
                 self.result = {'encoding': "UTF-8-SIG", 'confidence': 1.0}
-            elif byte_str.startswith(codecs.BOM_UTF32_LE):
+            elif byte_str.startswith(codecs.BOM_UTF32_LE) or byte_str.startswith(codecs.BOM_UTF32_BE):
                 # FF FE 00 00  UTF-32, little-endian BOM
-                self.result = {'encoding': "UTF-32LE", 'confidence': 1.0}
-            elif byte_str.startswith(codecs.BOM_UTF32_BE):
                 # 00 00 FE FF  UTF-32, big-endian BOM
-                self.result = {'encoding': "UTF-32BE", 'confidence': 1.0}
+                self.result = {'encoding': "UTF-32", 'confidence': 1.0}
             elif byte_str.startswith(b'\xFE\xFF\x00\x00'):
                 # FE FF 00 00  UCS-4, unusual octet order BOM (3412)
                 self.result = {'encoding': "X-ISO-10646-UCS-4-3412",
@@ -136,12 +134,10 @@ class UniversalDetector(object):
                 # 00 00 FF FE  UCS-4, unusual octet order BOM (2143)
                 self.result = {'encoding': "X-ISO-10646-UCS-4-2143",
                                'confidence': 1.0}
-            elif byte_str.startswith(codecs.BOM_LE):
+            elif byte_str.startswith(codecs.BOM_LE) or byte_str.startswith(codecs.BOM_BE):
                 # FF FE  UTF-16, little endian BOM
-                self.result = {'encoding': "UTF-16LE", 'confidence': 1.0}
-            elif byte_str.startswith(codecs.BOM_BE):
                 # FE FF  UTF-16, big endian BOM
-                self.result = {'encoding': "UTF-16BE", 'confidence': 1.0}
+                self.result = {'encoding': "UTF-16", 'confidence': 1.0}
 
             self._got_data = True
             if self.result['encoding'] is not None:
@@ -207,7 +203,7 @@ class UniversalDetector(object):
             return
         self.done = True
 
-        if self._input_state == InputState.pure_ascii:
+        if self._input_state in (InputState.pure_ascii, InputState.esc_ascii):
             self.result = {'encoding': 'ascii', 'confidence': 1.0}
             return self.result
 
@@ -228,8 +224,8 @@ class UniversalDetector(object):
                 return self.result
 
         if self.logger.getEffectiveLevel() == logging.DEBUG:
-            self.logger.debug('no probers hit minimum threshhold')
-            for prober in self._charset_probers[0].mProbers:
+            self.logger.debug('no probers hit minimum threshold')
+            for prober in self._charset_probers[0].probers:
                 if not prober:
                     continue
                 self.logger.debug('%s confidence = %s', prober.charset_name,

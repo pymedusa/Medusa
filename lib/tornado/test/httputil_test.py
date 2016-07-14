@@ -12,11 +12,11 @@ from tornado.util import u
 import copy
 import datetime
 import logging
+import pickle
 import time
 
 
 class TestUrlConcat(unittest.TestCase):
-
     def test_url_concat_no_query_params(self):
         url = url_concat(
             "https://localhost/path",
@@ -298,6 +298,26 @@ Foo: even
             self.assertIsNot(headers, h1)
             self.assertIsNot(headers.get_list('A'), h1.get_list('A'))
 
+    def test_pickle_roundtrip(self):
+        headers = HTTPHeaders()
+        headers.add('Set-Cookie', 'a=b')
+        headers.add('Set-Cookie', 'c=d')
+        headers.add('Content-Type', 'text/html')
+        pickled = pickle.dumps(headers)
+        unpickled = pickle.loads(pickled)
+        self.assertEqual(sorted(headers.get_all()), sorted(unpickled.get_all()))
+        self.assertEqual(sorted(headers.items()), sorted(unpickled.items()))
+
+    def test_setdefault(self):
+        headers = HTTPHeaders()
+        headers['foo'] = 'bar'
+        # If a value is present, setdefault returns it without changes.
+        self.assertEqual(headers.setdefault('foo', 'baz'), 'bar')
+        self.assertEqual(headers['foo'], 'bar')
+        # If a value is not present, setdefault sets it for future use.
+        self.assertEqual(headers.setdefault('quux', 'xyzzy'), 'xyzzy')
+        self.assertEqual(headers['quux'], 'xyzzy')
+        self.assertEqual(sorted(headers.get_all()), [('Foo', 'bar'), ('Quux', 'xyzzy')])
 
 
 class FormatTimestampTest(unittest.TestCase):

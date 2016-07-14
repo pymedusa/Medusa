@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 """
 Test post processing
 """
@@ -84,15 +86,17 @@ class PPBasicTests(test.SickbeardTestDBCase):
 
 
 if __name__ == '__main__':
-    print "=================="
-    print "STARTING - PostProcessor TESTS"
-    print "=================="
-    print "######################################################################"
+    print("""
+    ==================
+    STARTING - PostProcessor TESTS
+    ==================
+    ######################################################################
+    """)
 
     SUITE = unittest.TestLoader().loadTestsFromTestCase(PPInitTests)
     unittest.TextTestRunner(verbosity=2).run(SUITE)
 
-    print "######################################################################"
+    print("######################################################################")
 
     SUITE = unittest.TestLoader().loadTestsFromTestCase(PPBasicTests)
     unittest.TextTestRunner(verbosity=2).run(SUITE)

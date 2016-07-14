@@ -30,6 +30,7 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
+from six import iteritems
 import sickbeard
 
 from generic_provider_tests import GenericProviderTests
@@ -64,7 +65,7 @@ class TorrentProviderTests(GenericProviderTests):
             (True, True): True,
         }
 
-        for ((use_torrents, enabled), result) in test_cases.iteritems():
+        for ((use_torrents, enabled), result) in iteritems(test_cases):
             sickbeard.USE_TORRENTS = use_torrents
 
             provider = TorrentProvider('Test Provider')

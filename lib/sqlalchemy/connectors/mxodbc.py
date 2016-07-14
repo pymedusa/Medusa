@@ -1,5 +1,6 @@
 # connectors/mxodbc.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -79,8 +80,8 @@ class MxODBCConnector(Connector):
             if issubclass(errorclass, MxOdbcWarning):
                 errorclass.__bases__ = (Warning,)
                 warnings.warn(message=str(errorvalue),
-                          category=errorclass,
-                          stacklevel=2)
+                              category=errorclass,
+                              stacklevel=2)
             else:
                 raise errorclass(errorvalue)
         return error_handler
@@ -134,7 +135,7 @@ class MxODBCConnector(Connector):
     def _get_direct(self, context):
         if context:
             native_odbc_execute = context.execution_options.\
-                                        get('native_odbc_execute', 'auto')
+                get('native_odbc_execute', 'auto')
             # default to direct=True in all cases, is more generally
             # compatible especially with SQL Server
             return False if native_odbc_execute is True else True

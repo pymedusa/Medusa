@@ -1,5 +1,6 @@
 # testing/config.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -11,8 +12,11 @@ db = None
 db_url = None
 db_opts = None
 file_config = None
-
+test_schema = None
+test_schema_2 = None
 _current = None
+_skip_test_exception = None
+
 
 class Config(object):
     def __init__(self, db, db_opts, options, file_config):
@@ -20,12 +24,14 @@ class Config(object):
         self.db_opts = db_opts
         self.options = options
         self.file_config = file_config
+        self.test_schema = "test_schema"
+        self.test_schema_2 = "test_schema_2"
 
     _stack = collections.deque()
     _configs = {}
 
     @classmethod
-    def register(cls, db, db_opts, options, file_config, namespace):
+    def register(cls, db, db_opts, options, file_config):
         """add a config as one of the global configs.
 
         If there are no configs set up yet, this config also
@@ -33,25 +39,27 @@ class Config(object):
         """
         cfg = Config(db, db_opts, options, file_config)
 
-        global _current
-        if not _current:
-            cls.set_as_current(cfg, namespace)
         cls._configs[cfg.db.name] = cfg
         cls._configs[(cfg.db.name, cfg.db.dialect)] = cfg
         cls._configs[cfg.db] = cfg
+        return cfg
 
     @classmethod
     def set_as_current(cls, config, namespace):
-        global db, _current, db_url
+        global db, _current, db_url, test_schema, test_schema_2, db_opts
         _current = config
         db_url = config.db.url
+        db_opts = config.db_opts
+        test_schema = config.test_schema
+        test_schema_2 = config.test_schema_2
         namespace.db = db = config.db
 
     @classmethod
     def push_engine(cls, db, namespace):
         assert _current, "Can't push without a default Config set up"
         cls.push(
-            Config(db, _current.db_opts, _current.options, _current.file_config),
+            Config(
+                db, _current.db_opts, _current.options, _current.file_config),
             namespace
         )
 
@@ -75,3 +83,10 @@ class Config(object):
     def all_dbs(cls):
         for cfg in cls.all_configs():
             yield cfg.db
+
+    def skip_test(self, msg):
+        skip_test(msg)
+
+
+def skip_test(msg):
+    raise _skip_test_exception(msg)

@@ -21,16 +21,16 @@
 import datetime
 
 import warnings
-import sickbeard
 import os.path
 
-from sickbeard import db, common, helpers, logger
+from six import iteritems
 
+import sickbeard
+from sickbeard import db, common, helpers, logger, subtitles
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
+
 from sickrage.helper.common import dateTimeFormat, episode_num
 from sickrage.helper.encoding import ek
-
-from sickbeard import subtitles
 
 MIN_DB_VERSION = 9  # oldest db version we support migrating from
 MAX_DB_VERSION = 43
@@ -101,7 +101,7 @@ class MainSanityCheck(db.DBSanityCheck):
                 continue
 
             logger.log(u'Checking if there is already a show with id:%i in the show list')
-            duplicate = self.connection.select("SELECT show_name, indexer_id, location, FROM tv_shows WHERE indexer_id = %i AND indexer = %i" % (mapping[0]['mindexer_id'], INDEXER_TVDB))
+            duplicate = self.connection.select("SELECT show_name, indexer_id, location FROM tv_shows WHERE indexer_id = %i AND indexer = %i" % (mapping[0]['mindexer_id'], INDEXER_TVDB))
             if duplicate:
                 logger.log(u'Found %s which has the same id as %s, cannot convert automatically so I am pausing %s' %
                            (duplicate[0]['show_name'], tvrage_show['show_name'], duplicate[0]['show_name']), logger.WARNING)
@@ -238,7 +238,7 @@ class MainSanityCheck(db.DBSanityCheck):
             '': 'Unknown',
         }
 
-        for old_status, new_status in status_map.iteritems():
+        for old_status, new_status in iteritems(status_map):
             self.connection.action("UPDATE tv_shows SET status = ? WHERE LOWER(status) = ?", [new_status, old_status])
 
     def fix_episode_statuses(self):

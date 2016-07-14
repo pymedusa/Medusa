@@ -1,5 +1,6 @@
 # engine/url.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -24,8 +25,8 @@ class URL(object):
     Represent the components of a URL used to connect to a database.
 
     This object is suitable to be passed directly to a
-    :func:`~sqlalchemy.create_engine` call.  The fields of the URL are parsed from a
-    string by the :func:`.make_url` function.  the string
+    :func:`~sqlalchemy.create_engine` call.  The fields of the URL are parsed
+    from a string by the :func:`.make_url` function.  the string
     format of the URL is an RFC-1738-style string.
 
     All initialization parameters are available as public attributes.
@@ -104,11 +105,25 @@ class URL(object):
             self.database == other.database and \
             self.query == other.query
 
-    def get_dialect(self):
-        """Return the SQLAlchemy database dialect class corresponding
-        to this URL's driver name.
-        """
+    def get_backend_name(self):
+        if '+' not in self.drivername:
+            return self.drivername
+        else:
+            return self.drivername.split('+')[0]
 
+    def get_driver_name(self):
+        if '+' not in self.drivername:
+            return self.get_dialect().driver
+        else:
+            return self.drivername.split('+')[1]
+
+    def _get_entrypoint(self):
+        """Return the "entry point" dialect class.
+
+        This is normally the dialect itself except in the case when the
+        returned class implements the get_dialect_cls() method.
+
+        """
         if '+' not in self.drivername:
             name = self.drivername
         else:
@@ -118,11 +133,19 @@ class URL(object):
         # would return a module with 'dialect' as the
         # actual class
         if hasattr(cls, 'dialect') and \
-            isinstance(cls.dialect, type) and \
-            issubclass(cls.dialect, Dialect):
+                isinstance(cls.dialect, type) and \
+                issubclass(cls.dialect, Dialect):
             return cls.dialect
         else:
             return cls
+
+    def get_dialect(self):
+        """Return the SQLAlchemy database dialect class corresponding
+        to this URL's driver name.
+        """
+        entrypoint = self._get_entrypoint()
+        dialect_cls = entrypoint.get_dialect_cls(self)
+        return dialect_cls
 
     def translate_connect_args(self, names=[], **kw):
         """Translate url attributes into a dictionary of connection arguments.
@@ -188,7 +211,8 @@ def _parse_rfc1738_args(name):
         if components['database'] is not None:
             tokens = components['database'].split('?', 2)
             components['database'] = tokens[0]
-            query = (len(tokens) > 1 and dict(util.parse_qsl(tokens[1]))) or None
+            query = (
+                len(tokens) > 1 and dict(util.parse_qsl(tokens[1]))) or None
             if util.py2k and query is not None:
                 query = dict((k.encode('ascii'), query[k]) for k in query)
         else:
@@ -214,8 +238,10 @@ def _parse_rfc1738_args(name):
 def _rfc_1738_quote(text):
     return re.sub(r'[:@/]', lambda m: "%%%X" % ord(m.group(0)), text)
 
+
 def _rfc_1738_unquote(text):
     return util.unquote(text)
+
 
 def _parse_keyvalue_args(name):
     m = re.match(r'(\w+)://(.*)', name)

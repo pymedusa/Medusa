@@ -6,6 +6,8 @@ Unit Tests for sickbeard/numdict.py
 
 # pylint: disable=line-too-long
 
+from __future__ import print_function
+
 import os.path
 import sys
 import unittest
@@ -13,14 +15,8 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from six.moves import UserDict
 from sickbeard.numdict import NumDict
-
-PY3 = sys.version_info >= (3, )
-
-if PY3:
-    from collections import UserDict  # pylint: disable=no-name-in-module
-else:
-    from UserDict import UserDict
 
 
 class NumDictTest(unittest.TestCase):

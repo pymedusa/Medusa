@@ -36,12 +36,6 @@ from sickbeard.server.web.home import (
     HomeChangeLog,
     HomePostProcess,
     HomeAddShows,
-    Home,
-    HomeIRC,
-    HomeNews,
-    HomeChangeLog,
-    HomePostProcess,
-    HomeAddShows,
 )
 from sickbeard.server.web.manage import (
     Manage,

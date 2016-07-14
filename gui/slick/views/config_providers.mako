@@ -70,7 +70,7 @@ $('#config-components').tabs();
                         % for curProvider in sickbeard.providers.sortedProviderList():
                             <%
                                 ## These will show the '!' not saying they are broken
-                                broken_providers = {}
+                                broken_providers = {'btdigg'}
                                 if curProvider.provider_type == GenericProvider.NZB and not sickbeard.USE_NZBS:
                                     continue
                                 elif curProvider.provider_type == GenericProvider.TORRENT and not sickbeard.USE_TORRENTS:
@@ -403,6 +403,23 @@ $('#config-components').tabs();
                                 <span class="component-title">Password:</span>
                                 <span class="component-desc">
                                     <input type="password" name="${curTorrentProvider.get_id()}_password" id="${curTorrentProvider.get_id()}_password" value="${curTorrentProvider.password | h}" class="form-control input-sm input350" autocomplete="no" autocapitalize="off" />
+                                </span>
+                            </label>
+                        </div>
+                        % endif
+
+                        % if curTorrentProvider.enable_cookies:
+                        <div class="field-pair">
+                            <label for="${curTorrentProvider.get_id()}_cookies">
+                                <span class="component-title">Cookies:</span>
+                                <span class="component-desc">
+                                    <input type="text" name="${curTorrentProvider.get_id()}_cookies" id="${curTorrentProvider.get_id()}_cookies" value="${curTorrentProvider.cookies}" class="form-control input-sm input350" autocapitalize="off" autocomplete="no" />
+                                </span>
+                            </label>
+                            <label>
+                                <span class="component-title">&nbsp;</span>
+                                <span class="component-desc">
+                                    <p>eg. uid=xx;pass=yy</p>
                                 </span>
                             </label>
                         </div>
@@ -766,11 +783,11 @@ $('#config-components').tabs();
                         <div class="field-pair">
                             <label for="torrentrss_cookies">
                                 <span class="component-title">Cookies:</span>
-                                <input type="text" id="torrentrss_cookies" class="form-control input-sm input350" autocapitalize="off" />
+                                <input type="text" id="torrentrss_cookies" class="form-control input-sm input350" autocapitalize="off" disabled="disabled"/>
                             </label>
                             <label>
                                 <span class="component-title">&nbsp;</span>
-                                <span class="component-desc">eg. uid=xx;pass=yy</span>
+                                <span class="component-desc">eg. uid=xx;pass=yy, please use "Provider options" to reconfigure!</span>
                             </label>
                         </div>
                         <div class="field-pair">
