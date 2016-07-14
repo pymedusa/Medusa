@@ -20,23 +20,22 @@
 
 import re
 import datetime
+
 from dateutil import tz
+from six import iteritems
 
-from sickbeard import db
-from sickbeard import helpers
-from sickbeard import logger
+from sickbeard import db, helpers, logger
 from sickrage.helper.common import try_int
-
-# regex to parse time (12/24 hour format)
-time_regex = re.compile(r'(?P<hour>\d{1,2})(?:[:.](?P<minute>\d{2})?)? ?(?P<meridiem>[PA]\.? ?M?)?\b', re.I)
-
-network_dict = None
 
 try:
     sb_timezone = tz.tzwinlocal() if tz.tzwinlocal else tz.tzlocal()
 except Exception:
     sb_timezone = tz.tzlocal()
 
+# regex to parse time (12/24 hour format)
+time_regex = re.compile(r'(?P<hour>\d{1,2})(?:[:.](?P<minute>\d{2})?)? ?(?P<meridiem>[PA]\.? ?M?)?\b', re.I)
+
+network_dict = None
 missing_network_timezones = set()
 
 
@@ -66,7 +65,7 @@ def update_network_dict():
     network_list = dict(cache_db_con.select('SELECT * FROM network_timezones;'))
 
     queries = []
-    for network, timezone in d.iteritems():
+    for network, timezone in iteritems(d):
         existing = network in network_list
         if not existing:
             queries.append(['INSERT OR IGNORE INTO network_timezones VALUES (?,?);', [network, timezone]])

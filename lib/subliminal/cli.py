@@ -6,6 +6,7 @@ Subliminal uses `click <http://click.pocoo.org>`_ to provide a powerful :abbr:`C
 from __future__ import division
 from collections import defaultdict
 from datetime import timedelta
+import glob
 import json
 import logging
 import os
@@ -15,7 +16,7 @@ from appdirs import AppDirs
 from babelfish import Error as BabelfishError, Language
 import click
 from dogpile.cache.backends.file import AbstractFileLock
-from dogpile.core import ReadWriteMutex
+from dogpile.util.readwrite_lock import ReadWriteMutex
 from six.moves import configparser
 
 from subliminal import (AsyncProviderPool, Episode, Movie, Video, __version__, check_video, compute_score, get_scores,
@@ -266,7 +267,8 @@ def subliminal(ctx, addic7ed, itasa, legendastv, opensubtitles, subscenter, cach
 def cache(ctx, clear_subliminal):
     """Cache management."""
     if clear_subliminal:
-        os.remove(os.path.join(ctx.parent.params['cache_dir'], cache_file))
+        for file in glob.glob(os.path.join(ctx.parent.params['cache_dir'], cache_file) + '*'):
+            os.remove(file)
         click.echo('Subliminal\'s cache cleared.')
     else:
         click.echo('Nothing done.')

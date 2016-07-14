@@ -1,5 +1,6 @@
 # connectors/zxJDBC.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -35,17 +36,17 @@ class ZxJDBCConnector(Connector):
         """Create a JDBC url from a :class:`~sqlalchemy.engine.url.URL`"""
         return 'jdbc:%s://%s%s/%s' % (self.jdbc_db_name, url.host,
                                       url.port is not None
-                                        and ':%s' % url.port or '',
+                                      and ':%s' % url.port or '',
                                       url.database)
 
     def create_connect_args(self, url):
         opts = self._driver_kwargs()
         opts.update(url.query)
         return [
-                [self._create_jdbc_url(url),
-                url.username, url.password,
-                self.jdbc_driver_name],
-                opts]
+            [self._create_jdbc_url(url),
+             url.username, url.password,
+             self.jdbc_driver_name],
+            opts]
 
     def is_disconnect(self, e, connection, cursor):
         if not isinstance(e, self.dbapi.ProgrammingError):

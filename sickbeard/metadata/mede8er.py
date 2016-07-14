@@ -22,6 +22,8 @@ import io
 import os
 import datetime
 
+from six import string_types
+
 import sickbeard
 from sickbeard import logger, helpers
 from sickbeard.metadata import mediabrowser
@@ -325,7 +327,7 @@ class Mede8erMetadata(mediabrowser.MediaBrowserMetadata):
 
                 if getattr(my_show, '_actors', None) or getattr(my_ep, 'gueststars', None):
                     cast = etree.SubElement(episode, 'cast')
-                    if getattr(my_ep, 'gueststars', None) and isinstance(my_ep['gueststars'], basestring):
+                    if getattr(my_ep, 'gueststars', None) and isinstance(my_ep['gueststars'], string_types):
                         for actor in (x.strip() for x in my_ep['gueststars'].split('|') if x.strip()):
                             cur_actor = etree.SubElement(cast, 'actor')
                             cur_actor.text = actor

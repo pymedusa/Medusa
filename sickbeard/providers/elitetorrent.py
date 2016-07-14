@@ -1,25 +1,27 @@
 # coding=utf-8
 # Author: CristianBB
 #
-
+# This file is part of Medusa.
 #
-# This file is part of SickRage.
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import unicode_literals
 
 import re
 import traceback
+
+from requests.compat import urljoin
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
@@ -29,118 +31,133 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class elitetorrentProvider(TorrentProvider):
-
+    """EliteTorrent Torrent provider"""
     def __init__(self):
 
-        TorrentProvider.__init__(self, "EliteTorrent")
+        # Provider Init
+        TorrentProvider.__init__(self, 'EliteTorrent')
 
-        self.onlyspasearch = None
-        self.minseed = None
-        self.minleech = None
-        self.cache = tvcache.TVCache(self)  # Only poll EliteTorrent every 20 minutes max
+        # Credentials
 
+        # URLs
+        self.url = 'http://www.elitetorrent.net'
         self.urls = {
-            'base_url': 'http://www.elitetorrent.net',
-            'search': 'http://www.elitetorrent.net/torrents.php'
+            'base_url': self.url,
+            'search': urljoin(self.url, 'torrents.php')
         }
 
-        self.url = self.urls['base_url']
+        # Proper Strings
+
+        # Miscellaneous Options
+        self.onlyspasearch = None
+
+        # Torrent Stats
+        self.minseed = None
+        self.minleech = None
+
+        # Cache
+        self.cache = tvcache.TVCache(self)  # Only poll EliteTorrent every 20 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+        """
+        EliteTorrent search and parsing
+
+        :param search_string: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         lang_info = '' if not ep_obj or not ep_obj.show else ep_obj.show.lang
 
-        """
-        Search query:
-        http://www.elitetorrent.net/torrents.php?cat=4&modo=listado&orden=fecha&pag=1&buscar=fringe
-
-        cat = 4 => Shows
-        modo = listado => display results mode
-        orden = fecha => order
-        buscar => Search show
-        pag = 1 => page number
-        """
-
+        # Search query:
+        # http://www.elitetorrent.net/torrents.php?cat=4&modo=listado&orden=fecha&pag=1&buscar=fringe
+        # Search Params
         search_params = {
-            'cat': 4,
-            'modo': 'listado',
-            'orden': 'fecha',
-            'pag': 1,
-            'buscar': ''
-
+            'cat': 4,  # Shows
+            'modo': 'listado',  # display results mode
+            'orden': 'fecha',  # date order
+            'pag': 1,  # page number
+            'buscar': '',  # Search show
         }
 
         for mode in search_strings:
             items = []
-            logger.log(u"Search Mode: {}".format(mode), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             # Only search if user conditions are true
             if self.onlyspasearch and lang_info != 'es' and mode != 'RSS':
-                logger.log(u"Show info is not spanish, skipping provider search", logger.DEBUG)
+                logger.log('Show info is not spanish, skipping provider search', logger.DEBUG)
                 continue
 
             for search_string in search_strings[mode]:
+
                 if mode != 'RSS':
-                    logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
-                               logger.DEBUG)
+                    logger.log('Search string: {search}'.format
+                               (search=search_string), logger.DEBUG)
 
                 search_string = re.sub(r'S0*(\d*)E(\d*)', r'\1x\2', search_string)
                 search_params['buscar'] = search_string.strip() if mode != 'RSS' else ''
-
                 data = self.get_url(self.urls['search'], params=search_params, returns='text')
                 if not data:
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                try:
-                    with BS4Parser(data, 'html5lib') as html:
-                        torrent_table = html.find('table', class_='fichas-listado')
-                        torrent_rows = torrent_table('tr') if torrent_table else []
+                with BS4Parser(data, 'html5lib') as html:
+                    torrent_table = html.find('table', class_='fichas-listado')
+                    torrent_rows = torrent_table('tr') if torrent_table else []
 
-                        if len(torrent_rows) < 2:
-                            logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
-                            continue
+                    # Continue only if at least one release is found
+                    if len(torrent_rows) < 2:
+                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                        continue
 
-                        for row in torrent_rows[1:]:
-                            try:
-                                download_url = self.urls['base_url'] + row.find('a')['href']
-                                title = self._processTitle(row.find('a', class_='nombre')['title'])
-                                seeders = try_int(row.find('td', class_='semillas').get_text(strip=True))
-                                leechers = try_int(row.find('td', class_='clientes').get_text(strip=True))
-
-                                # Provider does not provide size
-                                size = -1
-
-                            except (AttributeError, TypeError, KeyError, ValueError):
-                                continue
-
+                    # Skip column headers
+                    for row in torrent_rows[1:]:
+                        try:
+                            title = self._process_title(row.find('a', class_='nombre')['title'])
+                            download_url = self.urls['base_url'] + row.find('a')['href']
                             if not all([title, download_url]):
                                 continue
+
+                            seeders = try_int(row.find('td', class_='semillas').get_text(strip=True))
+                            leechers = try_int(row.find('td', class_='clientes').get_text(strip=True))
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
                                 if mode != 'RSS':
-                                    logger.log(u"Discarding torrent because it doesn't meet the minimum seeders: {0}. Seeders: {1})".format
+                                    logger.log("Discarding torrent because it doesn't meet the "
+                                               "minimum seeders: {0}. Seeders: {1}".format
                                                (title, seeders), logger.DEBUG)
                                 continue
 
-                            item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                            size = -1  # Provider does not provide size
+
+                            item = {
+                                'title': title,
+                                'link': download_url,
+                                'size': size,
+                                'seeders': seeders,
+                                'leechers': leechers,
+                                'pubdate': None,
+                                'hash': None,
+                            }
                             if mode != 'RSS':
-                                logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
+                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                           (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
-
-                except Exception:
-                    logger.log(u"Failed parsing provider. Traceback: %s" % traceback.format_exc(), logger.WARNING)
-
-            # For each search mode sort all the items by seeders if available
-            items.sort(key=lambda d: try_int(d.get('seeders', 0)), reverse=True)
+                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
+                                       (traceback.format_exc()), logger.ERROR)
+                            continue
 
             results += items
 
         return results
 
     @staticmethod
-    def _processTitle(title):
+    def _process_title(title):
 
         # Quality, if no literal is defined it's HDTV
         if 'calidad' not in title:
@@ -152,10 +169,11 @@ class elitetorrentProvider(TorrentProvider):
         title = title.replace('(calidad regular)', 'DVDrip x264')
         title = title.replace('(calidad media)', 'DVDrip x264')
 
-        # Language, all results from this provider have spanish audio, we append it to title (avoid to download undesired torrents)
+        # Language, all results from this provider have spanish audio, we append it to title (to avoid downloading undesired torrents)
         title += ' SPANISH AUDIO'
         title += '-ELITETORRENT'
 
         return title.strip()
+
 
 provider = elitetorrentProvider()

@@ -3,6 +3,8 @@
 Tests for SickRage media
 """
 
+from __future__ import print_function
+
 import unittest
 
 from generic_media_tests import GenericMediaTests

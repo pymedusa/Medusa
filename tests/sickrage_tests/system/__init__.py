@@ -3,6 +3,8 @@
 Tests for SickRage system
 """
 
+from __future__ import print_function
+
 import unittest
 
 from restart_tests import RestartTests

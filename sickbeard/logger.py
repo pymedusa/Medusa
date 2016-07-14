@@ -25,28 +25,29 @@ Custom Logger for SickRage
 from __future__ import unicode_literals
 
 import io
-import os
-import re
-import sys
+import locale
 import logging
-import logging.handlers
 from logging import NullHandler
+from logging.handlers import RotatingFileHandler
+import os
 import pkgutil
 import platform
-import locale
-import sickrage
-import subliminal
-import tornado
+import re
+import sys
 import traceback
 
+import tornado
+import subliminal
+
 from requests.compat import quote
+from six import itervalues, text_type
 from github import Github, InputFileContent  # pylint: disable=import-error
 
 import sickbeard
 from sickbeard import classes
 
-from sickrage.helper.encoding import ss
-from sickrage.helper.encoding import ek
+import sickrage
+from sickrage.helper.encoding import ss, ek
 from sickrage.helper.exceptions import ex
 from sickrage.helper.common import dateTimeFormat
 
@@ -157,7 +158,7 @@ class CensoredFormatter(logging.Formatter, object):
         else:
             msg = super(CensoredFormatter, self).format(record)
 
-        if not isinstance(msg, unicode):
+        if not isinstance(msg, text_type):
             msg = msg.decode(self.encoding, 'replace')  # Convert to unicode
 
         # Change the SSL error to a warning with a link to information about how to fix it.
@@ -170,13 +171,13 @@ class CensoredFormatter(logging.Formatter, object):
                 msg = re.sub(ssl_error, SSL_ERROR_HELP_MSG, msg)
 
         # set of censored items
-        censored = {item for _, item in censored_items.iteritems() if item}
+        censored = {value for value in itervalues(censored_items) if value}
         # set of censored items and urlencoded counterparts
         censored = censored | {quote(item) for item in censored}
         # convert set items to unicode and typecast to list
         censored = list({
             item.decode(self.encoding, 'replace')
-            if not isinstance(item, unicode) else item
+            if not isinstance(item, text_type) else item
             for item in censored
         })
         # sort the list in order of descending length so that entire item is censored
@@ -276,7 +277,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         # rotating log file handler
         if self.file_logging:
 
-            rfh = logging.handlers.RotatingFileHandler(
+            rfh = RotatingFileHandler(
                 self.log_file, maxBytes=int(sickbeard.LOG_SIZE * 1048576), backupCount=sickbeard.LOG_NR,
                 encoding='utf-8')
             rfh.setFormatter(CensoredFormatter(file_log_pattern, dateTimeFormat))

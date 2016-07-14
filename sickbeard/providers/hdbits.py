@@ -1,21 +1,21 @@
 # coding=utf-8
 #
-
+# This file is part of Medusa.
 #
-# This file is part of SickRage.
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import unicode_literals
 
 import datetime
 import json
@@ -29,70 +29,51 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class HDBitsProvider(TorrentProvider):
-
+    """HDBits Torrent provider"""
     def __init__(self):
 
-        TorrentProvider.__init__(self, "HDBits")
+        # Provider Init
+        TorrentProvider.__init__(self, 'HDBits')
 
+        # Credentials
         self.username = None
         self.passkey = None
 
-        self.cache = HDBitsCache(self, min_time=15)  # only poll HDBits every 15 minutes max
-
+        # URLs
         self.url = 'https://hdbits.org'
         self.urls = {
             'search': urljoin(self.url, '/api/torrents'),
             'rss': urljoin(self.url, '/api/torrents'),
-            'download': urljoin(self.url, '/download.php')
+            'download': urljoin(self.url, '/download.php'),
         }
 
-    def _check_auth(self):
+        # Proper Strings
 
-        if not self.username or not self.passkey:
-            raise AuthException("Your authentication credentials for " + self.name + " are missing, check your config.")
+        # Miscellaneous Options
 
-        return True
+        # Torrent Stats
 
-    def _checkAuthFromData(self, parsedJSON):
+        # Cache
+        self.cache = HDBitsCache(self, min_time=15)  # only poll HDBits every 15 minutes max
 
-        if 'status' in parsedJSON and 'message' in parsedJSON:
-            if parsedJSON.get('status') == 5:
-                logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
-
-        return True
-
-    def _get_season_search_strings(self, ep_obj):
-        season_search_string = [self._make_post_data_JSON(show=ep_obj.show, season=ep_obj)]
-        return season_search_string
-
-    def _get_episode_search_strings(self, ep_obj, add_string=''):
-        episode_search_string = [self._make_post_data_JSON(show=ep_obj.show, episode=ep_obj)]
-        return episode_search_string
-
-    def _get_title_and_url(self, item):
-        title = item.get('name', '').replace(' ', '.')
-        url = self.urls['download'] + '?' + urlencode({'id': item['id'], 'passkey': self.passkey})
-
-        return title, url
-
-    def search(self, search_params, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None):
 
         # FIXME
         results = []
 
-        logger.log(u"Search string: %s" % search_params, logger.DEBUG)
+        logger.log('Search string: {0}'.format(search_strings), logger.DEBUG)
 
         self._check_auth()
 
-        parsedJSON = self.get_url(self.urls['search'], post_data=search_params, returns='json')
-        if not parsedJSON:
+        parsed_json = self.get_url(self.urls['search'], post_data=search_strings, returns='json')
+        if not parsed_json:
             return []
 
-        if self._checkAuthFromData(parsedJSON):
-            if parsedJSON and 'data' in parsedJSON:
-                items = parsedJSON['data']
+        if self._check_auth_from_data(parsed_json):
+            if parsed_json and 'data' in parsed_json:
+                items = parsed_json['data']
             else:
-                logger.log(u"Resulting JSON from provider isn't correct, not parsing it", logger.ERROR)
+                logger.log("Resulting JSON from provider isn't correct, not parsing it", logger.ERROR)
                 items = []
 
             for item in items:
@@ -100,13 +81,34 @@ class HDBitsProvider(TorrentProvider):
         # FIXME SORTING
         return results
 
+    def _check_auth(self):
+
+        if not self.username or not self.passkey:
+            raise AuthException('Your authentication credentials for ' + self.name + ' are missing, check your config.')
+
+        return True
+
+    def _check_auth_from_data(self, parsed_json):
+
+        if 'status' in parsed_json and 'message' in parsed_json:
+            if parsed_json.get('status') == 5:
+                logger.log('Invalid username or password. Check your settings', logger.WARNING)
+
+        return True
+
+    def _get_title_and_url(self, item):
+        title = item.get('name', '').replace(' ', '.')
+        url = self.urls['download'] + '?' + urlencode({'id': item['id'], 'passkey': self.passkey})
+
+        return title, url
+
     def find_propers(self, search_date=None):
         results = []
 
         search_terms = [' proper ', ' repack ']
 
         for term in search_terms:
-            for item in self.search(self._make_post_data_JSON(search_term=term)):
+            for item in self.search(self._make_post_data_json(search_term=term)):
                 if item['utadded']:
                     try:
                         result_date = datetime.datetime.fromtimestamp(int(item['utadded']))
@@ -120,7 +122,15 @@ class HDBitsProvider(TorrentProvider):
 
         return results
 
-    def _make_post_data_JSON(self, show=None, episode=None, season=None, search_term=None):
+    def _get_season_search_strings(self, ep_obj):
+        season_search_string = [self._make_post_data_json(show=ep_obj.show, season=ep_obj)]
+        return season_search_string
+
+    def _get_episode_search_strings(self, ep_obj, add_string=''):
+        episode_search_string = [self._make_post_data_json(show=ep_obj.show, episode=ep_obj)]
+        return episode_search_string
+
+    def _make_post_data_json(self, show=None, episode=None, season=None, search_term=None):
 
         post_data = {
             'username': self.username,
@@ -143,7 +153,7 @@ class HDBitsProvider(TorrentProvider):
             elif show.anime:
                 post_data['tvdb'] = {
                     'id': show.indexerid,
-                    'episode': "%i" % int(episode.scene_absolute_number)
+                    'episode': '%i' % int(episode.scene_absolute_number)
                 }
             else:
                 post_data['tvdb'] = {
@@ -161,7 +171,7 @@ class HDBitsProvider(TorrentProvider):
             elif show.anime:
                 post_data['tvdb'] = {
                     'id': show.indexerid,
-                    'season': "%d" % season.scene_absolute_number,
+                    'season': '%d' % season.scene_absolute_number,
                 }
             else:
                 post_data['tvdb'] = {
@@ -181,13 +191,14 @@ class HDBitsCache(tvcache.TVCache):
         results = []
 
         try:
-            parsedJSON = self.provider.getURL(self.provider.urls['rss'], post_data=self.provider._make_post_data_JSON(), returns='json')
+            parsed_json = self.provider.getURL(self.provider.urls['rss'], post_data=self.provider._make_post_data_json(), returns='json')
 
-            if self.provider._checkAuthFromData(parsedJSON):
-                results = parsedJSON['data']
+            if self.provider._check_auth_from_data(parsed_json):
+                results = parsed_json['data']
         except Exception:
             pass
 
         return {'entries': results}
+
 
 provider = HDBitsProvider()

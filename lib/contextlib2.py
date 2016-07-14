@@ -179,7 +179,7 @@ class closing(object):
         self.thing.close()
 
 
-class _RedirectStream:
+class _RedirectStream(object):
 
     _stream = None
 
@@ -219,7 +219,7 @@ class redirect_stderr(_RedirectStream):
     _stream = "stderr"
 
 
-class suppress:
+class suppress(object):
     """Context manager to suppress specified exceptions
 
     After the exception is suppressed, execution proceeds with the next
@@ -288,6 +288,20 @@ else:
         exc_type, exc_value, exc_tb = exc_details
         exec ("raise exc_type, exc_value, exc_tb")
 
+# Handle old-style classes if they exist
+try:
+    from types import InstanceType
+except ImportError:
+    # Python 3 doesn't have old-style classes
+    _get_type = type
+else:
+    # Need to handle old-style context managers on Python 2
+    def _get_type(obj):
+        obj_type = type(obj)
+        if obj_type is InstanceType:
+            return obj.__class__ # Old-style class
+        return obj_type # New-style class
+
 # Inspired by discussions on http://bugs.python.org/issue13585
 class ExitStack(object):
     """Context manager for dynamic management of a stack of exit callbacks
@@ -328,7 +342,7 @@ class ExitStack(object):
         """
         # We use an unbound method rather than a bound method to follow
         # the standard lookup behaviour for special methods
-        _cb_type = type(exit)
+        _cb_type = _get_type(exit)
         try:
             exit_method = _cb_type.__exit__
         except AttributeError:
@@ -358,7 +372,7 @@ class ExitStack(object):
         returns the result of the __enter__ method.
         """
         # We look up the special methods on the type to match the with statement
-        _cm_type = type(cm)
+        _cm_type = _get_type(cm)
         _exit = _cm_type.__exit__
         result = _cm_type.__enter__(cm)
         self._push_cm_exit(cm, _exit)

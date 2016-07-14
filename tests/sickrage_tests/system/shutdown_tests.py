@@ -30,6 +30,7 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
+from six import iteritems
 import sickbeard
 from sickbeard.event_queue import Events
 from sickrage.system.Shutdown import Shutdown
@@ -62,7 +63,7 @@ class ShutdownTests(unittest.TestCase):
         }
 
         for tests in test_cases, unicode_test_cases:
-            for (pid, result) in tests.iteritems():
+            for (pid, result) in iteritems(tests):
                 self.assertEqual(Shutdown.stop(pid), result)
 
 

@@ -1,12 +1,12 @@
 # engine/result.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 """Define result set constructs including :class:`.ResultProxy`
 and :class:`.RowProxy."""
-
 
 
 from .. import exc, util
@@ -74,7 +74,7 @@ except ImportError:
                 if isinstance(key, slice):
                     l = []
                     for processor, value in zip(self._processors[key],
-                                                 self._row[key]):
+                                                self._row[key]):
                         if processor is None:
                             l.append(value)
                         else:
@@ -84,8 +84,8 @@ except ImportError:
                     raise
             if index is None:
                 raise exc.InvalidRequestError(
-                        "Ambiguous column name '%s' in result set! "
-                        "try 'use_labels' option on select statement." % key)
+                    "Ambiguous column name '%s' in result set! "
+                    "try 'use_labels' option on select statement." % key)
             if processor is not None:
                 return processor(self._row[index])
             else:
@@ -110,7 +110,7 @@ class RowProxy(BaseRowProxy):
     __slots__ = ()
 
     def __contains__(self, key):
-        return self._parent._has_key(self._row, key)
+        return self._parent._has_key(key)
 
     def __getstate__(self):
         return {
@@ -155,7 +155,7 @@ class RowProxy(BaseRowProxy):
     def has_key(self, key):
         """Return True if this RowProxy contains the given key."""
 
-        return self._parent._has_key(self._row, key)
+        return self._parent._has_key(key)
 
     def items(self):
         """Return a list of tuples, each tuple containing a key/value pair."""
@@ -187,94 +187,170 @@ class ResultMetaData(object):
     context."""
 
     def __init__(self, parent, metadata):
-        self._processors = processors = []
-
-        # We do not strictly need to store the processor in the key mapping,
-        # though it is faster in the Python version (probably because of the
-        # saved attribute lookup self._processors)
-        self._keymap = keymap = {}
-        self.keys = []
         context = parent.context
         dialect = context.dialect
         typemap = dialect.dbapi_type_map
         translate_colname = context._translate_colname
-        self.case_sensitive = dialect.case_sensitive
+        self.case_sensitive = case_sensitive = dialect.case_sensitive
+        self._orig_processors = None
 
-        # high precedence key values.
-        primary_keymap = {}
+        if context.result_column_struct:
+            result_columns, cols_are_ordered = context.result_column_struct
+            num_ctx_cols = len(result_columns)
+        else:
+            num_ctx_cols = None
 
-        for i, rec in enumerate(metadata):
-            colname = rec[0]
-            coltype = rec[1]
+        if num_ctx_cols and \
+                cols_are_ordered and \
+                num_ctx_cols == len(metadata):
+            # case 1 - SQL expression statement, number of columns
+            # in result matches number of cols in compiled.  This is the
+            # vast majority case for SQL expression constructs.  In this
+            # case we don't bother trying to parse or match up to
+            # the colnames in the result description.
+            raw = [
+                (
+                    idx,
+                    key,
+                    name.lower() if not case_sensitive else name,
+                    context.get_result_processor(
+                        type_, key, metadata[idx][1]
+                    ),
+                    obj,
+                    None
+                ) for idx, (key, name, obj, type_)
+                in enumerate(result_columns)
+            ]
+            self.keys = [
+                elem[0] for elem in result_columns
+            ]
+        else:
+            # case 2 - raw string, or number of columns in result does
+            # not match number of cols in compiled.  The raw string case
+            # is very common.   The latter can happen
+            # when text() is used with only a partial typemap, or
+            # in the extremely unlikely cases where the compiled construct
+            # has a single element with multiple col expressions in it
+            # (e.g. has commas embedded) or there's some kind of statement
+            # that is adding extra columns.
+            # In all these cases we fall back to the "named" approach
+            # that SQLAlchemy has used up through 0.9.
 
-            if dialect.description_encoding:
-                colname = dialect._description_decoder(colname)
+            if num_ctx_cols:
+                result_map = self._create_result_map(
+                    result_columns, case_sensitive)
 
+            raw = []
+            self.keys = []
+            untranslated = None
+            for idx, rec in enumerate(metadata):
+                colname = rec[0]
+                coltype = rec[1]
+
+                if dialect.description_encoding:
+                    colname = dialect._description_decoder(colname)
+
+                if translate_colname:
+                    colname, untranslated = translate_colname(colname)
+
+                if dialect.requires_name_normalize:
+                    colname = dialect.normalize_name(colname)
+
+                self.keys.append(colname)
+                if not case_sensitive:
+                    colname = colname.lower()
+
+                if num_ctx_cols:
+                    try:
+                        ctx_rec = result_map[colname]
+                    except KeyError:
+                        mapped_type = typemap.get(coltype, sqltypes.NULLTYPE)
+                        obj = None
+                    else:
+                        obj = ctx_rec[1]
+                        mapped_type = ctx_rec[2]
+                else:
+                    mapped_type = typemap.get(coltype, sqltypes.NULLTYPE)
+                    obj = None
+                processor = context.get_result_processor(
+                    mapped_type, colname, coltype)
+
+                raw.append(
+                    (idx, colname, colname, processor, obj, untranslated)
+                )
+
+        # keymap indexes by integer index...
+        self._keymap = dict([
+            (elem[0], (elem[3], elem[4], elem[0]))
+            for elem in raw
+        ])
+
+        # processors in key order for certain per-row
+        # views like __iter__ and slices
+        self._processors = [elem[3] for elem in raw]
+
+        if num_ctx_cols:
+            # keymap by primary string...
+            by_key = dict([
+                (elem[2], (elem[3], elem[4], elem[0]))
+                for elem in raw
+            ])
+
+            # if by-primary-string dictionary smaller (or bigger?!) than
+            # number of columns, assume we have dupes, rewrite
+            # dupe records with "None" for index which results in
+            # ambiguous column exception when accessed.
+            if len(by_key) != num_ctx_cols:
+                seen = set()
+                for rec in raw:
+                    key = rec[1]
+                    if key in seen:
+                        key = key.lower() if not self.case_sensitive else key
+                        by_key[key] = (None, by_key[key][1], None)
+                    seen.add(key)
+
+            # update keymap with secondary "object"-based keys
+            self._keymap.update([
+                (obj_elem, by_key[elem[2]])
+                for elem in raw if elem[4]
+                for obj_elem in elem[4]
+            ])
+
+            # update keymap with primary string names taking
+            # precedence
+            self._keymap.update(by_key)
+        else:
+            self._keymap.update([
+                (elem[2], (elem[3], elem[4], elem[0]))
+                for elem in raw
+            ])
+            # update keymap with "translated" names (sqlite-only thing)
             if translate_colname:
-                colname, untranslated = translate_colname(colname)
+                self._keymap.update([
+                    (elem[5], self._keymap[elem[2]])
+                    for elem in raw if elem[5]
+                ])
 
-            if dialect.requires_name_normalize:
-                colname = dialect.normalize_name(colname)
-
-            if context.result_map:
-                try:
-                    name, obj, type_ = context.result_map[colname
-                                                    if self.case_sensitive
-                                                    else colname.lower()]
-                except KeyError:
-                    name, obj, type_ = \
-                        colname, None, typemap.get(coltype, sqltypes.NULLTYPE)
+    @classmethod
+    def _create_result_map(cls, result_columns, case_sensitive=True):
+        d = {}
+        for elem in result_columns:
+            key, rec = elem[0], elem[1:]
+            if not case_sensitive:
+                key = key.lower()
+            if key in d:
+                # conflicting keyname, just double up the list
+                # of objects.  this will cause an "ambiguous name"
+                # error if an attempt is made by the result set to
+                # access.
+                e_name, e_obj, e_type = d[key]
+                d[key] = e_name, e_obj + rec[1], e_type
             else:
-                name, obj, type_ = \
-                        colname, None, typemap.get(coltype, sqltypes.NULLTYPE)
-
-            processor = context.get_result_processor(type_, colname, coltype)
-
-            processors.append(processor)
-            rec = (processor, obj, i)
-
-            # indexes as keys. This is only needed for the Python version of
-            # RowProxy (the C version uses a faster path for integer indexes).
-            primary_keymap[i] = rec
-
-            # populate primary keymap, looking for conflicts.
-            if primary_keymap.setdefault(
-                                name if self.case_sensitive
-                                else name.lower(),
-                                rec) is not rec:
-                # place a record that doesn't have the "index" - this
-                # is interpreted later as an AmbiguousColumnError,
-                # but only when actually accessed.   Columns
-                # colliding by name is not a problem if those names
-                # aren't used; integer access is always
-                # unambiguous.
-                primary_keymap[name
-                                if self.case_sensitive
-                                else name.lower()] = rec = (None, obj, None)
-
-            self.keys.append(colname)
-            if obj:
-                for o in obj:
-                    keymap[o] = rec
-                    # technically we should be doing this but we
-                    # are saving on callcounts by not doing so.
-                    # if keymap.setdefault(o, rec) is not rec:
-                    #    keymap[o] = (None, obj, None)
-
-            if translate_colname and \
-                untranslated:
-                keymap[untranslated] = rec
-
-        # overwrite keymap values with those of the
-        # high precedence keymap.
-        keymap.update(primary_keymap)
-
-        if parent._echo:
-            context.engine.logger.debug(
-                "Col %r", tuple(x[0] for x in metadata))
+                d[key] = rec
+        return d
 
     @util.pending_deprecation("0.8", "sqlite dialect uses "
-                    "_translate_colname() now")
+                              "_translate_colname() now")
     def _set_keymap_synonym(self, name, origname):
         """Set a synonym for the given name.
 
@@ -284,8 +360,8 @@ class ResultMetaData(object):
 
         """
         rec = (processor, obj, i) = self._keymap[origname if
-                                                self.case_sensitive
-                                                else origname.lower()]
+                                                 self.case_sensitive
+                                                 else origname.lower()]
         if self._keymap.setdefault(name, rec) is not rec:
             self._keymap[name] = (processor, obj, None)
 
@@ -300,26 +376,26 @@ class ResultMetaData(object):
         # pickle/unpickle roundtrip
         elif isinstance(key, expression.ColumnElement):
             if key._label and (
-                            key._label
-                            if self.case_sensitive
-                            else key._label.lower()) in map:
+                    key._label
+                    if self.case_sensitive
+                    else key._label.lower()) in map:
                 result = map[key._label
-                            if self.case_sensitive
-                            else key._label.lower()]
+                             if self.case_sensitive
+                             else key._label.lower()]
             elif hasattr(key, 'name') and (
-                                    key.name
-                                    if self.case_sensitive
-                                    else key.name.lower()) in map:
+                    key.name
+                    if self.case_sensitive
+                    else key.name.lower()) in map:
                 # match is only on name.
                 result = map[key.name
-                            if self.case_sensitive
-                            else key.name.lower()]
+                             if self.case_sensitive
+                             else key.name.lower()]
             # search extra hard to make sure this
             # isn't a column/label name overlap.
             # this check isn't currently available if the row
             # was unpickled.
             if result is not None and \
-                 result[1] is not None:
+                    result[1] is not None:
                 for obj in result[1]:
                     if key._compare_name_for_result(obj):
                         break
@@ -329,18 +405,34 @@ class ResultMetaData(object):
             if raiseerr:
                 raise exc.NoSuchColumnError(
                     "Could not locate column in row for column '%s'" %
-                        expression._string_or_unprintable(key))
+                    expression._string_or_unprintable(key))
             else:
                 return None
         else:
             map[key] = result
         return result
 
-    def _has_key(self, row, key):
+    def _has_key(self, key):
         if key in self._keymap:
             return True
         else:
             return self._key_fallback(key, False) is not None
+
+    def _getter(self, key, raiseerr=True):
+        if key in self._keymap:
+            processor, obj, index = self._keymap[key]
+        else:
+            ret = self._key_fallback(key, raiseerr)
+            if ret is None:
+                return None
+            processor, obj, index = ret
+
+        if index is None:
+            raise exc.InvalidRequestError(
+                "Ambiguous column name '%s' in result set! "
+                "try 'use_labels' option on select statement." % key)
+
+        return operator.itemgetter(index)
 
     def __getstate__(self):
         return {
@@ -392,21 +484,49 @@ class ResultProxy(object):
     out_parameters = None
     _can_close_connection = False
     _metadata = None
+    _soft_closed = False
+    closed = False
 
     def __init__(self, context):
         self.context = context
         self.dialect = context.dialect
-        self.closed = False
         self.cursor = self._saved_cursor = context.cursor
         self.connection = context.root_connection
         self._echo = self.connection._echo and \
-                        context.engine._should_log_debug()
+            context.engine._should_log_debug()
         self._init_metadata()
+
+    def _getter(self, key, raiseerr=True):
+        try:
+            getter = self._metadata._getter
+        except AttributeError:
+            return self._non_result(None)
+        else:
+            return getter(key, raiseerr)
+
+    def _has_key(self, key):
+        try:
+            has_key = self._metadata._has_key
+        except AttributeError:
+            return self._non_result(None)
+        else:
+            return has_key(key)
 
     def _init_metadata(self):
         metadata = self._cursor_description()
         if metadata is not None:
-            self._metadata = ResultMetaData(self, metadata)
+            if self.context.compiled and \
+                    'compiled_cache' in self.context.execution_options:
+                if self.context.compiled._cached_metadata:
+                    self._metadata = self.context.compiled._cached_metadata
+                else:
+                    self._metadata = self.context.compiled._cached_metadata = \
+                        ResultMetaData(self, metadata)
+            else:
+                self._metadata = ResultMetaData(self, metadata)
+            if self._echo:
+                self.context.engine.logger.debug(
+                    "Col %r", tuple(x[0] for x in metadata))
 
     def keys(self):
         """Return the current set of string keys for rows."""
@@ -460,7 +580,7 @@ class ResultProxy(object):
             return self.context.rowcount
         except Exception as e:
             self.connection._handle_dbapi_exception(
-                              e, None, None, self.cursor, self.context)
+                e, None, None, self.cursor, self.context)
 
     @property
     def lastrowid(self):
@@ -482,8 +602,8 @@ class ResultProxy(object):
             return self._saved_cursor.lastrowid
         except Exception as e:
             self.connection._handle_dbapi_exception(
-                                 e, None, None,
-                                 self._saved_cursor, self.context)
+                e, None, None,
+                self._saved_cursor, self.context)
 
     @property
     def returns_rows(self):
@@ -516,39 +636,85 @@ class ResultProxy(object):
 
         return self._saved_cursor.description
 
-    def close(self, _autoclose_connection=True):
-        """Close this ResultProxy.
+    def _soft_close(self, _autoclose_connection=True):
+        """Soft close this :class:`.ResultProxy`.
 
-        Closes the underlying DBAPI cursor corresponding to the execution.
-
-        Note that any data cached within this ResultProxy is still available.
-        For some types of results, this may include buffered rows.
-
-        If this ResultProxy was generated from an implicit execution,
-        the underlying Connection will also be closed (returns the
-        underlying DBAPI connection to the connection pool.)
+        This releases all DBAPI cursor resources, but leaves the
+        ResultProxy "open" from a semantic perspective, meaning the
+        fetchXXX() methods will continue to return empty results.
 
         This method is called automatically when:
 
         * all result rows are exhausted using the fetchXXX() methods.
         * cursor.description is None.
 
+        This method is **not public**, but is documented in order to clarify
+        the "autoclose" process used.
+
+        .. versionadded:: 1.0.0
+
+        .. seealso::
+
+            :meth:`.ResultProxy.close`
+
+
+        """
+        if self._soft_closed:
+            return
+        self._soft_closed = True
+        cursor = self.cursor
+        self.connection._safe_close_cursor(cursor)
+        if _autoclose_connection and \
+                self.connection.should_close_with_result:
+            self.connection.close()
+        self.cursor = None
+
+    def close(self):
+        """Close this ResultProxy.
+
+        This closes out the underlying DBAPI cursor corresonding
+        to the statement execution, if one is stil present.  Note that the
+        DBAPI cursor is automatically released when the :class:`.ResultProxy`
+        exhausts all available rows.  :meth:`.ResultProxy.close` is generally
+        an optional method except in the case when discarding a
+        :class:`.ResultProxy` that still has additional rows pending for fetch.
+
+        In the case of a result that is the product of
+        :ref:`connectionless execution <dbengine_implicit>`,
+        the underyling :class:`.Connection` object is also closed, which
+        :term:`releases` DBAPI connection resources.
+
+        After this method is called, it is no longer valid to call upon
+        the fetch methods, which will raise a :class:`.ResourceClosedError`
+        on subsequent use.
+
+        .. versionchanged:: 1.0.0 - the :meth:`.ResultProxy.close` method
+           has been separated out from the process that releases the underlying
+           DBAPI cursor resource.   The "auto close" feature of the
+           :class:`.Connection` now performs a so-called "soft close", which
+           releases the underlying DBAPI cursor, but allows the
+           :class:`.ResultProxy` to still behave as an open-but-exhausted
+           result set; the actual :meth:`.ResultProxy.close` method is never
+           called.    It is still safe to discard a :class:`.ResultProxy`
+           that has been fully exhausted without calling this method.
+
+        .. seealso::
+
+            :ref:`connections_toplevel`
+
+            :meth:`.ResultProxy._soft_close`
+
         """
 
         if not self.closed:
+            self._soft_close()
             self.closed = True
-            self.connection._safe_close_cursor(self.cursor)
-            if _autoclose_connection and \
-                self.connection.should_close_with_result:
-                self.connection.close()
-            # allow consistent errors
-            self.cursor = None
 
     def __iter__(self):
         while True:
             row = self.fetchone()
             if row is None:
-                raise StopIteration
+                return
             else:
                 yield row
 
@@ -581,17 +747,17 @@ class ResultProxy(object):
 
         if not self.context.compiled:
             raise exc.InvalidRequestError(
-                        "Statement is not a compiled "
-                        "expression construct.")
+                "Statement is not a compiled "
+                "expression construct.")
         elif not self.context.isinsert:
             raise exc.InvalidRequestError(
-                        "Statement is not an insert() "
-                        "expression construct.")
+                "Statement is not an insert() "
+                "expression construct.")
         elif self.context._is_explicit_returning:
             raise exc.InvalidRequestError(
-                        "Can't call inserted_primary_key "
-                        "when returning() "
-                        "is used.")
+                "Can't call inserted_primary_key "
+                "when returning() "
+                "is used.")
 
         return self.context.inserted_primary_key
 
@@ -606,12 +772,12 @@ class ResultProxy(object):
         """
         if not self.context.compiled:
             raise exc.InvalidRequestError(
-                        "Statement is not a compiled "
-                        "expression construct.")
+                "Statement is not a compiled "
+                "expression construct.")
         elif not self.context.isupdate:
             raise exc.InvalidRequestError(
-                        "Statement is not an update() "
-                        "expression construct.")
+                "Statement is not an update() "
+                "expression construct.")
         elif self.context.executemany:
             return self.context.compiled_parameters
         else:
@@ -628,12 +794,12 @@ class ResultProxy(object):
         """
         if not self.context.compiled:
             raise exc.InvalidRequestError(
-                        "Statement is not a compiled "
-                        "expression construct.")
+                "Statement is not a compiled "
+                "expression construct.")
         elif not self.context.isinsert:
             raise exc.InvalidRequestError(
-                        "Statement is not an insert() "
-                        "expression construct.")
+                "Statement is not an insert() "
+                "expression construct.")
         elif self.context.executemany:
             return self.context.compiled_parameters
         else:
@@ -681,12 +847,12 @@ class ResultProxy(object):
 
         if not self.context.compiled:
             raise exc.InvalidRequestError(
-                        "Statement is not a compiled "
-                        "expression construct.")
+                "Statement is not a compiled "
+                "expression construct.")
         elif not self.context.isinsert and not self.context.isupdate:
             raise exc.InvalidRequestError(
-                        "Statement is not an insert() or update() "
-                        "expression construct.")
+                "Statement is not an insert() or update() "
+                "expression construct.")
         return self.context.postfetch_cols
 
     def prefetch_cols(self):
@@ -703,12 +869,12 @@ class ResultProxy(object):
 
         if not self.context.compiled:
             raise exc.InvalidRequestError(
-                        "Statement is not a compiled "
-                        "expression construct.")
+                "Statement is not a compiled "
+                "expression construct.")
         elif not self.context.isinsert and not self.context.isupdate:
             raise exc.InvalidRequestError(
-                        "Statement is not an insert() or update() "
-                        "expression construct.")
+                "Statement is not an insert() or update() "
+                "expression construct.")
         return self.context.prefetch_cols
 
     def supports_sane_rowcount(self):
@@ -733,7 +899,7 @@ class ResultProxy(object):
         try:
             return self.cursor.fetchone()
         except AttributeError:
-            self._non_result()
+            return self._non_result(None)
 
     def _fetchmany_impl(self, size=None):
         try:
@@ -742,22 +908,24 @@ class ResultProxy(object):
             else:
                 return self.cursor.fetchmany(size)
         except AttributeError:
-            self._non_result()
+            return self._non_result([])
 
     def _fetchall_impl(self):
         try:
             return self.cursor.fetchall()
         except AttributeError:
-            self._non_result()
+            return self._non_result([])
 
-    def _non_result(self):
+    def _non_result(self, default):
         if self._metadata is None:
             raise exc.ResourceClosedError(
-            "This result object does not return rows. "
-            "It has been closed automatically.",
+                "This result object does not return rows. "
+                "It has been closed automatically.",
             )
-        else:
+        elif self.closed:
             raise exc.ResourceClosedError("This result object is closed.")
+        else:
+            return default
 
     def process_rows(self, rows):
         process_row = self._process_row
@@ -776,41 +944,75 @@ class ResultProxy(object):
                     for row in rows]
 
     def fetchall(self):
-        """Fetch all rows, just like DB-API ``cursor.fetchall()``."""
+        """Fetch all rows, just like DB-API ``cursor.fetchall()``.
+
+        After all rows have been exhausted, the underlying DBAPI
+        cursor resource is released, and the object may be safely
+        discarded.
+
+        Subsequent calls to :meth:`.ResultProxy.fetchall` will return
+        an empty list.   After the :meth:`.ResultProxy.close` method is
+        called, the method will raise :class:`.ResourceClosedError`.
+
+        .. versionchanged:: 1.0.0 - Added "soft close" behavior which
+           allows the result to be used in an "exhausted" state prior to
+           calling the :meth:`.ResultProxy.close` method.
+
+        """
 
         try:
             l = self.process_rows(self._fetchall_impl())
-            self.close()
+            self._soft_close()
             return l
         except Exception as e:
             self.connection._handle_dbapi_exception(
-                                    e, None, None,
-                                    self.cursor, self.context)
+                e, None, None,
+                self.cursor, self.context)
 
     def fetchmany(self, size=None):
         """Fetch many rows, just like DB-API
         ``cursor.fetchmany(size=cursor.arraysize)``.
 
-        If rows are present, the cursor remains open after this is called.
-        Else the cursor is automatically closed and an empty list is returned.
+        After all rows have been exhausted, the underlying DBAPI
+        cursor resource is released, and the object may be safely
+        discarded.
+
+        Calls to :meth:`.ResultProxy.fetchmany` after all rows have been
+        exhuasted will return
+        an empty list.   After the :meth:`.ResultProxy.close` method is
+        called, the method will raise :class:`.ResourceClosedError`.
+
+        .. versionchanged:: 1.0.0 - Added "soft close" behavior which
+           allows the result to be used in an "exhausted" state prior to
+           calling the :meth:`.ResultProxy.close` method.
 
         """
 
         try:
             l = self.process_rows(self._fetchmany_impl(size))
             if len(l) == 0:
-                self.close()
+                self._soft_close()
             return l
         except Exception as e:
             self.connection._handle_dbapi_exception(
-                                    e, None, None,
-                                    self.cursor, self.context)
+                e, None, None,
+                self.cursor, self.context)
 
     def fetchone(self):
         """Fetch one row, just like DB-API ``cursor.fetchone()``.
 
-        If a row is present, the cursor remains open after this is called.
-        Else the cursor is automatically closed and None is returned.
+        After all rows have been exhausted, the underlying DBAPI
+        cursor resource is released, and the object may be safely
+        discarded.
+
+        Calls to :meth:`.ResultProxy.fetchone` after all rows have
+        been exhausted will return ``None``.
+        After the :meth:`.ResultProxy.close` method is
+        called, the method will raise :class:`.ResourceClosedError`.
+
+        .. versionchanged:: 1.0.0 - Added "soft close" behavior which
+           allows the result to be used in an "exhausted" state prior to
+           calling the :meth:`.ResultProxy.close` method.
 
         """
         try:
@@ -818,28 +1020,31 @@ class ResultProxy(object):
             if row is not None:
                 return self.process_rows([row])[0]
             else:
-                self.close()
+                self._soft_close()
                 return None
         except Exception as e:
             self.connection._handle_dbapi_exception(
-                                    e, None, None,
-                                    self.cursor, self.context)
+                e, None, None,
+                self.cursor, self.context)
 
     def first(self):
         """Fetch the first row and then close the result set unconditionally.
 
         Returns None if no row is present.
 
+        After calling this method, the object is fully closed,
+        e.g. the :meth:`.ResultProxy.close` method will have been called.
+
         """
         if self._metadata is None:
-            self._non_result()
+            return self._non_result(None)
 
         try:
             row = self._fetchone_impl()
         except Exception as e:
             self.connection._handle_dbapi_exception(
-                                    e, None, None,
-                                    self.cursor, self.context)
+                e, None, None,
+                self.cursor, self.context)
 
         try:
             if row is not None:
@@ -853,6 +1058,9 @@ class ResultProxy(object):
         """Fetch the first column of the first row, and close the result set.
 
         Returns None if no row is present.
+
+        After calling this method, the object is fully closed,
+        e.g. the :meth:`.ResultProxy.close` method will have been called.
 
         """
         row = self.first()
@@ -874,10 +1082,27 @@ class BufferedRowResultProxy(ResultProxy):
 
     The pre-fetching behavior fetches only one row initially, and then
     grows its buffer size by a fixed amount with each successive need
-    for additional rows up to a size of 100.
+    for additional rows up to a size of 1000.
+
+    The size argument is configurable using the ``max_row_buffer``
+    execution option::
+
+        with psycopg2_engine.connect() as conn:
+
+            result = conn.execution_options(
+                stream_results=True, max_row_buffer=50
+                ).execute("select * from table")
+
+    .. versionadded:: 1.0.6 Added the ``max_row_buffer`` option.
+
+    .. seealso::
+
+        :ref:`psycopg2_execution_options`
     """
 
     def _init_metadata(self):
+        self._max_row_buffer = self.context.execution_options.get(
+            'max_row_buffer', None)
         self.__buffer_rows()
         super(BufferedRowResultProxy, self)._init_metadata()
 
@@ -897,13 +1122,21 @@ class BufferedRowResultProxy(ResultProxy):
     }
 
     def __buffer_rows(self):
+        if self.cursor is None:
+            return
         size = getattr(self, '_bufsize', 1)
         self.__rowbuffer = collections.deque(self.cursor.fetchmany(size))
         self._bufsize = self.size_growth.get(size, size)
+        if self._max_row_buffer is not None:
+            self._bufsize = min(self._max_row_buffer, self._bufsize)
+
+    def _soft_close(self, **kw):
+        self.__rowbuffer.clear()
+        super(BufferedRowResultProxy, self)._soft_close(**kw)
 
     def _fetchone_impl(self):
-        if self.closed:
-            return None
+        if self.cursor is None:
+            return self._non_result(None)
         if not self.__rowbuffer:
             self.__buffer_rows()
             if not self.__rowbuffer:
@@ -922,6 +1155,8 @@ class BufferedRowResultProxy(ResultProxy):
         return result
 
     def _fetchall_impl(self):
+        if self.cursor is None:
+            return self._non_result([])
         self.__rowbuffer.extend(self.cursor.fetchall())
         ret = self.__rowbuffer
         self.__rowbuffer = collections.deque()
@@ -936,6 +1171,7 @@ class FullyBufferedResultProxy(ResultProxy):
     such as MSSQL INSERT...OUTPUT after an autocommit.
 
     """
+
     def _init_metadata(self):
         super(FullyBufferedResultProxy, self)._init_metadata()
         self.__rowbuffer = self._buffer_rows()
@@ -943,11 +1179,15 @@ class FullyBufferedResultProxy(ResultProxy):
     def _buffer_rows(self):
         return collections.deque(self.cursor.fetchall())
 
+    def _soft_close(self, **kw):
+        self.__rowbuffer.clear()
+        super(FullyBufferedResultProxy, self)._soft_close(**kw)
+
     def _fetchone_impl(self):
         if self.__rowbuffer:
             return self.__rowbuffer.popleft()
         else:
-            return None
+            return self._non_result(None)
 
     def _fetchmany_impl(self, size=None):
         if size is None:
@@ -961,6 +1201,8 @@ class FullyBufferedResultProxy(ResultProxy):
         return result
 
     def _fetchall_impl(self):
+        if not self.cursor:
+            return self._non_result([])
         ret = self.__rowbuffer
         self.__rowbuffer = collections.deque()
         return ret
@@ -997,16 +1239,21 @@ class BufferedColumnResultProxy(ResultProxy):
 
     def _init_metadata(self):
         super(BufferedColumnResultProxy, self)._init_metadata()
+
         metadata = self._metadata
-        # orig_processors will be used to preprocess each row when they are
-        # constructed.
-        metadata._orig_processors = metadata._processors
-        # replace the all type processors by None processors.
-        metadata._processors = [None for _ in range(len(metadata.keys))]
-        keymap = {}
-        for k, (func, obj, index) in metadata._keymap.items():
-            keymap[k] = (None, obj, index)
-        self._metadata._keymap = keymap
+
+        # don't double-replace the processors, in the case
+        # of a cached ResultMetaData
+        if metadata._orig_processors is None:
+            # orig_processors will be used to preprocess each row when
+            # they are constructed.
+            metadata._orig_processors = metadata._processors
+            # replace the all type processors by None processors.
+            metadata._processors = [None for _ in range(len(metadata.keys))]
+            keymap = {}
+            for k, (func, obj, index) in metadata._keymap.items():
+                keymap[k] = (None, obj, index)
+            metadata._keymap = keymap
 
     def fetchall(self):
         # can't call cursor.fetchall(), since rows must be

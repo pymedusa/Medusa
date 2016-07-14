@@ -21,6 +21,8 @@
 Test ShowBanner
 """
 
+from __future__ import print_function
+
 from generic_media_tests import GenericMediaTests
 
 import os

@@ -1,5 +1,6 @@
 # orm/unitofwork.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -15,6 +16,7 @@ organizes them in order of dependency, and executes.
 from .. import util, event
 from ..util import topological
 from . import attributes, persistence, util as orm_util
+import itertools
 
 
 def track_cascade_events(descriptor, prop):
@@ -55,16 +57,16 @@ def track_cascade_events(descriptor, prop):
 
             if sess._warn_on_events:
                 sess._flush_warning(
-                        "collection remove"
-                        if prop.uselist
-                        else "related attribute delete")
+                    "collection remove"
+                    if prop.uselist
+                    else "related attribute delete")
 
             # expunge pending orphans
             item_state = attributes.instance_state(item)
             if prop._cascade.delete_orphan and \
                 item_state in sess._new and \
                     prop.mapper._is_orphan(item_state):
-                    sess.expunge(item)
+                sess.expunge(item)
 
     def set_(state, newvalue, oldvalue, initiator):
         # process "save_update" cascade rules for when an instance
@@ -82,18 +84,19 @@ def track_cascade_events(descriptor, prop):
             if newvalue is not None:
                 newvalue_state = attributes.instance_state(newvalue)
                 if prop._cascade.save_update and \
-                    (prop.cascade_backrefs or key == initiator.key) and \
-                    not sess._contains_state(newvalue_state):
+                        (prop.cascade_backrefs or key == initiator.key) and \
+                        not sess._contains_state(newvalue_state):
                     sess._save_or_update_state(newvalue_state)
 
             if oldvalue is not None and \
+                oldvalue is not attributes.NEVER_SET and \
                 oldvalue is not attributes.PASSIVE_NO_RESULT and \
-                prop._cascade.delete_orphan:
+                    prop._cascade.delete_orphan:
                 # possible to reach here with attributes.NEVER_SET ?
                 oldvalue_state = attributes.instance_state(oldvalue)
 
                 if oldvalue_state in sess._new and \
-                    prop.mapper._is_orphan(oldvalue_state):
+                        prop.mapper._is_orphan(oldvalue_state):
                     sess.expunge(oldvalue)
         return newvalue
 
@@ -173,7 +176,7 @@ class UOWTransaction(object):
         self.states[state] = (isdelete, True)
 
     def get_attribute_history(self, state, key,
-                            passive=attributes.PASSIVE_NO_INITIALIZE):
+                              passive=attributes.PASSIVE_NO_INITIALIZE):
         """facade to attributes.get_state_history(), including
         caching of results."""
 
@@ -189,11 +192,11 @@ class UOWTransaction(object):
             # we want non-passive, do a non-passive lookup and re-cache
 
             if not cached_passive & attributes.SQL_OK \
-                and passive & attributes.SQL_OK:
+                    and passive & attributes.SQL_OK:
                 impl = state.manager[key].impl
                 history = impl.get_history(state, state.dict,
-                                    attributes.PASSIVE_OFF |
-                                    attributes.LOAD_AGAINST_COMMITTED)
+                                           attributes.PASSIVE_OFF |
+                                           attributes.LOAD_AGAINST_COMMITTED)
                 if history and impl.uses_objects:
                     state_history = history.as_state()
                 else:
@@ -204,13 +207,13 @@ class UOWTransaction(object):
             # TODO: store the history as (state, object) tuples
             # so we don't have to keep converting here
             history = impl.get_history(state, state.dict, passive |
-                                attributes.LOAD_AGAINST_COMMITTED)
+                                       attributes.LOAD_AGAINST_COMMITTED)
             if history and impl.uses_objects:
                 state_history = history.as_state()
             else:
                 state_history = history
             self.attributes[hashkey] = (history, state_history,
-                    passive)
+                                        passive)
 
         return state_history
 
@@ -223,13 +226,13 @@ class UOWTransaction(object):
             self.presort_actions[key] = Preprocess(processor, fromparent)
 
     def register_object(self, state, isdelete=False,
-                            listonly=False, cancel_delete=False,
-                            operation=None, prop=None):
+                        listonly=False, cancel_delete=False,
+                        operation=None, prop=None):
         if not self.session._contains_state(state):
             if not state.deleted and operation is not None:
                 util.warn("Object of type %s not in session, %s operation "
-                            "along '%s' will not proceed" %
-                            (orm_util.state_class_str(state), operation, prop))
+                          "along '%s' will not proceed" %
+                          (orm_util.state_class_str(state), operation, prop))
             return False
 
         if state not in self.states:
@@ -276,8 +279,8 @@ class UOWTransaction(object):
 
         """
         return util.PopulateDict(
-                    lambda tup: tup[0]._props.get(tup[1].key) is tup[1].prop
-                )
+            lambda tup: tup[0]._props.get(tup[1].key) is tup[1].prop
+        )
 
     def filter_states_for_dep(self, dep, states):
         """Filter the given list of InstanceStates to those relevant to the
@@ -312,8 +315,8 @@ class UOWTransaction(object):
 
         # see if the graph of mapper dependencies has cycles.
         self.cycles = cycles = topological.find_cycles(
-                                        self.dependencies,
-                                        list(self.postsort_actions.values()))
+            self.dependencies,
+            list(self.postsort_actions.values()))
 
         if cycles:
             # if yes, break the per-mapper actions into
@@ -328,8 +331,8 @@ class UOWTransaction(object):
             # that were broken up.
             for edge in list(self.dependencies):
                 if None in edge or \
-                    edge[0].disabled or edge[1].disabled or \
-                    cycles.issuperset(edge):
+                        edge[0].disabled or edge[1].disabled or \
+                        cycles.issuperset(edge):
                     self.dependencies.remove(edge)
                 elif edge[0] in cycles:
                     self.dependencies.remove(edge)
@@ -343,30 +346,30 @@ class UOWTransaction(object):
         return set([a for a in self.postsort_actions.values()
                     if not a.disabled
                     ]
-                ).difference(cycles)
+                   ).difference(cycles)
 
     def execute(self):
         postsort_actions = self._generate_actions()
 
-        #sort = topological.sort(self.dependencies, postsort_actions)
-        #print "--------------"
-        #print "\ndependencies:", self.dependencies
-        #print "\ncycles:", self.cycles
-        #print "\nsort:", list(sort)
-        #print "\nCOUNT OF POSTSORT ACTIONS", len(postsort_actions)
+        # sort = topological.sort(self.dependencies, postsort_actions)
+        # print "--------------"
+        # print "\ndependencies:", self.dependencies
+        # print "\ncycles:", self.cycles
+        # print "\nsort:", list(sort)
+        # print "\nCOUNT OF POSTSORT ACTIONS", len(postsort_actions)
 
         # execute
         if self.cycles:
             for set_ in topological.sort_as_subsets(
-                                            self.dependencies,
-                                            postsort_actions):
+                    self.dependencies,
+                    postsort_actions):
                 while set_:
                     n = set_.pop()
                     n.execute_aggregate(self, set_)
         else:
             for rec in topological.sort(
-                                    self.dependencies,
-                                    postsort_actions):
+                    self.dependencies,
+                    postsort_actions):
                 rec.execute(self)
 
     def finalize_flush_changes(self):
@@ -377,14 +380,19 @@ class UOWTransaction(object):
         execute() method has succeeded and the transaction has been committed.
 
         """
+        if not self.states:
+            return
+
         states = set(self.states)
         isdel = set(
             s for (s, (isdelete, listonly)) in self.states.items()
             if isdelete
         )
         other = states.difference(isdel)
-        self.session._remove_newly_deleted(isdel)
-        self.session._register_newly_persistent(other)
+        if isdel:
+            self.session._remove_newly_deleted(isdel)
+        if other:
+            self.session._register_newly_persistent(other)
 
 
 class IterateMappersMixin(object):
@@ -428,11 +436,11 @@ class Preprocess(IterateMappersMixin):
 
         if (delete_states or save_states):
             if not self.setup_flush_actions and (
-                    self.dependency_processor.\
-                            prop_has_changes(uow, delete_states, True) or
-                    self.dependency_processor.\
-                            prop_has_changes(uow, save_states, False)
-                ):
+                    self.dependency_processor.
+                    prop_has_changes(uow, delete_states, True) or
+                    self.dependency_processor.
+                    prop_has_changes(uow, save_states, False)
+            ):
                 self.dependency_processor.per_property_flush_actions(uow)
                 self.setup_flush_actions = True
             return True
@@ -449,8 +457,8 @@ class PostSortRec(object):
             return uow.postsort_actions[key]
         else:
             uow.postsort_actions[key] = \
-                                    ret = \
-                                    object.__new__(cls)
+                ret = \
+                object.__new__(cls)
             return ret
 
     def execute_aggregate(self, uow, recs):
@@ -469,7 +477,7 @@ class ProcessAll(IterateMappersMixin, PostSortRec):
         self.delete = delete
         self.fromparent = fromparent
         uow.deps[dependency_processor.parent.base_mapper].\
-                    add(dependency_processor)
+            add(dependency_processor)
 
     def execute(self, uow):
         states = self._elements(uow)
@@ -519,13 +527,14 @@ class SaveUpdateAll(PostSortRec):
 
     def execute(self, uow):
         persistence.save_obj(self.mapper,
-            uow.states_for_mapper_hierarchy(self.mapper, False, False),
-            uow
-        )
+                             uow.states_for_mapper_hierarchy(
+                                 self.mapper, False, False),
+                             uow
+                             )
 
     def per_state_flush_actions(self, uow):
         states = list(uow.states_for_mapper_hierarchy(
-                                    self.mapper, False, False))
+            self.mapper, False, False))
         base_mapper = self.mapper.base_mapper
         delete_all = DeleteAll(uow, base_mapper)
         for state in states:
@@ -547,13 +556,14 @@ class DeleteAll(PostSortRec):
 
     def execute(self, uow):
         persistence.delete_obj(self.mapper,
-            uow.states_for_mapper_hierarchy(self.mapper, True, False),
-            uow
-        )
+                               uow.states_for_mapper_hierarchy(
+                                   self.mapper, True, False),
+                               uow
+                               )
 
     def per_state_flush_actions(self, uow):
         states = list(uow.states_for_mapper_hierarchy(
-                                    self.mapper, True, False))
+            self.mapper, True, False))
         base_mapper = self.mapper.base_mapper
         save_all = SaveUpdateAll(uow, base_mapper)
         for state in states:
@@ -579,9 +589,9 @@ class ProcessState(PostSortRec):
         dependency_processor = self.dependency_processor
         delete = self.delete
         our_recs = [r for r in recs
-                        if r.__class__ is cls_ and
-                        r.dependency_processor is dependency_processor and
-                        r.delete is delete]
+                    if r.__class__ is cls_ and
+                    r.dependency_processor is dependency_processor and
+                    r.delete is delete]
         recs.difference_update(our_recs)
         states = [self.state] + [r.state for r in our_recs]
         if delete:
@@ -607,13 +617,13 @@ class SaveUpdateState(PostSortRec):
         cls_ = self.__class__
         mapper = self.mapper
         our_recs = [r for r in recs
-                        if r.__class__ is cls_ and
-                        r.mapper is mapper]
+                    if r.__class__ is cls_ and
+                    r.mapper is mapper]
         recs.difference_update(our_recs)
         persistence.save_obj(mapper,
-                        [self.state] +
-                        [r.state for r in our_recs],
-                        uow)
+                             [self.state] +
+                             [r.state for r in our_recs],
+                             uow)
 
     def __repr__(self):
         return "%s(%s)" % (
@@ -631,13 +641,13 @@ class DeleteState(PostSortRec):
         cls_ = self.__class__
         mapper = self.mapper
         our_recs = [r for r in recs
-                        if r.__class__ is cls_ and
-                        r.mapper is mapper]
+                    if r.__class__ is cls_ and
+                    r.mapper is mapper]
         recs.difference_update(our_recs)
         states = [self.state] + [r.state for r in our_recs]
         persistence.delete_obj(mapper,
-                        [s for s in states if uow.states[s][0]],
-                        uow)
+                               [s for s in states if uow.states[s][0]],
+                               uow)
 
     def __repr__(self):
         return "%s(%s)" % (

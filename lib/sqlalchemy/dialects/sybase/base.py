@@ -1,5 +1,6 @@
 # sybase/base.py
-# Copyright (C) 2010-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2010-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 # get_select_precolumns(), limit_clause() implementation
 # copyright (C) 2007 Fisch Asset Management
 # AG http://www.fam.ch, with coding by Alexander Houben
@@ -31,10 +32,10 @@ from sqlalchemy import schema as sa_schema
 from sqlalchemy import util, sql, exc
 
 from sqlalchemy.types import CHAR, VARCHAR, TIME, NCHAR, NVARCHAR,\
-                            TEXT, DATE, DATETIME, FLOAT, NUMERIC,\
-                            BIGINT, INT, INTEGER, SMALLINT, BINARY,\
-                            VARBINARY, DECIMAL, TIMESTAMP, Unicode,\
-                            UnicodeText, REAL
+    TEXT, DATE, DATETIME, FLOAT, NUMERIC,\
+    BIGINT, INT, INTEGER, SMALLINT, BINARY,\
+    VARBINARY, DECIMAL, TIMESTAMP, Unicode,\
+    UnicodeText, REAL
 
 RESERVED_WORDS = set([
     "add", "all", "alter", "and",
@@ -93,7 +94,7 @@ RESERVED_WORDS = set([
     "when", "where", "while", "window",
     "with", "with_cube", "with_lparen", "with_rollup",
     "within", "work", "writetext",
-    ])
+])
 
 
 class _SybaseUnitypeMixin(object):
@@ -145,40 +146,40 @@ class IMAGE(sqltypes.LargeBinary):
 
 
 class SybaseTypeCompiler(compiler.GenericTypeCompiler):
-    def visit_large_binary(self, type_):
+    def visit_large_binary(self, type_, **kw):
         return self.visit_IMAGE(type_)
 
-    def visit_boolean(self, type_):
+    def visit_boolean(self, type_, **kw):
         return self.visit_BIT(type_)
 
-    def visit_unicode(self, type_):
+    def visit_unicode(self, type_, **kw):
         return self.visit_NVARCHAR(type_)
 
-    def visit_UNICHAR(self, type_):
+    def visit_UNICHAR(self, type_, **kw):
         return "UNICHAR(%d)" % type_.length
 
-    def visit_UNIVARCHAR(self, type_):
+    def visit_UNIVARCHAR(self, type_, **kw):
         return "UNIVARCHAR(%d)" % type_.length
 
-    def visit_UNITEXT(self, type_):
+    def visit_UNITEXT(self, type_, **kw):
         return "UNITEXT"
 
-    def visit_TINYINT(self, type_):
+    def visit_TINYINT(self, type_, **kw):
         return "TINYINT"
 
-    def visit_IMAGE(self, type_):
+    def visit_IMAGE(self, type_, **kw):
         return "IMAGE"
 
-    def visit_BIT(self, type_):
+    def visit_BIT(self, type_, **kw):
         return "BIT"
 
-    def visit_MONEY(self, type_):
+    def visit_MONEY(self, type_, **kw):
         return "MONEY"
 
-    def visit_SMALLMONEY(self, type_):
+    def visit_SMALLMONEY(self, type_, **kw):
         return "SMALLMONEY"
 
-    def visit_UNIQUEIDENTIFIER(self, type_):
+    def visit_UNIQUEIDENTIFIER(self, type_, **kw):
         return "UNIQUEIDENTIFIER"
 
 ischema_names = {
@@ -224,7 +225,7 @@ ischema_names = {
     'image': IMAGE,
     'bit': BIT,
 
-# not in documentation for ASE 15.7
+    # not in documentation for ASE 15.7
     'long varchar': TEXT,  # TODO
     'timestamp': TIMESTAMP,
     'uniqueidentifier': UNIQUEIDENTIFIER,
@@ -267,12 +268,13 @@ class SybaseExecutionContext(default.DefaultExecutionContext):
 
             if insert_has_sequence:
                 self._enable_identity_insert = \
-                                seq_column.key in self.compiled_parameters[0]
+                    seq_column.key in self.compiled_parameters[0]
             else:
                 self._enable_identity_insert = False
 
             if self._enable_identity_insert:
-                self.cursor.execute("SET IDENTITY_INSERT %s ON" %
+                self.cursor.execute(
+                    "SET IDENTITY_INSERT %s ON" %
                     self.dialect.identifier_preparer.format_table(tbl))
 
         if self.isddl:
@@ -281,15 +283,15 @@ class SybaseExecutionContext(default.DefaultExecutionContext):
             # include a note about that.
             if not self.should_autocommit:
                 raise exc.InvalidRequestError(
-                        "The Sybase dialect only supports "
-                        "DDL in 'autocommit' mode at this time.")
+                    "The Sybase dialect only supports "
+                    "DDL in 'autocommit' mode at this time.")
 
             self.root_connection.engine.logger.info(
-                        "AUTOCOMMIT (Assuming no Sybase 'ddl in tran')")
+                "AUTOCOMMIT (Assuming no Sybase 'ddl in tran')")
 
             self.set_ddl_autocommit(
-                        self.root_connection.connection.connection,
-                        True)
+                self.root_connection.connection.connection,
+                True)
 
     def post_exec(self):
         if self.isddl:
@@ -297,10 +299,10 @@ class SybaseExecutionContext(default.DefaultExecutionContext):
 
         if self._enable_identity_insert:
             self.cursor.execute(
-                        "SET IDENTITY_INSERT %s OFF" %
-                            self.dialect.identifier_preparer.
-                            format_table(self.compiled.statement.table)
-                        )
+                "SET IDENTITY_INSERT %s OFF" %
+                self.dialect.identifier_preparer.
+                format_table(self.compiled.statement.table)
+            )
 
     def get_lastrowid(self):
         cursor = self.create_cursor()
@@ -316,40 +318,42 @@ class SybaseSQLCompiler(compiler.SQLCompiler):
     extract_map = util.update_copy(
         compiler.SQLCompiler.extract_map,
         {
-        'doy': 'dayofyear',
-        'dow': 'weekday',
-        'milliseconds': 'millisecond'
-    })
+            'doy': 'dayofyear',
+            'dow': 'weekday',
+            'milliseconds': 'millisecond'
+        })
 
-    def get_select_precolumns(self, select):
+    def get_select_precolumns(self, select, **kw):
         s = select._distinct and "DISTINCT " or ""
         # TODO: don't think Sybase supports
         # bind params for FIRST / TOP
-        if select._limit:
-            #if select._limit == 1:
-                #s += "FIRST "
-            #else:
-                #s += "TOP %s " % (select._limit,)
-            s += "TOP %s " % (select._limit,)
-        if select._offset:
-            if not select._limit:
+        limit = select._limit
+        if limit:
+            # if select._limit == 1:
+                # s += "FIRST "
+            # else:
+                # s += "TOP %s " % (select._limit,)
+            s += "TOP %s " % (limit,)
+        offset = select._offset
+        if offset:
+            if not limit:
                 # FIXME: sybase doesn't allow an offset without a limit
                 # so use a huge value for TOP here
                 s += "TOP 1000000 "
-            s += "START AT %s " % (select._offset + 1,)
+            s += "START AT %s " % (offset + 1,)
         return s
 
     def get_from_hint_text(self, table, text):
         return text
 
-    def limit_clause(self, select):
+    def limit_clause(self, select, **kw):
         # Limit in sybase is after the select keyword
         return ""
 
     def visit_extract(self, extract, **kw):
         field = self.extract_map.get(extract.field, extract.field)
         return 'DATEPART("%s", %s)' % (
-                            field, self.process(extract.expr, **kw))
+            field, self.process(extract.expr, **kw))
 
     def visit_now_func(self, fn, **kw):
         return "GETDATE()"
@@ -373,21 +377,22 @@ class SybaseSQLCompiler(compiler.SQLCompiler):
 class SybaseDDLCompiler(compiler.DDLCompiler):
     def get_column_specification(self, column, **kwargs):
         colspec = self.preparer.format_column(column) + " " + \
-                        self.dialect.type_compiler.process(column.type)
+            self.dialect.type_compiler.process(
+                column.type, type_expression=column)
 
         if column.table is None:
             raise exc.CompileError(
-                        "The Sybase dialect requires Table-bound "
-                       "columns in order to generate DDL")
+                "The Sybase dialect requires Table-bound "
+                "columns in order to generate DDL")
         seq_col = column.table._autoincrement_column
 
         # install a IDENTITY Sequence if we have an implicit IDENTITY column
         if seq_col is column:
             sequence = isinstance(column.default, sa_schema.Sequence) \
-                                    and column.default
+                and column.default
             if sequence:
                 start, increment = sequence.start or 1, \
-                                    sequence.increment or 1
+                    sequence.increment or 1
             else:
                 start, increment = 1, 1
             if (start, increment) == (1, 1):
@@ -413,8 +418,8 @@ class SybaseDDLCompiler(compiler.DDLCompiler):
         return "\nDROP INDEX %s.%s" % (
             self.preparer.quote_identifier(index.table.name),
             self._prepared_index_name(drop.element,
-                                        include_schema=False)
-            )
+                                      include_schema=False)
+        )
 
 
 class SybaseIdentifierPreparer(compiler.IdentifierPreparer):
@@ -444,14 +449,14 @@ class SybaseDialect(default.DefaultDialect):
 
     def _get_default_schema_name(self, connection):
         return connection.scalar(
-                     text("SELECT user_name() as user_name",
-                     typemap={'user_name': Unicode})
-             )
+            text("SELECT user_name() as user_name",
+                 typemap={'user_name': Unicode})
+        )
 
     def initialize(self, connection):
         super(SybaseDialect, self).initialize(connection)
         if self.server_version_info is not None and\
-            self.server_version_info < (15, ):
+                self.server_version_info < (15, ):
             self.max_identifier_length = 30
         else:
             self.max_identifier_length = 255
@@ -517,14 +522,15 @@ class SybaseDialect(default.DefaultDialect):
         for (name, type_, nullable, autoincrement, default, precision, scale,
              length) in results:
             col_info = self._get_column_info(name, type_, bool(nullable),
-                             bool(autoincrement), default, precision, scale,
-                             length)
+                                             bool(autoincrement),
+                                             default, precision, scale,
+                                             length)
             columns.append(col_info)
 
         return columns
 
     def _get_column_info(self, name, type_, nullable, autoincrement, default,
-            precision, scale, length):
+                         precision, scale, length):
 
         coltype = self.ischema_names.get(type_, None)
 
@@ -541,8 +547,8 @@ class SybaseDialect(default.DefaultDialect):
 
         if coltype:
             coltype = coltype(*args, **kwargs)
-            #is this necessary
-            #if is_array:
+            # is this necessary
+            # if is_array:
             #     coltype = ARRAY(coltype)
         else:
             util.warn("Did not recognize type '%s' of column '%s'" %
@@ -602,8 +608,8 @@ class SybaseDialect(default.DefaultDialect):
           FROM sysreferences r JOIN sysobjects o on r.tableid = o.id
           WHERE r.tableid = :table_id
         """)
-        referential_constraints = connection.execute(REFCONSTRAINT_SQL,
-                                                     table_id=table_id)
+        referential_constraints = connection.execute(
+            REFCONSTRAINT_SQL, table_id=table_id).fetchall()
 
         REFTABLE_SQL = text("""
           SELECT o.name AS name, u.name AS 'schema'
@@ -640,12 +646,12 @@ class SybaseDialect(default.DefaultDialect):
                 referred_columns.append(reftable_columns[r["refkey%i" % i]])
 
             fk_info = {
-                    "constrained_columns": constrained_columns,
-                    "referred_schema": reftable["schema"],
-                    "referred_table": reftable["name"],
-                    "referred_columns": referred_columns,
-                    "name": r["name"]
-                }
+                "constrained_columns": constrained_columns,
+                "referred_schema": reftable["schema"],
+                "referred_table": reftable["name"],
+                "referred_columns": referred_columns,
+                "name": r["name"]
+            }
 
             foreign_keys.append(fk_info)
 
@@ -734,10 +740,13 @@ class SybaseDialect(default.DefaultDialect):
         results.close()
 
         constrained_columns = []
-        for i in range(1, pks["count"] + 1):
-            constrained_columns.append(pks["pk_%i" % (i,)])
-        return {"constrained_columns": constrained_columns,
-                "name": pks["name"]}
+        if pks:
+            for i in range(1, pks["count"] + 1):
+                constrained_columns.append(pks["pk_%i" % (i,)])
+            return {"constrained_columns": constrained_columns,
+                    "name": pks["name"]}
+        else:
+            return {"constrained_columns": [], "name": None}
 
     @reflection.cache
     def get_schema_names(self, connection, **kw):

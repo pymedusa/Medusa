@@ -43,19 +43,13 @@ Process #1..n:
   _ResultItems in "Request Q"
 """
 
-from __future__ import with_statement
 import atexit
+from concurrent.futures import _base
+import Queue as queue
 import multiprocessing
 import threading
 import weakref
 import sys
-
-from concurrent.futures import _base
-
-try:
-    import queue
-except ImportError:
-    import Queue as queue
 
 __author__ = 'Brian Quinlan (brian@sweetapp.com)'
 
@@ -79,11 +73,11 @@ _shutdown = False
 def _python_exit():
     global _shutdown
     _shutdown = True
-    items = list(_threads_queues.items())
+    items = list(_threads_queues.items()) if _threads_queues else ()
     for t, q in items:
         q.put(None)
     for t, q in items:
-        t.join()
+        t.join(sys.maxint)
 
 # Controls how many more calls than processes will be queued in the call queue.
 # A smaller number will mean that processes spend more time idle waiting for
@@ -220,6 +214,8 @@ def _queue_management_worker(executor_reference,
                 work_item.future.set_exception(result_item.exception)
             else:
                 work_item.future.set_result(result_item.result)
+            # Delete references to object. See issue16284
+            del work_item
         # Check whether we should start shutting down.
         executor = executor_reference()
         # No more work items can be added if:
@@ -351,7 +347,7 @@ class ProcessPoolExecutor(_base.Executor):
             # Wake up queue management thread
             self._result_queue.put(None)
             if wait:
-                self._queue_management_thread.join()
+                self._queue_management_thread.join(sys.maxint)
         # To reduce the risk of openning too many files, remove references to
         # objects that use file descriptors.
         self._queue_management_thread = None

@@ -25,7 +25,7 @@ server.key
 
 #  Compiled source   #
 ######################
-*.py[co]
+*.py[cod]
 
 #  IDE specific      #
 ######################

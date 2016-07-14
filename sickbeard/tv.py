@@ -25,6 +25,36 @@ import re
 import glob
 import stat
 import traceback
+import shutil
+
+from imdb import imdb
+import shutil_custom
+from six import text_type
+
+import sickbeard
+from sickbeard import (
+    db, helpers, logger, image_cache, notifiers, postProcessor, subtitles, network_timezones,
+)
+from sickbeard.blackandwhitelist import BlackAndWhiteList
+from sickbeard.common import (
+    Quality, Overview, statusStrings,
+    DOWNLOADED, SNATCHED, SNATCHED_PROPER, ARCHIVED, IGNORED, UNAIRED, WANTED, SKIPPED, UNKNOWN,
+    NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND, NAMING_SEPARATED_REPEAT, NAMING_LIMITED_EXTEND_E_PREFIXED,
+)
+from sickbeard.indexers.indexer_config import INDEXER_TVRAGE
+from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
+
+from sickrage.helper.common import (
+    dateTimeFormat, remove_extension, replace_extension, sanitize_filename, try_int, episode_num,
+)
+from sickrage.helper.encoding import ek
+from sickrage.helper.exceptions import (
+    EpisodeDeletedException, EpisodeNotFoundException, ex,
+    MultipleEpisodesInDatabaseException, MultipleShowsInDatabaseException, MultipleShowObjectsException,
+    NoNFOException, ShowDirectoryNotFoundException, ShowNotFoundException,
+)
+from sickrage.show.Show import Show
+
 
 try:
     import xml.etree.cElementTree as etree
@@ -35,35 +65,6 @@ try:
     from send2trash import send2trash
 except ImportError:
     pass
-
-from imdb import imdb
-
-import sickbeard
-from sickbeard import db
-from sickbeard import helpers, logger
-from sickbeard import image_cache
-from sickbeard import notifiers
-from sickbeard import postProcessor
-from sickbeard import subtitles
-from sickbeard.blackandwhitelist import BlackAndWhiteList
-from sickbeard import network_timezones
-from sickbeard.indexers.indexer_config import INDEXER_TVRAGE
-from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
-from sickrage.helper.common import dateTimeFormat, remove_extension, replace_extension, sanitize_filename, try_int, episode_num
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import EpisodeDeletedException, EpisodeNotFoundException, ex
-from sickrage.helper.exceptions import MultipleEpisodesInDatabaseException, MultipleShowsInDatabaseException
-from sickrage.helper.exceptions import MultipleShowObjectsException, NoNFOException, ShowDirectoryNotFoundException
-from sickrage.helper.exceptions import ShowNotFoundException
-from sickrage.show.Show import Show
-
-from sickbeard.common import Quality, Overview, statusStrings
-from sickbeard.common import DOWNLOADED, SNATCHED, SNATCHED_PROPER, ARCHIVED, IGNORED, UNAIRED, WANTED, SKIPPED, UNKNOWN
-from sickbeard.common import NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND, NAMING_SEPARATED_REPEAT, \
-    NAMING_LIMITED_EXTEND_E_PREFIXED
-
-import shutil
-import shutil_custom
 
 
 shutil.copyfile = shutil_custom.copyfile_custom
@@ -495,7 +496,7 @@ class TVShow(object):  # pylint: disable=too-many-instance-attributes, too-many-
             curSeason = int(curResult["season"])
             curEpisode = int(curResult["episode"])
             curShowid = int(curResult['showid'])
-            curShowName = unicode(curResult['show_name'])
+            curShowName = text_type(curResult['show_name'])
 
             logger.log(u"%s: Loading %s episodes from DB" % (curShowid, curShowName), logger.DEBUG)
             deleteEp = False

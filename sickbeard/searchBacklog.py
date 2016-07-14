@@ -21,13 +21,12 @@
 import datetime
 import threading
 
-import sickbeard
+from six import iteritems
 
-from sickbeard import db, scheduler
-from sickbeard import search_queue
-from sickbeard import logger
-from sickbeard import ui
-from sickbeard import common
+import sickbeard
+from sickbeard import (
+    db, scheduler, search_queue, logger, ui, common,
+)
 
 
 class BacklogSearchScheduler(scheduler.Scheduler):
@@ -103,7 +102,7 @@ class BacklogSearcher(object):
 
             segments = self._get_segments(curShow, fromDate)
 
-            for season, segment in segments.iteritems():
+            for season, segment in iteritems(segments):
                 self.currentSearchInfo = {'title': curShow.name + " Season " + str(season)}
 
                 backlog_queue_item = search_queue.BacklogQueueItem(curShow, segment)

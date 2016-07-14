@@ -19,6 +19,8 @@
 from collections import namedtuple
 from datetime import datetime, timedelta
 
+from six import text_type
+
 from sickbeard.common import Quality
 from sickbeard.db import DBConnection
 
@@ -102,7 +104,7 @@ class History(object):
 
     @staticmethod
     def _get_actions(action):
-        action = action.lower() if isinstance(action, (str, unicode)) else ''
+        action = action.lower() if isinstance(action, (str, text_type)) else ''
 
         result = None
         if action == 'downloaded':

@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 import logging
 import re
 
+from six import iteritems
 from requests.compat import urljoin
 
 import sickbeard
@@ -53,7 +54,7 @@ class UTorrentAPI(GenericClient):
             'token': self.auth,
         }
 
-        for k, v in params.iteritems() or {}:
+        for k, v in iteritems(params) or {}:
             ordered_params.update({k: v})
 
         return super(UTorrentAPI, self)._request(method=method, params=ordered_params, data=data, files=files)

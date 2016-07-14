@@ -1,5 +1,6 @@
 # testing/entities.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -57,7 +58,7 @@ class ComparableEntity(BasicEntity):
         _recursion_stack.add(id(self))
 
         try:
-            # pick the entity thats not SA persisted as the source
+            # pick the entity that's not SA persisted as the source
             try:
                 self_key = sa.orm.attributes.instance_state(self).key
             except sa.orm.exc.NO_STATE:
@@ -85,7 +86,8 @@ class ComparableEntity(BasicEntity):
                     return False
 
                 if hasattr(value, '__iter__'):
-                    if hasattr(value, '__getitem__') and not hasattr(value, 'keys'):
+                    if hasattr(value, '__getitem__') and not hasattr(
+                            value, 'keys'):
                         if list(value) != list(battr):
                             return False
                     else:

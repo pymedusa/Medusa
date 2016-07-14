@@ -1,5 +1,6 @@
 # util/queue.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -56,7 +57,6 @@ class Queue:
         # Notify not_full whenever an item is removed from the queue;
         # a thread waiting to put is notified then.
         self.not_full = threading.Condition(self.mutex)
-
 
     def qsize(self):
         """Return the approximate size of the queue (not reliable!)."""

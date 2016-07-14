@@ -1,7 +1,7 @@
 # coding=utf-8
 import threading
 import traceback
-from Queue import Queue, Empty
+from six.moves.queue import Queue, Empty
 from sickbeard import logger
 from sickrage.helper.exceptions import ex
 
@@ -15,7 +15,7 @@ class Event(object):
         """
         Returns the type of the event
         """
-        
+
         return self._type
 
 

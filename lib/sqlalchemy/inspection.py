@@ -1,5 +1,6 @@
 # sqlalchemy/inspect.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -67,7 +68,7 @@ def inspect(subject, raiseerr=True):
 
     if raiseerr and (
             reg is None or ret is None
-        ):
+            ):
         raise exc.NoInspectionAvailable(
             "No inspection system is "
             "available for object of type %s" %
@@ -80,8 +81,8 @@ def _inspects(*types):
         for type_ in types:
             if type_ in _registrars:
                 raise AssertionError(
-                            "Type %s is already "
-                            "registered" % type_)
+                    "Type %s is already "
+                    "registered" % type_)
             _registrars[type_] = fn_or_cls
         return fn_or_cls
     return decorate

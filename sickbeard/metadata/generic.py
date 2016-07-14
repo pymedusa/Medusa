@@ -22,26 +22,25 @@ import os
 import io
 import re
 
+from six import iterkeys, text_type
+from tmdb_api.tmdb_api import TMDB
+
+import sickbeard
+from sickbeard import helpers
+from sickbeard import logger
+from sickbeard.metadata import helpers as metadata_helpers
+from sickbeard.show_name_helpers import allPossibleShowNames
+
+from sickrage.helper.common import replace_extension
+from sickrage.helper.exceptions import ex
+from sickrage.helper.encoding import ek
+
 try:
     import xml.etree.cElementTree as etree
 except ImportError:
     import xml.etree.ElementTree as etree
 
-import sickbeard
-
-from sickbeard import helpers
-from sickbeard import logger
-from sickbeard.metadata import helpers as metadata_helpers
-from sickbeard.show_name_helpers import allPossibleShowNames
-from sickrage.helper.common import replace_extension
-from sickrage.helper.exceptions import ex
-from sickrage.helper.encoding import ek
-
-from tmdb_api.tmdb_api import TMDB
-
-import fanart
-from fanart.core import Request as fanartRequest
-
+# todo: Implement Fanart.tv v3 API
 
 class GenericMetadata(object):
     """
@@ -118,7 +117,7 @@ class GenericMetadata(object):
     @staticmethod
     def _check_exists(location):
         if location:
-            assert isinstance(location, unicode)
+            assert isinstance(location, text_type)
             result = ek(os.path.isfile, location)
             logger.log(u"Checking if " + location + " exists: " + str(result), logger.DEBUG)
             return result
@@ -175,7 +174,7 @@ class GenericMetadata(object):
         Returns the path where the episode thumbnail should be stored.
         ep_obj: a TVEpisode instance for which to create the thumbnail
         """
-        assert isinstance(ep_obj.location, unicode)
+        assert isinstance(ep_obj.location, text_type)
         if ek(os.path.isfile, ep_obj.location):
 
             tbn_filename = ep_obj.location.rpartition(".")
@@ -267,7 +266,7 @@ class GenericMetadata(object):
                 logger.DEBUG)
 
             nfo_file_path = self.get_show_file_path(show_obj)
-            assert isinstance(nfo_file_path, unicode)
+            assert isinstance(nfo_file_path, text_type)
 
             try:
                 with io.open(nfo_file_path, 'rb') as xmlFileObj:
@@ -321,7 +320,7 @@ class GenericMetadata(object):
     def create_season_posters(self, show_obj):
         if self.season_posters and show_obj:
             result = []
-            for season, _ in show_obj.episodes.iteritems():  # @UnusedVariable
+            for season in iterkeys(show_obj.episodes):
                 if not self._has_season_poster(show_obj, season):
                     logger.log(u"Metadata provider " + self.name + " creating season posters for " + show_obj.name,
                                logger.DEBUG)
@@ -333,7 +332,7 @@ class GenericMetadata(object):
         if self.season_banners and show_obj:
             result = []
             logger.log(u"Metadata provider " + self.name + " creating season banners for " + show_obj.name, logger.DEBUG)
-            for season, _ in show_obj.episodes.iteritems():  # @UnusedVariable
+            for season in iterkeys(show_obj.episodes):  # @UnusedVariable
                 if not self._has_season_banner(show_obj, season):
                     result = result + [self.save_season_banners(show_obj, season)]
             return all(result)
@@ -399,7 +398,7 @@ class GenericMetadata(object):
             return False
 
         nfo_file_path = self.get_show_file_path(show_obj)
-        assert isinstance(nfo_file_path, unicode)
+        assert isinstance(nfo_file_path, text_type)
 
         nfo_file_dir = ek(os.path.dirname, nfo_file_path)
 
@@ -445,7 +444,7 @@ class GenericMetadata(object):
             return False
 
         nfo_file_path = self.get_episode_file_path(ep_obj)
-        assert isinstance(nfo_file_path, unicode)
+        assert isinstance(nfo_file_path, text_type)
         nfo_file_dir = ek(os.path.dirname, nfo_file_path)
 
         try:
@@ -684,7 +683,7 @@ class GenericMetadata(object):
         image_path: file location to save the image to
         """
 
-        assert isinstance(image_path, unicode)
+        assert isinstance(image_path, text_type)
 
         # don't bother overwriting it
         if ek(os.path.isfile, image_path):
@@ -758,23 +757,14 @@ class GenericMetadata(object):
             if getattr(indexer_show_obj, 'poster', None):
                 image_url = re.sub('posters', '_cache/posters', indexer_show_obj['poster'])
             if not image_url:
-                # Try and get images from Fanart.TV
-                image_url = self._retrieve_show_images_from_fanart(show_obj, image_type)
-            if not image_url:
                 # Try and get images from TMDB
                 image_url = self._retrieve_show_images_from_tmdb(show_obj, image_type)
         elif image_type == 'banner_thumb':
             if getattr(indexer_show_obj, 'banner', None):
                 image_url = re.sub('graphical', '_cache/graphical', indexer_show_obj['banner'])
-            if not image_url:
-                # Try and get images from Fanart.TV
-                image_url = self._retrieve_show_images_from_fanart(show_obj, image_type)
         else:
             if getattr(indexer_show_obj, image_type, None):
                 image_url = indexer_show_obj[image_type]
-            if not image_url:
-                # Try and get images from Fanart.TV
-                image_url = self._retrieve_show_images_from_fanart(show_obj, image_type)
             if not image_url:
                 # Try and get images from TMDB
                 image_url = self._retrieve_show_images_from_tmdb(show_obj, image_type)
@@ -904,7 +894,7 @@ class GenericMetadata(object):
 
         empty_return = (None, None, None)
 
-        assert isinstance(folder, unicode)
+        assert isinstance(folder, text_type)
 
         metadata_path = ek(os.path.join, folder, self._show_metadata_filename)
 
@@ -984,34 +974,3 @@ class GenericMetadata(object):
             pass
 
         logger.log(u"Could not find any " + img_type + " images on TMDB for " + show.name, logger.INFO)
-
-    def _retrieve_show_images_from_fanart(self, show, img_type, thumb=False):
-        types = {
-            'poster': fanart.TYPE.TV.POSTER,
-            'banner': fanart.TYPE.TV.BANNER,
-            'poster_thumb': fanart.TYPE.TV.POSTER,
-            'banner_thumb': fanart.TYPE.TV.BANNER,
-            'fanart': fanart.TYPE.TV.BACKGROUND,
-        }
-
-        try:
-            indexerid = helpers.mapIndexersToShow(show)[1]
-            if indexerid:
-                request = fanartRequest(
-                    apikey=sickbeard.FANART_API_KEY,
-                    id=indexerid,
-                    ws=fanart.WS.TV,
-                    type=types[img_type],
-                    sort=fanart.SORT.POPULAR,
-                    limit=fanart.LIMIT.ONE,
-                )
-
-                resp = request.response()
-                url = resp[types[img_type]][0]['url']
-                if thumb:
-                    url = re.sub('/fanart/', '/preview/', url)
-                return url
-        except Exception:
-            pass
-
-        logger.log(u"Could not find any " + img_type + " images on Fanart.tv for " + show.name, logger.INFO)

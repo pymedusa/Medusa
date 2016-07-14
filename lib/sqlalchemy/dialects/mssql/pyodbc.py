@@ -1,5 +1,6 @@
 # mssql/pyodbc.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -11,87 +12,70 @@
     :connectstring: mssql+pyodbc://<username>:<password>@<dsnname>
     :url: http://pypi.python.org/pypi/pyodbc/
 
-Additional Connection Examples
--------------------------------
+Connecting to PyODBC
+--------------------
 
-Examples of pyodbc connection string URLs:
+The URL here is to be translated to PyODBC connection strings, as
+detailed in `ConnectionStrings <https://code.google.com/p/pyodbc/wiki/ConnectionStrings>`_.
 
-* ``mssql+pyodbc://mydsn`` - connects using the specified DSN named ``mydsn``.
-  The connection string that is created will appear like::
+DSN Connections
+^^^^^^^^^^^^^^^
 
-    dsn=mydsn;Trusted_Connection=Yes
+A DSN-based connection is **preferred** overall when using ODBC.  A
+basic DSN-based connection looks like::
 
-* ``mssql+pyodbc://user:pass@mydsn`` - connects using the DSN named
-  ``mydsn`` passing in the ``UID`` and ``PWD`` information. The
-  connection string that is created will appear like::
+    engine = create_engine("mssql+pyodbc://scott:tiger@some_dsn")
+
+Which above, will pass the following connection string to PyODBC::
 
     dsn=mydsn;UID=user;PWD=pass
 
-* ``mssql+pyodbc://user:pass@mydsn/?LANGUAGE=us_english`` - connects
-  using the DSN named ``mydsn`` passing in the ``UID`` and ``PWD``
-  information, plus the additional connection configuration option
-  ``LANGUAGE``. The connection string that is created will appear
-  like::
+If the username and password are omitted, the DSN form will also add
+the ``Trusted_Connection=yes`` directive to the ODBC string.
 
-    dsn=mydsn;UID=user;PWD=pass;LANGUAGE=us_english
+Hostname Connections
+^^^^^^^^^^^^^^^^^^^^
 
-* ``mssql+pyodbc://user:pass@host/db`` - connects using a connection
-  that would appear like::
+Hostname-based connections are **not preferred**, however are supported.
+The ODBC driver name must be explicitly specified::
 
-    DRIVER={SQL Server};Server=host;Database=db;UID=user;PWD=pass
+    engine = create_engine("mssql+pyodbc://scott:tiger@myhost:port/databasename?driver=SQL+Server+Native+Client+10.0")
 
-* ``mssql+pyodbc://user:pass@host:123/db`` - connects using a connection
-  string which includes the port
-  information using the comma syntax. This will create the following
-  connection string::
+.. versionchanged:: 1.0.0 Hostname-based PyODBC connections now require the
+   SQL Server driver name specified explicitly.  SQLAlchemy cannot
+   choose an optimal default here as it varies based on platform
+   and installed drivers.
 
-    DRIVER={SQL Server};Server=host,123;Database=db;UID=user;PWD=pass
+Other keywords interpreted by the Pyodbc dialect to be passed to
+``pyodbc.connect()`` in both the DSN and hostname cases include:
+``odbc_autotranslate``, ``ansi``, ``unicode_results``, ``autocommit``.
 
-* ``mssql+pyodbc://user:pass@host/db?port=123`` - connects using a connection
-  string that includes the port
-  information as a separate ``port`` keyword. This will create the
-  following connection string::
+Pass through exact Pyodbc string
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    DRIVER={SQL Server};Server=host;Database=db;UID=user;PWD=pass;port=123
+A PyODBC connection string can also be sent exactly as specified in
+`ConnectionStrings <https://code.google.com/p/pyodbc/wiki/ConnectionStrings>`_
+into the driver using the parameter ``odbc_connect``.  The delimeters must be URL escaped, however,
+as illustrated below using ``urllib.quote_plus``::
 
-* ``mssql+pyodbc://user:pass@host/db?driver=MyDriver`` - connects using a connection
-  string that includes a custom
-  ODBC driver name.  This will create the following connection string::
+    import urllib
+    params = urllib.quote_plus("DRIVER={SQL Server Native Client 10.0};SERVER=dagger;DATABASE=test;UID=user;PWD=password")
 
-    DRIVER={MyDriver};Server=host;Database=db;UID=user;PWD=pass
+    engine = create_engine("mssql+pyodbc:///?odbc_connect=%s" % params)
 
-If you require a connection string that is outside the options
-presented above, use the ``odbc_connect`` keyword to pass in a
-urlencoded connection string. What gets passed in will be urldecoded
-and passed directly.
-
-For example::
-
-    mssql+pyodbc:///?odbc_connect=dsn%3Dmydsn%3BDatabase%3Ddb
-
-would create the following connection string::
-
-    dsn=mydsn;Database=db
-
-Encoding your connection string can be easily accomplished through
-the python shell. For example::
-
-    >>> import urllib
-    >>> urllib.quote_plus('dsn=mydsn;Database=db')
-    'dsn%3Dmydsn%3BDatabase%3Ddb'
 
 Unicode Binds
 -------------
 
 The current state of PyODBC on a unix backend with FreeTDS and/or
-EasySoft is poor regarding unicode; different OS platforms and versions of UnixODBC
-versus IODBC versus FreeTDS/EasySoft versus PyODBC itself dramatically
-alter how strings are received.  The PyODBC dialect attempts to use all the information
-it knows to determine whether or not a Python unicode literal can be
-passed directly to the PyODBC driver or not; while SQLAlchemy can encode
-these to bytestrings first, some users have reported that PyODBC mis-handles
-bytestrings for certain encodings and requires a Python unicode object,
-while the author has observed widespread cases where a Python unicode
+EasySoft is poor regarding unicode; different OS platforms and versions of
+UnixODBC versus IODBC versus FreeTDS/EasySoft versus PyODBC itself
+dramatically alter how strings are received.  The PyODBC dialect attempts to
+use all the information it knows to determine whether or not a Python unicode
+literal can be passed directly to the PyODBC driver or not; while SQLAlchemy
+can encode these to bytestrings first, some users have reported that PyODBC
+mis-handles bytestrings for certain encodings and requires a Python unicode
+object, while the author has observed widespread cases where a Python unicode
 is completely misinterpreted by PyODBC, particularly when dealing with
 the information schema tables used in table reflection, and the value
 must first be encoded to a bytestring.
@@ -109,12 +93,20 @@ for unix + PyODBC.
 .. versionadded:: 0.7.7
     ``supports_unicode_binds`` parameter to ``create_engine()``\ .
 
+Rowcount Support
+----------------
+
+Pyodbc only has partial support for rowcount.  See the notes at
+:ref:`mssql_rowcount_versioning` for important notes when using ORM
+versioning.
+
 """
 
-from .base import MSExecutionContext, MSDialect
+from .base import MSExecutionContext, MSDialect, VARBINARY
 from ...connectors.pyodbc import PyODBCConnector
 from ... import types as sqltypes, util
 import decimal
+
 
 class _ms_numeric_pyodbc(object):
 
@@ -128,7 +120,7 @@ class _ms_numeric_pyodbc(object):
     def bind_processor(self, dialect):
 
         super_process = super(_ms_numeric_pyodbc, self).\
-                        bind_processor(dialect)
+            bind_processor(dialect)
 
         if not dialect._need_decimal_fix:
             return super_process
@@ -154,37 +146,56 @@ class _ms_numeric_pyodbc(object):
 
     def _small_dec_to_string(self, value):
         return "%s0.%s%s" % (
-                    (value < 0 and '-' or ''),
-                    '0' * (abs(value.adjusted()) - 1),
-                    "".join([str(nint) for nint in value.as_tuple()[1]]))
+            (value < 0 and '-' or ''),
+            '0' * (abs(value.adjusted()) - 1),
+            "".join([str(nint) for nint in value.as_tuple()[1]]))
 
     def _large_dec_to_string(self, value):
         _int = value.as_tuple()[1]
         if 'E' in str(value):
             result = "%s%s%s" % (
-                    (value < 0 and '-' or ''),
-                    "".join([str(s) for s in _int]),
-                    "0" * (value.adjusted() - (len(_int) - 1)))
+                (value < 0 and '-' or ''),
+                "".join([str(s) for s in _int]),
+                "0" * (value.adjusted() - (len(_int) - 1)))
         else:
             if (len(_int) - 1) > value.adjusted():
                 result = "%s%s.%s" % (
-                (value < 0 and '-' or ''),
-                "".join(
-                    [str(s) for s in _int][0:value.adjusted() + 1]),
-                "".join(
-                    [str(s) for s in _int][value.adjusted() + 1:]))
+                    (value < 0 and '-' or ''),
+                    "".join(
+                        [str(s) for s in _int][0:value.adjusted() + 1]),
+                    "".join(
+                        [str(s) for s in _int][value.adjusted() + 1:]))
             else:
                 result = "%s%s" % (
-                (value < 0 and '-' or ''),
-                "".join(
-                    [str(s) for s in _int][0:value.adjusted() + 1]))
+                    (value < 0 and '-' or ''),
+                    "".join(
+                        [str(s) for s in _int][0:value.adjusted() + 1]))
         return result
+
 
 class _MSNumeric_pyodbc(_ms_numeric_pyodbc, sqltypes.Numeric):
     pass
 
+
 class _MSFloat_pyodbc(_ms_numeric_pyodbc, sqltypes.Float):
     pass
+
+
+class _VARBINARY_pyodbc(VARBINARY):
+    def bind_processor(self, dialect):
+        if dialect.dbapi is None:
+            return None
+
+        DBAPIBinary = dialect.dbapi.Binary
+
+        def process(value):
+            if value is not None:
+                return DBAPIBinary(value)
+            else:
+                # pyodbc-specific
+                return dialect.dbapi.BinaryNull
+        return process
+
 
 class MSExecutionContext_pyodbc(MSExecutionContext):
     _embedded_scope_identity = False
@@ -238,23 +249,24 @@ class MSDialect_pyodbc(PyODBCConnector, MSDialect):
 
     execution_ctx_cls = MSExecutionContext_pyodbc
 
-    pyodbc_driver_name = 'SQL Server'
-
     colspecs = util.update_copy(
         MSDialect.colspecs,
         {
             sqltypes.Numeric: _MSNumeric_pyodbc,
-            sqltypes.Float: _MSFloat_pyodbc
+            sqltypes.Float: _MSFloat_pyodbc,
+            VARBINARY: _VARBINARY_pyodbc,
+            sqltypes.LargeBinary: _VARBINARY_pyodbc,
         }
     )
 
     def __init__(self, description_encoding=None, **params):
+        if 'description_encoding' in params:
+            self.description_encoding = params.pop('description_encoding')
         super(MSDialect_pyodbc, self).__init__(**params)
-        self.description_encoding = description_encoding
         self.use_scope_identity = self.use_scope_identity and \
-                        self.dbapi and \
-                        hasattr(self.dbapi.Cursor, 'nextset')
+            self.dbapi and \
+            hasattr(self.dbapi.Cursor, 'nextset')
         self._need_decimal_fix = self.dbapi and \
-                            self._dbapi_version() < (2, 1, 8)
+            self._dbapi_version() < (2, 1, 8)
 
 dialect = MSDialect_pyodbc

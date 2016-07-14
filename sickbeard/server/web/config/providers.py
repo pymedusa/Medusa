@@ -81,12 +81,12 @@ class ConfigProviders(Config):
             else:
                 provider_dict[name].needs_auth = True
 
-            return '|'.join([provider_dict[name].get_id(), provider_dict[name].configStr()])
+            return '|'.join([provider_dict[name].get_id(), provider_dict[name].config_string()])
 
         else:
             new_provider = newznab.NewznabProvider(name, url, key=key)
             sickbeard.newznabProviderList.append(new_provider)
-            return '|'.join([new_provider.get_id(), new_provider.configStr()])
+            return '|'.join([new_provider.get_id(), new_provider.config_string()])
 
     @staticmethod
     def getNewznabCategories(name, url, key):
@@ -152,11 +152,11 @@ class ConfigProviders(Config):
         if temp_provider.get_id() in provider_dict:
             return json.dumps({'error': 'Exists as {name}'.format(name=provider_dict[temp_provider.get_id()].name)})
         else:
-            (succ, err_msg) = temp_provider.validateRSS()
-            if succ:
+            validate = temp_provider.validate_rss()
+            if validate['result']:
                 return json.dumps({'success': temp_provider.get_id()})
             else:
-                return json.dumps({'error': err_msg})
+                return json.dumps({'error': validate['message']})
 
     @staticmethod
     def saveTorrentRssProvider(name, url, cookies, titleTAG):
@@ -175,12 +175,12 @@ class ConfigProviders(Config):
             provider_dict[name].cookies = cookies
             provider_dict[name].titleTAG = titleTAG
 
-            return '|'.join([provider_dict[name].get_id(), provider_dict[name].configStr()])
+            return '|'.join([provider_dict[name].get_id(), provider_dict[name].config_string()])
 
         else:
             new_provider = rsstorrent.TorrentRssProvider(name, url, cookies, titleTAG)
             sickbeard.torrentRssProviderList.append(new_provider)
-            return '|'.join([new_provider.get_id(), new_provider.configStr()])
+            return '|'.join([new_provider.get_id(), new_provider.config_string()])
 
     @staticmethod
     def deleteTorrentRssProvider(id):
@@ -494,6 +494,12 @@ class ConfigProviders(Config):
                 except (AttributeError, KeyError):
                     curTorrentProvider.subtitle = 0  # these exceptions are actually catching unselected checkboxes
 
+            if curTorrentProvider.enable_cookies:
+                try:
+                    curTorrentProvider.cookies = str(kwargs['{id}_cookies'.format(id=curTorrentProvider.get_id())]).strip()
+                except (AttributeError, KeyError):
+                    pass  # I don't want to configure a default value here, as it can also be configured intially as a custom rss torrent provider
+
         for curNzbProvider in [prov for prov in sickbeard.providers.sortedProviderList() if
                                prov.provider_type == GenericProvider.NZB]:
 
@@ -543,7 +549,7 @@ class ConfigProviders(Config):
                 except (AttributeError, KeyError):
                     curNzbProvider.enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
 
-        sickbeard.NEWZNAB_DATA = '!!!'.join([x.configStr() for x in sickbeard.newznabProviderList])
+        sickbeard.NEWZNAB_DATA = '!!!'.join([x.config_string() for x in sickbeard.newznabProviderList])
         sickbeard.PROVIDER_ORDER = provider_list
 
         sickbeard.save_config()

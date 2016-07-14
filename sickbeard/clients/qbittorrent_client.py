@@ -93,10 +93,14 @@ class qbittorrentAPI(GenericClient):
         label = sickbeard.TORRENT_LABEL_ANIME if result.show.is_anime else sickbeard.TORRENT_LABEL
 
         if self.api > 6 and label:
-            self.url = '{host}command/setLabel'.format(host=self.host)
+            label_key = 'Category' if self.api >= 10 else 'Label'
+            self.url = '{host}command/set{key}'.format(
+                host=self.host,
+                key=label_key,
+            )
             data = {
                 'hashes': result.hash.lower(),
-                'label': label.replace(' ', '_'),
+                label_key.lower(): label.replace(' ', '_'),
             }
             return self._request(method='post', data=data, cookies=self.session.cookies)
         return None

@@ -331,10 +331,10 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                 self.results = search_result
                 self.success = True
                 if self.manual_search_type == 'season':
-                    ui.notifications.message("We have found season pack results for {0}".format(self.show.name),
+                    ui.notifications.message("We have found season packs for {0}".format(self.show.name),
                                              "These should become visible in the manual select page.")
                 else:
-                    ui.notifications.message("We have found single results for {0}".format(self.segment[0].prettyName()),
+                    ui.notifications.message("We have found results for {0}".format(self.segment[0].prettyName()),
                                              "These should become visible in the manual select page.")
             else:
                 ui.notifications.message('No results were found')

@@ -19,18 +19,20 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import time
 import re
-import os.path
+import time
+
+import dateutil
+from six import string_types, text_type
+
 import sickbeard
 from sickbeard.name_parser import regexes
-
 from sickbeard import logger, helpers, scene_numbering, common, scene_exceptions, db
+from sickbeard.helpers import remove_non_release_groups
+
 from sickrage.helper.common import remove_extension
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
-from sickbeard.helpers import remove_non_release_groups
-import dateutil
 
 
 class NameParser(object):
@@ -95,8 +97,8 @@ class NameParser(object):
             for cur_pattern_num, (cur_pattern_name, cur_pattern) in enumerate(regexItem):
                 try:
                     cur_regex = re.compile(cur_pattern, re.VERBOSE | re.IGNORECASE)
-                except re.error, errormsg:
-                    logger.log(u"WARNING: Invalid episode_pattern using %s regexs, %s. %s" % (dbg_str, errormsg, cur_pattern))
+                except re.error as msg:
+                    logger.log(u"WARNING: Invalid episode_pattern using %s regexs, %s. %s" % (dbg_str, msg, cur_pattern))
                 else:
                     self.compiled_regexes.append((cur_pattern_num, cur_pattern_name, cur_regex))
 
@@ -106,7 +108,7 @@ class NameParser(object):
 
         matches = []
         bestResult = None
-        
+
         # Remove non release groups from filename
         name = remove_non_release_groups(name)
 
@@ -362,10 +364,10 @@ class NameParser(object):
 
     @staticmethod
     def _unicodify(obj, encoding="utf-8"):
-        if isinstance(obj, basestring):
-            if not isinstance(obj, unicode):
-                obj = unicode(obj, encoding, 'replace')
-        return obj
+        if isinstance(obj, string_types) and not isinstance(obj, text_type):
+            return text_type(obj, encoding, 'replace')
+        else:
+            return obj
 
     @staticmethod
     def _convert_number(org_number):

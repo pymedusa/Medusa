@@ -415,5 +415,15 @@ anime_regexes = [
      (-(?P<extra_ab_ep_num>((?!(1080|720|480)[pi])|(?![hx].?264))\d{1,3}))?  # E02
      (v(?P<version>[0-9]))?                                                  # v2
      .*?                                                                     # Separator and EOL
+     """),
+    ('anime_season_only',
+     # Show.Name.S01.Source.Quality.Etc-Group
+     r"""
+     ^((?P<series_name>.+?)[. _-]+)?             # Show_Name and separator
+     s(eason[. _-])?                             # S01/Season 01
+     (?P<season_num>\d+)[. _-]*                  # S01 and optional separator
+     [. _-]*((?P<extra_info>.+?)                 # Source_Quality_Etc-
+     ((?<![. _-])(?<!WEB)                        # Make sure this is really the release group
+     -(?P<release_group>[^ -]+([. _-]\[.*\])?))?)?$              # Group
      """)
 ]

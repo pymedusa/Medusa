@@ -18,10 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import sickbeard
-
 from chardet import detect
 from os import name
+
+from six import text_type
+
+import sickbeard
 
 
 def ek(function, *args, **kwargs):
@@ -37,7 +39,7 @@ def ek(function, *args, **kwargs):
     if name == 'nt':
         result = function(*args, **kwargs)
     else:
-        result = function(*[ss(x) if isinstance(x, (str, unicode)) else x for x in args], **kwargs)
+        result = function(*[ss(x) if isinstance(x, (str, text_type)) else x for x in args], **kwargs)
 
     if isinstance(result, (list, tuple)):
         return _fix_list_encoding(result)
@@ -96,21 +98,21 @@ def _to_unicode(var):
 
     if isinstance(var, str):
         try:
-            var = unicode(var)
+            var = text_type(var)
         except Exception:
             try:
-                var = unicode(var, 'utf-8')
+                var = text_type(var, 'utf-8')
             except Exception:
                 try:
-                    var = unicode(var, 'latin-1')
+                    var = text_type(var, 'latin-1')
                 except Exception:
                     try:
-                        var = unicode(var, sickbeard.SYS_ENCODING)
+                        var = text_type(var, sickbeard.SYS_ENCODING)
                     except Exception:
                         try:
                             # Chardet can be wrong, so try it last
-                            var = unicode(var, detect(var).get('encoding'))
+                            var = text_type(var, detect(var).get('encoding'))
                         except Exception:
-                            var = unicode(var, sickbeard.SYS_ENCODING, 'replace')
+                            var = text_type(var, sickbeard.SYS_ENCODING, 'replace')
 
     return var

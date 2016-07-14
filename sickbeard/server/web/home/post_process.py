@@ -2,7 +2,9 @@
 
 from __future__ import unicode_literals
 
+from six import string_types
 from tornado.routes import route
+
 from sickbeard import processTV
 from sickrage.helper.encoding import ss
 from sickbeard.server.web.core import PageTemplate
@@ -26,7 +28,7 @@ class HomePostProcess(Home):
         nzb_name = nzbName
 
         def argToBool(argument):
-            if isinstance(argument, basestring):
+            if isinstance(argument, string_types):
                 _arg = argument.strip().lower()
             else:
                 _arg = argument

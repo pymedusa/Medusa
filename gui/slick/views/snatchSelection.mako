@@ -317,9 +317,9 @@
                 if hItem["name"] and preferred_words and show_name_helpers.containsAtLeastOneWord(hItem["name"], preferred_words):
                     name_preferred = True
 
-                if hItem["provider_minseed"] and hItem["seeders"] and hItem["seeders"] > -1 and int(hItem["seeders"]) < hItem["provider_minseed"]:
+                if hItem["provider_minseed"] and int(hItem["seeders"]) > -1 and int(hItem["seeders"]) < int(hItem["provider_minseed"]):
                     below_minseed = True
-                if hItem["provider_minleech"] and hItem["leechers"] and hItem["leechers"] > -1 and int(hItem["leechers"]) < hItem["provider_minleech"]:
+                if hItem["provider_minleech"] and int(hItem["leechers"]) > -1 and int(hItem["leechers"]) < int(hItem["provider_minleech"]):
                     below_minleech = True
 
                 %>
@@ -360,6 +360,7 @@
                         % endif
                     </td>
                     <td align="center">${renderQualityPill(int(hItem["quality"]))}</td>
+                    
                     % if below_minseed:
                         <td align="center"><font color="red">${hItem["seeders"] if hItem["seeders"] > -1 else '-'}</font></td>
                     % else:

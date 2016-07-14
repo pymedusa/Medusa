@@ -39,6 +39,8 @@ Classes:
     TestCacheDBConnection
 """
 
+from __future__ import print_function
+
 import os.path
 import shutil
 import sys
@@ -276,8 +278,8 @@ def teardown_test_db():
     #        try:
     #            os.remove(file_name)
     #        except Exception as e:
-    #            print 'ERROR: Failed to remove ' + file_name
-    #            print exception(e)
+    #            print('ERROR: Failed to remove ' + file_name)
+    #            print(exception(e))
 
 
 def setup_test_episode_file():
@@ -294,7 +296,7 @@ def setup_test_episode_file():
     # pylint: disable=broad-except
     # Catching too general exception
     except Exception:
-        print "Unable to set up test episode"
+        print("Unable to set up test episode")
         raise
 
 

@@ -1,5 +1,6 @@
 # testing/profiling.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors <see AUTHORS file>
+# Copyright (C) 2005-2016 the SQLAlchemy authors and contributors
+# <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
@@ -13,13 +14,11 @@ in a more fine-grained way than nose's profiling plugin.
 
 import os
 import sys
-from .util import gc_collect, decorator
+from .util import gc_collect
 from . import config
-from .plugin.plugin_base import SkipTest
 import pstats
-import time
 import collections
-from .. import util
+import contextlib
 
 try:
     import cProfile
@@ -29,64 +28,8 @@ from ..util import jython, pypy, win32, update_wrapper
 
 _current_test = None
 
-
-def profiled(target=None, **target_opts):
-    """Function profiling.
-
-    @profiled()
-    or
-    @profiled(report=True, sort=('calls',), limit=20)
-
-    Outputs profiling info for a decorated function.
-
-    """
-
-    profile_config = {'targets': set(),
-                       'report': True,
-                       'print_callers': False,
-                       'print_callees': False,
-                       'graphic': False,
-                       'sort': ('time', 'calls'),
-                       'limit': None}
-    if target is None:
-        target = 'anonymous_target'
-
-    @decorator
-    def decorate(fn, *args, **kw):
-        elapsed, load_stats, result = _profile(
-            fn, *args, **kw)
-
-        graphic = target_opts.get('graphic', profile_config['graphic'])
-        if graphic:
-            os.system("runsnake %s" % filename)
-        else:
-            report = target_opts.get('report', profile_config['report'])
-            if report:
-                sort_ = target_opts.get('sort', profile_config['sort'])
-                limit = target_opts.get('limit', profile_config['limit'])
-                print(("Profile report for target '%s'" % (
-                    target, )
-                    ))
-
-                stats = load_stats()
-                stats.sort_stats(*sort_)
-                if limit:
-                    stats.print_stats(limit)
-                else:
-                    stats.print_stats()
-
-                print_callers = target_opts.get(
-                    'print_callers', profile_config['print_callers'])
-                if print_callers:
-                    stats.print_callers()
-
-                print_callees = target_opts.get(
-                    'print_callees', profile_config['print_callees'])
-                if print_callees:
-                    stats.print_callees()
-
-        return result
-    return decorate
+# ProfileStatsFile instance, set up in plugin_base
+_profile_stats = None
 
 
 class ProfileStatsFile(object):
@@ -96,8 +39,13 @@ class ProfileStatsFile(object):
     so no json lib :(  need to roll something silly
 
     """
+
     def __init__(self, filename):
-        self.write = (
+        self.force_write = (
+            config.options is not None and
+            config.options.force_write_profiles
+        )
+        self.write = self.force_write or (
             config.options is not None and
             config.options.write_profiles
         )
@@ -127,6 +75,11 @@ class ProfileStatsFile(object):
             platform_tokens.append("pypy")
         if win32:
             platform_tokens.append("win")
+        platform_tokens.append(
+            "nativeunicode"
+            if config.db.dialect.convert_unicode
+            else "dbapiunicode"
+        )
         _has_cext = config.requirements._has_cextensions()
         platform_tokens.append(_has_cext and "cextensions" or "nocextensions")
         return "_".join(platform_tokens)
@@ -170,25 +123,32 @@ class ProfileStatsFile(object):
         per_fn = self.data[test_key]
         per_platform = per_fn[self.platform_key]
         counts = per_platform['counts']
-        counts[-1] = callcount
+        current_count = per_platform['current_count']
+        if current_count < len(counts):
+            counts[current_count - 1] = callcount
+        else:
+            counts[-1] = callcount
         if self.write:
             self._write()
 
     def _header(self):
-        return \
-        "# %s\n"\
-        "# This file is written out on a per-environment basis.\n"\
-        "# For each test in aaa_profiling, the corresponding function and \n"\
-        "# environment is located within this file.  If it doesn't exist,\n"\
-        "# the test is skipped.\n"\
-        "# If a callcount does exist, it is compared to what we received. \n"\
-        "# assertions are raised if the counts do not match.\n"\
-        "# \n"\
-        "# To add a new callcount test, apply the function_call_count \n"\
-        "# decorator and re-run the tests using the --write-profiles \n"\
-        "# option - this file will be rewritten including the new count.\n"\
-        "# \n"\
-        "" % (self.fname)
+        return (
+            "# %s\n"
+            "# This file is written out on a per-environment basis.\n"
+            "# For each test in aaa_profiling, the corresponding "
+            "function and \n"
+            "# environment is located within this file.  "
+            "If it doesn't exist,\n"
+            "# the test is skipped.\n"
+            "# If a callcount does exist, it is compared "
+            "to what we received. \n"
+            "# assertions are raised if the counts do not match.\n"
+            "# \n"
+            "# To add a new callcount test, apply the function_call_count \n"
+            "# decorator and re-run the tests using the --write-profiles \n"
+            "# option - this file will be rewritten including the new count.\n"
+            "# \n"
+        ) % (self.fname)
 
     def _read(self):
         try:
@@ -224,7 +184,6 @@ class ProfileStatsFile(object):
         profile_f.close()
 
 
-
 def function_call_count(variance=0.05):
     """Assert a target for a test case's function call count.
 
@@ -238,72 +197,69 @@ def function_call_count(variance=0.05):
 
     def decorate(fn):
         def wrap(*args, **kw):
-
-            if cProfile is None:
-                raise SkipTest("cProfile is not installed")
-
-            if not _profile_stats.has_stats() and not _profile_stats.write:
-                # run the function anyway, to support dependent tests
-                # (not a great idea but we have these in test_zoomark)
-                fn(*args, **kw)
-                raise SkipTest("No profiling stats available on this "
-                            "platform for this function.  Run tests with "
-                            "--write-profiles to add statistics to %s for "
-                            "this platform." % _profile_stats.short_fname)
-
-            gc_collect()
-
-            timespent, load_stats, fn_result = _profile(
-                fn, *args, **kw
-            )
-            stats = load_stats()
-            callcount = stats.total_calls
-
-            expected = _profile_stats.result(callcount)
-            if expected is None:
-                expected_count = None
-            else:
-                line_no, expected_count = expected
-
-            print(("Pstats calls: %d Expected %s" % (
-                    callcount,
-                    expected_count
-                )
-            ))
-            stats.print_stats()
-            #stats.print_callers()
-
-            if expected_count:
-                deviance = int(callcount * variance)
-                failed = abs(callcount - expected_count) > deviance
-
-                if failed:
-                    if _profile_stats.write:
-                        _profile_stats.replace(callcount)
-                    else:
-                        raise AssertionError(
-                            "Adjusted function call count %s not within %s%% "
-                            "of expected %s. Rerun with --write-profiles to "
-                            "regenerate this callcount."
-                            % (
-                            callcount, (variance * 100),
-                            expected_count))
-            return fn_result
+            with count_functions(variance=variance):
+                return fn(*args, **kw)
         return update_wrapper(wrap, fn)
     return decorate
 
 
-def _profile(fn, *args, **kw):
-    filename = "%s.prof" % fn.__name__
+@contextlib.contextmanager
+def count_functions(variance=0.05):
+    if cProfile is None:
+        raise SkipTest("cProfile is not installed")
 
-    def load_stats():
-        st = pstats.Stats(filename)
-        os.unlink(filename)
-        return st
+    if not _profile_stats.has_stats() and not _profile_stats.write:
+        config.skip_test(
+            "No profiling stats available on this "
+            "platform for this function.  Run tests with "
+            "--write-profiles to add statistics to %s for "
+            "this platform." % _profile_stats.short_fname)
 
-    began = time.time()
-    cProfile.runctx('result = fn(*args, **kw)', globals(), locals(),
-                    filename=filename)
-    ended = time.time()
+    gc_collect()
 
-    return ended - began, load_stats, locals()['result']
+    pr = cProfile.Profile()
+    pr.enable()
+    #began = time.time()
+    yield
+    #ended = time.time()
+    pr.disable()
+
+    #s = compat.StringIO()
+    stats = pstats.Stats(pr, stream=sys.stdout)
+
+    #timespent = ended - began
+    callcount = stats.total_calls
+
+    expected = _profile_stats.result(callcount)
+
+    if expected is None:
+        expected_count = None
+    else:
+        line_no, expected_count = expected
+
+    print(("Pstats calls: %d Expected %s" % (
+        callcount,
+        expected_count
+    )
+    ))
+    stats.sort_stats("cumulative")
+    stats.print_stats()
+
+    if expected_count:
+        deviance = int(callcount * variance)
+        failed = abs(callcount - expected_count) > deviance
+
+        if failed or _profile_stats.force_write:
+            if _profile_stats.write:
+                _profile_stats.replace(callcount)
+            else:
+                raise AssertionError(
+                    "Adjusted function call count %s not within %s%% "
+                    "of expected %s, platform %s. Rerun with "
+                    "--write-profiles to "
+                    "regenerate this callcount."
+                    % (
+                        callcount, (variance * 100),
+                        expected_count, _profile_stats.platform_key))
+
+
