@@ -19,11 +19,11 @@
                     <li><a href="#torrent-search">Torrent Search</a></li>
                 </ul>
                 <div id="episode-search">
-                    <div class="component-group">
                         <div class="component-group-desc">
                             <h3>General Search Settings</h3>
                             <p>How to manage searching with <a href="${srRoot}/config/providers">providers</a>.</p>
                         </div>
+                    <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
                                 <label for="randomize_providers">
@@ -157,11 +157,11 @@
                             <input type="submit" class="btn config_submitter" value="Save Changes" />
                         </fieldset>
                     </div><!-- general settings -->
-                    <div class="component-group">
                         <div class="component-group-desc">
                             <h3>Search Filters</h3>
                             <p>Options to filter search results</p>
                         </div>
+                        <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
                                 <label>
@@ -231,7 +231,7 @@
                             </div><!-- ignore unknown subs -->
                             <input type="submit" class="btn config_submitter" value="Save Changes" />
                         </fieldset>
-                    </div><!-- search filters -->
+                        </div><!-- search filters -->
                 </div><!-- /component-group1 //-->
                 <div id="nzb-search" class="component-group">
                     <div class="component-group-desc">
