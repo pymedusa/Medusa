@@ -784,6 +784,14 @@ var SICKRAGE = {
                 });
             });
 
+            $('#forceSync').on('click', function () {
+                $('#testTrakt-result').html(loading);
+                $.getJSON(srRoot + '/home/forceTraktSync', function(data) {
+                  $('#testTrakt-result').html(data.result);
+                });
+            });
+
+
             $('#testEmail').on('click', function () {
                 var status;
                 var host;

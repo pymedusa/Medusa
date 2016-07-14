@@ -448,6 +448,11 @@ class Home(WebRoot):
         return notifiers.trakt_notifier.test_notify(username, blacklist_name)
 
     @staticmethod
+    def forceTraktSync():
+        """Force a trakt sync, depending on the notification settings, library is synced with watchlist and/or collection."""
+        return json.dumps({'result': ('Could not start sync', 'Sync Started')[sickbeard.traktCheckerScheduler.forceRun()]})
+
+    @staticmethod
     def loadShowNotifyLists():
 
         main_db_con = db.DBConnection()
