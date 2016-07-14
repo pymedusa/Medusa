@@ -1287,15 +1287,28 @@ class TVShow(TVObject):
                                        (id=self.indexerid, ep=episode_num(season, episode),
                                         status=statusStrings[new_status]), logger.DEBUG)
                             cur_ep.status = new_status
-                            cur_ep.subtitles = list()
+                            cur_ep.subtitles = ''
                             cur_ep.subtitles_searchcount = 0
-                            cur_ep.subtitles_lastsearch = str(datetime.datetime.min)
+                            cur_ep.subtitles_lastsearch = ''
                         cur_ep.location = ''
                         cur_ep.hasnfo = False
                         cur_ep.hastbn = False
                         cur_ep.release_name = ''
 
                         sql_l.append(cur_ep.get_sql())
+
+                    logger.log("Looking for hanging associates files for: {}".format(cur_loc))
+                    related_files = postProcessor.PostProcessor(cur_loc).list_associated_files(
+                                    cur_loc, base_name_only=False, subfolders=True)
+
+                    if related_files:
+                        logger.log(u"{id}: Found hanging associated files for {ep}, deleting: {files}".format
+                                       (id=self.indexerid, ep=episode_num(season, episode), files=related_files), logger.WARNING)
+                        for related_file in related_files:
+                            try:
+                                os.remove(related_file)
+                            except Exception as e:
+                                logger.log(u"Could not delete associate file: {0}. Error: {1}".format(related_file, e), logger.WARNING)
 
         if sql_l:
             main_db_con = db.DBConnection()
