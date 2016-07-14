@@ -261,6 +261,7 @@ CHECK_PROPERS_INTERVAL = None
 ALLOW_HIGH_PRIORITY = False
 SAB_FORCED = False
 RANDOMIZE_PROVIDERS = False
+USE_LEGACY_NAME_PARSER = False
 
 AUTOPOSTPROCESSOR_FREQUENCY = None
 DAILYSEARCH_FREQUENCY = None
@@ -665,7 +666,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             AUTOPOSTPROCESSOR_FREQUENCY, SHOWUPDATE_HOUR, \
             ANIME_DEFAULT, NAMING_ANIME, ANIMESUPPORT, USE_ANIDB, ANIDB_USERNAME, ANIDB_PASSWORD, ANIDB_USE_MYLIST, \
             ANIME_SPLIT_HOME, SCENE_DEFAULT, DOWNLOAD_URL, BACKLOG_DAYS, GIT_USERNAME, GIT_PASSWORD, \
-            DEVELOPER, gh, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, SOCKET_TIMEOUT, RECENTLY_DELETED
+            DEVELOPER, gh, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, SOCKET_TIMEOUT, RECENTLY_DELETED, USE_LEGACY_NAME_PARSER
 
         if __INITIALIZED__:
             return False
@@ -882,6 +883,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         SCENE_DEFAULT = bool(check_setting_int(CFG, 'General', 'scene_default', 0))
 
         PROVIDER_ORDER = check_setting_str(CFG, 'General', 'provider_order', '').split()
+
+        USE_LEGACY_NAME_PARSER = bool(check_setting_int(CFG, 'General', 'use_legacy_name_parser', 0))
 
         NAMING_PATTERN = check_setting_str(CFG, 'General', 'naming_pattern', 'Season %0S/%SN - S%0SE%0E - %EN')
         NAMING_ABD_PATTERN = check_setting_str(CFG, 'General', 'naming_abd_pattern', '%SN - %A.D - %EN')
@@ -1651,6 +1654,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['usenet_retention'] = int(USENET_RETENTION)
     new_config['General']['cache_trimming'] = int(CACHE_TRIMMING)
     new_config['General']['max_cache_age'] = int(MAX_CACHE_AGE)
+    new_config['General']['use_legacy_name_parser'] = int(USE_LEGACY_NAME_PARSER)
     new_config['General']['autopostprocessor_frequency'] = int(AUTOPOSTPROCESSOR_FREQUENCY)
     new_config['General']['dailysearch_frequency'] = int(DAILYSEARCH_FREQUENCY)
     new_config['General']['backlog_frequency'] = int(BACKLOG_FREQUENCY)

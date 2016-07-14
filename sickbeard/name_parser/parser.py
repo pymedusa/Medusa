@@ -49,14 +49,14 @@ class NameParser(object):
     ANIME_REGEX = 2
 
     def __init__(self, file_name=True, showObj=None, tryIndexers=False,  # pylint: disable=too-many-arguments
-                 naming_pattern=False, parse_method=None, use_guessit=True, allow_multi_season=False):
+                 naming_pattern=False, parse_method=None, allow_multi_season=False):
 
         self.file_name = file_name
         self.showObj = showObj
         self.tryIndexers = tryIndexers
 
         self.naming_pattern = naming_pattern
-        self.use_guessit = use_guessit
+        self.use_guessit = not sickbeard.USE_LEGACY_NAME_PARSER
         self.allow_multi_season = allow_multi_season
 
         if (self.showObj and not self.showObj.is_anime) or parse_method == 'normal':
