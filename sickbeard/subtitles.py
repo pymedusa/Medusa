@@ -744,9 +744,9 @@ class SubtitlesFinder(object):
                 # Don't run post processor unless at least one file has all of the needed subtitles OR
                 # if user don't want to ignore embedded subtitles and wants to consider 'unknown' as wanted sub,
                 # and .mkv has one.
-                if not run_post_process and (not needs_subtitles(downloaded_languages) or
-                    (not sickbeard.EMBEDDED_SUBTITLES_ALL and sickbeard.EMBEDDED_SUBTITLES_UNKNOWN_LANG
-                        and Language('und') in processTV.get_embedded_subtitles(video_path))):
+                if not run_post_process and (
+                        not needs_subtitles(downloaded_languages) or
+                        processTV.has_matching_unknown_subtitles(video_path)):
                     run_post_process = True
 
         if run_post_process:

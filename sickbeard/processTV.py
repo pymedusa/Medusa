@@ -570,15 +570,18 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
             # This feature prevents PP for files that do not have subtitle associated with the video file
             if sickbeard.POSTPONE_IF_NO_SUBS and subtitles_enabled(cur_video_file):
                 # If user don't want to ignore embedded subtitles and video has at least one, don't post pone PP
-                if not sickbeard.EMBEDDED_SUBTITLES_ALL and sickbeard.EMBEDDED_SUBTITLES_UNKNOWN_LANG and Language('und') in get_embedded_subtitles(cur_video_file_path):
-                    result.output += logHelper(u"Found embedded unknown subtitles and we don't want to ignore them. Continuing the post-process of this file: %s" % cur_video_file)
+                if has_matching_unknown_subtitles(cur_video_file_path):
+                    result.output += logHelper(u"Found embedded unknown subtitles and we don't want to ignore them. "
+                                               u"Continuing the post-process of this file: %s" % cur_video_file)
                 else:
-                    associatedFiles = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
-                    if not [associatedFile for associatedFile in associatedFiles if associatedFile[-3:] in subtitle_extensions]:
-                        result.output += logHelper(u"No subtitles associated. Postponing the post-process of this file: %s" % cur_video_file, logger.DEBUG)
+                    associated_files = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
+                    if not [f for f in associated_files if associated_files[-3:] in subtitle_extensions]:
+                        result.output += logHelper(u"No subtitles associated. Postponing the post-process of this file:"
+                                                   u" %s" % cur_video_file, logger.DEBUG)
                         continue
                     else:
-                        result.output += logHelper(u"Found subtitles associated. Continuing the post-process of this file: %s" % cur_video_file)
+                        result.output += logHelper(u"Found subtitles associated. "
+                                                   u"Continuing the post-process of this file: %s" % cur_video_file)
 
             result.result = processor.process()
             process_fail_message = u""
@@ -675,13 +678,27 @@ def subtitles_enabled(video):
         logger.log(u'Empty indexer ID for: {}'.format(video), logger.WARNING)
         return
 
+
+def has_matching_unknown_subtitles(video_path):
+    """Whether or not there's a valid unknown embedded subtitle for the specified video.
+
+    :param video_path:
+    :type video_path: str
+    :return:
+    :rtype: bool
+    """
+    return not sickbeard.EMBEDDED_SUBTITLES_ALL and sickbeard.EMBEDDED_SUBTITLES_UNKNOWN_LANG and \
+           Language('und') in get_embedded_subtitles(video_path)
+
+
 def get_embedded_subtitles(video_path):
-    """
-    Check if video file has enmbedded subtitles
+    """Return all embedded subtitles for the given video path.
 
-    :param video: video filename to be checked
+    :param video_path: video filename to be checked
+    :type video_path: str
+    :return:
+    :rtype: set of Language
     """
-
     subliminal_video = scan_video(video_path)
     refine(subliminal_video, episode_refiners=('metadata',))
     return subliminal_video.subtitle_languages
