@@ -166,7 +166,7 @@ def logHelper(logMessage, logLevel=logger.INFO):
 
 # pylint: disable=too-many-arguments,too-many-branches,too-many-statements,too-many-locals
 #@OneRunPP()
-def processDir(dirName, nzbName=None, process_method=None, force=False, is_priority=None, delete_on=False, failed=False, proc_type="auto"):
+def processDir(dirName, nzbName=None, process_method=None, force=False, is_priority=None, delete_on=False, failed=False, proc_type="auto", ignore_subs=False):
     """
     Scans through the files in dirName and processes whatever media files it finds
 
@@ -175,6 +175,7 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
     :param force: True to postprocess already postprocessed files
     :param failed: Boolean for whether or not the download failed
     :param proc_type: Type of postprocessing auto or manual
+    :param ignore_subs: True to ignore setting 'postpone if no subs'
     """
 
     result = ProcessResult()
@@ -239,18 +240,18 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
 
         # Don't Link media when the media is extracted from a rar in the same path
         if process_method in (u'hardlink', u'symlink') and videoInRar:
-            process_media(path, videoInRar, nzbName, u'move', force, is_priority, result)
+            process_media(path, videoInRar, nzbName, u'move', force, is_priority, result, ignore_subs)
             delete_files(path, rarContent, result)
             for video in set(videoFiles) - set(videoInRar):
-                process_media(path, [video], nzbName, process_method, force, is_priority, result)
+                process_media(path, [video], nzbName, process_method, force, is_priority, result, ignore_subs)
         elif sickbeard.DELRARCONTENTS and videoInRar:
-            process_media(path, videoInRar, nzbName, process_method, force, is_priority, result)
+            process_media(path, videoInRar, nzbName, process_method, force, is_priority, result, ignore_subs)
             delete_files(path, rarContent, result, True)
             for video in set(videoFiles) - set(videoInRar):
-                process_media(path, [video], nzbName, process_method, force, is_priority, result)
+                process_media(path, [video], nzbName, process_method, force, is_priority, result, ignore_subs)
         else:
             for video in videoFiles:
-                process_media(path, [video], nzbName, process_method, force, is_priority, result)
+                process_media(path, [video], nzbName, process_method, force, is_priority, result, ignore_subs)
 
     else:
         result.output += logHelper(u"Found temporary sync files: %s in path: %s" % (SyncFiles, path))
@@ -288,17 +289,17 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
 
                 # Don't Link media when the media is extracted from a rar in the same path
                 if process_method in (u'hardlink', u'symlink') and videoInRar:
-                    process_media(processPath, videoInRar, nzbName, u'move', force, is_priority, result)
+                    process_media(processPath, videoInRar, nzbName, u'move', force, is_priority, result, ignore_subs)
                     process_media(processPath, set(videoFiles) - set(videoInRar), nzbName, process_method, force,
-                                  is_priority, result)
+                                  is_priority, result, ignore_subs)
                     delete_files(processPath, rarContent, result)
                 elif sickbeard.DELRARCONTENTS and videoInRar:
-                    process_media(processPath, videoInRar, nzbName, process_method, force, is_priority, result)
+                    process_media(processPath, videoInRar, nzbName, process_method, force, is_priority, result, ignore_subs)
                     process_media(processPath, set(videoFiles) - set(videoInRar), nzbName, process_method, force,
-                                  is_priority, result)
+                                  is_priority, result, ignore_subs)
                     delete_files(processPath, rarContent, result, True)
                 else:
-                    process_media(processPath, videoFiles, nzbName, process_method, force, is_priority, result)
+                    process_media(processPath, videoFiles, nzbName, process_method, force, is_priority, result, ignore_subs)
 
                     # Delete all file not needed and avoid deleting files if Manual PostProcessing
                     if not(process_method == u"move" and result.result) or (proc_type == u"manual" and not delete_on):
@@ -543,7 +544,7 @@ def already_postprocessed(dirName, videofile, force, result):  # pylint: disable
     return False
 
 
-def process_media(processPath, videoFiles, nzbName, process_method, force, is_priority, result):  # pylint: disable=too-many-arguments
+def process_media(processPath, videoFiles, nzbName, process_method, force, is_priority, result, ignore_subs):  # pylint: disable=too-many-arguments
     """
     Postprocess mediafiles
 
@@ -554,6 +555,7 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
     :param force: Postprocess currently postprocessing file
     :param is_priority: Boolean, is this a priority download
     :param result: Previous results
+    :param ignore_subs: True to ignore setting 'postpone if no subs'
     """
 
     processor = None
@@ -568,7 +570,7 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
             processor = postProcessor.PostProcessor(cur_video_file_path, nzbName, process_method, is_priority)
 
             # This feature prevents PP for files that do not have subtitle associated with the video file
-            if sickbeard.POSTPONE_IF_NO_SUBS: 
+            if sickbeard.POSTPONE_IF_NO_SUBS and not ignore_subs: 
                 if subtitles_enabled(cur_video_file, nzbName):
                     # If user don't want to ignore embedded subtitles and video has at least one, don't post pone PP
                     if has_matching_unknown_subtitles(cur_video_file_path):
