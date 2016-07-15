@@ -91,8 +91,8 @@ class TVObject(object):
         :type key: str
         :param value:
         """
-        if not key.startswith('_') and key not in self.__ignored_properties:
-            self.__dirty = self.__dict__.get(key) != value
+        if key == '_location' or (not key.startswith('_') and key not in self.__ignored_properties):
+            self.__dirty |= self.__dict__.get(key) != value
 
         super(TVObject, self).__setattr__(key, value)
 
@@ -1205,10 +1205,12 @@ class TVShow(TVObject):
                 else:
                     ek(shutil.rmtree, self.location)
 
-                logger.log(u'%s show folder %s' % (('Deleted', 'Trashed')[sickbeard.TRASH_REMOVE_SHOW], self.raw_location))
+                logger.log(u'%s show folder %s' % (('Deleted', 'Trashed')[sickbeard.TRASH_REMOVE_SHOW],
+                                                   self.raw_location))
 
             except ShowDirectoryNotFoundException:
-                logger.log(u'Show folder does not exist, no need to %s %s' % (action, self.raw_location), logger.WARNING)
+                logger.log(u'Show folder does not exist, no need to %s %s' % (action, self.raw_location),
+                           logger.WARNING)
             except OSError as e:
                 logger.log(u'Unable to %s %s: %s / %s' % (action, self.raw_location, repr(e), str(e)), logger.WARNING)
 
@@ -1302,13 +1304,14 @@ class TVShow(TVObject):
                                     cur_loc, base_name_only=False, subfolders=True)
 
                     if related_files:
-                        logger.log(u"{id}: Found hanging associated files for {ep}, deleting: {files}".format
-                                       (id=self.indexerid, ep=episode_num(season, episode), files=related_files), logger.WARNING)
+                        logger.log(u"{id}: Found hanging associated files for {ep}, deleting: {files}".format(
+                            id=self.indexerid, ep=episode_num(season, episode), files=related_files), logger.WARNING)
                         for related_file in related_files:
                             try:
                                 os.remove(related_file)
                             except Exception as e:
-                                logger.log(u"Could not delete associate file: {0}. Error: {1}".format(related_file, e), logger.WARNING)
+                                logger.log(u"Could not delete associate file: {0}. Error: {1}".format(related_file, e),
+                                           logger.WARNING)
 
         if sql_l:
             main_db_con = db.DBConnection()
@@ -2005,8 +2008,9 @@ class TVEpisode(TVObject):
 
         if not ek(os.path.isfile, self.location):
             if (self.airdate >= datetime.date.today() or self.airdate == datetime.date.fromordinal(1)) and \
-                self.status in (UNAIRED, UNKNOWN, WANTED):
-                # Need to check if is UNAIRED otherwise code will step into second 'IF' and make episode as default_ep_status
+                    self.status in (UNAIRED, UNKNOWN, WANTED):
+                # Need to check if is UNAIRED otherwise code will step into second 'IF'
+                # and make episode as default_ep_status
                 # If is a leaked episode and user manually snatched, it will respect status
                 # If is a fake (manually snatched), when user set as FAILED, status will be WANTED
                 # and code below will make it UNAIRED again
