@@ -660,27 +660,26 @@ def process_failed(dirName, nzbName, result):
             result.output += logHelper(u"Failed Download Processing failed: (%s, %s): %s" %
                                        (nzbName, dirName, process_fail_message), logger.WARNING)
 
-
-def subtitles_enabled(video, nzbName=None):
+def subtitles_enabled(*args):
+    """Try to parse names to a show and check whether the show has subtitles enabled.
+    :param args:
+    :return:
+    :rtype: bool
     """
-    Parse video filename to a show to check if it has subtitle enabled
+    for name in args:
+        try:
+            parse_result = NameParser().parse(name, cache_result=True)
+            if parse_result.show.indexerid:
+                main_db_con = db.DBConnection()
+                sql_results = main_db_con.select("SELECT subtitles FROM tv_shows WHERE indexer_id = ? LIMIT 1",
+                                                 [parse_result.show.indexerid])
+                return bool(sql_results[0]["subtitles"]) if sql_results else False
 
-    :param video: video filename to be parsed
-    """
-
-    try:
-        parse_result = NameParser().parse(video, cache_result=True)
-    except (InvalidNameException, InvalidShowException):
-        if nzbName:
-            logger.log(u'Try parsing from NZB name: {0}'.format(nzbName), logger.DEBUG)
-            try:
-                parse_result = NameParser().parse(nzbName, cache_result=True) 
-            except (InvalidNameException, InvalidShowException):
-                logger.log(u'Not enough information to parse NZB name into a valid show', logger.WARNING)
-                return
-        else:    
-            logger.log(u'Not enough information to parse filename into a valid show. Consider add scene exceptions or improve naming for: {}'.format(video), logger.WARNING)
-            return
+            logger.log(u'Empty indexer ID for: {name}'.format(name=name), logger.WARNING)
+        except (InvalidNameException, InvalidShowException):
+            logger.log(u'Not enough information to parse filename into a valid show. Consider adding scene exceptions '
+                       u'or improve naming for: {name}'.format(name=name), logger.WARNING)
+    return False
 
 def has_matching_unknown_subtitles(video_path):
     """Whether or not there's a valid unknown embedded subtitle for the specified video.
