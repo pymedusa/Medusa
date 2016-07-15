@@ -568,20 +568,24 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
             processor = postProcessor.PostProcessor(cur_video_file_path, nzbName, process_method, is_priority)
 
             # This feature prevents PP for files that do not have subtitle associated with the video file
-            if sickbeard.POSTPONE_IF_NO_SUBS and subtitles_enabled(cur_video_file, nzbName):
-                # If user don't want to ignore embedded subtitles and video has at least one, don't post pone PP
-                if has_matching_unknown_subtitles(cur_video_file_path):
-                    result.output += logHelper(u"Found embedded unknown subtitles and we don't want to ignore them. "
-                                               u"Continuing the post-process of this file: %s" % cur_video_file)
-                else:
-                    associated_files = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
-                    if not [f for f in associated_files if associated_files[-3:] in subtitle_extensions]:
-                        result.output += logHelper(u"No subtitles associated. Postponing the post-process of this file:"
-                                                   u" %s" % cur_video_file, logger.DEBUG)
-                        continue
+            if sickbeard.POSTPONE_IF_NO_SUBS: 
+                if subtitles_enabled(cur_video_file, nzbName):
+                    # If user don't want to ignore embedded subtitles and video has at least one, don't post pone PP
+                    if has_matching_unknown_subtitles(cur_video_file_path):
+                        result.output += logHelper(u"Found embedded unknown subtitles and we don't want to ignore them. "
+                                                u"Continuing the post-process of this file: %s" % cur_video_file)
                     else:
-                        result.output += logHelper(u"Found subtitles associated. "
-                                                   u"Continuing the post-process of this file: %s" % cur_video_file)
+                        associated_files = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
+                        if not [f for f in associated_files if associated_files[-3:] in subtitle_extensions]:
+                            result.output += logHelper(u"No subtitles associated. Postponing the post-process of this file:"
+                                                    u" %s" % cur_video_file, logger.DEBUG)
+                            continue
+                        else:
+                            result.output += logHelper(u"Found subtitles associated. "
+                                                    u"Continuing the post-process of this file: %s" % cur_video_file)
+                else:
+                    result.output += logHelper(u"Subtitles disabled for this show. "
+                                            "Continuing the post-process of this file: %s" % cur_video_file)
 
             result.result = processor.process()
             process_fail_message = u""
@@ -668,7 +672,7 @@ def subtitles_enabled(video, nzbName=None):
         parse_result = NameParser().parse(video, cache_result=True)
     except (InvalidNameException, InvalidShowException):
         if nzbName:
-            logger.log(u'Try parsing from NZB name: {0}'.format(nzbName), logger.WARNING)
+            logger.log(u'Try parsing from NZB name: {0}'.format(nzbName), logger.DEBUG)
             try:
                 parse_result = NameParser().parse(nzbName, cache_result=True) 
             except (InvalidNameException, InvalidShowException):
