@@ -1330,6 +1330,10 @@ class TVShow(TVObject):
                                 logger.log(u'Could not delete associated file: {0}. Error: {1}'.format
                                            (related_file, e), logger.WARNING)
 
+        # clean up any empty season folders after deletion of associated files
+        for sub_dir in ek(os.listdir, self.location):
+            helpers.delete_empty_folders(ek(os.path.join, self.location, sub_dir), self.location)
+
         if sql_l:
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
