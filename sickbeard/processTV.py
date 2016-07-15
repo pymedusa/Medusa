@@ -585,7 +585,7 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
                                                     u"Continuing the post-process of this file: %s" % cur_video_file)
                 else:
                     result.output += logHelper(u"Subtitles disabled for this show. "
-                                            "Continuing the post-process of this file: %s" % cur_video_file)
+                                            u"Continuing the post-process of this file: %s" % cur_video_file)
 
             result.result = processor.process()
             process_fail_message = u""
