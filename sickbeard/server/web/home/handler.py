@@ -762,7 +762,7 @@ class Home(WebRoot):
                 })
                 submenu.append({
                     'title': 'Remove',
-                    'path': 'home/delete_show?show={show}'.format(show=show_obj.indexerid),
+                    'path': 'home/deleteShow?show={show}'.format(show=show_obj.indexerid),
                     'class': 'removeshow',
                     'confirm': True,
                     'icon': 'ui-icon ui-icon-trash',
@@ -1085,7 +1085,7 @@ class Home(WebRoot):
                 })
                 submenu.append({
                     'title': 'Remove',
-                    'path': 'home/delete_show?show={show}'.format(show=show_obj.indexerid),
+                    'path': 'home/deleteShow?show={show}'.format(show=show_obj.indexerid),
                     'class': 'removeshow',
                     'confirm': True,
                     'icon': 'ui-icon ui-icon-trash',

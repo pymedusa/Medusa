@@ -1205,10 +1205,10 @@ class TVShow(TVObject):
                 else:
                     ek(shutil.rmtree, self.location)
 
-                logger.log(u'%s show folder %s' % (('Deleted', 'Trashed')[sickbeard.TRASH_REMOVE_SHOW], self.location))
+                logger.log(u'%s show folder %s' % (('Deleted', 'Trashed')[sickbeard.TRASH_REMOVE_SHOW], self.raw_location))
 
             except ShowDirectoryNotFoundException:
-                logger.log(u'Show folder does not exist, no need to %s %s' % (action, self.location), logger.WARNING)
+                logger.log(u'Show folder does not exist, no need to %s %s' % (action, self.raw_location), logger.WARNING)
             except OSError as e:
                 logger.log(u'Unable to %s %s: %s / %s' % (action, self.location, repr(e), str(e)), logger.WARNING)
 
