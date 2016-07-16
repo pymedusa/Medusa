@@ -121,6 +121,7 @@ class NameParser(object):
 
         matches = []
         bestResult = None
+        guess = None
 
         if self.use_guessit:
             guess = guessit.guessit(name, dict(show_type=self.show_type))
@@ -235,6 +236,8 @@ class NameParser(object):
 
             # get quality
             bestResult.quality = common.Quality.nameQuality(name, bestResult.show.is_anime)
+            if bestResult.quality == common.Quality.UNKNOWN and guess is not None:
+                bestResult.quality = common.Quality.from_guessit(guess)
 
             new_episode_numbers = []
             new_season_numbers = []
