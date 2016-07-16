@@ -427,6 +427,11 @@ class TVShow(TVObject):
         :return:
         :rtype: bool
         """
+        # if show is 'paused' do not update_date
+        if self.paused:
+            logger.log(u'Show update skipped, show: {show} is paused.'.format(show=self.name), logger.INFO)
+            return False
+
         # if show is not 'Ended' always update (status 'Continuing')
         if self.status == 'Continuing':
             return True
