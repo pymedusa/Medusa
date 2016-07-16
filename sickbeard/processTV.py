@@ -568,20 +568,24 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
             processor = postProcessor.PostProcessor(cur_video_file_path, nzbName, process_method, is_priority)
 
             # This feature prevents PP for files that do not have subtitle associated with the video file
-            if sickbeard.POSTPONE_IF_NO_SUBS and subtitles_enabled(cur_video_file):
-                # If user don't want to ignore embedded subtitles and video has at least one, don't post pone PP
-                if has_matching_unknown_subtitles(cur_video_file_path):
-                    result.output += logHelper(u"Found embedded unknown subtitles and we don't want to ignore them. "
-                                               u"Continuing the post-process of this file: %s" % cur_video_file)
-                else:
-                    associated_files = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
-                    if not [f for f in associated_files if associated_files[-3:] in subtitle_extensions]:
-                        result.output += logHelper(u"No subtitles associated. Postponing the post-process of this file:"
-                                                   u" %s" % cur_video_file, logger.DEBUG)
-                        continue
+            if sickbeard.POSTPONE_IF_NO_SUBS: 
+                if subtitles_enabled(cur_video_file, nzbName):
+                    # If user don't want to ignore embedded subtitles and video has at least one, don't post pone PP
+                    if has_matching_unknown_subtitles(cur_video_file_path):
+                        result.output += logHelper(u"Found embedded unknown subtitles and we don't want to ignore them. "
+                                                u"Continuing the post-process of this file: %s" % cur_video_file)
                     else:
-                        result.output += logHelper(u"Found subtitles associated. "
-                                                   u"Continuing the post-process of this file: %s" % cur_video_file)
+                        associated_files = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
+                        if not [f for f in associated_files if associated_files[-3:] in subtitle_extensions]:
+                            result.output += logHelper(u"No subtitles associated. Postponing the post-process of this file:"
+                                                    u" %s" % cur_video_file, logger.DEBUG)
+                            continue
+                        else:
+                            result.output += logHelper(u"Found subtitles associated. "
+                                                    u"Continuing the post-process of this file: %s" % cur_video_file)
+                else:
+                    result.output += logHelper(u"Subtitles disabled for this show. "
+                                            u"Continuing the post-process of this file: %s" % cur_video_file)
 
             result.result = processor.process()
             process_fail_message = u""
@@ -656,28 +660,26 @@ def process_failed(dirName, nzbName, result):
             result.output += logHelper(u"Failed Download Processing failed: (%s, %s): %s" %
                                        (nzbName, dirName, process_fail_message), logger.WARNING)
 
-
-def subtitles_enabled(video):
+def subtitles_enabled(*args):
+    """Try to parse names to a show and check whether the show has subtitles enabled.
+    :param args:
+    :return:
+    :rtype: bool
     """
-    Parse video filename to a show to check if it has subtitle enabled
+    for name in args:
+        try:
+            parse_result = NameParser().parse(name, cache_result=True)
+            if parse_result.show.indexerid:
+                main_db_con = db.DBConnection()
+                sql_results = main_db_con.select("SELECT subtitles FROM tv_shows WHERE indexer_id = ? LIMIT 1",
+                                                 [parse_result.show.indexerid])
+                return bool(sql_results[0]["subtitles"]) if sql_results else False
 
-    :param video: video filename to be parsed
-    """
-
-    try:
-        parse_result = NameParser().parse(video, cache_result=True)
-    except (InvalidNameException, InvalidShowException):
-        logger.log(u'Not enough information to parse filename into a valid show. Consider add scene exceptions or improve naming for: {}'.format(video), logger.WARNING)
-        return
-
-    if parse_result.show.indexerid:
-        main_db_con = db.DBConnection()
-        sql_results = main_db_con.select("SELECT subtitles FROM tv_shows WHERE indexer_id = ? LIMIT 1", [parse_result.show.indexerid])
-        return bool(sql_results[0]["subtitles"]) if sql_results else False
-    else:
-        logger.log(u'Empty indexer ID for: {}'.format(video), logger.WARNING)
-        return
-
+            logger.log(u'Empty indexer ID for: {name}'.format(name=name), logger.WARNING)
+        except (InvalidNameException, InvalidShowException):
+            logger.log(u'Not enough information to parse filename into a valid show. Consider adding scene exceptions '
+                       u'or improve naming for: {name}'.format(name=name), logger.WARNING)
+    return False
 
 def has_matching_unknown_subtitles(video_path):
     """Whether or not there's a valid unknown embedded subtitle for the specified video.
