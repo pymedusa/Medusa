@@ -321,7 +321,7 @@ def download_best_subs(video_path, subtitles_dir, release_name, languages, subti
             logger.info(u'No subtitles found for %s', os.path.basename(video_path))
             return []
 
-        min_score = get_min_score()
+        min_score = get_min_score(video)
         scored_subtitles = sorted([(s, compute_score(s, video, hearing_impaired=sickbeard.SUBTITLES_HEARING_IMPAIRED))
                                   for s in subtitles_list], key=operator.itemgetter(1), reverse=True)
         for subtitle, score in scored_subtitles:
@@ -420,16 +420,25 @@ def merge_subtitles(existing_subtitles, new_subtitles):
     return current_subtitles
 
 
-def get_min_score():
+def get_min_score(video):
     """Return the min score to be used by subliminal.
 
     Perfect match = hash - resolution (subtitle for 720p is the same as for 1080p) - video_codec - audio_codec
+    Perfect match (no release_group): hash - release_group - audio_codec*
     Non-perfect match = series + year + season + episode
 
+    *Subliminal enhances video with metadata refiner and for some release names, guessit guess
+    audio_codec as DolbyDigital but subliminal changes it to AC3 -> https://github.com/Diaoul/subliminal/issues/677
+
+    :param video:
+    :type video: subliminal.video.Video
     :return: min score to be used to download subtitles
     :rtype: int
     """
     if sickbeard.SUBTITLES_PERFECT_MATCH:
+        if not video.release_group:
+            return episode_scores['hash'] - (episode_scores['release_group'] + episode_scores['audio_codec'])
+
         return episode_scores['hash'] - (episode_scores['resolution'] +
                                          episode_scores['video_codec'] +
                                          episode_scores['audio_codec'])
