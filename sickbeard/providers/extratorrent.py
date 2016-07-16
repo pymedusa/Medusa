@@ -19,12 +19,10 @@
 
 from __future__ import unicode_literals
 
-import re
 import traceback
 
 from requests.compat import urljoin
 
-import sickbeard
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 from sickbeard.common import USER_AGENT
@@ -46,8 +44,8 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         # URLs
         self.url = 'http://extratorrent.cc'
         self.urls = {
-            'index': self.url,
-            'rss': urljoin(self.url, 'rss.xml'),
+            'search': urljoin(self.url, 'search/'),
+            'rss': urljoin(self.url, 'view/today/TV.html'),
         }
         self.custom_url = None
 
@@ -55,7 +53,6 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         # Miscellaneous Options
         self.headers.update({'User-Agent': USER_AGENT})
-        self.search_params = {'cid': 8}
 
         # Torrent Stats
         self.minseed = None
@@ -77,8 +74,10 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         # Search Params
         search_params = {
-            'cid': 8,
-            'type': 'rss',
+            'search': '',
+            'new': 1,
+            'x': 0,
+            'y': 0,
         }
 
         for mode in search_strings:
@@ -88,44 +87,48 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    search_params['type'] = 'search'
+                    search_params['search'] = search_string
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
+                    search_url = self.urls['search']
+                    decrease = 0
+                else:
+                    search_url = self.urls['rss']
+                    decrease = 1
 
-                search_params['search'] = search_string
-                search_url = self.urls['rss'] if not self.custom_url else self.urls['rss'].replace(self.urls['index'], self.custom_url)
+                search_url = search_url if not self.custom_url else \
+                    search_url.replace(self.url + '/', self.custom_url)
+
                 data = self.get_url(search_url, params=search_params, returns='text')
                 if not data:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                if not data.startswith('<?xml'):
-                    logger.log('Expected xml but got something else, is your mirror failing?', logger.INFO)
-                    continue
-
                 with BS4Parser(data, 'html5lib') as html:
-                    for item in html('item'):
+                    torrent_table = html.find('table', class_='tl')
+                    torrent_rows = torrent_table('tr') if torrent_table else []
+
+                    # Continue only if at least one release is found
+                    if len(torrent_rows) < 2:
+                        logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                        continue
+
+                    # Skip column headers
+                    for result in torrent_rows[1:]:
+
                         try:
-                            title = re.sub(r'^<!\[CDATA\[|\]\]>$', '', item.find('title').get_text(strip=True))
+                            cells = result('td')
 
-                            if sickbeard.TORRENT_METHOD == 'blackhole':
-                                enclosure = item.find('enclosure')  # Backlog doesnt have enclosure
-                                download_url = enclosure['url'] if enclosure else item.find('link').next.strip()
-                                download_url = re.sub(r'(.*)/torrent/(.*).html', r'\1/download/\2.torrent', download_url)
-                            else:
-                                info_hash = item.find('info_hash')
-                                if not info_hash:
-                                    continue
-                                info_hash = info_hash.get_text(strip=True)
-                                download_url = 'magnet:?xt=urn:btih:' + info_hash + '&dn=' + title + self._custom_trackers
-
-                            if not all([title, download_url]):
+                            torrent_info = cells[0].find('a')
+                            if not torrent_info:
                                 continue
+                            title = torrent_info.get('title').strip('Download torrent')
+                            download_url = torrent_info.get('href')
 
-                            seeders = item.find('seeders')
-                            seeders = try_int(seeders.get_text(strip=True)) if seeders else 1
-                            leechers = item.find('leechers')
-                            leechers = try_int(leechers.get_text(strip=True)) if leechers else 0
+                            if len(cells) < 4:
+                                continue
+                            seeders = try_int(cells[4 - decrease].get_text(), 1)
+                            leechers = try_int(cells[5 - decrease].get_text())
 
                             # Filter unseeded torrent
                             if seeders < min(self.minseed, 1):
@@ -135,8 +138,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                                (title, seeders), logger.DEBUG)
                                 continue
 
-                            torrent_size = item.find('size')
-                            torrent_size = torrent_size.get_text() if torrent_size else None
+                            torrent_size = cells[3 - decrease].get_text().replace('\xa0', ' ')
                             size = convert_size(torrent_size) or -1
 
                             item = {
