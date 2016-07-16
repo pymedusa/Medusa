@@ -2705,3 +2705,18 @@
   release_group: POOLSTAR
   type: episode
 
+# FixMultipleFormats
+? Show.Name.S02E01.eps2.0.unm4sk-pt1.tc.1080p.WEB-DL.DD5.1.H264-GROUP
+: title: Show Name
+  season: 2
+  episode: 1
+  # episode title and part are not fixed. Not a big issue for us.
+  episode_title: eps2 0 unm4sk
+  part: 1
+  screen_size: 1080p
+  format: WEB-DL
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: GROUP
+  type: episode
