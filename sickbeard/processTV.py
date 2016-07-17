@@ -576,7 +576,7 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
                                                 u"Continuing the post-process of this file: %s" % cur_video_file)
                     else:
                         associated_files = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
-                        if not [f for f in associated_files if associated_files[-3:] in subtitle_extensions]:
+                        if not [f for f in associated_files if f[-3:] in subtitle_extensions]:
                             result.output += logHelper(u"No subtitles associated. Postponing the post-process of this file:"
                                                     u" %s" % cur_video_file, logger.DEBUG)
                             continue
