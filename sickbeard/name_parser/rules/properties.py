@@ -97,9 +97,12 @@ def size():
     :return:
     :rtype: Rebulk
     """
+    def format_size(value):
+        return re.sub(r'(?<=\d)[\.](?=[^\d])', '', value.upper())
+
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
     rebulk.defaults(name='size', validator=seps_surround)
-    rebulk.regex(r'\d+[mgt]b', r'\d+\.\d+[mgt]b', formatter=upper, tags=['release-group-prefix'])
+    rebulk.regex(r'\d+\.?[mgt]b', r'\d+\.\d+[mgt]b', formatter=format_size, tags=['release-group-prefix'])
 
     return rebulk
 

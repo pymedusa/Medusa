@@ -2720,3 +2720,14 @@
   video_codec: h264
   release_group: GROUP
   type: episode
+
+# Size detection separated with .
+? Show.Name.S06E09.720p.HDTV.450.MB.-.iExTV
+: title: Show Name
+  season: 6
+  episode: 9
+  screen_size: 720p
+  format: HDTV
+  size: 450MB
+  release_group: iExTV
+  type: episode
