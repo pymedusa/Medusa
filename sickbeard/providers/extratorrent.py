@@ -94,6 +94,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     decrease = 0
                 else:
                     search_url = self.urls['rss']
+                    # RSS search has one less column
                     decrease = 1
 
                 search_url = search_url if not self.custom_url else \
@@ -109,25 +110,24 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     torrent_rows = torrent_table('tr') if torrent_table else []
 
                     # Continue only if at least one release is found
-                    if len(torrent_rows) < 2:
+                    if len(torrent_rows) < 3 or (len(torrent_rows) == 3 and
+                                                 torrent_rows[2].get_text() == 'No torrents'):
                         logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                         continue
 
                     # Skip column headers
-                    for result in torrent_rows[1:]:
+                    for result in torrent_rows[2:]:
 
                         try:
                             cells = result('td')
 
                             torrent_info = cells[0].find('a')
-                            if not torrent_info:
-                                continue
                             title = torrent_info.get('title').strip('Download torrent')
                             download_url = urljoin(self.url, torrent_info.get('href').replace
                                                    ('torrent_download', 'download'))
-
-                            if len(cells) < 4:
+                            if not all([title, download_url]):
                                 continue
+
                             seeders = try_int(cells[4 - decrease].get_text(), 1)
                             leechers = try_int(cells[5 - decrease].get_text())
 
