@@ -399,10 +399,16 @@ class TVCache(object):
         return needed_eps[episode] if episode in needed_eps else []
 
     def listPropers(self, date=None):
+        """
+        Method is currently not used anywhere.
+        It can be usefull with some small modifications. First we'll need to flag the propers in db.
+        Then this method can be used to retrieve those, and let the properFinder use results from cache,
+        before moving on with hitting the providers.
+        """
         cache_db_con = self._get_db()
-        sql = b"SELECT * FROM [{provider_id}] WHERE name LIKE '%.PROPER.%' OR name LIKE '%.REPACK.%'".format(provider_id=self.provider_id)
+        sql = b"SELECT * FROM [{provider_id}] WHERE (name LIKE '%.PROPER.%' OR name LIKE '%.REPACK.%' OR name LIKE '%.REAL.%')".format(provider_id=self.provider_id)
 
-        if date is not None:
+        if date:
             sql += b' AND time >= {0}'.format(int(time.mktime(date.timetuple())))
 
         propers_results = cache_db_con.select(sql)

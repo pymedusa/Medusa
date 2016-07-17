@@ -1,36 +1,31 @@
 # coding=utf-8
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-
 # Git: https://github.com/PyMedusa/SickRage.git
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 
-from datetime import datetime
 from feedparser.util import FeedParserDict
 from hachoir_parser import createParser
 
 import sickbeard
 from sickbeard import logger
-from sickbeard.classes import Proper, TorrentSearchResult
-from sickbeard.common import Quality
-from sickbeard.db import DBConnection
+from sickbeard.classes import TorrentSearchResult
 from sickrage.helper.common import try_int
 from sickrage.helper.exceptions import ex
 from sickrage.providers.GenericProvider import GenericProvider
-from sickrage.show.Show import Show
 
 
 class TorrentProvider(GenericProvider):
@@ -38,38 +33,6 @@ class TorrentProvider(GenericProvider):
         GenericProvider.__init__(self, name)
         self.ratio = None
         self.provider_type = GenericProvider.TORRENT
-
-    def find_propers(self, search_date=None):
-        results = []
-        db = DBConnection()
-        placeholder = ','.join([str(x) for x in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST])
-        sql_results = db.select(
-            'SELECT s.show_name, e.showid, e.season, e.episode, e.status, e.airdate'
-            ' FROM tv_episodes AS e'
-            ' INNER JOIN tv_shows AS s ON (e.showid = s.indexer_id)'
-            ' WHERE e.airdate >= ' + str(search_date.toordinal()) +
-            ' AND e.status IN (' + placeholder + ')'
-        )
-
-        for result in sql_results or []:
-            show = Show.find(sickbeard.showList, int(result['showid']))
-
-            if show:
-                episode = show.get_episode(result['season'], result['episode'])
-
-                for term in self.proper_strings:
-                    search_strings = self._get_episode_search_strings(episode, add_string=term)
-
-                    for item in self.search(search_strings[0]):
-                        title, url = self._get_title_and_url(item)
-                        seeders, leechers = self._get_result_info(item)
-                        size = self._get_size(item)
-                        pubdate = self._get_pubdate(item)
-                        hash = self._get_hash(item)
-
-                        results.append(Proper(title, url, datetime.today(), show, seeders, leechers, size, pubdate, hash))
-
-        return results
 
     def is_active(self):
         return bool(sickbeard.USE_TORRENTS) and self.is_enabled()
