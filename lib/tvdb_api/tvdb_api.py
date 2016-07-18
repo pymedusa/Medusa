@@ -22,7 +22,6 @@ import logging
 import zipfile
 import datetime as dt
 import requests
-
 import xmltodict
 
 try:
@@ -36,7 +35,6 @@ except ImportError:
     gzip = None
 
 from dateutil.parser import parse
-from cachecontrol import CacheControl, caches
 
 from tvdb_ui import BaseUI, ConsoleUI
 from tvdb_exceptions import (tvdb_error, tvdb_userabort, tvdb_shownotfound, tvdb_showincomplete,
@@ -368,7 +366,8 @@ class Tvdb:
                  forceConnect=False,
                  useZip=False,
                  dvdorder=False,
-                 proxy=None):
+                 proxy=None,
+                 session=None):
 
         """interactive (True/False):
             When True, uses built-in console UI is used to select the correct show.
@@ -479,7 +478,7 @@ class Tvdb:
         else:
             raise ValueError("Invalid value for Cache %r (type was %s)" % (cache, type(cache)))
 
-        self.config['session'] = requests.Session()
+        self.config['session'] = session if session else requests.Session()
 
         self.config['banners_enabled'] = banners
         self.config['actors_enabled'] = actors
@@ -548,7 +547,7 @@ class Tvdb:
         tvdb_api-myuser)
         """
         if hasattr(os, 'getuid'):
-            uid = "u%d" % (os.getuid())
+            uid = "u%d" % (os.getuid())  # pylint: disable=no-member
         else:
             # For Windows
             try:
@@ -565,8 +564,6 @@ class Tvdb:
 
             # get response from TVDB
             if self.config['cache_enabled']:
-                # Lets try without caching sessions to disk for awhile
-                # session = CacheControl(sess=self.config['session'], cache=caches.FileCache(self.config['cache_location'], use_dir_lock=True), cache_etags=False)
                 session = self.config['session']
                 if self.config['proxy']:
                     log().debug("Using proxy for URL: %s" % url)
@@ -798,6 +795,7 @@ class Tvdb:
         Any key starting with an underscore has been processed (not the raw
         data from the XML)
         """
+
         log().debug("Getting actors for %s" % (sid))
         actorsEt = self._getetsrc(self.config['url_actorsInfo'] % (sid))
 
