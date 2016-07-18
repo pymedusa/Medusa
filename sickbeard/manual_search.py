@@ -213,8 +213,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             # The default sql, that's executed for each providers cache table
             common_sql = b"SELECT rowid, ? AS 'provider_type', ? AS 'provider_image', \
                           ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed', ? 'provider_minleech', \
-                          name, season, episodes, indexerid, url, time, \
-                          CASE WHEN proper_count > 0 THEN 1 ELSE 0 END AS 'isproper', \
+                          name, season, episodes, indexerid, url, time, proper_count, \
                           quality, release_group, version, seeders, leechers, size, time \
                           FROM '{provider_id}' WHERE indexerid = ? AND quality > 0 ".format(provider_id=cur_provider.get_id())
             additional_sql = " AND episodes LIKE ? AND season = ? "
@@ -240,7 +239,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     if combined_sql_q:
         sql_prepend = b"SELECT * FROM ("
         sql_append = b") ORDER BY CASE quality WHEN '{quality_unknown}' THEN -1 ELSE CAST(quality AS DECIMAL) END DESC, " \
-                     b" isproper DESC, seeders DESC".format(quality_unknown=Quality.UNKNOWN)
+                     b" proper_count DESC, seeders DESC".format(quality_unknown=Quality.UNKNOWN)
 
         # Add all results
         sql_total += main_db_con.select(b'{0} {1} {2}'.
