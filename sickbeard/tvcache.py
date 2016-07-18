@@ -35,6 +35,7 @@ from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.Show import Show
 
 
+
 class CacheDBConnection(db.DBConnection):
     def __init__(self, provider_id):
         db.DBConnection.__init__(self, 'cache.db')
@@ -88,6 +89,10 @@ class CacheDBConnection(db.DBConnection):
             # add hash column to table if missing
             if not self.hasColumn(provider_id, 'hash'):
                 self.addColumn(provider_id, 'hash', 'NUMERIC', '')
+
+            # add proper_count column to table if missing
+            if not self.hasColumn(provider_id, 'proper_count'):
+                self.addColumn(provider_id, 'proper_count', 'NUMERIC', '')
 
         except Exception as e:
             if str(e) != 'table [{provider_id}] already exists'.format(provider_id=provider_id):
@@ -385,14 +390,17 @@ class TVCache(object):
 
             # get version
             version = parse_result.version
+            
+            # get proper_count
+            proper_count = parse_result.proper_count
 
             logger.log('Added RSS item: [{0}] to cache: [{1}]'.format(name, self.provider_id), logger.DEBUG)
 
             return [
                 b'INSERT OR REPLACE INTO [{provider_id}] (name, season, episodes, indexerid, url, time, quality, release_group, version, seeders, '
-                b'leechers, size, pubdate, hash) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(provider_id=self.provider_id),
+                b'leechers, size, pubdate, hash, proper_count) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(provider_id=self.provider_id),
                 [name, season, episodeText, parse_result.show.indexerid, url, cur_timestamp, quality,
-                 release_group, version, seeders, leechers, size, pubdate, torrent_hash]]
+                 release_group, version, seeders, leechers, size, pubdate, torrent_hash, proper_count]]
 
     def searchCache(self, episode, forced_search=False, downCurQuality=False):
         needed_eps = self.findNeededEpisodes(episode, forced_search, downCurQuality)
@@ -487,6 +495,7 @@ class TVCache(object):
             result.size = cur_result[b'size']
             result.pubdate = cur_result[b'pubdate']
             result.hash = cur_result[b'hash']
+            result.proper_count = cur_result[b'proper_count']
             result.name = title
             result.quality = cur_quality
             result.release_group = cur_release_group

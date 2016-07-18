@@ -329,6 +329,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 result.size = cur_proper.size
                 result.pubdate = cur_proper.pubdate
                 result.hash = cur_proper.hash
+                result.proper_count = cur_proper.proper_count
 
                 # snatch it
                 snatchEpisode(result, SNATCHED_PROPER)

@@ -80,6 +80,9 @@ class SearchResult(object):  # pylint: disable=too-few-public-methods, too-many-
         # hash
         self.hash = None
 
+        # proper_count
+        self.proper_count = 0
+
         # content
         self.content = None
 
@@ -209,7 +212,7 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
 
 
 class Proper(object):
-    def __init__(self, name, url, date, show, seeders, leechers, size, pubdate, hash):
+    def __init__(self, name, url, date, show, seeders, leechers, size, pubdate, hash, proper_count):
         self.name = name
         self.url = url
         self.date = date
@@ -221,6 +224,7 @@ class Proper(object):
         self.leechers = leechers
         self.size = size
         self.pubdate = pubdate
+        self.proper_count = proper_count
         self.hash = hash
         self.show = show
         self.indexer = None
