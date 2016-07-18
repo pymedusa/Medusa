@@ -234,7 +234,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             # only keep the proper if we have already retrieved the same quality ep (don't get better/worse ones)
-            old_status, old_quality = Quality.splitCompositeStatus(int(sql_results[0]['status']))
+            old_status, old_quality = Quality.splitCompositeStatus(int(sql_results[0][b'status']))
             if old_status not in (DOWNLOADED, SNATCHED) or old_quality != best_result.quality:
                 logger.log('Ignoring proper because quality is different or episode is already archived: {name}'.format
                            (name=best_result.name))
