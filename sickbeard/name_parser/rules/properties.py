@@ -145,6 +145,22 @@ def subtitle_language():
 
     return rebulk
 
+def audio_channels():
+    """Audio channels property.
+
+    :return:
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash]).string_defaults(ignore_case=True)
+    rebulk.defaults(name='audio_channels')
+
+    # https://github.com/guessit-io/guessit/issues/328
+    rebulk.string('7.1ch', value='7.1')
+    rebulk.string('5.1ch', value='5.1')
+    rebulk.string('2.0ch', value='2.0')
+
+    return rebulk
+
 
 class ValidateHardcodedSubs(Rule):
     """Validate HC matches."""

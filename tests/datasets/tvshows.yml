@@ -2731,3 +2731,16 @@
   size: 450MB
   release_group: iExTV
   type: episode
+
+# 5.1ch detection
+? Show.Name.S02E02.Episode.Title.1080p.WEB-DL.x264.5.1Ch.-.Group
+: title: Show Name
+  season: 2
+  episode: 2
+  episode_title: Episode Title
+  screen_size: 1080p
+  format: WEB-DL
+  video_codec: h264
+  audio_channels: '5.1'
+  release_group: Group
+  type: episode
