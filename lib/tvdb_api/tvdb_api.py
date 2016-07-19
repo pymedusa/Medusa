@@ -363,7 +363,7 @@ class Tvdb:
                  language=None,
                  search_all_languages=False,
                  apikey=None,
-                 forceConnect=False,
+                 force_connect=False,
                  useZip=False,
                  dvdorder=False,
                  proxy=None,
@@ -429,7 +429,7 @@ class Tvdb:
             tvdb_api in a larger application)
             See http://thetvdb.com/?tab=apiregister to get your own key
 
-        forceConnect (bool):
+        force_connect (bool):
             If true it will always try to connect to theTVDB.com even if we
             recently timed out. By default it will wait one minute before
             trying again, and any requests within that one minute window will

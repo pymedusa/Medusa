@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
 
 import os
 import getpass
@@ -274,7 +275,7 @@ class TVDBv2(object):
                  language=None,
                  search_all_languages=False,
                  apikey=None,
-                 forceConnect=False,
+                 force_connect=False,
                  useZip=False,
                  dvdorder=False,
                  proxy=None,
@@ -303,7 +304,7 @@ class TVDBv2(object):
 
         if cache is True:
             self.config['cache_enabled'] = True
-            self.config['cache_location'] = self._getTempDir()
+            self.config['cache_location'] = self._get_temp_dir()
         elif cache is False:
             self.config['cache_enabled'] = False
         elif isinstance(cache, basestring):
@@ -368,8 +369,7 @@ class TVDBv2(object):
         self.search_api = SearchApi(auth_client)
         self.series_api = SeriesApi(auth_client)
 
-    @staticmethod
-    def _parse_show_data(indexer_data, parsing_into_key='series'):  # pylint: disable=no-self-use
+    def _parse_show_data(self, indexer_data, parsing_into_key='series'):  # pylint: disable=no-self-use
         """ These are the fields we'd like to see for a show search"""
 
         name_map = {
@@ -396,18 +396,20 @@ class TVDBv2(object):
                 value = getattr(attributes, attribute, None)
                 if isinstance(value, list):
                     value = '|'.join(value)
+                if name_map.get(attribute, attribute) == 'fanart':
+                    value = urljoin(self.config['artwork_prefix'], value)
                 new_dict[name_map.get(attribute, attribute)] = value
             except Exception:
                 pass
 
         return OrderedDict({parsing_into_key: new_dict}) if parsing_into_key else new_dict
 
-    def _getTempDir(self):  # pylint: disable=no-self-use
+    def _get_temp_dir(self):  # pylint: disable=no-self-use
         """Returns the [system temp dir]/tvdb_api-u501 (or
         tvdb_api-myuser)
         """
         if hasattr(os, 'getuid'):
-            uid = 'u%d' % (os.getuid())  # pylint: disable=no-member
+            uid = 'u{0}'.format(os.getuid())  # pylint: disable=no-member
         else:
             # For Windows
             try:
@@ -415,11 +417,11 @@ class TVDBv2(object):
             except ImportError:
                 return os.path.join(tempfile.gettempdir(), 'tvdbv2_api')
 
-        return os.path.join(tempfile.gettempdir(), 'tvdbv2_api-%s' % (uid))
+        return os.path.join(tempfile.gettempdir(), 'tvdbv2_api-{0}'.format(uid))
 
-    def _setItem(self, sid, seas, ep, attrib, value):  # pylint: disable=too-many-arguments
+    def _set_item(self, sid, seas, ep, attrib, value):  # pylint: disable=too-many-arguments
         """Creates a new episode, creating Show(), Season() and
-        Episode()s as required. Called by _getShowData to populate show
+        Episode()s as required. Called by _get_show_data to populate show
 
         Since the nice-to-use tvdb[1][24]['name] interface
         makes it impossible to do tvdb[1][24]['name] = "name"
@@ -440,14 +442,14 @@ class TVDBv2(object):
             self.shows[sid][seas][ep] = Episode(season=self.shows[sid][seas])
         self.shows[sid][seas][ep][attrib] = value
 
-    def _setShowData(self, sid, key, value):
+    def _set_show_data(self, sid, key, value):
         """Sets self.shows[sid] to a new Show instance, or sets the data
         """
         if sid not in self.shows:
             self.shows[sid] = Show()
         self.shows[sid].data[key] = value
 
-    def _cleanData(self, data):  # pylint: disable=no-self-use
+    def _clean_data(self, data):  # pylint: disable=no-self-use
         """Cleans up strings returned by tvrage.com
 
         Issues corrected:
@@ -456,7 +458,7 @@ class TVDBv2(object):
         """
 
         if isinstance(data, basestring):
-            data = data.replace(u'&amp;', u'&')
+            data = data.replace('&amp;', '&')
             data = data.strip()
 
             tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
@@ -531,19 +533,29 @@ class TVDBv2(object):
         :param tvdb_id: Series tvdbv2 id.
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
         """
+        results = []
+
         # Parse episode data
         log().debug('Getting all episodes of %s', [tvdb_id])
-        results = self.series_api.series_id_episodes_get(tvdb_id)
+
+        # get paginated pages
+        page = 1
+        last = 1
+        while page <= last:
+            paged_episodes = self.series_api.series_id_episodes_query_get(tvdb_id, page=page)
+            results += paged_episodes.data
+            last = paged_episodes.links.last
+            page += 1
 
         def map_episodes(indexer_data):
             episode_list = []
-            for episode in indexer_data.data:
+            for episode in indexer_data:
                 episode_list.append(self._parse_show_data(episode, None))
             return episode_list
 
         return OrderedDict({'episode': map_episodes(results)})
 
-    def _getSeries(self, series):
+    def _get_series(self, series):
         """This searches thetvdb.com for the series name,
         If a custom_ui UI is configured, it uses this to select the correct
         series. If not, and interactive == True, ConsoleUI is used, if not
@@ -575,7 +587,7 @@ class TVDBv2(object):
 
         return ui.selectSeries(allSeries)
 
-    def _parseBanners(self, sid):
+    def _parse_banners(self, sid):
         """Parses banners XML, from
         http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/banners.xml
 
@@ -611,9 +623,9 @@ class TVDBv2(object):
                                                      u'_bannerpath': image_original,
                                                      u'id': u'1035106'}}}}
 
-        self._setShowData(sid, '_banners', banners)
+        self._set_show_data(sid, '_banners', banners)
 
-    def _parseActors(self, sid):
+    def _parse_actors(self, sid):
         """Parsers actors XML, from
         http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
 
@@ -639,7 +651,7 @@ class TVDBv2(object):
         """
         log().debug('Getting actors for %s', [sid])
         # actorsEt = self._getetsrc(self.config['url_actorsInfo'] % (sid))
-        actors = series_id_actors_get(sid)
+        actors = self.series_api.series_id_actors_get(sid)
 
         if not actors:
             log().debug('Actors result returned zero')
@@ -647,16 +659,16 @@ class TVDBv2(object):
 
         cur_actors = Actors()
         for cur_actor in actors['data'] if isinstance(actors['data'], list) else [actors['data']]:
-            curActor = Actor()
-            curActor['id'] = cur_actor['person']['id']
-            curActor['image'] = cur_actor['person']['image']['original']
-            curActor['name'] = cur_actor['person']['name']
-            curActor['role'] = cur_actor['character']['name']
-            curActor['sortorder'] = 0
-            cur_actors.append(curActor)
-        self._setShowData(sid, '_actors', cur_actors)
+            new_actor = Actor()
+            new_actor['id'] = cur_actor['person']['id']
+            new_actor['image'] = cur_actor['person']['image']['original']
+            new_actor['name'] = cur_actor['person']['name']
+            new_actor['role'] = cur_actor['character']['name']
+            new_actor['sortorder'] = 0
+            cur_actors.append(new_actor)
+        self._set_show_data(sid, '_actors', cur_actors)
 
-    def _getShowData(self, sid, language, getEpInfo=False):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
+    def _get_show_data(self, sid, language, get_ep_info=False):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
         """Takes a series ID, gets the epInfo URL and parses the TVmaze json response
         into the shows dict in layout:
         shows[series_id][season_number][episode_number]
@@ -665,7 +677,7 @@ class TVDBv2(object):
             log().debug('Config language is none, using show language')
             if language is None:
                 raise tvdbv2_error("config['language'] was None, this should not happen")
-            getShowInLanguage = language
+            get_show_in_language = language
         else:
             log().debug(
                 'Configured language %s override show language of %s' % (
@@ -673,43 +685,43 @@ class TVDBv2(object):
                     language
                 )
             )
-            getShowInLanguage = self.config['language']
+            get_show_in_language = self.config['language']
 
         # Parse show information
-        seriesInfoEt = self._get_show_by_id(sid)
+        series_info = self._get_show_by_id(sid)
 
-        if not seriesInfoEt:
+        if not series_info:
             log().debug('Series result returned zero')
             raise tvdbv2_error('Series result returned zero')
 
         # get series data
-        for k, v in seriesInfoEt['series'].items():
+        for k, v in series_info['series'].items():
             if v is not None:
                 if k in ['image_medium', 'image_large']:
-                    v = self._cleanData(v)
-            self._setShowData(sid, k, v)
+                    v = self._clean_data(v)
+            self._set_show_data(sid, k, v)
 
         # get episode data
-        if getEpInfo:
+        if get_ep_info:
             # Parse banners
             if self.config['banners_enabled']:
-                self._parseBanners(sid)
+                self._parse_banners(sid)
 
             # Parse actors
             if self.config['actors_enabled']:
-                self._parseActors(sid)
+                self._parse_actors(sid)
 
             # Parse episode data
-            epsEt = self._get_episode_list(sid, specials=False)
+            episode_data = self._get_episode_list(sid, specials=False)
 
-            if not epsEt:
+            if not episode_data:
                 log().debug('Series results incomplete')
                 raise tvdbv2_showincomplete('Show search returned incomplete results (cannot find complete show on TVmaze)')
 
-            if 'episode' not in epsEt:
+            if 'episode' not in episode_data:
                 return False
 
-            episodes = epsEt['episode']
+            episodes = episode_data['episode']
             if not isinstance(episodes, list):
                 episodes = [episodes]
 
@@ -740,9 +752,9 @@ class TVDBv2(object):
                         if k == 'filename':
                             v = urljoin(self.config['artwork_prefix'], v)
                         else:
-                            v = self._cleanData(v)
+                            v = self._clean_data(v)
 
-                    self._setItem(sid, seas_no, ep_no, k, v)
+                    self._set_item(sid, seas_no, ep_no, k, v)
 
         return True
 
@@ -753,15 +765,15 @@ class TVDBv2(object):
         if isinstance(key, (int, long)):
             # Item is integer, treat as show id
             if key not in self.shows:
-                self._getShowData(key, self.config['language'], True)
+                self._get_show_data(key, self.config['language'], True)
             return self.shows[key]
 
         key = str(key).lower()
         self.config['searchterm'] = key
-        selected_series = self._getSeries(key)
+        selected_series = self._get_series(key)
         if isinstance(selected_series, dict):
             selected_series = [selected_series]
-        [[self._setShowData(show['id'], k, v) for k, v in show.items()] for show in selected_series]
+        [[self._set_show_data(show['id'], k, v) for k, v in show.items()] for show in selected_series]
         return selected_series
 
     def __repr__(self):

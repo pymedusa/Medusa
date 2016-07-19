@@ -275,7 +275,7 @@ class TVmaze(object):
                  language=None,
                  search_all_languages=False,
                  apikey=None,
-                 forceConnect=False,
+                 force_connect=False,
                  useZip=False,
                  dvdorder=False,
                  proxy=None,
