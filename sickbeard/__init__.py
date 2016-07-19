@@ -36,7 +36,7 @@ from sickrage.helper.encoding import ek
 from sickrage.providers.GenericProvider import GenericProvider
 from sickrage.system.Shutdown import Shutdown
 from . import (
-    auto_postprocessor, db, helpers, logger, metadata, naming, properFinder, providers,
+    auto_postprocessor, db, helpers, logger, metadata, naming, providers,
     scheduler, search_queue, showUpdater, show_queue, subtitles, traktChecker, versionChecker
 )
 from .common import SD, SKIPPED, WANTED
@@ -52,7 +52,7 @@ from .indexers.indexer_exceptions import (
     indexer_seasonnotfound, indexer_showincomplete, indexer_shownotfound, indexer_userabort
 )
 from .providers import NewznabProvider, TorrentRssProvider
-from .search import backlog, daily
+from .search import backlog, daily, proper
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -1380,7 +1380,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             update_interval = datetime.timedelta(hours=1)
             run_at = datetime.time(hour=1)  # 1 AM
 
-        properFinderScheduler = scheduler.Scheduler(properFinder.ProperFinder(),
+        properFinderScheduler = scheduler.Scheduler(proper.ProperFinder(),
                                                     cycleTime=update_interval,
                                                     threadName="FINDPROPERS",
                                                     start_time=run_at,
