@@ -40,6 +40,7 @@ import tempfile
 import time
 import traceback
 import uuid
+import warnings
 import xml.etree.ElementTree as ET
 import zipfile
 
@@ -1413,58 +1414,42 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
     """
     Returns data retrieved from the url provider.
     """
+    response_type = kwargs.pop(u'returns', u'response')
+    stream = kwargs.pop(u'stream', False)
+    hooks, cookies, verify, proxies = request_defaults(kwargs)
+    method = u'POST' if post_data else u'GET'
+
+    resp = session.request(method, url, data=post_data, params=params, timeout=timeout, allow_redirects=True,
+                           hooks=hooks, stream=stream, headers=headers, cookies=cookies, proxies=proxies,
+                           verify=verify)
+
+    if not resp.ok:
+        logger.log(u'Requested url {url} returned status code {status}: {desc}'.format
+                   (url=url, status=resp.status_code, desc=http_code_description(resp.status_code)), logger.DEBUG)
+
     try:
-        response_type = kwargs.pop(u'returns', 'text')
-        stream = kwargs.pop(u'stream', False)
-
-        hooks, cookies, verify, proxies = request_defaults(kwargs)
-
-        if params and isinstance(params, (list, dict)):
-            for param in params:
-                if isinstance(params[param], text_type):
-                    params[param] = params[param].encode('utf-8')
-
-        if post_data and isinstance(post_data, (list, dict)):
-            for param in post_data:
-                if isinstance(post_data[param], text_type):
-                    post_data[param] = post_data[param].encode('utf-8')
-
-        resp = session.request(
-            'POST' if post_data else 'GET', url, data=post_data, params=params,
-            timeout=timeout, allow_redirects=True, hooks=hooks, stream=stream,
-            headers=headers, cookies=cookies, proxies=proxies, verify=verify
-        )
-
-        if not resp.ok:
-            logger.log(u"Requested getURL %s returned status code is %s: %s"
-                       % (url, resp.status_code, http_code_description(resp.status_code)), logger.DEBUG)
-            return None
-
-    except (SocketTimeout, TypeError) as e:
-        logger.log(u"Connection timed out (sockets) accessing getURL %s Error: %r" % (url, ex(e)), logger.DEBUG)
-        return None
-    except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects) as e:
-        logger.log(u"HTTP error in getURL %s Error: %r" % (url, ex(e)), logger.DEBUG)
-        return None
-    except requests.exceptions.ConnectionError as e:
-        logger.log(u"Connection error to getURL %s Error: %r" % (url, ex(e)), logger.DEBUG)
-        return None
-    except requests.exceptions.Timeout as e:
-        logger.log(u"Connection timed out accessing getURL %s Error: %r" % (url, ex(e)), logger.DEBUG)
-        return None
-    except requests.exceptions.ContentDecodingError:
-        logger.log(u"Content-Encoding was gzip, but content was not compressed. getURL: %s" % url, logger.DEBUG)
-        logger.log(traceback.format_exc(), logger.DEBUG)
-        return None
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        logger.log(u'Error requesting url {resp.url} Error: {msg}'.format(resp=resp, msg=ex(e)), logger.DEBUG)
     except Exception as e:
-        if 'ECONNRESET' in e or (hasattr(e, 'errno') and e.errno == errno.ECONNRESET):
-            logger.log(u"Connection reseted by peer accessing getURL %s Error: %r" % (url, ex(e)), logger.WARNING)
+        if u'ECONNRESET' in e or (hasattr(e, u'errno') and e.errno == errno.ECONNRESET):
+            logger.log(u'Connection reset by peer accessing url %s Error: %r' % (url, ex(e)), logger.WARNING)
         else:
-            logger.log(u"Unknown exception in getURL %s Error: %r" % (url, ex(e)), logger.ERROR)
+            logger.log(u"Unknown exception in url %s Error: %r" % (url, ex(e)), logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
-        return None
 
-    return resp if response_type == u'response' or response_type is None else resp.json() if response_type == u'json' else getattr(resp, response_type, resp)
+    if not response_type or response_type == u'response':
+        return resp
+    else:
+        warnings.warn(u'Returning {0} instead of {1} will be deprecated in the near future!'.format
+                      (response_type, 'response'), PendingDeprecationWarning)
+        if response_type == u'json':
+            try:
+                return resp.json()
+            except ValueError:
+                return {}
+        else:
+            return getattr(resp, response_type, resp)
 
 
 def download_file(url, filename, session=None, headers=None, **kwargs):  # pylint:disable=too-many-return-statements
