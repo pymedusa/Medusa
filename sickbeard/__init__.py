@@ -37,7 +37,7 @@ from sickrage.providers.GenericProvider import GenericProvider
 from sickrage.system.Shutdown import Shutdown
 from . import (
     auto_postprocessor, dailysearcher, db, helpers, logger, metadata, naming, properFinder, providers,
-    scheduler, searchBacklog, search_queue, showUpdater, show_queue, subtitles, traktChecker, versionChecker
+    scheduler, search_queue, showUpdater, show_queue, subtitles, traktChecker, versionChecker
 )
 from .common import SD, SKIPPED, WANTED
 from .config import (
@@ -52,6 +52,7 @@ from .indexers.indexer_exceptions import (
     indexer_seasonnotfound, indexer_showincomplete, indexer_shownotfound, indexer_userabort
 )
 from .providers import NewznabProvider, TorrentRssProvider
+from .search import backlog
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -1366,10 +1367,10 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                    run_delay=update_interval)
 
         update_interval = datetime.timedelta(minutes=BACKLOG_FREQUENCY)
-        backlogSearchScheduler = searchBacklog.BacklogSearchScheduler(searchBacklog.BacklogSearcher(),
-                                                                      cycleTime=update_interval,
-                                                                      threadName="BACKLOG",
-                                                                      run_delay=update_interval)
+        backlogSearchScheduler = backlog.BacklogSearchScheduler(backlog.BacklogSearcher(),
+                                                                cycleTime=update_interval,
+                                                                threadName="BACKLOG",
+                                                                run_delay=update_interval)
 
         search_intervals = {'15m': 15, '45m': 45, '90m': 90, '4h': 4 * 60, 'daily': 24 * 60}
         if CHECK_PROPERS_INTERVAL in search_intervals:

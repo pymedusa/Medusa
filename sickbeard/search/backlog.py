@@ -23,7 +23,7 @@ import threading
 
 import sickbeard
 from six import iteritems
-from . import common, db, logger, scheduler, search_queue, ui
+from .. import common, db, logger, scheduler, search_queue, ui
 
 
 class BacklogSearchScheduler(scheduler.Scheduler):
