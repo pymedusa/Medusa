@@ -50,6 +50,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.custom_url = None
 
         # Proper Strings
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
         # Miscellaneous Options
         self.headers.update({'User-Agent': USER_AGENT})
