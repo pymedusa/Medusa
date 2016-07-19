@@ -36,7 +36,7 @@ from sickrage.helper.encoding import ek
 from sickrage.providers.GenericProvider import GenericProvider
 from sickrage.system.Shutdown import Shutdown
 from . import (
-    auto_postprocessor, dailysearcher, db, helpers, logger, metadata, naming, properFinder, providers,
+    auto_postprocessor, db, helpers, logger, metadata, naming, properFinder, providers,
     scheduler, search_queue, showUpdater, show_queue, subtitles, traktChecker, versionChecker
 )
 from .common import SD, SKIPPED, WANTED
@@ -52,7 +52,7 @@ from .indexers.indexer_exceptions import (
     indexer_seasonnotfound, indexer_showincomplete, indexer_shownotfound, indexer_userabort
 )
 from .providers import NewznabProvider, TorrentRssProvider
-from .search import backlog
+from .search import backlog, daily
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -1361,7 +1361,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # TODO: update_interval should take last daily/backlog times into account!
         update_interval = datetime.timedelta(minutes=DAILYSEARCH_FREQUENCY)
-        dailySearchScheduler = scheduler.Scheduler(dailysearcher.DailySearcher(),
+        dailySearchScheduler = scheduler.Scheduler(daily.DailySearcher(),
                                                    cycleTime=update_interval,
                                                    threadName="DAILYSEARCHER",
                                                    run_delay=update_interval)
