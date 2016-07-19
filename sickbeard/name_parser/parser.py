@@ -121,7 +121,7 @@ class NameParser(object):
 
         matches = []
         bestResult = None
-        guess = guessit.guessit(name, dict(show_type=self.show_type, advanced=True, implicit=True))
+        guess = guessit.guessit(name, dict(show_type=self.show_type))
         if self.use_guessit:
             result = self.to_parse_result(name, guess)
             matches.append(result)
@@ -139,7 +139,7 @@ class NameParser(object):
                 result = ParseResult(name)
                 result.which_regex = [cur_regex_name]
                 result.score = 0 - cur_regex_num
-                result.proper_tags = [x.raw for x in guess.get('other', '') if x._value=='Proper']
+                result.proper_tags = ensure_list(guess.get('proper_tag'))
 
                 named_groups = match.groupdict().keys()
 
@@ -526,7 +526,7 @@ class NameParser(object):
             'episode_numbers': ensure_list(guess.get('episode'))
             if guess.get('episode') != guess.get('absolute_episode') else [],
             'ab_episode_numbers': ensure_list(guess.get('absolute_episode')),
-            'proper_count': guess.get('proper_count', 0)
+            'proper_tags': ensure_list(guess.get('proper_tag'))
         }
 
         result = ParseResult(name)
