@@ -92,7 +92,7 @@ class CacheDBConnection(db.DBConnection):
 
             # add proper_tags column to table if missing
             if not self.hasColumn(provider_id, 'proper_tags'):
-                self.addColumn(provider_id, 'proper_tags', 'NUMERIC', '')
+                self.addColumn(provider_id, 'proper_tags', 'TEXT', '')
 
         except Exception as e:
             if str(e) != 'table [{provider_id}] already exists'.format(provider_id=provider_id):
