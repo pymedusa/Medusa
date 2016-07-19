@@ -24,14 +24,16 @@ from ..core import PageTemplate, WebRoot
 from .... import clients, config, db, helpers, logger, notifiers, nzbget, sab, search_queue, show_name_helpers, subtitles, ui
 from ....blackandwhitelist import BlackAndWhiteList, short_group_names
 from ....common import FAILED, IGNORED, Overview, Quality, SKIPPED, UNAIRED, WANTED, cpu_presets, statusStrings
-from ....manual_search import SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING, collectEpisodesFromSearchThread, getEpisode, \
-    get_provider_cache_results, update_finished_search_queue_item
 from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
 from ....scene_numbering import (
     get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
     get_scene_numbering, get_scene_numbering_for_show,
     get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
     set_scene_numbering, xem_refresh
+)
+from ....search.manual import (
+    collectEpisodesFromSearchThread, get_provider_cache_results, getEpisode, update_finished_search_queue_item,
+    SEARCH_STATUS_FINISHED, SEARCH_STATUS_SEARCHING, SEARCH_STATUS_QUEUED,
 )
 from ....versionChecker import CheckVersion
 

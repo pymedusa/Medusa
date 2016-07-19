@@ -26,8 +26,8 @@ import time
 import sickbeard
 from sickrage.helper.common import enabled_providers
 from sickrage.show.Show import Show
-from . import db, logger, search_queue
-from .common import Overview, Quality, cpu_presets, statusStrings
+from .. import db, logger, search_queue
+from ..common import Overview, Quality, cpu_presets, statusStrings
 
 SEARCH_STATUS_FINISHED = "finished"
 SEARCH_STATUS_QUEUED = "queued"
