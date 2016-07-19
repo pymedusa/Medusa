@@ -1828,7 +1828,7 @@ class EnhanceReleaseGroupDetection(Rule):
             "format": "HDTV",
             "video_codec": "h264",
             "other": "Proper",
-            "proper_count": 1,
+            "proper_tags": 1,
             "type": "episode"
         }
 
@@ -1841,7 +1841,7 @@ class EnhanceReleaseGroupDetection(Rule):
             "format": "HDTV",
             "video_codec": "h264",
             "other": "Proper",
-            "proper_count": 1,
+            "proper_tags": 1,
             "release_group": "LOL",
             "type": "episode"
         }
