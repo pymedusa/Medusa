@@ -393,6 +393,9 @@ class TVCache(object):
             
             # get proper_tags
             proper_tags = parse_result.proper_tags
+            
+            # Store proper_tags as proper1|proper2|proper3
+            proper_tags = "|".join(proper_tags)
 
             logger.log('Added RSS item: [{0}] to cache: [{1}]'.format(name, self.provider_id), logger.DEBUG)
 
