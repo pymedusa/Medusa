@@ -2706,7 +2706,8 @@
   type: episode
 
 # FixMultipleFormats
-? Show.Name.S02E01.eps2.0.unm4sk-pt1.tc.1080p.WEB-DL.DD5.1.H264-GROUP
+? - Show.Name.S02E01.eps2.0.unm4sk-pt1.tc.1080p.WEB-DL.DD5.1.H264-GROUP.mkv
+  - /folder/Show.Name.S02E01.eps2.0.unm4sk-pt1.tc.1080p.WEB-DL.DD5.1.H264-GROUP[something]/Show.Name.S02E01.eps2.0.unm4sk-pt1.tc.1080p.WEB-DL.DD5.1.H264-GROUP.mkv
 : title: Show Name
   season: 2
   episode: 1
@@ -2719,6 +2720,8 @@
   audio_channels: '5.1'
   video_codec: h264
   release_group: GROUP
+  container: mkv
+  mimetype: video/x-matroska
   type: episode
 
 # Size detection separated with .
