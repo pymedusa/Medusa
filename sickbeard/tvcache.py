@@ -390,7 +390,7 @@ class TVCache(object):
 
             # get version
             version = parse_result.version
-            
+
             # get proper_tags
             proper_tags = parse_result.proper_tags
             
@@ -417,7 +417,7 @@ class TVCache(object):
         before moving on with hitting the providers.
         """
         cache_db_con = self._get_db()
-        sql = b"SELECT * FROM [{provider_id}] WHERE is_proper > 0".format(provider_id=self.provider_id)
+        sql = b"SELECT * FROM [{provider_id}] WHERE proper_tag != ''".format(provider_id=self.provider_id)
 
         if date:
             sql += b' AND time >= {0}'.format(int(time.mktime(date.timetuple())))

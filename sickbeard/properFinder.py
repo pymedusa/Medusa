@@ -158,7 +158,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # if they haven't been added by a different provider than add the proper to the list
             for proper in cur_propers:
                 guess = guessit(proper.name)
-                if not guess.get('proper_tags'):
+                if not guess.get('proper_count'):
                     logger.log('Skipping non-proper: {name}'.format(name=proper.name))
                     continue
 

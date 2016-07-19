@@ -139,7 +139,7 @@ class NameParser(object):
                 result = ParseResult(name)
                 result.which_regex = [cur_regex_name]
                 result.score = 0 - cur_regex_num
-                result.proper_tags = [x.raw for x in guess.get('other') if x._value=='Proper']
+                result.proper_tags = [x.raw for x in guess.get('other', '') if x._value=='Proper']
 
                 named_groups = match.groupdict().keys()
 
@@ -526,7 +526,7 @@ class NameParser(object):
             'episode_numbers': ensure_list(guess.get('episode'))
             if guess.get('episode') != guess.get('absolute_episode') else [],
             'ab_episode_numbers': ensure_list(guess.get('absolute_episode')),
-            'proper_tags': guess.get('proper_tags', 0)
+            'proper_count': guess.get('proper_count', 0)
         }
 
         result = ParseResult(name)
@@ -636,7 +636,7 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
 
         if self.release_group:
             to_return += ' [GROUP: {0}]'.format(self.release_group)
-        
+
         if self.proper_tags:
             to_return += ' [PROPER COUNT: {0}]'.format(self.proper_tags)
 
