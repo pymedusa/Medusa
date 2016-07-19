@@ -130,7 +130,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             show_obj = Show.find(sickbeard.showList, int(proper_candidate[b'showid'])) if proper_candidate[b'showid'] else None
 
             if show_obj:
-                episode_obj = show_obj.getEpisode(proper_candidate[b'season'], proper_candidate[b'episode'])
+                episode_obj = show_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
 
                 for term in self.proper_strings:
                     search_strings = self._get_episode_search_strings(episode_obj, add_string=term)
