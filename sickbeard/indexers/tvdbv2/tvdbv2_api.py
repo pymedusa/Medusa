@@ -24,6 +24,7 @@ import time
 import logging
 import warnings
 import requests
+from requests.compat import urljoin
 import re
 import cgi
 
@@ -349,17 +350,21 @@ class TVDBv2(object):
             else:
                 self.config['language'] = language
 
+        # Configure artwork prefix url
+        self.config['artwork_prefix'] = 'http://thetvdb.com/banners/'
+
         # Initiate the tvdb api v2
-        base_url = 'https://api.thetvdb.com'
+        api_base_url = 'https://api.thetvdb.com'
+
         # client_id = 'username'  # (optional! Only required for the /user routes)
         # client_secret = 'pass'  # (optional! Only required for the /user routes)
         apikey = "0629B785CE550C8D"
 
         authentication_string = {"apikey": apikey, "username": "", "userpass": ""}
-        unauthenticated_client = ApiClient(base_url)
+        unauthenticated_client = ApiClient(api_base_url)
         auth_api = AuthenticationApi(unauthenticated_client)
         access_token = auth_api.login_post(authentication_string)
-        auth_client = ApiClient(base_url, 'Authorization', 'Bearer ' + access_token.token)
+        auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
         self.search_api = SearchApi(auth_client)
         self.series_api = SeriesApi(auth_client)
 
@@ -733,7 +738,7 @@ class TVDBv2(object):
 
                     if v is not None:
                         if k == 'filename':
-                            v = self.config['url_artworkPrefix'] % (v)
+                            v = urljoin(self.config['artwork_prefix'], v)
                         else:
                             v = self._cleanData(v)
 

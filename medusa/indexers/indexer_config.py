@@ -56,8 +56,8 @@ indexerConfig = {
         'xem_origin': 'tvdb',
         'icon': 'thetvdb16.png',
         'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
-        'show_url': 'http://thetvdb.com/?tab=series&id=',
         'base_url': 'https://api.thetvdb.com',
+        'show_url': 'http://thetvdb.com/?tab=series&id=',
         'mapped_to': 'tvdbid'  # The attribute to which other indexers can map there thetvdb id to
     }
 }
