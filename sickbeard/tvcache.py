@@ -35,7 +35,6 @@ from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.Show import Show
 
 
-
 class CacheDBConnection(db.DBConnection):
     def __init__(self, provider_id):
         db.DBConnection.__init__(self, 'cache.db')
@@ -417,7 +416,7 @@ class TVCache(object):
         before moving on with hitting the providers.
         """
         cache_db_con = self._get_db()
-        sql = b"SELECT * FROM [{provider_id}] WHERE proper_tag != ''".format(provider_id=self.provider_id)
+        sql = b"SELECT * FROM [{provider_id}] WHERE proper_tags != ''".format(provider_id=self.provider_id)
 
         if date:
             sql += b' AND time >= {0}'.format(int(time.mktime(date.timetuple())))

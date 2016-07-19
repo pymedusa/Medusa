@@ -40,7 +40,6 @@ from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.History import History
 from sickrage.helper.common import enabled_providers
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
-from guessit import guessit
 
 
 class ProperFinder(object):  # pylint: disable=too-few-public-methods
@@ -157,14 +156,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # if they haven't been added by a different provider than add the proper to the list
             for proper in cur_propers:
-                guess = guessit(proper.name)
-                if not guess.get('proper_count'):
-                    logger.log('Skipping non-proper: {name}'.format(name=proper.name))
-                    continue
-
                 name = self._genericName(proper.name, remove=False)
                 if name not in propers:
-                    logger.log('Found new proper result: {name}'.format
+                    logger.log('Found new possible proper result: {name}'.format
                                (name=proper.name), logger.DEBUG)
                     proper.provider = cur_provider
                     propers[name] = proper
@@ -180,6 +174,10 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 parse_result = NameParser(False).parse(cur_proper.name)
             except (InvalidNameException, InvalidShowException) as error:
                 logger.log('{0}'.format(error), logger.DEBUG)
+                continue
+
+            if not parse_result.proper_tags:
+                logger.log('Skipping non-proper: {name}'.format(name=proper.name))
                 continue
 
             if not parse_result.series_name:

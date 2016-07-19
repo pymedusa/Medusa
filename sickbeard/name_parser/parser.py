@@ -638,7 +638,7 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
             to_return += ' [GROUP: {0}]'.format(self.release_group)
 
         if self.proper_tags:
-            to_return += ' [PROPER COUNT: {0}]'.format(self.proper_tags)
+            to_return += ' [PROPER TAGs: {0}]'.format("|".join(self.proper_tags))
 
         to_return += ' [ABD: {0}]'.format(self.is_air_by_date)
         to_return += ' [ANIME: {0}]'.format(self.is_anime)
