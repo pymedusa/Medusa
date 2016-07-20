@@ -317,6 +317,11 @@ def _xem_exceptions_fetcher():
             if parsedJSON['result'] == 'failure':
                 continue
 
+            if not parsedJSON['data']: 
+                logger.log(u"No data returned from XEM when checking scene exceptions. Update failed for {}".format
+                            (sickbeard.indexerApi(indexer).name), logger.DEBUG)
+                continue
+
             for indexerid, names in iteritems(parsedJSON['data']):
                 try:
                     xem_exception_dict[int(indexerid)] = names
