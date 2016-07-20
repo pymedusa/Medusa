@@ -359,7 +359,11 @@
                             <img src="${srRoot}/images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="missing provider"/> ${hItem["provider"]}
                         % endif
                     </td>
-                    <td align="center">${renderQualityPill(int(hItem["quality"]))}</td>
+                    <td align="center">${renderQualityPill(int(hItem["quality"]))}
+                        % if hItem["proper_tags"]:
+                            <img src="${srRoot}/images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem["proper_tags"]}"/>
+                        % endif
+                    </td>
                     
                     % if below_minseed:
                         <td align="center"><font color="red">${hItem["seeders"] if hItem["seeders"] > -1 else '-'}</font></td>
