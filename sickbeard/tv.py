@@ -1651,6 +1651,37 @@ class TVEpisode(TVObject):
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
 
+    @staticmethod
+    def from_filepath(filepath):
+        """Return an TVEpisode for the given filepath.
+
+        IMPORTANT: The filepath is not kept in the TVEpisode.location
+        TVEpisode.location should only be set after it's post-processed and it's in the correct location.
+        :param filepath:
+        :type filepath: str
+        :return:
+        :rtype: TVEpisode
+        """
+        try:
+            parse_result = NameParser(True, tryIndexers=True).parse(filepath, cache_result=True)
+            results = []
+            if parse_result.show.is_anime and parse_result.ab_episode_numbers:
+                results = [parse_result.show.get_episode(absolute_number=episode_number)
+                           for episode_number in parse_result.ab_episode_numbers]
+
+            if not parse_result.show.is_anime and parse_result.episode_numbers:
+                results = [parse_result.show.get_episode(season=parse_result.season_number,
+                                                         episode=episode_number)
+                           for episode_number in parse_result.episode_numbers]
+
+            for episode in results:
+                episode.related_episodes = list(results[1:])
+                return episode  # only root episode has related_episodes
+
+        except (InvalidNameException, InvalidShowException):
+            logger.log(logger.INFO, u'Cannot create TVEpisode from path {path}'.format(path=filepath))
+
+
     @property
     def location(self):
         """Return the location.
@@ -1702,10 +1733,7 @@ class TVEpisode(TVObject):
                         episode_num(self.season, self.episode, numbering='absolute')), logger.DEBUG)
             return
 
-        new_subtitles = subtitles.download_subtitles(video_path=self.location, show_name=self.show.name,
-                                                     season=self.season, episode=self.episode, episode_name=self.name,
-                                                     show_indexerid=self.show.indexerid, release_name=self.release_name,
-                                                     status=self.status, existing_subtitles=self.subtitles)
+        new_subtitles = subtitles.download_subtitles(self)
         if new_subtitles:
             self.subtitles = subtitles.merge_subtitles(self.subtitles, new_subtitles)
 
