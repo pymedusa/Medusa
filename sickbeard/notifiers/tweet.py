@@ -40,27 +40,27 @@ class Notifier(object):
 
     def notify_snatch(self, ep_name, is_proper):
         if sickbeard.TWITTER_NOTIFY_ONSNATCH:
-            self._notifyTwitter(common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]] + ': ' + ep_name)
+            self._notifyTwitter('{0}: {1}'.format(common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]], ep_name))
 
     def notify_download(self, ep_name):
         if sickbeard.TWITTER_NOTIFY_ONDOWNLOAD:
-            self._notifyTwitter(common.notifyStrings[common.NOTIFY_DOWNLOAD] + ': ' + ep_name)
+            self._notifyTwitter('{0}: {1}'.format(common.notifyStrings[common.NOTIFY_DOWNLOAD], ep_name))
 
     def notify_subtitle_download(self, ep_name, lang):
         if sickbeard.TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._notifyTwitter(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD] + ' ' + ep_name + ": " + lang)
+            self._notifyTwitter('{0} {1}: {2}'.format(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD], ep_name, lang))
 
     def notify_git_update(self, new_version="??"):
         if sickbeard.USE_TWITTER:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
-            self._notifyTwitter(title + " - " + update_text + new_version)
+            self._notifyTwitter('{0} - {1}{2}'.format(title, update_text, new_version))
 
     def notify_login(self, ipaddress=""):
         if sickbeard.USE_TWITTER:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
-            self._notifyTwitter(title + " - " + update_text.format(ipaddress))
+            self._notifyTwitter('{0} - {1}'.format(title, update_text.format(ipaddress)))
 
     def test_notify(self):
         return self._notifyTwitter("This is a test notification from Medusa", force=True)
@@ -76,7 +76,7 @@ class Notifier(object):
         resp, content = oauth_client.request(self.REQUEST_TOKEN_URL, 'GET')
 
         if resp['status'] != '200':
-            logger.log(u'Invalid response from Twitter requesting temp token: %s' % resp['status'], logger.ERROR)
+            logger.log(u'Invalid response from Twitter requesting temp token: {0}'.format(resp['status']), logger.ERROR)
         else:
             request_token = dict(parse_qsl(content))
 
@@ -95,26 +95,26 @@ class Notifier(object):
         token = oauth.Token(request_token['oauth_token'], request_token['oauth_token_secret'])
         token.set_verifier(key)
 
-        logger.log(u'Generating and signing request for an access token using key ' + key, logger.DEBUG)
+        logger.log(u'Generating and signing request for an access token using key {0}'.format(key), logger.DEBUG)
 
         signature_method_hmac_sha1 = oauth.SignatureMethod_HMAC_SHA1()  # @UnusedVariable
         oauth_consumer = oauth.Consumer(key=self.consumer_key, secret=self.consumer_secret)
-        logger.log(u'oauth_consumer: ' + str(oauth_consumer), logger.DEBUG)
+        logger.log(u'oauth_consumer: {0}'.format(oauth_consumer), logger.DEBUG)
         oauth_client = oauth.Client(oauth_consumer, token)
-        logger.log(u'oauth_client: ' + str(oauth_client), logger.DEBUG)
+        logger.log(u'oauth_client: {0}'.format(oauth_client), logger.DEBUG)
         resp, content = oauth_client.request(self.ACCESS_TOKEN_URL, method='POST', body='oauth_verifier=%s' % key)
-        logger.log(u'resp, content: ' + str(resp) + ',' + str(content), logger.DEBUG)
+        logger.log(u'resp, content: {0}, {1}'.format(resp, content), logger.DEBUG)
 
         access_token = dict(parse_qsl(content))
-        logger.log(u'access_token: ' + str(access_token), logger.DEBUG)
+        logger.log(u'access_token: {0}'.format(access_token), logger.DEBUG)
 
-        logger.log(u'resp[status] = ' + str(resp['status']), logger.DEBUG)
+        logger.log(u'resp[status] = {0}'.format(resp['status']), logger.DEBUG)
         if resp['status'] != '200':
-            logger.log(u'The request for a token with did not succeed: ' + str(resp['status']), logger.ERROR)
+            logger.log(u'The request for a token with did not succeed: {0}'.format(resp['status']), logger.ERROR)
             return False
         else:
-            logger.log(u'Your Twitter Access Token key: %s' % access_token['oauth_token'], logger.DEBUG)
-            logger.log(u'Access Token secret: %s' % access_token['oauth_token_secret'], logger.DEBUG)
+            logger.log(u'Your Twitter Access Token key: {0}'.format(access_token['oauth_token']), logger.DEBUG)
+            logger.log(u'Access Token secret: {0}'.format(access_token['oauth_token_secret']), logger.DEBUG)
             sickbeard.TWITTER_USERNAME = access_token['oauth_token']
             sickbeard.TWITTER_PASSWORD = access_token['oauth_token_secret']
             return True
@@ -126,14 +126,14 @@ class Notifier(object):
         access_token_key = sickbeard.TWITTER_USERNAME
         access_token_secret = sickbeard.TWITTER_PASSWORD
 
-        logger.log(u"Sending tweet: " + message, logger.DEBUG)
+        logger.log(u'Sending tweet: {0}'.format(message), logger.DEBUG)
 
         api = twitter.Api(username, password, access_token_key, access_token_secret)
 
         try:
             api.PostUpdate(message.encode('utf8')[:139])
         except Exception as e:
-            logger.log(u"Error Sending Tweet: " + ex(e), logger.ERROR)
+            logger.log(u'Error Sending Tweet: {!r}'.format(e), logger.ERROR)
             return False
 
         return True
@@ -146,14 +146,14 @@ class Notifier(object):
         access_token_key = sickbeard.TWITTER_USERNAME
         access_token_secret = sickbeard.TWITTER_PASSWORD
 
-        logger.log(u"Sending DM: " + dmdest + " " + message, logger.DEBUG)
+        logger.log(u'Sending DM: {0} {1}'.format(dmdest, message), logger.DEBUG)
 
         api = twitter.Api(username, password, access_token_key, access_token_secret)
 
         try:
             api.PostDirectMessage(dmdest, message.encode('utf8')[:139])
         except Exception as e:
-            logger.log(u"Error Sending Tweet (DM): " + ex(e), logger.ERROR)
+            logger.log(u'Error Sending Tweet (DM): {!r}'.format(e), logger.ERROR)
             return False
 
         return True
