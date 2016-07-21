@@ -100,6 +100,7 @@ NOTIFY_GIT_UPDATE = 4
 NOTIFY_GIT_UPDATE_TEXT = 5
 NOTIFY_LOGIN = 6
 NOTIFY_LOGIN_TEXT = 7
+NOTIFY_SNATCH_PROPER = 8
 
 notifyStrings = NumDict({
     NOTIFY_SNATCH: "Started Download",
@@ -108,7 +109,8 @@ notifyStrings = NumDict({
     NOTIFY_GIT_UPDATE: "SickRage Updated",
     NOTIFY_GIT_UPDATE_TEXT: "SickRage Updated To Commit#: ",
     NOTIFY_LOGIN: "SickRage new login",
-    NOTIFY_LOGIN_TEXT: "New login from IP: {0}. http://geomaplookup.net/?ip={0}"
+    NOTIFY_LOGIN_TEXT: "New login from IP: {0}. http://geomaplookup.net/?ip={0}",
+    NOTIFY_SNATCH_PROPER: "Started PROPER Download"
 })
 
 # Episode statuses

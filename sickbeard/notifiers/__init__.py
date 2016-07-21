@@ -84,9 +84,9 @@ def notify_subtitle_download(ep_name, lang):
         n.notify_subtitle_download(ep_name, lang)
 
 
-def notify_snatch(ep_name):
+def notify_snatch(ep_name, is_proper):
     for n in notifiers:
-        n.notify_snatch(ep_name)
+        n.notify_snatch(ep_name, is_proper)
 
 
 def notify_git_update(new_version=""):

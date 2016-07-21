@@ -25,7 +25,7 @@ from six.moves.urllib.request import Request, urlopen
 
 import sickbeard
 from sickbeard import logger
-from sickbeard.common import notifyStrings, NOTIFY_SNATCH, NOTIFY_DOWNLOAD, NOTIFY_SUBTITLE_DOWNLOAD, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN, NOTIFY_LOGIN_TEXT
+from sickbeard.common import notifyStrings, NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER, NOTIFY_DOWNLOAD, NOTIFY_SUBTITLE_DOWNLOAD, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN, NOTIFY_LOGIN_TEXT
 
 
 class Notifier(object):
@@ -86,7 +86,8 @@ class Notifier(object):
         logger.log(message, logger.INFO)
         return True, message
 
-    def notify_snatch(self, ep_name, title=notifyStrings[NOTIFY_SNATCH]):
+    def notify_snatch(self, ep_name, is_proper):
+        title=notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
         if sickbeard.FREEMOBILE_NOTIFY_ONSNATCH:
             self._notifyFreeMobile(title, ep_name)
 

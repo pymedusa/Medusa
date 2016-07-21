@@ -86,7 +86,7 @@ class Notifier(object):
 
         return True
 
-    def notify_snatch(self, ep_name):
+    def notify_snatch(self, ep_name, is_proper):
         return False
         # Not implemented: Start the scanner when snatched does not make any sense
 

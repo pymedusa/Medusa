@@ -27,7 +27,7 @@ from six.moves.urllib.request import Request, urlopen
 import sickbeard
 from sickbeard import logger
 from sickbeard.common import notifyStrings, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN, NOTIFY_LOGIN_TEXT, \
-    NOTIFY_SNATCH, NOTIFY_DOWNLOAD, NOTIFY_SUBTITLE_DOWNLOAD
+    NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER, NOTIFY_DOWNLOAD, NOTIFY_SUBTITLE_DOWNLOAD
 
 from sickrage.helper.common import http_status_code
 
@@ -93,13 +93,14 @@ class Notifier(object):
             logger.log(message, logger.INFO)
             return success, message
 
-    def notify_snatch(self, ep_name, title=notifyStrings[NOTIFY_SNATCH]):
+    def notify_snatch(self, ep_name, is_proper):
         """
         Sends a Telegram notification when an episode is snatched
 
         :param ep_name: The name of the episode snatched
         :param title: The title of the notification to send
         """
+        title=notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
         if sickbeard.TELEGRAM_NOTIFY_ONSNATCH:
             self._notify_telegram(title, ep_name)
 

@@ -103,12 +103,14 @@ def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branc
         return False
 
     result.priority = 0  # -1 = low, 0 = normal, 1 = high
+    is_proper = False
     if sickbeard.ALLOW_HIGH_PRIORITY:
         # if it aired recently make it high priority
         for curEp in result.episodes:
             if datetime.date.today() - curEp.airdate <= datetime.timedelta(days=7):
                 result.priority = 1
     if re.search(r'(^|[\. _-])(proper|repack)([\. _-]|$)', result.name, re.I) is not None:
+        is_proper = True
         endStatus = SNATCHED_PROPER
 
     if result.url.startswith('magnet') or result.url.endswith('torrent'):
@@ -121,7 +123,6 @@ def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branc
         elif sickbeard.NZB_METHOD == "sabnzbd":
             dlResult = sab.sendNZB(result)
         elif sickbeard.NZB_METHOD == "nzbget":
-            is_proper = True if endStatus == SNATCHED_PROPER else False
             dlResult = nzbget.sendNZB(result, is_proper)
         else:
             logger.log(u"Unknown NZB action specified in config: " + sickbeard.NZB_METHOD, logger.ERROR)
@@ -175,13 +176,13 @@ def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branc
                 if all([sickbeard.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
                         result.leechers not in (-1, None)]):
                     notifiers.notify_snatch("{0} with {1} seeders and {2} leechers from {3}".format
-                                            (notify_message, result.seeders, result.leechers, result.provider.name))
+                                            (notify_message, result.seeders, result.leechers, result.provider.name), is_proper)
                 else:
-                    notifiers.notify_snatch("{0} from {1}".format(notify_message, result.provider.name))
+                    notifiers.notify_snatch("{0} from {1}".format(notify_message, result.provider.name), is_proper)
             except Exception:
                 # Without this, when notification fail, it crashes the snatch thread and Medusa will
                 # keep snatching until notification is sent
-                logger.log(u"Failed to send snatch notification", logger.DEBUG)
+                logger.log(u"Failed to send snatch notification. Error: {0}".format(e), logger.DEBUG)
 
             trakt_data.append((curEpObj.season, curEpObj.episode))
 
