@@ -1238,8 +1238,9 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
             # do the library update for Trakt
             notifiers.trakt_notifier.update_library(ep_obj)
-        except Exception:
-            logger.log(u'Some notifications could not be sent. Continuing with postProcessing...')
+        except Exception as e:
+            logger.log(u'Some notifications could not be sent. Error: {0!r}. Continuing with postProcessing...'
+                        .format(e))
 
         self._run_extra_scripts(ep_obj)
 
