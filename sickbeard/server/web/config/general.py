@@ -168,7 +168,7 @@ class ConfigGeneral(Config):
 
         sickbeard.THEME_NAME = theme_name
         sickbeard.FANART_BACKGROUND = fanart_background
-		sickbeard.FANART_BACKGROUND_OPACITY = fanart_background_opacity
+        sickbeard.FANART_BACKGROUND_OPACITY = fanart_background_opacity
 
         sickbeard.DEFAULT_PAGE = default_page
 
