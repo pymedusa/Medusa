@@ -611,6 +611,17 @@ class Quality(object):
         }
     }
 
+    to_guessit_format_list = [
+        ANYHDTV, ANYWEBDL, ANYBLURAY
+    ]
+
+    to_guessit_screen_size_map = {
+        HDTV | HDWEBDL | HDBLURAY: '720p',
+        RAWHDTV: '1080i',
+        FULLHDTV | FULLHDWEBDL | FULLHDBLURAY: '1080p',
+        UHD_4K_TV | UHD_4K_WEBDL | UHD_4K_BLURAY: '4K',
+    }
+
     @staticmethod
     def from_guessit(guess):
         """
@@ -638,6 +649,48 @@ class Quality(object):
 
         quality = format_map.get(fmt)
         return quality if quality is not None else Quality.UNKNOWN
+
+    @staticmethod
+    def to_guessit(status):
+        """Return a guessit dict containing 'screen_size and format' from a Quality (composite status)
+
+        :param status: a quality composite status
+        :type status int
+        :return: dict {'screen_size': <screen_size>, 'format': <format>}
+        :rtype: dict (str, str)
+        """
+        _, quality = Quality.splitCompositeStatus(status)
+        result = {
+            'screen_size': Quality.to_guessit_screen_size(quality),
+            'format': Quality.to_guessit_format(quality)
+        }
+        return result
+
+    @staticmethod
+    def to_guessit_format(quality):
+        """Return a guessit format from a Quality
+
+        :param quality: the quality
+        :type quality: int
+        :return: guessit format
+        :rtype: str
+        """
+        for q in Quality.to_guessit_format_list:
+            if quality & q:
+                return Quality.combinedQualityStrings.get(q)
+
+    @staticmethod
+    def to_guessit_screen_size(quality):
+        """Return a guessit screen_size from a Quality
+
+        :param quality: the quality
+        :type quality: int
+        :return: guessit screen_size
+        :rtype: str
+        """
+        for key, value in Quality.to_guessit_screen_size_map.items():
+            if quality & key:
+                return value
 
     DOWNLOADED = None
     SNATCHED = None

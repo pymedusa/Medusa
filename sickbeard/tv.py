@@ -41,7 +41,7 @@ from sickbeard.common import (
     DOWNLOADED, SNATCHED, SNATCHED_PROPER, ARCHIVED, IGNORED, UNAIRED, WANTED, SKIPPED, UNKNOWN,
     NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND, NAMING_SEPARATED_REPEAT, NAMING_LIMITED_EXTEND_E_PREFIXED,
 )
-from sickbeard.indexers.indexer_config import INDEXER_TVRAGE
+from sickbeard.indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
 from sickbeard.scene_numbering import get_scene_absolute_numbering, get_scene_numbering, xem_refresh
 
@@ -74,14 +74,20 @@ shutil.copyfile = shutil_custom.copyfile_custom
 class TVObject(object):
     """Base class for TVShow and TVEpisode."""
 
-    def __init__(self, ignored_properties):
+    def __init__(self, indexer, indexerid, ignored_properties):
         """Constructor with ignore_properties.
 
+        :param indexer:
+        :type indexer: int
+        :param indexerid:
+        :type indexerid: int
         :param ignored_properties:
         :type ignored_properties: set(str)
         """
-        self.__ignored_properties = ignored_properties | {'lock'}
         self.__dirty = True
+        self.__ignored_properties = ignored_properties | {'lock'}
+        self.indexer = int(indexer)
+        self.indexerid = int(indexerid)
         self.lock = threading.Lock()
 
     def __setattr__(self, key, value):
@@ -108,6 +114,15 @@ class TVObject(object):
     def reset_dirty(self):
         """Reset the dirty flag."""
         self.__dirty = False
+
+    @property
+    def tvdb_id(self):
+        """Return the tvdb_id
+
+        :return:
+        :rtype: int
+        """
+        return self.indexerid if self.indexerid and self.indexer == INDEXER_TVDB else None
 
     def __getstate__(self):
         """Get threading lock state.
@@ -138,10 +153,7 @@ class TVShow(TVObject):
         :param lang:
         :type lang: str
         """
-        super(TVShow, self).__init__({'episodes', 'nextaired', 'release_groups'})
-
-        self.indexerid = int(indexerid)
-        self.indexer = int(indexer)
+        super(TVShow, self).__init__(indexer, indexerid, {'episodes', 'nextaired', 'release_groups'})
         self.name = ''
         self.imdbid = ''
         self.network = ''
@@ -1619,7 +1631,8 @@ class TVEpisode(TVObject):
         :param filepath:
         :type filepath: str
         """
-        super(TVEpisode, self).__init__({'show', 'scene_season', 'scene_episode', 'scene_absolute_number',
+        super(TVEpisode, self).__init__(int(show.indexer) if show else 0, 0,
+                                        {'show', 'scene_season', 'scene_episode', 'scene_absolute_number',
                                          'related_episodes', 'wanted_quality'})
         self.show = show
         self.name = ''
@@ -1634,7 +1647,6 @@ class TVEpisode(TVObject):
         self.hasnfo = False
         self.hastbn = False
         self.status = UNKNOWN
-        self.indexerid = 0
         self.file_size = 0
         self.release_name = ''
         self.is_proper = False
@@ -1646,7 +1658,6 @@ class TVEpisode(TVObject):
         self.scene_absolute_number = 0
         self.related_episodes = []
         self.wanted_quality = []
-        self.indexer = int(self.show.indexer) if show else 0
         if show:
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
@@ -1709,7 +1720,7 @@ class TVEpisode(TVObject):
 
     def refresh_subtitles(self):
         """Look for subtitles files and refresh the subtitles property."""
-        current_subtitles = subtitles.get_current_subtitles(self.location)
+        current_subtitles = subtitles.get_current_subtitles(self)
         ep_num = episode_num(self.season, self.episode) or \
             episode_num(self.season, self.episode, numbering='absolute')
         if self.subtitles == current_subtitles:

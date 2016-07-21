@@ -55,11 +55,12 @@ provider_manager.register('itasa = subliminal.providers.itasa:ItaSAProvider')
 provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider')
 
 refiner_manager.register('release = sickbeard.refiners.release:refine')
+refiner_manager.register('tvepisode = sickbeard.refiners.tvepisode:refine')
 
 region.configure('dogpile.cache.memory')
 video_key = u'{name}:video|{{video_path}}'.format(name=__name__)
 
-episode_refiners = ('metadata', 'release', 'tvdb', 'omdb')
+episode_refiners = ('metadata', 'release', 'tvepisode', 'tvdb', 'omdb')
 
 PROVIDER_URLS = {
     'addic7ed': 'http://www.addic7ed.com',
@@ -297,8 +298,8 @@ def download_best_subs(tv_episode, video_path, subtitles_dir, subtitles=True, em
     logger.debug(u'Checking subtitle candidates for %s %s (%s)', show_name, ep_num, os.path.basename(video_path))
 
     try:
-        video = get_video(video_path, subtitles_dir=subtitles_dir, subtitles=subtitles,
-                          embedded_subtitles=embedded_subtitles, release_name=release_name, tv_episode=tv_episode)
+        video = get_video(tv_episode, video_path, subtitles_dir=subtitles_dir, subtitles=subtitles,
+                          embedded_subtitles=embedded_subtitles, release_name=release_name)
 
         if not video:
             logger.info(u'Exception caught in subliminal.scan_video for %s', video_path)
@@ -434,19 +435,20 @@ def get_min_score():
     return episode_scores['series'] + episode_scores['year'] + episode_scores['season'] + episode_scores['episode']
 
 
-def get_current_subtitles(video_path):
+def get_current_subtitles(tv_episode):
     """Return a list of current subtitles for the episode.
 
-    :param video_path: the video path
-    :type video_path: str
+    :param tv_episode:
+    :type tv_episode: sickbeard.tv.TVEpisode
     :return: the current subtitles (3-letter opensubtitles codes) for the specified video
     :rtype: list of str
     """
+    video_path = tv_episode.location
     # invalidate the cached video entry for the given path
     invalidate_video_cache(video_path)
 
     # get the latest video information
-    video = get_video(video_path)
+    video = get_video(tv_episode, video_path)
     if not video:
         logger.info(u"Exception caught in subliminal.scan_video, subtitles couldn't be refreshed for %s", video_path)
     else:
@@ -533,13 +535,14 @@ def invalidate_video_cache(video_path):
     logger.debug(u'Cached video information under key %s was invalidated', key)
 
 
-def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles=None, release_name=None,
-              tv_episode=None):
+def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedded_subtitles=None, release_name=None):
     """Return the subliminal video for the given path.
 
     The video_path is used as a key to cache the video to avoid
     scanning and parsing the video metadata all the time
 
+    :param tv_episode:
+    :type tv_episode: sickbeard.tv.TVEpisode
     :param video_path: the video path
     :type video_path: str
     :param subtitles_dir: the subtitles directory
@@ -550,8 +553,6 @@ def get_video(video_path, subtitles_dir=None, subtitles=True, embedded_subtitles
     :type embedded_subtitles: bool
     :param release_name: the release name
     :type release_name: str
-    :param tv_episode:
-    :type tv_episode: sickbeard.tv.TVEpisode
     :return: video
     :rtype: subliminal.video.Video
     """
