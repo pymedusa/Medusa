@@ -29,7 +29,7 @@ from sickrage.show.Show import Show
 from traktor import TraktApi, TraktException
 from . import db, logger, ui
 from .common import Quality, SKIPPED, UNKNOWN, WANTED
-from .search import queue
+from .search.queue import BacklogQueueItem
 
 
 def setEpisodeToWanted(show, s, e):
@@ -50,7 +50,7 @@ def setEpisodeToWanted(show, s, e):
             ep_obj.status = WANTED
             ep_obj.save_to_db()
 
-        cur_backlog_queue_item = queue.BacklogQueueItem(show, [ep_obj])
+        cur_backlog_queue_item = BacklogQueueItem(show, [ep_obj])
         sickbeard.searchQueueScheduler.action.add_item(cur_backlog_queue_item)
 
         logger.log('Starting backlog search for {show} {ep} because some episodes were set to wanted'.format

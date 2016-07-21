@@ -23,9 +23,8 @@ import threading
 
 import sickbeard
 from six import iteritems
-from . import queue
+from .queue import BacklogQueueItem
 from .. import common, db, logger, scheduler, ui
-
 
 
 class BacklogSearchScheduler(scheduler.Scheduler):
@@ -104,7 +103,7 @@ class BacklogSearcher(object):
             for season, segment in iteritems(segments):
                 self.currentSearchInfo = {'title': curShow.name + " Season " + str(season)}
 
-                backlog_queue_item = queue.BacklogQueueItem(curShow, segment)
+                backlog_queue_item = BacklogQueueItem(curShow, segment)
                 sickbeard.searchQueueScheduler.action.add_item(backlog_queue_item)  # @UndefinedVariable
 
             if not segments:

@@ -31,47 +31,13 @@ from threading import Lock
 from configobj import ConfigObj
 import requests
 import shutil_custom
-<<<<<<< 5ee6b0e51ab8ea1fc7c1cc9298b3dfbcddbe8520
 import sickrage.helper.exceptions
-=======
-from configobj import ConfigObj
-from github import Github
-
-from sickbeard import daily
-from sickbeard import db
-from sickbeard import helpers
-from sickbeard import logger
-from sickbeard import metadata
-from sickbeard import naming
-from sickbeard import providers
-from sickbeard import scheduler
-from sickbeard import queue
-from sickbeard import (
-    showUpdater, versionChecker, proper, auto_postprocessor, subtitles, traktChecker,
-)
-from sickbeard import show_queue
-from sickbeard.common import SD
-from sickbeard.common import SKIPPED
-from sickbeard.common import WANTED
-from sickbeard.config import (
-    CheckSection, ConfigMigrator,
-    check_provider_setting, check_setting_int, check_setting_bool, check_setting_str, check_setting_float,
-    load_provider_setting, save_provider_setting
-)
-from sickbeard.databases import main_db, cache_db, failed_db
-from sickbeard.indexers import indexer_api
-from sickbeard.indexers.indexer_exceptions import indexer_shownotfound, indexer_showincomplete, indexer_exception, \
-    indexer_error, indexer_episodenotfound, indexer_attributenotfound, indexer_seasonnotfound, indexer_userabort
-from sickbeard.providers.newznab import NewznabProvider
-from sickbeard.providers.rsstorrent import TorrentRssProvider
-from sickbeard.search import backlog, daily, proper, queue
->>>>>>> Refactor search_queue -> search/queue
 from sickrage.helper.encoding import ek
 from sickrage.providers.GenericProvider import GenericProvider
 from sickrage.system.Shutdown import Shutdown
 from . import (
     auto_postprocessor, db, helpers, logger, metadata, naming, providers,
-    scheduler, search_queue, showUpdater, show_queue, subtitles, traktChecker, versionChecker
+    scheduler, showUpdater, show_queue, subtitles, traktChecker, versionChecker
 )
 from .common import SD, SKIPPED, WANTED
 from .config import (
@@ -87,6 +53,10 @@ from .indexers.indexer_exceptions import (
 )
 from .providers import NewznabProvider, TorrentRssProvider
 from .search import backlog, daily, proper
+from .search.backlog import BacklogSearchScheduler, BacklogSearcher
+from .search.daily import DailySearcher
+from .search.proper import ProperFinder
+from .search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -1381,27 +1351,27 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                   start_time=datetime.time(hour=SHOWUPDATE_HOUR, minute=random.randint(0, 59)))
 
         # snatcher used for manual search, manual picked results
-        manualSnatchScheduler = scheduler.Scheduler(queue.SnatchQueue(),
+        manualSnatchScheduler = scheduler.Scheduler(SnatchQueue(),
                                                     cycleTime=datetime.timedelta(seconds=3),
                                                     threadName="MANUALSNATCHQUEUE")
         # searchers
-        searchQueueScheduler = scheduler.Scheduler(queue.SearchQueue(),
+        searchQueueScheduler = scheduler.Scheduler(SearchQueue(),
                                                    cycleTime=datetime.timedelta(seconds=3),
                                                    threadName="SEARCHQUEUE")
 
-        forcedSearchQueueScheduler = scheduler.Scheduler(queue.ForcedSearchQueue(),
+        forcedSearchQueueScheduler = scheduler.Scheduler(ForcedSearchQueue(),
                                                          cycleTime=datetime.timedelta(seconds=3),
                                                          threadName="FORCEDSEARCHQUEUE")
 
         # TODO: update_interval should take last daily/backlog times into account!
         update_interval = datetime.timedelta(minutes=DAILYSEARCH_FREQUENCY)
-        dailySearchScheduler = scheduler.Scheduler(daily.DailySearcher(),
+        dailySearchScheduler = scheduler.Scheduler(DailySearcher(),
                                                    cycleTime=update_interval,
                                                    threadName="DAILYSEARCHER",
                                                    run_delay=update_interval)
 
         update_interval = datetime.timedelta(minutes=BACKLOG_FREQUENCY)
-        backlogSearchScheduler = backlog.BacklogSearchScheduler(backlog.BacklogSearcher(),
+        backlogSearchScheduler = BacklogSearchScheduler(BacklogSearcher(),
                                                                 cycleTime=update_interval,
                                                                 threadName="BACKLOG",
                                                                 run_delay=update_interval)
@@ -1414,7 +1384,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             update_interval = datetime.timedelta(hours=1)
             run_at = datetime.time(hour=1)  # 1 AM
 
-        properFinderScheduler = scheduler.Scheduler(proper.ProperFinder(),
+        properFinderScheduler = scheduler.Scheduler(ProperFinder(),
                                                     cycleTime=update_interval,
                                                     threadName="FINDPROPERS",
                                                     start_time=run_at,
