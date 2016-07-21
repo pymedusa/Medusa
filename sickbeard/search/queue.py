@@ -23,8 +23,8 @@ import time
 import traceback
 
 import sickbeard
-from . import common, failed_history, generic_queue, history, logger, providers, ui
-from .search import core
+from .. import common, failed_history, generic_queue, history, logger, providers, ui
+from ..search import core
 
 search_queue_lock = threading.Lock()
 

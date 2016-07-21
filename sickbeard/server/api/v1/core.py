@@ -52,11 +52,12 @@ from six import iteritems, text_type
 from tornado.web import RequestHandler
 from .... import (
     classes, db, helpers, image_cache, logger, network_timezones,
-    processTV, sbdatetime, search_queue, ui,
+    processTV, sbdatetime, ui,
 )
 from ....common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, UNAIRED, UNKNOWN, WANTED, \
     statusStrings
 from ....logger import filter_logline, read_loglines
+from ....search import queue
 from ....versionChecker import CheckVersion
 
 indexer_ids = ["indexerid", "tvdbid"]
@@ -772,7 +773,7 @@ class CMD_EpisodeSearch(ApiCall):
             return _responds(RESULT_FAILURE, msg="Episode not found")
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ForcedSearchQueueItem(show_obj, [ep_obj])
+        ep_queue_item = queue.ForcedSearchQueueItem(show_obj, [ep_obj])
         sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
 
         # wait until the queue item tells us whether it worked or not
@@ -892,7 +893,7 @@ class CMD_EpisodeSetStatus(ApiCall):
         extra_msg = ""
         if start_backlog:
             for season, segment in iteritems(segments):
-                cur_backlog_queue_item = search_queue.BacklogQueueItem(show_obj, segment)
+                cur_backlog_queue_item = queue.BacklogQueueItem(show_obj, segment)
                 sickbeard.searchQueueScheduler.action.add_item(cur_backlog_queue_item)  # @UndefinedVariable
 
                 logger.log(u"API :: Starting backlog for " + show_obj.name + " season " + str(

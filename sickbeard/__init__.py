@@ -31,7 +31,41 @@ from threading import Lock
 from configobj import ConfigObj
 import requests
 import shutil_custom
+<<<<<<< 5ee6b0e51ab8ea1fc7c1cc9298b3dfbcddbe8520
 import sickrage.helper.exceptions
+=======
+from configobj import ConfigObj
+from github import Github
+
+from sickbeard import daily
+from sickbeard import db
+from sickbeard import helpers
+from sickbeard import logger
+from sickbeard import metadata
+from sickbeard import naming
+from sickbeard import providers
+from sickbeard import scheduler
+from sickbeard import queue
+from sickbeard import (
+    showUpdater, versionChecker, proper, auto_postprocessor, subtitles, traktChecker,
+)
+from sickbeard import show_queue
+from sickbeard.common import SD
+from sickbeard.common import SKIPPED
+from sickbeard.common import WANTED
+from sickbeard.config import (
+    CheckSection, ConfigMigrator,
+    check_provider_setting, check_setting_int, check_setting_bool, check_setting_str, check_setting_float,
+    load_provider_setting, save_provider_setting
+)
+from sickbeard.databases import main_db, cache_db, failed_db
+from sickbeard.indexers import indexer_api
+from sickbeard.indexers.indexer_exceptions import indexer_shownotfound, indexer_showincomplete, indexer_exception, \
+    indexer_error, indexer_episodenotfound, indexer_attributenotfound, indexer_seasonnotfound, indexer_userabort
+from sickbeard.providers.newznab import NewznabProvider
+from sickbeard.providers.rsstorrent import TorrentRssProvider
+from sickbeard.search import backlog, daily, proper, queue
+>>>>>>> Refactor search_queue -> search/queue
 from sickrage.helper.encoding import ek
 from sickrage.providers.GenericProvider import GenericProvider
 from sickrage.system.Shutdown import Shutdown
@@ -1347,15 +1381,15 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                   start_time=datetime.time(hour=SHOWUPDATE_HOUR, minute=random.randint(0, 59)))
 
         # snatcher used for manual search, manual picked results
-        manualSnatchScheduler = scheduler.Scheduler(search_queue.SnatchQueue(),
+        manualSnatchScheduler = scheduler.Scheduler(queue.SnatchQueue(),
                                                     cycleTime=datetime.timedelta(seconds=3),
                                                     threadName="MANUALSNATCHQUEUE")
         # searchers
-        searchQueueScheduler = scheduler.Scheduler(search_queue.SearchQueue(),
+        searchQueueScheduler = scheduler.Scheduler(queue.SearchQueue(),
                                                    cycleTime=datetime.timedelta(seconds=3),
                                                    threadName="SEARCHQUEUE")
 
-        forcedSearchQueueScheduler = scheduler.Scheduler(search_queue.ForcedSearchQueue(),
+        forcedSearchQueueScheduler = scheduler.Scheduler(queue.ForcedSearchQueue(),
                                                          cycleTime=datetime.timedelta(seconds=3),
                                                          threadName="FORCEDSEARCHQUEUE")
 

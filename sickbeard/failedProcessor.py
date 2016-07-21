@@ -21,8 +21,9 @@
 import sickbeard
 from sickrage.helper.exceptions import FailedPostProcessingFailedException
 
-from . import logger, search_queue, show_name_helpers
+from . import logger, show_name_helpers
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from .search import queue
 
 
 class FailedProcessor(object):
@@ -71,7 +72,7 @@ class FailedProcessor(object):
 
         if segment:
             self._log(u"Adding this release to failed queue: {0}".format(releaseName), logger.DEBUG)
-            cur_failed_queue_item = search_queue.FailedQueueItem(parsed.show, segment)
+            cur_failed_queue_item = queue.FailedQueueItem(parsed.show, segment)
             sickbeard.forcedSearchQueueScheduler.action.add_item(cur_failed_queue_item)
 
         return True
