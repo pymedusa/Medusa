@@ -655,7 +655,7 @@ class Quality(object):
         """Return a guessit dict containing 'screen_size and format' from a Quality (composite status)
 
         :param status: a quality composite status
-        :type status int
+        :type status: int
         :return: dict {'screen_size': <screen_size>, 'format': <format>}
         :rtype: dict (str, str)
         """
