@@ -53,7 +53,6 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
         # Miscellaneous Options
-        self.headers.update({'User-Agent': USER_AGENT})
 
         # Torrent Stats
         self.minseed = None
