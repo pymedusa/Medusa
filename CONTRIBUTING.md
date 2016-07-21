@@ -13,6 +13,8 @@ In general, we follow the "fork-and-pull" Git workflow.
 
 **Be sure to rebase on top of the latest from "upstream" before making a pull request!**
 
+It is always possible to request a topic branch, with one if the team members. They will create one for you, which can be used instead of your local fork. The rest of the workflow will be exactly the same, with the benifit of having more users to test your code.
+
 ## A multilingual application
 Medusa makes use of python, javascript, css, and html (Mako templated) code. As you might understand it is important that we follow the guidelines for each of these languages. To help you get started we provide you with some basic guidelines per language.
 
