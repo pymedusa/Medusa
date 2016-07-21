@@ -20,7 +20,7 @@
 }
 
 .fileBrowserDialog ul li a:hover {
-    color: #00f;
+    color: rgb(0, 0, 255);
     background: none;
 }
 
