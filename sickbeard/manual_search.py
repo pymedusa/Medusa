@@ -209,7 +209,8 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
 
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
-        if table_exists and 'seeders' in columns and 'leechers' in columns and 'size' in columns and 'proper_tags' in columns:
+        required_columns = ['seeders', 'leechers', 'size', 'proper_tags']
+        if table_exists and all(required_column in columns for required_column in required_columns):
             # The default sql, that's executed for each providers cache table
             common_sql = b"SELECT rowid, ? AS 'provider_type', ? AS 'provider_image', \
                           ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed', ? 'provider_minleech', \

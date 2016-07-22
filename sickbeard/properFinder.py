@@ -177,8 +177,11 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             if not parse_result.proper_tags:
-                logger.log('Skipping non-proper: {name}'.format(name=proper.name))
+                logger.log('Skipping non-proper: {name}'.format(name=cur_proper.name))
                 continue
+
+            logger.log('Proper tags for {proper}: {tags}'.format
+                       (proper=cur_proper.name, tags=parse_result.proper_tags), logger.DEBUG)
 
             if not parse_result.series_name:
                 logger.log('Ignoring invalid show: {name}'.format
@@ -207,6 +210,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             cur_proper.version = parse_result.version
             cur_proper.quality = Quality.nameQuality(cur_proper.name, parse_result.is_anime)
             cur_proper.content = None
+            cur_proper.proper_tags = parse_result.proper_tags
 
             # filter release
             best_result = pickBestResult(cur_proper, parse_result.show)
