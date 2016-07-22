@@ -355,7 +355,8 @@ class TVShow(TVObject):
 
         return ep_list
 
-    def get_episode(self, season=None, episode=None, filepath=None, no_create=False, absolute_number=None):
+    def get_episode(self, season=None, episode=None, filepath=None, no_create=False, absolute_number=None,
+                    should_cache=True):
         """Return TVEpisode given the specified filter.
 
         :param season:
@@ -368,6 +369,8 @@ class TVShow(TVObject):
         :type no_create: bool
         :param absolute_number:
         :type absolute_number: int
+        :param should_cache:
+        :type should_cache: bool
         :return:
         :rtype: TVEpisode
         """
@@ -401,6 +404,7 @@ class TVShow(TVObject):
         if season not in self.episodes:
             self.episodes[season] = {}
 
+        ep = None
         if episode not in self.episodes[season] or self.episodes[season][episode] is None:
             if no_create:
                 return None
@@ -410,12 +414,10 @@ class TVShow(TVObject):
             else:
                 ep = TVEpisode(self, season, episode)
 
-            if ep is not None:
-                self.episodes[season][episode] = ep
-        elif filepath:
-            self.episodes[season][episode].location = filepath
+        if ep is not None and should_cache:
+            self.episodes[season][episode] = ep
 
-        return self.episodes[season][episode]
+        return ep
 
     def should_update(self, update_date=datetime.date.today()):
         """Whether the show information should be updated.
@@ -1670,6 +1672,9 @@ class TVEpisode(TVObject):
 
         IMPORTANT: The filepath is not kept in the TVEpisode.location
         TVEpisode.location should only be set after it's post-processed and it's in the correct location.
+        As of now, TVEpisode is also not cached in TVShow.episodes since this method is only used during postpone PP.
+        Goal here is to slowly move to use this method to create TVEpisodes. New parameters might be introduced.
+
         :param filepath:
         :type filepath: str
         :return:
@@ -1679,12 +1684,12 @@ class TVEpisode(TVObject):
             parse_result = NameParser(True, tryIndexers=True).parse(filepath, cache_result=True)
             results = []
             if parse_result.show.is_anime and parse_result.ab_episode_numbers:
-                results = [parse_result.show.get_episode(absolute_number=episode_number)
+                results = [parse_result.show.get_episode(absolute_number=episode_number, should_cache=False)
                            for episode_number in parse_result.ab_episode_numbers]
 
             if not parse_result.show.is_anime and parse_result.episode_numbers:
                 results = [parse_result.show.get_episode(season=parse_result.season_number,
-                                                         episode=episode_number)
+                                                         episode=episode_number, should_cache=False)
                            for episode_number in parse_result.episode_numbers]
 
             for episode in results:
