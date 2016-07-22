@@ -404,15 +404,15 @@ class TVShow(TVObject):
         if season not in self.episodes:
             self.episodes[season] = {}
 
-        ep = None
-        if episode not in self.episodes[season] or self.episodes[season][episode] is None:
-            if no_create:
-                return None
+        if episode in self.episodes[season] and self.episodes[season][episode] is not None:
+            return self.episodes[season][episode]
+        elif no_create:
+            return None
 
-            if filepath:
-                ep = TVEpisode(self, season, episode, filepath)
-            else:
-                ep = TVEpisode(self, season, episode)
+        if filepath:
+            ep = TVEpisode(self, season, episode, filepath)
+        else:
+            ep = TVEpisode(self, season, episode)
 
         if ep is not None and should_cache:
             self.episodes[season][episode] = ep
