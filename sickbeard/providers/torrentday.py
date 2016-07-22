@@ -167,6 +167,9 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         if self.cookies:
             self.add_cookies_from_ui()
+        else:
+            logger.log('Failed to login, you must add your cookies in the provider settings', logger.WARNING)
+            return False
 
             login_params = {
                 'username': self.username,
