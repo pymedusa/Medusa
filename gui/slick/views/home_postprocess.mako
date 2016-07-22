@@ -41,6 +41,7 @@
             </td>
             <td>
                 <input id="force" name="force" type="checkbox">
+                <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to post-process files that were previoused post-processed)</i></span>
             </td>
         </tr>
         <tr>
@@ -68,6 +69,25 @@
             </td>
             <td>
                 <input id="failed" name="failed" type="checkbox">
+                <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to mark download as failed)</i></span>
+            </td>
+        </tr>
+        % endif
+        % if sickbeard.POSTPONE_IF_NO_SUBS:
+        <tr>
+            <td>
+                <b>Skip associated subtitle check*:</b>
+            </td>
+            <td>
+                <input id="ignore_subs" name="ignore_subs" type="checkbox">
+                <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to postprocess when no subtitles available)</i></span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            </td>
+            <td>
+        <span style="line-height: 0; font-size: 12px;"><i>* Create a new folder in PP folder and move only the files you want to ignore subtitles</i></span>
             </td>
         </tr>
         % endif
