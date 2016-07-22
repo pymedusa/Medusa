@@ -58,7 +58,7 @@
         <span class="h2footer displayspecials pull-right">
             % if season_special:
             Display Specials:
-                <a class="inner" href="${srRoot}/toggleDisplayShowSpecials/?show=${show.indexerid}">${('Show', 'Hide')[bool(sickbeard.DISPLAY_SHOW_SPECIALS)]}</a>
+                <a class="inner" href="${srRoot}/toggleDisplayShowSpecials/?show=${show.indexerid}">${'Hide' if bool(sickbeard.DISPLAY_SHOW_SPECIALS) else 'Show'}</a>
             % endif
         </span>
         <div class="h2footer pull-right">
@@ -67,7 +67,7 @@
                 <select id="seasonJump" class="form-control input-sm" style="position: relative; top: -4px;">
                     <option value="jump">Jump to Season</option>
                 % for seasonNum in seasonResults:
-                    <option value="#season-${seasonNum["season"]}" data-season="${seasonNum["season"]}">${('Specials', 'Season ' + str(seasonNum["season"]))[int(seasonNum["season"]) > 0]}</option>
+                    <option value="#season-${seasonNum["season"]}" data-season="${seasonNum["season"]}">${'Season ' + str(seasonNum["season"]) if int(seasonNum["season"]) > 0 else 'Specials'}</option>
                 % endfor
                 </select>
             % else:
@@ -148,7 +148,7 @@
             </div>
 
             <!-- Show Summary -->
-            <div id="summary" ${("", "class=\"summaryFanArt\"")[bool(sickbeard.FANART_BACKGROUND)]}>
+            <div id="summary" ${"class=\"summaryFanArt\"" if bool(sickbeard.FANART_BACKGROUND) else ""}>
                 <table class="summaryTable pull-left">
                 <% anyQualities, bestQualities = Quality.splitQuality(int(show.quality)) %>
                     <tr><td class="showLegend">Quality: </td><td>
@@ -156,18 +156,18 @@
                     ${renderQualityPill(show.quality)}
                 % else:
                 % if anyQualities:
-                    <i>Allowed:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(anyQualities)])}${("", "<br />")[bool(bestQualities)]}
+                    <i>Allowed:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(anyQualities)])}${"<br />" if bool(bestQualities) else ""}
                 % endif
                 % if bestQualities:
                     <i>Preferred:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(bestQualities)])}
                 % endif
                 % endif
                 % if show.network and show.airs:
-                    <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${("<font color='#FF0000'><b>(invalid Timeformat)</b></font> ", "")[network_timezones.test_timeformat(show.airs)]} on ${show.network}</td></tr>
+                    <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font> "} on ${show.network}</td></tr>
                 % elif show.network:
                     <tr><td class="showLegend">Originally Airs: </td><td>${show.network}</td></tr>
                 % elif show.airs:
-                    <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${("<font color='#FF0000'><b>(invalid Timeformat)</b></font>", "")[network_timezones.test_timeformat(show.airs)]}</td></tr>
+                    <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>" }</td></tr>
                 % endif
                     <tr><td class="showLegend">Show Status: </td><td>${show.status}</td></tr>
                     <tr><td class="showLegend">Default EP Status: </td><td>${statusStrings[show.default_ep_status]}</td></tr>
@@ -193,13 +193,13 @@
                 % endif
                 % if bwl and bwl.whitelist:
                     <tr>
-                        <td class="showLegend">Wanted Group${("", "s")[len(bwl.whitelist) > 1]}:</td>
+                        <td class="showLegend">Wanted Group${"s" if len(bwl.whitelist) > 1 else ""}:</td>
                         <td>${', '.join(bwl.whitelist)}</td>
                     </tr>
                 % endif
                 % if bwl and bwl.blacklist:
                     <tr>
-                        <td class="showLegend">Unwanted Group${("", "s")[len(bwl.blacklist) > 1]}:</td>
+                        <td class="showLegend">Unwanted Group${"s" if len(bwl.blacklist) > 1 else ""}:</td>
                         <td>${', '.join(bwl.blacklist)}</td>
                     </tr>
                 % endif
@@ -262,9 +262,13 @@
 <br>
 <br>
 
-<table id="${("showTable", "animeTable")[bool(show.is_anime)]}" class="${("displayShowTable", "displayShowTableFanArt tablesorterFanArt")[bool(sickbeard.FANART_BACKGROUND)]} display_show" cellspacing="0" border="0" cellpadding="0">
+<table id="${"animeTable" if bool(show.is_anime) else "showTable"}" class="${"displayShowTableFanArt tablesorterFanArt" if bool(sickbeard.FANART_BACKGROUND) else "displayShowTable"} display_show" cellspacing="0" border="0" cellpadding="0">
     <% curSeason = -1 %>
     <% odd = 0 %>
+    <% epCount = 0 %>
+    <% epSize = 0 %>
+    <% epList = [] %>
+    
     % for epResult in sql_results:
         <%
         epStr = str(epResult["season"]) + "x" + str(epResult["episode"])
@@ -322,16 +326,16 @@
     </thead>
     <tbody class="tablesorter-no-sort">
         <tr style="height: 60px;">
-            <th class="row-seasonheader ${("displayShowTable", "displayShowTableFanArt")[bool(sickbeard.FANART_BACKGROUND)]}" colspan="13" style="vertical-align: bottom; width: auto;">
-                <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[int(epResult["season"]) > 0]}
+            <th class="row-seasonheader ${"displayShowTable" if bool(sickbeard.FANART_BACKGROUND) else "displayShowTableFanArt"}" colspan="13" style="vertical-align: bottom; width: auto;">
+                <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${"Season " + str(epResult["season"]) if int(epResult["season"]) > 0 else "Specials"}
                 <!-- @TODO: port the season scene exceptions to angular -->
                 % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
                 <a class="epManualSearch" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="${srRoot}/images/manualsearch${'-white' if sickbeard.THEME_NAME == 'dark' else ''}.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                 % endif
                 </h3>
-                <div class="season-scene-exception" data-season=${("Specials", str(epResult["season"]))[int(epResult["season"]) > 0]}></div>
+                <div class="season-scene-exception" data-season=${str(epResult["season"]) if int(epResult["season"]) > 0 else "Specials"}></div>
                 % if sickbeard.DISPLAY_ALL_SEASONS is False:
-                    <button id="showseason-${epResult['season']}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
+                    <button id="showseason-${epResult['season']}" type="button" class="btn btn-xs pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Hide Episodes</button>
                 % endif
             </th>
         </tr>
@@ -355,11 +359,17 @@
             <th class="col-search">Search</th>
         </tr>
             % else:
+        <tr id="season-${epResult["season"]}-footer" class="seasoncols">
+            <th class="col-footer" colspan=15 align=left>Season contains ${epCount} episodes with total filesize: ${pretty_file_size(epSize)}</th>
+        </tr> 
+        <% epCount = 0 %>
+        <% epSize = 0 %>
+        <% epList = [] %>           
     </tbody>
     <tbody class="tablesorter-no-sort">
         <tr style="height: 60px;">
-            <th class="row-seasonheader ${("displayShowTable", "displayShowTableFanArt")[bool(sickbeard.FANART_BACKGROUND)]}" colspan="13" style="vertical-align: bottom; width: auto;">
-                <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[bool(int(epResult["season"]))]}
+            <th class="row-seasonheader ${"displayShowTableFanArt" if bool(sickbeard.FANART_BACKGROUND) else "displayShowTable"}" colspan="13" style="vertical-align: bottom; width: auto;">
+                <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${"Season " + str(epResult["season"]) if bool(int(epResult["season"])) else "Specials"}
                 % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
                 <a class="epManualSearch" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="${srRoot}/images/manualsearch${'-white' if sickbeard.THEME_NAME == 'dark' else ''}.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                 % endif
@@ -412,6 +422,10 @@
                 text = str(epResult['episode'])
                 if epLoc != '' and epLoc is not None:
                     text = '<span title="' + epLoc + '" class="addQTip">' + text + "</span>"
+                    epCount+=1
+                    if not epLoc in epList:
+                        epSize+=epResult["file_size"]
+                        epList.append(epLoc)
             %>
                 ${text}
             </td>
@@ -509,6 +523,9 @@
             </td>
         </tr>
     % endfor
+        <tr id="season-${epResult["season"]}-footer" class="seasoncols">
+            <th class="col-footer" colspan=15 align=left>Season contains ${epCount} episodes with total filesize: ${pretty_file_size(epSize)}</th>
+        </tr> 
     </tbody>
 </table>
 <!--Begin - Bootstrap Modal-->

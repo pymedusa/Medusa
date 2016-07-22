@@ -1275,6 +1275,10 @@ td.col-name {
     text-align: left;
 }
 
+th.col-footer {
+    text-align: left !important;
+}
+
 th.col-subtitles,
 td.col-subtitles {
     width: 150px;
