@@ -246,6 +246,28 @@
                                 </span>
                             </label>
                         </div>
+              
+                        <div class="field-pair">
+                            <label for="fanart_background">
+                                <span class="component-title">Show fanart in the background</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" class="enabler" name="fanart_background" id="fanart_background" ${('', 'checked="checked"')[bool(sickbeard.FANART_BACKGROUND)]}>
+                                    <p>on the show summary page</p>
+                                </span>
+                            </label>
+                        </div>
+                        <div id="content_fanart_background">
+                            <div class="field-pair">
+                                <label for="fanart_background_opacity">
+                                    <span class="component-title">Fanart transparency</span>
+                                    <span class="component-desc">
+                                    <input type="number" step="0.1" min="0.1" max="1.0" name="fanart_background_opacity" id="fanart_background_opacity" value="${sickbeard.FANART_BACKGROUND_OPACITY}" class="form-control input-sm input75" />
+                                    <p>Transparency of the fanart in the background</p>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
                         <div class="field-pair">
                             <label for="display_all_seasons">
                                 <span class="component-title">Show all seasons</span>

@@ -110,6 +110,8 @@
 
         <div id="showCol">
 
+            <img id="showBanner" src="${srRoot}/showPoster/?show=${show.indexerid}&amp;which=banner">
+
             <div id="showinfo">
 % if 'rating' in show.imdb_info:
     <% rating_tip = str(show.imdb_info['rating']) + " / 10" + " Stars" + "<br>" + str(show.imdb_info['votes']) + " Votes" %>
@@ -145,6 +147,7 @@
                     <img alt="[xem]" height="16" width="16" src="${srRoot}/images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
 % endif
+                <a href="${anon_url('https://fanart.tv/series/', show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="https://fanart.tv/series/${show.name}"><img alt="[fanart.tv]" height="16" width="16" src="${srRoot}/images/fanart.tv.png" class="fanart"/></a>
             </div>
 
             <div id="tags">
@@ -161,7 +164,8 @@
                 </ul>
             </div>
 
-            <div id="summary">
+            <!-- Show Summary -->
+            <div id="summary" ${("", "class=\"summaryFanArt\"")[bool(sickbeard.FANART_BACKGROUND)]}>
                 <table class="summaryTable pull-left">
                 <% anyQualities, bestQualities = Quality.splitQuality(int(show.quality)) %>
                     <tr><td class="showLegend">Quality: </td><td>
@@ -223,7 +227,8 @@
 
                 </table>
 
-                <table style="width:180px; float: right; vertical-align: middle; height: 100%;">
+                <!-- Option table right -->
+                <table class="showOptions">
                     <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %>
                     <tr><td class="showLegend">Info Language:</td><td><img src="${srRoot}/images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='${srRoot}/images/flags/unknown.png';"/></td></tr>
                     % if sickbeard.USE_SUBTITLES:
@@ -283,7 +288,7 @@
 <br>
 <br>
 
-<table id="${("showTable", "animeTable")[bool(show.is_anime)]}" class="displayShowTable display_show" cellspacing="0" border="0" cellpadding="0">
+<table id="${("showTable", "animeTable")[bool(show.is_anime)]}" class="${("displayShowTable", "displayShowTableFanArt tablesorterFanArt")[bool(sickbeard.FANART_BACKGROUND)]} display_show" cellspacing="0" border="0" cellpadding="0">
     <% curSeason = -1 %>
     <% odd = 0 %>
     % for epResult in sql_results:
@@ -350,7 +355,7 @@
     </thead>
     <tbody class="tablesorter-no-sort">
         <tr style="height: 60px;">
-            <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
+            <th class="row-seasonheader ${("displayShowTable", "displayShowTableFanArt")[bool(sickbeard.FANART_BACKGROUND)]}" colspan="13" style="vertical-align: bottom; width: auto;">
                 <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[int(epResult["season"]) > 0]}
                 <!-- @TODO: port the season scene exceptions to angular -->
                 % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
@@ -386,7 +391,7 @@
     </tbody>
     <tbody class="tablesorter-no-sort">
         <tr style="height: 60px;">
-            <th class="row-seasonheader displayShowTable" colspan="13" style="vertical-align: bottom; width: auto;">
+            <th class="row-seasonheader ${("displayShowTable", "displayShowTableFanArt")[bool(sickbeard.FANART_BACKGROUND)]}" colspan="13" style="vertical-align: bottom; width: auto;">
                 <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${("Specials", "Season " + str(epResult["season"]))[bool(int(epResult["season"]))]}
                 % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
                 <a class="epManualSearch" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="${srRoot}/images/manualsearch${('', '-white')[sickbeard.THEME_NAME == 'dark']}.png" width="16" height="16" alt="search" title="Manual Search" /></a>

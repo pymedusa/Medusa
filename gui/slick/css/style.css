@@ -1134,7 +1134,7 @@ span.snatched b {
 }
 
 .displayShowTable.display_show {
-    clear:both
+    clear:both;
 }
 
 .displayShowTable th.row-seasonheader {
@@ -1147,6 +1147,43 @@ span.snatched b {
 
 .displayShowTable td.col-search {
     text-align: center;
+}
+
+
+.displayShowTableFanArt {
+    table-layout: auto;
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    text-align: center;
+    border: none;
+    empty-cells: show;
+    color: #000 !important;
+}
+
+.displayShowTableFanArt.display_show {
+    clear:both;
+    opacity: 0.8;
+}
+
+.displayShowTableFanArt th.row-seasonheader {
+    border: none !important;
+    background-color: transparent !important;
+    color: #fff !important;
+    padding-top: 15px !important;
+    text-align: left !important;
+}
+
+.displayShowTableFanArt td.col-search {
+    text-align: center;
+}
+
+.summaryFanArt {
+   opacity: 0.8 !important; 
+}
+
+.tablesorterFanArt {
+    background-color: transparent !important;
 }
 
 .sickbeardTable {
@@ -1302,6 +1339,23 @@ td.col-group {
 
 div.season-scene-exception {
     display: inline;
+}
+
+#showBanner {
+    float:right;
+    height:50px;
+    border:1px solid black; 
+}
+
+.fanart {
+    margin-top: -1px; 
+    vertical-align:middle;
+}
+
+.showOptions {
+    width:180px;
+    float: right;
+    vertical-align: middle;
 }
 
 /* =======================================================================

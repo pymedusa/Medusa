@@ -69,7 +69,7 @@ class ConfigGeneral(Config):
                     fuzzy_dating=None, trim_zero=None, date_preset=None, date_preset_na=None, time_preset=None,
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
                     git_reset=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None,
-                    privacy_level='normal', use_legacy_name_parser=None):
+                    privacy_level='normal', use_legacy_name_parser=None, fanart_background=None, fanart_background_opacity=None):
 
         results = []
 
@@ -167,6 +167,8 @@ class ConfigGeneral(Config):
         sickbeard.HANDLE_REVERSE_PROXY = config.checkbox_to_value(handle_reverse_proxy)
 
         sickbeard.THEME_NAME = theme_name
+        sickbeard.FANART_BACKGROUND = fanart_background
+        sickbeard.FANART_BACKGROUND_OPACITY = fanart_background_opacity
 
         sickbeard.DEFAULT_PAGE = default_page
 
