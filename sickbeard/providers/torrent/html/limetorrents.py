@@ -116,7 +116,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
             if mode != 'RSS' and torrent_table and len(torrent_table) < 2:
                 logger.log(u'Data returned from provider does not contain any torrents', logger.DEBUG)
-                return
+                return items
 
             torrent_table = torrent_table[0 if mode == 'RSS' else 1]
             torrent_rows = torrent_table('tr')
