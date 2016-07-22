@@ -1,22 +1,22 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
-
+#
 # Git: https://github.com/PyMedusa/SickRage.git
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 # pylint: disable=too-many-lines
 
 import glob
@@ -141,8 +141,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 return PostProcessor.EXISTS_SMALLER
 
         else:
-            self._log(u"File {0} doesn't exist so there's no worries about replacing it".format(existing_file),
-                      logger.DEBUG)
+            self._log(u"File {0} doesn't exist so there's no worries about replacing it".format
+                      (existing_file), logger.DEBUG)
             return PostProcessor.DOESNT_EXIST
 
     def list_associated_files(self, file_path, base_name_only=False,  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
@@ -239,9 +239,9 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             if sickbeard.MOVE_ASSOCIATED_FILES:
                 allowed_extensions = sickbeard.ALLOWED_EXTENSIONS.split(',')
                 found_extension = associated_file_path.rpartition('.')[2]
-                if found_extension and not found_extension in allowed_extensions:
-                    self._log(u'Associated file extension not found in allowed extension: .{0}'
-                              .format(found_extension.upper()), logger.DEBUG)
+                if found_extension and found_extension not in allowed_extensions:
+                    self._log(u'Associated file extension not found in allowed extension: .{0}'.format
+                              (found_extension.upper()), logger.DEBUG)
                     if ek(os.path.isfile, associated_file_path):
                         extensions_to_delete.append(associated_file_path)
 
@@ -249,10 +249,12 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 file_path_list.append(associated_file_path)
 
         if file_path_list:
-            self._log(u'Found the following associated files for {0}: {1}'.format(file_path, file_path_list), logger.DEBUG)
+            self._log(u'Found the following associated files for {0}: {1}'.format
+                      (file_path, file_path_list), logger.DEBUG)
             if extensions_to_delete:
                 # Rebuild the 'file_path_list' list only with the extensions the user allows
-                file_path_list = [associated_file for associated_file in file_path_list if associated_file not in extensions_to_delete]
+                file_path_list = [associated_file for associated_file in file_path_list
+                                  if associated_file not in extensions_to_delete]
                 self._delete(extensions_to_delete)
         else:
             self._log(u'No associated files for {0} were found during this pass'.format(file_path), logger.DEBUG)
@@ -281,7 +283,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             file_list = file_list + self.list_associated_files(file_path, base_name_only=True, subfolders=True)
 
         if not file_list:
-            self._log(u'There were no files associated with {0}, not deleting anything'.format(file_path), logger.DEBUG)
+            self._log(u'There were no files associated with {0}, not deleting anything'.format
+                      (file_path), logger.DEBUG)
             return
 
         # delete the file and any other files which we want to delete
@@ -292,11 +295,12 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 file_attribute = ek(os.stat, cur_file)[0]
                 if not file_attribute & stat.S_IWRITE:
                     # File is read-only, so make it writeable
-                    self._log('Read only mode on file ' + cur_file + ' Will try to make it writeable', logger.DEBUG)
+                    self._log(u'Read only mode on file {0}. Will try to make it writeable'.format
+                              (cur_file), logger.DEBUG)
                     try:
                         ek(os.chmod, cur_file, stat.S_IWRITE)
                     except Exception:
-                        self._log(u'Cannot change permissions of ' + cur_file, logger.WARNING)
+                        self._log(u'Cannot change permissions of {0}'.format(cur_file), logger.WARNING)
 
                 ek(os.remove, cur_file)
 
@@ -329,7 +333,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             file_list = file_list + self.list_associated_files(file_path, subtitles_only=True)
 
         if not file_list:
-            self._log(u'There were no files associated with {0}, not moving anything'.format(file_path), logger.DEBUG)
+            self._log(u'There were no files associated with {0}, not moving anything'.format
+                      (file_path), logger.DEBUG)
             return
 
         # create base name with file_path (media_file without .extension)
@@ -397,8 +402,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 helpers.moveFile(cur_file_path, new_file_path)
                 helpers.chmodAsParent(new_file_path)
             except (IOError, OSError) as e:
-                self._log('Unable to move file {0} to {1}: {2!r}'
-                          .format(cur_file_path, new_file_path, e), logger.ERROR)
+                self._log(u'Unable to move file {0} to {1}: {2!r}'.format
+                          (cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
         self._combined_file_operation(file_path, new_path, new_base_name, associated_files, action=_int_move,
@@ -421,8 +426,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 helpers.copyFile(cur_file_path, new_file_path)
                 helpers.chmodAsParent(new_file_path)
             except (IOError, OSError) as e:
-                self._log(u'Unable to copy file {0} to {1}: {2!r}'
-                            .format(cur_file_path, new_file_path, e), logger.ERROR)
+                self._log(u'Unable to copy file {0} to {1}: {2!r}'.format
+                          (cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
         self._combined_file_operation(file_path, new_path, new_base_name, associated_files, action=_int_copy,
@@ -445,10 +450,12 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 helpers.hardlinkFile(cur_file_path, new_file_path)
                 helpers.chmodAsParent(new_file_path)
             except (IOError, OSError) as e:
-                self._log('Unable to link file {0} to {1}: {2!r}'.format(cur_file_path, new_file_path, e), logger.ERROR)
+                self._log(u'Unable to link file {0} to {1}: {2!r}'.format
+                          (cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
-        self._combined_file_operation(file_path, new_path, new_base_name, associated_files, action=_int_hard_link, subtitles=subtitles)
+        self._combined_file_operation(file_path, new_path, new_base_name, associated_files,
+                                      action=_int_hard_link, subtitles=subtitles)
 
     def _moveAndSymlink(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):  # pylint: disable=too-many-arguments
         """
@@ -462,13 +469,14 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
         def _int_move_and_sym_link(cur_file_path, new_file_path):
 
-            self._log(u'Moving then symbolic linking file from {0} to {1}'
-                        .format(cur_file_path, new_file_path), logger.DEBUG)
+            self._log(u'Moving then symbolic linking file from {0} to {1}'.format
+                      (cur_file_path, new_file_path), logger.DEBUG)
             try:
                 helpers.moveAndSymlinkFile(cur_file_path, new_file_path)
                 helpers.chmodAsParent(new_file_path)
             except (IOError, OSError) as e:
-                self._log('Unable to link file {0} to {1}: {2!r}'.format(cur_file_path, new_file_path, e), logger.ERROR)
+                self._log(u'Unable to link file {0} to {1}: {2!r}'.format
+                          (cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
         self._combined_file_operation(file_path, new_path, new_base_name, associated_files,
@@ -523,7 +531,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             to_return = (show, season, [], quality, version)
 
             qual_str = common.Quality.qualityStrings[quality] if quality is not None else quality
-            self._log('Found result in history for {0} - Season: {1} - Quality: {2} - Version: {3}'.format
+            self._log(u'Found result in history for {0} - Season: {1} - Quality: {2} - Version: {3}'.format
                       (show.name if show else 'UNDEFINED', season, qual_str, version), logger.DEBUG)
 
             return to_return
@@ -549,7 +557,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                                          parse_result.air_date) and parse_result.release_group:
 
             if not self.release_name:
-                self.release_name = helpers.remove_non_release_groups(remove_extension(ek(os.path.basename, parse_result.original_name)))
+                self.release_name = helpers.remove_non_release_groups(
+                    remove_extension(ek(os.path.basename, parse_result.original_name)))
 
         else:
             logger.log(u'Parse result not sufficient (all following have to be set). will not save release name',
@@ -690,9 +699,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
             # for air-by-date shows we need to look up the season/episode from database
             if season == -1 and show and episodes:
-                self._log(
-                    u'Looks like this is an air-by-date or sports show, attempting to convert the date to season/episode',
-                    logger.DEBUG)
+                self._log(u'Looks like this is an air-by-date or sports show, '
+                          u'attempting to convert the date to season/episode', logger.DEBUG)
 
                 try:
                     airdate = episodes[0].toordinal()
@@ -719,8 +727,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                         season = int(sql_result[0]['season'])
                         episodes = [int(sql_result[0]['episode'])]
                     else:
-                        self._log(
-                            u'Unable to find episode with date {0} for show {1}, skipping'.format(episodes[0], show.indexerid), logger.DEBUG)
+                        self._log(u'Unable to find episode with date {0} for show {1}, skipping'.format
+                                  (episodes[0], show.indexerid), logger.DEBUG)
                         # we don't want to leave dates in the episode list if we couldn't convert them to real episode numbers
                         episodes = []
                         continue
@@ -732,9 +740,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                     'SELECT COUNT(DISTINCT season) FROM tv_episodes WHERE showid = ? and indexer = ? and season != 0',
                     [show.indexerid, show.indexer])
                 if int(numseasonsSQlResult[0][0]) == 1 and season is None:
-                    self._log(
-                        u"Don't have a season number, but this show appears to only have 1 season, setting season number to 1...",
-                        logger.DEBUG)
+                    self._log(u"Don't have a season number, but this show appears to only have 1 season, "
+                              u"setting season number to 1...", logger.DEBUG)
                     season = 1
 
             if show and season and episodes:
@@ -791,9 +798,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         if ep_obj.status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
             _, ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)  # @UnusedVariable
             if ep_quality != common.Quality.UNKNOWN:
-                self._log(
-                    u'The old status had a quality in it, using that: {0}'.format(common.Quality.qualityStrings[ep_quality]),
-                    logger.DEBUG)
+                self._log(u'The old status had a quality in it, using that: {0}'.format
+                          (common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
                 return ep_quality
 
         # nzb name is the most reliable if it exists, followed by folder name and lastly file name
@@ -807,33 +813,30 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 continue
 
             ep_quality = common.Quality.nameQuality(cur_name, ep_obj.show.is_anime)
-            self._log(
-                u'Looking up quality for name {0}, got {1}'.format(cur_name, common.Quality.qualityStrings[ep_quality]),
-                logger.DEBUG)
+            self._log(u'Looking up quality for name {0}, got {1}'.format
+                      (cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
 
             # if we find a good one then use it
             if ep_quality != common.Quality.UNKNOWN:
-                logger.log(u'{0} looks like it has quality {1}, using that'
-                           .format(cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
+                logger.log(u'{0} looks like it has quality {1}, using that'.format
+                           (cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
                 return ep_quality
 
         # Try getting quality from the episode (snatched) status
         if ep_obj.status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
             _, ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)  # @UnusedVariable
             if ep_quality != common.Quality.UNKNOWN:
-                self._log(
-                    u'The old status had a quality in it, using that: {0}'.format(common.Quality.qualityStrings[ep_quality]),
-                    logger.DEBUG)
+                self._log(u'The old status had a quality in it, using that: {0}'.format
+                          (common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
                 return ep_quality
 
         # Try guessing quality from the file name
         ep_quality = common.Quality.assumeQuality(self.file_path)
-        self._log(
-            u'Guessing quality for name {0}, got {1}'.format(self.file_name, common.Quality.qualityStrings[ep_quality]),
-            logger.DEBUG)
+        self._log(u'Guessing quality for name {0}, got {1}'.format
+                  (self.file_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
         if ep_quality != common.Quality.UNKNOWN:
-            logger.log(u'{0} looks like it has quality {1}, using that'
-                       .format(self.file_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
+            logger.log(u'{0} looks like it has quality {1}, using that'.format
+                       (self.file_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
             return ep_quality
 
         return ep_quality
@@ -912,7 +915,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         _, old_ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)
 
         # if Medusa downloaded this on purpose we likely have a priority download
-        if self.in_history or ep_obj.status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
+        if self.in_history or ep_obj.status in common.Quality.SNATCHED + \
+                common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
             # if the episode is still in a snatched status, then we can assume we want this
             if not self.in_history:
                 self._log(u'Medusa snatched this episode and it is not processed before', logger.DEBUG)
@@ -920,23 +924,27 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
             # if it's in history, we only want it if the new quality is higher or if it's a proper of equal or higher quality
             if new_ep_quality > old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-                self._log(u"Medusa snatched this episode and it is a higher quality so I'm marking it as priority", logger.DEBUG)
+                self._log(u"Medusa snatched this episode and it is a higher quality so I'm marking it as priority",
+                          logger.DEBUG)
                 return True
 
             if self.is_proper and new_ep_quality >= old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-                self._log(u"Medusa snatched this episode and it is a proper of equal or higher quality so I'm marking it as priority", logger.DEBUG)
+                self._log(u"Medusa snatched this episode and it is a proper of equal or higher quality "
+                          u"so I'm marking it as priority", logger.DEBUG)
                 return True
 
             return False
 
         # if the user downloaded it manually and it's higher quality than the existing episode then it's priority
         if new_ep_quality > old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-            self._log(u"This was manually downloaded but it appears to be better quality than what we have so I'm marking it as priority", logger.DEBUG)
+            self._log(u"This was manually downloaded but it appears to be better quality than what we have "
+                      u"so I'm marking it as priority", logger.DEBUG)
             return True
 
         # if the user downloaded it manually and it appears to be a PROPER/REPACK then it's priority
         if self.is_proper and new_ep_quality >= old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-            self._log(u"This was manually downloaded but it appears to be a proper so I'm marking it as priority", logger.DEBUG)
+            self._log(u"This was manually downloaded but it appears to be a proper so I'm marking it as priority",
+                      logger.DEBUG)
             return True
 
         return False
@@ -984,14 +992,14 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
         # get the quality of the episode we're processing
         if quality and not common.Quality.qualityStrings[quality] == 'Unknown':
-            self._log(u'Snatch history had a quality in it, using that: {0}'
-                      .format(common.Quality.qualityStrings[quality]), logger.DEBUG)
+            self._log(u'Snatch history had a quality in it, using that: {0}'.format
+                      (common.Quality.qualityStrings[quality]), logger.DEBUG)
             new_ep_quality = quality
         else:
             new_ep_quality = self._get_quality(ep_obj)
 
-        logger.log(u'Quality of the episode we are processing: {0}'
-                    .format(common.Quality.qualityStrings[new_ep_quality]), logger.DEBUG)
+        logger.log(u'Quality of the episode we are processing: {0}'.format
+                   (common.Quality.qualityStrings[new_ep_quality]), logger.DEBUG)
 
         # see if this is a priority download (is it snatched, in history, PROPER, or BEST)
         priority_download = self._is_priority(ep_obj, new_ep_quality)
@@ -1020,34 +1028,38 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 else:
                     _, preferred_qualities = common.Quality.splitQuality(int(show.quality))
                     if new_ep_quality not in preferred_qualities:
-                        self._log(u'File exists and new file quality is not in a preferred quality list, marking it unsafe to replace')
+                        self._log(u'File exists and new file quality is not in a preferred quality list, '
+                                  u'marking it unsafe to replace')
                         return False
 
-            # Check if the processed file season is already in our indexer. If not, the file is most probably mislabled/fake and will be skipped
+            # Check if the processed file season is already in our indexer. If not,
+            # the file is most probably mislabled/fake and will be skipped.
             # Only proceed if the file season is > 0
             if int(ep_obj.season) > 0:
                 main_db_con = db.DBConnection()
                 max_season = main_db_con.select(
-                    "SELECT MAX(season) FROM tv_episodes WHERE showid = ? and indexer = ?", [show.indexerid, show.indexer])
+                    "SELECT MAX(season) FROM tv_episodes WHERE showid = ? and indexer = ?",
+                    [show.indexerid, show.indexer])
 
                 # If the file season (ep_obj.season) is bigger than the indexer season (max_season[0][0]), skip the file
                 if int(ep_obj.season) > int(max_season[0][0]):
-                    self._log(u'File has season {0}, while the indexer is on season {1}. The file may be incorrectly labeled or fake, aborting.'
-                              .format(ep_obj.season, max_season[0][0]))
+                    self._log(u'File has season {0}, while the indexer is on season {1}. '
+                              u'The file may be incorrectly labeled or fake, aborting.'.format
+                              (ep_obj.season, max_season[0][0]))
                     return False
 
         # if the file is priority then we're going to replace it even if it exists
         else:
-            self._log(
-                u"This download is marked a priority download so I'm going to replace an existing file if I find one")
+            self._log(u"This download is marked a priority download so I'm going to replace "
+                      u"an existing file if I find one")
 
         # try to find out if we have enough space to perform the copy or move action.
         if not helpers.isFileLocked(self.file_path, False):
             if not verify_freespace(self.file_path, ep_obj.show._location, [ep_obj] + ep_obj.related_episodes):  # pylint: disable=protected-access
-                self._log('Not enough space to continue PP, exiting', logger.WARNING)
+                self._log(u'Not enough space to continue PP, exiting', logger.WARNING)
                 return False
         else:
-            self._log('Unable to determine needed filespace as the source file is locked for access')
+            self._log(u'Unable to determine needed filespace as the source file is locked for access')
 
         # delete the existing file (and company)
         for cur_ep in [ep_obj] + ep_obj.related_episodes:
@@ -1058,7 +1070,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 if cur_ep.location:
                     helpers.delete_empty_folders(ek(os.path.dirname, cur_ep.location), keep_dir=ep_obj.show._location)  # pylint: disable=protected-access
             except (OSError, IOError):
-                raise EpisodePostProcessingFailedException('Unable to delete the existing files')
+                raise EpisodePostProcessingFailedException(u'Unable to delete the existing files')
 
             # set the status of the episodes
             # for curEp in [ep_obj] + ep_obj.related_episodes:
@@ -1074,7 +1086,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 # do the library update for synoindex
                 notifiers.synoindex_notifier.addFolder(ep_obj.show._location)  # pylint: disable=protected-access
             except (OSError, IOError):
-                raise EpisodePostProcessingFailedException('Unable to create the show directory: {0}'.format(ep_obj.show._location))  # pylint: disable=protected-access
+                raise EpisodePostProcessingFailedException('Unable to create the show directory: {0}'.format
+                                                           (ep_obj.show._location))  # pylint: disable=protected-access
 
             # get metadata for the show (but not episode because it hasn't been fully processed)
             ep_obj.show.write_metadata(True)
@@ -1128,9 +1141,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
             dest_path = ek(os.path.dirname, proper_absolute_path)
         except ShowDirectoryNotFoundException:
-            raise EpisodePostProcessingFailedException(
-                u"Unable to post-process an episode if the show dir '{0}' doesn't exist, quitting"
-                    .format(dep_obj.show.raw_location))
+            raise EpisodePostProcessingFailedException(u"Unable to post-process an episode if the show dir '{0}' "
+                                                       u"doesn't exist, quitting".format(ep_obj.show.raw_location))
 
         self._log(u'Destination folder for this episode: {0}'.format(dest_path), logger.DEBUG)
 
@@ -1186,7 +1198,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                     cur_ep.refresh_subtitles()
                     cur_ep.download_subtitles(force=True)
 
-        # now that processing has finished, we can put the info in the DB. If we do it earlier, then when processing fails, it won't try again.
+        # now that processing has finished, we can put the info in the DB.
+        # If we do it earlier, then when processing fails, it won't try again.
         if sql_l:
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
@@ -1239,8 +1252,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             # do the library update for Trakt
             notifiers.trakt_notifier.update_library(ep_obj)
         except Exception as e:
-            logger.log(u'Some notifications could not be sent. Error: {0!r}. Continuing with postProcessing...'
-                        .format(e))
+            logger.log(u'Some notifications could not be sent. Error: {0!r}. '
+                       u'Continuing with postProcessing...'.format(e))
 
         self._run_extra_scripts(ep_obj)
 
