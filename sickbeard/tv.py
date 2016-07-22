@@ -412,6 +412,8 @@ class TVShow(TVObject):
 
             if ep is not None:
                 self.episodes[season][episode] = ep
+        elif filepath:
+            self.episodes[season][episode].location = filepath
 
         return self.episodes[season][episode]
 
