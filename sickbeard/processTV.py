@@ -240,18 +240,18 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
 
         # Don't Link media when the media is extracted from a rar in the same path
         if process_method in (u'hardlink', u'symlink') and videoInRar:
-            process_media(path, videoInRar, nzbName, u'move', force, is_priority, result, ignore_subs)
+            process_media(path, videoInRar, nzbName, u'move', force, is_priority, ignore_subs, result)
             delete_files(path, rarContent, result)
             for video in set(videoFiles) - set(videoInRar):
-                process_media(path, [video], nzbName, process_method, force, is_priority, result, ignore_subs)
+                process_media(path, [video], nzbName, process_method, force, is_priority, ignore_subs, result)
         elif sickbeard.DELRARCONTENTS and videoInRar:
-            process_media(path, videoInRar, nzbName, process_method, force, is_priority, result, ignore_subs)
+            process_media(path, videoInRar, nzbName, process_method, force, is_priority, ignore_subs, result)
             delete_files(path, rarContent, result, True)
             for video in set(videoFiles) - set(videoInRar):
-                process_media(path, [video], nzbName, process_method, force, is_priority, result, ignore_subs)
+                process_media(path, [video], nzbName, process_method, force, is_priority, ignore_subs, result)
         else:
             for video in videoFiles:
-                process_media(path, [video], nzbName, process_method, force, is_priority, result, ignore_subs)
+                process_media(path, [video], nzbName, process_method, force, is_priority, ignore_subs, result)
 
     else:
         result.output += logHelper(u"Found temporary sync files: %s in path: %s" % (SyncFiles, path))
@@ -289,17 +289,17 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
 
                 # Don't Link media when the media is extracted from a rar in the same path
                 if process_method in (u'hardlink', u'symlink') and videoInRar:
-                    process_media(processPath, videoInRar, nzbName, u'move', force, is_priority, result, ignore_subs)
+                    process_media(processPath, videoInRar, nzbName, u'move', force, is_priority, ignore_subs, result)
                     process_media(processPath, set(videoFiles) - set(videoInRar), nzbName, process_method, force,
-                                  is_priority, result, ignore_subs)
+                                  is_priority, ignore_subs, result)
                     delete_files(processPath, rarContent, result)
                 elif sickbeard.DELRARCONTENTS and videoInRar:
-                    process_media(processPath, videoInRar, nzbName, process_method, force, is_priority, result, ignore_subs)
+                    process_media(processPath, videoInRar, nzbName, process_method, force, is_priority, ignore_subs, result)
                     process_media(processPath, set(videoFiles) - set(videoInRar), nzbName, process_method, force,
-                                  is_priority, result, ignore_subs)
+                                  is_priority, ignore_subs, result)
                     delete_files(processPath, rarContent, result, True)
                 else:
-                    process_media(processPath, videoFiles, nzbName, process_method, force, is_priority, result, ignore_subs)
+                    process_media(processPath, videoFiles, nzbName, process_method, force, is_priority, ignore_subs, result)
 
                     # Delete all file not needed and avoid deleting files if Manual PostProcessing
                     if not(process_method == u"move" and result.result) or (proc_type == u"manual" and not delete_on):
@@ -544,7 +544,7 @@ def already_postprocessed(dirName, videofile, force, result):  # pylint: disable
     return False
 
 
-def process_media(processPath, videoFiles, nzbName, process_method, force, is_priority, result, ignore_subs):  # pylint: disable=too-many-arguments
+def process_media(processPath, videoFiles, nzbName, process_method, force, is_priority, ignore_subs, result):  # pylint: disable=too-many-arguments
     """
     Postprocess mediafiles
 
