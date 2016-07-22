@@ -489,20 +489,34 @@ class NameParser(object):
         final_result.show = self._combine_results(file_name_result, dir_name_result, 'show')
         final_result.quality = self._combine_results(file_name_result, dir_name_result, 'quality')
 
-        if not final_result.show:
-            raise InvalidShowException('Unable to match {0} to a show in your database. Parser result: {1}'.format(
-                                         name, file_name_result or dir_name_result))
-
-        # if there's no useful info in it then raise an exception
-        if final_result.season_number is None and not final_result.episode_numbers and final_result.air_date is None and not final_result.ab_episode_numbers and not final_result.series_name:
-            raise InvalidNameException('Unable to parse {0} to a valid episode. Parser result: {1}'.format(
-                                         name, file_name_result or dir_name_result))
+        self.assert_supported(final_result)
 
         if cache_result:
             name_parser_cache.add(name, final_result)
 
         logger.log('Parsed {0} into {1}'.format(name, str(final_result).decode('utf-8', 'xmlcharrefreplace')), logger.DEBUG)
         return final_result
+
+    @staticmethod
+    def assert_supported(result):
+        """Whether or not the result is supported.
+
+        :param result:
+        :type result: ParseResult
+        """
+        if not result.show:
+            raise InvalidShowException('Unable to match {name} to a show in your database. '
+                                       'Parser result: {result}'.format(name=result.original_name, result=result))
+
+        if result.season_number is None and not result.episode_numbers and \
+                result.air_date is None and not result.ab_episode_numbers and not result.series_name:
+            raise InvalidNameException('Unable to parse {name}. No episode numbering info. '
+                                       'Parser result: {result}'.format(name=result.original_name, result=result))
+
+        if result.season_number is not None and not result.episode_numbers and \
+                not result.ab_episode_numbers and result.is_episode_special:
+            raise InvalidNameException('Discarding {name}. Season special is not supported yet. '
+                                       'Parser result: {result}'.format(name=result.original_name, result=result))
 
     def to_parse_result(self, name, guess):
         """Guess the episode information from a given release name.
@@ -515,14 +529,13 @@ class NameParser(object):
         :return:
         :rtype: dict
         """
-
         adapted = {
             'series_name': guess.get('alias') or guess.get('title'),
             'season_number': single_or_list(guess.get('season'), self.allow_multi_season),
             'release_group': guess.get('release_group'),
             'air_date': guess.get('date'),
             'version': guess.get('version', -1),
-            'extra_info': ' '.join(ensure_list(guess.get('other'))) if guess.get('other') else None,
+            'extra_info': ' '.join(ensure_list(guess.get('other', ''))),
             'episode_numbers': ensure_list(guess.get('episode'))
             if guess.get('episode') != guess.get('absolute_episode') else [],
             'ab_episode_numbers': ensure_list(guess.get('absolute_episode')),
@@ -530,6 +543,7 @@ class NameParser(object):
         }
 
         result = ParseResult(name)
+        result.guess = guess
         for key, value in adapted.items():
             setattr(result, key, value)
 
@@ -567,38 +581,22 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
     def __init__(self, original_name, series_name=None, season_number=None,  # pylint: disable=too-many-arguments
                  episode_numbers=None, extra_info=None, release_group=None,
                  air_date=None, ab_episode_numbers=None, show=None,
-                 score=None, quality=None, version=None, proper_tags=None):
-
+                 score=None, quality=None, version=None, proper_tags=None, guess=None):
         self.original_name = original_name
-
         self.series_name = series_name
         self.season_number = season_number
-        if not episode_numbers:
-            self.episode_numbers = []
-        else:
-            self.episode_numbers = episode_numbers
-
-        if not ab_episode_numbers:
-            self.ab_episode_numbers = []
-        else:
-            self.ab_episode_numbers = ab_episode_numbers
-
-        if not quality:
-            self.quality = common.Quality.UNKNOWN
-        else:
-            self.quality = quality
-
+        self.episode_numbers = episode_numbers if episode_numbers else []
+        self.ab_episode_numbers = ab_episode_numbers if ab_episode_numbers else []
+        self.quality = quality if quality else common.Quality.UNKNOWN
         self.extra_info = extra_info
         self.release_group = release_group
-
         self.air_date = air_date
-
         self.which_regex = []
         self.show = show
         self.score = score
-
         self.version = version
         self.proper_tags = proper_tags
+        self.guess = guess
 
     def __eq__(self, other):
         return other and all([
@@ -642,7 +640,9 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
 
         to_return += ' [ABD: {0}]'.format(self.is_air_by_date)
         to_return += ' [ANIME: {0}]'.format(self.is_anime)
-        to_return += ' [whichReg: {0}]'.format(self.which_regex)
+
+        if not self.guess:
+            to_return += ' [whichReg: {0}]'.format(self.which_regex)
 
         return to_return.encode('utf-8')
 
@@ -657,6 +657,25 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
         if self.ab_episode_numbers:
             return True
         return False
+
+    @property
+    def is_proper(self):
+        if self.guess:
+            return bool(self.proper_count)
+
+        return re.search(r'(^|[\. _-])(proper|repack)([\. _-]|$)',
+                         self.extra_info, re.I) is not None if self.extra_info else False
+
+    @property
+    def proper_count(self):
+        if self.guess:
+            return self.guess.get('proper_count', 0) > 0
+
+        return 0
+
+    @property
+    def is_episode_special(self):
+        return self.guess.get('episode_details') == 'Special' if self.guess else False
 
 
 class NameParserCache(object):
