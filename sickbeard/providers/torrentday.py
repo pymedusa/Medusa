@@ -104,7 +104,15 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     self.session.cookies.clear()
                     continue
 
-                torrents = jdata.get('Fs', [dict()])[0].get('Cn', {}).get('torrents', [])
+                try:
+                    cn = jdata.get('Fs', [dict()])[0].get('Cn', {})
+                    torrents = cn.get('torrents', []) if cn else []
+                except (AttributeError, TypeError, KeyError, ValueError, IndexError) as e:
+                    # If TorrentDay changes their website issue will be opened so we can fix fast
+                    # and not wait user notice it's not downloading torrents from there
+                    logger.log('TorrentDay response: {0}. Error: {1!r}'.format(jdata, e), logger.ERROR)
+                    continue
+
                 if not torrents:
                     logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                     continue
