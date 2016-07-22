@@ -397,8 +397,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 helpers.moveFile(cur_file_path, new_file_path)
                 helpers.chmodAsParent(new_file_path)
             except (IOError, OSError) as e:
-                self._log('Unable to move file {0} to {1}: {2!r}'.
-                                format(cur_file_path, new_file_path, e), logger.ERROR)
+                self._log('Unable to move file {0} to {1}: {2!r}'
+                          .format(cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
         self._combined_file_operation(file_path, new_path, new_base_name, associated_files, action=_int_move,
