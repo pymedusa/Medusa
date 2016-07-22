@@ -41,7 +41,7 @@
             </td>
             <td>
                 <input id="force" name="force" type="checkbox">
-                <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to post-process files that were previoused post-processed)</i></span>
+                <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to post-process files that were already post-processed)</i></span>
             </td>
         </tr>
         <tr>
@@ -50,7 +50,7 @@
             </td>
             <td>
                 <input id="is_priority" name="is_priority" type="checkbox">
-                <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check it to replace the file even if it exists at higher quality)</i></span>
+                <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to replace the file even if it exists at higher quality)</i></span>
             </td>
         </tr>
         <tr>
@@ -59,7 +59,7 @@
             </td>
             <td>
                 <input id="delete_on" name="delete_on" type="checkbox">
-                <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check it to delete files and folders like auto processing)</i></span>
+                <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to delete files and folders like auto processing)</i></span>
             </td>
         </tr>
         % if sickbeard.USE_FAILED_DOWNLOADS:
@@ -76,18 +76,18 @@
         % if sickbeard.POSTPONE_IF_NO_SUBS:
         <tr>
             <td>
-                <b>Skip associated subtitle check*:</b>
+                <b>Skip associated subtitles check*:</b>
             </td>
             <td>
                 <input id="ignore_subs" name="ignore_subs" type="checkbox">
-                <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to postprocess when no subtitles available)</i></span>
+                <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to post-process when no subtitles available)</i></span>
             </td>
         </tr>
         <tr>
             <td>
             </td>
             <td>
-        <span style="line-height: 0; font-size: 12px;"><i>* Create a new folder in PP folder and move only the files you want to ignore subtitles</i></span>
+        <span style="line-height: 0; font-size: 12px;"><i>* Create a new folder in PP folder and move only the files you want to ignore subtitles for</i></span>
             </td>
         </tr>
         % endif
