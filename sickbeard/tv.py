@@ -1308,7 +1308,7 @@ class TVShow(TVObject):
                             id=self.indexerid, ep=episode_num(season, episode), files=related_files), logger.WARNING)
                         for related_file in related_files:
                             try:
-                                os.remove(related_file)
+                                ek(os.remove, related_file)
                             except Exception as e:
                                 logger.log(u"Could not delete associate file: {0}. Error: {1}".format(related_file, e),
                                            logger.WARNING)
