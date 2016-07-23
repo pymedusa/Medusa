@@ -64,6 +64,14 @@ displayShow.mako
 	text-align: left !important;
 }
 
+.displayShowTableFanArt th.row-seasonheader {
+	border: none !important;
+	background-color: #fff !important;
+	color: #000 !important;
+	padding-top: 15px !important;
+	text-align: left !important;
+}
+
 /* =======================================================================
 testRename.mako
 ========================================================================== */
