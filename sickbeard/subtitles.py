@@ -741,6 +741,8 @@ class SubtitlesFinder(object):
                     run_post_process = True
                     continue
 
+                # 'postpone' should not consider existing subtitles from db.
+                tv_episode.subtitles = []
                 downloaded_languages = download_subtitles(tv_episode, video_path=video_path,
                                                           subtitles=False, embedded_subtitles=False)
 
