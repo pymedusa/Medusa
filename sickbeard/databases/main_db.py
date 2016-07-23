@@ -61,9 +61,9 @@ class MainSanityCheck(db.DBSanityCheck):
         if sql_results:
             for sql_result in sql_results:
                 logger.log(u"Found deleted episode id {0} from show ID {1} with subtitle data. Erasing reference...".format
-                    (sql_result['episode_id'], sql_result['showid']), logger.WARNING)
+                           (sql_result['episode_id'], sql_result['showid']), logger.WARNING)
                 self.connection.action("UPDATE tv_episodes SET subtitles = '', subtitles_searchcount = 0, subtitles_lastsearch = '' " + \
-                                        "WHERE episode_id = %i" % (sql_result['episode_id']))
+                                       "WHERE episode_id = %i" % (sql_result['episode_id']))
 
     def convert_archived_to_compound(self):
         logger.log(u'Checking for archived episodes not qualified', logger.DEBUG)
