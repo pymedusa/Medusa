@@ -105,7 +105,7 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                 try:
                     index = response.text.index('<div id="information"')
                 except ValueError:
-                    logger.log('Could not find main torrent table', logger.ERROR)
+                    logger.log('Could not find main torrent table', logger.DEBUG)
                     continue
 
                 results += self.parse(response.text[index:], mode)
