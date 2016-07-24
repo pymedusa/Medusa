@@ -38,7 +38,7 @@ import subliminal
 
 from requests.compat import quote
 from six import itervalues, text_type
-from github import Github, InputFileContent  # pylint: disable=import-error
+from github import Github, InputFileContent, GithubException  # pylint: disable=import-error
 
 import sickbeard
 from sickbeard import classes
@@ -475,7 +475,13 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
 
                 message = '\n'.join(msg)
                 title_error = '[APP SUBMITTED]: %s' % title_error
-                reports = git.get_organization(gh_org).get_repo(gh_repo).get_issues(state='all')
+
+                try:
+                    reports = git.get_organization(gh_org).get_repo(gh_repo).get_issues(state='all')
+                except (GithubException.BadCredentialsException, GithubException.RateLimitExceededException) as e:
+                    self.log('Error while accessing github: {0}'.format(e), WARNING)
+                except Exception as e:
+                    self.log('Error while accessing github: {0}'.format(e), ERROR)
 
                 def is_ascii_error(title):
                     # [APP SUBMITTED]:
