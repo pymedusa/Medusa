@@ -129,7 +129,10 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         items = []
 
-        torrent_rows = data.get('Fs', [dict()])[0].get('Cn', {}).get('torrents', [])
+        try:
+            torrent_rows = data.get('Fs', [dict()])[0].get('Cn', {}).get('torrents', [])
+        except AttributeError:
+            torrent_rows = None
 
         if not torrent_rows:
             logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
