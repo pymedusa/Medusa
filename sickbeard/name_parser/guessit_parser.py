@@ -3,22 +3,17 @@
 """Guessit Name Parser."""
 from __future__ import unicode_literals
 
+import re
+import sickbeard
 import six
 
 from guessit.api import default_api
+from guessit.rules.common.date import valid_year
 
-
-expected_titles = {
+# hardcoded expected titles
+fixed_expected_titles = {
     # guessit doesn't add dots for this show
     '11.22.63',
-
-    # guessit gets confused because of the numbers (only in some special cases)
-    # (?<![^/\\]) means -> it matches nothing but path separators  (negative lookbehind)
-    r're:(?<![^/\\])12 Monkeys\b',
-    r're:(?<![^/\\])500 Bus Stops\b',
-    r're:(?<![^/\\])60 Minutes\b',
-    r're:(?<![^/\\])Star Trek DS9\b',
-    r're:(?<![^/\\])The 100\b',
 
     # guessit: conflicts with italian language
     r're:(?<![^/\\])\w+ it\b',
@@ -75,6 +70,8 @@ allowed_countries = {
     'gb',
 }
 
+series_re = re.compile(r'^(?P<series>.*?)(?: \(?(?:(?P<year>\d{4})|(?P<country>[A-Z]{2}))\)?)?$')
+
 
 def guessit(name, options=None):
     """Guess the episode information from a given release name.
@@ -89,7 +86,7 @@ def guessit(name, options=None):
     final_options = dict(options) if options else dict()
     final_options.update(dict(type='episode', implicit=True,
                               episode_prefer_number=final_options.get('show_type') == 'anime',
-                              expected_title=normalize(expected_titles),
+                              expected_title=normalize(get_expected_titles()),
                               expected_group=normalize(expected_groups),
                               allowed_languages=normalize(allowed_languages),
                               allowed_countries=normalize(allowed_countries)))
@@ -111,3 +108,32 @@ def normalize(strings):
             string = string.decode('ascii')
         result.append(string)
     return result
+
+
+def get_expected_titles():
+    """Return expected titles to be used by guessit.
+
+    It iterates over user's show list and only returns a regex for titles that contains numbers
+    (since they can confuse guessit).
+
+    :return:
+    :rtype: list of str
+    """
+    expected_titles = list(fixed_expected_titles)
+    for show in sickbeard.showList:
+        match = series_re.match(show.name)
+        if not match:
+            continue
+
+        series, year, _ = match.groups()
+        if year and not valid_year(int(year)):
+            series = show.name
+
+        if not any([char.isdigit() for char in series]):
+            continue
+
+        # (?<![^/\\]) means -> it matches nothing but path separators (negative lookbehind)
+        fmt = r're:\b{name}\b' if show.is_anime else r're:(?<![^/\\]){name}\b'
+        expected_titles.append(fmt.format(name=series))
+
+    return expected_titles

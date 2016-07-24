@@ -1,18 +1,23 @@
 # coding=utf-8
 """Guessit name parser tests."""
-
 from __future__ import unicode_literals
 
 import os
 import unittest
 
+try:
+    from unittest.mock import Mock
+except ImportError:
+    from mock import Mock
 import yaml
 from yaml.constructor import ConstructorError
 from yaml.nodes import MappingNode, SequenceNode
 
 import guessit
+
+import sickbeard
+import sickbeard.name_parser.guessit_parser as sut
 from nose_parameterized import parameterized
-from sickbeard.name_parser.guessit_parser import guessit as pre_configured_guessit
 from six import iteritems
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -47,12 +52,27 @@ def construct_mapping(self, node, deep=False):
 yaml.Loader.add_constructor('tag:yaml.org,2002:map', construct_mapping)
 
 
+def _mock_tv_show(name, is_anime=False):
+    tvshow = Mock(is_anime=is_anime)
+    tvshow.configure_mock(name=name)
+    return tvshow
+
+
 class GuessitTests(unittest.TestCase):
     """Guessit Tests."""
 
     files = {
         'tvshows': 'tvshows.yml',
     }
+
+    # show names with numbers that are used in our test suite
+    show_list = [
+            _mock_tv_show('12 Monkeys'),
+            _mock_tv_show('500 Bus Stops'),
+            _mock_tv_show('60 Minutes'),
+            _mock_tv_show('Mobile Suit Gundam Unicorn RE 0096', is_anime=True),
+            _mock_tv_show('The 100'),
+        ]
 
     parameters = []
 
@@ -69,9 +89,35 @@ class GuessitTests(unittest.TestCase):
             for release_name in release_names:
                 parameters.append([scenario_name, release_name, expected])
 
+    def test_get_expected_titles(self):
+        """Assert expect titles only returns regexes for titles containing numbers."""
+        # Given
+        regular_format = r're:(?<![^/\\]){name}\b'
+        anime_format = r're:\b{name}\b'
+        sickbeard.showList = [
+            _mock_tv_show('Super Show (1999)'),
+            _mock_tv_show('Incredible Show 2007'),
+            _mock_tv_show('The Show (UK)'),
+            _mock_tv_show('The 123 Show'),
+            _mock_tv_show('222 Show (2010)'),
+            _mock_tv_show('The 10 Anime Show', is_anime=True),
+        ]
+
+        # When
+        actual = sut.get_expected_titles()
+
+        # Then
+        expected = list(sut.fixed_expected_titles)
+        expected.extend([
+            regular_format.format(name='The 123 Show'),
+            regular_format.format(name='222 Show'),
+            anime_format.format(name='The 10 Anime Show'),
+        ])
+        self.assertEqual(expected, actual)
+
     def test_pre_configured_guessit(self):
         """Assert that guessit.guessit() uses the pre-configured hook."""
-        self.assertEqual(pre_configured_guessit, guessit.guessit)
+        self.assertEqual(sut.guessit, guessit.guessit)
 
     @parameterized.expand(parameters)
     def test_guess(self, scenario_name, release_name, expected):
@@ -85,6 +131,7 @@ class GuessitTests(unittest.TestCase):
         :type expected: dict
         """
         self.maxDiff = None
+        sickbeard.showList = self.show_list
         options = expected.pop('options', {})
         actual = guessit.guessit(release_name, options=options)
         actual = {k: v for k, v in iteritems(actual)}

@@ -2754,7 +2754,6 @@
   release_group: Group
   type: episode
 
-
 # CreateProperTags
 ? Show.Name.S03E08.REPACK.PROPER.HDTV.x264-GROUP
 : title: Show Name
@@ -2766,4 +2765,15 @@
   format: HDTV
   video_codec: h264
   release_group: GROUP
+  type: episode
+
+# Anime show containing number in its title
+? "[GROUP].Mobile.Suit.Gundam.Unicorn.RE.0096.-.14.[720p].mkv"
+: title: Mobile Suit Gundam Unicorn RE 0096
+  absolute_episode: 14
+  episode: 14
+  screen_size: 720p
+  release_group: GROUP
+  container: mkv
+  mimetype: video/x-matroska
   type: episode
