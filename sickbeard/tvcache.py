@@ -89,6 +89,10 @@ class CacheDBConnection(db.DBConnection):
             if not self.hasColumn(provider_id, 'hash'):
                 self.addColumn(provider_id, 'hash', 'NUMERIC', '')
 
+            # add proper_tags column to table if missing
+            if not self.hasColumn(provider_id, 'proper_tags'):
+                self.addColumn(provider_id, 'proper_tags', 'TEXT', '')
+
         except Exception as e:
             if str(e) != 'table [{provider_id}] already exists'.format(provider_id=provider_id):
                 raise
@@ -386,13 +390,16 @@ class TVCache(object):
             # get version
             version = parse_result.version
 
+            # Store proper_tags as proper1|proper2|proper3
+            proper_tags = '|'.join(parse_result.proper_tags)
+
             logger.log('Added RSS item: [{0}] to cache: [{1}]'.format(name, self.provider_id), logger.DEBUG)
 
             return [
                 b'INSERT OR REPLACE INTO [{provider_id}] (name, season, episodes, indexerid, url, time, quality, release_group, version, seeders, '
-                b'leechers, size, pubdate, hash) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(provider_id=self.provider_id),
+                b'leechers, size, pubdate, hash, proper_tags) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(provider_id=self.provider_id),
                 [name, season, episodeText, parse_result.show.indexerid, url, cur_timestamp, quality,
-                 release_group, version, seeders, leechers, size, pubdate, torrent_hash]]
+                 release_group, version, seeders, leechers, size, pubdate, torrent_hash, proper_tags]]
 
     def searchCache(self, episode, forced_search=False, downCurQuality=False):
         needed_eps = self.findNeededEpisodes(episode, forced_search, downCurQuality)
@@ -406,7 +413,7 @@ class TVCache(object):
         before moving on with hitting the providers.
         """
         cache_db_con = self._get_db()
-        sql = b"SELECT * FROM [{provider_id}] WHERE (name LIKE '%.PROPER.%' OR name LIKE '%.REPACK.%' OR name LIKE '%.REAL.%')".format(provider_id=self.provider_id)
+        sql = b"SELECT * FROM [{provider_id}] WHERE proper_tags != ''".format(provider_id=self.provider_id)
 
         if date:
             sql += b' AND time >= {0}'.format(int(time.mktime(date.timetuple())))
@@ -487,6 +494,7 @@ class TVCache(object):
             result.size = cur_result[b'size']
             result.pubdate = cur_result[b'pubdate']
             result.hash = cur_result[b'hash']
+            result.proper_tags = cur_result[b'proper_tags']
             result.name = title
             result.quality = cur_quality
             result.release_group = cur_release_group

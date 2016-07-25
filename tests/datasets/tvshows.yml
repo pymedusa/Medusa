@@ -765,6 +765,7 @@
   season: 2
   other: Proper
   proper_count: 1
+  proper_tag: REPACK
   screen_size: 720p
   format: BluRay
   audio_codec: DolbyDigital
@@ -1572,6 +1573,7 @@
   size: 177MB
   other: Proper
   proper_count: 1
+  proper_tag: PROPER
   format: HDTV
   video_codec: h264
   type: episode
@@ -1585,6 +1587,7 @@
   size: 4.8GB
   other: Proper
   proper_count: 1
+  proper_tag: PROPER
   format: HDTV
   video_codec: h264
   type: episode
@@ -1596,6 +1599,7 @@
   size: 1.1TB
   other: Proper
   proper_count: 1
+  proper_tag: PROPER
   format: HDTV
   video_codec: h264
   type: episode
@@ -2351,6 +2355,7 @@
   video_codec: XviD
   other: Proper
   proper_count: 1
+  proper_tag: REPACK
   release_group: OMiCRON
   type: episode
 
@@ -2376,6 +2381,7 @@
   video_codec: h264
   other: Proper
   proper_count: 1
+  proper_tag: PROPER
   release_group: LOL
   type: episode
 
@@ -2746,4 +2752,18 @@
   video_codec: h264
   audio_channels: '5.1'
   release_group: Group
+  type: episode
+
+
+# CreateProperTags
+? Show.Name.S03E08.REPACK.PROPER.HDTV.x264-GROUP
+: title: Show Name
+  season: 3
+  episode: 8
+  other: Proper
+  proper_count: 2
+  proper_tag: [REPACK, PROPER]
+  format: HDTV
+  video_codec: h264
+  release_group: GROUP
   type: episode

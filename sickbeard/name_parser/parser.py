@@ -121,10 +121,8 @@ class NameParser(object):
 
         matches = []
         bestResult = None
-        guess = None
-
+        guess = guessit.guessit(name, dict(show_type=self.show_type))
         if self.use_guessit:
-            guess = guessit.guessit(name, dict(show_type=self.show_type))
             result = self.to_parse_result(name, guess)
             matches.append(result)
 
@@ -141,6 +139,7 @@ class NameParser(object):
                 result = ParseResult(name)
                 result.which_regex = [cur_regex_name]
                 result.score = 0 - cur_regex_num
+                result.proper_tags = ensure_list(guess.get('proper_tag'))
 
                 named_groups = match.groupdict().keys()
 
@@ -474,6 +473,7 @@ class NameParser(object):
         final_result.extra_info = self._combine_results(dir_name_result, file_name_result, 'extra_info')
         final_result.release_group = self._combine_results(dir_name_result, file_name_result, 'release_group')
         final_result.version = self._combine_results(dir_name_result, file_name_result, 'version')
+        final_result.proper_tags =  self._combine_results(dir_name_result, file_name_result, 'proper_tags')
 
         final_result.which_regex = []
         if final_result == file_name_result:
@@ -525,7 +525,8 @@ class NameParser(object):
             'extra_info': ' '.join(ensure_list(guess.get('other'))) if guess.get('other') else None,
             'episode_numbers': ensure_list(guess.get('episode'))
             if guess.get('episode') != guess.get('absolute_episode') else [],
-            'ab_episode_numbers': ensure_list(guess.get('absolute_episode'))
+            'ab_episode_numbers': ensure_list(guess.get('absolute_episode')),
+            'proper_tags': ensure_list(guess.get('proper_tag'))
         }
 
         result = ParseResult(name)
@@ -566,7 +567,7 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
     def __init__(self, original_name, series_name=None, season_number=None,  # pylint: disable=too-many-arguments
                  episode_numbers=None, extra_info=None, release_group=None,
                  air_date=None, ab_episode_numbers=None, show=None,
-                 score=None, quality=None, version=None):
+                 score=None, quality=None, version=None, proper_tags=None):
 
         self.original_name = original_name
 
@@ -597,6 +598,7 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
         self.score = score
 
         self.version = version
+        self.proper_tags = proper_tags
 
     def __eq__(self, other):
         return other and all([
@@ -610,7 +612,8 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
             self.show == other.show,
             self.score == other.score,
             self.quality == other.quality,
-            self.version == other.version
+            self.version == other.version,
+            self.proper_tags == other.proper_tags
         ])
 
     def __str__(self):
@@ -633,6 +636,9 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
 
         if self.release_group:
             to_return += ' [GROUP: {0}]'.format(self.release_group)
+
+        if self.proper_tags:
+            to_return += ' [PROPER TAGs: {0}]'.format('|'.join(self.proper_tags))
 
         to_return += ' [ABD: {0}]'.format(self.is_air_by_date)
         to_return += ' [ANIME: {0}]'.format(self.is_anime)

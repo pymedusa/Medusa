@@ -1810,6 +1810,63 @@ class FixMultipleFormats(Rule):
                 return to_remove
 
 
+class CreateProperTags(Rule):
+    """Create the proper_tags property from the proper matches.
+
+    e.g.: guessit -t episode "Show.Name.S03E08.REPACK.PROPER.HDTV.x264-GROUP"
+
+    without this rule:
+        For: Show.Name.S03E08.REPACK.PROPER.HDTV.x264-GROUP
+        GuessIt found: {
+            "title": "Show Name",
+            "season": 3,
+            "episode": 8,
+            "other": "Proper",
+            "proper_count": 2,
+            "format": "HDTV",
+            "video_codec": "h264",
+            "release_group": "GROUP",
+            "type": "episode"
+        }
+
+    with this rule:
+        For: Show.Name.S03E08.REPACK.PROPER.HDTV.x264-GROUP
+        GuessIt found: {
+            "title": "Show Name",
+            "season": 3,
+            "episode": 8,
+            "other": "Proper",
+            "proper_count": 2,
+            "proper_tag": ["REPACK", "PROPER"]
+            "format": "HDTV",
+            "video_codec": "h264",
+            "release_group": "GROUP",
+            "type": "episode"
+        }
+    """
+
+    priority = POST_PROCESS
+    consequence = AppendMatch
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        to_append = []
+        for proper in matches.named('other', predicate=lambda match: match.value == 'Proper'):
+            tag = copy.copy(proper)
+            tag.name = 'proper_tag'
+            tag.value = cleanup(proper.raw.upper())
+            to_append.append(tag)
+
+        return to_append
+
+
 class EnhanceReleaseGroupDetection(Rule):
     """Enhance release group detection.
 
@@ -2038,5 +2095,6 @@ def rules():
         EnhanceReleaseGroupDetection,
         ReleaseGroupPostProcessor,
         FixMultipleTitles,
-        FixMultipleFormats
+        FixMultipleFormats,
+        CreateProperTags
     )

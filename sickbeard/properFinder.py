@@ -40,7 +40,6 @@ from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.History import History
 from sickrage.helper.common import enabled_providers
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
-from guessit import guessit
 
 
 class ProperFinder(object):  # pylint: disable=too-few-public-methods
@@ -157,14 +156,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # if they haven't been added by a different provider than add the proper to the list
             for proper in cur_propers:
-                guess = guessit(proper.name)
-                if not guess.get('proper_count'):
-                    logger.log('Skipping non-proper: {name}'.format(name=proper.name))
-                    continue
-
                 name = self._genericName(proper.name, remove=False)
                 if name not in propers:
-                    logger.log('Found new proper result: {name}'.format
+                    logger.log('Found new possible proper result: {name}'.format
                                (name=proper.name), logger.DEBUG)
                     proper.provider = cur_provider
                     propers[name] = proper
@@ -181,6 +175,13 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             except (InvalidNameException, InvalidShowException) as error:
                 logger.log('{0}'.format(error), logger.DEBUG)
                 continue
+
+            if not parse_result.proper_tags:
+                logger.log('Skipping non-proper: {name}'.format(name=cur_proper.name))
+                continue
+
+            logger.log('Proper tags for {proper}: {tags}'.format
+                       (proper=cur_proper.name, tags=parse_result.proper_tags), logger.DEBUG)
 
             if not parse_result.series_name:
                 logger.log('Ignoring invalid show: {name}'.format
@@ -209,6 +210,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             cur_proper.version = parse_result.version
             cur_proper.quality = Quality.nameQuality(cur_proper.name, parse_result.is_anime)
             cur_proper.content = None
+            cur_proper.proper_tags = parse_result.proper_tags
 
             # filter release
             best_result = pickBestResult(cur_proper, parse_result.show)
@@ -329,6 +331,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 result.size = cur_proper.size
                 result.pubdate = cur_proper.pubdate
                 result.hash = cur_proper.hash
+                result.proper_tags = cur_proper.proper_tags
 
                 # snatch it
                 snatchEpisode(result, SNATCHED_PROPER)

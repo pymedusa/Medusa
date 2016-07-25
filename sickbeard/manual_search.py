@@ -209,12 +209,12 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
 
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
-        if table_exists and 'seeders' in columns and 'leechers' in columns and 'size' in columns:
+        required_columns = ['seeders', 'leechers', 'size', 'proper_tags']
+        if table_exists and all(required_column in columns for required_column in required_columns):
             # The default sql, that's executed for each providers cache table
-            common_sql = b"SELECT rowid, ? as 'provider_type', ? as 'provider_image', \
-                          ? as 'provider', ? as 'provider_id', ? 'provider_minseed', ? 'provider_minleech', \
-                          name, season, episodes, indexerid, url, time, \
-                          (select 'proper' where name like '%PROPER%' or name like '%REAL%' or name like '%REPACK%') as  'isproper', \
+            common_sql = b"SELECT rowid, ? AS 'provider_type', ? AS 'provider_image', \
+                          ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed', ? 'provider_minleech', \
+                          name, season, episodes, indexerid, url, time, proper_tags, \
                           quality, release_group, version, seeders, leechers, size, time \
                           FROM '{provider_id}' WHERE indexerid = ? AND quality > 0 ".format(provider_id=cur_provider.get_id())
             additional_sql = " AND episodes LIKE ? AND season = ? "
@@ -233,14 +233,14 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             combined_sql_params += add_params
 
             # Get the last updated cache items timestamp
-            last_update = main_db_con.select(b"select max(time) as lastupdate from '{provider_id}'".format(provider_id=cur_provider.get_id()))
+            last_update = main_db_con.select(b"select max(time) AS lastupdate from '{provider_id}'".format(provider_id=cur_provider.get_id()))
             provider_results['last_prov_updates'][cur_provider.get_id()] = last_update[0]['lastupdate'] if last_update[0]['lastupdate'] else 0
 
     # Check if we have the combined sql strings
     if combined_sql_q:
         sql_prepend = b"SELECT * FROM ("
-        sql_append = b") ORDER BY CASE quality WHEN '{quality_unknown}' THEN -1 ELSE CAST(quality as DECIMAL) END DESC, " \
-                     b" isproper DESC, seeders DESC".format(quality_unknown=Quality.UNKNOWN)
+        sql_append = b") ORDER BY CASE quality WHEN '{quality_unknown}' THEN -1 ELSE CAST(quality AS DECIMAL) END DESC, " \
+                     b" proper_tags DESC, seeders DESC".format(quality_unknown=Quality.UNKNOWN)
 
         # Add all results
         sql_total += main_db_con.select(b'{0} {1} {2}'.
