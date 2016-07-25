@@ -41,7 +41,7 @@ from sickbeard.common import (
     DOWNLOADED, SNATCHED, SNATCHED_PROPER, ARCHIVED, IGNORED, UNAIRED, WANTED, SKIPPED, UNKNOWN,
     NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND, NAMING_SEPARATED_REPEAT, NAMING_LIMITED_EXTEND_E_PREFIXED,
 )
-from sickbeard.indexers.indexer_config import INDEXER_TVRAGE
+from sickbeard.indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
 from sickbeard.scene_numbering import get_scene_absolute_numbering, get_scene_numbering, xem_refresh
 
@@ -74,14 +74,20 @@ shutil.copyfile = shutil_custom.copyfile_custom
 class TVObject(object):
     """Base class for TVShow and TVEpisode."""
 
-    def __init__(self, ignored_properties):
+    def __init__(self, indexer, indexerid, ignored_properties):
         """Constructor with ignore_properties.
 
+        :param indexer:
+        :type indexer: int
+        :param indexerid:
+        :type indexerid: int
         :param ignored_properties:
         :type ignored_properties: set(str)
         """
-        self.__ignored_properties = ignored_properties | {'lock'}
         self.__dirty = True
+        self.__ignored_properties = ignored_properties | {'lock'}
+        self.indexer = int(indexer)
+        self.indexerid = int(indexerid)
         self.lock = threading.Lock()
 
     def __setattr__(self, key, value):
@@ -108,6 +114,15 @@ class TVObject(object):
     def reset_dirty(self):
         """Reset the dirty flag."""
         self.__dirty = False
+
+    @property
+    def tvdb_id(self):
+        """Return the tvdb_id
+
+        :return:
+        :rtype: int
+        """
+        return self.indexerid if self.indexerid and self.indexer == INDEXER_TVDB else None
 
     def __getstate__(self):
         """Get threading lock state.
@@ -138,10 +153,7 @@ class TVShow(TVObject):
         :param lang:
         :type lang: str
         """
-        super(TVShow, self).__init__({'episodes', 'nextaired', 'release_groups'})
-
-        self.indexerid = int(indexerid)
-        self.indexer = int(indexer)
+        super(TVShow, self).__init__(indexer, indexerid, {'episodes', 'nextaired', 'release_groups'})
         self.name = ''
         self.imdbid = ''
         self.network = ''
@@ -343,7 +355,8 @@ class TVShow(TVObject):
 
         return ep_list
 
-    def get_episode(self, season=None, episode=None, filepath=None, no_create=False, absolute_number=None):
+    def get_episode(self, season=None, episode=None, filepath=None, no_create=False, absolute_number=None,
+                    should_cache=True):
         """Return TVEpisode given the specified filter.
 
         :param season:
@@ -356,6 +369,8 @@ class TVShow(TVObject):
         :type no_create: bool
         :param absolute_number:
         :type absolute_number: int
+        :param should_cache:
+        :type should_cache: bool
         :return:
         :rtype: TVEpisode
         """
@@ -389,19 +404,20 @@ class TVShow(TVObject):
         if season not in self.episodes:
             self.episodes[season] = {}
 
-        if episode not in self.episodes[season] or self.episodes[season][episode] is None:
-            if no_create:
-                return None
+        if episode in self.episodes[season] and self.episodes[season][episode] is not None:
+            return self.episodes[season][episode]
+        elif no_create:
+            return None
 
-            if filepath:
-                ep = TVEpisode(self, season, episode, filepath)
-            else:
-                ep = TVEpisode(self, season, episode)
+        if filepath:
+            ep = TVEpisode(self, season, episode, filepath)
+        else:
+            ep = TVEpisode(self, season, episode)
 
-            if ep is not None:
-                self.episodes[season][episode] = ep
+        if ep is not None and should_cache:
+            self.episodes[season][episode] = ep
 
-        return self.episodes[season][episode]
+        return ep
 
     def should_update(self, update_date=datetime.date.today()):
         """Whether the show information should be updated.
@@ -1620,7 +1636,8 @@ class TVEpisode(TVObject):
         :param filepath:
         :type filepath: str
         """
-        super(TVEpisode, self).__init__({'show', 'scene_season', 'scene_episode', 'scene_absolute_number',
+        super(TVEpisode, self).__init__(int(show.indexer) if show else 0, 0,
+                                        {'show', 'scene_season', 'scene_episode', 'scene_absolute_number',
                                          'related_episodes', 'wanted_quality'})
         self.show = show
         self.name = ''
@@ -1635,7 +1652,6 @@ class TVEpisode(TVObject):
         self.hasnfo = False
         self.hastbn = False
         self.status = UNKNOWN
-        self.indexerid = 0
         self.file_size = 0
         self.release_name = ''
         self.is_proper = False
@@ -1647,10 +1663,43 @@ class TVEpisode(TVObject):
         self.scene_absolute_number = 0
         self.related_episodes = []
         self.wanted_quality = []
-        self.indexer = int(self.show.indexer) if show else 0
         if show:
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
+
+    @staticmethod
+    def from_filepath(filepath):
+        """Return an TVEpisode for the given filepath.
+
+        IMPORTANT: The filepath is not kept in the TVEpisode.location
+        TVEpisode.location should only be set after it's post-processed and it's in the correct location.
+        As of now, TVEpisode is also not cached in TVShow.episodes since this method is only used during postpone PP.
+        Goal here is to slowly move to use this method to create TVEpisodes. New parameters might be introduced.
+
+        :param filepath:
+        :type filepath: str
+        :return:
+        :rtype: TVEpisode
+        """
+        try:
+            parse_result = NameParser(True, tryIndexers=True).parse(filepath, cache_result=True)
+            results = []
+            if parse_result.show.is_anime and parse_result.ab_episode_numbers:
+                results = [parse_result.show.get_episode(absolute_number=episode_number, should_cache=False)
+                           for episode_number in parse_result.ab_episode_numbers]
+
+            if not parse_result.show.is_anime and parse_result.episode_numbers:
+                results = [parse_result.show.get_episode(season=parse_result.season_number,
+                                                         episode=episode_number, should_cache=False)
+                           for episode_number in parse_result.episode_numbers]
+
+            for episode in results:
+                episode.related_episodes = list(results[1:])
+                return episode  # only root episode has related_episodes
+
+        except (InvalidNameException, InvalidShowException):
+            logger.log(logger.INFO, u'Cannot create TVEpisode from path {path}'.format(path=filepath))
+
 
     @property
     def location(self):
@@ -1679,7 +1728,7 @@ class TVEpisode(TVObject):
 
     def refresh_subtitles(self):
         """Look for subtitles files and refresh the subtitles property."""
-        current_subtitles = subtitles.get_current_subtitles(self.location)
+        current_subtitles = subtitles.get_current_subtitles(self)
         ep_num = episode_num(self.season, self.episode) or \
             episode_num(self.season, self.episode, numbering='absolute')
         if self.subtitles == current_subtitles:
@@ -1703,10 +1752,7 @@ class TVEpisode(TVObject):
                         episode_num(self.season, self.episode, numbering='absolute')), logger.DEBUG)
             return
 
-        new_subtitles = subtitles.download_subtitles(video_path=self.location, show_name=self.show.name,
-                                                     season=self.season, episode=self.episode, episode_name=self.name,
-                                                     show_indexerid=self.show.indexerid, release_name=self.release_name,
-                                                     status=self.status, existing_subtitles=self.subtitles)
+        new_subtitles = subtitles.download_subtitles(self)
         if new_subtitles:
             self.subtitles = subtitles.merge_subtitles(self.subtitles, new_subtitles)
 
