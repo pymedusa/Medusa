@@ -334,7 +334,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 result.proper_tags = cur_proper.proper_tags
 
                 # snatch it
-                snatchEpisode(result, SNATCHED_PROPER)
+                snatchEpisode(result)
                 time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 
     @staticmethod

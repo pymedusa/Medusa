@@ -91,12 +91,11 @@ def _downloadResult(result):
     return newResult
 
 
-def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branches, too-many-statements
+def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statements
     """
     Internal logic necessary to actually "snatch" a result that has been found.
 
     :param result: SearchResult instance to be snatched.
-    :param endStatus: the episode status that should be used for the episode object once it's snatched.
     :return: boolean, True on success
     """
     if result is None:
@@ -113,6 +112,8 @@ def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branc
         logger.log(u'Found proper tags for {0}. Snatching as PROPER'.format(result.name), logger.DEBUG)
         is_proper = True
         endStatus = SNATCHED_PROPER
+    else:
+        endStatus = SNATCHED
 
     if result.url.startswith('magnet') or result.url.endswith('torrent'):
         result.resultType = 'torrent'
