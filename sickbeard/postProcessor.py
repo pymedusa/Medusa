@@ -549,7 +549,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
         # remember whether it's a proper
         if parse_result.extra_info:
-            self.is_proper = parse_result.is_proper
+            self.is_proper = bool(parse_result.proper_tags)
 
         # if the result is complete then remember that for later
         # if the result is complete then set release name
