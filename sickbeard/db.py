@@ -113,7 +113,17 @@ class DBConnection(object):
                 return sql_results.fetchone()
             else:
                 return sql_results
+        except sqlite3.OperationalError as e:
+            # This errors user should be able to fix it.
+            if 'unable to open database file' in e.args[0] or \
+               'database is locked' in e.args[0] or \
+               'database or disk is full' in e.args[0]:
+                logger.log(u'DB error: {0!r}'.format(e), logger.WARNING)
+            else:
+                logger.log(u'DB error: {0!r}'.format(e), logger.ERROR)
+                raise
         except Exception:
+            logger.log(u'DB error: {0!r}'.format(e), logger.ERROR)
             raise
 
     def checkDBVersion(self):
