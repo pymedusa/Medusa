@@ -109,7 +109,8 @@ def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branc
         for curEp in result.episodes:
             if datetime.date.today() - curEp.airdate <= datetime.timedelta(days=7):
                 result.priority = 1
-    if re.search(r'(^|[\. _-])(proper|repack)([\. _-]|$)', result.name, re.I) is not None:
+    if result.proper_tags:
+        logger.log(u'Found proper tags for {0}. Snatching as PROPER'.format(result.name), logger.DEBUG)
         is_proper = True
         endStatus = SNATCHED_PROPER
 
