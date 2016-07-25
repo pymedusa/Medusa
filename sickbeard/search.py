@@ -289,9 +289,8 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
             if any(ext in cur_result.name.lower() for ext in preferred_words):
                 logger.log(u"Preferring " + cur_result.name + u" (preferred words)")
                 bestResult = cur_result
-            if "proper" in cur_result.name.lower() or "real" in cur_result.name.lower() or \
-                    "repack" in cur_result.name.lower():
-                logger.log(u"Preferring " + cur_result.name + u" (repack/proper/real over nuked)")
+            if cur_result.proper_tags:
+                logger.log(u"Preferring " + cur_result.name + u" (repack/proper/real/rerip over nuked)")
                 bestResult = cur_result
             elif "internal" in bestResult.name.lower() and "internal" not in cur_result.name.lower():
                 logger.log(u"Preferring " + cur_result.name + u" (normal instead of internal)")
