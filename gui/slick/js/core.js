@@ -3353,7 +3353,6 @@ var SICKRAGE = {
                     alert('You must choose a show to continue');
                     return false;
                 }
-                generateBlackWhiteList();
                 $('#addShowForm').submit();
             });
 
