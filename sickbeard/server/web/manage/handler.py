@@ -263,7 +263,7 @@ class Manage(Home, WebRoot):
                     b'AND location != \'\'',
                     [cur_indexer_id]
                 )
-                to_download[cur_indexer_id] = [str(x['season']) + 'x' + str(x['episode']) for x in all_eps_results]
+                to_download[cur_indexer_id] = [str(x[b'season']) + 'x' + str(x[b'episode']) for x in all_eps_results]
 
             for epResult in to_download[cur_indexer_id]:
                 season, episode = epResult.split('x')
