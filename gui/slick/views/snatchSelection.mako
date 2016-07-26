@@ -417,7 +417,7 @@
                             <h3 style="display: inline;">
                                 Season ${season}
                             % if manual_search_type != 'season':
-                                 Episode ${episode}
+                                Episode ${episode}
                             % endif
                             </h3>
                         </th>
@@ -507,7 +507,11 @@
                             <img src="/images/providers/${provider_img or 'missing.png'}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${provider}" title="${provider}"/>
                             ${hItem["provider"]}
                         </td>
-                        <td align="center">${renderQualityPill(int(hItem["quality"]))}</td>
+                        <td align="center">${renderQualityPill(int(hItem["quality"]))}
+                        % if hItem["proper_tags"]:
+                            <img src="${srRoot}/images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem["proper_tags"].replace('|', ', ')}"/>
+                        % endif
+                        </td>
                         <td align="center">
                             <span class="${seed_highlight}">
                                 ${hItem["seeders"] if hItem["seeders"] >= 0 else '-'}
