@@ -142,7 +142,7 @@ var SICKRAGE = {
                 });
             }
 
-            if(metaToBool('sickbeard.FUZZY_DATING')) {
+            if(metaToBool('FUZZY_DATING')) {
                 $.timeago.settings.allowFuture = true;
                 $.timeago.settings.strings = {
                     prefixAgo: null,
@@ -2017,8 +2017,8 @@ var SICKRAGE = {
                 $('.loading-spinner').hide();
                 $('.show-grid').show().isotope({
                     itemSelector: '.show-container',
-                    sortBy : getMeta('sickbeard.POSTER_SORTBY'),
-                    sortAscending: getMeta('sickbeard.POSTER_SORTDIR'),
+                    sortBy : getMeta('POSTER_SORTBY'),
+                    sortAscending: getMeta('POSTER_SORTDIR'),
                     layoutMode: 'masonry',
                     masonry: {
                         isFitWidth: true
@@ -2026,7 +2026,7 @@ var SICKRAGE = {
                     getSortData: {
                         name: function (itemElem) {
                             var name = $(itemElem).attr('data-name') || '';
-                            return (metaToBool('sickbeard.SORT_ARTICLE') ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
+                            return (metaToBool('SORT_ARTICLE') ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
                         },
                         network: '[data-network]',
                         date: function (itemElem) {
@@ -2115,16 +2115,16 @@ var SICKRAGE = {
             }).on('shown.bs.popover', function () { // bootstrap popover event triggered when the popover opens
                 // call this function to copy the column selection code into the popover
                 $.tablesorter.columnSelector.attachTo( $('#showListTableShows'), '#popover-target');
-                if(metaToBool('sickbeard.ANIME_SPLIT_HOME')){
+                if(metaToBool('ANIME_SPLIT_HOME')){
                     $.tablesorter.columnSelector.attachTo( $('#showListTableAnime'), '#popover-target');
                 }
 
             });
         },
         displayShow: function() {
-            if (metaToBool('sickbeard.FANART_BACKGROUND')) {
+            if (metaToBool('FANART_BACKGROUND')) {
                 $.backstretch(srRoot + '/showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
-                $('.backstretch').css("opacity", getMeta('sickbeard.FANART_BACKGROUND_OPACITY')).fadeIn("500");
+                $('.backstretch').css("opacity", getMeta('FANART_BACKGROUND_OPACITY')).fadeIn("500");
             }
             $('#srRoot').ajaxEpSearch({'colorRow': true});
 
@@ -2357,7 +2357,7 @@ var SICKRAGE = {
                 $(this).val(value.replace(/[^0-9xX]*/g, ''));
                 var forSeason = $(this).attr('data-for-season');
                 var forEpisode = $(this).attr('data-for-episode');
-                
+
                 // If empty reset the field
                 if (value === '') {
                     setEpisodeSceneNumbering(forSeason, forEpisode, null, null);
@@ -2380,11 +2380,11 @@ var SICKRAGE = {
                 } else {
                     isValid = setInputValidInvalid(false, $(this));
                 }
-                
+
                 if (isValid){
                     setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode);
                 }
-                
+
             });
 
             $('.sceneAbsolute').on('change', function() {
@@ -2528,7 +2528,7 @@ var SICKRAGE = {
                         callback();
                     }
                 });
-                
+
             };
 
             // Click event for the download button for snatching a result
@@ -2559,7 +2559,7 @@ var SICKRAGE = {
                 var self = this;
                 var pollInterval = 5000;
                 repeat = repeat || true;
-                
+
                 var show = $('meta[data-last-prov-updates]').attr('data-show');
                 var season = $('meta[data-last-prov-updates]').attr('data-season');
                 var episode = $('meta[data-last-prov-updates]').attr('data-episode');
@@ -2987,7 +2987,7 @@ var SICKRAGE = {
                 widgets: ['zebra', 'filter'],
                 sortList: [[0,1]],
                 textExtraction: (function(){
-                    if(isMeta('sickbeard.HISTORY_LAYOUT', ['detailed'])){
+                    if(isMeta('HISTORY_LAYOUT', ['detailed'])){
                         return {
                             0: function(node) { return $(node).find('time').attr('datetime'); },
                             4: function(node) { return $(node).find("span").text().toLowerCase(); }
@@ -3002,7 +3002,7 @@ var SICKRAGE = {
                     }
                 }()),
                 headers: (function(){
-                    if(isMeta('sickbeard.HISTORY_LAYOUT', ['detailed'])){
+                    if(isMeta('HISTORY_LAYOUT', ['detailed'])){
                         return {
                             0: { sorter: 'realISODate' },
                             4: { sorter: 'quality' }
@@ -3055,9 +3055,9 @@ var SICKRAGE = {
 
         },
         index: function() {
-            if(isMeta('sickbeard.COMING_EPS_LAYOUT', ['list'])){
+            if(isMeta('COMING_EPS_LAYOUT', ['list'])){
                 var sortCodes = {'date': 0, 'show': 2, 'network': 5};
-                var sort = getMeta('sickbeard.COMING_EPS_SORT');
+                var sort = getMeta('COMING_EPS_SORT');
                 var sortList = (sort in sortCodes) ? [[sortCodes[sort], 0]] : [[0, 0]];
 
                 $('#showListTable:has(tbody tr)').tablesorter({
@@ -3088,7 +3088,7 @@ var SICKRAGE = {
                 $('#srRoot').ajaxEpSearch();
             }
 
-            if(isMeta('sickbeard.COMING_EPS_LAYOUT', ['banner', 'poster'])){
+            if(isMeta('COMING_EPS_LAYOUT', ['banner', 'poster'])){
                 $('#srRoot').ajaxEpSearch({'size': 16, 'loadingImage': 'loading16' + themeSpinner + '.gif'});
                 $('.ep_summary').hide();
                 $('.ep_summaryTrigger').click(function() {
@@ -3114,7 +3114,7 @@ var SICKRAGE = {
         init: function() {
             $('#tabs').tabs({
                 collapsible: true,
-                selected: (metaToBool('sickbeard.SORT_ARTICLE') ? -1 : 0)
+                selected: (metaToBool('SORT_ARTICLE') ? -1 : 0)
             });
 
             $.initRemoteShowGrid = function(){
@@ -3162,7 +3162,7 @@ var SICKRAGE = {
                     getSortData: {
                         name: function(itemElem) {
                             var name = $(itemElem).attr('data-name') || '';
-                            return (metaToBool('sickbeard.SORT_ARTICLE') ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
+                            return (metaToBool('SORT_ARTICLE') ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
                         },
                         rating: '[data-rating] parseInt',
                         votes: '[data-votes] parseInt',

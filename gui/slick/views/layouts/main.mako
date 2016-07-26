@@ -15,6 +15,8 @@
         THEME_NAME,
         TIME_PRESET,
         TRIM_ZERO,
+        FANART_BACKGROUND,
+        FANART_BACKGROUND_OPACITY,
         WEB_ROOT,
     )
 %>
