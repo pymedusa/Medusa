@@ -475,13 +475,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
 
                 message = '\n'.join(msg)
                 title_error = '[APP SUBMITTED]: %s' % title_error
-
-                try:
-                    reports = git.get_organization(gh_org).get_repo(gh_repo).get_issues(state='all')
-                except (GithubException.BadCredentialsException, GithubException.RateLimitExceededException) as e:
-                    self.log('Error while accessing github: {0}'.format(e), WARNING)
-                except Exception as e:
-                    self.log('Error while accessing github: {0}'.format(e), ERROR)
+                reports = git.get_organization(gh_org).get_repo(gh_repo).get_issues(state='all')
 
                 def is_ascii_error(title):
                     # [APP SUBMITTED]:
@@ -527,6 +521,8 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
                 if issue_id and cur_error in classes.ErrorViewer.errors:
                     # clear error from error list
                     classes.ErrorViewer.errors.remove(cur_error)
+        except (GithubException.BadCredentialsException, GithubException.RateLimitExceededException) as e:
+            self.log('Error while accessing github: {0}'.format(e), WARNING)
         except Exception:  # pylint: disable=broad-except
             self.log(traceback.format_exc(), ERROR)
             submitter_result = 'Exception generated in issue submitter, please check the log'
