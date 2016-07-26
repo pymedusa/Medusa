@@ -509,7 +509,7 @@
                         </td>
                         <td align="center">${renderQualityPill(int(hItem["quality"]))}
                         % if hItem["proper_tags"]:
-                            <img src="${srRoot}/images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem["proper_tags"].replace('|', ', ')}"/>
+                            <img src="/images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem["proper_tags"].replace('|', ', ')}"/>
                         % endif
                         </td>
                         <td align="center">
