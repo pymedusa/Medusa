@@ -408,7 +408,7 @@
         % endif
         <!-- @TODO: Change this to use the REST API -->
         <!-- add provider meta data -->
-            <meta data-last-prov-updates="${provider_results["last_prov_updates"]}" data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
+            <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
             <table id="showTable" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
                 <!-- @TODO: Change this first thead to a caption with CSS styling -->
                 <thead class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
