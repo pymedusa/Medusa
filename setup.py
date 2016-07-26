@@ -24,6 +24,9 @@ setup(
         'rednose',
         'mock',
     ],
+    extras_require={
+        'system-stats': ['psutil'],
+    },
     classifiers=[
         'Development Status :: ???',
         'Intended Audience :: Developers',
