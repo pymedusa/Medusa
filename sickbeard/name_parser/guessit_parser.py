@@ -134,6 +134,7 @@ def get_expected_titles():
 
         # (?<![^/\\]) means -> it matches nothing but path separators (negative lookbehind)
         fmt = r're:\b{name}\b' if show.is_anime else r're:(?<![^/\\]){name}\b'
-        expected_titles.append(fmt.format(name=series))
+        escaped_name = re.escape(series).replace(r'\ ', ' ')  # space should not be escaped
+        expected_titles.append(fmt.format(name=escaped_name))
 
     return expected_titles

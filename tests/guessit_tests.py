@@ -67,10 +67,13 @@ class GuessitTests(unittest.TestCase):
 
     # show names with numbers that are used in our test suite
     show_list = [
+            _mock_tv_show('11.22.63'),
             _mock_tv_show('12 Monkeys'),
             _mock_tv_show('500 Bus Stops'),
             _mock_tv_show('60 Minutes'),
             _mock_tv_show('Mobile Suit Gundam Unicorn RE 0096', is_anime=True),
+            _mock_tv_show('R-15'),
+            _mock_tv_show('The Show ** 2 **'),
             _mock_tv_show('The 100'),
         ]
 

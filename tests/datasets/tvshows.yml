@@ -2777,3 +2777,10 @@
   container: mkv
   mimetype: video/x-matroska
   type: episode
+
+# Show name with number
+? R-15.S03E04
+: title: R-15
+  season: 3
+  episode: 4
+  type: episode
