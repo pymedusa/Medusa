@@ -8,6 +8,7 @@
     from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from sickbeard.common import Quality, qualityPresets, qualityPresetStrings, statusStrings, Overview
     from sickrage.providers.GenericProvider import GenericProvider
+    from sickrage.helper.common import pretty_file_size
 %>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -45,7 +46,7 @@
     <td class="nowrap">${hItem["release"]}</td>
     <td align="center">
     % if hItem["size"] != -1:
-        ${hItem["size"]}
+        ${pretty_file_size(hItem["size"])}
     % else:
         ?
     % endif
