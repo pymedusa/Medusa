@@ -31,12 +31,12 @@
                     <li><a href="#advanced-settings">Advanced Settings</a></li>
                 </ul>
                 <div id="misc">
-                    <div class="component-group">
                         <div class="component-group-desc">
                             <h3>Misc</h3>
                             <p>Startup options. Indexer options. Log and show file locations.</p>
                             <p><b>Some options may require a manual restart to take effect.</b></p>
                         </div>
+                    <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
                                 <label for="indexerDefaultLang">
@@ -156,11 +156,11 @@
                             <input type="submit" class="btn config_submitter" value="Save Changes" />
                         </fieldset>
                     </div>
-                    <div class="component-group">
                         <div class="component-group-desc">
                             <h3>Updates</h3>
                             <p>Options for software updates.</p>
                         </div>
+                    <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
                                 <label for="version_notify">
@@ -205,11 +205,11 @@
                     </div>
                 </div><!-- /component-group1 //-->
                 <div id="interface">
-                <div class="component-group">
                     <div class="component-group-desc">
                         <h3>User Interface</h3>
                         <p>Options for visual appearance.</p>
                     </div>
+                <div class="component-group">
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label for="theme_name">
@@ -351,12 +351,12 @@
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
                 </div><!-- /User interface component-group -->
-                <div class="component-group">
                     <div class="component-group-desc">
                         <h3>Web Interface</h3>
                         <p>It is recommended that you enable a username and password to secure Medusa from being tampered with remotely.</p>
                         <p><b>These options require a manual restart to take effect.</b></p>
                     </div>
+                <div class="component-group">
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label for="api_key">
@@ -468,10 +468,10 @@
                 </div><!-- /component-group2 //-->
                 </div>
                 <div id="advanced-settings" class="component-group">
-                <div class="component-group">
                     <div class="component-group-desc">
                         <h3>Advanced Settings</h3>
                     </div>
+                <div class="component-group">
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label>
@@ -612,10 +612,10 @@
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
-                <div class="component-group">
                     <div class="component-group-desc">
                         <h3>Logging</h3>
                     </div>
+                <div class="component-group">
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label for="debug">
@@ -656,11 +656,11 @@
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
-                <div class="component-group">
                     <div class="component-group-desc">
                         <h3>GitHub</h3>
                         <p>Options for github related features.</p>
                     </div>
+                <div class="component-group">
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label>
