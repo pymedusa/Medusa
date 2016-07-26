@@ -56,6 +56,8 @@
     <meta data-var="SORT_ARTICLE" data-content="${SORT_ARTICLE}">
     <meta data-var="TIME_PRESET" data-content="${TIME_PRESET}">
     <meta data-var="TRIM_ZERO" data-content="${TRIM_ZERO}">
+    <meta data-var="sickbeard.FANART_BACKGROUND" data-content="${sickbeard.FANART_BACKGROUND}">
+    <meta data-var="sickbeard.FANART_BACKGROUND_OPACITY" data-content="${sickbeard.FANART_BACKGROUND_OPACITY}">
     <%block name="metas" />
     <link rel="shortcut icon" href="/images/ico/favicon.ico">
     <link rel="icon" sizes="16x16 32x32 64x64" href="/images/ico/favicon.ico">
