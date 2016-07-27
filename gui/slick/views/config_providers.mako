@@ -80,11 +80,11 @@ $('#config-components').tabs();
                                 <span style="vertical-align:middle;">${curProvider.name}</span>
                                 ${('<span class="red-text">*</span>', '')[bool(curProvider.supports_backlog)]}
                                 ${('<span class="red-text">!</span>', '')[bool(curProvider.get_id() not in broken_providers)]}
-                                <span class="ui-icon ui-icon-arrowthick-2-n-s pull-right" style="vertical-align:middle;"></span>
-                                <span class="ui-icon ${('ui-icon-locked','ui-icon-unlocked')[bool(curProvider.public)]} pull-right" style="vertical-align:middle;"></span>
-                                <span class="${('','ui-icon enable-manual-search-icon pull-right')[bool(curProvider.enable_manualsearch)]}" style="vertical-align:middle;"></span>
-                                <span class="${('','ui-icon enable-backlog-search-icon pull-right')[bool(curProvider.enable_backlog)]}" style="vertical-align:middle;"></span>
-                                <span class="${('','ui-icon enable-daily-search-icon pull-right')[bool(curProvider.enable_daily)]}" style="vertical-align:middle;"></span>
+                                <span class="ui-icon ui-icon-arrowthick-2-n-s pull-right" style="vertical-align:middle;" title="Re-order provider"></span>
+                                <span class="ui-icon ${('ui-icon-locked','ui-icon-unlocked')[bool(curProvider.public)]} pull-right" style="vertical-align:middle;" title="Public or Private"></span>
+                                <span class="${('','ui-icon enable-manual-search-icon pull-right')[bool(curProvider.enable_manualsearch)]}" style="vertical-align:middle;" title="Enabled for Manual Searches"></span>
+                                <span class="${('','ui-icon enable-backlog-search-icon pull-right')[bool(curProvider.enable_backlog)]}" style="vertical-align:middle;" title="Enabled for Backlog Searches"></span>
+                                <span class="${('','ui-icon enable-daily-search-icon pull-right')[bool(curProvider.enable_daily)]}" style="vertical-align:middle;" title="Enabled for Daily Searches"></span>
                             </li>
                         % endfor
                         </ul>
