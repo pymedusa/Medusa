@@ -265,8 +265,8 @@
             <table style="width:180px; float: right; vertical-align: middle; height: 100%;">
                 <%
                     info_flag = subtitles.code_from_code(show.lang) if show.lang else ''
-                    yes_img = '<img src="${srRoot}/images/yes16.png" alt="Y" width="16" height="16" />'
-                    no_img = '<img src="${srRoot}/images/no16.png" alt="N" width="16" height="16" />'
+                    yes_img = '<img src="' + srRoot + '/images/yes16.png" alt="Y" width="16" height="16" />'
+                    no_img = '<img src="' + srRoot + '/images/no16.png" alt="N" width="16" height="16" />'
                 %>
                 <tr>
                     <td class="showLegend">
@@ -448,7 +448,7 @@
                     % if manual_search_type != 'season' and 'E00' not in hItem["name"]:
                     <%
                         hItem = dict(hItem)
-                        release_group = (hItem["release_group"] or '')
+                        release_group = (hItem["release_group"] or 'None')
                         if ignore_words and release_group in ignored:
                             rg_highlight = 'ignored'
                         elif require_words and release_group in required:
