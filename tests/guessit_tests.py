@@ -71,9 +71,9 @@ class GuessitTests(unittest.TestCase):
             _mock_tv_show('12 Monkeys'),
             _mock_tv_show('500 Bus Stops'),
             _mock_tv_show('60 Minutes'),
-            _mock_tv_show('Mobile Suit Gundam Unicorn RE 0096', is_anime=True),
+            _mock_tv_show('Mobile Suit Gundam Unicorn RE:0096', is_anime=True),
             _mock_tv_show('R-15'),
-            _mock_tv_show('The Show ** 2 **'),
+            _mock_tv_show(r"The.Someone's.Show.**.2.**"),
             _mock_tv_show('The 100'),
         ]
 
@@ -103,20 +103,23 @@ class GuessitTests(unittest.TestCase):
             _mock_tv_show('The Show (UK)'),
             _mock_tv_show('The 123 Show'),
             _mock_tv_show('222 Show (2010)'),
+            _mock_tv_show('Something RE:0096', is_anime=True),
             _mock_tv_show('The 10 Anime Show', is_anime=True),
+            _mock_tv_show(r"The.Someone's.Show.**.2.**"),
         ]
 
         # When
         actual = sut.get_expected_titles()
 
         # Then
-        expected = list(sut.fixed_expected_titles)
-        expected.extend([
-            regular_format.format(name='The 123 Show'),
-            regular_format.format(name='222 Show'),
-            anime_format.format(name='The 10 Anime Show'),
-        ])
-        self.assertEqual(expected, actual)
+        expected = set(sut.fixed_expected_titles) | {
+            regular_format.format(name='The +123 +Show'),
+            regular_format.format(name='222 +Show'),
+            regular_format.format(name="The +Someone'?s +Show +2"),
+            anime_format.format(name='Something +RE +0096'),
+            anime_format.format(name='The +10 +Anime +Show'),
+        }
+        self.assertEqual(expected, set(actual))
 
     def test_pre_configured_guessit(self):
         """Assert that guessit.guessit() uses the pre-configured hook."""

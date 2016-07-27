@@ -2784,3 +2784,10 @@
   season: 3
   episode: 4
   type: episode
+
+# Show name with special characters and numbers:
+? The.Someone's.Show.**.2.**.S05E07
+: title: The Someone's Show 2
+  season: 5
+  episode: 7
+  type: episode

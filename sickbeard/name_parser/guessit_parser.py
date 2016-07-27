@@ -10,6 +10,7 @@ import six
 from guessit.api import default_api
 from guessit.rules.common.date import valid_year
 
+
 # hardcoded expected titles
 fixed_expected_titles = {
     # guessit doesn't add dots for this show
@@ -134,7 +135,33 @@ def get_expected_titles():
 
         # (?<![^/\\]) means -> it matches nothing but path separators (negative lookbehind)
         fmt = r're:\b{name}\b' if show.is_anime else r're:(?<![^/\\]){name}\b'
-        escaped_name = re.escape(series).replace(r'\ ', ' ')  # space should not be escaped
-        expected_titles.append(fmt.format(name=escaped_name))
+        expected_titles.append(fmt.format(name=prepare(series)))
 
     return expected_titles
+
+
+def prepare(string):
+    """Prepare a string to be used as a regex in guessit expected_title
+
+    :param string:
+    :type string: str
+    :return:
+    :rtype: str
+    """
+    # replace some special characters with space
+    characters = {'-', ':', '.', ',', '*'}
+    string = re.sub(r'[%s]' % re.escape(''.join(characters)), ' ', string)
+
+    # escape other characters that might be problematic
+    string = re.escape(string)
+
+    # ' should be optional
+    string = string.replace(r"\'", r"'?")
+
+    # spaces shouldn't be escaped
+    string = string.replace('\ ', ' ')
+
+    # replace multiple spaces with one
+    string = re.sub(r'\s+', ' +', string.strip())
+
+    return string
