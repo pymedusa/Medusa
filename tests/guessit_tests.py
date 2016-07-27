@@ -98,6 +98,7 @@ class GuessitTests(unittest.TestCase):
         regular_format = r're:(?<![^/\\]){name}\b'
         anime_format = r're:\b{name}\b'
         sickbeard.showList = [
+            _mock_tv_show('1.2.3'),
             _mock_tv_show('Super Show (1999)'),
             _mock_tv_show('Incredible Show 2007'),
             _mock_tv_show('The Show (UK)'),
@@ -113,6 +114,8 @@ class GuessitTests(unittest.TestCase):
 
         # Then
         expected = set(sut.fixed_expected_titles) | {
+            '1.2.3',
+            regular_format.format(name='1 +2 +3'),
             regular_format.format(name='The +123 +Show'),
             regular_format.format(name='222 +Show'),
             regular_format.format(name="The +Someone'?s +Show +2"),

@@ -13,9 +13,6 @@ from guessit.rules.common.date import valid_year
 
 # hardcoded expected titles
 fixed_expected_titles = {
-    # guessit doesn't add dots for this show
-    '11.22.63',
-
     # guessit: conflicts with italian language
     r're:(?<![^/\\])\w+ it\b',
 }
@@ -132,6 +129,10 @@ def get_expected_titles():
 
         if not any([char.isdigit() for char in series]):
             continue
+
+        if not any([char.isalpha() for char in series]):
+            # if no alpha chars then add series name 'as-is'
+            expected_titles.append(series)
 
         # (?<![^/\\]) means -> it matches nothing but path separators (negative lookbehind)
         fmt = r're:\b{name}\b' if show.is_anime else r're:(?<![^/\\]){name}\b'
