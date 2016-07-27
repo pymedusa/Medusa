@@ -21,18 +21,18 @@
     from sickrage.helper.encoding import ek
 %>
 <%block name="scripts">
-<script type="text/javascript" src="/js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
-<script type="text/javascript" src="/js/plotTooltip.js?${sbPID}"></script>
-<script type="text/javascript" src="/js/ratingTooltip.js?${sbPID}"></script>
-<script type="text/javascript" src="/js/ajaxEpSubtitles.js?${sbPID}"></script>
+<script type="text/javascript" src="${srRoot}/js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
+<script type="text/javascript" src="${srRoot}/js/plotTooltip.js?${sbPID}"></script>
+<script type="text/javascript" src="${srRoot}/js/ratingTooltip.js?${sbPID}"></script>
+<script type="text/javascript" src="${srRoot}/js/ajaxEpSubtitles.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<input type="hidden" id="srRoot" value="" />
+<input type="hidden" id="srRoot" value="${srRoot}" />
     <div class="clearfix"></div><!-- div.clearfix //-->
     <div id="showtitle" data-showname="${show.name}">
         <h1 class="title" id="scene_exception_${show.indexerid}">
-            <a href="/home/displayShow?show=${show.indexerid}">
+            <a href="${srRoot}/home/displayShow?show=${show.indexerid}">
                 ${show.name}
             </a>
         </h1>
@@ -44,8 +44,8 @@
     </div><!-- .alert .alert-info //-->
 % endif
     <div id="posterCol">
-        <a href="/showPoster/?show=${show.indexerid}&amp;which=poster" rel="dialog" title="View Poster for ${show.name}">
-            <img src="/showPoster/?show=${show.indexerid}&amp;which=poster_thumb" class="tvshowImg" alt=""/>
+        <a href="${srRoot}/showPoster/?show=${show.indexerid}&amp;which=poster" rel="dialog" title="View Poster for ${show.name}">
+            <img src="${srRoot}/showPoster/?show=${show.indexerid}&amp;which=poster_thumb" class="tvshowImg" alt=""/>
         </a>
     </div><!-- #posterCol //-->
     <div id="showCol">
@@ -63,7 +63,7 @@
             % else:
                 % if 'country_codes' in show.imdb_info:
                     % for country in show.imdb_info['country_codes'].split('|'):
-                <img src="/images/blank.png" class="country-flag flag-${country}" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
+                <img src="${srRoot}/images/blank.png" class="country-flag flag-${country}" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
                     % endfor
                 % endif
                 <span>
@@ -73,15 +73,15 @@
                     ${show.imdb_info.get('runtimes') or show.runtime} minutes
                 </span>
                 <a href="${anon_url('http://www.imdb.com/title/', show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdbid}">
-                    <img alt="[imdb]" height="16" width="16" src="/images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
+                    <img alt="[imdb]" height="16" width="16" src="${srRoot}/images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
             % endif
                 <a href="${anon_url(sickbeard.indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title='${sickbeard.indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}'>
-                    <img alt="${sickbeard.indexerApi(show.indexer).name}" height="16" width="16" src='/images/${sickbeard.indexerApi(show.indexer).config["icon"]}' style="margin-top: -1px; vertical-align:middle;"/>
+                    <img alt="${sickbeard.indexerApi(show.indexer).name}" height="16" width="16" src='${srRoot}/images/${sickbeard.indexerApi(show.indexer).config["icon"]}' style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
             % if xem_numbering or xem_absolute_numbering:
                 <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
-                    <img alt="[xem]" height="16" width="16" src="/images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
+                    <img alt="[xem]" height="16" width="16" src="${srRoot}/images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
             % endif
         </div><!-- #showinfo //-->
@@ -265,15 +265,15 @@
             <table style="width:180px; float: right; vertical-align: middle; height: 100%;">
                 <%
                     info_flag = subtitles.code_from_code(show.lang) if show.lang else ''
-                    yes_img = '<img src="/images/yes16.png" alt="Y" width="16" height="16" />'
-                    no_img = '<img src="/images/no16.png" alt="N" width="16" height="16" />'
+                    yes_img = '<img src="${srRoot}/images/yes16.png" alt="Y" width="16" height="16" />'
+                    no_img = '<img src="${srRoot}/images/no16.png" alt="N" width="16" height="16" />'
                 %>
                 <tr>
                     <td class="showLegend">
                         Info Language:
                     </td>
                     <td>
-                        <img src="/images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='/images/flags/unknown.png';"/>
+                        <img src="${srRoot}/images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='/images/flags/unknown.png';"/>
                     </td>
                 </tr><!-- Row: Language //-->
                 % if sickbeard.USE_SUBTITLES:
@@ -393,7 +393,7 @@
                         <td align="center" style="width: auto;">
                             <% provider = providers.getProviderClass(GenericProvider.make_id(item["provider"])) %>
                             % if provider is not None:
-                                <img src="/images/providers/${provider.image_name()}" width="16" height="16" alt="${provider.name}" title="${provider.name}"/> ${item["provider"]}
+                                <img src="${srRoot}/images/providers/${provider.image_name()}" width="16" height="16" alt="${provider.name}" title="${provider.name}"/> ${item["provider"]}
                             % else:
                                 ${item['provider'] if item['provider'] != "-1" else 'Unknown'}
                             % endif
@@ -504,12 +504,12 @@
                                 provider_img = hItem.get("provider_image")
                                 provider = hItem["provider"] if provider_img else 'missing provider'
                             %>
-                            <img src="/images/providers/${provider_img or 'missing.png'}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${provider}" title="${provider}"/>
+                            <img src="${srRoot}/images/providers/${provider_img or 'missing.png'}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${provider}" title="${provider}"/>
                             ${hItem["provider"]}
                         </td>
                         <td align="center">${renderQualityPill(int(hItem["quality"]))}
                         % if hItem["proper_tags"]:
-                            <img src="/images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem["proper_tags"].replace('|', ', ')}"/>
+                            <img src="${srRoot}/images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem["proper_tags"].replace('|', ', ')}"/>
                         % endif
                         </td>
                         <td align="center">
@@ -525,7 +525,7 @@
                         <td class="col-size">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
                         <td align="center">${hItem["provider_type"]}</td>
                         <td class="col-date">${datetime.fromtimestamp(hItem["time"]).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</td>
-                        <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='/home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
+                        <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='/home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                     </tr>
                     % endif
                 % endfor

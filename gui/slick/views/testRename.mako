@@ -9,7 +9,7 @@
     import re
 %>
 <%block name="scripts">
-<script type="text/javascript" src="/js/testRename.js"></script>
+<script type="text/javascript" src="${srRoot}/js/testRename.js"></script>
 </%block>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -45,7 +45,7 @@
     </thead>
 </table>
 <br />
-<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
+<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="${srRoot}/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
 <table id="testRenameTable" class="sickbeardTable" cellspacing="1" border="0" cellpadding="0">
 % for cur_ep_obj in ep_obj_list:
 <%
@@ -91,5 +91,5 @@ if len(epList) > 1:
     </tbody>
 % endfor
 </table><br />
-<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
+<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="${srRoot}/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
 </%block>
