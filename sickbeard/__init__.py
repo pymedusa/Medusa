@@ -1355,6 +1355,10 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         # initialize the cache database
         cache_db_con = db.DBConnection('cache.db')
         db.upgradeDatabase(cache_db_con, cache_db.InitialSchema)
+        
+        # Performs a vacuum on cache.db
+        logger.log(u"Performing a vacuum on the CACHE database", logger.DEBUG)
+        cache_db_con.action("VACUUM")
 
         # initialize the failed downloads database
         failed_db_con = db.DBConnection('failed.db')
