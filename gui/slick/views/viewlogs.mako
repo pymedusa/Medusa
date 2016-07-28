@@ -21,7 +21,7 @@ pre {
 % endif
 <div class="h2footer pull-right">
     <!-- Select Loglevel -->
-    <span>Logging level:
+    <span style="margin-left: 130px;">Logging level:
         <select name="minLevel" id="minLevel" class="form-control form-control-inline input-sm">
             <%
                 levels = LOGGING_LEVELS.keys()
