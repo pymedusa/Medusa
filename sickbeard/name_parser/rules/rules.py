@@ -1728,9 +1728,11 @@ class FixMultipleTitles(Rule):
         # In case of duplicated titles, keep only the first one
         titles = matches.named('title')
 
-        to_remove = titles[1:]
-
-        return to_remove
+        if titles and len(titles) > 1:
+            # Safety: https://github.com/pymedusa/SickRage/pull/812#issuecomment-235824102
+            # Only remove matches that are different from the first match
+            to_remove = matches.named('title', predicate=lambda match: match.span != titles[0].span)
+            return to_remove
 
 
 class FixMultipleFormats(Rule):

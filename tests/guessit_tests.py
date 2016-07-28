@@ -52,10 +52,30 @@ def construct_mapping(self, node, deep=False):
 yaml.Loader.add_constructor('tag:yaml.org,2002:map', construct_mapping)
 
 
-def _mock_tv_show(name, is_anime=False):
-    tvshow = Mock(is_anime=is_anime)
+def _mock_tv_show(name, exceptions=None, is_anime=False):
+    tvshow = Mock(exceptions=exceptions if exceptions else [], is_anime=is_anime)
     tvshow.configure_mock(name=name)
     return tvshow
+
+
+def _parameters(files, single_test=None):
+    parameters = []
+    for scenario_name, file_name in iteritems(files):
+        with open(os.path.join(__location__, 'datasets', file_name), 'r') as stream:
+            data = yaml.load(stream)
+
+        for release_names, expected in iteritems(data):
+            expected = {k: v for k, v in iteritems(expected)}
+
+            if not isinstance(release_names, tuple):
+                release_names = (release_names,)
+
+            for release_name in release_names:
+                parameters.append([scenario_name, release_name, expected])
+                if single_test is not None and single_test == release_name:
+                    return [[scenario_name, release_name, expected]]
+
+    return parameters
 
 
 class GuessitTests(unittest.TestCase):
@@ -71,31 +91,19 @@ class GuessitTests(unittest.TestCase):
             _mock_tv_show('12 Monkeys'),
             _mock_tv_show('500 Bus Stops'),
             _mock_tv_show('60 Minutes'),
-            _mock_tv_show('Mobile Suit Gundam Unicorn RE:0096', is_anime=True),
+            _mock_tv_show('Mobile Suit Gundam UC RE:0096',
+                          exceptions=['Mobile Suit Gundam Unicorn RE 0096'], is_anime=True),
             _mock_tv_show('R-15'),
             _mock_tv_show(r"The.Someone's.Show.**.2.**"),
             _mock_tv_show('The 100'),
         ]
 
-    parameters = []
-
-    for scenario_name, file_name in iteritems(files):
-        with open(os.path.join(__location__, 'datasets', file_name), 'r') as stream:
-            data = yaml.load(stream)
-
-        for release_names, expected in iteritems(data):
-            expected = {k: v for k, v in iteritems(expected)}
-
-            if not isinstance(release_names, tuple):
-                release_names = (release_names,)
-
-            for release_name in release_names:
-                parameters.append([scenario_name, release_name, expected])
+    parameters = _parameters(files)
 
     def test_get_expected_titles(self):
         """Assert expect titles only returns regexes for titles containing numbers."""
         # Given
-        regular_format = r're:(?<![^/\\]){name}\b'
+        regular_format = r're:(?<![^/\\\.]){name}\b'
         anime_format = r're:\b{name}\b'
         sickbeard.showList = [
             _mock_tv_show('1.2.3'),
@@ -104,7 +112,7 @@ class GuessitTests(unittest.TestCase):
             _mock_tv_show('The Show (UK)'),
             _mock_tv_show('The 123 Show'),
             _mock_tv_show('222 Show (2010)'),
-            _mock_tv_show('Something RE:0096', is_anime=True),
+            _mock_tv_show('Something RE:0096', exceptions=['Something UNICORN RE 0096'], is_anime=True),
             _mock_tv_show('The 10 Anime Show', is_anime=True),
             _mock_tv_show(r"The.Someone's.Show.**.2.**"),
         ]
@@ -119,7 +127,8 @@ class GuessitTests(unittest.TestCase):
             regular_format.format(name='The +123 +Show'),
             regular_format.format(name='222 +Show'),
             regular_format.format(name="The +Someone'?s +Show +2"),
-            anime_format.format(name='Something +RE +0096'),
+            anime_format.format(name='Something +RE ?0096'),
+            anime_format.format(name='Something +UNICORN +RE +0096'),
             anime_format.format(name='The +10 +Anime +Show'),
         }
         self.assertEqual(expected, set(actual))

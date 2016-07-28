@@ -119,24 +119,26 @@ def get_expected_titles():
     """
     expected_titles = list(fixed_expected_titles)
     for show in sickbeard.showList:
-        match = series_re.match(show.name)
-        if not match:
-            continue
+        names = [show.name] + show.exceptions
+        for name in names:
+            match = series_re.match(name)
+            if not match:
+                continue
 
-        series, year, _ = match.groups()
-        if year and not valid_year(int(year)):
-            series = show.name
+            series, year, _ = match.groups()
+            if year and not valid_year(int(year)):
+                series = name
 
-        if not any([char.isdigit() for char in series]):
-            continue
+            if not any([char.isdigit() for char in series]):
+                continue
 
-        if not any([char.isalpha() for char in series]):
-            # if no alpha chars then add series name 'as-is'
-            expected_titles.append(series)
+            if not any([char.isalpha() for char in series]):
+                # if no alpha chars then add series name 'as-is'
+                expected_titles.append(series)
 
-        # (?<![^/\\]) means -> it matches nothing but path separators (negative lookbehind)
-        fmt = r're:\b{name}\b' if show.is_anime else r're:(?<![^/\\]){name}\b'
-        expected_titles.append(fmt.format(name=prepare(series)))
+            # (?<![^/\\]) means -> it matches nothing but path separators and dot (negative lookbehind)
+            fmt = r're:\b{name}\b' if show.is_anime else r're:(?<![^/\\\.]){name}\b'
+            expected_titles.append(fmt.format(name=prepare(series)))
 
     return expected_titles
 
@@ -150,7 +152,7 @@ def prepare(string):
     :rtype: str
     """
     # replace some special characters with space
-    characters = {'-', ':', '.', ',', '*'}
+    characters = {'-', '.', ',', '*'}
     string = re.sub(r'[%s]' % re.escape(''.join(characters)), ' ', string)
 
     # escape other characters that might be problematic
@@ -164,5 +166,8 @@ def prepare(string):
 
     # replace multiple spaces with one
     string = re.sub(r'\s+', ' +', string.strip())
+
+    # : should be optional or space
+    string = string.replace(r"\:", r" ?")
 
     return string
