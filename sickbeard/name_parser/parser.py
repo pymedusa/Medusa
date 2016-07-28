@@ -458,6 +458,8 @@ class NameParser(object):
         # parse the dirname for extra info if needed
         dir_name_result = self._parse_string(dir_name)
 
+        final_result.guess = file_name_result.guess if file_name_result else None
+
         # build the ParseResult object
         final_result.air_date = self._combine_results(file_name_result, dir_name_result, 'air_date')
 
@@ -657,21 +659,6 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
         if self.ab_episode_numbers:
             return True
         return False
-
-    @property
-    def is_proper(self):
-        if self.guess:
-            return bool(self.proper_count)
-
-        return re.search(r'(^|[\. _-])(proper|repack)([\. _-]|$)',
-                         self.extra_info, re.I) is not None if self.extra_info else False
-
-    @property
-    def proper_count(self):
-        if self.guess:
-            return self.guess.get('proper_count', 0) > 0
-
-        return 0
 
     @property
     def is_episode_special(self):
