@@ -1,15 +1,15 @@
 <%!
-    from sickbeard import BRANCH, DEVELOPER, NEWEST_VERSION_STRING
+    import sickbeard
 %>
 <!-- BEGIN ALERTS -->
-% if BRANCH and BRANCH != 'master' and not DEVELOPER and loggedIn:
+% if sickbeard.BRANCH and sickbeard.BRANCH != 'master' and not sickbeard.DEVELOPER and loggedIn:
 <div class="alert alert-danger upgrade-notification hidden-print" role="alert">
-    <span>You're using the ${BRANCH} branch. Please use 'master' unless specifically asked</span>
+    <span>You're using the ${sickbeard.BRANCH} branch. Please use 'master' unless specifically asked</span>
 </div>
 % endif
-% if NEWEST_VERSION_STRING and loggedIn:
+% if sickbeard.NEWEST_VERSION_STRING and loggedIn:
 <div class="alert alert-success upgrade-notification hidden-print" role="alert">
-    <span>${NEWEST_VERSION_STRING}</span>
+    <span>${sickbeard.NEWEST_VERSION_STRING}</span>
 </div>
 % endif
 <!-- END ALERTS -->
