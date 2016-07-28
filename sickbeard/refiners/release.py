@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Release refiner."""
-from __future__ import unicode_literals
 
 import logging
 import os
@@ -10,7 +9,7 @@ from guessit import guessit
 logger = logging.getLogger(__name__)
 
 MOVIE_ATTRIBUTES = {'title': 'title', 'year': 'year', 'format': 'format', 'release_group': 'release_group',
-                    'resolution': 'screen_size',  'video_codec': 'video_codec', 'audio_codec': 'audio_codec'}
+                    'resolution': 'screen_size', 'video_codec': 'video_codec', 'audio_codec': 'audio_codec'}
 EPISODE_ATTRIBUTES = {'series': 'title', 'season': 'season', 'episode': 'episode', 'title': 'episode_title',
                       'year': 'year', 'format': 'format', 'release_group': 'release_group', 'resolution': 'screen_size',
                       'video_codec': 'video_codec', 'audio_codec': 'audio_codec'}
