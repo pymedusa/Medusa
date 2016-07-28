@@ -15,12 +15,13 @@ pre {
 </%block>
 <%block name="content">
 % if not header is UNDEFINED:
-    <h1 class="header" style="margin: 0;">${header}</h1>
+    <h1 class="header">${header}</h1>
 % else:
-    <h1 class="title" style="margin: 0;">${title}</h1>
+    <h1 class="title">${title}</h1>
 % endif
-<div class="h2footer pull-right" style="margin: 0;">
-    <span>Minimum level:
+<div class="h2footer pull-right">
+    <!-- Select Loglevel -->
+    <span>Logging level:
         <select name="minLevel" id="minLevel" class="form-control form-control-inline input-sm">
             <%
                 levels = LOGGING_LEVELS.keys()
@@ -30,12 +31,12 @@ pre {
                 if not sickbeard.DBDEBUG:
                     levels.remove('DB')
             %>
-            % for level in levels:
-                <option value="${LOGGING_LEVELS[level]}" ${('', 'selected="selected"')[minLevel == LOGGING_LEVELS[level]]}>${level.title()}</option>
-            % endfor
+        % for level in levels:
+            <option value="${LOGGING_LEVELS[level]}" ${('', 'selected="selected"')[minLevel == LOGGING_LEVELS[level]]}>${level.title()}</option>
+        % endfor
         </select>
     </span>
-    &nbsp;
+    <!-- Filter log -->
     <span>Filter log by:
         <select name="logFilter" id="logFilter" class="form-control form-control-inline input-sm">
         % for logNameFilter in sorted(logNameFilters):
@@ -43,14 +44,13 @@ pre {
         % endfor
         </select>
     </span>
-    &nbsp;
+    <!-- Search Log -->
     <span>Search log by:
         <input type="text" name="logSearch" placeholder="clear to reset" id="logSearch" value="${('', logSearch)[bool(logSearch)]}" class="form-control form-control-inline input-sm"/>
     </span>
-</div>
-<br>
-&nbsp;
-<div class="align-left" style="margin: 0;">
+</div> <!-- End form group -->
+<br />
+<div class="align-left">
 <pre>
 ${logLines}
 </pre>
