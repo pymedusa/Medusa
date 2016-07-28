@@ -91,12 +91,11 @@ def _downloadResult(result):
     return newResult
 
 
-def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branches, too-many-statements
+def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statements
     """
     Internal logic necessary to actually "snatch" a result that has been found.
 
     :param result: SearchResult instance to be snatched.
-    :param endStatus: the episode status that should be used for the episode object once it's snatched.
     :return: boolean, True on success
     """
     if result is None:
@@ -109,9 +108,12 @@ def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branc
         for curEp in result.episodes:
             if datetime.date.today() - curEp.airdate <= datetime.timedelta(days=7):
                 result.priority = 1
-    if re.search(r'(^|[\. _-])(proper|repack)([\. _-]|$)', result.name, re.I) is not None:
+    if result.proper_tags:
+        logger.log(u'Found proper tags for {0}. Snatching as PROPER'.format(result.name), logger.DEBUG)
         is_proper = True
         endStatus = SNATCHED_PROPER
+    else:
+        endStatus = SNATCHED
 
     if result.url.startswith('magnet') or result.url.endswith('torrent'):
         result.resultType = 'torrent'
@@ -287,9 +289,8 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
             if any(ext in cur_result.name.lower() for ext in preferred_words):
                 logger.log(u"Preferring " + cur_result.name + u" (preferred words)")
                 bestResult = cur_result
-            if "proper" in cur_result.name.lower() or "real" in cur_result.name.lower() or \
-                    "repack" in cur_result.name.lower():
-                logger.log(u"Preferring " + cur_result.name + u" (repack/proper/real over nuked)")
+            if cur_result.proper_tags:
+                logger.log(u"Preferring " + cur_result.name + u" (repack/proper/real/rerip over nuked)")
                 bestResult = cur_result
             elif "internal" in bestResult.name.lower() and "internal" not in cur_result.name.lower():
                 logger.log(u"Preferring " + cur_result.name + u" (normal instead of internal)")

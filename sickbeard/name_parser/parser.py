@@ -658,10 +658,6 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
             return True
         return False
 
-    @property
-    def is_proper(self):
-        return re.search(r'(^|[\. _-])(proper|repack)([\. _-]|$)', self.extra_info, re.I) is not None if self.extra_info else False
-
 
 class NameParserCache(object):
     _previous_parsed = {}
