@@ -83,8 +83,9 @@ class History(object):
             if row.index in compact:
                 compact[row.index].actions.append(row.cur_action)
             elif not limit or len(compact) < limit:
-                detailed.append(row)
                 compact[row.index] = row.compacted()
+            elif not limit or len(detailed) < limit:
+                detailed.append(row)
 
         results = namedtuple('results', ['detailed', 'compact'])
         return results(detailed, compact.values())
