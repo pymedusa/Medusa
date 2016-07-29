@@ -132,8 +132,10 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         try:
             initial_data = data.get('Fs', [dict()])[0].get('Cn', {})
             torrent_rows = initial_data.get('torrents', []) if initial_data else None
-        except AttributeError:
-            torrent_rows = None
+        except (AttributeError, TypeError, KeyError, ValueError, IndexError) as e:
+            # If TorrentDay changes their website issue will be opened so we can fix fast
+            # and not wait user notice it's not downloading torrents from there
+            logger.log('TorrentDay response: {0}. Error: {1!r}'.format(data, e), logger.ERROR)
 
         if not torrent_rows:
             logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
