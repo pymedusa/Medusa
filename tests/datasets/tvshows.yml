@@ -2754,7 +2754,6 @@
   release_group: Group
   type: episode
 
-
 # CreateProperTags
 ? Show.Name.S03E08.REPACK.PROPER.HDTV.x264-GROUP
 : title: Show Name
@@ -2766,4 +2765,54 @@
   format: HDTV
   video_codec: h264
   release_group: GROUP
+  type: episode
+
+# Anime show containing number in its title and show with :
+? "[GROUP].Mobile.Suit.Gundam.Unicorn.RE.0096.-.14.[720p].mkv"
+: title: Mobile Suit Gundam Unicorn RE 0096
+  absolute_episode: 14
+  episode: 14
+  screen_size: 720p
+  release_group: GROUP
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+# Anime show containing number in its title and show with :
+? /Anime/Mobile Suit Gundam UC RE0096/Season 01/Mobile Suit Gundam UC RE0096 - s01e15 - Title
+: title: Mobile Suit Gundam UC RE0096
+  season: 1
+  episode: 15
+  episode_title: Title
+  type: episode
+
+# Show name with number
+? R-15.S03E04
+: title: R-15
+  season: 3
+  episode: 4
+  type: episode
+
+# Show name with special characters and numbers:
+? The.Someone's.Show.**.2.**.S05E07
+: title: The Someone's Show 2
+  season: 5
+  episode: 7
+  type: episode
+
+# Show name with numbers and a single quote but filename without it:
+? The.Someones.Show.**.2.**.S05E07
+: title: The Someones Show 2
+  season: 5
+  episode: 7
+  type: episode
+
+# Regression test for https://github.com/pymedusa/SickRage/pull/812#issuecomment-235824102
+# Case: Expected title + 2 file parts and the second one starts with a word separator (dot)
+? 11.22.63./.11.22.63.[S01].(2016).HDTVRip.|.Group
+: title: 11.22.63
+  season: 1
+  year: 2016
+  format: HDTV
+  release_group: Group
   type: episode

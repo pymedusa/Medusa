@@ -182,6 +182,7 @@ class TVShow(TVObject):
         self.episodes = {}
         self.nextaired = ''
         self.release_groups = None
+        self.exceptions = []
 
         other_show = Show.find(sickbeard.showList, self.indexerid)
         if other_show is not None:
