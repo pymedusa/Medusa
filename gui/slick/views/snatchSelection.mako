@@ -29,10 +29,11 @@
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <input type="hidden" id="srRoot" value="${srRoot}" />
+<input type="hidden" id="showID" value="${show.indexerid}" />
     <div class="clearfix"></div><!-- div.clearfix //-->
     <div id="showtitle" data-showname="${show.name}">
         <h1 class="title" id="scene_exception_${show.indexerid}">
-            <a href="${srRoot}/home/displayShow?show=${show.indexerid}">
+            <a href="${srRoot}/home/displayShow?show=${show.indexerid}" class="snatchTitle">
                 ${show.name}
             </a>
         </h1>
@@ -43,12 +44,14 @@
         ${show_message}
     </div><!-- .alert .alert-info //-->
 % endif
+    <div id="summaryContainer">
     <div id="posterCol">
         <a href="${srRoot}/showPoster/?show=${show.indexerid}&amp;which=poster" rel="dialog" title="View Poster for ${show.name}">
             <img src="${srRoot}/showPoster/?show=${show.indexerid}&amp;which=poster_thumb" class="tvshowImg" alt=""/>
         </a>
     </div><!-- #posterCol //-->
     <div id="showCol">
+        <img id="showBanner" src="${srRoot}/showPoster/?show=${show.indexerid}&amp;which=banner">
         <div id="showinfo">
             % if 'rating' in show.imdb_info:
                 <% rating_tip = "{x} / 10 Stars<br />{y} Votes".format(x=show.imdb_info['rating'], y=show.imdb_info['votes']) %>
@@ -84,6 +87,8 @@
                     <img alt="[xem]" height="16" width="16" src="${srRoot}/images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
             % endif
+            <a href="${anon_url('https://fanart.tv/series/${show.name}', show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="https://fanart.tv/series/${show.name}">
+                <img alt="[fanart.tv]" height="16" width="16" src="${srRoot}/images/fanart.tv.png" class="fanart"/></a>
         </div><!-- #showinfo //-->
         <div id="tags">
             <ul class="tags">
@@ -98,7 +103,7 @@
                 % endif
             </ul>
         </div><!-- #tags //-->
-        <div id="summary">
+        <div id="summary" ${"class=\"summaryFanArt\"" if sickbeard.FANART_BACKGROUND else ""}>
             <table class="summaryTable pull-left">
                 <% allowed_qualities, preferred_qualities = Quality.splitQuality(int(show.quality)) %>
                 <tr>
@@ -110,7 +115,7 @@
                         ${renderQualityPill(show.quality)}
                     % else:
                         % if allowed_qualities:
-                        <i>Allowed:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${("", "<br />")[bool(preferred_qualities)]}
+                        <i>Allowed:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${"<br />" if preferred_qualities else ""}
                         % endif
                         % if preferred_qualities:
                         <i>Preferred:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
@@ -183,7 +188,7 @@
                         Scene Name:
                     </td>
                     <td>
-                        ${(show.name, " | ".join(show.exceptions))[show.exceptions != 0]}
+                        ${" | ".join(show.exceptions) if show.exceptions != 0 else show.name}
                     </td>
                 </tr><!-- Row: Scene exceptions //-->
             % endif
@@ -345,17 +350,22 @@
             </table><!-- Table: Configuration //-->
         </div><!-- #summary //-->
     </div><!-- #showCol //-->
+    </div><!-- #summaryContainer //-->
     <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
     <input class="btn manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-force-search="1" />
     <div id="searchNotification"></div><!-- #searchNotification //-->
+    <div class="pull-right clearfix" id="filterControls">
+        <button id="popover" type="button" class="btn btn-xs">Select Columns <b class="caret"></b></button>
+        <button id="btnReset" type="button" class="btn btn-xs">Reset Sort</b></button>
+    </div><!-- #filterControls //-->
     <div class="clearfix"></div><!-- .clearfix //-->
     <div id="wrapper" data-history-toggle="hide">
         <div id="container">
         % if episode_history:
-            <table id="history" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
+            <table id="history" class="${"displayShowTableFanArt tablesorterFanArt" if sickbeard.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
                 <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
                     <tr style="height: 60px;" role="row">
-                        <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader displayShowTable">
+                        <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader ${"displayShowTableFanArt" if sickbeard.FANART_BACKGROUND else "displayShowTable"}">
                             <h3 style="display: inline;">
                                 History
                             </h3>
@@ -409,11 +419,11 @@
         <!-- @TODO: Change this to use the REST API -->
         <!-- add provider meta data -->
             <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
-            <table id="showTable" class="displayShowTable display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
+            <table id="showTableSeason" class="${"displayShowTableFanArt tablesorterFanArt" if sickbeard.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
                 <!-- @TODO: Change this first thead to a caption with CSS styling -->
-                <thead class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
+                <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
                     <tr style="height: 60px;" role="row">
-                        <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader displayShowTable">
+                        <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader ${"displayShowTableFanArt" if sickbeard.FANART_BACKGROUND else "displayShowTable"}">
                             <h3 style="display: inline;">
                                 Season ${season}
                             % if manual_search_type != 'season':
@@ -422,10 +432,12 @@
                             </h3>
                         </th>
                     </tr>
-                </thead>
-                <thead class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
+                </tbody>
+            </table>
+            <table id="showTable" class="${"displayShowTableFanArt tablesorterFanArt" if sickbeard.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
+                <thead aria-live="polite" aria-relevant="all">
                     <tr>
-                        <th class="col-name">Release</th>
+                        <th data-priority="critical" class="col-name">Release</th>
                         <th>Group</th>
                         <th>Provider</th>
                         <th>Quality</th>
@@ -434,7 +446,7 @@
                         <th>Size</th>
                         <th>Type</th>
                         <th>Date</th>
-                        <th class="col-search">Snatch</th>
+                        <th data-priority="critical" class="col-search">Snatch</th>
                     </tr>
                 </thead>
                 <tbody aria-live="polite" aria-relevant="all">
