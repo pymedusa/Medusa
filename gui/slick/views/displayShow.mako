@@ -58,7 +58,7 @@
         <span class="h2footer displayspecials pull-right">
             % if season_special:
             Display Specials:
-                <a class="inner" href="${srRoot}/toggleDisplayShowSpecials/?show=${show.indexerid}">${'Hide' if bool(sickbeard.DISPLAY_SHOW_SPECIALS) else 'Show'}</a>
+                <a class="inner" href="${srRoot}/toggleDisplayShowSpecials/?show=${show.indexerid}">${'Hide' if sickbeard.DISPLAY_SHOW_SPECIALS else 'Show'}</a>
             % endif
         </span>
         <div class="h2footer pull-right">
@@ -148,7 +148,7 @@
             </div>
 
             <!-- Show Summary -->
-            <div id="summary" ${"class=\"summaryFanArt\"" if bool(sickbeard.FANART_BACKGROUND) else ""}>
+            <div id="summary" ${'class="summaryFanArt"' if sickbeard.FANART_BACKGROUND else ''}>
                 <table class="summaryTable pull-left">
                 <% anyQualities, bestQualities = Quality.splitQuality(int(show.quality)) %>
                     <tr><td class="showLegend">Quality: </td><td>
@@ -156,18 +156,18 @@
                     ${renderQualityPill(show.quality)}
                 % else:
                 % if anyQualities:
-                    <i>Allowed:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(anyQualities)])}${"<br />" if bool(bestQualities) else ""}
+                    <i>Allowed:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(anyQualities)])}${'<br />' if bestQualities else ''}
                 % endif
                 % if bestQualities:
-                    <i>Preferred:</i> ${", ".join([capture(renderQualityPill, x) for x in sorted(bestQualities)])}
+                    <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(bestQualities)])}
                 % endif
                 % endif
                 % if show.network and show.airs:
-                    <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font> "} on ${show.network}</td></tr>
+                    <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"} on ${show.network}</td></tr>
                 % elif show.network:
                     <tr><td class="showLegend">Originally Airs: </td><td>${show.network}</td></tr>
                 % elif show.airs:
-                    <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>" }</td></tr>
+                    <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"}</td></tr>
                 % endif
                     <tr><td class="showLegend">Show Status: </td><td>${show.status}</td></tr>
                     <tr><td class="showLegend">Default EP Status: </td><td>${statusStrings[show.default_ep_status]}</td></tr>
@@ -262,7 +262,7 @@
 <br>
 <br>
 
-<table id="${"animeTable" if bool(show.is_anime) else "showTable"}" class="${"displayShowTableFanArt tablesorterFanArt" if bool(sickbeard.FANART_BACKGROUND) else "displayShowTable"} display_show" cellspacing="0" border="0" cellpadding="0">
+<table id="${'animeTable' if show.is_anime else 'showTable'}" class="${'displayShowTableFanArt tablesorterFanArt' if sickbeard.FANART_BACKGROUND else 'displayShowTable'} display_show" cellspacing="0" border="0" cellpadding="0">
     <% curSeason = -1 %>
     <% odd = 0 %>
     <% epCount = 0 %>
@@ -326,7 +326,7 @@
     </thead>
     <tbody class="tablesorter-no-sort">
         <tr style="height: 60px;">
-            <th class="row-seasonheader ${"displayShowTable" if bool(sickbeard.FANART_BACKGROUND) else "displayShowTableFanArt"}" colspan="13" style="vertical-align: bottom; width: auto;">
+            <th class="row-seasonheader ${'displayShowTable' if sickbeard.FANART_BACKGROUND else 'displayShowTableFanArt'}" colspan="13" style="vertical-align: bottom; width: auto;">
                 <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${"Season " + str(epResult["season"]) if int(epResult["season"]) > 0 else "Specials"}
                 <!-- @TODO: port the season scene exceptions to angular -->
                 % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
@@ -368,8 +368,8 @@
     </tbody>
     <tbody class="tablesorter-no-sort">
         <tr style="height: 60px;">
-            <th class="row-seasonheader ${"displayShowTableFanArt" if bool(sickbeard.FANART_BACKGROUND) else "displayShowTable"}" colspan="13" style="vertical-align: bottom; width: auto;">
-                <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${"Season " + str(epResult["season"]) if bool(int(epResult["season"])) else "Specials"}
+            <th class="row-seasonheader ${'displayShowTableFanArt' if sickbeard.FANART_BACKGROUND else 'displayShowTable'}" colspan="13" style="vertical-align: bottom; width: auto;">
+                <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${"Season " + str(epResult["season"]) if int(epResult["season"]) else "Specials"}
                 % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
                 <a class="epManualSearch" href="snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="${srRoot}/images/manualsearch${'-white' if sickbeard.THEME_NAME == 'dark' else ''}.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                 % endif
@@ -422,9 +422,9 @@
                 text = str(epResult['episode'])
                 if epLoc != '' and epLoc is not None:
                     text = '<span title="' + epLoc + '" class="addQTip">' + text + "</span>"
-                    epCount+=1
+                    epCount += 1
                     if not epLoc in epList:
-                        epSize+=epResult["file_size"]
+                        epSize += epResult["file_size"]
                         epList.append(epLoc)
             %>
                 ${text}
