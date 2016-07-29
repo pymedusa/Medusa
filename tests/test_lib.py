@@ -52,7 +52,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from configobj import ConfigObj
 from sickbeard import db, providers
 from sickbeard.databases import cache_db, failed_db, main_db
-from sickbeard.providers.newznab import NewznabProvider
+from sickbeard.providers import NewznabProvider
 from sickbeard.tv import TVEpisode
 import shutil_custom  # pylint: disable=import-error
 import sickbeard

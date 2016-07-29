@@ -26,7 +26,7 @@ from sickbeard.providers.torrent import (
     hdbits, hounddawgs, speedcd, nyaatorrents, bluetigers, xthor, abnormal, torrentbytes, cpasbien, freshontv,
     morethantv, t411, tokyotoshokan, shazbat, rarbg, alpharatio, tntvillage, torrentproject,
     extratorrent, scenetime, btdigg, transmitthenet, tvchaosuk, bitcannon, pretome, gftracker, hdspace,
-    newpct, elitetorrent, bitsnoop, danishbits, hd4free, limetorrents,  norbits, ilovetorrents, bithdtv,
+    newpct, elitetorrent, bitsnoop, danishbits, hd4free, limetorrents, norbits, ilovetorrents, bithdtv,
     zooqle, animebytes, torrentshack,
 )
 
