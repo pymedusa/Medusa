@@ -85,6 +85,7 @@ $('#config-components').tabs();
                                 <span class="${('','ui-icon enable-manual-search-icon pull-right')[bool(curProvider.enable_manualsearch)]}" style="vertical-align:middle;" title="Enabled for Manual Searches"></span>
                                 <span class="${('','ui-icon enable-backlog-search-icon pull-right')[bool(curProvider.enable_backlog)]}" style="vertical-align:middle;" title="Enabled for Backlog Searches"></span>
                                 <span class="${('','ui-icon enable-daily-search-icon pull-right')[bool(curProvider.enable_daily)]}" style="vertical-align:middle;" title="Enabled for Daily Searches"></span>
+                                <span class="${('','ui-icon enable-confirmed-torrents-icon pull-right')[(hasattr(curProvider, 'ranked') and bool(curProvider.ranked)) or (hasattr(curProvider, 'confirmed') and bool(curProvider.confirmed))]}" style="vertical-align:middle;" title="Confirmed torrents enabled"></span>
                             </li>
                         % endfor
                         </ul>

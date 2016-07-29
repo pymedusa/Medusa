@@ -389,6 +389,13 @@ inc_top.mako
     margin-right: 3px;
 }
 
+.enable-confirmed-torrents-icon {
+    background-image: url("../images/confirmed_torrents_8x8.png")!important;
+    width: 8px;
+    height: 8px;
+    margin-top: 5px;
+    margin-right: 3px;
+}
 
 /* =======================================================================
 inc_bottom.mako
