@@ -80,10 +80,11 @@ class History(object):
         # TODO: Convert to using operators to combine items
         for row in sql_results:
             row = History.Item(*row)
+            if not limit or len(detailed) < limit:
+                detailed.append(row)
             if row.index in compact:
                 compact[row.index].actions.append(row.cur_action)
             elif not limit or len(compact) < limit:
-                detailed.append(row)
                 compact[row.index] = row.compacted()
 
         results = namedtuple('results', ['detailed', 'compact'])
