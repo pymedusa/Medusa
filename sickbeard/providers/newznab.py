@@ -70,6 +70,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         self.caps = False
         self.cap_tv_search = None
         self.force_query = False
+        self.providers_without_caps = ['gingadaddy', 'usenet-crawler', '6box']
         # self.cap_search = None
         # self.cap_movie_search = None
         # self.cap_audio_search = None
@@ -86,7 +87,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
             return results
 
         # For providers that don't have caps, or for which the t=caps is not working.
-        if not self.caps and all(provider not in self.url for provider in ['gingadaddy', 'usenet-crawler']):
+        if not self.caps and all(provider not in self.url for provider in self.providers_without_caps):
             self.get_newznab_categories(just_caps=True)
             if not self.caps:
                 return results
