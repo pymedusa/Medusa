@@ -136,6 +136,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             # If TorrentDay changes their website issue will be opened so we can fix fast
             # and not wait user notice it's not downloading torrents from there
             logger.log('TorrentDay response: {0}. Error: {1!r}'.format(data, e), logger.ERROR)
+            torrent_rows = None
 
         if not torrent_rows:
             logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
