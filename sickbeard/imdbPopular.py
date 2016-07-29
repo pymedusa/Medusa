@@ -13,7 +13,9 @@ from sickbeard import helpers
 from sickrage.helper.encoding import ek
 
 
-class imdbPopular(object):
+class ImdbPopular(object):
+    """This class contains everything for the IMDB popular page."""
+
     def __init__(self):
         """Get a list of most popular TV series from imdb."""
         # Use akas.imdb.com, just like the imdb lib.
@@ -47,7 +49,7 @@ class imdbPopular(object):
             image_div = row.find('div', class_='lister-item-image float-left')
             if image_div:
                 image = image_div.find('img')
-                show['image_url_large'] = image['loadlate'].replace('67_CR0,0,67,98', '186_CR0,0,186,273')
+                show['image_url_large'] = self.change_size(image['loadlate'], 3)
                 show['image_path'] = ek(posixpath.join, 'images', 'imdb_popular', ek(os.path.basename,
                                                                                      show['image_url_large']))
                 self.cache_image(show['image_url_large'])
@@ -78,20 +80,24 @@ class imdbPopular(object):
 
     @staticmethod
     def change_size(image_url, factor=3):
-        match = re.search("^(.*)V1._(.{2})(.*?)_(.{2})(.*?),(.*?),(.*?),(.*?)_.jpg$", image_url)
+        """
+        Change the size of the image we get from IMDB.
+
+        :param: image_url: Image source URL
+        :param: factor: Multiplier for the image size
+        """
+        match = re.search('(.+[X|Y])(\d+)(_CR\d+,\d+,)(\d+),(\d+)', image_url)
 
         if match:
             matches = match.groups()
             ek(os.path.basename, image_url)
             matches = list(matches)
-            matches[2] = int(matches[2]) * factor
+            matches[1] = int(matches[1]) * factor
+            matches[3] = int(matches[3]) * factor
             matches[4] = int(matches[4]) * factor
-            matches[5] = int(matches[5]) * factor
-            matches[6] = int(matches[6]) * factor
-            matches[7] = int(matches[7]) * factor
 
-            return "%sV1._%s%s_%s%s,%s,%s,%s_.jpg" % (matches[0], matches[1], matches[2], matches[3], matches[4],
-                                                      matches[5], matches[6], matches[7])
+            return '{0}{1}{2}{3},{4}_AL_.jpg'.format(matches[0], matches[1], matches[2],
+                                                     matches[3], matches[4])
         else:
             return image_url
 
@@ -99,7 +105,7 @@ class imdbPopular(object):
         """
         Store cache of image in cache dir.
 
-        :param image_url: Source URL
+        :param image_url: Image source URL
         """
         path = ek(os.path.abspath, ek(os.path.join, sickbeard.CACHE_DIR, 'images', 'imdb_popular'))
 
@@ -111,4 +117,5 @@ class imdbPopular(object):
         if not ek(os.path.isfile, full_path):
             helpers.download_file(image_url, full_path, session=self.session)
 
-imdb_popular = imdbPopular()
+
+imdb_popular = ImdbPopular()
