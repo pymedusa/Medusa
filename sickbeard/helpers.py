@@ -1431,7 +1431,7 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
         resp.raise_for_status()
     except requests.RequestException as e:
         logger.log(u'Error requesting url {resp.url}. Error: {msg}'.format(resp=resp, msg=ex(e)), logger.DEBUG)
-    except (SocketTimeout, TypeError) as e:
+    except SocketTimeout as e:
         logger.log(u'Connection timed out (sockets) for url {resp.url}. Error: {msg}'.format(resp=resp, msg=ex(e)), logger.DEBUG)
     except Exception as e:
         if u'ECONNRESET' in e or (hasattr(e, u'errno') and e.errno == errno.ECONNRESET):
