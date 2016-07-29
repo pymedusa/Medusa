@@ -56,7 +56,7 @@
                     </div>
                     <div class="clearfix">
                         <p>${int(cur_rating*10)}% <img src="${srRoot}/images/heart.png"></p>
-                        <i>$('{x} votes'.format(x=cur_votes) if cur_votes else '')</i>
+                        <i>${'{x} votes'.format(x=cur_votes) if cur_votes else '0 votes'}</i>
                         <div class="traktShowTitleIcons">
                             <a href="${srRoot}/addShows/addShowByID?indexer_id=${cur_result['imdb_tt']}&amp;show_name=${cur_result['name'] | u}&amp;indexer=IMDB" class="btn btn-xs" data-no-redirect>Add Show</a>
                         </div>
