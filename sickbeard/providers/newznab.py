@@ -195,8 +195,11 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                                 'hash': None,
                             }
                             if mode != 'RSS':
-                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                           (title, seeders, leechers), logger.DEBUG)
+                                if seeders == -1:
+                                    logger.log('Found result: {0}'.format(title), logger.DEBUG)
+                                else:
+                                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                               (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
                         except (AttributeError, TypeError, KeyError, ValueError, IndexError):
