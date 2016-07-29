@@ -9,6 +9,7 @@ from .html import (
     cpasbien,
     danishbits,
     elitetorrent,
+    extratorrent,
     freshontv,
     gftracker,
     hdspace,
@@ -56,7 +57,6 @@ from .rss import (
 
 from .xml import (
     bitsnoop,
-    extratorrent,
     kat,
     torrentz,
 )
