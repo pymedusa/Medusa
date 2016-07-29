@@ -127,7 +127,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             if len(torrent_rows) < 3 or (len(torrent_rows) == 3 and
                                          torrent_rows[2].get_text() == 'No torrents'):
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
-                continue
+                return items
 
             # Skip column headers
             for result in torrent_rows[2:]:
