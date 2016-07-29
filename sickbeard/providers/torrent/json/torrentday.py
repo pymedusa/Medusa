@@ -130,7 +130,8 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         items = []
 
         try:
-            torrent_rows = data.get('Fs', [dict()])[0].get('Cn', {}).get('torrents', [])
+            initial_data = data.get('Fs', [dict()])[0].get('Cn', {})
+            torrent_rows = initial_data.get('torrents', []) if initial_data else None
         except AttributeError:
             torrent_rows = None
 
@@ -185,6 +186,9 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         if self.cookies:
             self.add_cookies_from_ui()
+        else:
+            logger.log('Failed to login, you must add your cookies in the provider settings', logger.WARNING)
+            return False
 
             login_params = {
                 'username': self.username,
