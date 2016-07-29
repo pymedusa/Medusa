@@ -135,8 +135,6 @@ class newpctProvider(TorrentProvider):
             # Skip column headers
             for row in torrent_rows[1:-1]:
                 cells = row('td')
-                if len(cells) < len(labels):
-                    continue
 
                 try:
                     torrent_row = row.find('a')
@@ -167,6 +165,8 @@ class newpctProvider(TorrentProvider):
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                     logger.log('Failed parsing provider. Traceback: {0!r}'.format
                                (traceback.format_exc()), logger.ERROR)
+
+        return items
 
     @staticmethod
     def _process_title(title):
