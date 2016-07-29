@@ -1488,7 +1488,7 @@ def download_file(url, filename, session=None, headers=None, **kwargs):  # pylin
             except Exception:
                 logger.log(u"Problem setting permissions or writing file to: %s" % filename, logger.WARNING)
 
-    except (SocketTimeout, TypeError) as e:
+    except SocketTimeout as e:
         remove_file_failed(filename)
         logger.log(u"Connection timed out (sockets) while loading download URL %s Error: %r" % (url, ex(e)), logger.WARNING)
         return False
