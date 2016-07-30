@@ -94,7 +94,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     search_url = self.urls['rss']
 
                 search_url = search_url if not self.custom_url else \
-                    search_url.replace(self.url + '/', self.custom_url)
+                    search_url.replace(self.url, self.custom_url.rstrip('/'))
 
                 response = self.get_url(search_url, params=search_params, returns='response')
                 if not response.text:
