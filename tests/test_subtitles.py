@@ -55,7 +55,6 @@ def test_wanted_languages__only_valid_3letter_codes(monkeypatch):
     actual = sut.wanted_languages()
 
     # Then
-
     assert {'pob', 'eng', 'fre'} == actual
 
 
