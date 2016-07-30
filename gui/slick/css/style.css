@@ -1165,7 +1165,7 @@ span.snatched b {
     text-align: center;
     border: none;
     empty-cells: show;
-    color: #000 !important;
+    color: rgb(0, 0, 0) !important;
 }
 
 .displayShowTableFanArt.display_show {
@@ -1176,13 +1176,17 @@ span.snatched b {
 .displayShowTableFanArt th.row-seasonheader {
     border: none !important;
     background-color: transparent !important;
-    color: #fff !important;
+    color: rgb(255, 255, 255) !important;
     padding-top: 15px !important;
     text-align: left !important;
 }
 
 .displayShowTableFanArt td.col-search {
     text-align: center;
+}
+
+.snatchTitle {
+    color: rgb(255, 255, 255) !important;
 }
 
 .summaryFanArt {
