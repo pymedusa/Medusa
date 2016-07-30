@@ -24,7 +24,7 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
-<div id="config">
+<div id="config" ${"class=\"summaryFanArt\"" if sickbeard.FANART_BACKGROUND else ""}>
     <div id="config-content">
         <form action="editShow" method="post">
         <div id="config-components">
@@ -41,7 +41,7 @@
                             <label for="location">
                                 <span class="component-title">Show Location</span>
                                 <span class="component-desc">
-                                    <input type="hidden" name="show" value="${show.indexerid}" />
+                                    <input type="hidden" name="show" id="show" value="${show.indexerid}" />
                                     <input type="text" name="location" id="location" value="${show._location}" class="form-control form-control-inline input-sm input350"/>
                                 </span>
                             </label>
@@ -81,7 +81,7 @@
                             <label for="subtitles">
                                 <span class="component-title">Subtitles</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="subtitles" name="subtitles" ${'checked="checked"' if show.subtitles == 1 and sickbeard.USE_SUBTITLES is True else ''} ${('disabled="disabled"', '')[bool(sickbeard.USE_SUBTITLES)]}/> search for subtitles
+                                    <input type="checkbox" id="subtitles" name="subtitles" ${'checked="checked"' if show.subtitles == 1 and sickbeard.USE_SUBTITLES is True else ''} ${'' if sickbeard.USE_SUBTITLES else 'disabled="disabled"'}/> search for subtitles
                                 </span>
                             </label>
                         </div>
@@ -133,7 +133,7 @@
                             <label for="season_folders">
                                 <span class="component-title">Season folders</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="season_folders" name="flatten_folders" ${('checked="checked"', '')[show.flatten_folders == 1 and not sickbeard.NAMING_FORCE_FOLDERS]} ${'disabled="disabled"' if sickbeard.NAMING_FORCE_FOLDERS else ''}/> group episodes by season folder (uncheck to store in a single folder)
+                                    <input type="checkbox" id="season_folders" name="flatten_folders" ${'' if show.flatten_folders == 1 and not sickbeard.NAMING_FORCE_FOLDERS else 'checked="checked"'} ${'disabled="disabled"' if sickbeard.NAMING_FORCE_FOLDERS else ''}/> group episodes by season folder (uncheck to store in a single folder)
                                 </span>
                             </label>
                         </div>

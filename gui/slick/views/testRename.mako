@@ -46,7 +46,8 @@
 </table>
 <br />
 <input type="submit" value="Rename Selected" class="btn btn-success"> <a href="${srRoot}/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
-<table id="testRenameTable" class="sickbeardTable" cellspacing="1" border="0" cellpadding="0">
+
+<table id="testRenameTable" class="sickbeardTable ${"summaryFanArt" if sickbeard.FANART_BACKGROUND else ""}" cellspacing="1" border="0" cellpadding="0">
 % for cur_ep_obj in ep_obj_list:
 <%
     curLoc = cur_ep_obj.location[len(cur_ep_obj.show.location)+1:]
@@ -58,7 +59,7 @@
         <tr class="seasonheader" id="season-${cur_ep_obj.season}">
             <td colspan="4">
                  <br />
-                <h2>${('Season '+str(cur_ep_obj.season), 'Specials')[int(cur_ep_obj.season) == 0]}</h2>
+                <h2>${'Specials' if int(cur_ep_obj.season) == 0 else 'Season '+str(cur_ep_obj.season)}</h2>
             </td>
         </tr>
         <tr class="seasoncols" id="season-${cur_ep_obj.season}-cols">
@@ -78,7 +79,7 @@ epList = sorted([cur_ep_obj.episode] + [x.episode for x in cur_ep_obj.related_ep
 if len(epList) > 1:
     epList = [min(epList), max(epList)]
 %>
-        <tr class="season-${curSeason} ${('wanted', 'good')[curLoc == newLoc]} seasonstyle">
+        <tr class="season-${curSeason} ${'good' if curLoc == newLoc else 'wanted'} seasonstyle">
             <td class="col-checkbox">
             % if curLoc != newLoc:
                 <input type="checkbox" class="epCheck" id="${str(cur_ep_obj.season) + 'x' + str(cur_ep_obj.episode)}" name="${str(cur_ep_obj.season) + "x" + str(cur_ep_obj.episode)}" />
