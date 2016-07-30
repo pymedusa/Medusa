@@ -33,7 +33,6 @@ import random
 import re
 import shutil
 import socket
-from socket import timeout as SocketTimeout
 import ssl
 import stat
 import tempfile
@@ -1429,10 +1428,8 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
 
     try:
         resp.raise_for_status()
-    except requests.RequestException as e:
+    except requests.exceptions.RequestException as e:
         logger.log(u'Error requesting url {resp.url}. Error: {msg}'.format(resp=resp, msg=ex(e)), logger.DEBUG)
-    except SocketTimeout as e:
-        logger.log(u'Connection timed out (sockets) for url {resp.url}. Error: {msg}'.format(resp=resp, msg=ex(e)), logger.DEBUG)
     except Exception as e:
         if u'ECONNRESET' in e or (hasattr(e, u'errno') and e.errno == errno.ECONNRESET):
             logger.log(u'Connection reset by peer accessing url {resp.url}. Error: {msg}'.format(resp=resp, msg=ex(e)), logger.WARNING)
@@ -1488,10 +1485,6 @@ def download_file(url, filename, session=None, headers=None, **kwargs):  # pylin
             except Exception:
                 logger.log(u"Problem setting permissions or writing file to: %s" % filename, logger.WARNING)
 
-    except SocketTimeout as e:
-        remove_file_failed(filename)
-        logger.log(u"Connection timed out (sockets) while loading download URL %s Error: %r" % (url, ex(e)), logger.WARNING)
-        return False
     except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects) as e:
         remove_file_failed(filename)
         logger.log(u"HTTP error %r while loading download URL %s " % (ex(e), url), logger.WARNING)
