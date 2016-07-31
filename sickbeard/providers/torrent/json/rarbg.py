@@ -146,7 +146,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                         log_level = logger.INFO
                     else:
                         log_level = logger.DEBUG
-                    logger.log('Error {code}: {msg}'.format(code=error_code, msg=error), log_level)
+                    logger.log('{msg}. Code: {code}'.format(code=error_code, msg=error), log_level)
                     continue
 
                 results += self.parse(jdata, mode)
