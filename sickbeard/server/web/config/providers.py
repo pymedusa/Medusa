@@ -13,7 +13,7 @@ import sickbeard
 from sickbeard import (
     config, logger, ui,
 )
-from sickbeard.providers import NewznabProvider, TorrentRssProvider
+from sickbeard.providers import NewznabProvider
 from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
 from sickrage.providers.GenericProvider import GenericProvider
