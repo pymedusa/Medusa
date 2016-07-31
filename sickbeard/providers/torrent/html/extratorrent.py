@@ -91,6 +91,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                (search=search_string), logger.DEBUG)
                     search_url = self.urls['search']
                 else:
+                    search_params = None
                     search_url = self.urls['rss']
 
                 search_url = search_url if not self.custom_url else \
@@ -111,7 +112,6 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         :param data: The raw response from a search
         :param mode: The current mode used to search, e.g. RSS
-
         :return: A list of items found
         """
         # RSS search has one less column
