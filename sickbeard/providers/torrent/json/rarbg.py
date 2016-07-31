@@ -18,9 +18,9 @@
 
 from __future__ import unicode_literals
 
-import traceback
 import datetime
 import time
+import traceback
 
 from sickbeard import logger, tvcache
 from sickbeard.indexers.indexer_config import INDEXER_TVDB
@@ -30,7 +30,8 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """RARBG Torrent provider"""
+    """RARBG Torrent provider."""
+
     def __init__(self):
 
         # Provider Init
@@ -63,7 +64,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals, too-many-statements
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -98,7 +99,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
-            if mode != 'RSS':
+            if mode == 'RSS':
                 search_params['search_string'] = None
                 search_params['search_tvdb'] = None
             else:
@@ -161,7 +162,6 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
 
         :return: A list of items found
         """
-
         items = []
 
         torrent_rows = data.get('torrent_results', {})
