@@ -71,10 +71,10 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         :returns: A list of search results (structure)
         """
         results = []
-        """
-        205 = SD, 208 = HD, 200 = All Videos
-        https://pirateproxy.pl/s/?q=Game of Thrones&type=search&orderby=7&page=0&category=200
-        """
+
+        # 205 = SD, 208 = HD, 200 = All Videos
+        # https://pirateproxy.pl/s/?q=Game of Thrones&type=search&orderby=7&page=0&category=200
+
         search_params = {
             'q': '',
             'type': 'search',
