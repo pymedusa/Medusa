@@ -457,7 +457,7 @@
                     undesired = undesired_words.lower().split(',') if undesired_words else []
                 %>
                 % for hItem in provider_results['found_items']:
-                    % if manual_search_type != 'season' and 'E00' not in hItem["name"]:
+                    % if 'E00' not in hItem["name"]:
                     <%
                         hItem = dict(hItem)
                         release_group = (hItem["release_group"] or 'None')
