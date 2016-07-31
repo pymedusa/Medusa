@@ -457,8 +457,11 @@
                     undesired = undesired_words.lower().split(',') if undesired_words else []
                 %>
                 % for hItem in provider_results['found_items']:
-                    % if manual_search_type != 'season' and 'E00' not in hItem["name"]:
                     <%
+                        # Hides special episodes from season search
+                        if manual_search_type == 'season' and 'E00' in hItem["name"]:
+                            continue
+
                         hItem = dict(hItem)
                         release_group = (hItem["release_group"] or 'None')
                         if ignore_words and release_group in ignored:
@@ -539,7 +542,6 @@
                         <td class="col-date">${datetime.fromtimestamp(hItem["time"]).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</td>
                         <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='${srRoot}/home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="${srRoot}/images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                     </tr>
-                    % endif
                 % endfor
                 </tbody>
             </table>
