@@ -2913,3 +2913,46 @@
   release_group: Group
   type: episode
   disabled: true # work in progress
+
+# https://github.com/guessit-io/guessit/issues/323
+? Show.Name.S02E59.WEB-DLx264-GROUP
+: episode: 59
+  season: 2
+  format: WEB-DL
+  release_group: GROUP
+  title: Show Name
+  type: episode
+  video_codec: h264
+
+# https://github.com/guessit-io/guessit/issues/323
+? Show.Name.S12E31.Episode.Title.PDTVx264-Group
+: episode: 31
+  episode_title: Episode Title
+  season: 12
+  format: DVB
+  release_group: Group
+  title: Show Name
+  type: episode
+  video_codec: h264
+
+# https://github.com/guessit-io/guessit/issues/323
+? Show.Name.S09E09.Episode.Title.HDTVx264-Group
+: episode: 9
+  episode_title: Episode Title
+  season: 9
+  format: HDTV
+  release_group: Group
+  title: Show Name
+  type: episode
+  video_codec: h264
+
+# https://github.com/guessit-io/guessit/issues/319
+? Show.Name.(s01e10).Episode.Title.(720pHD).mp4-[Group]
+: title: Show Name
+  season: 1
+  episode: 10
+  episode_title: Episode Title
+  screen_size: 720p
+  container: MP4
+  release_group: Group
+  type: episode
