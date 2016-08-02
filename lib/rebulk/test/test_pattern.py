@@ -754,4 +754,3 @@ class TestValidator(object):
 
         matches = list(pattern.matches(self.input_string))
         assert len(matches) == 1
-
