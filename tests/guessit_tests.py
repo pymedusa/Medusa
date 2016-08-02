@@ -3,22 +3,23 @@
 from __future__ import unicode_literals
 
 import os
-import unittest
 
 try:
     from unittest.mock import Mock
 except ImportError:
     from mock import Mock
+
+import guessit
+import pytest
+from six import iteritems
+
 import yaml
 from yaml.constructor import ConstructorError
 from yaml.nodes import MappingNode, SequenceNode
 
-import guessit
-
 import sickbeard
 import sickbeard.name_parser.guessit_parser as sut
-from nose_parameterized import parameterized
-from six import iteritems
+
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
@@ -78,103 +79,102 @@ def _parameters(files, single_test=None):
     return parameters
 
 
-class GuessitTests(unittest.TestCase):
-    """Guessit Tests."""
+files = {
+    'tvshows': 'tvshows.yml',
+}
 
-    files = {
-        'tvshows': 'tvshows.yml',
+# show names with numbers that are used in our test suite
+show_list = [
+        _mock_tv_show('11.22.63'),
+        _mock_tv_show('12 Monkeys'),
+        _mock_tv_show('500 Bus Stops'),
+        _mock_tv_show('60 Minutes'),
+        _mock_tv_show('Mobile Suit Gundam UC RE:0096',
+                      exceptions=['Mobile Suit Gundam Unicorn RE 0096'], is_anime=True),
+        _mock_tv_show('R-15'),
+        _mock_tv_show(r"The.Someone's.Show.**.2.**"),
+        _mock_tv_show('The 100'),
+    ]
+
+parameters = _parameters(files)
+
+
+def test_get_expected_titles():
+    """Assert expect titles only returns regexes for titles containing numbers."""
+    # Given
+    regular_format = r're:(?<![^/\\\.]){name}\b'
+    anime_format = r're:\b{name}\b'
+    sickbeard.showList = [
+        _mock_tv_show('1.2.3'),
+        _mock_tv_show('Super Show (1999)'),
+        _mock_tv_show('Incredible Show 2007'),
+        _mock_tv_show('The Show (UK)'),
+        _mock_tv_show('The 123 Show'),
+        _mock_tv_show('222 Show (2010)'),
+        _mock_tv_show('Something RE:0096', exceptions=['Something UNICORN RE 0096'], is_anime=True),
+        _mock_tv_show('The 10 Anime Show', is_anime=True),
+        _mock_tv_show(r"The.Someone's.Show.**.2.**"),
+    ]
+
+    # When
+    actual = sut.get_expected_titles()
+
+    # Then
+    expected = set(sut.fixed_expected_titles) | {
+        '1.2.3',
+        regular_format.format(name='1 +2 +3'),
+        regular_format.format(name='The +123 +Show'),
+        regular_format.format(name='222 +Show'),
+        regular_format.format(name="The +Someone'?s +Show +2"),
+        anime_format.format(name='Something +RE ?0096'),
+        anime_format.format(name='Something +UNICORN +RE +0096'),
+        anime_format.format(name='The +10 +Anime +Show'),
     }
+    assert expected == set(actual)
 
-    # show names with numbers that are used in our test suite
-    show_list = [
-            _mock_tv_show('11.22.63'),
-            _mock_tv_show('12 Monkeys'),
-            _mock_tv_show('500 Bus Stops'),
-            _mock_tv_show('60 Minutes'),
-            _mock_tv_show('Mobile Suit Gundam UC RE:0096',
-                          exceptions=['Mobile Suit Gundam Unicorn RE 0096'], is_anime=True),
-            _mock_tv_show('R-15'),
-            _mock_tv_show(r"The.Someone's.Show.**.2.**"),
-            _mock_tv_show('The 100'),
-        ]
 
-    parameters = _parameters(files)
+def test_pre_configured_guessit():
+    """Assert that guessit.guessit() uses the pre-configured hook."""
+    assert sut.guessit == guessit.guessit
 
-    def test_get_expected_titles(self):
-        """Assert expect titles only returns regexes for titles containing numbers."""
-        # Given
-        regular_format = r're:(?<![^/\\\.]){name}\b'
-        anime_format = r're:\b{name}\b'
-        sickbeard.showList = [
-            _mock_tv_show('1.2.3'),
-            _mock_tv_show('Super Show (1999)'),
-            _mock_tv_show('Incredible Show 2007'),
-            _mock_tv_show('The Show (UK)'),
-            _mock_tv_show('The 123 Show'),
-            _mock_tv_show('222 Show (2010)'),
-            _mock_tv_show('Something RE:0096', exceptions=['Something UNICORN RE 0096'], is_anime=True),
-            _mock_tv_show('The 10 Anime Show', is_anime=True),
-            _mock_tv_show(r"The.Someone's.Show.**.2.**"),
-        ]
 
-        # When
-        actual = sut.get_expected_titles()
+@pytest.mark.parametrize('scenario_name,release_name,expected', parameters)
+def test_guess(scenario_name, release_name, expected):
+    """Test the given release name.
 
-        # Then
-        expected = set(sut.fixed_expected_titles) | {
-            '1.2.3',
-            regular_format.format(name='1 +2 +3'),
-            regular_format.format(name='The +123 +Show'),
-            regular_format.format(name='222 +Show'),
-            regular_format.format(name="The +Someone'?s +Show +2"),
-            anime_format.format(name='Something +RE ?0096'),
-            anime_format.format(name='Something +UNICORN +RE +0096'),
-            anime_format.format(name='The +10 +Anime +Show'),
-        }
-        self.assertEqual(expected, set(actual))
+    :param scenario_name:
+    :type scenario_name: str
+    :param release_name: the input release name
+    :type release_name: str
+    :param expected: the expected guessed dict
+    :type expected: dict
+    """
+    sickbeard.showList = show_list
+    options = expected.pop('options', {})
+    actual = guessit.guessit(release_name, options=options)
+    actual = {k: v for k, v in iteritems(actual)}
 
-    def test_pre_configured_guessit(self):
-        """Assert that guessit.guessit() uses the pre-configured hook."""
-        self.assertEqual(sut.guessit, guessit.guessit)
+    def format_param(param):
+        if isinstance(param, list):
+            result = []
+            for p in param:
+                result.append(str(p))
+            return result
 
-    @parameterized.expand(parameters)
-    def test_guess(self, scenario_name, release_name, expected):
-        """Test the given release name.
+        return str(param)
 
-        :param scenario_name:
-        :type scenario_name: str
-        :param release_name: the input release name
-        :type release_name: str
-        :param expected: the expected guessed dict
-        :type expected: dict
-        """
-        self.maxDiff = None
-        sickbeard.showList = self.show_list
-        options = expected.pop('options', {})
-        actual = guessit.guessit(release_name, options=options)
-        actual = {k: v for k, v in iteritems(actual)}
+    if 'country' in actual:
+        actual['country'] = format_param(actual['country'])
+    if 'language' in actual:
+        actual['language'] = format_param(actual['language'])
+    if 'subtitle_language' in actual:
+        actual['subtitle_language'] = format_param(actual['subtitle_language'])
 
-        def format_param(param):
-            if isinstance(param, list):
-                result = []
-                for p in param:
-                    result.append(str(p))
-                return result
+    expected['release_name'] = release_name
+    actual['release_name'] = release_name
 
-            return str(param)
-
-        if 'country' in actual:
-            actual['country'] = format_param(actual['country'])
-        if 'language' in actual:
-            actual['language'] = format_param(actual['language'])
-        if 'subtitle_language' in actual:
-            actual['subtitle_language'] = format_param(actual['subtitle_language'])
-
-        expected['release_name'] = release_name
-        actual['release_name'] = release_name
-
-        if expected.get('disabled'):
-            print('Skipping {scenario}: {release_name}'.format(scenario=scenario_name, release_name=release_name))
-        else:
-            print('Testing {scenario}: {release_name}'.format(scenario=scenario_name, release_name=release_name))
-            self.assertEqual(expected, actual)
+    if expected.get('disabled'):
+        print('Skipping {scenario}: {release_name}'.format(scenario=scenario_name, release_name=release_name))
+    else:
+        print('Testing {scenario}: {release_name}'.format(scenario=scenario_name, release_name=release_name))
+        assert expected == actual
