@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """Properties: This section contains additional properties to be guessed by guessit."""
 import re
-from string import upper
 
 import babelfish
 from guessit.rules.common import dash, alt_dash
@@ -64,11 +63,8 @@ def screen_size():
     :return:
     :rtype: Rebulk
     """
-    # https://github.com/guessit-io/guessit/issues/319
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE)
     rebulk.defaults(name='screen_size', validator=seps_surround)
-    rebulk.regex(r'(?:\d{3,}(?:x|\*))?720phd', value='720p')
-    rebulk.regex(r'(?:\d{3,}(?:x|\*))?1080phd', value='1080p')
 
     rebulk.regex('NetflixUHD', value='4k')
 
