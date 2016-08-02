@@ -11,7 +11,7 @@ from rebulk import Rebulk, Rule, RemoveMatch, POST_PROCESS, AppendMatch
 from ..common import dash
 from ..common import seps
 from ..common.validators import seps_surround
-from guessit.rules.common.formatters import raw_cleanup
+from ...rules.common.formatters import raw_cleanup
 
 
 def other():

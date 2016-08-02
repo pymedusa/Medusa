@@ -3,7 +3,7 @@
 """
 part property
 """
-from rebulk.remodule import re, REGEX_AVAILABLE
+from rebulk.remodule import re
 
 from rebulk import Rebulk
 from ..common import dash
@@ -22,11 +22,7 @@ def part():
 
     prefixes = ['pt', 'part']
 
-    if REGEX_AVAILABLE:
-        rebulk.regex(r'\L<prefixes>-?(' + numeral + r')', prefixes=prefixes,
-                     name='part', validate_all=True, private_parent=True, children=True, formatter=parse_numeral)
-    else:
-        rebulk.regex(build_or_pattern(prefixes) + r'-?(' + numeral + r')', prefixes=prefixes,
-                     name='part', validate_all=True, private_parent=True, children=True, formatter=parse_numeral)
+    rebulk.regex(build_or_pattern(prefixes) + r'-?(' + numeral + r')', prefixes=prefixes,
+                 name='part', validate_all=True, private_parent=True, children=True, formatter=parse_numeral)
 
     return rebulk
