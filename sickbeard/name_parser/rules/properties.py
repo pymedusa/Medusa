@@ -4,11 +4,11 @@
 import re
 
 import babelfish
-from guessit.rules.common import dash, alt_dash
+from guessit.rules.common import alt_dash, dash
 from guessit.rules.common.validators import seps, seps_surround
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
-from rebulk.rules import Rule, RemoveMatch
+from rebulk.rules import RemoveMatch, Rule
 
 
 def blacklist():

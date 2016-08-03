@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """Guessit customization."""
 from guessit.api import default_api
-from sickbeard.name_parser.rules.properties import (audio_channels, blacklist, format_, language, other, size,
-                                                    screen_size, subtitle_language)
+from sickbeard.name_parser.rules.properties import (audio_channels, blacklist, format_, language, other, screen_size,
+                                                    size, subtitle_language)
 from sickbeard.name_parser.rules.rules import rules
 
 
