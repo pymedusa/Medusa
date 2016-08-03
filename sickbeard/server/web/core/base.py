@@ -27,7 +27,7 @@ import sickbeard
 from sickbeard import (
     classes, db, helpers, logger, network_timezones, ui
 )
-from sickbeard.server.api.core import function_mapper
+from sickbeard.server.api.v1.core import function_mapper
 
 from sickrage.helper.encoding import ek
 from sickrage.media.ShowBanner import ShowBanner
