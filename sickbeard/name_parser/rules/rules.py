@@ -1150,8 +1150,15 @@ class PartsAsEpisodeNumbers(Rule):
         :return:
         """
         # only if there's no season and no episode
-        if not matches.named('season') and not matches.named('episode') and not matches.named('date'):
-            return matches.named('part')
+        to_rename = []
+        fileparts = matches.markers.named('path')
+        for filepart in marker_sorted(fileparts, matches):
+            parts = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'part')
+            if parts and not matches.range(filepart.start, filepart.end,
+                                           predicate=lambda match: match.name in ('season', 'episode', 'date')):
+                to_rename.extend(parts)
+
+        return to_rename
 
 
 class FixSeasonNotDetected(Rule):
