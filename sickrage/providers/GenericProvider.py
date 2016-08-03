@@ -39,6 +39,8 @@ from sickbeard.tvcache import TVCache
 from sickrage.helper.common import replace_extension, sanitize_filename
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
+from sickrage.show.Show import Show
+
 from requests.utils import add_dict_to_cookiejar
 
 # Keep a list of per provider of recent provider search results
@@ -54,11 +56,12 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         self.anime_only = False
         self.bt_cache_urls = [
-            'http://torcache.net/torrent/{torrent_hash}.torrent',
             'http://thetorrent.org/torrent/{torrent_hash}.torrent',
             'http://itorrents.org/torrent/{torrent_hash}.torrent',
+            'https://torrentproject.se/torrent/{torrent_hash}.torrent',
+            # 'http://torcache.net/torrent/{torrent_hash}.torrent',
             # 'http://btdig.com/torrent/{torrent_hash}.torrent',
-            # 'http://torrage.com/torrent/{torrent_hash}.torrent',
+            # 'http://torrage.info/torrent/{torrent_hash}.torrent',
         ]
         self.cache = TVCache(self)
         self.enable_backlog = False
@@ -121,11 +124,31 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         return False
 
-    def find_propers(self, search_date=None):
-        results = self.cache.listPropers(search_date)
+    def find_propers(self, proper_candidates):
+        results = []
 
-        return [Proper(x[b'name'], x[b'url'], datetime.fromtimestamp(x[b'time']), self.show, x[b'seeders'],
-                       x[b'leechers'], x[b'size'], x[b'pubdate'], x[b'hash']) for x in results]
+        for proper_candidate in proper_candidates:
+            show_obj = Show.find(sickbeard.showList, int(proper_candidate[b'showid'])) if proper_candidate[b'showid'] else None
+
+            if show_obj:
+                episode_obj = show_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
+
+                for term in self.proper_strings:
+                    search_strings = self._get_episode_search_strings(episode_obj, add_string=term)
+
+                    for item in self.search(search_strings[0], ep_obj=episode_obj):
+                        title, url = self._get_title_and_url(item)
+                        seeders, leechers = self._get_result_info(item)
+                        size = self._get_size(item)
+                        pubdate = self._get_pubdate(item)
+                        torrent_hash = self._get_hash(item)
+
+                        # This will be retrived from parser
+                        proper_tags = None
+
+                        results.append(Proper(title, url, datetime.today(), show_obj, seeders, leechers, size, pubdate, torrent_hash, proper_tags))
+
+        return results
 
     def find_search_results(self, show, episodes, search_mode, forced_search=False,
                             download_current_quality=False, manual_search=False,
@@ -291,8 +314,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
             if not manual_search:
                 for episode_number in actual_episodes:
-                    if not show_object.wantEpisode(actual_season, episode_number, quality, forced_search,
-                                                   download_current_quality):
+                    if not show_object.want_episode(actual_season, episode_number, quality, forced_search,
+                                                    download_current_quality):
                         episode_wanted = False
                         break
 
@@ -304,7 +327,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
             episode_object = []
             for current_episode in actual_episodes:
-                episode_object.append(show_object.getEpisode(actual_season, current_episode))
+                episode_object.append(show_object.get_episode(actual_season, current_episode))
 
             result = self.get_result(episode_object)
             result.show = show_object

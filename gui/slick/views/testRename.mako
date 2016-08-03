@@ -17,9 +17,7 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
-
 <input type="hidden" id="showID" value="${show.indexerid}" />
-
 <h3>Preview of the proposed name changes</h3>
 <blockquote>
 % if int(show.air_by_date) == 1 and sickbeard.NAMING_CUSTOM_ABD:
@@ -30,10 +28,8 @@
     ${sickbeard.NAMING_PATTERN}
 % endif
 </blockquote>
-
 <% curSeason = -1 %>
 <% odd = False%>
-
 <table id="SelectAllTable" class="sickbeardTable" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr class="seasonheader" id="season-all">
@@ -48,12 +44,10 @@
         </tr>
     </thead>
 </table>
+<br />
+<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="${srRoot}/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
 
-<br>
-<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
-
-<table id="testRenameTable" class="sickbeardTable" cellspacing="1" border="0" cellpadding="0">
-
+<table id="testRenameTable" class="sickbeardTable ${"summaryFanArt" if sickbeard.FANART_BACKGROUND else ""}" cellspacing="1" border="0" cellpadding="0">
 % for cur_ep_obj in ep_obj_list:
 <%
     curLoc = cur_ep_obj.location[len(cur_ep_obj.show.location)+1:]
@@ -64,8 +58,8 @@
     <thead>
         <tr class="seasonheader" id="season-${cur_ep_obj.season}">
             <td colspan="4">
-                 <br>
-                <h2>${('Season '+str(cur_ep_obj.season), 'Specials')[int(cur_ep_obj.season) == 0]}</h2>
+                 <br />
+                <h2>${'Specials' if int(cur_ep_obj.season) == 0 else 'Season '+str(cur_ep_obj.season)}</h2>
             </td>
         </tr>
         <tr class="seasoncols" id="season-${cur_ep_obj.season}-cols">
@@ -81,11 +75,11 @@
 <%
 odd = not odd
 epStr = str(cur_ep_obj.season) + "x" + str(cur_ep_obj.episode)
-epList = sorted([cur_ep_obj.episode] + [x.episode for x in cur_ep_obj.relatedEps])
+epList = sorted([cur_ep_obj.episode] + [x.episode for x in cur_ep_obj.related_episodes])
 if len(epList) > 1:
     epList = [min(epList), max(epList)]
 %>
-        <tr class="season-${curSeason} ${('wanted', 'good')[curLoc == newLoc]} seasonstyle">
+        <tr class="season-${curSeason} ${'good' if curLoc == newLoc else 'wanted'} seasonstyle">
             <td class="col-checkbox">
             % if curLoc != newLoc:
                 <input type="checkbox" class="epCheck" id="${str(cur_ep_obj.season) + 'x' + str(cur_ep_obj.episode)}" name="${str(cur_ep_obj.season) + "x" + str(cur_ep_obj.episode)}" />
@@ -96,8 +90,7 @@ if len(epList) > 1:
             <td width="50%" class="col-name">${newLoc}</td>
         </tr>
     </tbody>
-
 % endfor
-</table><br>
-<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
+</table><br />
+<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="${srRoot}/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
 </%block>

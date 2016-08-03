@@ -11,7 +11,12 @@ import six
 
 
 if six.PY2:
-    StrOptType = lambda s: unicode(s, sys.stdin.encoding)  # pylint:disable=undefined-variable
+    encoding = sys.stdin.encoding
+    if not encoding:
+        # This can occur when running guessit in non-interactive shell
+        # https://github.com/guessit-io/guessit/issues/293
+        encoding = 'UTF-8'
+    StrOptType = lambda s: unicode(s, encoding)  # pylint:disable=undefined-variable
 else:
     StrOptType = str  # pylint:disable=redefined-variable-type
 

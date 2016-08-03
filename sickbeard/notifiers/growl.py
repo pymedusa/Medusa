@@ -34,9 +34,9 @@ class Notifier(object):
         return self._sendGrowl("Test Growl", "Testing Growl settings from Medusa", "Test", host, password,
                                force=True)
 
-    def notify_snatch(self, ep_name):
+    def notify_snatch(self, ep_name, is_proper):
         if sickbeard.GROWL_NOTIFY_ONSNATCH:
-            self._sendGrowl(common.notifyStrings[common.NOTIFY_SNATCH], ep_name)
+            self._sendGrowl(common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]], ep_name)
 
     def notify_download(self, ep_name):
         if sickbeard.GROWL_NOTIFY_ONDOWNLOAD:
@@ -181,7 +181,7 @@ class Notifier(object):
         register.add_header('Application-Icon', sickbeard.LOGO_URL)
 
         register.add_notification('Test', True)
-        register.add_notification(common.notifyStrings[common.NOTIFY_SNATCH], True)
+        register.add_notification(common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]], True)
         register.add_notification(common.notifyStrings[common.NOTIFY_DOWNLOAD], True)
         register.add_notification(common.notifyStrings[common.NOTIFY_GIT_UPDATE], True)
 

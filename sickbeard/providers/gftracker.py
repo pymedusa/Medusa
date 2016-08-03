@@ -136,7 +136,7 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                             title_anchor = cells[labels.index('Name')].find('a').find_next('a') or \
                                 cells[labels.index('Name')].find('a')
                             title = title_anchor.get('title') if title_anchor else None
-                            download_url = self.url + cells[labels.index('DL')].find('a')['href']
+                            download_url = urljoin(self.url, cells[labels.index('DL')].find('a')['href'])
                             if not all([title, download_url]):
                                 continue
 

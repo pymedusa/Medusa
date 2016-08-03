@@ -221,7 +221,7 @@ class Mede8erMetadata(mediabrowser.MediaBrowserMetadata):
         show_obj: a TVShow instance to create the NFO for
         """
 
-        eps_to_write = [ep_obj] + ep_obj.relatedEps
+        eps_to_write = [ep_obj] + ep_obj.related_episodes
 
         indexer_lang = ep_obj.show.lang
 
@@ -307,7 +307,7 @@ class Mede8erMetadata(mediabrowser.MediaBrowserMetadata):
                     mpaa = etree.SubElement(episode, 'mpaa')
                     mpaa.text = my_show['contentrating']
 
-                if not ep_obj.relatedEps and getattr(my_ep, 'rating', None):
+                if not ep_obj.related_episodes and getattr(my_ep, 'rating', None):
                     try:
                         rating = int((float(my_ep['rating']) * 10))
                     except ValueError:

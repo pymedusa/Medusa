@@ -67,12 +67,12 @@ class TVShowTests(test.SickbeardTestDBCase):
         show.airs = "monday"
         show.startyear = 1987
 
-        show.saveToDB()
-        show.loadFromDB()
+        show.save_to_db()
+        show._load_from_db()
 
         show.indexerid = 2
-        show.saveToDB()
-        show.loadFromDB()
+        show.save_to_db()
+        show._load_from_db()
 
         self.assertEqual(show.indexerid, 2)
 
@@ -82,8 +82,8 @@ class TVShowTests(test.SickbeardTestDBCase):
         """
         show = TVShow(1, 1, "en")
         show.name = "newName"
-        show.saveToDB()
-        show.loadFromDB()
+        show.save_to_db()
+        show._load_from_db()
         self.assertEqual(show.name, "newName")
 
 
@@ -105,8 +105,8 @@ class TVEpisodeTests(test.SickbeardTestDBCase):
         show = TVShow(1, 1, "en")
         episode = TVEpisode(show, 1, 1)
         episode.name = "asdasdasdajkaj"
-        episode.saveToDB()
-        episode.loadFromDB(1, 1)
+        episode.save_to_db()
+        episode.load_from_db(1, 1)
         self.assertEqual(episode.name, "asdasdasdajkaj")
 
 
@@ -135,7 +135,7 @@ class TVTests(test.SickbeardTestDBCase):
         show.default_ep_status = "5"
         show.airs = "monday"
         show.startyear = 1987
-        show.saveToDB()
+        show.save_to_db()
         sickbeard.showList = [show]
         # TODO: implement
 

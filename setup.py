@@ -20,9 +20,13 @@ setup(
     tests_require=[
         'coveralls',
         'nose',
+        'nose-parameterized',
         'rednose',
         'mock',
     ],
+    extras_require={
+        'system-stats': ['psutil'],
+    },
     classifiers=[
         'Development Status :: ???',
         'Intended Audience :: Developers',

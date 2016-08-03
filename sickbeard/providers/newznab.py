@@ -70,6 +70,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         self.caps = False
         self.cap_tv_search = None
         self.force_query = False
+        self.providers_without_caps = ['gingadaddy', '6box']
         # self.cap_search = None
         # self.cap_movie_search = None
         # self.cap_audio_search = None
@@ -86,7 +87,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
             return results
 
         # For providers that don't have caps, or for which the t=caps is not working.
-        if not self.caps and all(provider not in self.url for provider in ['gingadaddy', 'usenet-crawler']):
+        if not self.caps and all(provider not in self.url for provider in self.providers_without_caps):
             self.get_newznab_categories(just_caps=True)
             if not self.caps:
                 return results
@@ -127,6 +128,10 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
+
+                    # If its a PROPER search, need to change param to 'search' so it searches using 'q' param
+                    if any(proper_string in search_string for proper_string in self.proper_strings):
+                        search_params['t'] = 'search'
 
                     if search_params['t'] != 'tvsearch':
                         search_params['q'] = search_string
@@ -190,8 +195,11 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                                 'hash': None,
                             }
                             if mode != 'RSS':
-                                logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                           (title, seeders, leechers), logger.DEBUG)
+                                if seeders == -1:
+                                    logger.log('Found result: {0}'.format(title), logger.DEBUG)
+                                else:
+                                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
+                                               (title, seeders, leechers), logger.DEBUG)
 
                             items.append(item)
                         except (AttributeError, TypeError, KeyError, ValueError, IndexError):

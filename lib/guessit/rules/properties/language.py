@@ -136,7 +136,7 @@ def find_languages(string, context=None):
                 key = 'subtitle_language'
         for suffix in subtitle_suffixes:
             if lang_word.endswith(suffix):
-                lang_word = lang_word[:len(suffix) - 1]
+                lang_word = lang_word[:len(lang_word) - len(suffix)]
                 key = 'subtitle_language'
         for prefix in lang_prefixes:
             if lang_word.startswith(prefix):

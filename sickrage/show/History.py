@@ -59,10 +59,11 @@ class History(object):
         actions = History._get_actions(action)
         limit = max(try_int(limit), 0)
 
-        common_sql = 'SELECT show_name, showid, season, episode, h.quality, ' \
-                     'action, provider, resource, date ' \
-                     'FROM history h, tv_shows s ' \
-                     'WHERE h.showid = s.indexer_id '
+        common_sql = 'SELECT s.show_name, h.showid, h.season, h.episode, h.quality, e.is_proper, ' \
+                     'h.action, h.provider, h.resource, h.date ' \
+                     'FROM history h, tv_shows s, tv_episodes e ' \
+                     'WHERE h.showid = s.indexer_id ' \
+                     'AND h.showid = e.showid AND h.season = e.season AND h.episode = e.episode '
         filter_sql = 'AND action in (' + ','.join(['?'] * len(actions)) + ') '
         order_sql = 'ORDER BY date DESC '
 
@@ -79,10 +80,11 @@ class History(object):
         # TODO: Convert to using operators to combine items
         for row in sql_results:
             row = History.Item(*row)
+            if not limit or len(detailed) < limit:
+                detailed.append(row)
             if row.index in compact:
                 compact[row.index].actions.append(row.cur_action)
             elif not limit or len(compact) < limit:
-                detailed.append(row)
                 compact[row.index] = row.compacted()
 
         results = namedtuple('results', ['detailed', 'compact'])
@@ -119,12 +121,12 @@ class History(object):
     Action = namedtuple('Action', action_fields)
     Action.width = len(action_fields)
 
-    index_fields = ('show_id', 'season', 'episode', 'quality', )
+    index_fields = ('show_id', 'season', 'episode', 'quality', 'is_proper')
     # An index for an item or compact item from history
     Index = namedtuple('Index', index_fields)
     Index.width = len(index_fields)
 
-    compact_fields = ('show_name', 'index', 'actions', )
+    compact_fields = ('show_name', 'index', 'actions', 'is_proper')
     # Related items compacted with a list of actions from history
     CompactItem = namedtuple('CompactItem', compact_fields)
 
@@ -151,6 +153,7 @@ class History(object):
                 self.season,
                 self.episode,
                 self.quality,
+                self.is_proper
             )
 
         @property
@@ -175,6 +178,7 @@ class History(object):
                 self.show_name,
                 self.index,
                 [self.cur_action],  # actions
+                self.is_proper,
             )
             return result
 

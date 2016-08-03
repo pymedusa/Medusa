@@ -263,13 +263,13 @@ class Manage(Home, WebRoot):
                     b'AND location != \'\'',
                     [cur_indexer_id]
                 )
-                to_download[cur_indexer_id] = [str(x['season']) + 'x' + str(x['episode']) for x in all_eps_results]
+                to_download[cur_indexer_id] = [str(x[b'season']) + 'x' + str(x[b'episode']) for x in all_eps_results]
 
             for epResult in to_download[cur_indexer_id]:
                 season, episode = epResult.split('x')
 
                 show = Show.find(sickbeard.showList, int(cur_indexer_id))
-                show.getEpisode(season, episode).download_subtitles()
+                show.get_episode(season, episode).download_subtitles()
 
         return self.redirect('/manage/subtitleMissed/')
 
@@ -318,7 +318,7 @@ class Manage(Home, WebRoot):
             )
 
             for cur_result in sql_results:
-                cur_ep_cat = cur_show.getOverview(cur_result[b'status'])
+                cur_ep_cat = cur_show.get_overview(cur_result[b'status'])
                 if cur_ep_cat:
                     ep_cats[u'{ep}'.format(ep=episode_num(cur_result[b'season'], cur_result[b'episode']))] = cur_ep_cat
                     ep_counts[cur_ep_cat] += 1

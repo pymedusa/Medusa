@@ -183,7 +183,7 @@ class WDTVMetadata(generic.GenericMetadata):
         ep_obj: a TVShow instance to create the NFO for
         """
 
-        eps_to_write = [ep_obj] + ep_obj.relatedEps
+        eps_to_write = [ep_obj] + ep_obj.related_episodes
 
         indexer_lang = ep_obj.show.lang
 
@@ -237,7 +237,7 @@ class WDTVMetadata(generic.GenericMetadata):
             episode_id.text = str(ep_to_write.indexerid)
 
             title = etree.SubElement(episode, 'title')
-            title.text = ep_obj.prettyName()
+            title.text = ep_obj.pretty_name()
 
             if getattr(my_show, 'seriesname', None):
                 series_name = etree.SubElement(episode, 'series_name')

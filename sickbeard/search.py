@@ -91,25 +91,29 @@ def _downloadResult(result):
     return newResult
 
 
-def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branches, too-many-statements
+def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statements
     """
     Internal logic necessary to actually "snatch" a result that has been found.
 
     :param result: SearchResult instance to be snatched.
-    :param endStatus: the episode status that should be used for the episode object once it's snatched.
     :return: boolean, True on success
     """
     if result is None:
         return False
 
     result.priority = 0  # -1 = low, 0 = normal, 1 = high
+    is_proper = False
     if sickbeard.ALLOW_HIGH_PRIORITY:
         # if it aired recently make it high priority
         for curEp in result.episodes:
             if datetime.date.today() - curEp.airdate <= datetime.timedelta(days=7):
                 result.priority = 1
-    if re.search(r'(^|[\. _-])(proper|repack)([\. _-]|$)', result.name, re.I) is not None:
+    if result.proper_tags:
+        logger.log(u'Found proper tags for {0}. Snatching as PROPER'.format(result.name), logger.DEBUG)
+        is_proper = True
         endStatus = SNATCHED_PROPER
+    else:
+        endStatus = SNATCHED
 
     if result.url.startswith('magnet') or result.url.endswith('torrent'):
         result.resultType = 'torrent'
@@ -121,7 +125,6 @@ def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branc
         elif sickbeard.NZB_METHOD == "sabnzbd":
             dlResult = sab.sendNZB(result)
         elif sickbeard.NZB_METHOD == "nzbget":
-            is_proper = True if endStatus == SNATCHED_PROPER else False
             dlResult = nzbget.sendNZB(result, is_proper)
         else:
             logger.log(u"Unknown NZB action specified in config: " + sickbeard.NZB_METHOD, logger.ERROR)
@@ -175,13 +178,13 @@ def snatchEpisode(result, endStatus=SNATCHED):  # pylint: disable=too-many-branc
                 if all([sickbeard.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
                         result.leechers not in (-1, None)]):
                     notifiers.notify_snatch("{0} with {1} seeders and {2} leechers from {3}".format
-                                            (notify_message, result.seeders, result.leechers, result.provider.name))
+                                            (notify_message, result.seeders, result.leechers, result.provider.name), is_proper)
                 else:
-                    notifiers.notify_snatch("{0} from {1}".format(notify_message, result.provider.name))
+                    notifiers.notify_snatch("{0} from {1}".format(notify_message, result.provider.name), is_proper)
             except Exception:
                 # Without this, when notification fail, it crashes the snatch thread and Medusa will
                 # keep snatching until notification is sent
-                logger.log(u"Failed to send snatch notification", logger.DEBUG)
+                logger.log(u"Failed to send snatch notification. Error: {0}".format(e), logger.DEBUG)
 
             trakt_data.append((curEpObj.season, curEpObj.episode))
 
@@ -286,9 +289,8 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
             if any(ext in cur_result.name.lower() for ext in preferred_words):
                 logger.log(u"Preferring " + cur_result.name + u" (preferred words)")
                 bestResult = cur_result
-            if "proper" in cur_result.name.lower() or "real" in cur_result.name.lower() or \
-                    "repack" in cur_result.name.lower():
-                logger.log(u"Preferring " + cur_result.name + u" (repack/proper/real over nuked)")
+            if cur_result.proper_tags:
+                logger.log(u"Preferring " + cur_result.name + u" (repack/proper/real/rerip over nuked)")
                 bestResult = cur_result
             elif "internal" in bestResult.name.lower() and "internal" not in cur_result.name.lower():
                 logger.log(u"Preferring " + cur_result.name + u" (normal instead of internal)")
@@ -396,8 +398,8 @@ def wantedEpisodes(show, fromDate):
             elif cur_quality in allowed_qualities:
                 continue
 
-        epObj = show.getEpisode(result["season"], result["episode"])
-        epObj.wantedQuality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
+        epObj = show.get_episode(result["season"], result["episode"])
+        epObj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
         wanted.append(epObj)
 
     return wanted
@@ -455,14 +457,14 @@ def searchForNeededEpisodes():
         # pick a single result for each episode, respecting existing results
         for curEp in curFoundResults:
             if not curEp.show or curEp.show.paused:
-                logger.log(u"Skipping %s because the show is paused " % curEp.prettyName(), logger.DEBUG)
+                logger.log(u"Skipping %s because the show is paused " % curEp.pretty_name(), logger.DEBUG)
                 continue
 
             bestResult = pickBestResult(curFoundResults[curEp], curEp.show)
 
             # if all results were rejected move on to the next episode
             if not bestResult:
-                logger.log(u"All found results for " + curEp.prettyName() + u" were rejected.", logger.DEBUG)
+                logger.log(u"All found results for " + curEp.pretty_name() + u" were rejected.", logger.DEBUG)
                 continue
 
             # if it's already in the list (from another provider) and the newly found quality is no better then skip it
@@ -668,7 +670,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
             anyWanted = False
             for curEpNum in allEps:
                 for season in {x.season for x in episodes}:
-                    if not show.wantEpisode(season, curEpNum, seasonQual, downCurQuality):
+                    if not show.want_episode(season, curEpNum, seasonQual, downCurQuality):
                         allWanted = False
                     else:
                         anyWanted = True
@@ -682,7 +684,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
                 epObjs = []
                 for curEpNum in allEps:
                     for season in {x.season for x in episodes}:
-                        epObjs.append(show.getEpisode(season, curEpNum))
+                        epObjs.append(show.get_episode(season, curEpNum))
                 bestSeasonResult.episodes = epObjs
 
                 # Remove provider from thread name before return results
@@ -725,7 +727,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
                     epObjs = []
                     for curEpNum in allEps:
                         for season in {x.season for x in episodes}:
-                            epObjs.append(show.getEpisode(season, curEpNum))
+                            epObjs.append(show.get_episode(season, curEpNum))
                     bestSeasonResult.episodes = epObjs
 
                     if MULTI_EP_RESULT in foundResults[cur_provider.name]:

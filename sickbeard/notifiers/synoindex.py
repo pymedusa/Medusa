@@ -29,7 +29,7 @@ from sickrage.helper.exceptions import ex
 
 
 class Notifier(object):
-    def notify_snatch(self, ep_name):
+    def notify_snatch(self, ep_name, is_proper):
         pass
 
     def notify_download(self, ep_name):

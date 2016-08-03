@@ -137,9 +137,9 @@ class TestTVShow(TVShow):
     def __init__(self, indexer, indexer_id):
         super(TestTVShow, self).__init__(indexer, indexer_id)
 
-    def loadFromDB(self):
+    def _load_from_db(self):
         """
-        Override TVShow.loadFromDB to avoid DB access during testing
+        Override TVShow._load_from_db to avoid DB access during testing
         """
         pass
 

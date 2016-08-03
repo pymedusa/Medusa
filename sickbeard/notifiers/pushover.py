@@ -27,7 +27,7 @@ from six.moves.http_client import HTTPSConnection
 
 import sickbeard
 from sickbeard import logger
-from sickbeard.common import notifyStrings, NOTIFY_SNATCH, NOTIFY_DOWNLOAD, NOTIFY_SUBTITLE_DOWNLOAD, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN_TEXT, NOTIFY_LOGIN
+from sickbeard.common import notifyStrings, NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER, NOTIFY_DOWNLOAD, NOTIFY_SUBTITLE_DOWNLOAD, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN_TEXT, NOTIFY_LOGIN
 from sickrage.helper.exceptions import ex
 
 API_URL = "https://api.pushover.net/1/messages.json"
@@ -136,7 +136,8 @@ class Notifier(object):
         logger.log(u"Pushover notification successful.", logger.INFO)
         return True
 
-    def notify_snatch(self, ep_name, title=notifyStrings[NOTIFY_SNATCH]):
+    def notify_snatch(self, ep_name, is_proper):
+        title=notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
         if sickbeard.PUSHOVER_NOTIFY_ONSNATCH:
             self._notifyPushover(title, ep_name)
 

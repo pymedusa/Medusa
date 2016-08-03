@@ -136,7 +136,7 @@ def revertEpisode(epObj):
                 logger.log(u"Episode don't have a previous snatched status to revert. Setting it back to WANTED",
                            logger.DEBUG)
                 epObj.status = WANTED
-                epObj.saveToDB()
+                epObj.save_to_db()
 
     except EpisodeNotFoundException as e:
         logger.log(u"Unable to create episode, please set its status manually: " + ex(e),
@@ -156,7 +156,7 @@ def markFailed(epObj):
         with epObj.lock:
             quality = Quality.splitCompositeStatus(epObj.status)[1]
             epObj.status = Quality.compositeStatus(FAILED, quality)
-            epObj.saveToDB()
+            epObj.save_to_db()
 
     except EpisodeNotFoundException as e:
         logger.log(u"Unable to get episode, please set its status manually: " + ex(e), logger.WARNING)

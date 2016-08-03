@@ -102,19 +102,18 @@ class TVShow(object):  # pylint: disable=too-few-public-methods
 
 class TVEpisode(tv.TVEpisode):  # pylint: disable=too-many-instance-attributes
     def __init__(self, season, episode, absolute_number, name):  # pylint: disable=super-init-not-called
-        self.relatedEps = []
-        self._name = name
-        self._season = season
-        self._episode = episode
-        self._absolute_number = absolute_number
+        super(TVEpisode, self).__init__(None, season, episode)
+        self.related_episodes = []
+        self.name = name
+        self.absolute_number = absolute_number
         self.scene_season = season
         self.scene_episode = episode
         self.scene_absolute_number = absolute_number
-        self._airdate = datetime.date(2010, 3, 9)
+        self.airdate = datetime.date(2010, 3, 9)
+        self.status = Quality.compositeStatus(common.DOWNLOADED, common.Quality.SDTV)
+        self.release_name = 'Show.Name.S02E03.HDTV.XviD-RLSGROUP'
+        self.is_proper = True
         self.show = TVShow()
-        self._status = Quality.compositeStatus(common.DOWNLOADED, common.Quality.SDTV)
-        self._release_name = 'Show.Name.S02E03.HDTV.XviD-RLSGROUP'
-        self._is_proper = True
 
 
 def check_force_season_folders(pattern=None, multi=None, anime_type=None):
@@ -229,14 +228,14 @@ def validate_name(pattern, multi=None, anime_type=None,  # pylint: disable=too-m
             logger.log(u"Air date incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
     elif anime_type != 3:
-        if len(result.ab_episode_numbers) and result.ab_episode_numbers != [x.absolute_number for x in [ep] + ep.relatedEps]:
+        if len(result.ab_episode_numbers) and result.ab_episode_numbers != [x.absolute_number for x in [ep] + ep.related_episodes]:
             logger.log(u"Absolute numbering incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
     else:
         if result.season_number != ep.season:
             logger.log(u"Season number incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
-        if result.episode_numbers != [x.episode for x in [ep] + ep.relatedEps]:
+        if result.episode_numbers != [x.episode for x in [ep] + ep.related_episodes]:
             logger.log(u"Episode numbering incorrect in parsed episode, pattern isn't valid", logger.DEBUG)
             return False
 
@@ -248,48 +247,48 @@ def generate_sample_ep(multi=None, abd=False, sports=False, anime_type=None):
     ep = TVEpisode(2, 3, 3, "Ep Name")
 
     # pylint: disable=protected-access
-    ep._status = Quality.compositeStatus(DOWNLOADED, Quality.HDTV)
-    ep._airdate = datetime.date(2011, 3, 9)
+    ep.status = Quality.compositeStatus(DOWNLOADED, Quality.HDTV)
+    ep.airdate = datetime.date(2011, 3, 9)
 
     if abd:
-        ep._release_name = 'Show.Name.2011.03.09.HDTV.XviD-RLSGROUP'
+        ep.release_name = 'Show.Name.2011.03.09.HDTV.XviD-RLSGROUP'
         ep.show.air_by_date = 1
     elif sports:
-        ep._release_name = 'Show.Name.2011.03.09.HDTV.XviD-RLSGROUP'
+        ep.release_name = 'Show.Name.2011.03.09.HDTV.XviD-RLSGROUP'
         ep.show.sports = 1
     else:
         if anime_type != 3:
             ep.show.anime = 1
-            ep._release_name = 'Show.Name.003.HDTV.XviD-RLSGROUP'
+            ep.release_name = 'Show.Name.003.HDTV.XviD-RLSGROUP'
         else:
-            ep._release_name = 'Show.Name.S02E03.HDTV.XviD-RLSGROUP'
+            ep.release_name = 'Show.Name.S02E03.HDTV.XviD-RLSGROUP'
 
     if multi is not None:
-        ep._name = "Ep Name (1)"
+        ep.name = "Ep Name (1)"
 
         if anime_type != 3:
             ep.show.anime = 1
 
-            ep._release_name = 'Show.Name.003-004.HDTV.XviD-RLSGROUP'
+            ep.release_name = 'Show.Name.003-004.HDTV.XviD-RLSGROUP'
 
             secondEp = TVEpisode(2, 4, 4, "Ep Name (2)")
-            secondEp._status = Quality.compositeStatus(DOWNLOADED, Quality.HDTV)
-            secondEp._release_name = ep._release_name
+            secondEp.status = Quality.compositeStatus(DOWNLOADED, Quality.HDTV)
+            secondEp.release_name = ep.release_name
 
-            ep.relatedEps.append(secondEp)
+            ep.related_episodes.append(secondEp)
         else:
-            ep._release_name = 'Show.Name.S02E03E04E05.HDTV.XviD-RLSGROUP'
+            ep.release_name = 'Show.Name.S02E03E04E05.HDTV.XviD-RLSGROUP'
 
             secondEp = TVEpisode(2, 4, 4, "Ep Name (2)")
-            secondEp._status = Quality.compositeStatus(DOWNLOADED, Quality.HDTV)
-            secondEp._release_name = ep._release_name
+            secondEp.status = Quality.compositeStatus(DOWNLOADED, Quality.HDTV)
+            secondEp.release_name = ep.release_name
 
             thirdEp = TVEpisode(2, 5, 5, "Ep Name (3)")
-            thirdEp._status = Quality.compositeStatus(DOWNLOADED, Quality.HDTV)
-            thirdEp._release_name = ep._release_name
+            thirdEp.status = Quality.compositeStatus(DOWNLOADED, Quality.HDTV)
+            thirdEp.release_name = ep.release_name
 
-            ep.relatedEps.append(secondEp)
-            ep.relatedEps.append(thirdEp)
+            ep.related_episodes.append(secondEp)
+            ep.related_episodes.append(thirdEp)
 
     return ep
 

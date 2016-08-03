@@ -12,6 +12,8 @@ import os.path
 import sys
 import unittest
 
+import sickbeard
+
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -168,7 +170,17 @@ UNICODE_TEST_CASES = [
 FAILURE_CASES = ['7sins-jfcs01e09-720p-bluray-x264']
 
 
-class UnicodeTests(test.SickbeardTestDBCase):
+class LegacyParserTestDBCase(test.SickbeardTestDBCase):
+    @classmethod
+    def setUpClass(cls):
+        sickbeard.USE_LEGACY_NAME_PARSER = 1
+
+    @classmethod
+    def tearDownClass(cls):
+        sickbeard.USE_LEGACY_NAME_PARSER = 0
+
+
+class UnicodeTests(LegacyParserTestDBCase):
     """
     Test unicode
     """
@@ -201,10 +213,11 @@ class UnicodeTests(test.SickbeardTestDBCase):
             self._test_unicode(name, result)
 
 
-class FailureCaseTests(test.SickbeardTestDBCase):
+class FailureCaseTests(LegacyParserTestDBCase):
     """
     Test cases that should fail
     """
+
     @staticmethod
     def _test_name(name):
         """
@@ -231,7 +244,7 @@ class FailureCaseTests(test.SickbeardTestDBCase):
             self.assertTrue(self._test_name(name))
 
 
-class ComboTests(test.SickbeardTestDBCase):
+class ComboTests(LegacyParserTestDBCase):
     """
     Perform combination tests
     """
@@ -275,7 +288,7 @@ class ComboTests(test.SickbeardTestDBCase):
             self._test_combo(os.path.normpath(name), result, which_regexes)
 
 
-class BasicTests(test.SickbeardTestDBCase):
+class BasicTests(LegacyParserTestDBCase):
     """
     Basic name parsing tests
     """
@@ -439,7 +452,7 @@ class BasicTests(test.SickbeardTestDBCase):
 
 
 # TODO: Make these work or document why they shouldn't
-class BasicFailedTests(test.SickbeardTestDBCase):
+class BasicFailedTests(LegacyParserTestDBCase):
     """
     Basic tests that currently fail
     """
@@ -479,6 +492,7 @@ class BasicFailedTests(test.SickbeardTestDBCase):
             else:
                 result.which_regex = [section]
                 test_result = name_parser.parse(cur_test)
+                test_result.which_regex = [section]
 
             if DEBUG or verbose:
                 print('air_by_date:', test_result.is_air_by_date, 'air_date:', test_result.air_date)

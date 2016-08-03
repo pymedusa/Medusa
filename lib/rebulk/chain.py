@@ -205,6 +205,7 @@ class Chain(Pattern):
                     match.children.append(child)
             if chain_match not in match.children:
                 match.children.append(chain_match)
+                chain_match.parent = match
         return match
 
     @staticmethod

@@ -261,6 +261,7 @@ CHECK_PROPERS_INTERVAL = None
 ALLOW_HIGH_PRIORITY = False
 SAB_FORCED = False
 RANDOMIZE_PROVIDERS = False
+USE_LEGACY_NAME_PARSER = False
 
 AUTOPOSTPROCESSOR_FREQUENCY = None
 DAILYSEARCH_FREQUENCY = None
@@ -298,7 +299,7 @@ NFO_RENAME = True
 TV_DOWNLOAD_DIR = None
 UNPACK = False
 SKIP_REMOVED_FILES = False
-ALLOWED_EXTENSIONS = "srt,nfo,srr,sfv"
+ALLOWED_EXTENSIONS = "srt,nfo,sub,idx"
 
 NZBS = False
 NZBS_UID = None
@@ -537,6 +538,8 @@ TIMEZONE_DISPLAY = None
 THEME_NAME = None
 POSTER_SORTBY = None
 POSTER_SORTDIR = None
+FANART_BACKGROUND = None
+FANART_BACKGROUND_OPACITY = None
 
 USE_SUBTITLES = False
 SUBTITLES_LANGUAGES = []
@@ -546,6 +549,8 @@ SUBTITLES_SERVICES_ENABLED = []
 SUBTITLES_HISTORY = False
 SUBTITLES_PERFECT_MATCH = False
 EMBEDDED_SUBTITLES_ALL = False
+EMBEDDED_SUBTITLES_UNKNOWN_LANG = False
+SUBTITLES_STOP_AT_FIRST = False
 SUBTITLES_HEARING_IMPAIRED = False
 SUBTITLES_FINDER_FREQUENCY = 1
 SUBTITLES_MULTI = False
@@ -659,13 +664,14 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             GUI_NAME, HOME_LAYOUT, HISTORY_LAYOUT, DISPLAY_SHOW_SPECIALS, COMING_EPS_LAYOUT, COMING_EPS_SORT, COMING_EPS_DISPLAY_PAUSED, COMING_EPS_MISSED_RANGE, FUZZY_DATING, TRIM_ZERO, DATE_PRESET, TIME_PRESET, TIME_PRESET_W_SECONDS, THEME_NAME, \
             POSTER_SORTBY, POSTER_SORTDIR, HISTORY_LIMIT, CREATE_MISSING_SHOW_DIRS, ADD_SHOWS_WO_DIR, \
             METADATA_WDTV, METADATA_TIVO, METADATA_MEDE8ER, IGNORE_WORDS, PREFERRED_WORDS, UNDESIRED_WORDS, TRACKERS_LIST, IGNORED_SUBS_LIST, REQUIRE_WORDS, CALENDAR_UNPROTECTED, CALENDAR_ICONS, NO_RESTART, IGNORE_UND_SUBS, \
-            USE_SUBTITLES, SUBTITLES_LANGUAGES, SUBTITLES_DIR, SUBTITLES_SERVICES_LIST, SUBTITLES_SERVICES_ENABLED, SUBTITLES_HISTORY, SUBTITLES_FINDER_FREQUENCY, SUBTITLES_MULTI, SUBTITLES_DOWNLOAD_IN_PP, SUBTITLES_KEEP_ONLY_WANTED, EMBEDDED_SUBTITLES_ALL, SUBTITLES_EXTRA_SCRIPTS, SUBTITLES_PRE_SCRIPTS, SUBTITLES_PERFECT_MATCH, subtitlesFinderScheduler, \
+            USE_SUBTITLES, SUBTITLES_LANGUAGES, SUBTITLES_DIR, SUBTITLES_SERVICES_LIST, SUBTITLES_SERVICES_ENABLED, SUBTITLES_HISTORY, SUBTITLES_FINDER_FREQUENCY, SUBTITLES_MULTI, SUBTITLES_DOWNLOAD_IN_PP, SUBTITLES_KEEP_ONLY_WANTED, EMBEDDED_SUBTITLES_ALL, SUBTITLES_EXTRA_SCRIPTS, SUBTITLES_PRE_SCRIPTS, SUBTITLES_PERFECT_MATCH, subtitlesFinderScheduler, EMBEDDED_SUBTITLES_UNKNOWN_LANG, SUBTITLES_STOP_AT_FIRST, \
             SUBTITLES_HEARING_IMPAIRED, ADDIC7ED_USER, ADDIC7ED_PASS, ITASA_USER, ITASA_PASS, LEGENDASTV_USER, LEGENDASTV_PASS, OPENSUBTITLES_USER, OPENSUBTITLES_PASS, \
             USE_FAILED_DOWNLOADS, DELETE_FAILED, ANON_REDIRECT, LOCALHOST_IP, DEBUG, DBDEBUG, DEFAULT_PAGE, SEEDERS_LEECHERS_IN_NOTIFY, PROXY_SETTING, PROXY_INDEXERS, \
             AUTOPOSTPROCESSOR_FREQUENCY, SHOWUPDATE_HOUR, \
             ANIME_DEFAULT, NAMING_ANIME, ANIMESUPPORT, USE_ANIDB, ANIDB_USERNAME, ANIDB_PASSWORD, ANIDB_USE_MYLIST, \
             ANIME_SPLIT_HOME, SCENE_DEFAULT, DOWNLOAD_URL, BACKLOG_DAYS, GIT_USERNAME, GIT_PASSWORD, \
-            DEVELOPER, gh, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, SOCKET_TIMEOUT, RECENTLY_DELETED
+            DEVELOPER, gh, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, SOCKET_TIMEOUT, RECENTLY_DELETED, USE_LEGACY_NAME_PARSER, \
+            FANART_BACKGROUND, FANART_BACKGROUND_OPACITY
 
         if __INITIALIZED__:
             return False
@@ -799,6 +805,9 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                         if cleanupDir not in ['rss', 'sessions', 'indexers']:
                             logger.log(u"Restore: Unable to remove the cache/{0} directory: {1}".format(cleanupDir, ex(e)), logger.WARNING)
 
+        FANART_BACKGROUND = bool(check_setting_int(CFG, 'GUI', 'fanart_background', 1))
+        FANART_BACKGROUND_OPACITY = check_setting_float(CFG, 'GUI', 'fanart_background_opacity', 0.4)
+
         GUI_NAME = check_setting_str(CFG, 'GUI', 'gui_name', 'slick')
 
         THEME_NAME = check_setting_str(CFG, 'GUI', 'theme_name', 'dark')
@@ -882,6 +891,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         SCENE_DEFAULT = bool(check_setting_int(CFG, 'General', 'scene_default', 0))
 
         PROVIDER_ORDER = check_setting_str(CFG, 'General', 'provider_order', '').split()
+
+        USE_LEGACY_NAME_PARSER = bool(check_setting_int(CFG, 'General', 'use_legacy_name_parser', 0))
 
         NAMING_PATTERN = check_setting_str(CFG, 'General', 'naming_pattern', 'Season %0S/%SN - S%0SE%0E - %EN')
         NAMING_ABD_PATTERN = check_setting_str(CFG, 'General', 'naming_abd_pattern', '%SN - %A.D - %EN')
@@ -1204,6 +1215,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         SUBTITLES_HISTORY = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_history', 0))
         SUBTITLES_PERFECT_MATCH = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_perfect_match', 1))
         EMBEDDED_SUBTITLES_ALL = bool(check_setting_int(CFG, 'Subtitles', 'embedded_subtitles_all', 0))
+        SUBTITLES_STOP_AT_FIRST = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_stop_at_first', 0))
+        EMBEDDED_SUBTITLES_UNKNOWN_LANG = bool(check_setting_int(CFG, 'Subtitles', 'embedded_subtitles_unknown_lang', 0))
         SUBTITLES_HEARING_IMPAIRED = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_hearing_impaired', 0))
         SUBTITLES_FINDER_FREQUENCY = check_setting_int(CFG, 'Subtitles', 'subtitles_finder_frequency', 1)
         SUBTITLES_MULTI = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_multi', 1))
@@ -1342,6 +1355,10 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         # initialize the cache database
         cache_db_con = db.DBConnection('cache.db')
         db.upgradeDatabase(cache_db_con, cache_db.InitialSchema)
+
+        # Performs a vacuum on cache.db
+        logger.log(u"Performing a vacuum on the CACHE database", logger.DEBUG)
+        cache_db_con.action("VACUUM")
 
         # initialize the failed downloads database
         failed_db_con = db.DBConnection('failed.db')
@@ -1589,7 +1606,7 @@ def saveAll():
     # write all shows
     logger.log(u"Saving all shows to the database")
     for show in showList:
-        show.saveToDB()
+        show.save_to_db()
 
     # save config
     logger.log(u"Saving config file to disk")
@@ -1651,6 +1668,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['usenet_retention'] = int(USENET_RETENTION)
     new_config['General']['cache_trimming'] = int(CACHE_TRIMMING)
     new_config['General']['max_cache_age'] = int(MAX_CACHE_AGE)
+    new_config['General']['use_legacy_name_parser'] = int(USE_LEGACY_NAME_PARSER)
     new_config['General']['autopostprocessor_frequency'] = int(AUTOPOSTPROCESSOR_FREQUENCY)
     new_config['General']['dailysearch_frequency'] = int(DAILYSEARCH_FREQUENCY)
     new_config['General']['backlog_frequency'] = int(BACKLOG_FREQUENCY)
@@ -2029,6 +2047,8 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['GUI'] = {}
     new_config['GUI']['gui_name'] = GUI_NAME
     new_config['GUI']['theme_name'] = THEME_NAME
+    new_config['GUI']['fanart_background'] = FANART_BACKGROUND
+    new_config['GUI']['fanart_background_opacity'] = FANART_BACKGROUND_OPACITY
     new_config['GUI']['home_layout'] = HOME_LAYOUT
     new_config['GUI']['history_layout'] = HISTORY_LAYOUT
     new_config['GUI']['history_limit'] = HISTORY_LIMIT
@@ -2055,6 +2075,8 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['Subtitles']['subtitles_history'] = int(SUBTITLES_HISTORY)
     new_config['Subtitles']['subtitles_perfect_match'] = int(SUBTITLES_PERFECT_MATCH)
     new_config['Subtitles']['embedded_subtitles_all'] = int(EMBEDDED_SUBTITLES_ALL)
+    new_config['Subtitles']['subtitles_stop_at_first'] = int(SUBTITLES_STOP_AT_FIRST)
+    new_config['Subtitles']['embedded_subtitles_unknown_lang'] = int(EMBEDDED_SUBTITLES_UNKNOWN_LANG)
     new_config['Subtitles']['subtitles_hearing_impaired'] = int(SUBTITLES_HEARING_IMPAIRED)
     new_config['Subtitles']['subtitles_finder_frequency'] = int(SUBTITLES_FINDER_FREQUENCY)
     new_config['Subtitles']['subtitles_multi'] = int(SUBTITLES_MULTI)

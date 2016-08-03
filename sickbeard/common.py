@@ -100,6 +100,7 @@ NOTIFY_GIT_UPDATE = 4
 NOTIFY_GIT_UPDATE_TEXT = 5
 NOTIFY_LOGIN = 6
 NOTIFY_LOGIN_TEXT = 7
+NOTIFY_SNATCH_PROPER = 8
 
 notifyStrings = NumDict({
     NOTIFY_SNATCH: "Started Download",
@@ -108,7 +109,8 @@ notifyStrings = NumDict({
     NOTIFY_GIT_UPDATE: "SickRage Updated",
     NOTIFY_GIT_UPDATE_TEXT: "SickRage Updated To Commit#: ",
     NOTIFY_LOGIN: "SickRage new login",
-    NOTIFY_LOGIN_TEXT: "New login from IP: {0}. http://geomaplookup.net/?ip={0}"
+    NOTIFY_LOGIN_TEXT: "New login from IP: {0}. http://geomaplookup.net/?ip={0}",
+    NOTIFY_SNATCH_PROPER: "Started PROPER Download"
 })
 
 # Episode statuses
@@ -586,6 +588,109 @@ class Quality(object):
         if assume and quality == Quality.UNKNOWN:
             quality = Quality.assumeQuality(name)
         return Quality.compositeStatus(DOWNLOADED, quality)
+
+    guessit_map = {
+        '720p': {
+            'HDTV': HDTV,
+            'WEB-DL': HDWEBDL,
+            'WEBRip': HDWEBDL,
+            'BluRay': HDBLURAY,
+        },
+        '1080i': RAWHDTV,
+        '1080p': {
+            'HDTV': FULLHDTV,
+            'WEB-DL': FULLHDWEBDL,
+            'WEBRip': FULLHDWEBDL,
+            'BluRay': FULLHDBLURAY
+        },
+        '4k': {
+            'HDTV': UHD_4K_TV,
+            'WEB-DL': UHD_4K_WEBDL,
+            'WEBRip': UHD_4K_WEBDL,
+            'BluRay': UHD_4K_BLURAY
+        }
+    }
+
+    to_guessit_format_list = [
+        ANYHDTV, ANYWEBDL, ANYBLURAY
+    ]
+
+    to_guessit_screen_size_map = {
+        HDTV | HDWEBDL | HDBLURAY: '720p',
+        RAWHDTV: '1080i',
+        FULLHDTV | FULLHDWEBDL | FULLHDBLURAY: '1080p',
+        UHD_4K_TV | UHD_4K_WEBDL | UHD_4K_BLURAY: '4K',
+    }
+
+    @staticmethod
+    def from_guessit(guess):
+        """
+
+        :param guess: guessit dict
+        :type guess: dict
+        :return: quality
+        :rtype: int
+        """
+        screen_size = guess.get('screen_size')
+        fmt = guess.get('format')
+
+        if not screen_size:
+            return Quality.UNKNOWN
+
+        format_map = Quality.guessit_map.get(screen_size)
+        if not format_map:
+            return Quality.UNKNOWN
+
+        if isinstance(format_map, int):
+            return format_map
+
+        if not fmt:
+            return Quality.UNKNOWN
+
+        quality = format_map.get(fmt)
+        return quality if quality is not None else Quality.UNKNOWN
+
+    @staticmethod
+    def to_guessit(status):
+        """Return a guessit dict containing 'screen_size and format' from a Quality (composite status)
+
+        :param status: a quality composite status
+        :type status: int
+        :return: dict {'screen_size': <screen_size>, 'format': <format>}
+        :rtype: dict (str, str)
+        """
+        _, quality = Quality.splitCompositeStatus(status)
+        result = {
+            'screen_size': Quality.to_guessit_screen_size(quality),
+            'format': Quality.to_guessit_format(quality)
+        }
+        return result
+
+    @staticmethod
+    def to_guessit_format(quality):
+        """Return a guessit format from a Quality
+
+        :param quality: the quality
+        :type quality: int
+        :return: guessit format
+        :rtype: str
+        """
+        for q in Quality.to_guessit_format_list:
+            if quality & q:
+                return Quality.combinedQualityStrings.get(q)
+
+    @staticmethod
+    def to_guessit_screen_size(quality):
+        """Return a guessit screen_size from a Quality
+
+        :param quality: the quality
+        :type quality: int
+        :return: guessit screen_size
+        :rtype: str
+        """
+        for key, value in Quality.to_guessit_screen_size_map.items():
+            if quality & key:
+                return value
 
     DOWNLOADED = None
     SNATCHED = None

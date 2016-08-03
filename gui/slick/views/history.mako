@@ -5,13 +5,10 @@
     from datetime import datetime
     import re
     import time
-
     from sickbeard import providers
     from sickbeard.sbdatetime import sbdatetime
-
     from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED, DOWNLOADED, SUBTITLED
     from sickbeard.common import Quality, statusStrings, Overview
-
     from sickrage.show.History import History
     from sickrage.helper.encoding import ek
     from sickrage.providers.GenericProvider import GenericProvider
@@ -25,26 +22,24 @@
 % endif
 <div class="h2footer pull-right"><b>Limit:</b>
     <select name="history_limit" id="history_limit" class="form-control form-control-inline input-sm">
-        <option value="10" ${('', 'selected="selected"')[limit == 10]}>10</option>
-        <option value="25" ${('', 'selected="selected"')[limit == 25]}>25</option>
-        <option value="50" ${('', 'selected="selected"')[limit == 50]}>50</option>
-        <option value="100" ${('', 'selected="selected"')[limit == 100]}>100</option>
-        <option value="250" ${('', 'selected="selected"')[limit == 250]}>250</option>
-        <option value="500" ${('', 'selected="selected"')[limit == 500]}>500</option>
-        <option value="750" ${('', 'selected="selected"')[limit == 750]}>750</option>
-        <option value="1000" ${('', 'selected="selected"')[limit == 1000]}>1000</option>
-        <option value="0"   ${('', 'selected="selected"')[limit == 0  ]}>All</option>
+        <option value="10" ${'selected="selected"' if limit == 10 else ''}>10</option>
+        <option value="25" ${'selected="selected"' if limit == 25 else ''}>25</option>
+        <option value="50" ${'selected="selected"' if limit == 50 else ''}>50</option>
+        <option value="100" ${'selected="selected"' if limit == 100 else ''}>100</option>
+        <option value="250" ${'selected="selected"' if limit == 250 else ''}>250</option>
+        <option value="500" ${'selected="selected"' if limit == 500 else ''}>500</option>
+        <option value="750" ${'selected="selected"' if limit == 750 else ''}>750</option>
+        <option value="1000" ${'selected="selected"' if limit == 1000 else ''}>1000</option>
+        <option value="0"   ${'selected="selected"' if limit == 0   else ''}>All</option>
     </select>
-
     <span> Layout:
         <select name="HistoryLayout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="${srRoot}/setHistoryLayout/?layout=compact"  ${('', 'selected="selected"')[sickbeard.HISTORY_LAYOUT == 'compact']}>Compact</option>
-            <option value="${srRoot}/setHistoryLayout/?layout=detailed" ${('', 'selected="selected"')[sickbeard.HISTORY_LAYOUT == 'detailed']}>Detailed</option>
+            <option value="${srRoot}/setHistoryLayout/?layout=compact"  ${'selected="selected"' if sickbeard.HISTORY_LAYOUT == 'compact' else ''}>Compact</option>
+            <option value="${srRoot}/setHistoryLayout/?layout=detailed" ${'selected="selected"' if sickbeard.HISTORY_LAYOUT == 'detailed' else ''}>Detailed</option>
         </select>
     </span>
 </div>
-<br>
-
+<br />
 % if sickbeard.HISTORY_LAYOUT == "detailed":
     <table id="historyTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
         <thead>
@@ -56,13 +51,11 @@
                 <th width="14%">Quality</th>
             </tr>
         </thead>
-
         <tfoot>
             <tr>
                 <th class="nowrap" colspan="5">&nbsp;</th>
             </tr>
         </tfoot>
-
         <tbody>
         % for hItem in historyResults:
             <% composite = Quality.splitCompositeStatus(int(hItem.action)) %>
@@ -72,10 +65,10 @@
                     <% isoDate = datetime.strptime(str(hItem.date), History.date_format).isoformat('T') %>
                     <time datetime="${isoDate}" class="date">${airDate}</time>
                 </td>
-                <td class="tvShow"><a href="${srRoot}/home/displayShow?show=${hItem.show_id}#S${hItem.season}E${hItem.episode}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${('', '<span class="quality Proper">Proper</span>')[any(x in hItem.resource.lower() for x in ['proper', 'repack', 'real', 'rerip'])]}</a></td>
-                <td align="center" ${('', 'class="subtitles_column"')[composite.status == SUBTITLED]}>
+                <td class="tvShow"><a href="${srRoot}/home/displayShow?show=${hItem.show_id}#S${hItem.season}E${hItem.episode}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${'<span class="quality Proper">Proper</span>' if hItem.is_proper else ''}</a></td>
+                <td align="center" ${'class="subtitles_column"' if composite.status == SUBTITLED else ''}>
                 % if composite.status == SUBTITLED:
-                    <img width="16" height="11" style="vertical-align:middle;" src="${srRoot}/images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='${srRoot}/images/flags/unknown.png';">
+                    <img width="16" height="11" style="vertical-align:middle;" src="${srRoot}/images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='/images/flags/unknown.png';">
                 % endif
                     <span style="cursor: help; vertical-align:middle;" title="${ek(os.path.basename, hItem.resource)}">${statusStrings[composite.status]}</span>
                 </td>
@@ -108,7 +101,6 @@
         </tbody>
     </table>
 % else:
-
     <table id="historyTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
         <thead>
             <tr>
@@ -122,13 +114,11 @@
                 <th width="14%">Quality</th>
             </tr>
         </thead>
-
         <tfoot>
             <tr>
                 <th class="nowrap" colspan="6">&nbsp;</th>
             </tr>
         </tfoot>
-
         <tbody>
         % for hItem in compactResults:
             <tr>
@@ -138,7 +128,7 @@
                     <time datetime="${isoDate}" class="date">${airDate}</time>
                 </td>
                 <td class="tvShow">
-                    <span><a href="${srRoot}/home/displayShow?show=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${('', '<span class="quality Proper">Proper</span>')[any(x in hItem.actions[0].resource.lower() for x in ['proper', 'repack', 'real', 'rerip'])]}</a></span>
+                    <span><a href="${srRoot}/home/displayShow?show=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${'<span class="quality Proper">Proper</span>' if hItem.is_proper else ''}</a></span>
                 </td>
                 <td align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
                     % for cur_action in sorted(hItem.actions):
@@ -172,7 +162,7 @@
                         % if composite.status == SUBTITLED:
                             <img src="${srRoot}/images/subtitles/${cur_action.provider}.png" width="16" height="16" style="vertical-align:middle;" alt="${cur_action.provider}" title="${cur_action.provider.capitalize()}: ${ek(os.path.basename, cur_action.resource)}"/>
                             <span style="vertical-align:middle;"> / </span>
-                            <img width="16" height="11" style="vertical-align:middle;" src="${srRoot}/images/subtitles/flags/${cur_action.resource}.png" onError="this.onerror=null;this.src='${srRoot}/images/flags/unknown.png';" style="vertical-align: middle !important;">
+                            <img width="16" height="11" style="vertical-align:middle;" src="${srRoot}/images/subtitles/flags/${cur_action.resource}.png" onError="this.onerror=null;this.src='/images/flags/unknown.png';" style="vertical-align: middle !important;">
                             &nbsp;
                         % endif
                     % endfor
@@ -183,6 +173,5 @@
         % endfor
         </tbody>
     </table>
-
 % endif
 </%block>

@@ -166,7 +166,7 @@ def _fake_specify_ep(self, season, episode):
 
 
 # the real one tries to contact TVDB just stop it from getting more info on the ep
-TVEpisode.specifyEpisode = _fake_specify_ep
+TVEpisode._specify_episode = _fake_specify_ep
 
 
 # =================

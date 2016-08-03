@@ -248,7 +248,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         show_obj: a TVEpisode instance to create the NFO for
         """
 
-        eps_to_write = [ep_obj] + ep_obj.relatedEps
+        eps_to_write = [ep_obj] + ep_obj.related_episodes
 
         indexer_lang = ep_obj.show.lang
 

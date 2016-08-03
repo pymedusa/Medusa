@@ -63,7 +63,8 @@ class Notifier(object):
         logger.log('Boxcar2 notification successful.', logger.DEBUG)
         return True
 
-    def notify_snatch(self, ep_name, title=common.notifyStrings[common.NOTIFY_SNATCH]):
+    def notify_snatch(self, ep_name, is_proper):
+        title=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]]
         if sickbeard.BOXCAR2_NOTIFY_ONSNATCH:
             self._notifyBoxcar2(title, ep_name)
 

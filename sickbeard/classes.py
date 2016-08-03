@@ -80,6 +80,9 @@ class SearchResult(object):  # pylint: disable=too-few-public-methods, too-many-
         # hash
         self.hash = None
 
+        # proper_tags
+        self.proper_tags = None
+
         # content
         self.content = None
 
@@ -107,7 +110,7 @@ class SearchResult(object):  # pylint: disable=too-few-public-methods, too-many-
         return my_string
 
     def fileName(self):
-        return u'{}.{}'.format(self.episodes[0].prettyName(), self.resultType)
+        return u'{}.{}'.format(self.episodes[0].pretty_name(), self.resultType)
 
 
 class NZBSearchResult(SearchResult):  # pylint: disable=too-few-public-methods
@@ -209,7 +212,7 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
 
 
 class Proper(object):
-    def __init__(self, name, url, date, show, seeders, leechers, size, pubdate, hash):
+    def __init__(self, name, url, date, show, seeders, leechers, size, pubdate, torrent_hash, proper_tags):
         self.name = name
         self.url = url
         self.date = date
@@ -221,7 +224,8 @@ class Proper(object):
         self.leechers = leechers
         self.size = size
         self.pubdate = pubdate
-        self.hash = hash
+        self.proper_tags = proper_tags
+        self.hash = torrent_hash
         self.show = show
         self.indexer = None
         self.indexerid = -1

@@ -6,7 +6,7 @@ Website property.
 from pkg_resources import resource_stream  # @UnresolvedImport
 from rebulk.remodule import re, REGEX_AVAILABLE
 
-from rebulk import Rebulk
+from rebulk import Rebulk, Rule, RemoveMatch
 from ...reutils import build_or_pattern
 
 
@@ -49,5 +49,25 @@ def website():
                      r'\.)+(?:'+build_or_pattern(tlds) +
                      r'))(?:[^a-z0-9]|$)',
                      safe_subdomains=safe_subdomains, safe_prefix=safe_prefix, tlds=tlds, children=True)
+
+    class PreferTitleOverWebsite(Rule):
+        """
+        If found match is more likely a title, remove website.
+        """
+        consequence = RemoveMatch
+
+        @staticmethod
+        def valid_followers(match):
+            return any(name in ['season', 'episode', 'year'] for name in match.names)
+
+        def when(self, matches, context):
+            to_remove = []
+            for website in matches.named('website'):
+                suffix = matches.next(website, PreferTitleOverWebsite.valid_followers, 0)
+                if suffix:
+                    to_remove.append(website)
+            return to_remove
+
+    rebulk.rules(PreferTitleOverWebsite)
 
     return rebulk

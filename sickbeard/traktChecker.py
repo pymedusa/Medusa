@@ -40,7 +40,7 @@ def setEpisodeToWanted(show, s, e):
     """
     Sets an episode to wanted, only if it is currently skipped
     """
-    ep_obj = show.getEpisode(s, e)
+    ep_obj = show.get_episode(s, e)
     if ep_obj:
 
         with ep_obj.lock:
@@ -52,7 +52,7 @@ def setEpisodeToWanted(show, s, e):
             # figure out what segment the episode is in and remember it so we can backlog it
 
             ep_obj.status = WANTED
-            ep_obj.saveToDB()
+            ep_obj.save_to_db()
 
         cur_backlog_queue_item = search_queue.BacklogQueueItem(show, [ep_obj])
         sickbeard.searchQueueScheduler.action.add_item(cur_backlog_queue_item)

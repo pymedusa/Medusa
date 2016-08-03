@@ -71,12 +71,12 @@ class PPBasicTests(test.SickbeardTestDBCase):
         show = TVShow(1, 3)
         show.name = test.SHOW_NAME
         show.location = test.SHOW_DIR
-        show.saveToDB()
+        show.save_to_db()
 
         sickbeard.showList = [show]
         episode = TVEpisode(show, test.SEASON, test.EPISODE)
         episode.name = "some episode name"
-        episode.saveToDB()
+        episode.save_to_db()
 
         addNameToCache('show name', 3)
         sickbeard.PROCESS_METHOD = 'move'
