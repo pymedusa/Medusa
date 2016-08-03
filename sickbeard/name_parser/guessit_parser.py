@@ -12,7 +12,6 @@ import six
 
 import sickbeard
 
-
 # hardcoded expected titles
 fixed_expected_titles = {
     # guessit: conflicts with italian language
