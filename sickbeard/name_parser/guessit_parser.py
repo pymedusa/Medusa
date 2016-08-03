@@ -4,11 +4,13 @@
 from __future__ import unicode_literals
 
 import re
-import sickbeard
-import six
 
 from guessit.api import default_api
 from guessit.rules.common.date import valid_year
+
+import six
+
+import sickbeard
 
 
 # hardcoded expected titles
@@ -144,7 +146,7 @@ def get_expected_titles():
 
 
 def prepare(string):
-    """Prepare a string to be used as a regex in guessit expected_title
+    """Prepare a string to be used as a regex in guessit expected_title.
 
     :param string:
     :type string: str

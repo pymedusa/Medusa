@@ -85,22 +85,21 @@ files = {
 
 # show names with numbers that are used in our test suite
 show_list = [
-        _mock_tv_show('11.22.63'),
-        _mock_tv_show('12 Monkeys'),
-        _mock_tv_show('500 Bus Stops'),
-        _mock_tv_show('60 Minutes'),
-        _mock_tv_show('Mobile Suit Gundam UC RE:0096',
-                      exceptions=['Mobile Suit Gundam Unicorn RE 0096'], is_anime=True),
-        _mock_tv_show('R-15'),
-        _mock_tv_show(r"The.Someone's.Show.**.2.**"),
-        _mock_tv_show('The 100'),
-    ]
+    _mock_tv_show('11.22.63'),
+    _mock_tv_show('12 Monkeys'),
+    _mock_tv_show('500 Bus Stops'),
+    _mock_tv_show('60 Minutes'),
+    _mock_tv_show('Mobile Suit Gundam UC RE:0096',
+                  exceptions=['Mobile Suit Gundam Unicorn RE 0096'], is_anime=True),
+    _mock_tv_show('R-15'),
+    _mock_tv_show(r"The.Someone's.Show.**.2.**"),
+    _mock_tv_show('The 100'),
+]
 
 parameters = _parameters(files)
 
 
 def test_get_expected_titles():
-    """Assert expect titles only returns regexes for titles containing numbers."""
     # Given
     regular_format = r're:(?<![^/\\\.]){name}\b'
     anime_format = r're:\b{name}\b'
@@ -134,21 +133,11 @@ def test_get_expected_titles():
 
 
 def test_pre_configured_guessit():
-    """Assert that guessit.guessit() uses the pre-configured hook."""
     assert sut.guessit == guessit.guessit
 
 
 @pytest.mark.parametrize('scenario_name,release_name,expected', parameters)
 def test_guess(scenario_name, release_name, expected):
-    """Test the given release name.
-
-    :param scenario_name:
-    :type scenario_name: str
-    :param release_name: the input release name
-    :type release_name: str
-    :param expected: the expected guessed dict
-    :type expected: dict
-    """
     sickbeard.showList = show_list
     options = expected.pop('options', {})
     actual = guessit.guessit(release_name, options=options)
