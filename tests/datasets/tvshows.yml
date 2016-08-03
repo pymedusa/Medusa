@@ -285,6 +285,31 @@
   release_group: Group
   type: episode
 
+# Part as episode number
+? Show.Name.Part.4.720p.HDTV.x264-GROUP.mkv
+: title: Show Name
+  episode: 4
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: GROUP
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+# Part as episode number
+? /series/Show Name/Season 1/Show.Name.Part.4.720p.HDTV.x264-GROUP.mkv
+: title: Show Name
+  season: 1
+  episode: 4
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: GROUP
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
 # bare
 ? Show.Name.102.HDTV.720p.x264-Group
 : title: Show Name
