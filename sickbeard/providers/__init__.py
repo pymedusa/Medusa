@@ -1,31 +1,38 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
 #
+# This file is part of Medusa.
 #
-# This file is part of SickRage.
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from os import sys
 from random import shuffle
 
 import sickbeard
-from sickbeard.providers import btn, womble, thepiratebay, torrentleech, kat, iptorrents, torrentz, \
-    omgwtfnzbs, scc, hdtorrents, torrentday, hdbits, hounddawgs, speedcd, nyaatorrents, bluetigers, xthor, abnormal, torrentbytes, cpasbien,\
-    freshontv, morethantv, t411, tokyotoshokan, shazbat, rarbg, alpharatio, tntvillage, binsearch, torrentproject, extratorrent, \
-    scenetime, btdigg, transmitthenet, tvchaosuk, bitcannon, pretome, gftracker, hdspace, newpct, elitetorrent, bitsnoop, danishbits, hd4free, limetorrents, \
-    norbits, ilovetorrents, anizb, bithdtv, zooqle, animebytes, torrentshack
+from sickbeard.providers.nzb import (
+    anizb, binsearch, omgwtfnzbs, womble,
+)
+from sickbeard.providers.torrent import (
+    abnormal, alpharatio, animebytes, bitcannon, bithdtv, bitsnoop, bluetigers, btdigg, btn, cpasbien, danishbits,
+    elitetorrent, extratorrent, freshontv, gftracker, hd4free, hdbits, hdspace, hdtorrents, hounddawgs, ilovetorrents,
+    iptorrents, kat, limetorrents, morethantv, newpct, norbits, nyaatorrents, pretome, rarbg, scc, scenetime, shazbat,
+    speedcd, t411, thepiratebay, tntvillage, tokyotoshokan, torrentbytes, torrentday, torrentleech, torrentproject,
+    torrentshack, torrentz, transmitthenet, tvchaosuk, xthor, zooqle,
+)
+
+from .nzb.newznab import NewznabProvider
+from .torrent.rss.rsstorrent import TorrentRssProvider
 
 __all__ = [
     'womble', 'btn', 'thepiratebay', 'kat', 'torrentleech', 'scc', 'hdtorrents',
@@ -41,30 +48,30 @@ __all__ = [
 
 
 def sortedProviderList(randomize=False):
-    initialList = sickbeard.providerList + sickbeard.newznabProviderList + sickbeard.torrentRssProviderList
-    providerDict = dict(zip([x.get_id() for x in initialList], initialList))
+    initial_list = sickbeard.providerList + sickbeard.newznabProviderList + sickbeard.torrentRssProviderList
+    provider_dict = dict(zip([x.get_id() for x in initial_list], initial_list))
 
-    newList = []
+    new_list = []
 
     # add all modules in the priority list, in order
-    for curModule in sickbeard.PROVIDER_ORDER:
-        if curModule in providerDict:
-            newList.append(providerDict[curModule])
+    for cur_module in sickbeard.PROVIDER_ORDER:
+        if cur_module in provider_dict:
+            new_list.append(provider_dict[cur_module])
 
     # add all enabled providers first
-    for curModule in providerDict:
-        if providerDict[curModule] not in newList and providerDict[curModule].is_enabled():
-            newList.append(providerDict[curModule])
+    for cur_module in provider_dict:
+        if provider_dict[cur_module] not in new_list and provider_dict[cur_module].is_enabled():
+            new_list.append(provider_dict[cur_module])
 
     # add any modules that are missing from that list
-    for curModule in providerDict:
-        if providerDict[curModule] not in newList:
-            newList.append(providerDict[curModule])
+    for cur_module in provider_dict:
+        if provider_dict[cur_module] not in new_list:
+            new_list.append(provider_dict[cur_module])
 
     if randomize:
-        shuffle(newList)
+        shuffle(new_list)
 
-    return newList
+    return new_list
 
 
 def makeProviderList():
@@ -73,19 +80,21 @@ def makeProviderList():
 
 def getProviderModule(name):
     name = name.lower()
-    prefix = "sickbeard.providers."
-    if name in __all__ and prefix + name in sys.modules:
-        return sys.modules[prefix + name]
-    else:
-        raise Exception("Can't find " + prefix + name + " in " + "Providers")
+    prefixes = [
+        "sickbeard.providers.nzb.",
+        "sickbeard.providers.torrent.html.",
+        "sickbeard.providers.torrent.json.",
+        "sickbeard.providers.torrent.rss.",
+        "sickbeard.providers.torrent.xml.",
+    ]
+
+    for prefix in prefixes:
+        if name in __all__ and prefix + name in sys.modules:
+            return sys.modules[prefix + name]
+
+    raise Exception("Can't find " + prefix + name + " in " + "Providers")
 
 
 def getProviderClass(provider_id):
-    providerMatch = [x for x in
-                     sickbeard.providerList + sickbeard.newznabProviderList + sickbeard.torrentRssProviderList if
-                     x and x.get_id() == provider_id]
-
-    if len(providerMatch) != 1:
-        return None
-    else:
-        return providerMatch[0]
+    provider_list = sickbeard.providerList + sickbeard.newznabProviderList + sickbeard.torrentRssProviderList
+    return next((provider for provider in provider_list if provider.get_id() == provider_id), None)
