@@ -13,7 +13,7 @@ from tornado.web import Application, StaticFileHandler, RedirectHandler
 import sickbeard
 from sickbeard import logger
 from sickbeard.helpers import create_https_certificates, generateApiKey
-from sickbeard.server.api.core import ApiHandler
+from sickbeard.server.api.v1.core import ApiHandler
 from sickbeard.server.web import LoginHandler, LogoutHandler, KeyHandler, CalendarHandler
 from sickrage.helper.encoding import ek
 
@@ -52,7 +52,7 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         # api root
         if not sickbeard.API_KEY:
             sickbeard.API_KEY = generateApiKey()
-        self.options['api_root'] = r'{root}/api/{key}'.format(root=sickbeard.WEB_ROOT, key=sickbeard.API_KEY)
+        self.options['api_root'] = r'{root}/api/(?:v1/)?{key}'.format(root=sickbeard.WEB_ROOT, key=sickbeard.API_KEY)
 
         # tornado setup
         self.enable_https = self.options['enable_https']
@@ -84,15 +84,16 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
             login_url=r'{root}/login/'.format(root=self.options['web_root']),
         )
 
-        # Main Handlers
+        # API v1 handlers
+        # @NOTE: This will be moved to /api/v1/
         self.app.add_handlers('.*$', [
-            # webapi handler
+            # main handler
             (r'{base}(/?.*)'.format(base=self.options['api_root']), ApiHandler),
 
-            # webapi key retrieval
+            # key retrieval
             (r'{base}/getkey(/?.*)'.format(base=self.options['web_root']), KeyHandler),
 
-            # webapi builder redirect
+            # builder redirect
             (r'{base}/api/builder'.format(base=self.options['web_root']),
              RedirectHandler, {'url': '{base}/apibuilder/'.format(base=self.options['web_root'])}),
 
