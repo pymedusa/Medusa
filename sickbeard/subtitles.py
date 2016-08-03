@@ -101,7 +101,7 @@ def sorted_service_list():
                              'enabled': sickbeard.SUBTITLES_SERVICES_ENABLED[current_index] == 1})
         current_index += 1
 
-    for current_service in provider_manager.names():
+    for current_service in sorted(provider_manager.names()):
         if current_service not in [service['name'] for service in new_list]:
             new_list.append({'name': current_service,
                              'url': PROVIDER_URLS[current_service]
@@ -133,7 +133,7 @@ def get_needed_languages(subtitles):
     """Given the existing subtitles, returns a set of the needed subtitles.
 
     :param subtitles: the existing subtitles (opensubtitles codes)
-    :type subtitles: list of str
+    :type subtitles: set of str
     :return: the needed subtitles
     :rtype: set of babelfish.Language
     """
@@ -167,7 +167,7 @@ def needs_subtitles(subtitles):
         subtitles = {subtitle.strip() for subtitle in subtitles.split(',') if subtitle.strip()}
 
     if sickbeard.SUBTITLES_MULTI:
-        return wanted.difference(subtitles)
+        return bool(wanted.difference(subtitles))
 
     return 'und' not in subtitles
 
@@ -178,7 +178,7 @@ def from_code(code, unknown='und'):
     :param code: an opensubtitles language code to be converted
     :type code: str
     :param unknown: the code to be returned for unknown language codes
-    :type unknown: str
+    :type unknown: str or None
     :return: a language object
     :rtype: babelfish.Language
     """
@@ -195,7 +195,7 @@ def from_ietf_code(code, unknown='und'):
     :param code: an IETF language code
     :type code: str
     :param unknown: the code to be returned for unknown language codes
-    :type unknown: str
+    :type unknown: str or None
     :return: a language object
     :rtype: babelfish.Language
     """
@@ -386,7 +386,7 @@ def compute_subtitle_path(subtitle, video_path, subtitles_dir):
     :param video_path: the video path
     :type video_path: str
     :param subtitles_dir: the subtitles directory
-    :type subtitles_dir: str
+    :type subtitles_dir: str or None
     :return: the computed subtitles path
     :rtype: str
     """
@@ -546,13 +546,13 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
     :param video_path: the video path
     :type video_path: str
     :param subtitles_dir: the subtitles directory
-    :type subtitles_dir: str
+    :type subtitles_dir: str or None
     :param subtitles: True if existing external subtitles should be taken into account
-    :type subtitles: bool
+    :type subtitles: bool or None
     :param embedded_subtitles: True if embedded subtitles should be taken into account
-    :type embedded_subtitles: bool
+    :type embedded_subtitles: bool or None
     :param release_name: the release name
-    :type release_name: str
+    :type release_name: str or None
     :return: video
     :rtype: subliminal.video.Video
     """

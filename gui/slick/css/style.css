@@ -1170,7 +1170,11 @@ span.snatched b {
 
 .displayShowTableFanArt.display_show {
     clear:both;
-    opacity: 0.8;
+    opacity: 0.9;
+}
+
+.summaryFanArt {
+   opacity: 0.9; 
 }
 
 .displayShowTableFanArt th.row-seasonheader {
@@ -1187,10 +1191,6 @@ span.snatched b {
 
 .snatchTitle {
     color: rgb(255, 255, 255) !important;
-}
-
-.summaryFanArt {
-   opacity: 0.8 !important; 
 }
 
 .tablesorterFanArt {
