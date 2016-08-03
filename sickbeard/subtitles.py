@@ -18,6 +18,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+"""Subtitles module."""
 
 import datetime
 import logging
@@ -29,21 +30,21 @@ import time
 import traceback
 
 from babelfish import Language, language_converters
-from six import iteritems, string_types, text_type
 from dogpile.cache.api import NO_VALUE
-from subliminal import (compute_score, ProviderPool, provider_manager, refine, refiner_manager, region, save_subtitles,
+from six import iteritems, string_types, text_type
+from subliminal import (ProviderPool, compute_score, provider_manager, refine, refiner_manager, region, save_subtitles,
                         scan_video)
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
 
 import sickbeard
-from sickbeard.common import cpu_presets
 from sickrage.helper.common import dateTimeFormat, episode_num, subtitle_extensions
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
 
 from . import db, history, processTV
+from .common import cpu_presets
 from .helpers import isMediaFile, isRarFile, remove_non_release_groups
 
 logger = logging.getLogger(__name__)
@@ -699,6 +700,7 @@ class SubtitlesFinder(object):
     """
 
     def __init__(self):
+        """Default constructor."""
         self.amActive = False
 
     @staticmethod
@@ -859,7 +861,8 @@ class SubtitlesFinder(object):
                 continue
 
             if not needs_subtitles(ep_to_sub['subtitles']):
-                logger.debug(u'Episode already has all needed subtitles, skipping %s %s', ep_to_sub['show_name'], ep_num)
+                logger.debug(u'Episode already has all needed subtitles, skipping %s %s',
+                             ep_to_sub['show_name'], ep_num)
                 continue
 
             try:

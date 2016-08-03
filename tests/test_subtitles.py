@@ -1,13 +1,13 @@
 # coding=utf-8
+"""Tests for sickbeard.subtitles.py."""
 import os
-
 import sys
-
-import sickbeard.subtitles as sut
 
 from babelfish.language import Language
 from mock.mock import Mock
 from subliminal.subtitle import Subtitle
+
+import sickbeard.subtitles as sut
 
 
 def test_sorted_service_list(monkeypatch):

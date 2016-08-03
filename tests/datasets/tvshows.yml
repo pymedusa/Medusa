@@ -285,6 +285,31 @@
   release_group: Group
   type: episode
 
+# Part as episode number
+? Show.Name.Part.4.720p.HDTV.x264-GROUP.mkv
+: title: Show Name
+  episode: 4
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: GROUP
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+# Part as episode number
+? /series/Show Name/Season 1/Show.Name.Part.4.720p.HDTV.x264-GROUP.mkv
+: title: Show Name
+  season: 1
+  episode: 4
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: GROUP
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
 # bare
 ? Show.Name.102.HDTV.720p.x264-Group
 : title: Show Name
@@ -2814,5 +2839,145 @@
   season: 1
   year: 2016
   format: HDTV
+  release_group: Group
+  type: episode
+
+# Blacklisted pattern: blacklist-01
+? '[Group].Show.Name!.Super!!.-.05.[720p][AAC].mp4.[1/6].-."[Group].Show.Name!.Super!!.-.05.[720p][AAC].mp4"'
+: title: Show Name! Super!!
+  absolute_episode: 5
+  episode: 5
+  screen_size: 720p
+  audio_codec: AAC
+  container: MP4
+  release_group: Group
+  type: episode
+
+# Blacklisted pattern: blacklist-01
+? '[Group].Show.Name.-.05.[1080p].[01/22].-."[Group].Show.Name.-.05.[1080p].mkv.001"'
+: title: Show Name
+  absolute_episode: 5
+  episode: 5
+  release_group: Group
+  screen_size: 1080p
+  type: episode
+
+# Blacklisted pattern: blacklist-02
+? Show.Name.S02E20.Episode.Title.720p.HDTV.2CH.HEVC.x265-GROUP.mkv.vol003+04.PAR2.-.05.of.10..Some.Really.Strange.Phrase.Here.....(1/7)
+: title: Show Name
+  season: 2
+  episode: 20
+  episode_title: Episode Title
+  screen_size: 720p
+  format: HDTV
+  audio_channels: '2.0'
+  video_codec: h265
+  release_group: GROUP
+  container: MKV
+  type: episode
+
+# Blacklisted pattern: blacklist-03
+? Show.Name.S01E08.Episode.Title.720p.WEBRip.HEVC.x265-GROUP.mkv.par2.-.02.of.11.(1/1)
+: title: Show Name
+  season: 1
+  episode: 8
+  episode_title: Episode Title
+  screen_size: 720p
+  format: WEBRip
+  video_codec: h265
+  release_group: GROUP
+  container: MKV
+  type: episode
+
+# Blacklisted pattern: blacklist-03
+? Show.Name.S01E08.Episode.Title.720p.HDTV.HEVC.x265.nzb.-.00.of.10
+: title: Show Name
+  season: 1
+  episode: 8
+  episode_title: Episode Title
+  screen_size: 720p
+  format: HDTV
+  video_codec: h265
+  type: episode
+
+# Blacklisted pattern: blacklist-03
+? Show.Name.S02E14.Episode.Title.720p.HDTV.HEVC.x265-GROUP.mkv.-.01.of.10.With.another.strange.phrase,.whatever.will.the."-1".Troll.do?
+: title: Show Name
+  season: 2
+  episode: 14
+  episode_title: Episode Title
+  screen_size: 720p
+  format: HDTV
+  video_codec: h265
+  release_group: GROUP
+  container: MKV
+  type: episode
+
+# Blacklisted pattern: blacklist-03 (negative scenario)
+? Show.Name.3.of.3.-.Episode.Title.HDTV.x264.AC3.1080p
+: title: Show Name
+  episode: 3
+  episode_count: 3
+  episode_title: Episode Title
+  format: HDTV
+  video_codec: h264
+  audio_codec: AC3
+  screen_size: 1080p
+  type: episode
+
+# Blacklisted
+? '[.160715_01.Show.Name.S01E05.720p.WEB-DL.DD5.1.H.264-Group.].--."160715_01.Show.Name.S01E05.720p.WEB-DL.DD5.1.H.264-Group.nfo"'
+: title: Show Name
+  season: 1
+  episode: 5
+  screen_size: 720p
+  format: WEB-DL
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: Group
+  type: episode
+  disabled: true # work in progress
+
+# https://github.com/guessit-io/guessit/issues/323
+? Show.Name.S02E59.WEB-DLx264-GROUP
+: episode: 59
+  season: 2
+  format: WEB-DL
+  release_group: GROUP
+  title: Show Name
+  type: episode
+  video_codec: h264
+
+# https://github.com/guessit-io/guessit/issues/323
+? Show.Name.S12E31.Episode.Title.PDTVx264-Group
+: episode: 31
+  episode_title: Episode Title
+  season: 12
+  format: DVB
+  release_group: Group
+  title: Show Name
+  type: episode
+  video_codec: h264
+
+# https://github.com/guessit-io/guessit/issues/323
+? Show.Name.S09E09.Episode.Title.HDTVx264-Group
+: episode: 9
+  episode_title: Episode Title
+  season: 9
+  format: HDTV
+  release_group: Group
+  title: Show Name
+  type: episode
+  video_codec: h264
+
+# https://github.com/guessit-io/guessit/issues/319
+? Show.Name.(s01e10).Episode.Title.(720pHD).mp4-[Group]
+: title: Show Name
+  season: 1
+  episode: 10
+  episode_title: Episode Title
+  screen_size: 720p
+  container: MP4
   release_group: Group
   type: episode

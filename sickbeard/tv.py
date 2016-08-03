@@ -18,43 +18,42 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 """TVShow and TVEpisode classes."""
 
-import os.path
 import datetime
-import threading
-import re
 import glob
-import stat
-import traceback
+import os.path
+import re
 import shutil
+import stat
+import threading
+import traceback
 
 from imdb import imdb
 import shutil_custom
 from six import text_type
 
 import sickbeard
-from sickbeard import (
-    db, helpers, logger, image_cache, notifiers, postProcessor, subtitles, network_timezones,
-)
-from sickbeard.blackandwhitelist import BlackAndWhiteList
-from sickbeard.common import (
-    Quality, Overview, statusStrings,
-    DOWNLOADED, SNATCHED, SNATCHED_PROPER, ARCHIVED, IGNORED, UNAIRED, WANTED, SKIPPED, UNKNOWN,
-    NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND, NAMING_SEPARATED_REPEAT, NAMING_LIMITED_EXTEND_E_PREFIXED,
-)
-from sickbeard.indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
-from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
-from sickbeard.scene_numbering import get_scene_absolute_numbering, get_scene_numbering, xem_refresh
 
 from sickrage.helper.common import (
-    dateTimeFormat, remove_extension, replace_extension, sanitize_filename, try_int, episode_num,
+    dateTimeFormat, episode_num, remove_extension, replace_extension, sanitize_filename, try_int
 )
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import (
-    EpisodeDeletedException, EpisodeNotFoundException, ex,
-    MultipleEpisodesInDatabaseException, MultipleShowsInDatabaseException, MultipleShowObjectsException,
-    NoNFOException, ShowDirectoryNotFoundException, ShowNotFoundException,
+    EpisodeDeletedException, EpisodeNotFoundException, MultipleEpisodesInDatabaseException,
+    MultipleShowObjectsException, MultipleShowsInDatabaseException, NoNFOException, ShowDirectoryNotFoundException,
+    ShowNotFoundException, ex
 )
 from sickrage.show.Show import Show
+
+from . import db, helpers, image_cache, logger, network_timezones, notifiers, postProcessor, subtitles
+from .blackandwhitelist import BlackAndWhiteList
+from .common import (
+    ARCHIVED, DOWNLOADED, IGNORED, NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND,
+    NAMING_LIMITED_EXTEND_E_PREFIXED, NAMING_SEPARATED_REPEAT, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER,
+    UNAIRED, UNKNOWN, WANTED, statusStrings
+)
+from .indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
+from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from .scene_numbering import get_scene_absolute_numbering, get_scene_numbering, xem_refresh
 
 
 try:
@@ -117,7 +116,7 @@ class TVObject(object):
 
     @property
     def tvdb_id(self):
-        """Return the tvdb_id
+        """Return the tvdb_id.
 
         :return:
         :rtype: int
@@ -1709,7 +1708,6 @@ class TVEpisode(TVObject):
 
         except (InvalidNameException, InvalidShowException):
             logger.log(logger.INFO, u'Cannot create TVEpisode from path {path}'.format(path=filepath))
-
 
     @property
     def location(self):

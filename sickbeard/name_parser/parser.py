@@ -39,10 +39,6 @@ from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 
 
-pre_cleanup_re = re.compile(r'(\.vol\d+\+\d+)?((\.par2\b)|(\.nzb\b)|(\.mkv\b)).*((\d+\.of\.\d+)|(\(\d+/\d+\))).*$',
-                            flags=re.IGNORECASE)
-
-
 class NameParser(object):
     ALL_REGEX = 0
     NORMAL_REGEX = 1
@@ -429,7 +425,6 @@ class NameParser(object):
 
     def parse(self, name, cache_result=True):
         name = self._unicodify(name)
-        name = pre_cleanup_re.sub('', name)
 
         if self.naming_pattern:
             cache_result = False
