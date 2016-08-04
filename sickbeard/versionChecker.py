@@ -582,12 +582,8 @@ class GitUpdateManager(UpdateManager):
 
         # if we're up to date then don't set this
         sickbeard.NEWEST_VERSION_STRING = None
-
-        if self._num_commits_ahead:
-            logger.log(u"Local branch is ahead of " + self.branch + ". Automatic update not possible.", logger.WARNING)
-            newest_text = "Local branch is ahead of " + self.branch + ". Automatic update not possible."
-
-        elif self._num_commits_behind > 0:
+        
+        if self._num_commits_behind > 0 or (sickbeard.GIT_RESET and sickbeard.BRANCH in sickbeard.GIT_RESET_BRANCHES):
 
             base_url = 'http://github.com/' + self.github_org + '/' + self.github_repo
             if self._newest_commit_hash:
@@ -600,6 +596,10 @@ class GitUpdateManager(UpdateManager):
             if self._num_commits_behind > 1:
                 newest_text += 's'
             newest_text += ' behind)' + "&mdash; <a href=\"" + self.get_update_url() + "\">Update Now</a>"
+
+        elif self._num_commits_ahead > 0:
+            logger.log(u"Local branch is ahead of " + self.branch + ". Automatic update not possible.", logger.WARNING)
+            newest_text = "Local branch is ahead of " + self.branch + ". Automatic update not possible."
 
         else:
             return
@@ -622,7 +622,7 @@ class GitUpdateManager(UpdateManager):
                 logger.log(u"Unable to contact github, can't check for update: " + repr(e), logger.WARNING)
                 return False
 
-            if self._num_commits_behind > 0:
+            if self._num_commits_behind > 0 or self._num_commits_ahead > 0:
                 return True
 
         return False
@@ -637,7 +637,7 @@ class GitUpdateManager(UpdateManager):
         self.update_remote_origin()
 
         # remove untracked files and performs a hard reset on git branch to avoid update issues
-        if sickbeard.GIT_RESET:
+        if sickbeard.GIT_RESET and sickbeard.BRANCH in sickbeard.GIT_RESET_BRANCHES:
             # self.clean() # This is removing user data and backups
             self.reset()
 
@@ -673,7 +673,8 @@ class GitUpdateManager(UpdateManager):
         Calls git reset --hard to perform a hard reset. Returns a bool depending
         on the call's success.
         """
-        _, _, exit_status = self._run_git(self._git_path, 'reset --hard')  # @UnusedVariable
+        _, _, exit_status = self._run_git(self._git_path, 'reset --hard {0}/{1}'.format
+                                          (sickbeard.GIT_REMOTE, sickbeard.BRANCH))  # @UnusedVariable
         if exit_status == 0:
             return True
 

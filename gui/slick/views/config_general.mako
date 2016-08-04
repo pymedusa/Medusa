@@ -10,6 +10,7 @@
     from sickbeard import metadata
     from sickbeard.metadata.generic import GenericMetadata
     from sickbeard.helpers import anon_url
+    gh_branch = sickbeard.versionCheckScheduler.action.list_remote_branches()
 %>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -667,7 +668,6 @@
                                 <span class="component-title">Branch version:</span>
                                 <span class="component-desc">
                                     <select id="branchVersion" class="form-control form-control-inline input-sm pull-left">
-                                    <% gh_branch = sickbeard.versionCheckScheduler.action.list_remote_branches() %>
                                     % if gh_branch:
                                         % for cur_branch in gh_branch:
                                             % if sickbeard.GIT_USERNAME and sickbeard.GIT_PASSWORD and sickbeard.DEVELOPER == 1:
@@ -730,12 +730,24 @@
                                 </span>
                             </label>
                         </div>
-                        <div class="field-pair" hidden>
+                        <div class="field-pair">
                             <label for="git_reset">
                                 <span class="component-title">Git reset</span>
                                 <span class="component-desc">
                                     <input type="checkbox" name="git_reset" id="git_reset" ${'checked="checked"' if sickbeard.GIT_RESET else ''}/>
                                     <p>removes untracked files and performs a hard reset on git branch automatically to help resolve update issues</p>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="field-pair">
+                            <label for="git_reset_branches">
+                                <span class="component-title">Branches to reset</span>
+                                <span class="component-desc">
+                                    <select id="git_reset_branches" name="git_reset_branches" multiple="multiple" style="min-width:200px;height:99px;">
+                                    % for branch in gh_branch:
+                                        <option value="${branch}" ${'selected="selected"' if branch in sickbeard.GIT_RESET_BRANCHES else ''}>${branch}</option>
+                                    % endfor
+                                    </select>
                                 </span>
                             </label>
                         </div>
