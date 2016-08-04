@@ -24,12 +24,13 @@ import time
 
 import adba
 
+from indexers.indexer_config import INDEXER_TVDB
+
 import sickbeard
+
 from sickbeard import db, helpers, logger
 
 from six import iteritems
-
-from .indexers.indexer_config import INDEXER_TVDB
 
 
 exception_dict = {}
@@ -149,7 +150,7 @@ def get_scene_exception_by_name(show_name):
 
 def get_scene_exception_by_name_multiple(show_name):
     """Given a show name, return the indexerid of the exception, None if no exception is present."""
-    # try the obvious case first
+    # Try the obvious case first
     cache_db_con = db.DBConnection('cache.db')
     exception_result = cache_db_con.select(
         'SELECT indexer_id, season FROM scene_exceptions WHERE LOWER(show_name) = ? ORDER BY season ASC',
@@ -166,7 +167,7 @@ def get_scene_exception_by_name_multiple(show_name):
         cur_indexer_id = int(cur_exception['indexer_id'])
 
         if show_name.lower() in (cur_exception_name.lower(),
-                                 sickbeard.helpers.sanitizeSceneName(cur_exception_name).lower().replace('.', ' ')):
+                                 helpers.sanitizeSceneName(cur_exception_name).lower().replace('.', ' ')):
 
             logger.log(u'Scene exception lookup got indexer id {0}, using that'.format
                        (cur_indexer_id), logger.DEBUG)
@@ -252,7 +253,7 @@ def retrieve_exceptions():
         cache_db_con.mass_action(queries)
         logger.log(u'Updated scene exceptions', logger.DEBUG)
 
-    # cleanup
+    # Cleanup
     exception_dict.clear()
     anidb_exception_dict.clear()
     xem_exception_dict.clear()
