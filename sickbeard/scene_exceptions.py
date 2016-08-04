@@ -40,18 +40,20 @@ exceptionsSeasonCache = {}
 
 exceptionLock = threading.Lock()
 
+xem_session = helpers.make_session()
 
-def shouldRefresh(exList):
+
+def should_refresh(ex_list):
     """
-    Check if we should refresh cache for items in exList.
+    Check if we should refresh cache for items in ex_list.
 
-    :param exList: exception list to check if needs a refresh
+    :param ex_list: exception list to check if exception needs a refresh
     :return: True if refresh is needed
     """
     max_refresh_age_secs = 86400  # 1 day
 
     cache_db_con = db.DBConnection('cache.db')
-    rows = cache_db_con.select('SELECT last_refreshed FROM scene_exceptions_refresh WHERE list = ?', [exList])
+    rows = cache_db_con.select('SELECT last_refreshed FROM scene_exceptions_refresh WHERE list = ?', [ex_list])
     if rows:
         last_refresh = int(rows[0]['last_refreshed'])
         return int(time.mktime(datetime.datetime.today().timetuple())) > last_refresh + max_refresh_age_secs
@@ -59,17 +61,17 @@ def shouldRefresh(exList):
         return True
 
 
-def setLastRefresh(exList):
+def set_last_refresh(ex_list):
     """
     Update last cache update time for shows in list.
 
-    :param exList: exception list to set refresh time
+    :param ex_list: exception list to set refresh time
     """
     cache_db_con = db.DBConnection('cache.db')
     cache_db_con.upsert(
         'scene_exceptions_refresh',
         {'last_refreshed': int(time.mktime(datetime.datetime.today().timetuple()))},
-        {'list': exList}
+        {'list': ex_list}
     )
 
 
@@ -140,6 +142,7 @@ def get_scene_seasons(indexer_id):
 
 
 def get_scene_exception_by_name(show_name):
+    """Given a show name, return the first indexerid and season of the exceptions list."""
     return get_scene_exception_by_name_multiple(show_name)[0]
 
 
@@ -161,9 +164,8 @@ def get_scene_exception_by_name_multiple(show_name):
         cur_exception_name = cur_exception['show_name']
         cur_indexer_id = int(cur_exception['indexer_id'])
 
-        if show_name.lower() in (
-                cur_exception_name.lower(),
-                sickbeard.helpers.sanitizeSceneName(cur_exception_name).lower().replace('.', ' ')):
+        if show_name.lower() in (cur_exception_name.lower(),
+                                 sickbeard.helpers.sanitizeSceneName(cur_exception_name).lower().replace('.', ' ')):
 
             logger.log(u'Scene exception lookup got indexer id {0}, using that'.format
                        (cur_indexer_id), logger.DEBUG)
@@ -176,14 +178,16 @@ def get_scene_exception_by_name_multiple(show_name):
     return [(None, None)]
 
 
-def retrieve_exceptions():  # pylint:disable=too-many-locals, too-many-branches
+def retrieve_exceptions():
     """
-    Look up the exceptions on github, parses them into a dict, and inserts them into the
+    Look up the exceptions on github.
+
+    Parses the exceptions into a dict, and inserts them into the
     scene_exceptions table in cache.db. Also clears the scene name cache.
     """
     do_refresh = False
     for indexer in sickbeard.indexerApi().indexers:
-        if shouldRefresh(sickbeard.indexerApi(indexer).name):
+        if should_refresh(sickbeard.indexerApi(indexer).name):
             do_refresh = True
 
     if do_refresh:
@@ -200,7 +204,7 @@ def retrieve_exceptions():  # pylint:disable=too-many-locals, too-many-branches
         if jdata:
             for indexer in sickbeard.indexerApi().indexers:
                 try:
-                    setLastRefresh(sickbeard.indexerApi(indexer).name)
+                    set_last_refresh(sickbeard.indexerApi(indexer).name)
                     for indexer_id in jdata[sickbeard.indexerApi(indexer).config['xem_origin']]:
                         alias_list = [
                             {scene_exception: int(scene_season)}
@@ -271,26 +275,27 @@ def update_scene_exceptions(indexer_id, scene_exceptions, season=-1):
 
 
 def _anidb_exceptions_fetcher():
-    if shouldRefresh('anidb'):
+    if should_refresh('anidb'):
         logger.log(u'Checking for scene exception updates for AniDB')
         for show in sickbeard.showList:
             if show.is_anime and show.indexer == 1:
                 try:
                     anime = adba.Anime(None, name=show.name, tvdbid=show.indexerid, autoCorrectName=True)
                 except Exception:
+                    logger.log(u'Check AniDB scene exceptions update failed for {0}.'.format
+                               (show.name), logger.DEBUG)
                     continue
-                else:
-                    if anime.name and anime.name != show.name:
-                        anidb_exception_dict[show.indexerid] = [{anime.name: -1}]
 
-        setLastRefresh('anidb')
+                if anime and anime.name != show.name:
+                    anidb_exception_dict[show.indexerid] = [{anime.name: -1}]
+
+        set_last_refresh('anidb')
+
     return anidb_exception_dict
-
-xem_session = helpers.make_session()
 
 
 def _xem_exceptions_fetcher():
-    if shouldRefresh('xem'):
+    if should_refresh('xem'):
         for indexer in sickbeard.indexerApi().indexers:
             logger.log(u'Checking for XEM scene exception updates for {0}'.format
                        (sickbeard.indexerApi(indexer).name))
@@ -306,10 +311,7 @@ def _xem_exceptions_fetcher():
                            (sickbeard.indexerApi(indexer).name, url), logger.DEBUG)
                 continue
 
-            if jdata['result'] == 'failure':
-                continue
-
-            if not jdata['data']:
+            if jdata['result'] == 'failure' or not jdata['data']:
                 logger.log(u'No data returned from XEM when checking scene exceptions. Update failed for {0}'.format
                            (sickbeard.indexerApi(indexer).name), logger.DEBUG)
                 continue
@@ -320,15 +322,8 @@ def _xem_exceptions_fetcher():
                 except Exception as error:
                     logger.log(u'XEM: Rejected entry: indexerid:{0}; names:{1}'.format
                                (indexerid, names), logger.WARNING)
-                    logger.log(u'XEM: Rejected entry error message:{0}'.format(error), logger.DEBUG)
+                    logger.log(u'XEM: Rejected entry error message:{0}'.format(error), logger.ERROR)
 
-        setLastRefresh('xem')
+        set_last_refresh('xem')
 
     return xem_exception_dict
-
-
-def getSceneSeasons(indexer_id):
-    """Get a list of season numbers that have scene exceptions."""
-    cache_db_con = db.DBConnection('cache.db')
-    seasons = cache_db_con.select('SELECT DISTINCT season FROM scene_exceptions WHERE indexer_id = ?', [indexer_id])
-    return [cur_exception['season'] for cur_exception in seasons]
