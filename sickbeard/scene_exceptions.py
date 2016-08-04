@@ -24,13 +24,12 @@ import time
 
 import adba
 
-from indexers.indexer_config import INDEXER_TVDB
-
 import sickbeard
-
 from sickbeard import db, helpers, logger
 
 from six import iteritems
+
+from .indexers.indexer_config import INDEXER_TVDB
 
 
 exception_dict = {}
