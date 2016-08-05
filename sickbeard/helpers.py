@@ -1729,7 +1729,7 @@ def getTVDBFromID(indexer_id, indexer):  # pylint:disable=too-many-return-statem
     if indexer == 'IMDB':
         url = 'http://api.tvmaze.com/lookup/shows?imdb={indexer_id}'.format(indexer_id=indexer_id)
         data = getURL(url, session=session, returns='json')
-        if data is None:
+        if not data:
             return tvdb_id
         tvdb_id = data['externals'].get('thetvdb', '')
         return tvdb_id

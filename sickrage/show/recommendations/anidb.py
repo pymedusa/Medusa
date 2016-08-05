@@ -18,6 +18,7 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
+import traceback
 from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
 import sickbeard
@@ -40,9 +41,12 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         try:
             tvdb_id = self.anidb.aid_to_tvdb_id(show_obj.aid)
         except Exception:
-            tvdb_id = None
             logger.log("Couldn't map aid [{0}] to tvdbid ".format(show_obj.aid), logger.WARNING)
-            return
+            return None
+
+        # If the anime can't be mapped to a tvdb_id, return none, and move on to the next.
+        if not tvdb_id:
+            return tvdb_id
 
         rec_show = RecommendedShow(self,
                                    show_obj.aid,
@@ -78,9 +82,11 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
 
         for show in shows:
             try:
-                result.append(self._create_recommended_show(show))
+                recommended_show = self._create_recommended_show(show)
+                if recommended_show:
+                    result.append(recommended_show)
             except Exception as e:
-                logger.log('Could not parse Anidb show, with exception: {0!r}'.format(e), logger.WARNING)
+                logger.log('Could not parse Anidb show, with exception: {0!r}'.format(traceback.format_exc()), logger.WARNING)
 
         return result
 
