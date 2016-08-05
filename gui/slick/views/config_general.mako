@@ -730,7 +730,7 @@
                                 </span>
                             </label>
                         </div>
-                        <div class="field-pair">
+                        <div class="field-pair" " hidden" if not sickbeard.DEVELOPER else "">
                             <label for="git_reset">
                                 <span class="component-title">Git reset</span>
                                 <span class="component-desc">
@@ -739,7 +739,7 @@
                                 </span>
                             </label>
                         </div>
-                        <div class="field-pair">
+                        <div class="field-pair" " hidden" if not sickbeard.DEVELOPER else "">
                             <label for="git_reset_branches">
                                 <span class="component-title">Branches to reset</span>
                                 <span class="component-desc">
