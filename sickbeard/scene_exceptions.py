@@ -25,10 +25,10 @@ import time
 import adba
 
 import sickbeard
-from sickbeard import db, helpers, logger
 
 from six import iteritems
 
+from . import db, helpers, logger
 from .indexers.indexer_config import INDEXER_TVDB
 
 
