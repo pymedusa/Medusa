@@ -24,9 +24,9 @@ import time
 
 import adba
 
-from six import iteritems
-
 import sickbeard
+
+from six import iteritems
 
 from . import db, helpers, logger
 from .indexers.indexer_config import INDEXER_TVDB
