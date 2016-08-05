@@ -53,18 +53,12 @@ class FailedProcessor(object):
             raise FailedPostProcessingFailedException()
 
         try:
-            parsed = NameParser(False).parse(releaseName)
+            parsed = NameParser().parse(releaseName)
         except (InvalidNameException, InvalidShowException) as error:
             self._log(u"{}".format(error), logger.DEBUG)
             raise FailedPostProcessingFailedException()
 
-        self._log(u"name_parser info: ", logger.DEBUG)
-        self._log(u" - " + str(parsed.series_name), logger.DEBUG)
-        self._log(u" - " + str(parsed.season_number), logger.DEBUG)
-        self._log(u" - " + str(parsed.episode_numbers), logger.DEBUG)
-        self._log(u" - " + str(parsed.extra_info), logger.DEBUG)
-        self._log(u" - " + str(parsed.release_group), logger.DEBUG)
-        self._log(u" - " + str(parsed.air_date), logger.DEBUG)
+        self._log(u"name_parser info: {result}".format(result=parsed), logger.DEBUG)
 
         for episode in parsed.episode_numbers:
             segment = parsed.show.get_episode(parsed.season_number, episode)

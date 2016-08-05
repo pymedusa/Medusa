@@ -180,7 +180,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             try:
-                parse_result = NameParser(False).parse(cur_proper.name)
+                parse_result = NameParser().parse(cur_proper.name)
             except (InvalidNameException, InvalidShowException) as error:
                 logger.log('{0}'.format(error), logger.DEBUG)
                 continue

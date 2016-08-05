@@ -589,7 +589,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
         # parse the name to break it into show name, season, and episode
         try:
-            parse_result = NameParser(True).parse(name)
+            parse_result = NameParser().parse(name)
         except (InvalidNameException, InvalidShowException) as error:
             logger.log(u'{0}'.format(error), logger.DEBUG)
             return to_return

@@ -522,7 +522,7 @@ def already_postprocessed(dirName, videofile, force, result):  # pylint: disable
     # Needed if we have downloaded the same episode @ different quality
     # But we need to make sure we check the history of the episode we're going to PP, and not others
     try:  # if it fails to find any info (because we're doing an unparsable folder (like the TV root dir) it will throw an exception, which we want to ignore
-        parse_result = NameParser(dirName, tryIndexers=True).parse(dirName)
+        parse_result = NameParser(try_indexers=True).parse(dirName)
     except (InvalidNameException, InvalidShowException):  # ignore the exception, because we kind of expected it, but create parse_result anyway so we can perform a check on it.
         parse_result = False
 

@@ -91,7 +91,7 @@ class FixAnimeReleaseGroup(Rule):
         :type context: dict
         :return:
         """
-        if context.get('show_type') == 'regular':
+        if context.get('show_type') == 'normal':
             return
 
         fileparts = matches.markers.named('path')
@@ -207,7 +207,7 @@ class SpanishNewpctReleaseName(Rule):
 
                 if not context.get('show_type'):
                     # fix the show_type as this is not anime
-                    context['show_type'] = 'regular'
+                    context['show_type'] = 'normal'
 
                 to_remove = []
                 to_append = []
@@ -898,7 +898,7 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
         :type context: dict
         :return:
         """
-        if context.get('show_type') == 'regular' or not matches.tagged('anime') or matches.tagged('newpct'):
+        if context.get('show_type') == 'normal' or not matches.tagged('anime') or matches.tagged('newpct'):
             return
 
         fileparts = matches.markers.named('path')
@@ -994,7 +994,7 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
         :return:
         """
         # only for shows that seems to be animes
-        if context.get('show_type') == 'regular' or not matches.tagged('anime') or \
+        if context.get('show_type') == 'normal' or not matches.tagged('anime') or \
                 not matches.tagged('weak-duplicate') or matches.tagged('newpct'):
             return
 
@@ -1069,7 +1069,7 @@ class AbsoluteEpisodeNumbers(Rule):
         :return:
         """
         # if it seems to be anime and it doesn't have season
-        if context.get('show_type') != 'regular' and not matches.named('season') and not matches.tagged('newpct'):
+        if context.get('show_type') != 'normal' and not matches.named('season') and not matches.tagged('newpct'):
             episodes = matches.named('episode')
             to_remove = []
             to_append = []
