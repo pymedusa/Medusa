@@ -601,15 +601,6 @@
                             </label>
                         </div>
 
-                        <div class="field-pair">
-                            <label for="use_legacy_name_parser">
-                                <span class="component-title">Use legacy name parser</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="use_legacy_name_parser" id="use_legacy_name_parser" ${('', 'checked="checked"')[bool(sickbeard.USE_LEGACY_NAME_PARSER)]}/>
-                                    <p>Use the legacy name parser. If disabled <a href=${anon_url("https://github.com/guessit-io/guessit")}>Guessit</a> is used for release and filename parsing.</p>
-                                </span>
-                            </label>
-                        </div>
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
