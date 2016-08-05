@@ -582,7 +582,7 @@ class GitUpdateManager(UpdateManager):
 
         # if we're up to date then don't set this
         sickbeard.NEWEST_VERSION_STRING = None
-        
+
         if self._num_commits_behind > 0 or (sickbeard.GIT_RESET and sickbeard.BRANCH in sickbeard.GIT_RESET_BRANCHES):
 
             base_url = 'http://github.com/' + self.github_org + '/' + self.github_repo
