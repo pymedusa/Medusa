@@ -31,18 +31,16 @@ import traceback
 
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
+import sickbeard
+from sickrage.helper.common import dateTimeFormat, episode_num, subtitle_extensions
+from sickrage.helper.exceptions import ex
+from sickrage.show.Show import Show
 from six import iteritems, string_types, text_type
 from subliminal import (ProviderPool, compute_score, provider_manager, refine, refiner_manager, region, save_subtitles,
                         scan_video)
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
-
-import sickbeard
-from sickrage.helper.common import dateTimeFormat, episode_num, subtitle_extensions
-from sickrage.helper.exceptions import ex
-from sickrage.show.Show import Show
-
 from . import db, history, processTV
 from .common import cpu_presets
 from .helpers import isMediaFile, isRarFile, remove_non_release_groups

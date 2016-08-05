@@ -5,9 +5,8 @@ import sys
 
 from babelfish.language import Language
 from mock.mock import Mock
-from subliminal.subtitle import Subtitle
-
 import sickbeard.subtitles as sut
+from subliminal.subtitle import Subtitle
 
 
 def test_sorted_service_list(monkeypatch):

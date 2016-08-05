@@ -29,10 +29,7 @@ import traceback
 
 from imdb import imdb
 import shutil_custom
-from six import text_type
-
 import sickbeard
-
 from sickrage.helper.common import (
     dateTimeFormat, episode_num, remove_extension, replace_extension, sanitize_filename, try_int
 )
@@ -43,7 +40,7 @@ from sickrage.helper.exceptions import (
     ShowNotFoundException, ex
 )
 from sickrage.show.Show import Show
-
+from six import text_type
 from . import db, helpers, image_cache, logger, network_timezones, notifiers, postProcessor, subtitles
 from .blackandwhitelist import BlackAndWhiteList
 from .common import (
@@ -54,7 +51,6 @@ from .common import (
 from .indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .scene_numbering import get_scene_absolute_numbering, get_scene_numbering, xem_refresh
-
 
 try:
     import xml.etree.cElementTree as ETree
