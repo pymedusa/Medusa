@@ -7,10 +7,8 @@ import re
 
 from guessit.api import default_api
 from guessit.rules.common.date import valid_year
-
-import six
-
 import sickbeard
+import six
 
 # hardcoded expected titles
 fixed_expected_titles = {

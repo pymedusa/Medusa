@@ -4,21 +4,19 @@ from __future__ import unicode_literals
 
 import os
 
-try:
-    from unittest.mock import Mock
-except ImportError:
-    from mock import Mock
-
 import guessit
 import pytest
+import sickbeard
+import sickbeard.name_parser.guessit_parser as sut
 from six import iteritems
-
 import yaml
 from yaml.constructor import ConstructorError
 from yaml.nodes import MappingNode, SequenceNode
 
-import sickbeard
-import sickbeard.name_parser.guessit_parser as sut
+try:
+    from unittest.mock import Mock
+except ImportError:
+    from mock import Mock
 
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))

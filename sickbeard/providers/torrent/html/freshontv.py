@@ -24,13 +24,11 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
-from six import text_type
-
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
-
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from six import text_type
 
 
 class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
