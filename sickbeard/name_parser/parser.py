@@ -23,11 +23,7 @@ from __future__ import unicode_literals
 
 import logging
 import time
-
-try:
-    from collections import OrderedDict
-except ImportError:  # pragma: no-cover
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 import guessit
 
@@ -338,10 +334,13 @@ class ParseResult(object):
         :return:
         :rtype: str
         """
-        return str(OrderedDict(self.guess, **dict(season=self.season_number,
-                                                  episode=self.episode_numbers,
-                                                  absolute_episode=self.ab_episode_numbers,
-                                                  quality=self.quality)))
+        return ', '.join(
+            ['{key}: {value}'.format(key=k, value=v)
+             for k, v in OrderedDict(self.guess, **dict(season=self.season_number,
+                                                        episode=self.episode_numbers,
+                                                        absolute_episode=self.ab_episode_numbers,
+                                                        quality=common.Quality.qualityStrings[self.quality])).items()
+             ])
 
     @property
     def is_air_by_date(self):
