@@ -32,13 +32,12 @@ import sickbeard
 
 from sickbeard import db
 from sickbeard import logger
-from sickbeard.helpers import remove_non_release_groups
 from sickbeard.search import snatchEpisode
 from sickbeard.search import pickBestResult
-from sickbeard.common import DOWNLOADED, SNATCHED, SNATCHED_PROPER, Quality, cpu_presets
+from sickbeard.common import DOWNLOADED, SNATCHED, Quality, cpu_presets
 from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.History import History
-from sickrage.helper.common import enabled_providers
+from sickrage.helper.common import enabled_providers, remove_extension
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
 
 
@@ -358,8 +357,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _genericName(name, **kwargs):
-        if kwargs.pop('remove', True):
-            name = remove_non_release_groups(name, clean_proper=kwargs.pop('clean_proper', False))
+        if kwargs.pop('remove', True) and kwargs.pop('clean_proper', True):
+            name = remove_extension(name)
+
         return name.replace('.', ' ').replace('-', ' ').replace('_', ' ').lower()
 
     @staticmethod

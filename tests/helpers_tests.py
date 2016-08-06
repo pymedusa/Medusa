@@ -24,7 +24,6 @@ Test sickbeard.helpers
 Public Methods:
     fixGlob
     indentXML
-    remove_non_release_groups
     isMediaFile
     isRarFile
     remove_file_failed
@@ -159,7 +158,7 @@ def generator(test_strings):
         :return: test to run
         """
         for test_string in test_strings:
-            self.assertEqual(helpers.remove_non_release_groups(test_string), TEST_RESULT)
+            self.assertEqual(test_string, TEST_RESULT)
     return _test
 
 
@@ -577,13 +576,6 @@ class HelpersMiscTests(unittest.TestCase):
     def test_indent_xml(self):
         """
         Test indentXML
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_remove_non_release_groups(self):
-        """
-        Test remove_non_release_groups
         """
         pass
 

@@ -556,8 +556,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                                          parse_result.air_date) and parse_result.release_group:
 
             if not self.release_name:
-                self.release_name = helpers.remove_non_release_groups(
-                    remove_extension(ek(os.path.basename, parse_result.original_name)))
+                self.release_name = remove_extension(ek(os.path.basename, parse_result.original_name))
 
         else:
             logger.log(u'Parse result not sufficient (all following have to be set). will not save release name',
@@ -584,8 +583,6 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             return to_return
 
         logger.log(u'Analyzing name {0}'.format(name), logger.DEBUG)
-
-        name = helpers.remove_non_release_groups(remove_extension(name))
 
         # parse the name to break it into show name, season, and episode
         try:
