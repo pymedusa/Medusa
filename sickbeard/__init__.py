@@ -128,7 +128,7 @@ CUR_COMMIT_HASH = None
 BRANCH = ''
 
 GIT_RESET = True
-GIT_RESET_BRANCHES = []
+GIT_RESET_BRANCHES = 'develop,master'
 GIT_REMOTE = ''
 GIT_REMOTE_URL = ''
 CUR_COMMIT_BRANCH = ''
@@ -729,7 +729,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # git reset on update
         GIT_RESET = bool(check_setting_int(CFG, 'General', 'git_reset', 1))
-        GIT_RESET_BRANCHES = check_setting_str(CFG, 'General', 'git_reset_branches', 'master,develop').split(',')
+        GIT_RESET_BRANCHES = check_setting_str(CFG, 'General', 'git_reset_branches', GIT_RESET_BRANCHES).split(',')
         if GIT_RESET_BRANCHES[0] == '':
             GIT_RESET_BRANCHES = []
 
