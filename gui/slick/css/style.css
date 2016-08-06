@@ -897,7 +897,7 @@ div.recommended-image {
 
 .show-in-list div#check-overlay {
     opacity: 0.8;
-    background-image: url(/images/green-check.png);
+    background-image: url(../images/green-check.png);
     background-repeat: no-repeat;
     background-position: 90% 5%;
     background-size: 100px;
@@ -944,7 +944,7 @@ div.recommended-image {
 .recommended-container .default-poster {
     display: block;
     z-index: 0;
-    background-image: url(/images/poster-dark.jpg)
+    background-image: url(../images/poster-dark.jpg)
 }
 
 
@@ -3354,12 +3354,11 @@ span.token-input-delete-token {
 .nextline-block {display:block;
 }
 
-    background-image: url(/images/poster-dark.jpg);
 /* =======================================================================
 jquery.confirm.css
 ========================================================================== */
 
-#confirmOverlay{
+#confirmOverlay {
     width: 100%;
     height: 100%;
     position: fixed;
@@ -3371,7 +3370,7 @@ jquery.confirm.css
     z-index: 100000;
 }
 
-#confirmBox{
+#confirmBox {
     background: rgb(245, 241, 228);
     width: 460px;
     position: fixed;
@@ -3383,7 +3382,7 @@ jquery.confirm.css
 }
 
 #confirmBox h1,
-#confirmBox p{
+#confirmBox p {
     padding: 6px 10px;
 }
 
