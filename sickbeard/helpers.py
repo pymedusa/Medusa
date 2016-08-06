@@ -47,18 +47,19 @@ import adba
 from cachecontrol import CacheControl
 import certifi
 from contextlib2 import closing, suppress
+import guessit
 import requests
 from requests.compat import urlparse
 import shutil_custom
 import sickbeard
 from sickbeard import classes, db
 from sickbeard.common import USER_AGENT
-from sickrage.helper.common import (episode_num, http_code_description, media_extensions, pretty_file_size,
-                                    remove_strings, subtitle_extensions)
+from sickrage.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, \
+    subtitle_extensions
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
-from six import iteritems, text_type
+from six import string_types, text_type
 from six.moves import http_client
 
 
@@ -1542,3 +1543,21 @@ def ensure_list(value):
     :rtype: list
     """
     return sorted(value) if isinstance(value, list) else [value] if value is not None else []
+
+
+def canonical_name(obj, fmt='{key}:{value}', separator='|', ignore_list=frozenset()):
+    """Create a canonical name from a release name or a guessed dictionary.
+
+    :param obj:
+    :type obj: str or dict
+    :param fmt:
+    :type fmt: str or unicode
+    :param separator:
+    :type separator: str or unicode
+    :param ignore_list:
+    :type ignore_list: set
+    :return:
+    :rtype: str
+    """
+    guess = obj if isinstance(obj, dict) else guessit.guessit(obj)
+    return str(separator.join([fmt.format(key=k, value=v) for k, v in guess.items() if k not in ignore_list]))

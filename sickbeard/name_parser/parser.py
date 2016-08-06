@@ -334,13 +334,11 @@ class ParseResult(object):
         :return:
         :rtype: str
         """
-        return ', '.join(
-            ['{key}: {value}'.format(key=k, value=v)
-             for k, v in OrderedDict(self.guess, **dict(season=self.season_number,
-                                                        episode=self.episode_numbers,
-                                                        absolute_episode=self.ab_episode_numbers,
-                                                        quality=common.Quality.qualityStrings[self.quality])).items()
-             ])
+        obj = OrderedDict(self.guess, **dict(season=self.season_number,
+                                             episode=self.episode_numbers,
+                                             absolute_episode=self.ab_episode_numbers,
+                                             quality=common.Quality.qualityStrings[self.quality]))
+        return helpers.canonical_name(obj, fmt='{key}: {value}', separator=', ')
 
     @property
     def is_air_by_date(self):
