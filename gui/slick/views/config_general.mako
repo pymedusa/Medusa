@@ -224,7 +224,7 @@
                                 </span>
                             </label>
                         </div>
-              
+
                         <div class="field-pair">
                             <label for="fanart_background">
                                 <span class="component-title">Show fanart in the background</span>
@@ -749,6 +749,9 @@
                                     % endfor
                                     </select>
                                 </span>
+                                <div class="clear-left">
+                                    <span class="component-desc"><b>NOTE:</b> Empty selection means that any branch could be reset.</span>
+                                </div>
                             </label>
                         </div>
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
