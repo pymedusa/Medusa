@@ -100,7 +100,7 @@ class ConfigGeneral(Config):
         sickbeard.GIT_USERNAME = git_username
         sickbeard.GIT_PASSWORD = git_password
         sickbeard.GIT_RESET = config.checkbox_to_value(git_reset)
-        sickbeard.GIT_RESET_BRANCHES = git_reset_branches if git_reset_branches else ''
+        sickbeard.GIT_RESET_BRANCHES = git_reset_branches.split(',') if git_reset_branches else []
         sickbeard.GIT_PATH = git_path
         sickbeard.GIT_REMOTE = git_remote
         sickbeard.CALENDAR_UNPROTECTED = config.checkbox_to_value(calendar_unprotected)
