@@ -138,7 +138,7 @@ class TVObject(object):
 class TVShow(TVObject):
     """Represent a TV Show."""
 
-    def __init__(self, indexer, indexerid, lang=''):
+    def __init__(self, indexer, indexerid, lang='', quality=None, flatten_folders=None, enabled_subtitles=None):
         """Instantiate a TVShow with database information based on indexerid.
 
         :param indexer:
@@ -156,14 +156,14 @@ class TVShow(TVObject):
         self.classification = ''
         self.runtime = 0
         self.imdb_info = {}
-        self.quality = int(sickbeard.QUALITY_DEFAULT)
-        self.flatten_folders = int(sickbeard.FLATTEN_FOLDERS_DEFAULT)
+        self.quality = quality or int(sickbeard.QUALITY_DEFAULT)
+        self.flatten_folders = flatten_folders or int(sickbeard.FLATTEN_FOLDERS_DEFAULT)
         self.status = 'Unknown'
         self.airs = ''
         self.startyear = 0
         self.paused = 0
         self.air_by_date = 0
-        self.subtitles = int(sickbeard.SUBTITLES_DEFAULT)
+        self.subtitles = enabled_subtitles or int(sickbeard.SUBTITLES_DEFAULT)
         self.dvdorder = 0
         self.lang = lang
         self.last_update_indexer = 1

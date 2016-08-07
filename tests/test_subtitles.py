@@ -4,7 +4,6 @@ import os
 import sys
 
 from babelfish.language import Language
-from mock.mock import Mock
 import sickbeard.subtitles as sut
 from subliminal.subtitle import Subtitle
 
@@ -240,7 +239,7 @@ def test_code_from_code__valid_2letter_code():
 def test_compute_subtitle_path__multi_with_valid_language(monkeypatch):
     # Given
     monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', True)
-    subtitle = Mock(spec=Subtitle, language=Language('por', 'BR'))
+    subtitle = Subtitle(language=Language('por', 'BR'))
     video_path = '/folder/subfolder/video.mkv'
     subtitles_dir = None
 
@@ -254,7 +253,7 @@ def test_compute_subtitle_path__multi_with_valid_language(monkeypatch):
 def test_compute_subtitle_path__multi_with_und_language(monkeypatch):
     # Given
     monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', True)
-    subtitle = Mock(spec=Subtitle, language=Language('und'))
+    subtitle = Subtitle(language=Language('und'))
     video_path = '/folder/subfolder/video.mkv'
     subtitles_dir = None
 
@@ -268,7 +267,7 @@ def test_compute_subtitle_path__multi_with_und_language(monkeypatch):
 def test_compute_subtitle_path__single_with_valid_language(monkeypatch):
     # Given
     monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', False)
-    subtitle = Mock(spec=Subtitle, language=Language('por', 'BR'))
+    subtitle = Subtitle(language=Language('por', 'BR'))
     video_path = '/folder/subfolder/video.mkv'
     subtitles_dir = None
 
@@ -282,7 +281,7 @@ def test_compute_subtitle_path__single_with_valid_language(monkeypatch):
 def test_compute_subtitle_path__single_with_valid_language_and_subs_folder(monkeypatch):
     # Given
     monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', False)
-    subtitle = Mock(spec=Subtitle, language=Language('por', 'BR'))
+    subtitle = Subtitle(language=Language('por', 'BR'))
     video_path = '/folder/subfolder/video.mkv'
     subtitles_dir = '/folder/subtitles'
 
