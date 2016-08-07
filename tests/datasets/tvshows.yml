@@ -2997,3 +2997,10 @@
   container: mkv
   mimetype: video/x-matroska
   type: episode
+
+# Title with number and unicode character
+? 3 Show.på.(abc2).s01e01
+: title: 3 Show på abc2
+  season: 1
+  episode: 1
+  type: episode
