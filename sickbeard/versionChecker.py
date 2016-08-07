@@ -289,7 +289,7 @@ class CheckVersion(object):
 
         # found updates
         self.updater.set_newest_text()
-        return True
+        return self.updater.can_update()
 
     def check_for_new_news(self, force=False):
         """
@@ -583,11 +583,7 @@ class GitUpdateManager(UpdateManager):
         # if we're up to date then don't set this
         sickbeard.NEWEST_VERSION_STRING = None
 
-        if self._num_commits_ahead:
-            logger.log(u"Local branch is ahead of " + self.branch + ". Automatic update not possible.", logger.WARNING)
-            newest_text = "Local branch is ahead of " + self.branch + ". Automatic update not possible."
-
-        elif self._num_commits_behind > 0:
+        if self._num_commits_behind > 0 or self._is_hard_reset_allowed():
 
             base_url = 'http://github.com/' + self.github_org + '/' + self.github_repo
             if self._newest_commit_hash:
@@ -599,7 +595,15 @@ class GitUpdateManager(UpdateManager):
             newest_text += " (you're " + str(self._num_commits_behind) + " commit"
             if self._num_commits_behind > 1:
                 newest_text += 's'
-            newest_text += ' behind)' + "&mdash; <a href=\"" + self.get_update_url() + "\">Update Now</a>"
+            newest_text += ' behind'
+            if self._num_commits_ahead > 0:
+                newest_text += ' and {ahead} commit{s} ahead'.format(ahead=self._num_commits_ahead,
+                                                                     s='s' if self._num_commits_ahead > 1 else '')
+            newest_text += ')' + "&mdash; <a href=\"" + self.get_update_url() + "\">Update Now</a>"
+
+        elif self._num_commits_ahead > 0:
+            logger.log(u"Local branch is ahead of " + self.branch + ". Automatic update not possible.", logger.WARNING)
+            newest_text = "Local branch is ahead of " + self.branch + ". Automatic update not possible."
 
         else:
             return
@@ -622,10 +626,18 @@ class GitUpdateManager(UpdateManager):
                 logger.log(u"Unable to contact github, can't check for update: " + repr(e), logger.WARNING)
                 return False
 
-            if self._num_commits_behind > 0:
+            if self._num_commits_behind > 0 or self._num_commits_ahead > 0:
                 return True
 
         return False
+
+    def can_update(self):
+        """Return whether update can be executed.
+
+        :return:
+        :rtype: bool
+        """
+        return self._num_commits_ahead <= 0 or self._is_hard_reset_allowed()
 
     def update(self):
         """
@@ -637,7 +649,7 @@ class GitUpdateManager(UpdateManager):
         self.update_remote_origin()
 
         # remove untracked files and performs a hard reset on git branch to avoid update issues
-        if sickbeard.GIT_RESET:
+        if self._is_hard_reset_allowed():
             # self.clean() # This is removing user data and backups
             self.reset()
 
@@ -659,6 +671,16 @@ class GitUpdateManager(UpdateManager):
         else:
             return False
 
+    @staticmethod
+    def _is_hard_reset_allowed():
+        """Return whether git hard reset is allowed or not.
+
+        :return:
+        :rtype: bool
+        """
+        return sickbeard.GIT_RESET and (not sickbeard.GIT_RESET_BRANCHES or
+                                        sickbeard.BRANCH in sickbeard.GIT_RESET_BRANCHES)
+
     def clean(self):
         """
         Calls git clean to remove all untracked files. Returns a bool depending
@@ -673,7 +695,8 @@ class GitUpdateManager(UpdateManager):
         Calls git reset --hard to perform a hard reset. Returns a bool depending
         on the call's success.
         """
-        _, _, exit_status = self._run_git(self._git_path, 'reset --hard')  # @UnusedVariable
+        _, _, exit_status = self._run_git(self._git_path, 'reset --hard {0}/{1}'.format
+                                          (sickbeard.GIT_REMOTE, sickbeard.BRANCH))  # @UnusedVariable
         if exit_status == 0:
             return True
 
@@ -749,6 +772,14 @@ class SourceUpdateManager(UpdateManager):
             return True
 
         return False
+
+    def can_update(self):
+        """Whether or not the update can be performed.
+
+        :return:
+        :rtype: bool
+        """
+        return True
 
     def _check_github_for_update(self):
         """

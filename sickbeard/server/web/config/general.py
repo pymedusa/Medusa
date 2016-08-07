@@ -68,7 +68,7 @@ class ConfigGeneral(Config):
                     calendar_unprotected=None, calendar_icons=None, debug=None, ssl_verify=None, no_restart=None, coming_eps_missed_range=None,
                     fuzzy_dating=None, trim_zero=None, date_preset=None, date_preset_na=None, time_preset=None,
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
-                    git_reset=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None,
+                    git_reset=None, git_reset_branches=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None,
                     privacy_level='normal', use_legacy_name_parser=None, fanart_background=None, fanart_background_opacity=None):
 
         results = []
@@ -99,9 +99,8 @@ class ConfigGeneral(Config):
         sickbeard.PROXY_INDEXERS = config.checkbox_to_value(proxy_indexers)
         sickbeard.GIT_USERNAME = git_username
         sickbeard.GIT_PASSWORD = git_password
-        # sickbeard.GIT_RESET = config.checkbox_to_value(git_reset)
-        # Force GIT_RESET
-        sickbeard.GIT_RESET = 1
+        sickbeard.GIT_RESET = config.checkbox_to_value(git_reset)
+        sickbeard.GIT_RESET_BRANCHES = git_reset_branches.split(',') if git_reset_branches else []
         sickbeard.GIT_PATH = git_path
         sickbeard.GIT_REMOTE = git_remote
         sickbeard.CALENDAR_UNPROTECTED = config.checkbox_to_value(calendar_unprotected)
