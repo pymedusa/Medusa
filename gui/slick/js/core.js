@@ -45,6 +45,15 @@ function isMeta(pyVar, result) {
     return (reg).test($('meta[data-var="' + pyVar + '"]').data('content'));
 }
 
+$.fn.extend({
+    addRemoveWarningClass: function (_) {
+        if (_) {
+            return $(this).removeClass('warning');
+        }
+        return $(this).addClass('warning');
+    }
+});
+
 var SICKRAGE = {
     common: {
         init: function() {
@@ -216,10 +225,10 @@ var SICKRAGE = {
 
             $('.datePresets').on('click', function() {
                 var def = $('#date_presets').val();
-                if ($(this).prop('checked') && '%x' === def) {
+                if ($(this).prop('checked') && def === '%x') {
                     def = '%a, %b %d, %Y';
                     $('#date_use_system_default').html('1');
-                } else if (!$(this).prop('checked') && '1' === $('#date_use_system_default').html()) {
+                } else if (!$(this).prop('checked') && $('#date_use_system_default').html() === '1') {
                     def = '%x';
                 }
 
@@ -232,7 +241,9 @@ var SICKRAGE = {
                 $('#date_presets_old').attr('name', 'date_preset_na');
                 $('#date_presets_old').attr('id', 'date_presets_na');
 
-                if (def) { $('#date_presets').val(def); }
+                if (def) {
+                    $('#date_presets').val(def);
+                }
             });
 
             // bind 'myForm' and provide a simple callback function
@@ -310,21 +321,23 @@ var SICKRAGE = {
                 $('#Backup').attr('disabled', true);
                 $('#Backup-result').html(loading);
                 var backupDir = $('#backupDir').val();
-                $.get(srRoot + '/config/backuprestore/backup', {'backupDir': backupDir})
-                    .done(function (data) {
-                        $('#Backup-result').html(data);
-                        $('#Backup').attr('disabled', false);
-                    });
+                $.get(srRoot + '/config/backuprestore/backup', {
+                    backupDir: backupDir
+                }).done(function (data) {
+                    $('#Backup-result').html(data);
+                    $('#Backup').attr('disabled', false);
+                });
             });
             $('#Restore').on('click', function() {
                 $('#Restore').attr('disabled', true);
                 $('#Restore-result').html(loading);
                 var backupFile = $('#backupFile').val();
-                $.get(srRoot + '/config/backuprestore/restore', {'backupFile': backupFile})
-                    .done(function (data) {
-                        $('#Restore-result').html(data);
-                        $('#Restore').attr('disabled', false);
-                    });
+                $.get(srRoot + '/config/backuprestore/restore', {
+                    backupFile: backupFile
+                }).done(function (data) {
+                    $('#Restore-result').html(data);
+                    $('#Restore').attr('disabled', false);
+                });
             });
 
             $('#backupDir').fileBrowser({title: 'Select backup folder to save to', key: 'backupPath'});
@@ -345,8 +358,8 @@ var SICKRAGE = {
                 $(this).prop('disabled', true);
                 $('#testGrowl-result').html(loading);
                 $.get(srRoot + '/home/testGrowl', {
-                    'host': growl.host,
-                    'password': growl.password
+                    host: growl.host,
+                    password: growl.password
                 }).done(function (data) {
                     $('#testGrowl-result').html(data);
                     $('#testGrowl').prop('disabled', false);
@@ -366,8 +379,8 @@ var SICKRAGE = {
                 $(this).prop('disabled', true);
                 $('#testProwl-result').html(loading);
                 $.get(srRoot + '/home/testProwl', {
-                    'prowl_api': prowl.api,
-                    'prowl_priority': prowl.priority
+                    prowl_api: prowl.api, // eslint-disable-line camelcase
+                    prowl_priority: prowl.priority // eslint-disable-line camelcase
                 }).done(function (data) {
                     $('#testProwl-result').html(data);
                     $('#testProwl').prop('disabled', false);
@@ -388,9 +401,9 @@ var SICKRAGE = {
                 $(this).prop('disabled', true);
                 $('#testKODI-result').html(loading);
                 $.get(srRoot + '/home/testKODI', {
-                    'host': kodi.host,
-                    'username': kodi.username,
-                    'password': kodi.password
+                    host: kodi.host,
+                    username: kodi.username,
+                    password: kodi.password
                 }).done(function (data) {
                     $('#testKODI-result').html(data);
                     $('#testKODI').prop('disabled', false);
@@ -412,9 +425,9 @@ var SICKRAGE = {
                 $(this).prop('disabled', true);
                 $('#testPHT-result').html(loading);
                 $.get(srRoot + '/home/testPHT', {
-                    'host': plex.client.host,
-                    'username': plex.client.username,
-                    'password': plex.client.password
+                    host: plex.client.host,
+                    username: plex.client.username,
+                    password: plex.client.password
                 }).done(function (data) {
                     $('#testPHT-result').html(data);
                     $('#testPHT').prop('disabled', false);
@@ -437,10 +450,10 @@ var SICKRAGE = {
                 $(this).prop('disabled', true);
                 $('#testPMS-result').html(loading);
                 $.get(srRoot + '/home/testPMS', {
-                    'host': plex.server.host,
-                    'username': plex.server.username,
-                    'password': plex.server.password,
-                    'plex_server_token': plex.server.token
+                    host: plex.server.host,
+                    username: plex.server.username,
+                    password: plex.server.password,
+                    plex_server_token: plex.server.token // eslint-disable-line camelcase
                 }).done(function (data) {
                     $('#testPMS-result').html(data);
                     $('#testPMS').prop('disabled', false);
@@ -453,24 +466,16 @@ var SICKRAGE = {
                 emby.apikey = $('#emby_apikey').val();
                 if (!emby.host || !emby.apikey) {
                     $('#testEMBY-result').html('Please fill out the necessary fields above.');
-                    if (!emby.host) {
-                        $('#emby_host').addClass('warning');
-                    } else {
-                        $('#emby_host').removeClass('warning');
-                    }
-                    if (!emby.apikey) {
-                        $('#emby_apikey').addClass('warning');
-                    } else {
-                        $('#emby_apikey').removeClass('warning');
-                    }
+                    $('#emby_host').addRemoveWarningClass(emby.host);
+                    $('#emby_apikey').addRemoveWarningClass(emby.apikey);
                     return;
                 }
                 $('#emby_host,#emby_apikey').removeClass('warning');
                 $(this).prop('disabled', true);
                 $('#testEMBY-result').html(loading);
                 $.get(srRoot + '/home/testEMBY', {
-                    'host': emby.host,
-                    'emby_apikey': emby.apikey
+                    host: emby.host,
+                    emby_apikey: emby.apikey // eslint-disable-line camelcase
                 }).done(function (data) {
                     $('#testEMBY-result').html(data);
                     $('#testEMBY').prop('disabled', false);
@@ -489,7 +494,7 @@ var SICKRAGE = {
                 $(this).prop('disabled', true);
                 $('#testBoxcar2-result').html(loading);
                 $.get(srRoot + '/home/testBoxcar2', {
-                    'accesstoken': boxcar2.accesstoken
+                    accesstoken: boxcar2.accesstoken
                 }).done(function (data) {
                     $('#testBoxcar2-result').html(data);
                     $('#testBoxcar2').prop('disabled', false);
@@ -502,24 +507,16 @@ var SICKRAGE = {
                 pushover.apikey = $('#pushover_apikey').val();
                 if (!pushover.userkey || !pushover.apikey) {
                     $('#testPushover-result').html('Please fill out the necessary fields above.');
-                    if (!pushover.userkey) {
-                        $('#pushover_userkey').addClass('warning');
-                    } else {
-                        $('#pushover_userkey').removeClass('warning');
-                    }
-                    if (!pushover.apikey) {
-                        $('#pushover_apikey').addClass('warning');
-                    } else {
-                        $('#pushover_apikey').removeClass('warning');
-                    }
+                    $('#pushover_userkey').addRemoveWarningClass(pushover.userkey);
+                    $('#pushover_apikey').addRemoveWarningClass(pushover.apikey);
                     return;
                 }
                 $('#pushover_userkey,#pushover_apikey').removeClass('warning');
                 $(this).prop('disabled', true);
                 $('#testPushover-result').html(loading);
                 $.get(srRoot + '/home/testPushover', {
-                    'userKey': pushover.userkey,
-                    'apiKey': pushover.apikey
+                    userKey: pushover.userkey,
+                    apiKey: pushover.apikey
                 }).done(function (data) {
                     $('#testPushover-result').html(data);
                     $('#testPushover').prop('disabled', false);
@@ -545,18 +542,16 @@ var SICKRAGE = {
             $('#twitterStep2').on('click', function () {
                 var twitter = {};
                 twitter.key = $.trim($('#twitter_key').val());
-                if (!twitter.key) {
-                    $('#testTwitter-result').html('Please fill out the necessary fields above.');
-                    $('#twitter_key').addClass('warning');
-                    return;
+                $('#twitter_key').addRemoveWarningClass(twitter.key);
+                if (twitter.key) {
+                    $('#testTwitter-result').html(loading);
+                    $.get(srRoot + '/home/twitterStep2', {
+                        key: twitter.key
+                    }, function(data) {
+                        $('#testTwitter-result').html(data);
+                    });
                 }
-                $('#twitter_key').removeClass('warning');
-                $('#testTwitter-result').html(loading);
-                $.get(srRoot + '/home/twitterStep2', {
-                    'key': twitter.key
-                }, function(data) {
-                    $('#testTwitter-result').html(data);
-                });
+                $('#testTwitter-result').html('Please fill out the necessary fields above.');
             });
 
             $('#testTwitter').on('click', function() {
@@ -567,35 +562,34 @@ var SICKRAGE = {
 
             $('#settingsNMJ').on('click', function() {
                 var nmj = {};
-                if (!$('#nmj_host').val()) {
-                    alert('Please fill in the Popcorn IP address');
-                    $('#nmj_host').focus();
-                    return;
+                if ($('#nmj_host').val()) {
+                    $('#testNMJ-result').html(loading);
+                    nmj.host = $('#nmj_host').val();
+
+                    $.get(srRoot + '/home/settingsNMJ', {host: nmj.host}, function (data) {
+                        if (data === null) {
+                            $('#nmj_database').removeAttr('readonly');
+                            $('#nmj_mount').removeAttr('readonly');
+                        }
+                        var JSONData = $.parseJSON(data);
+                        $('#testNMJ-result').html(JSONData.message);
+                        $('#nmj_database').val(JSONData.database);
+                        $('#nmj_mount').val(JSONData.mount);
+
+                        if (JSONData.database) {
+                            $('#nmj_database').attr('readonly', true);
+                        } else {
+                            $('#nmj_database').removeAttr('readonly');
+                        }
+                        if (JSONData.mount) {
+                            $('#nmj_mount').attr('readonly', true);
+                        } else {
+                            $('#nmj_mount').removeAttr('readonly');
+                        }
+                    });
                 }
-                $('#testNMJ-result').html(loading);
-                nmj.host = $('#nmj_host').val();
-
-                $.get(srRoot + '/home/settingsNMJ', {'host': nmj.host}, function (data) {
-                    if (data === null) {
-                        $('#nmj_database').removeAttr('readonly');
-                        $('#nmj_mount').removeAttr('readonly');
-                    }
-                    var JSONData = $.parseJSON(data);
-                    $('#testNMJ-result').html(JSONData.message);
-                    $('#nmj_database').val(JSONData.database);
-                    $('#nmj_mount').val(JSONData.mount);
-
-                    if (JSONData.database) {
-                        $('#nmj_database').attr('readonly', true);
-                    } else {
-                        $('#nmj_database').removeAttr('readonly');
-                    }
-                    if (JSONData.mount) {
-                        $('#nmj_mount').attr('readonly', true);
-                    } else {
-                        $('#nmj_mount').removeAttr('readonly');
-                    }
-                });
+                alert('Please fill in the Popcorn IP address');
+                $('#nmj_host').focus();
             });
 
             $('#testNMJ').on('click', function () {
@@ -603,80 +597,77 @@ var SICKRAGE = {
                 nmj.host = $.trim($('#nmj_host').val());
                 nmj.database = $('#nmj_database').val();
                 nmj.mount = $('#nmj_mount').val();
-                if (!nmj.host) {
-                    $('#testNMJ-result').html('Please fill out the necessary fields above.');
-                    $('#nmj_host').addClass('warning');
-                    return;
+                if (nmj.host) {
+                    $('#nmj_host').removeClass('warning');
+                    $(this).prop('disabled', true);
+                    $('#testNMJ-result').html(loading);
+                    $.get(srRoot + '/home/testNMJ', {
+                        host: nmj.host,
+                        database: nmj.database,
+                        mount: nmj.mount
+                    }).done(function (data) {
+                        $('#testNMJ-result').html(data);
+                        $('#testNMJ').prop('disabled', false);
+                    });
                 }
-                $('#nmj_host').removeClass('warning');
-                $(this).prop('disabled', true);
-                $('#testNMJ-result').html(loading);
-                $.get(srRoot + '/home/testNMJ', {
-                    'host': nmj.host,
-                    'database': nmj.database,
-                    'mount': nmj.mount
-                }).done(function (data) {
-                    $('#testNMJ-result').html(data);
-                    $('#testNMJ').prop('disabled', false);
-                });
+                $('#testNMJ-result').html('Please fill out the necessary fields above.');
+                $('#nmj_host').addClass('warning');
             });
 
             $('#settingsNMJv2').on('click', function() {
                 var nmjv2 = {};
-                if (!$('#nmjv2_host').val()) {
-                    alert('Please fill in the Popcorn IP address');
-                    $('#nmjv2_host').focus();
-                    return;
-                }
-                $('#testNMJv2-result').html(loading);
-                nmjv2.host = $('#nmjv2_host').val();
-                nmjv2.dbloc = '';
-                var radios = document.getElementsByName('nmjv2_dbloc');
-                for (var i = 0, len = radios.length; i < len; i++) {
-                    if (radios[i].checked) {
-                        nmjv2.dbloc = radios[i].value;
-                        break;
+                if ($('#nmjv2_host').val()) {
+                    $('#testNMJv2-result').html(loading);
+                    nmjv2.host = $('#nmjv2_host').val();
+                    nmjv2.dbloc = '';
+                    var radios = document.getElementsByName('nmjv2_dbloc');
+                    for (var i = 0, len = radios.length; i < len; i++) {
+                        if (radios[i].checked) {
+                            nmjv2.dbloc = radios[i].value;
+                            break;
+                        }
                     }
-                }
 
-                nmjv2.dbinstance = $('#NMJv2db_instance').val();
-                $.get(srRoot + '/home/settingsNMJv2', {
-                    'host': nmjv2.host,
-                    'dbloc': nmjv2.dbloc,
-                    'instance': nmjv2.dbinstance
-                }, function (data) {
-                    if (data === null) {
-                        $('#nmjv2_database').removeAttr('readonly');
-                    }
-                    var JSONData = $.parseJSON(data);
-                    $('#testNMJv2-result').html(JSONData.message);
-                    $('#nmjv2_database').val(JSONData.database);
+                    nmjv2.dbinstance = $('#NMJv2db_instance').val();
+                    $.get(srRoot + '/home/settingsNMJv2', {
+                        host: nmjv2.host,
+                        dbloc: nmjv2.dbloc,
+                        instance: nmjv2.dbinstance
+                    }, function (data) {
+                        if (data === null) {
+                            $('#nmjv2_database').removeAttr('readonly');
+                        }
+                        var JSONData = $.parseJSON(data);
+                        $('#testNMJv2-result').html(JSONData.message);
+                        $('#nmjv2_database').val(JSONData.database);
 
-                    if (JSONData.database) {
-                        $('#nmjv2_database').attr('readonly', true);
-                    } else {
-                        $('#nmjv2_database').removeAttr('readonly');
-                    }
-                });
+                        if (JSONData.database) {
+                            $('#nmjv2_database').attr('readonly', true);
+                        } else {
+                            $('#nmjv2_database').removeAttr('readonly');
+                        }
+                    });
+                }
+                alert('Please fill in the Popcorn IP address');
+                $('#nmjv2_host').focus();
             });
 
             $('#testNMJv2').on('click', function () {
                 var nmjv2 = {};
                 nmjv2.host = $.trim($('#nmjv2_host').val());
-                if (!nmjv2.host) {
-                    $('#testNMJv2-result').html('Please fill out the necessary fields above.');
-                    $('#nmjv2_host').addClass('warning');
-                    return;
+                if (nmjv2.host) {
+                    $('#nmjv2_host').removeClass('warning');
+                    $(this).prop('disabled', true);
+                    $('#testNMJv2-result').html(loading);
+                    $.get(srRoot + '/home/testNMJv2', {
+                        host: nmjv2.host
+                    }).done(function (data) {
+                        $('#testNMJv2-result').html(data);
+                        $('#testNMJv2').prop('disabled', false);
+                    });
                 }
-                $('#nmjv2_host').removeClass('warning');
-                $(this).prop('disabled', true);
-                $('#testNMJv2-result').html(loading);
-                $.get(srRoot + '/home/testNMJv2', {
-                    'host': nmjv2.host
-                }).done(function (data) {
-                    $('#testNMJv2-result').html(data);
-                    $('#testNMJv2').prop('disabled', false);
-                });
+                $('#testNMJv2-result').html('Please fill out the necessary fields above.');
+                $('#nmjv2_host').addClass('warning');
             });
 
             $('#testFreeMobile').on('click', function () {
@@ -685,15 +676,15 @@ var SICKRAGE = {
                 freemobile.apikey = $.trim($('#freemobile_apikey').val());
                 if (!freemobile.id || !freemobile.apikey) {
                     $('#testFreeMobile-result').html('Please fill out the necessary fields above.');
-                    if (!freemobile.id) {
-                        $('#freemobile_id').addClass('warning');
-                    } else {
+                    if (freemobile.id) {
                         $('#freemobile_id').removeClass('warning');
-                    }
-                    if (!freemobile.apikey) {
-                        $('#freemobile_apikey').addClass('warning');
                     } else {
+                        $('#freemobile_id').addClass('warning');
+                    }
+                    if (freemobile.apikey) {
                         $('#freemobile_apikey').removeClass('warning');
+                    } else {
+                        $('#freemobile_apikey').addClass('warning');
                     }
                     return;
                 }
@@ -715,16 +706,8 @@ var SICKRAGE = {
                 telegram.apikey = $.trim($('#telegram_apikey').val());
                 if (!telegram.id || !telegram.apikey) {
                     $('#testTelegram-result').html('Please fill out the necessary fields above.');
-                    if (!telegram.id) {
-                        $('#telegram_id').addClass('warning');
-                    } else {
-                        $('#telegram_id').removeClass('warning');
-                    }
-                    if (!telegram.apikey) {
-                        $('#telegram_apikey').addClass('warning');
-                    } else {
-                        $('#telegram_apikey').removeClass('warning');
-                    }
+                    $('#telegram_id').addRemoveWarningClass(telegram.id);
+                    $('#telegram_apikey').addRemoveWarningClass(telegram.apikey);
                     return;
                 }
                 $('#telegram_id,#telegram_apikey').removeClass('warning');
@@ -793,7 +776,7 @@ var SICKRAGE = {
                 $(this).prop('disabled', true);
                 $('#testTrakt-result').html(loading);
                 $.get(srRoot + '/home/testTrakt', {
-                    'username': trakt.username,
+                    username: trakt.username,
                     'blacklist_name': trakt.trendingBlacklist
                 }).done(function (data) {
                     $('#testTrakt-result').html(data);
@@ -802,7 +785,15 @@ var SICKRAGE = {
             });
 
             $('#testEmail').on('click', function () {
-                var status, host, port, tls, from, user, pwd, err, to;
+                var status;
+                var host;
+                var port;
+                var tls;
+                var from;
+                var user;
+                var pwd;
+                var err;
+                var to;
                 status = $('#testEmail-result');
                 status.html(loading);
                 host = $('#email_host').val();
@@ -832,13 +823,13 @@ var SICKRAGE = {
                         status.html('<p style="color: red;">You must provide a recipient email address!</p>');
                     } else {
                         $.get(srRoot + '/home/testEmail', {
-                            'host': host,
-                            'port': port,
-                            'smtp_from': from, // @TODO we shouldn't be using any reserved words like "from"
-                            'use_tls': tls,
-                            'user': user,
-                            'pwd': pwd,
-                            'to': to
+                            host: host,
+                            port: port,
+                            smtp_from: from, // @TODO we shouldn't be using any reserved words like "from"
+                            use_tls: tls,
+                            user: user,
+                            pwd: pwd,
+                            to: to
                         }, function (msg) {
                             $('#testEmail-result').html(msg);
                         });
@@ -879,7 +870,7 @@ var SICKRAGE = {
                 $(this).prop('disabled', true);
                 $('#testPushalot-result').html(loading);
                 $.get(srRoot + '/home/testPushalot', {
-                    'authorizationToken': pushalot.authToken
+                    authorizationToken: pushalot.authToken
                 }).done(function (data) {
                     $('#testPushalot-result').html(data);
                     $('#testPushalot').prop('disabled', false);
@@ -898,7 +889,7 @@ var SICKRAGE = {
                 $(this).prop('disabled', true);
                 $('#testPushbullet-result').html(loading);
                 $.get(srRoot + '/home/testPushbullet', {
-                    'api': pushbullet.api
+                    api: pushbullet.api
                 }).done(function (data) {
                     $('#testPushbullet-result').html(data);
                     $('#testPushbullet').prop('disabled', false);
@@ -920,7 +911,7 @@ var SICKRAGE = {
                 }
 
                 $.get(srRoot + '/home/getPushbulletDevices', {
-                    'api': pushbullet.api
+                    api: pushbullet.api
                 }, function (data) {
                     pushbullet.devices = $.parseJSON(data).devices;
                     pushbullet.currentDevice = $('#pushbullet_device').val();
@@ -935,7 +926,9 @@ var SICKRAGE = {
                         }
                     }
                     $('#pushbullet_device_list').prepend('<option value="" ' + (pushbullet.currentDevice === '' ? 'selected' : '') + '>All devices</option>');
-                    if (msg) { $('#testPushbullet-result').html(msg); }
+                    if (msg) {
+                        $('#testPushbullet-result').html(msg);
+                    }
                 });
 
                 $('#pushbullet_device_list').on('change', function() {
@@ -963,15 +956,18 @@ var SICKRAGE = {
                 var key = parseInt($('#prowl_show').val(), 10);
                 $.getJSON(srRoot + '/home/loadShowNotifyLists', function(notifyData) {
                     if (notifyData._size > 0) {
-                        $('#prowl_show_list').val(key >= 0 ? notifyData[key.toString()].prowl_notify_list : '');   // jshint ignore:line
+                        $('#prowl_show_list').val(key >= 0 ? notifyData[key.toString()].prowl_notify_list : '');
                     }
                 });
             });
 
             function loadShowNotifyLists() {
                 $.getJSON(srRoot + '/home/loadShowNotifyLists', function(list) {
-                    var html, s;
-                    if (list._size === 0) { return; }
+                    var html;
+                    var s;
+                    if (list._size === 0) {
+                        return;
+                    }
 
                     // Convert the 'list' object to a js array of objects so that we can sort it
                     var _list = [];
@@ -981,8 +977,12 @@ var SICKRAGE = {
                         }
                     }
                     var sortedList = _list.sort(function(a, b) {
-                        if (a.name < b.name) { return -1; }
-                        if (a.name > b.name) { return 1; }
+                        if (a.name < b.name) {
+                            return -1;
+                        }
+                        if (a.name > b.name) {
+                            return 1;
+                        }
                         return 0;
                     });
                     html = '<option value="-1">-- Select --</option>';
@@ -1020,8 +1020,8 @@ var SICKRAGE = {
             });
             $('#prowl_show_save').on('click', function() {
                 $.post(srRoot + '/home/saveShowNotifyList', {
-                    'show': $('#prowl_show').val(),
-                    'prowlAPIs': $('#prowl_show_list').val()
+                    show: $('#prowl_show').val(),
+                    prowlAPIs: $('#prowl_show_list').val()
                 }, function() {
                     // Reload the per show notify lists to reflect changes
                     loadShowNotifyLists();
@@ -1039,7 +1039,9 @@ var SICKRAGE = {
         },
         postProcessing: function() {
             $('#config-components').tabs();
-            $('#tv_download_dir').fileBrowser({title: 'Select TV Download Directory'});
+            $('#tv_download_dir').fileBrowser({
+                title: 'Select TV Download Directory'
+            });
 
             // http://stackoverflow.com/questions/2219924/idiomatic-jquery-delayed-event-only-after-a-short-pause-in-typing-e-g-timew
             var typewatch = (function () {
@@ -1071,8 +1073,8 @@ var SICKRAGE = {
                 example.animeType = $('input[name="naming_anime"]:checked').val();
 
                 $.get(srRoot + '/config/postProcessing/testNaming', {
-                    'pattern': example.pattern,
-                    'anime_type': 3 // jshint ignore:line
+                    pattern: example.pattern,
+                    anime_type: 3
                 }, function (data) {
                     if (data) {
                         $('#naming_example').text(data + '.ext');
@@ -1083,9 +1085,9 @@ var SICKRAGE = {
                 });
 
                 $.get(srRoot + '/config/postProcessing/testNaming', {
-                    'pattern': example.pattern,
-                    'multi': example.multi,
-                    'anime_type': 3
+                    pattern: example.pattern,
+                    multi: example.multi,
+                    anime_type: 3
                 }, function (data) {
                     if (data) {
                         $('#naming_example_multi').text(data + '.ext');
@@ -1096,9 +1098,9 @@ var SICKRAGE = {
                 });
 
                 $.get(srRoot + '/config/postProcessing/isNamingValid', {
-                    'pattern': example.pattern,
-                    'multi': example.multi,
-                    'anime_type': example.animeType
+                    pattern: example.pattern,
+                    multi: example.multi,
+                    anime_type: example.animeType
                 }, function (data) {
                     if (data === 'invalid') {
                         $('#naming_pattern').qtip('option', {
@@ -1129,8 +1131,8 @@ var SICKRAGE = {
                 var pattern = $('#naming_abd_pattern').val();
 
                 $.get(srRoot + '/config/postProcessing/testNaming', {
-                    'pattern': pattern,
-                    'abd': 'True'
+                    pattern: pattern,
+                    abd: 'True'
                 }, function (data) {
                     if (data) {
                         $('#naming_abd_example').text(data + '.ext');
@@ -1141,8 +1143,8 @@ var SICKRAGE = {
                 });
 
                 $.get(srRoot + '/config/postProcessing/isNamingValid', {
-                    'pattern': pattern,
-                    'abd': 'True'
+                    pattern: pattern,
+                    abd: 'True'
                 }, function (data) {
                     if (data === 'invalid') {
                         $('#naming_abd_pattern').qtip('option', {
@@ -1173,8 +1175,8 @@ var SICKRAGE = {
                 var pattern = $('#naming_sports_pattern').val();
 
                 $.get(srRoot + '/config/postProcessing/testNaming', {
-                    'pattern': pattern,
-                    'sports': 'True' // @TODO does this actually need to be a string or can it be a boolean?
+                    pattern: pattern,
+                    sports: 'True' // @TODO does this actually need to be a string or can it be a boolean?
                 }, function (data) {
                     if (data) {
                         $('#naming_sports_example').text(data + '.ext');
@@ -1185,8 +1187,8 @@ var SICKRAGE = {
                 });
 
                 $.get(srRoot + '/config/postProcessing/isNamingValid', {
-                    'pattern': pattern,
-                    'sports': 'True' // @TODO does this actually need to be a string or can it be a boolean?
+                    pattern: pattern,
+                    sports: 'True' // @TODO does this actually need to be a string or can it be a boolean?
                 }, function (data) {
                     if (data === 'invalid') {
                         $('#naming_sports_pattern').qtip('option', {
@@ -1220,8 +1222,8 @@ var SICKRAGE = {
                 example.animeType = $('input[name="naming_anime"]:checked').val();
 
                 $.get(srRoot + '/config/postProcessing/testNaming', {
-                    'pattern': example.pattern,
-                    'anime_type': example.animeType
+                    pattern: example.pattern,
+                    anime_type: example.animeType
                 }, function (data) {
                     if (data) {
                         $('#naming_example_anime').text(data + '.ext');
@@ -1232,9 +1234,9 @@ var SICKRAGE = {
                 });
 
                 $.get(srRoot + '/config/postProcessing/testNaming', {
-                    'pattern': example.pattern,
-                    'multi': example.multi,
-                    'anime_type': example.animeType
+                    pattern: example.pattern,
+                    multi: example.multi,
+                    anime_type: example.animeType
                 }, function (data) {
                     if (data) {
                         $('#naming_example_multi_anime').text(data + '.ext');
@@ -1245,9 +1247,9 @@ var SICKRAGE = {
                 });
 
                 $.get(srRoot + '/config/postProcessing/isNamingValid', {
-                    'pattern': example.pattern,
-                    'multi': example.multi,
-                    'anime_type': example.animeType
+                    pattern: example.pattern,
+                    multi: example.multi,
+                    anime_type: example.animeType
                 }, function (data) {
                     if (data === 'invalid') {
                         $('#naming_pattern').qtip('option', {
@@ -1741,9 +1743,9 @@ var SICKRAGE = {
                 sab.apiKey = $('#sab_apikey').val();
 
                 $.get(srRoot + '/home/testSABnzbd', {
-                    'host': sab.host,
-                    'username': sab.username,
-                    'password': sab.password,
+                    host: sab.host,
+                    username: sab.username,
+                    password: sab.password,
                     'apikey': sab.apiKey
                 }, function(data) {
                     $('#testSABnzbd_result').html(data);
@@ -1764,9 +1766,9 @@ var SICKRAGE = {
 
                 $.get(srRoot + '/home/testTorrent', {
                     'torrent_method': torrent.method,
-                    'host': torrent.host,
-                    'username': torrent.username,
-                    'password': torrent.password
+                    host: torrent.host,
+                    username: torrent.username,
+                    password: torrent.password
                 }, function(data) {
                     $('#test_torrent_result').html(data);
                 });
@@ -1954,10 +1956,10 @@ var SICKRAGE = {
                     7: {filter: 'parsed'}
                 },
                 widgetOptions: {
-                    filter_columnFilters: true, // jshint ignore:line
-                    filter_hideFilters: true, // jshint ignore:line
-                    filter_saveFilters: true, // jshint ignore:line
-                    filter_functions: { // jshint ignore:line
+                    filter_columnFilters: true,
+                    filter_hideFilters: true,
+                    filter_saveFilters: true,
+                    filter_functions: {
                         5: function(e, n, f) {
                             var test = false;
                             var pct = Math.floor((n % 1) * 1000);
@@ -2421,10 +2423,10 @@ var SICKRAGE = {
             $('#showTable, #animeTable').tablesorter({
                 widgets: ['saveSort', 'stickyHeaders', 'columnSelector'],
                 widgetOptions: {
-                    columnSelector_saveColumns: true, // jshint ignore:line
-                    columnSelector_layout: '<br><label><input type="checkbox">{name}</label>', // jshint ignore:line
-                    columnSelector_mediaquery: false, // jshint ignore:line
-                    columnSelector_cssChecked: 'checked' // jshint ignore:line
+                    columnSelector_saveColumns: true,
+                    columnSelector_layout: '<br><label><input type="checkbox">{name}</label>',
+                    columnSelector_mediaquery: false,
+                    columnSelector_cssChecked: 'checked'
                 }
             });
 
@@ -2564,13 +2566,13 @@ var SICKRAGE = {
                     widthFixed: true,
                     widgets: ['saveSort', 'stickyHeaders', 'columnSelector', 'filter'],
                     widgetOptions: {
-                        filter_columnFilters: true, // jshint ignore:line
-                        filter_hideFilters: true, // jshint ignore:line
-                        filter_saveFilters: true, // jshint ignore:line
-                        columnSelector_saveColumns: true, // jshint ignore:line
-                        columnSelector_layout: '<br><label><input type="checkbox">{name}</label>', // jshint ignore:line
-                        columnSelector_mediaquery: false, // jshint ignore:line
-                        columnSelector_cssChecked: 'checked' // jshint ignore:line
+                        filter_columnFilters: true,
+                        filter_hideFilters: true,
+                        filter_saveFilters: true,
+                        columnSelector_saveColumns: true,
+                        columnSelector_layout: '<br><label><input type="checkbox">{name}</label>',
+                        columnSelector_mediaquery: false,
+                        columnSelector_cssChecked: 'checked'
                     }
                 });
             }
@@ -3035,15 +3037,15 @@ var SICKRAGE = {
                 textExtraction: (function() {
                     if (isMeta('HISTORY_LAYOUT', ['detailed'])) {
                         return {
-                            0: function(node) { return $(node).find('time').attr('datetime'); },
-                            4: function(node) { return $(node).find('span').text().toLowerCase(); }
+                            0: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
+                            4: function(node) { return $(node).find('span').text().toLowerCase(); } // eslint-disable-line brace-style
                         };
                     } else {
                         return {
-                            0: function(node) { return $(node).find('time').attr('datetime'); },
-                            1: function(node) { return $(node).find('span').text().toLowerCase(); },
-                            2: function(node) { return $(node).attr('provider').toLowerCase(); },
-                            5: function(node) { return $(node).attr('quality').toLowerCase(); }
+                            0: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
+                            1: function(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
+                            2: function(node) { return $(node).attr('provider').toLowerCase(); }, // eslint-disable-line brace-style
+                            5: function(node) { return $(node).attr('quality').toLowerCase(); } // eslint-disable-line brace-style
                         };
                     }
                 }()),
@@ -3053,13 +3055,12 @@ var SICKRAGE = {
                             0: {sorter: 'realISODate'},
                             4: {sorter: 'quality'}
                         };
-                    } else {
-                        return {
-                            0: {sorter: 'realISODate'},
-                            4: {sorter: false},
-                            5: {sorter: 'quality'}
-                        };
                     }
+                    return {
+                        0: {sorter: 'realISODate'},
+                        4: {sorter: false},
+                        5: {sorter: 'quality'}
+                    };
                 }())
             });
 
@@ -3429,7 +3430,7 @@ var SICKRAGE = {
             $('#nameToSearch').focus();
 
             // @TODO we need to move to real forms instead of this
-            var myform = new formtowizard({ // jshint ignore:line
+            var myform = new formtowizard({
                 formid: 'addShowForm',
                 revealfx: ['slide', 500],
                 oninit: function () {
