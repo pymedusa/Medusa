@@ -13,7 +13,7 @@ import sickbeard
 from sickbeard import (
     config, logger, ui,
 )
-from sickbeard.providers import NewznabProvider
+from sickbeard.providers import NewznabProvider, TorrentRssProvider
 from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
 from sickrage.providers.GenericProvider import GenericProvider
@@ -147,7 +147,7 @@ class ConfigProviders(Config):
         provider_dict = dict(
             zip([x.get_id() for x in sickbeard.torrentRssProviderList], sickbeard.torrentRssProviderList))
 
-        temp_provider = TorrentRSSProvider(name, url, cookies, titleTAG)
+        temp_provider = TorrentRssProvider(name, url, cookies, titleTAG)
 
         if temp_provider.get_id() in provider_dict:
             return json.dumps({'error': 'Exists as {name}'.format(name=provider_dict[temp_provider.get_id()].name)})
@@ -178,7 +178,7 @@ class ConfigProviders(Config):
             return '|'.join([provider_dict[name].get_id(), provider_dict[name].config_string()])
 
         else:
-            new_provider = TorrentRSSProvider(name, url, cookies, titleTAG)
+            new_provider = TorrentRssProvider(name, url, cookies, titleTAG)
             sickbeard.torrentRssProviderList.append(new_provider)
             return '|'.join([new_provider.get_id(), new_provider.config_string()])
 
@@ -292,7 +292,7 @@ class ConfigProviders(Config):
                 cur_name, cur_url, cur_cookies, cur_title_tag = curTorrentRssProviderStr.split('|')
                 cur_url = config.clean_url(cur_url)
 
-                new_provider = TorrentRSSProvider(cur_name, cur_url, cur_cookies, cur_title_tag)
+                new_provider = TorrentRssProvider(cur_name, cur_url, cur_cookies, cur_title_tag)
 
                 cur_id = new_provider.get_id()
 
