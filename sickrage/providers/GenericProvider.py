@@ -56,6 +56,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         self.anime_only = False
         self.bt_cache_urls = [
+            'http://itorrents.org/torrent/{torrent_hash}.torrent',
             'http://thetorrent.org/torrent/{torrent_hash}.torrent',
             'http://itorrents.org/torrent/{torrent_hash}.torrent',
             'https://torrentproject.se/torrent/{torrent_hash}.torrent',
