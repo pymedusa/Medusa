@@ -99,7 +99,7 @@ def get_release_name(release_file):
     :return: the release name
     :rtype: str
     """
-    if not release_file:
+    if not release_file or not os.path.isfile(release_file):
         return
 
     with open(release_file, 'r') as f:
