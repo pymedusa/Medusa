@@ -38,7 +38,8 @@ import subliminal
 
 from requests.compat import quote
 from six import itervalues, text_type
-from github import Github, InputFileContent, GithubException  # pylint: disable=import-error
+from github import Github, InputFileContent  # pylint: disable=import-error
+from github.GithubException import BadCredentialsException, RateLimitExceededException
 
 import sickbeard
 from sickbeard import classes
@@ -521,7 +522,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
                 if issue_id and cur_error in classes.ErrorViewer.errors:
                     # clear error from error list
                     classes.ErrorViewer.errors.remove(cur_error)
-        except (GithubException.BadCredentialsException, GithubException.RateLimitExceededException) as e:
+        except (BadCredentialsException, RateLimitExceededException) as e:
             self.log('Error while accessing github: {0}'.format(e), WARNING)
         except Exception:  # pylint: disable=broad-except
             self.log(traceback.format_exc(), ERROR)
