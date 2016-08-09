@@ -1,37 +1,32 @@
 language: python
-
 python:
-  - 2.7.9
-
+- 2.7.9
 sudo: false
-
 branches:
   except:
-    - master
-
+  - master
 env:
-  - TRAVIS_NODE_VERSION="5.0.0"
-
+- TRAVIS_NODE_VERSION="5.0.0"
 before_install:
-  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION
-  - npm install -g grunt-cli
-  - npm install -g bower
-  - cd .build && npm install --quiet && bower install && cd ..
-
+- rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm
+  && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm
+  install $TRAVIS_NODE_VERSION
+- npm install -g grunt-cli
+- npm install -g bower
+- cd .build && npm install --quiet && bower install && cd ..
 install:
-    - pip install --upgrade pip
-    - pip install --upgrade tox
-
+- pip install --upgrade pip
+- pip install --upgrade tox
 script:
-  - cd .build && grunt travis && cd ..
-  - tox -v --recreate
-
+- cd .build && grunt travis && cd ..
+- tox -v --recreate
 cache:
   directories:
-    - $HOME/.cache/pip
-    - .build/bower_components
-    - .build/node_modules
-
+  - $HOME/.cache/pip
+  - .build/bower_components
+  - .build/node_modules
 after_failure:
-  - cat ./Logs/sickrage.log
-
+- cat ./Logs/sickrage.log
+notifications:
+  slack:
+    secure: YYOoxBgy4+iAIWylJX0ndT+KwctRzSL/8mUOPErIJOaGAwU6w9JT2WyO1uP/xq9xm+MjgGWqKJ7bpwGRJ12bCkP4mPcnn5A7c/UqFcCgwVgWfKdI/5EeHB6RfzK76J01amenN69/hzt5WjifE4wCONfJAcftKxylh69kWV5QipDcZZA//yQiO9BfYlsW3CxkHb3OGPHSJVYb32IdfCn4hnt3WaWkentXBj5R0v0kyNKbkFqQ5OGPlsjrYpxDMF8vgduxmg8zGw2tXjWGIC2bWuPoAurZy0ewyoKIna82wgkNySFjNBXoZCtssW7yPFJjUQHP/lHIZa4gLmA5Gdli7WoaN/lYaoGXlxAXSskfvgGXin92CRHukSbzEdzQznPhzxzIcuJA2je0gAvmIn2nw0itUGKbVQBZTV3nRFJb3iEHaodC0+1zozGQASxfXQzzBuHU6ZUAFWzlMNQ80RjuiS5951mmgIBo8fOfTWkVFTX8ayEfGbYhqoJqJ5QMjTjoEt8SYKrlHdlDBh803LmKOsID9B8dDn0onXlYNZAioqTTFb/xqL95aCDr84PKYbNSfraqPU6hsSc8ITtxeMS454k8BGxzed0s8bKsCDQP7HXmYKbShByMYX8NipuhtEDXeCGyCLX3atoO0qFiZ0/sUXXf67w/14eLRBAdKfnr02I=
