@@ -1485,17 +1485,9 @@ def download_file(url, filename, session=None, headers=None, **kwargs):  # pylin
             except Exception:
                 logger.log(u"Problem setting permissions or writing file to: %s" % filename, logger.WARNING)
 
-    except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects) as e:
+    except requests.exceptions.RequestException as e:
         remove_file_failed(filename)
-        logger.log(u"HTTP error %r while loading download URL %s " % (ex(e), url), logger.WARNING)
-        return False
-    except requests.exceptions.ConnectionError as e:
-        remove_file_failed(filename)
-        logger.log(u"Connection error %r while loading download URL %s " % (ex(e), url), logger.WARNING)
-        return False
-    except requests.exceptions.Timeout as e:
-        remove_file_failed(filename)
-        logger.log(u"Connection timed out %r while loading download URL %s " % (ex(e), url), logger.WARNING)
+        logger.log(u'Error requesting download url: {0}. Error: {1}'.format(url, ex(e)), logger.WARNING)
         return False
     except EnvironmentError as e:
         remove_file_failed(filename)
