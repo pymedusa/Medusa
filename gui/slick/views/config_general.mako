@@ -744,9 +744,16 @@
                                 <span class="component-title">Branches to reset</span>
                                 <span class="component-desc">
                                     <select id="git_reset_branches" name="git_reset_branches" multiple="multiple" style="min-width:200px;height:99px;">
-                                    % for branch in gh_branch:
-                                        <option value="${branch}" ${'selected="selected"' if branch in sickbeard.GIT_RESET_BRANCHES else ''}>${branch}</option>
-                                    % endfor
+                                        % for branch in gh_branch:
+                                            % if branch in sickbeard.GIT_RESET_BRANCHES:
+                                            <option value="${branch}" selected="selected">${branch}</option>
+                                            % endif
+                                        % endfor
+                                        % for branch in gh_branch:
+                                            % if branch not in sickbeard.GIT_RESET_BRANCHES:
+                                            <option value="${branch}">${branch}</option>
+                                            % endif
+                                        % endfor
                                     </select>
                                 </span>
                                 <div class="clear-left">
