@@ -2,166 +2,88 @@
 """Guessit name parser tests."""
 from __future__ import unicode_literals
 
+import datetime
 import os
 
 import guessit
 import pytest
-import sickbeard
 import sickbeard.name_parser.guessit_parser as sut
-from six import iteritems
 import yaml
-from yaml.constructor import ConstructorError
-from yaml.nodes import MappingNode, SequenceNode
-
-try:
-    from unittest.mock import Mock
-except ImportError:
-    from mock import Mock
-
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 
-def construct_mapping(self, node, deep=False):
-    """Custom yaml map constructor to allow lists to be key of a map.
-
-    :param self:
-    :param node:
-    :param deep:
-    :return:
-    """
-    if not isinstance(node, MappingNode):
-        raise ConstructorError(None, None, 'expected a mapping node, but found %s' % node.id, node.start_mark)
-    mapping = {}
-    for key_node, value_node in node.value:
-        is_sequence = isinstance(key_node, SequenceNode)
-        key = self.construct_object(key_node, deep=deep or is_sequence)
-        try:
-            if is_sequence:
-                key = tuple(key)
-            hash(key)
-        except TypeError as exc:
-            raise ConstructorError('while constructing a mapping', node.start_mark,
-                                   'found unacceptable key (%s)' % exc, key_node.start_mark)
-        value = self.construct_object(value_node, deep=deep)
-        mapping[key] = value
-    return mapping
+@pytest.fixture
+def show_list(create_tvshow):
+    # show names with numbers that are used in our test suite
+    return [
+        create_tvshow(indexerid=1, name='1.2.3'),
+        create_tvshow(indexerid=2, name='11.22.63'),
+        create_tvshow(indexerid=3, name='12 Monkeys'),
+        create_tvshow(indexerid=4, name='222 Show (2010)'),
+        create_tvshow(indexerid=5, name='500 Bus Stops'),
+        create_tvshow(indexerid=6, name='60 Minutes'),
+        create_tvshow(indexerid=7, name='Incredible Show 2007'),
+        create_tvshow(indexerid=8, name='Mobile Suit Gundam UC RE:0096',
+                      exceptions=['Mobile Suit Gundam Unicorn RE 0096'], anime=1),
+        create_tvshow(indexerid=9, name='R-15'),
+        create_tvshow(indexerid=10, name='Super Show (1999)'),
+        create_tvshow(indexerid=11, name='The 10 Anime Show', anime=1),
+        create_tvshow(indexerid=12, name='The 100'),
+        create_tvshow(indexerid=13, name='The 123 Show'),
+        create_tvshow(indexerid=14, name=r"The.Someone's.Show.**.2.**"),
+        create_tvshow(indexerid=15, name='The Show (UK)'),
+    ]
 
 
-yaml.Loader.add_constructor('tag:yaml.org,2002:map', construct_mapping)
+def _format_param(param):
+    if isinstance(param, list):
+        return [_format_param(p) for p in param]
+    if isinstance(param, datetime.date):
+        return param
+    if isinstance(param, int):
+        return param
 
-
-def _mock_tv_show(name, exceptions=None, is_anime=False):
-    tvshow = Mock(exceptions=exceptions if exceptions else [], is_anime=is_anime)
-    tvshow.configure_mock(name=name)
-    return tvshow
+    return str(param)
 
 
 def _parameters(files, single_test=None):
     parameters = []
-    for scenario_name, file_name in iteritems(files):
+    for file_name in files:
         with open(os.path.join(__location__, 'datasets', file_name), 'r') as stream:
             data = yaml.load(stream)
 
-        for release_names, expected in iteritems(data):
-            expected = {k: v for k, v in iteritems(expected)}
+        for release_names, expected in data.items():
+            expected = {k: v for k, v in expected.items()}
 
             if not isinstance(release_names, tuple):
                 release_names = (release_names,)
 
             for release_name in release_names:
-                parameters.append([scenario_name, release_name, expected])
+                parameters.append([release_name, expected])
                 if single_test is not None and single_test == release_name:
-                    return [[scenario_name, release_name, expected]]
+                    return [[release_name, expected]]
 
     return parameters
-
-
-files = {
-    'tvshows': 'tvshows.yml',
-}
-
-# show names with numbers that are used in our test suite
-show_list = [
-    _mock_tv_show('11.22.63'),
-    _mock_tv_show('12 Monkeys'),
-    _mock_tv_show('500 Bus Stops'),
-    _mock_tv_show('60 Minutes'),
-    _mock_tv_show('Mobile Suit Gundam UC RE:0096',
-                  exceptions=['Mobile Suit Gundam Unicorn RE 0096'], is_anime=True),
-    _mock_tv_show('R-15'),
-    _mock_tv_show(r"The.Someone's.Show.**.2.**"),
-    _mock_tv_show('The 100'),
-]
-
-parameters = _parameters(files)
-
-
-def test_get_expected_titles():
-    # Given
-    regular_format = r're:(?<![^/\\\.]){name}\b'
-    anime_format = r're:\b{name}\b'
-    sickbeard.showList = [
-        _mock_tv_show('1.2.3'),
-        _mock_tv_show('Super Show (1999)'),
-        _mock_tv_show('Incredible Show 2007'),
-        _mock_tv_show('The Show (UK)'),
-        _mock_tv_show('The 123 Show'),
-        _mock_tv_show('222 Show (2010)'),
-        _mock_tv_show('Something RE:0096', exceptions=['Something UNICORN RE 0096'], is_anime=True),
-        _mock_tv_show('The 10 Anime Show', is_anime=True),
-        _mock_tv_show(r"The.Someone's.Show.**.2.**"),
-    ]
-
-    # When
-    actual = sut.get_expected_titles()
-
-    # Then
-    expected = set(sut.fixed_expected_titles) | {
-        '1.2.3',
-        regular_format.format(name='1 +2 +3'),
-        regular_format.format(name='The +123 +Show'),
-        regular_format.format(name='222 +Show'),
-        regular_format.format(name="The +Someone'?s +Show +2"),
-        anime_format.format(name='Something +RE ?0096'),
-        anime_format.format(name='Something +UNICORN +RE +0096'),
-        anime_format.format(name='The +10 +Anime +Show'),
-    }
-    assert expected == set(actual)
 
 
 def test_pre_configured_guessit():
     assert sut.guessit == guessit.guessit
 
 
-@pytest.mark.parametrize('scenario_name,release_name,expected', parameters)
-def test_guess(scenario_name, release_name, expected):
-    sickbeard.showList = show_list
+@pytest.mark.parametrize('release_name,expected', _parameters(['tvshows.yml']))
+def test_guess(monkeypatch, show_list, release_name, expected):
+    # Given
+    monkeypatch.setattr('sickbeard.showList', show_list)
     options = expected.pop('options', {})
+
+    # When
     actual = guessit.guessit(release_name, options=options)
-    actual = {k: v for k, v in iteritems(actual)}
 
-    def format_param(param):
-        if isinstance(param, list):
-            result = []
-            for p in param:
-                result.append(str(p))
-            return result
-
-        return str(param)
-
-    if 'country' in actual:
-        actual['country'] = format_param(actual['country'])
-    if 'language' in actual:
-        actual['language'] = format_param(actual['language'])
-    if 'subtitle_language' in actual:
-        actual['subtitle_language'] = format_param(actual['subtitle_language'])
-
+    # Then
+    actual = {k: _format_param(v) for k, v in actual.items()}
     expected['release_name'] = release_name
     actual['release_name'] = release_name
 
-    if expected.get('disabled'):
-        print('Skipping {scenario}: {release_name}'.format(scenario=scenario_name, release_name=release_name))
-    else:
-        print('Testing {scenario}: {release_name}'.format(scenario=scenario_name, release_name=release_name))
+    if not expected.get('disabled'):
         assert expected == actual

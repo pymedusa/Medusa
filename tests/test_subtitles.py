@@ -4,6 +4,8 @@ import os
 import sys
 
 from babelfish.language import Language
+from mock.mock import Mock
+import pytest
 import sickbeard.subtitles as sut
 from subliminal.subtitle import Subtitle
 
@@ -371,3 +373,164 @@ def test_get_subtitles_dir__relative_subtitles_dir(monkeypatch, tmpdir):
     # Then
     assert expected == actual
     assert os.path.isdir(actual)
+
+
+def test_delete_unwanted_subtitles__existing_subtitles_in_unwanted_languages(monkeypatch, tmpdir):
+    # Given
+    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', True)
+    monkeypatch.setattr('sickbeard.SUBTITLES_KEEP_ONLY_WANTED', True)
+    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', ['pob', 'eng'])
+    subtitle_pob = str(tmpdir.ensure('video.pt-BR.srt'))
+    subtitle_eng = str(tmpdir.ensure('video.en.srt'))
+    subtitle_fre = str(tmpdir.ensure('video.fr.srt'))
+    some_file = str(tmpdir.ensure('video.fr.nfo'))
+
+    # When
+    sut.delete_unwanted_subtitles(tmpdir, subtitle_pob)
+    sut.delete_unwanted_subtitles(tmpdir, subtitle_eng)
+    sut.delete_unwanted_subtitles(tmpdir, subtitle_fre)
+
+    # Then
+    assert os.path.exists(subtitle_pob)
+    assert os.path.exists(subtitle_eng)
+    assert not os.path.exists(subtitle_fre)
+    assert os.path.exists(some_file)
+
+
+def test_delete_unwanted_subtitles__multi_disabled(monkeypatch, tmpdir):
+    # Given
+    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', False)
+    monkeypatch.setattr('sickbeard.SUBTITLES_KEEP_ONLY_WANTED', True)
+    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', ['pob', 'eng'])
+    subtitle_pob = str(tmpdir.ensure('video.pt-BR.srt'))
+    subtitle_fre = str(tmpdir.ensure('video.fr.srt'))
+
+    # When
+    sut.delete_unwanted_subtitles(tmpdir, subtitle_pob)
+    sut.delete_unwanted_subtitles(tmpdir, subtitle_fre)
+
+    # Then
+    assert os.path.exists(subtitle_pob)
+    assert os.path.exists(subtitle_fre)
+
+
+def test_delete_unwanted_subtitles__keep_only_wanted_disabled(monkeypatch, tmpdir):
+    # Given
+    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', True)
+    monkeypatch.setattr('sickbeard.SUBTITLES_KEEP_ONLY_WANTED', False)
+    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', ['pob', 'eng'])
+    subtitle_pob = str(tmpdir.ensure('video.pt-BR.srt'))
+    subtitle_fre = str(tmpdir.ensure('video.fr.srt'))
+
+    # When
+    sut.delete_unwanted_subtitles(tmpdir, subtitle_pob)
+    sut.delete_unwanted_subtitles(tmpdir, subtitle_fre)
+
+    # Then
+    assert os.path.exists(subtitle_pob)
+    assert os.path.exists(subtitle_fre)
+
+
+@pytest.mark.parametrize('p', [
+    {  # multi subs and needed languages: download needed
+        'multiple_subtitles': True,
+        'wanted_languages': ['pob', 'eng', 'fre'],
+        'existing_subtitles': ['eng'],
+        'external_subtitles': True,
+        'embedded_subtitles': False,
+        'hearing_impaired': False,
+        'pre_scripts': ['pre.sh'],
+        'post_scripts': ['post.sh'],
+        'list_subtitles': [(1, 'pob', 'content'), (0, 'pob', 'poor content'), (1, 'fre', 'content')],
+        'best_subtitles': [(1, 'pob', 'content'), (1, 'fre', 'content')],
+        'expected': ['fre', 'pob']
+    },
+    {  # multi subs, needed languages, but already have all: download needed
+        'multiple_subtitles': True,
+        'wanted_languages': ['pob', 'eng'],
+        'existing_subtitles': ['eng', 'pob'],
+        'external_subtitles': False,
+        'embedded_subtitles': True,
+        'hearing_impaired': True,
+        'pre_scripts': ['pre.sh'],
+        'post_scripts': ['post.sh'],
+        'list_subtitles': [(1, 'pob', 'content'), (0, 'pob', 'poor content')],
+        'best_subtitles': [(1, 'pob', 'content')],
+        'expected': []
+    },
+    {  # multi subs, needed languages, no content: download needed
+        'multiple_subtitles': True,
+        'wanted_languages': ['pob', 'eng'],
+        'existing_subtitles': ['eng'],
+        'external_subtitles': False,
+        'embedded_subtitles': True,
+        'hearing_impaired': True,
+        'pre_scripts': ['pre.sh'],
+        'post_scripts': ['post.sh'],
+        'list_subtitles': [(1, 'pob', None), (0, 'pob', 'poor content')],
+        'best_subtitles': [(1, 'pob', None)],
+        'expected': []
+    },
+    {  # single subs and 'und' in subtitles: no download needed
+        'multiple_subtitles': False,
+        'wanted_languages': ['pob', 'eng'],
+        'existing_subtitles': ['und'],
+        'external_subtitles': True,
+        'embedded_subtitles': False,
+        'hearing_impaired': False,
+        'pre_scripts': [],
+        'post_scripts': [],
+        'list_subtitles': [(1, 'pob', 'content'), (0, 'pob', 'poor content')],
+        'best_subtitles': [(1, 'pob', 'content')],
+        'expected': []
+    },
+    {  # single subs and 'und' not in subtitles: download needed
+        'multiple_subtitles': False,
+        'wanted_languages': ['pob', 'eng'],
+        'existing_subtitles': ['pob'],
+        'external_subtitles': True,
+        'embedded_subtitles': None,
+        'hearing_impaired': False,
+        'pre_scripts': [],
+        'post_scripts': [],
+        'list_subtitles': [(1, 'eng', 'content'), (0, 'eng', 'poor content')],
+        'best_subtitles': [(1, 'eng', 'content')],
+        'expected': ['eng']
+    }
+])
+def test_download_subtitles(monkeypatch, tmpdir, video, tvshow, create_sub, create_tvepisode, p):
+    # Given
+    subtitles = [create_sub(language=code, id=sid, content=content) for sid, code, content in p['list_subtitles']]
+    best_subtitles = [create_sub(language=code, id=sid, content=content) for sid, code, content in p['best_subtitles']]
+    video_path = str(tmpdir.ensure(video.name))
+    tvepisode = create_tvepisode(show=tvshow, season=3, episode=4, subtitles=p['existing_subtitles'])
+    external_subtitles = p['external_subtitles']
+    embedded_subtitles = p['embedded_subtitles'] if p['embedded_subtitles'] is not None else True
+    refine = Mock()
+    compute_score = Mock(return_value=1)
+    list_subtitles = Mock(return_value=subtitles)
+    download_best_subtitles = Mock(return_value=best_subtitles)
+    popen = Mock()
+    monkeypatch.setattr('sickbeard.SYS_ENCODING', 'utf-8')
+    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', p['multiple_subtitles'])
+    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', p['wanted_languages'])
+    monkeypatch.setattr('sickbeard.SUBTITLES_PRE_SCRIPTS', p['pre_scripts'])
+    monkeypatch.setattr('sickbeard.SUBTITLES_EXTRA_SCRIPTS', p['post_scripts'])
+    monkeypatch.setattr('sickbeard.SUBTITLES_HEARING_IMPAIRED', p['hearing_impaired'])
+    monkeypatch.setattr('sickbeard.subtitles.refine', refine)
+    monkeypatch.setattr('sickbeard.subtitles.compute_score', compute_score)
+    monkeypatch.setattr('subliminal.core.ProviderPool.list_subtitles', list_subtitles)
+    monkeypatch.setattr('subliminal.core.ProviderPool.download_best_subtitles', download_best_subtitles)
+    monkeypatch.setattr('subprocess.Popen', popen)
+
+    # When
+    actual = sut.download_subtitles(tv_episode=tvepisode, video_path=video_path,
+                                    subtitles=external_subtitles, embedded_subtitles=embedded_subtitles)
+
+    # Then
+    assert p['expected'] == actual
+    if p['expected']:
+        assert len(p['pre_scripts']) + len(p['post_scripts']) * len(p['best_subtitles']) == popen.call_count
+    if refine.called:
+        assert embedded_subtitles == refine.call_args[1]['embedded_subtitles']
+        assert tvepisode == refine.call_args[1]['tv_episode']
