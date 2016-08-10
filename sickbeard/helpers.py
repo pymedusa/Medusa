@@ -1422,11 +1422,11 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
         resp = session.request(method, url, data=post_data, params=params, timeout=timeout, allow_redirects=True,
                                hooks=hooks, stream=stream, headers=headers, cookies=cookies, proxies=proxies,
                                verify=verify)
-    
+
         if not resp.ok:
             logger.log(u'Requested url {url} returned status code {status}: {desc}'.format
                        (url=url, status=resp.status_code, desc=http_code_description(resp.status_code)), logger.DEBUG)
-    
+
     except requests.exceptions.RequestException as e:
         logger.log(u'Error requesting url {resp.url}. Error: {msg}'.format(resp=resp, msg=ex(e)), logger.DEBUG)
     except Exception as e:
