@@ -1760,3 +1760,13 @@ def is_ip_private(ip):
     priv_20 = re.compile(r"^192\.168\.\d{1,3}.\d{1,3}$")
     priv_16 = re.compile(r"^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$")
     return priv_lo.match(ip) or priv_24.match(ip) or priv_20.match(ip) or priv_16.match(ip)
+
+
+def ensure_list(value):
+    """Return a list.
+
+    When value is not a list, return a list containing the single value.
+    :param value:
+    :rtype: list
+    """
+    return sorted(value) if isinstance(value, list) else [value] if value is not None else []
