@@ -1418,16 +1418,15 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
     hooks, cookies, verify, proxies = request_defaults(kwargs)
     method = u'POST' if post_data else u'GET'
 
-    resp = session.request(method, url, data=post_data, params=params, timeout=timeout, allow_redirects=True,
-                           hooks=hooks, stream=stream, headers=headers, cookies=cookies, proxies=proxies,
-                           verify=verify)
-
-    if not resp.ok:
-        logger.log(u'Requested url {url} returned status code {status}: {desc}'.format
-                   (url=url, status=resp.status_code, desc=http_code_description(resp.status_code)), logger.DEBUG)
-
     try:
-        resp.raise_for_status()
+        resp = session.request(method, url, data=post_data, params=params, timeout=timeout, allow_redirects=True,
+                               hooks=hooks, stream=stream, headers=headers, cookies=cookies, proxies=proxies,
+                               verify=verify)
+
+        if not resp.ok:
+            logger.log(u'Requested url {url} returned status code {status}: {desc}'.format
+                       (url=url, status=resp.status_code, desc=http_code_description(resp.status_code)), logger.DEBUG)
+
     except requests.exceptions.RequestException as e:
         logger.log(u'Error requesting url {resp.url}. Error: {msg}'.format(resp=resp, msg=ex(e)), logger.DEBUG)
     except Exception as e:
@@ -1485,17 +1484,9 @@ def download_file(url, filename, session=None, headers=None, **kwargs):  # pylin
             except Exception:
                 logger.log(u"Problem setting permissions or writing file to: %s" % filename, logger.WARNING)
 
-    except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects) as e:
+    except requests.exceptions.RequestException as e:
         remove_file_failed(filename)
-        logger.log(u"HTTP error %r while loading download URL %s " % (ex(e), url), logger.WARNING)
-        return False
-    except requests.exceptions.ConnectionError as e:
-        remove_file_failed(filename)
-        logger.log(u"Connection error %r while loading download URL %s " % (ex(e), url), logger.WARNING)
-        return False
-    except requests.exceptions.Timeout as e:
-        remove_file_failed(filename)
-        logger.log(u"Connection timed out %r while loading download URL %s " % (ex(e), url), logger.WARNING)
+        logger.log(u'Error requesting download url: {0}. Error: {1}'.format(url, ex(e)), logger.WARNING)
         return False
     except EnvironmentError as e:
         remove_file_failed(filename)
