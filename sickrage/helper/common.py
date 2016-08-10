@@ -313,18 +313,18 @@ def try_int(candidate, default_value=0):
         return default_value
 
 
-def episode_num(season=None, episode=None, **kwargs):
+def episode_num(season=None, episode=None, numbering='standard'):
     """
     Convert season and episode into string
 
     :param season: Season number
+    :type season: int or None
     :param episode: Episode Number
-    :keyword numbering: Absolute for absolute numbering
+    :type episode: int or None
+    :param numbering: standard or absolute numbering
+    :type numbering: str
     :returns: a string in s01e01 format or absolute numbering
     """
-
-    numbering = kwargs.pop('numbering', 'standard')
-
     if numbering == 'standard':
         if season is not None and episode:
             return 'S{0:0>2}E{1:02}'.format(season, episode)

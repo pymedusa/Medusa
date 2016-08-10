@@ -2,33 +2,19 @@
 """Tests for sickbeard.refiners.tvepisode.py."""
 
 import pytest
-
 from sickbeard.common import DOWNLOADED, Quality
-from sickbeard.indexers.indexer_config import INDEXER_TVDB
 from sickbeard.refiners import tvepisode as sut
-from sickbeard.tv import TVEpisode, TVShow
 from subliminal.video import Video
 
 
 @pytest.fixture
-def data(monkeypatch):
-    monkeypatch.setattr('sickbeard.tv.TVShow._load_from_db', lambda method: None)
-    monkeypatch.setattr('sickbeard.tv.TVEpisode._specify_episode', lambda method, season, episode: None)
-
+def data(create_tvshow, create_tvepisode):
     show_name = 'Enhanced Show Name'
     show_year = 2012
-
-    tvshow = TVShow(indexer=INDEXER_TVDB, indexerid=12, quality=Quality.UNKNOWN, flatten_folders=0, enabled_subtitles=0)
-    tvshow.name = '{name} ({year})'.format(name=show_name, year=show_year)
-    tvshow.imdbid = 'tt0000000'
-
-    tvepisode = TVEpisode(show=tvshow, season=3, episode=4)
-    tvepisode.indexer = 34
-    tvepisode.file_size = 1122334455
-    tvepisode.name = 'Episode Title'
-    tvepisode.status = Quality.compositeStatus(DOWNLOADED, Quality.FULLHDBLURAY)
-    tvepisode.release_group = 'SuperGroup'
-
+    tvshow = create_tvshow(indexerid=12, name='{0} ({1})'.format(show_name, show_year), imdbid='tt0000000')
+    tvepisode = create_tvepisode(show=tvshow, indexer=34, season=3, episode=4, name='Episode Title',
+                                 file_size=1122334455, status=Quality.compositeStatus(DOWNLOADED, Quality.FULLHDBLURAY),
+                                 release_group='SuperGroup')
     return {
         'tvshow': tvshow,
         'tvshow_properties': {

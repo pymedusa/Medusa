@@ -249,66 +249,27 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     episode_name = tv_episode.name
     show_indexerid = tv_episode.show.indexerid
     status = tv_episode.status
-
-    subtitles_dir = get_subtitles_dir(video_path)
-    found_subtitles = download_best_subs(tv_episode, video_path, subtitles_dir,
-                                         subtitles=subtitles, embedded_subtitles=embedded_subtitles)
-
-    for subtitle in found_subtitles:
-        if sickbeard.SUBTITLES_EXTRA_SCRIPTS and isMediaFile(video_path):
-            subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
-            run_subs_extra_scripts(video_path=video_path, subtitle_path=subtitle_path,
-                                   subtitle_language=subtitle.language, show_name=show_name, season=season,
-                                   episode=episode, episode_name=episode_name, show_indexerid=show_indexerid)
-        if sickbeard.SUBTITLES_HISTORY:
-            logger.debug(u'history.logSubtitle %s, %s', subtitle.provider_name, subtitle.language.opensubtitles)
-            history.logSubtitle(show_indexerid, season, episode, status, subtitle)
-
-    return sorted({subtitle.language.opensubtitles for subtitle in found_subtitles})
-
-
-def download_best_subs(tv_episode, video_path, subtitles_dir, subtitles=True, embedded_subtitles=True):
-    """Download the best subtitle for the given video.
-
-    :param tv_episode:
-    :type tv_episode: sickbeard.tv.TVEpisode
-    :param video_path: the video path
-    :type video_path: str
-    :param subtitles_dir: the subtitles directory
-    :type subtitles_dir: str
-    :param subtitles: True if existing external subtitles should be taken into account
-    :type subtitles: bool
-    :param embedded_subtitles: True if embedded subtitles should be taken into account
-    :type embedded_subtitles: bool
-    :return: the downloaded subtitles
-    :rtype: list of subliminal.subtitle.Subtitle
-    """
-    show_name = tv_episode.show.name
-    season = tv_episode.season
-    episode = tv_episode.episode
     release_name = tv_episode.release_name
     ep_num = episode_num(season, episode) or episode_num(season, episode, numbering='absolute')
+    subtitles_dir = get_subtitles_dir(video_path)
     languages = get_needed_languages(tv_episode.subtitles)
 
     if not languages:
         logger.debug(u'Episode already has all needed subtitles, skipping %s %s', show_name, ep_num)
         return []
 
-    logger.debug(u'Checking subtitle candidates for %s %s (%s)', show_name, ep_num, os.path.basename(video_path))
-
     try:
+        logger.debug(u'Checking subtitle candidates for %s %s (%s)', show_name, ep_num, os.path.basename(video_path))
         video = get_video(tv_episode, video_path, subtitles_dir=subtitles_dir, subtitles=subtitles,
                           embedded_subtitles=embedded_subtitles, release_name=release_name)
-
         if not video:
             logger.info(u'Exception caught in subliminal.scan_video for %s', video_path)
             return []
 
-        pool = get_provider_pool()
-
         if sickbeard.SUBTITLES_PRE_SCRIPTS:
             run_subs_pre_scripts(video_path)
 
+        pool = get_provider_pool()
         subtitles_list = pool.list_subtitles(video, languages)
         for provider in pool.providers:
             if provider in pool.discarded_providers:
@@ -334,17 +295,27 @@ def download_best_subs(tv_episode, video_path, subtitles_dir, subtitles=True, em
                         os.path.basename(video_path), min_score)
             return []
 
-        save_subtitles(video, found_subtitles, directory=_encode(subtitles_dir), single=not sickbeard.SUBTITLES_MULTI)
+        saved_subtitles = save_subtitles(video, found_subtitles, directory=_encode(subtitles_dir),
+                                         single=not sickbeard.SUBTITLES_MULTI)
 
-        for subtitle in found_subtitles:
+        for subtitle in saved_subtitles:
             logger.info(u'Found subtitle for %s in %s provider with language %s', os.path.basename(video_path),
                         subtitle.provider_name, subtitle.language.opensubtitles)
             subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
-
             sickbeard.helpers.chmodAsParent(subtitle_path)
             sickbeard.helpers.fixSetGroupID(subtitle_path)
 
-        return found_subtitles
+            if sickbeard.SUBTITLES_EXTRA_SCRIPTS and isMediaFile(video_path):
+                subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
+                run_subs_extra_scripts(video_path=video_path, subtitle_path=subtitle_path,
+                                       subtitle_language=subtitle.language, show_name=show_name, season=season,
+                                       episode=episode, episode_name=episode_name, show_indexerid=show_indexerid)
+
+            if sickbeard.SUBTITLES_HISTORY:
+                logger.debug(u'history.logSubtitle %s, %s', subtitle.provider_name, subtitle.language.opensubtitles)
+                history.logSubtitle(show_indexerid, season, episode, status, subtitle)
+
+        return sorted({subtitle.language.opensubtitles for subtitle in saved_subtitles})
     except IOError as error:
         if 'No space left on device' in ex(error):
             logger.warning(u'Not enough space on the drive to save subtitles')
