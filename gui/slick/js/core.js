@@ -3662,6 +3662,7 @@ var SICKRAGE = {
                     'Loading trending shows...',
                     'Trakt timed out, refresh page to try again'
                 );
+                $('h1.header').text('Trakt ' + $('option[value="'+ e.target.value + '"]')[0].innerText);
             });
 
             $.initAddShowById();

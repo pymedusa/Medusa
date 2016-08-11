@@ -243,25 +243,25 @@ class HomeAddShows(Home):
         trakt_list = trakt_list.lower()
 
         if trakt_list == 'trending':
-            page_title = 'Trending Shows'
+            page_title = 'Trakt Trending Shows'
         elif trakt_list == 'popular':
-            page_title = 'Popular Shows'
+            page_title = 'Trakt Popular Shows'
         elif trakt_list == 'anticipated':
-            page_title = 'Most Anticipated Shows'
+            page_title = 'Trakt Most Anticipated Shows'
         elif trakt_list == 'collected':
-            page_title = 'Most Collected Shows'
+            page_title = 'Trakt Most Collected Shows'
         elif trakt_list == 'watched':
-            page_title = 'Most Watched Shows'
+            page_title = 'Trakt Most Watched Shows'
         elif trakt_list == 'played':
-            page_title = 'Most Played Shows'
+            page_title = 'Trakt Most Played Shows'
         elif trakt_list == 'recommended':
-            page_title = 'Recommended Shows'
+            page_title = 'Trakt Recommended Shows'
         elif trakt_list == 'newshow':
-            page_title = 'New Shows'
+            page_title = 'Trakt New Shows'
         elif trakt_list == 'newseason':
-            page_title = 'Season Premieres'
+            page_title = 'Trakt Season Premieres'
         else:
-            page_title = 'Most Anticipated Shows'
+            page_title = 'Trakt Most Anticipated Shows'
 
         t = PageTemplate(rh=self, filename="addShows_trendingShows.mako")
         return t.render(title=page_title, header=page_title,
