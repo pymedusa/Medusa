@@ -28,9 +28,9 @@ from .recommended import RecommendedShow
 
 class AnidbPopular(object):  # pylint: disable=too-few-public-methods
     def __init__(self):
-        """This class retrieves a speficed recommended show list from Trakt.
+        """Class retrieves a specified recommended show list from Trakt.
 
-        The list of returned shows is mapped to a RecommendedShow object
+        List of returned shows is mapped to a RecommendedShow object
         """
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
         self.session = helpers.make_session()
