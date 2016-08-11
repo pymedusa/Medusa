@@ -24,6 +24,8 @@ from requests.compat import urljoin
 
 from sickbeard import logger, tvcache
 
+from sickrage.helper.common import convert_size
+
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
