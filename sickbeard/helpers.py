@@ -445,7 +445,8 @@ def symlink(src, dst):
     """
 
     if os.name == 'nt':
-        if ctypes.windll.kernel32.CreateSymbolicLinkW(text_type(dst), text_type(src), 1 if ek(os.path.isdir, src) else 0) in [0, 1280]:
+        dword = 1 if ek(os.path.isdir, src) else 0
+        if ctypes.windll.kernel32.CreateSymbolicLinkW(text_type(dst), text_type(src), dword) in [0, 1280]:
             raise ctypes.WinError()
     else:
         ek(os.symlink, src, dst)
@@ -761,7 +762,8 @@ def get_all_episodes_from_absolute_number(show, absolute_numbers, indexer_id=Non
             ep = show.get_episode(None, None, absolute_number=absolute_number)
             if ep:
                 episodes.append(ep.episode)
-                season = ep.season  # this will always take the last found season so eps that cross the season border are not handeled well
+                # this will always take the last found season so eps that cross the season border are not handeled well
+                season = ep.season
 
     return season, episodes
 
@@ -1030,7 +1032,8 @@ def encrypt(data, encryption_version=0, _decrypt=False):
     # Version 2: Simple XOR encryption (this is not very secure, but works)
     elif encryption_version == 2:
         if _decrypt:
-            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(base64.decodestring(data), cycle(sickbeard.ENCRYPTION_SECRET)))
+            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(base64.decodestring(data),
+                                                                   cycle(sickbeard.ENCRYPTION_SECRET)))
         else:
             return base64.encodestring(
                 ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(data, cycle(sickbeard.ENCRYPTION_SECRET)))).strip()
@@ -1127,7 +1130,8 @@ def is_hidden_folder(folder):
 
 def real_path(path):
     """
-    Returns: the canonicalized absolute pathname. The resulting path will have no symbolic link, '/./' or '/../' components.
+    Returns: the canonicalized absolute pathname.
+    The resulting path will have no symbolic link, '/./' or '/../' components.
     """
     return ek(os.path.normpath, ek(os.path.normcase, ek(os.path.realpath, path)))
 
@@ -1334,7 +1338,8 @@ def mapIndexersToShow(showObj):
                 logger.log(u"Adding indexer mapping to DB for show: " + showObj.name, logger.DEBUG)
 
                 sql_l.append([
-                    "INSERT OR IGNORE INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) VALUES (?,?,?,?)",
+                    "INSERT OR IGNORE INTO indexer_mapping \
+                    (indexer_id, indexer, mindexer_id, mindexer) VALUES (?,?,?,?)",
                     [showObj.indexerid, showObj.indexer, int(mapped_show[0]['id']), indexer]])
 
         if sql_l:
@@ -1408,7 +1413,9 @@ def request_defaults(kwargs):
     return hooks, cookies, verify, proxies
 
 
-def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too-many-arguments, too-many-return-statements, too-many-branches, too-many-locals
+def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too-many-arguments,
+                                                            # too-many-return-statements, too-many-branches,
+                                                            # too-many-locals
            timeout=30, session=None, **kwargs):
     """
     Returns data retrieved from the url provider.
@@ -1446,7 +1453,8 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
         return None
     except Exception as e:
         if u'ECONNRESET' in e or (hasattr(e, u'errno') and e.errno == errno.ECONNRESET):
-            logger.log(u'Connection reset by peer accessing url {url}. Error: {msg}'.format(url=url, msg=ex(e)), logger.WARNING)
+            logger.log(u'Connection reset by peer accessing url {url}. Error: {msg}'
+                       .format(url=url, msg=ex(e)), logger.WARNING)
         else:
             logger.log(u'Unknown exception in url {url}. Error: {msg}'.format(url=url, msg=ex(e)), logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
@@ -1485,7 +1493,7 @@ def download_file(url, filename, session=None, headers=None, **kwargs):  # pylin
 
                 chmodAsParent(filename)
             except Exception:
-                logger.log(u"Problem setting permissions or writing file to: %s" % filename, logger.WARNING)
+                logger.log(u'Problem setting permissions or writing file to: {0}'.format(filename), logger.WARNING)
 
     except requests.exceptions.RequestException as e:
         remove_file_failed(filename)
@@ -1493,11 +1501,12 @@ def download_file(url, filename, session=None, headers=None, **kwargs):  # pylin
         return False
     except EnvironmentError as e:
         remove_file_failed(filename)
-        logger.log(u"Unable to save the file: %r " % ex(e), logger.WARNING)
+        logger.log(u'Unable to save the file: {0}'.format(ex(e)), logger.WARNING)
         return False
-    except Exception:
+    except Exception as e:
         remove_file_failed(filename)
-        logger.log(u"Unknown exception while loading download URL %s : %r" % (url, traceback.format_exc()), logger.ERROR)
+        logger.log(u'Unknown exception while loading download URL: {0} : {1}'
+                   .format(url, ex(e)), logger.ERROR)
         logger.log(traceback.format_exc(), logger.DEBUG)
         return False
 
@@ -1514,7 +1523,7 @@ def handle_requests_exception(requests_exception):  # pylint: disable=too-many-b
                 error.request.url, ssl.OPENSSL_VERSION))
         if sickbeard.SSL_VERIFY:
             logger.log(
-                "SSL Error requesting url: '{0}' Try disabling Cert Verification on the advanced tab of /config/general")
+                "SSL Error requesting url: '{0}'. Disable Cert Verification on the advanced tab of /config/general")
         logger.log(default.format(error), logger.DEBUG)
         logger.log(traceback.format_exc(), logger.DEBUG)
 
@@ -1575,7 +1584,8 @@ def verify_freespace(src, dest, oldfile=None):
     :param src: Source filename
     :param dest: Destination path
     :param oldfile: File to be replaced (defaults to None)
-    :return: True if there is enough space for the file, False if there isn't. Also returns True if the OS doesn't support this option
+    :return: True if there is enough space for the file,
+             False if there isn't. Also returns True if the OS doesn't support this option
     """
 
     if not isinstance(oldfile, list):
@@ -1679,7 +1689,8 @@ def getDiskSpaceUsage(diskPath=None, pretty=True):
     if diskPath and ek(os.path.exists, diskPath):
         if platform.system() == 'Windows':
             free_bytes = ctypes.c_ulonglong(0)
-            ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(diskPath), None, None, ctypes.pointer(free_bytes))
+            ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(diskPath), None, None,
+                                                       ctypes.pointer(free_bytes))
             return pretty_file_size(free_bytes.value) if pretty else free_bytes.value
         else:
             st = ek(os.statvfs, diskPath)
