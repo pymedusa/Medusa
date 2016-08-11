@@ -75,16 +75,16 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
                                (search=search_string), logger.DEBUG)
 
                     search_url = (self.urls['rss'], self.urls['api'] + search_string)[mode != 'RSS']
-                    data = self.get_url(search_url, returns='text')
-                    if not data:
+                    response = self.get_url(search_url, returns='response')
+                    if not response or not response.text:
                         logger.log('No data returned from provider', logger.DEBUG)
                         continue
 
-                    if not data.startswith('<?xml'):
+                    if not response.text.startswith('<?xml'):
                         logger.log('Expected xml but got something else, is your mirror failing?', logger.INFO)
                         continue
 
-                    with BS4Parser(data, 'html5lib') as html:
+                    with BS4Parser(response.text, 'html5lib') as html:
                         entries = html('item')
                         if not entries:
                             logger.log('Returned xml contained no results', logger.INFO)

@@ -77,15 +77,15 @@ class OmgwtfnzbsProvider(NZBProvider):
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
 
-                data = self.get_url(self.urls['api'], params=search_params, returns='json')
-                if not data:
+                response = self.get_url(self.urls['api'], params=search_params, returns='json')
+                if not response:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                if not self._check_auth_from_data(data, is_XML=False):
-                    continue
+                if not self._check_auth_from_data(response, is_XML=False):
+                    break
 
-                for item in data:
+                for item in response:
                     try:
                         if not self._get_title_and_url(item):
                             continue
