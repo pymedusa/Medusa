@@ -18,7 +18,7 @@ function updateBlackWhiteList(showName) { // jshint ignore:line
 
     $('#blackwhitelist').show();
     if (showName) {
-        $.getJSON(srRoot + '/home/fetch_releasegroups', {
+        $.getJSON('/home/fetch_releasegroups', {
             'show_name': showName
         }, function (data) {
             if (data.result === 'success') {

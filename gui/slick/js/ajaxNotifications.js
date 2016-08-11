@@ -1,7 +1,7 @@
-var message_url = srRoot + '/ui/get_messages',
-    test = !1;
+var message_url = 'ui/get_messages';
+var test = !1;
 
-var icon_url = srRoot + '/images/ico/favicon-120.png'
+var icon_url = '/images/ico/favicon-120.png'
 
 PNotify.prototype.options.addclass = 'stack-bottomright';
 PNotify.prototype.options.buttons.closer_hover = !1;
@@ -41,5 +41,7 @@ function check_notifications() {
 
 $(document).ready(function(){
     check_notifications();
-    if(test) displayPNotify('notice', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>');
+    if (test) {
+        displayPNotify('notice', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>');
+    }
 });

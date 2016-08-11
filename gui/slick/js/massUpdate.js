@@ -8,7 +8,7 @@ $(document).ready(function(){
 
         if(editArr.length === 0) { return; }
 
-        window.location.href = 'massEdit?toEdit='+editArr.join('|');
+        window.location.href = 'manage/massEdit?toEdit='+editArr.join('|');
     });
 
     $('.submitMassUpdate').on('click', function(){
@@ -66,7 +66,7 @@ $(document).ready(function(){
             });
         }
         if(updateArr.length+refreshArr.length+renameArr.length+subtitleArr.length+deleteArr.length+removeArr.length+metadataArr.length === 0) { return false; }
-        window.location.href = 'massUpdate?toUpdate='+updateArr.join('|')+'&toRefresh='+refreshArr.join('|')+'&toRename='+renameArr.join('|')+'&toSubtitle='+subtitleArr.join('|')+'&toDelete='+deleteArr.join('|')+'&toRemove='+removeArr.join('|')+'&toMetadata='+metadataArr.join('|');
+        window.location.href = 'manage/massUpdate?toUpdate='+updateArr.join('|')+'&toRefresh='+refreshArr.join('|')+'&toRename='+renameArr.join('|')+'&toSubtitle='+subtitleArr.join('|')+'&toDelete='+deleteArr.join('|')+'&toRemove='+removeArr.join('|')+'&toMetadata='+metadataArr.join('|');
     });
 
     ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck'].forEach(function(name) {

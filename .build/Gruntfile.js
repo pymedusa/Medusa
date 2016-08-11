@@ -153,11 +153,9 @@ module.exports = function(grunt) {
         'uglify',
         'sass',
         'cssmin',
-        'jshint',
         'mocha'
     ]);
     grunt.registerTask('travis', [
-        'jshint',
         'mocha'
     ]);
 };

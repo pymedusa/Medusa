@@ -11,21 +11,10 @@ function metaToBool(pyVar){
     }
 }
 
-function getMeta(pyVar){
-    return $('meta[data-var="' + pyVar + '"]').data('content');
-}
 
-var srRoot = getMeta('srRoot');
-
-
-$(document).ready(function(){
-    if (metaToBool('FANART_BACKGROUND')) {
-        $.backstretch(srRoot + '/showPoster/?show=' + $('#show').attr('value') + '&which=fanart');
-        $('.backstretch').css('opacity', getMeta('FANART_BACKGROUND_OPACITY')).fadeIn('500');
-    }
+$('#location').fileBrowser({
+    title: 'Select Show Location'
 });
-
-$('#location').fileBrowser({ title: 'Select Show Location' });
 
 $('#submit').click(function() {
     var allExceptions = [];
@@ -36,7 +25,9 @@ $('#submit').click(function() {
 
     $('#exceptions_list').val(allExceptions);
 
-    if(metaToBool('show.is_anime')) { generateBlackWhiteList(); }
+    if(metaToBool['show.is_anime']) {
+        generateBlackWhiteList();
+    }
 });
 $('#addSceneName').click(function() {
     var sceneEx = $('#SceneName').val();

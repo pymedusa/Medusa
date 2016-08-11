@@ -1,4 +1,4 @@
-var searchStatusUrl = srRoot + '/home/getManualSearchStatus';
+var searchStatusUrl = 'home/getManualSearchStatus';
 var failedDownload = false;
 var qualityDownload = false;
 var selectedEpisode = '';
@@ -35,7 +35,7 @@ function updateImages(data) {
                 //el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title','Searching');
                 img.prop('alt','Searching');
-                img.prop('src',srRoot+'/images/' + loadingImage);
+                img.prop('src', '/images/' + loadingImage);
                 disableLink(el);
                 // Update Status and Quality
                 rSearchTerm = /(\w+)\s\((.+?)\)/;
@@ -45,7 +45,7 @@ function updateImages(data) {
                 //el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title','Queued');
                 img.prop('alt','queued');
-                img.prop('src',srRoot+'/images/' + queuedImage );
+                img.prop('src', '/images/' + queuedImage );
                 disableLink(el);
                 htmlContent = ep.searchstatus;
 
@@ -54,7 +54,7 @@ function updateImages(data) {
                 img.prop('title','Searching');
                 img.prop('alt','searching');
                 img.parent().prop('class','epRetry');
-                img.prop('src',srRoot+'/images/' + searchImage);
+                img.prop('src', '/images/' + searchImage);
                 enableLink(el);
 
                 // Update Status and Quality
@@ -72,16 +72,16 @@ function updateImages(data) {
             if (ep.searchstatus.toLowerCase() === 'searching') {
                 imageCompleteEpisodes.prop('title','Searching');
                 imageCompleteEpisodes.prop('alt','Searching');
-                imageCompleteEpisodes.prop('src',srRoot+'/images/' + loadingImage);
+                imageCompleteEpisodes.prop('src', '/images/' + loadingImage);
                 disableLink(elementCompleteEpisodes);
             } else if (ep.searchstatus.toLowerCase() === 'queued') {
                 imageCompleteEpisodes.prop('title','Queued');
                 imageCompleteEpisodes.prop('alt','queued');
-                imageCompleteEpisodes.prop('src',srRoot+'/images/' + queuedImage );
+                imageCompleteEpisodes.prop('src', '/images/' + queuedImage );
             } else if (ep.searchstatus.toLowerCase() === 'finished') {
                 imageCompleteEpisodes.prop('title','Forced Search');
                 imageCompleteEpisodes.prop('alt','[search]');
-                imageCompleteEpisodes.prop('src',srRoot+'/images/' + searchImage);
+                imageCompleteEpisodes.prop('src', '/images/' + searchImage);
                 if (ep.overview.toLowerCase() === 'snatched') {
                     elementCompleteEpisodes.closest('tr').remove();
                 } else {
@@ -162,13 +162,13 @@ $(document).ready(function () {
             var img = selectedEpisode.children('img');
             img.prop('title','loading');
             img.prop('alt','');
-            img.prop('src',srRoot+'/images/' + options.loadingImage);
+            img.prop('src', '/images/' + options.loadingImage);
 
             var url = selectedEpisode.prop('href');
 
             if (!failedDownload) {
                 url = url.replace("retryEpisode", "searchEpisode");
-            } 
+            }
 
             // Only pass the down_cur_quality flag when retryEpisode() is called
             if (qualityDownload && url.indexOf('retryEpisode') >= 0) {
@@ -176,13 +176,12 @@ $(document).ready(function () {
             }
 
             $.getJSON(url, function(data){
-
                 // if they failed then just put the red X
                 if (data.result.toLowerCase() === 'failure') {
                     imageName = options.noImage;
                     imageResult = 'failed';
-                } else { 
-                    // if the snatch was successful then apply the 
+                } else {
+                    // if the snatch was successful then apply the
                     // corresponding class and fill in the row appropriately
                     imageName = options.loadingImage;
                     imageResult = 'success';
@@ -203,7 +202,7 @@ $(document).ready(function () {
                 img.prop('title', imageResult);
                 img.prop('alt', imageResult);
                 img.prop('height', options.size);
-                img.prop('src', srRoot+"/images/" + imageName);
+                img.prop('src',  "/images/" + imageName);
             });
 
             // don't follow the link
@@ -229,7 +228,7 @@ $(document).ready(function () {
             event.preventDefault();
             var performSearch = '0';
             var showAllResults = '0';
-            
+
             //TODO: Omg this disables all the manual snatch icons, when one is clicked
             if ($(this).hasClass('disabled')) {
                 return false;
@@ -237,7 +236,7 @@ $(document).ready(function () {
 
             $('.epManualSearch').addClass('disabled');
             $('.epManualSearch').fadeTo(1, 0.1);
- 
+
             var url = this.href + '&perform_search=' + performSearch + '&show_all_results=' + showAllResults;
             if (event.shiftKey || event.ctrlKey || event.which === 2){
                 window.open(url, '_blank');

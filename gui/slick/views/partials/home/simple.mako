@@ -142,7 +142,7 @@
             <td align="center" data-show-size="${show_size}">${pretty_file_size(show_size)}</td>
             <td align="center">
                 <% paused = int(curShow.paused) == 0 and curShow.status == 'Continuing' %>
-                <img src="${srRoot}/images/${('no16.png', 'yes16.png')[bool(paused)]}" alt="${('No', 'Yes')[bool(paused)]}" width="16" height="16" />
+                <img src="/images/${('no16.png', 'yes16.png')[bool(paused)]}" alt="${('No', 'Yes')[bool(paused)]}" width="16" height="16" />
             </td>
             <td align="center">
             <%

@@ -3,11 +3,11 @@
 
     $.Browser = {
         defaults: {
-            title:             'Choose Directory',
-            url:               srRoot + '/browser/',
-            autocompleteURL:   srRoot + '/browser/complete',
-            includeFiles:      0,
-            showBrowseButton:  true
+            title: 'Choose Directory',
+            url: 'browser/',
+            autocompleteURL: 'browser/complete',
+            includeFiles: 0,
+            showBrowseButton: true
         }
     };
 

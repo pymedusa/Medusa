@@ -14,6 +14,8 @@ import sickbeard
 from sickbeard import logger
 from sickbeard.helpers import create_https_certificates, generateApiKey
 from sickbeard.server.api.v1.core import ApiHandler
+from sickbeard.server.api.v2.ShowsHandler import ShowsHandler
+from sickbeard.server.api.v2.InfoHandler import InfoHandler
 from sickbeard.server.web import LoginHandler, LogoutHandler, KeyHandler, CalendarHandler
 from sickrage.helper.encoding import ek
 
@@ -53,6 +55,7 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         if not sickbeard.API_KEY:
             sickbeard.API_KEY = generateApiKey()
         self.options['api_root'] = r'{root}/api/(?:v1/)?{key}'.format(root=sickbeard.WEB_ROOT, key=sickbeard.API_KEY)
+        self.options['api_v2_root'] = r'{root}/api/v2'.format(root=sickbeard.WEB_ROOT)
 
         # tornado setup
         self.enable_https = self.options['enable_https']
@@ -85,19 +88,18 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         )
 
         # API v1 handlers
-        # @NOTE: This will be moved to /api/v1/
         self.app.add_handlers('.*$', [
-            # main handler
+            # Main handler
             (r'{base}(/?.*)'.format(base=self.options['api_root']), ApiHandler),
 
-            # key retrieval
+            # Key retrieval
             (r'{base}/getkey(/?.*)'.format(base=self.options['web_root']), KeyHandler),
 
-            # builder redirect
+            # Builder redirect
             (r'{base}/api/builder'.format(base=self.options['web_root']),
              RedirectHandler, {'url': '{base}/apibuilder/'.format(base=self.options['web_root'])}),
 
-            # webui login/logout handlers
+            # Webui login/logout handlers
             (r'{base}/login(/?)'.format(base=self.options['web_root']), LoginHandler),
             (r'{base}/logout(/?)'.format(base=self.options['web_root']), LogoutHandler),
 
@@ -106,6 +108,13 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
 
             # webui handlers
         ] + route.get_routes(self.options['web_root']))
+
+        # API v2 handlers
+        self.app.add_handlers('.*$', [
+            # Shows handler
+            (r'{base}/shows/?([0-9]*)/?'.format(base=self.options['api_v2_root']), ShowsHandler),
+            (r'{base}/info/?([A-Za-z0-9_-]*)/?'.format(base=self.options['api_v2_root']), InfoHandler)
+        ])
 
         # Static File Handlers
         self.app.add_handlers('.*$', [

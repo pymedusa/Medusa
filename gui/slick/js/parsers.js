@@ -7,7 +7,7 @@ $.tablesorter.addParser({
         if (0 === s.indexOf('Loading...')){
             return s.replace('Loading...', '000');
         } else {
-            return (metaToBool('sickbeard.SORT_ARTICLE') ? (s || '') : (s || '').replace(/^(The|A|An)\s/i,''));
+            return (SICKRAGE.info['sortArticle'] ? (s || '') : (s || '').replace(/^(The|A|An)\s/i,''));
         }
     },
     type: 'text'

@@ -70,7 +70,7 @@
                 <span class="icon-bar"></span>
             </button>
             <a class="navbar-brand" href="${srRoot}/apibuilder/" title="Medusa">
-                <img alt="Medusa" src="${srRoot}/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" />
+                <img alt="Medusa" src="/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" />
                 <p class="navbar-text hidden-xs">${title}</p>
             </a>
         </div>
@@ -87,7 +87,7 @@
                 <li><a href="${srRoot}/home/">Back to Medusa</a></li>
                 <li class="hidden-xs">
                     <a href="https://github.com/PyMedusa/SickRage/wiki/Donations" rel="noreferrer" onclick="window.open('${sickbeard.ANON_REDIRECT}' + this.href); return false;">
-                        <img src="${srRoot}/images/donate.jpg" alt="[donate]" class="navbaricon" />
+                        <img src="/images/donate.jpg" alt="[donate]" class="navbaricon" />
                     </a>
                 </li>
             </ul>
@@ -133,18 +133,18 @@
                     </table>
                     % endif
                     <h4>Playground</h4>
-                    URL: <kbd id="command-${command_id}-base-url">/api/${apikey}/?cmd=${command}</kbd><br />
+                    URL: <kbd id="command-${command_id}-base-url">/api/${apikey}/?cmd=${command}</kbd><br>
                     % if help['data']['requiredParameters']:
-                        Required parameters: ${display_parameters_playground(help['data']['requiredParameters'], True, command_id)}<br />
+                        Required parameters: ${display_parameters_playground(help['data']['requiredParameters'], True, command_id)}<br>
                     % endif
                     % if help['data']['optionalParameters']:
-                        Optional parameters: ${display_parameters_playground(help['data']['optionalParameters'], False, command_id)}<br />
+                        Optional parameters: ${display_parameters_playground(help['data']['optionalParameters'], False, command_id)}<br>
                     % endif
-                    <button class="btn btn-primary" data-action="api-call" data-command-name="${command_id}" data-base-url="command-${command_id}-base-url" data-target="#command-${command_id}-response" data-time="#command-${command_id}-time" data-url="#command-${command_id}-url">Call API</button><br />
+                    <button class="btn btn-primary" data-action="api-call" data-command-name="${command_id}" data-base-url="command-${command_id}-base-url" data-target="#command-${command_id}-response" data-time="#command-${command_id}-time" data-url="#command-${command_id}-url">Call API</button><br>
                     <div class="result-wrapper hidden">
                         <div class="clearfix">
                             <span class="pull-left">
-                                Response: <strong id="command-${command_id}-time"></strong><br />
+                                Response: <strong id="command-${command_id}-time"></strong><br>
                                 URL: <kbd id="command-${command_id}-url"></kbd>
                             </span>
                             <span class="pull-right">
@@ -163,9 +163,9 @@
 var commands = ${sorted(commands)};
 var episodes = ${episodes};
 </script>
-<script type="text/javascript" src="${srRoot}/js/vender.min.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/core.min.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/apibuilder.js?${sbPID}"></script>
+<script type="text/javascript" src="/js/vender.min.js?${sbPID}"></script>
+<script type="text/javascript" src="/js/core.min.js?${sbPID}"></script>
+<script type="text/javascript" src="/js/apibuilder.js?${sbPID}"></script>
 </body>
 </html>
 <%def name="display_parameters_doc(parameters, required)">
