@@ -1426,6 +1426,20 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
         if not resp.ok:
             logger.log(u'Requested url {url} returned status code {status}: {desc}'.format
                        (url=url, status=resp.status_code, desc=http_code_description(resp.status_code)), logger.DEBUG)
+            return None
+
+        if not response_type or response_type == u'response':
+            return resp
+        else:
+            warnings.warn(u'Returning {0} instead of {1} will be deprecated in the near future!'.format
+                          (response_type, 'response'), PendingDeprecationWarning)
+            if response_type == u'json':
+                try:
+                    return resp.json()
+                except ValueError:
+                    return {}
+            else:
+                return getattr(resp, response_type, resp)
 
     except requests.exceptions.RequestException as e:
         logger.log(u'Error requesting url {url}. Error: {msg}'.format(url=url, msg=ex(e)), logger.DEBUG)
@@ -1437,19 +1451,6 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
             logger.log(u'Unknown exception in url {url}. Error: {msg}'.format(url=url, msg=ex(e)), logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
         return None
-
-    if resp and (not response_type or response_type == u'response'):
-        return resp
-    else:
-        warnings.warn(u'Returning {0} instead of {1} will be deprecated in the near future!'.format
-                      (response_type, 'response'), PendingDeprecationWarning)
-        if response_type == u'json':
-            try:
-                return resp.json()
-            except ValueError:
-                return {}
-        else:
-            return getattr(resp, response_type, resp)
 
 
 def download_file(url, filename, session=None, headers=None, **kwargs):  # pylint:disable=too-many-return-statements
