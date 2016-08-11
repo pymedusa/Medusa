@@ -101,10 +101,10 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                     search_url = urljoin(self.custom_url, search_url.split(self.url)[1])
 
                 response = self.get_url(search_url, params=search_params, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider, maybe try a custom url, or a different one', logger.DEBUG)
                     continue
-                elif not response.text.startswith('<?xml'):
+                elif not response or not response.text.startswith('<?xml'):
                     logger.log('Expected xml but got something else, is your mirror failing?', logger.INFO)
                     continue
 

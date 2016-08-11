@@ -91,6 +91,8 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     search_url = self.url
 
                 response = self.get_url(search_url, params=search_params, returns='response')
+                if not response:
+                    continue
 
                 try:
                     jdata = response.json()

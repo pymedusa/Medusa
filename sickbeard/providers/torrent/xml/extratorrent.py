@@ -92,10 +92,10 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                 search_params['search'] = search_string
                 search_url = self.urls['rss'] if not self.custom_url else self.urls['rss'].replace(self.urls['base'], self.custom_url)
                 response = self.get_url(search_url, params=search_params, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
-                elif not response.text.startswith('<?xml'):
+                elif not response or not response.text.startswith('<?xml'):
                     logger.log('Expected xml but got something else, is your mirror failing?', logger.INFO)
                     continue
 

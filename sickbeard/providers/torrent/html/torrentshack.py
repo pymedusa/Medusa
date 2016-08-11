@@ -105,7 +105,7 @@ class TorrentShackProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     search_params['searchstr'] = search_string
 
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 

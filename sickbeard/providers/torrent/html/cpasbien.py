@@ -77,7 +77,7 @@ class CpasbienProvider(TorrentProvider):
                     search_url = self.url + '/view_cat.php?categorie=series&trie=date-d'
 
                 response = self.get_url(search_url, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 

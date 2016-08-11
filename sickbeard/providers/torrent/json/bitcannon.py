@@ -95,7 +95,7 @@ class BitCannonProvider(TorrentProvider):
                     logger.log(u'Error while connecting to provider: {error}'.format(error=msg), logger.ERROR)
                     continue
 
-                if not response.content:
+                if not response or not response.content:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 

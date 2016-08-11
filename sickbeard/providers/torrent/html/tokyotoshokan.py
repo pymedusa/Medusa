@@ -89,7 +89,7 @@ class TokyoToshokanProvider(TorrentProvider):  # pylint: disable=too-many-instan
 
                 search_params['terms'] = search_string
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 

@@ -98,7 +98,7 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                 search_params['search'] = search_string
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
@@ -181,7 +181,7 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
-        if not response.text:
+        if not response or not response.text:
             check_login = self.get_url(self.urls['base_url'], returns='response')
             if not re.search('account-logout.php', check_login.text):
                 logger.log('Unable to connect to provider', logger.WARNING)

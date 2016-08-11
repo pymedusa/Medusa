@@ -97,7 +97,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     post_data.update({'free': 'on'})
 
                 response = self.get_url(self.urls['search'], post_data=post_data, returns='response')
-                if not response.content:
+                if not response or not response.content:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 

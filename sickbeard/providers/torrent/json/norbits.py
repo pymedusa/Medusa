@@ -90,7 +90,7 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                 self._check_auth()
                 response = self.get_url(self.urls['search'], post_data=sickbeard.providers.torrent.json.dumps(post_data), returns='response')
-                if not response.content:
+                if not response or not response.content:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 

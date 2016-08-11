@@ -94,7 +94,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                 for search_url in search_urls:
                     response = self.get_url(search_url, returns='response')
 
-                    if not response.content:
+                    if not response or not response.content:
                         logger.log('No data returned from provider', logger.DEBUG)
                         continue
 

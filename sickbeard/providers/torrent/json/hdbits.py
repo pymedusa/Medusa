@@ -73,7 +73,7 @@ class HDBitsProvider(TorrentProvider):
         self._check_auth()
 
         response = self.get_url(self.urls['search'], post_data=search_strings, returns='response')
-        if not response.content:
+        if not response or not response.content:
             logger.log('No data returned from provider', logger.DEBUG)
             return results
 

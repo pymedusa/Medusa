@@ -91,6 +91,9 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     search_params['search'] = None
 
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                if not response:
+                    continue
+
                 try:
                     jdata = response.json()
                 except ValueError:
