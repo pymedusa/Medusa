@@ -27,7 +27,6 @@ Public Methods:
     remove_non_release_groups
     isMediaFile
     isRarFile
-    isBeingWritten
     remove_file_failed
     makeDir
     searchIndexerForShowID
@@ -49,7 +48,6 @@ Public Methods:
     get_absolute_number_from_season_and_episode
     get_all_episodes_from_absolute_number
     sanitizeSceneName
-    arithmeticEval
     create_https_certificates
     backupVersionedFile
     restoreVersionedFile
@@ -64,8 +62,6 @@ Public Methods:
     real_path
     validateShow
     set_up_anidb_connection
-    makeZip
-    extractZip
     backupConfigZip
     restoreConfigZip
     mapIndexersToShow
@@ -81,8 +77,6 @@ Public Methods:
     isFileLocked
     getDiskSpaceUsage
 Private Methods:
-    _check_against_names
-    _getTempDir
     _setUpSession
 """
 
@@ -173,19 +167,6 @@ class HelpersZipTests(unittest.TestCase):
     """
     Test zip methods
     """
-    @unittest.skip('Not yet implemented')
-    def test_make_zip(self):
-        """
-        Test makeZip
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_extract_zip(self):
-        """
-        Test extractZip
-        """
-        pass
 
     @unittest.skip('Not yet implemented')
     def test_backup_config_zip(self):
@@ -231,13 +212,6 @@ class HelpersDirectoryTests(unittest.TestCase):
     def test_make_dir(self):
         """
         Test makeDir
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_get_temp_dir(self):
-        """
-        Test _getTempDir
         """
         pass
 
@@ -312,13 +286,6 @@ class HelpersFileTests(unittest.TestCase):
     def test_is_file_locked(self):
         """
         Test isFileLocked
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_is_being_written(self):
-        """
-        Test isBeingWritten
         """
         pass
 
@@ -506,13 +473,6 @@ class HelpersShowTests(unittest.TestCase):
         pass
 
     @unittest.skip('Not yet implemented')
-    def test_check_against_names(self):
-        """
-        Test _check_against_names
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
     def test_get_show(self):
         """
         Test get_show
@@ -645,13 +605,6 @@ class HelpersMiscTests(unittest.TestCase):
     def test_sanitize_scene_name(self):
         """
         Test sanitizeSceneName
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_arithmetic_eval(self):
-        """
-        Test arithmeticEval
         """
         pass
 
