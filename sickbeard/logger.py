@@ -522,8 +522,12 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
                 if issue_id and cur_error in classes.ErrorViewer.errors:
                     # clear error from error list
                     classes.ErrorViewer.errors.remove(cur_error)
-        except (BadCredentialsException, RateLimitExceededException) as e:
-            self.log('Error while accessing github: {0}'.format(e), WARNING)
+        except BadCredentialsException as e:
+            submitter_result = 'Please check your Github credentials in Medusa settings. Bad Credentials error'
+            issue_id = None
+        except RateLimitExceededException as e:
+            submitter_result = 'Please wait before submit new issues . Github Rate Limit Exceeded error'
+            issue_id = None
         except Exception:  # pylint: disable=broad-except
             self.log(traceback.format_exc(), ERROR)
             submitter_result = 'Exception generated in issue submitter, please check the log'
