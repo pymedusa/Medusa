@@ -106,7 +106,7 @@ class BitCannonProvider(TorrentProvider):
                     continue
 
                 if not self._check_auth_from_data(jdata):
-                    continue
+                    break
 
                 results += self.parse(jdata, mode)
 
