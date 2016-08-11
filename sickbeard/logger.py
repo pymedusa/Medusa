@@ -31,7 +31,6 @@ import pkgutil
 import platform
 import re
 import sys
-import traceback
 
 import tornado
 import subliminal
