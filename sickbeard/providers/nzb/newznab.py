@@ -140,6 +140,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
                 response = self.get_url(urljoin(self.url, 'api'), params=search_params, returns='response')
                 if not response or not response.text:
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 with BS4Parser(response.text, 'html5lib') as html:

@@ -92,6 +92,7 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
                 if not response:
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 try:

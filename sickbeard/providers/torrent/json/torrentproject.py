@@ -92,6 +92,7 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
 
                 response = self.get_url(search_url, params=search_params, returns='response')
                 if not response:
+                    logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
                 try:
