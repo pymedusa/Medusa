@@ -32,7 +32,9 @@ from .recommended import RecommendedShow
 class TraktPopular(object):
     """This class retrieves a speficed recommended show list from Trakt.
 
-    The list of returned shows is mapped to a RecommendedShow object"""
+    The list of returned shows is mapped to a RecommendedShow object
+    """
+
     def __init__(self):
         """Initialize the trakt recommended list object."""
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
@@ -42,7 +44,7 @@ class TraktPopular(object):
         self.anidb = Anidb(cache_dir=sickbeard.CACHE_DIR)
 
     def _create_recommended_show(self, show_obj):
-        """create the RecommendedShow object from the returned showobj"""
+        """Create the RecommendedShow object from the returned showobj."""
         rec_show = RecommendedShow(self,
                                    show_obj['show']['ids'], show_obj['show']['title'],
                                    1,  # indexer
@@ -80,7 +82,7 @@ class TraktPopular(object):
         return library_shows
 
     def fetch_popular_shows(self, page_url=None, trakt_list=None):  # pylint: disable=too-many-nested-blocks,too-many-branches
-        """Get a list of popular shows from different Trakt lists based on a provided trakt_list
+        """Get a list of popular shows from different Trakt lists based on a provided trakt_list.
 
         :param page_url: the page url opened to the base api url, for retreiving a specific list
         :param trakt_list: a description of the trakt list

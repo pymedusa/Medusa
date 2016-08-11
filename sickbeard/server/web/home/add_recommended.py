@@ -25,8 +25,10 @@ from tornado.routes import route
 
 @route('/addRecommended(/?.*)')
 class HomeAddRecommended(Home):
-    """Landing page for the recommended shows"""
+    """Landing page for the recommended shows."""
+
     def __init__(self, *args, **kwargs):
+        """Initialize route."""
         super(HomeAddRecommended, self).__init__(*args, **kwargs)
 
     def index(self):
