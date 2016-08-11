@@ -31,14 +31,14 @@ import pkgutil
 import platform
 import re
 import sys
-import traceback
 
 import tornado
 import subliminal
 
 from requests.compat import quote
 from six import itervalues, text_type
-from github import Github, InputFileContent, GithubException  # pylint: disable=import-error
+from github import Github, InputFileContent  # pylint: disable=import-error
+from github.GithubException import BadCredentialsException, RateLimitExceededException
 
 import sickbeard
 from sickbeard import classes
@@ -521,11 +521,14 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
                 if issue_id and cur_error in classes.ErrorViewer.errors:
                     # clear error from error list
                     classes.ErrorViewer.errors.remove(cur_error)
-        except (GithubException.BadCredentialsException, GithubException.RateLimitExceededException) as e:
-            self.log('Error while accessing github: {0}'.format(e), WARNING)
-        except Exception:  # pylint: disable=broad-except
-            self.log(traceback.format_exc(), ERROR)
-            submitter_result = 'Exception generated in issue submitter, please check the log'
+        except BadCredentialsException:
+            submitter_result = 'Please check your Github credentials in Medusa settings. Bad Credentials error'
+            issue_id = None
+        except RateLimitExceededException:
+            submitter_result = 'Please wait before submit new issues. Github Rate Limit Exceeded error'
+            issue_id = None
+        except Exception as e:  # pylint: disable=broad-except
+            submitter_result = 'Exception generated in issue submitter. Error: {0}'.format(ex(e))
             issue_id = None
         finally:
             self.submitter_running = False
