@@ -1428,15 +1428,17 @@ def getURL(url, post_data=None, params=None, headers=None,  # pylint:disable=too
                        (url=url, status=resp.status_code, desc=http_code_description(resp.status_code)), logger.DEBUG)
 
     except requests.exceptions.RequestException as e:
-        logger.log(u'Error requesting url {resp.url}. Error: {msg}'.format(resp=resp, msg=ex(e)), logger.DEBUG)
+        logger.log(u'Error requesting url {url}. Error: {msg}'.format(url=url, msg=ex(e)), logger.DEBUG)
+        return None
     except Exception as e:
         if u'ECONNRESET' in e or (hasattr(e, u'errno') and e.errno == errno.ECONNRESET):
-            logger.log(u'Connection reset by peer accessing url {resp.url}. Error: {msg}'.format(resp=resp, msg=ex(e)), logger.WARNING)
+            logger.log(u'Connection reset by peer accessing url {url}. Error: {msg}'.format(url=url, msg=ex(e)), logger.WARNING)
         else:
-            logger.log(u'Unknown exception in url {resp.url}. Error: {msg}'.format(resp=resp, msg=ex(e)), logger.ERROR)
+            logger.log(u'Unknown exception in url {url}. Error: {msg}'.format(url=url, msg=ex(e)), logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
+        return None
 
-    if not response_type or response_type == u'response':
+    if resp and (not response_type or response_type == u'response'):
         return resp
     else:
         warnings.warn(u'Returning {0} instead of {1} will be deprecated in the near future!'.format
