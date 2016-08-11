@@ -22,12 +22,10 @@ import requests
 import sickbeard
 from sickbeard import logger
 from sickrage.helper.common import try_int
-
-from traktor import (TraktApi, AuthException, TraktException)
-from simpleanidb import Anidb
-
 from sickrage.helper.exceptions import ex
 from sickrage.helper.exceptions import MultipleShowObjectsException
+from simpleanidb import Anidb
+from traktor import (AuthException, TraktApi, TraktException)
 from .recommended import RecommendedShow
 
 
@@ -50,7 +48,9 @@ class TraktPopular(object):
                                    **{'rating': show_obj['show']['rating'],
                                       'votes': try_int(show_obj['show']['votes'], '0'),
                                       'image_href': 'http://www.trakt.tv/shows/{0}'.format(show_obj['show']['ids']['slug']),
-                                      'ids': show_obj['show']['ids']  # Adds like: {u'tmdb': 62126, u'tvdb': 304219, u'trakt': 79382, u'imdb': u'tt3322314', u'tvrage': None, u'slug': u'marvel-s-luke-cage'}
+                                      # Adds like: {u'tmdb': 62126, u'tvdb': 304219, u'trakt': 79382, u'imdb': u'tt3322314',
+                                      # u'tvrage': None, u'slug': u'marvel-s-luke-cage'}
+                                      'ids': show_obj['show']['ids']
                                       }
                                    )
 

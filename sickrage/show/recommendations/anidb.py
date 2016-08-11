@@ -22,7 +22,7 @@ import traceback
 from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
 import sickbeard
-from sickbeard import logger, helpers
+from sickbeard import helpers, logger
 from .recommended import RecommendedShow
 
 

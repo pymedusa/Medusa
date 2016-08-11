@@ -1,11 +1,9 @@
 # coding=utf-8
 
 from __future__ import unicode_literals
-
-from tornado.routes import route
-
 from sickbeard.server.web.core import PageTemplate
 from sickbeard.server.web.home.handler import Home
+from tornado.routes import route
 
 
 @route('/addRecommended(/?.*)')
