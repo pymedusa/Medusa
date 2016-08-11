@@ -36,7 +36,7 @@ class ImdbPopular(object):
         }
 
     def _create_recommended_show(self, show_obj):
-        """creates the RecommendedShow object from the returned showobj"""
+        """Creates the RecommendedShow object from the returned showobj"""
 
         tvdb_id = helpers.getTVDBFromID(show_obj.get('imdb_tt'), 'IMDB')
         if not tvdb_id:
@@ -115,8 +115,7 @@ class ImdbPopular(object):
 
     @staticmethod
     def change_size(image_url, factor=3):
-        """
-        Change the size of the image we get from IMDB.
+        """Change the size of the image we get from IMDB.
 
         :param: image_url: Image source URL
         :param: factor: Multiplier for the image size

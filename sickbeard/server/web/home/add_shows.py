@@ -373,12 +373,10 @@ class HomeAddShows(Home):
                     anime=None, scene=None, blacklist=None, whitelist=None,
                     default_status_after=None, default_flatten_folders=None,
                     configure_show_options=False):
-
         """
         Add's a new show with provided show options by indexer_id.
         Currently only TVDB and IMDB id's supported.
         """
-
         if indexer != 'TVDB':
             tvdb_id = helpers.getTVDBFromID(indexer_id, indexer.upper())
             if not tvdb_id:

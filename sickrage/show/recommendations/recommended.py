@@ -1,7 +1,8 @@
 # coding=utf-8
 #
-# Git: https://github.com/PyMedusa/SickRage.git
-# This file is part of Medusa.
+# URL: https://sickrage.github.io
+#
+# This file is part of SickRage.
 #
 # SickRage is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,12 +27,9 @@ from sickbeard import helpers
 
 
 class RecommendedShow(object):
-    """
-    Base class for show recommendations
-    """
+    """Base class for show recommendations"""
     def __init__(self, rec_show_prov, show_id, title, indexer, indexer_id, **show_attr):
-        """
-        Create a show recommendation
+        """Create a show recommendation
 
         :param rec_show_prov: Recommended shows provider. Used to keep track of the provider,
                               which facilitated the recommended shows list.
@@ -71,8 +69,7 @@ class RecommendedShow(object):
         self.session = helpers.make_session()
 
     def cache_image(self, image_url):
-        """
-        Store cache of image in cache dir
+        """Store cache of image in cache dir
 
         :param image_url: Source URL
         """
@@ -93,10 +90,9 @@ class RecommendedShow(object):
                 self.image_src = posixpath.join('images', self.cache_subfolder, os.path.basename(self.default_img_src))
 
     def check_if_anime(self, anidb, tvdbid):
-        """
-        Use the simpleanidb lib, to check the anime-lists.xml for an anime show mapping with this tvdbid.
-        The show if flagged as anime, through the is_anime attribute.
+        """Use the simpleanidb lib, to check the anime-lists.xml for an anime show mapping with this tvdbid.
 
+        The show if flagged as anime, through the is_anime attribute.
         :param anidb: simpleanidb.Anidb() class instance, for reducing the amounts of objects that are instantiated
         :param tvdbid: thetvdb id of the show, for which you want to try mapping to an anidb show
         :return: Returns True, when the show can be mapped to anidb.net, False if not.
@@ -115,4 +111,5 @@ class RecommendedShow(object):
         return False
 
     def __str__(self):
-        return
+        """Return a string repr of the recommended list."""
+        return 'Recommended show {0} from recommended list: {1}'.format(self.title, self.recommender)

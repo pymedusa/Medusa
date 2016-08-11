@@ -29,7 +29,9 @@ from .recommended import RecommendedShow
 class AnidbPopular(object):  # pylint: disable=too-few-public-methods
     def __init__(self):
         """This class retrieves a speficed recommended show list from Trakt
-        The list of returned shows is mapped to a RecommendedShow object"""
+
+        The list of returned shows is mapped to a RecommendedShow object
+        """
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
         self.session = helpers.make_session()
         self.recommender = "Anidb Popular"
@@ -37,7 +39,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         self.anidb = Anidb(cache_dir=sickbeard.CACHE_DIR)
 
     def _create_recommended_show(self, show_obj):
-        """creates the RecommendedShow object from the returned showobj"""
+        """Create the RecommendedShow object from the returned showobj"""
         try:
             tvdb_id = self.anidb.aid_to_tvdb_id(show_obj.aid)
         except Exception:
