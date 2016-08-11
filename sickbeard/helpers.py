@@ -1695,35 +1695,43 @@ def getTVDBFromID(indexer_id, indexer):  # pylint:disable=too-many-return-statem
         data = getURL(url, session=session, returns='content')
         if data is None:
             return tvdb_id
-        try:
+
+        with suppress(SyntaxError):
             tree = ET.fromstring(data)
             for show in tree.getiterator("Series"):
                 tvdb_id = show.findtext("seriesid")
 
-        except SyntaxError:
-            pass
+        if tvdb_id:
+            return tvdb_id
 
-        return tvdb_id
     elif indexer == 'ZAP2IT':
         url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s" % indexer_id
         data = getURL(url, session=session, returns='content')
         if data is None:
             return tvdb_id
-        try:
+
+        with suppress(SyntaxError):
             tree = ET.fromstring(data)
             for show in tree.getiterator("Series"):
                 tvdb_id = show.findtext("seriesid")
 
-        except SyntaxError:
-            pass
-
         return tvdb_id
+
     elif indexer == 'TVMAZE':
         url = "http://api.tvmaze.com/shows/%s" % indexer_id
         data = getURL(url, session=session, returns='json')
         if data is None:
             return tvdb_id
         tvdb_id = data['externals']['thetvdb']
+        return tvdb_id
+
+    # If indexer is IMDB and we've still not returned a tvdb_id, let's try to use tvmaze's api, to get the tvdbid
+    if indexer == 'IMDB':
+        url = 'http://api.tvmaze.com/lookup/shows?imdb={indexer_id}'.format(indexer_id=indexer_id)
+        data = getURL(url, session=session, returns='json')
+        if not data:
+            return tvdb_id
+        tvdb_id = data['externals'].get('thetvdb', '')
         return tvdb_id
     else:
         return tvdb_id

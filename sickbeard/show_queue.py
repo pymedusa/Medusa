@@ -35,7 +35,7 @@ from sickrage.helper.exceptions import CantRefreshShowException, CantRemoveShowE
 from sickrage.helper.exceptions import EpisodeDeletedException, ex, MultipleShowObjectsException
 from sickrage.helper.exceptions import ShowDirectoryNotFoundException
 from sickbeard.helpers import get_showname_from_indexer
-from libtrakt import TraktAPI
+from traktor import TraktApi
 from sickrage.helper.encoding import ek
 from sickbeard.helpers import makeDir, chmodAsParent
 from sickrage.helper.common import sanitize_filename
@@ -393,7 +393,7 @@ class QueueItemAdd(ShowQueueItem):
             if sickbeard.USE_TRAKT:
 
                 trakt_id = sickbeard.indexerApi(self.indexer).config['trakt_id']
-                trakt_api = TraktAPI(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
+                trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
 
                 title = self.showDir.split("/")[-1]
                 data = {
@@ -743,12 +743,15 @@ class QueueItemRemove(ShowQueueItem):
     def run(self):
         ShowQueueItem.run(self)
         logger.log(u"Removing %s" % self.show.name)
-        self.show.delete_show(full=self.full)
 
+        # Need to first remove the episodes from the Trakt collection, because we need the list of
+        # Episodes from the db to know which eps to remove.
         if sickbeard.USE_TRAKT:
             try:
                 sickbeard.traktCheckerScheduler.action.remove_show_trakt_library(self.show)
             except Exception as e:
                 logger.log(u"Unable to delete show '{}' from Trakt. Please remove manually otherwise it will be added again. Error: {}".format(self.show.name, ex(e)), logger.WARNING)
+
+        self.show.delete_show(full=self.full)
 
         self.finish()

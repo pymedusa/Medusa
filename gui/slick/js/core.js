@@ -193,11 +193,6 @@ var SICKRAGE = {
                     $(this).prop('checked', $(bulkCheck).prop('checked'));
                 });
             });
-        }
-    },
-    config: {
-        init: function() {
-            $('#config-components').tabs();
 
             $('.enabler').each(function() {
                 if (!$(this).prop('checked')) {
@@ -212,6 +207,11 @@ var SICKRAGE = {
                     $('#content_' + $(this).attr('id')).fadeOut('fast', 'linear');
                 }
             });
+        }
+    },
+    config: {
+        init: function() {
+            $('#config-components').tabs();
 
             $('.viewIf').on('click', function() {
                 if ($(this).prop('checked')) {
@@ -783,6 +783,14 @@ var SICKRAGE = {
                     $('#testTrakt').prop('disabled', false);
                 });
             });
+
+            $('#forceSync').on('click', function () {
+                $('#testTrakt-result').html(loading);
+                $.getJSON(srRoot + '/home/forceTraktSync', function(data) {
+                  $('#testTrakt-result').html(data.result);
+                });
+            });
+
 
             $('#testEmail').on('click', function () {
                 var status;
@@ -3227,17 +3235,104 @@ var SICKRAGE = {
                     }
                 });
             };
-        },
-        index: function() {
 
-        },
-        newShow: function() {
-            function updateBlackWhiteList(showName) {
+            /*
+             * Add's shows by by indexer and indexer_id with a number of optional parameters
+             * The show can be added as an anime show, by providing the data attribute: data-isanime="1"
+             */
+            $.initAddShowById = function(){
+
+                $(document.body).on('click', 'a[data-add-show]', function(e){
+                    e.preventDefault();
+
+                    var url = $(this).attr('href');
+                    // Whe're going to add this show, let's remove the anchor and button desc, so it can't be added twice!
+                    if ( $(this).attr('disabled') === 'disabled' ) { return false; }
+
+                    $(this).html('Added').attr('disabled', 'disabled');
+
+                    var anyQualArray = [];
+                    var bestQualArray = [];
+                    $('#anyQualities option:selected').each(function (i, d) {
+                        anyQualArray.push($(d).val());
+                    });
+                    $('#bestQualities option:selected').each(function (i, d) {
+                        bestQualArray.push($(d).val());
+                    });
+
+                    // If we are going to add an anime, let's by default configure it as one
+                    var anime = $('#anime').prop('checked');
+                    var configureShowOptions = $('#configure_show_options').prop('checked');
+
+                    /* Let's disable this for now, generates more questions then it saves the user time
+                    if ( !configureShowOptions && $(this).data("isanime") ) {
+                        anime = true;
+                        configureShowOptions = true;
+                    }*/
+
+                    $.get(url + '?indexer_id=' + $(this).attr('data-indexer-id'), {
+                        'root_dir': $('#rootDirs option:selected').val(),
+                        'configure_show_options': configureShowOptions,
+                        'indexer': $(this).attr('data-indexer'),
+                        'show_name': $(this).attr('data-show-name'),
+                        'quality_preset': $('#qualityPreset').val(),
+                        'default_status': $('#statusSelect').val(),
+                        'any_qualities': anyQualArray.join(','),
+                        'best_qualities': bestQualArray.join(','),
+                        'default_flatten_folders': $('#flatten_folders').prop('checked'),
+                        'subtitles': $('#subtitles').prop('checked'),
+                        'anime': anime,
+                        'scene': $('#scene').prop('checked'),
+                        'default_status_after': $('#statusSelectAfter').val(),
+                    });
+                    return false;
+                });
+
+                $('#saveDefaultsButton').on('click', function() {
+                    var anyQualArray = [];
+                    var bestQualArray = [];
+                    $('#anyQualities option:selected').each(function (i, d) {
+                        anyQualArray.push($(d).val());
+                    });
+                    $('#bestQualities option:selected').each(function (i, d) {
+                        bestQualArray.push($(d).val());
+                    });
+
+                    $.get(srRoot + '/config/general/saveAddShowDefaults', {
+                        defaultStatus: $('#statusSelect').val(),
+                        anyQualities: anyQualArray.join(','),
+                        bestQualities: bestQualArray.join(','),
+                        defaultFlattenFolders: $('#flatten_folders').prop('checked'),
+                        subtitles: $('#subtitles').prop('checked'),
+                        anime: $('#anime').prop('checked'),
+                        scene: $('#scene').prop('checked'),
+                        defaultStatusAfter: $('#statusSelectAfter').val(),
+                    });
+
+                    $(this).attr('disabled', true);
+                    new PNotify({
+                        title: 'Saved Defaults',
+                        text: 'Your "add show" defaults have been set to your current selections.',
+                        shadow: false
+                    });
+                });
+
+                $('#statusSelect, #qualityPreset, #flatten_folders, #anyQualities, #bestQualities, #subtitles, #scene, #anime, #statusSelectAfter').change(function () {
+                    $('#saveDefaultsButton').attr('disabled', false);
+                });
+
+                $('#qualityPreset').on('change', function() {
+                    //fix issue #181 - force re-render to correct the height of the outer div
+                    $('span.prev').click();
+                    $('span.next').click();
+                });
+            };
+            $.updateBlackWhiteList = function (showName) {
                 $('#white').children().remove();
                 $('#black').children().remove();
                 $('#pool').children().remove();
 
-                if ($('#anime').prop('checked')) {
+                if ($('#anime').prop('checked') && showName) {
                     $('#blackwhitelist').show();
                     if (showName) {
                         $.getJSON(srRoot + '/home/fetch_releasegroups', {
@@ -3256,7 +3351,12 @@ var SICKRAGE = {
                 } else {
                     $('#blackwhitelist').hide();
                 }
-            }
+            };
+        },
+        index: function() {
+
+        },
+        newShow: function() {
 
             function updateSampleText() {
                 // if something's selected then we have some behavior to figure out
@@ -3270,7 +3370,7 @@ var SICKRAGE = {
                 } else {
                     showName = '';
                 }
-                updateBlackWhiteList(showName);
+                $.updateBlackWhiteList(showName);
                 var sampleText = 'Adding show <b>' + showName + '</b> into <b>';
 
                 // if we have a root dir selected, figure out the path
@@ -3533,13 +3633,21 @@ var SICKRAGE = {
             });
         },
         recommendedShows: function() {
+            // Cleanest way of not showing the black/whitelist, when there isn't a show to show it for
+            $.updateBlackWhiteList(undefined);
             $('#recommendedShows').loadRemoteShows(
                 '/addShows/getRecommendedShows/',
                 'Loading recommended shows...',
                 'Trakt timed out, refresh page to try again'
             );
+
+            $.initAddShowById();
+            $.initRemoteShowGrid();
         },
-        trendingShows: function() {
+
+        trendingShows: function(){
+            // Cleanest way of not showing the black/whitelist, when there isn't a show to show it for
+            $.updateBlackWhiteList(undefined);
             $('#trendingShows').loadRemoteShows(
                 '/addShows/getTrendingShows/?traktList=' + $('#traktList').val(),
                 'Loading trending shows...',
@@ -3554,7 +3662,10 @@ var SICKRAGE = {
                     'Loading trending shows...',
                     'Trakt timed out, refresh page to try again'
                 );
+                $('h1.header').text('Trakt ' + $('option[value="'+ e.target.value + '"]')[0].innerText);
             });
+
+            $.initAddShowById();
         },
         popularShows: function() {
             $.initRemoteShowGrid();

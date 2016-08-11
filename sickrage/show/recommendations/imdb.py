@@ -1,18 +1,29 @@
 # coding=utf-8
+from __future__ import unicode_literals
+
 import re
 import os
 import posixpath
-from bs4 import BeautifulSoup
+import traceback
 from datetime import date
+from bs4 import BeautifulSoup
 
 import sickbeard
-from sickbeard import helpers
-from sickrage.helper.encoding import ek
+from sickbeard import (helpers, logger)
+
+from .recommended import RecommendedShow
+from simpleanidb import Anidb
 
 
-class imdbPopular(object):
+class ImdbPopular(object):
     def __init__(self):
         """Gets a list of most popular TV series from imdb"""
+
+        self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
+        self.session = helpers.make_session()
+        self.recommender = 'IMDB Popular'
+        self.default_img_src = ''
+        self.anidb = Anidb(cache_dir=sickbeard.CACHE_DIR)
 
         # Use akas.imdb.com, just like the imdb lib.
         self.url = 'http://akas.imdb.com/search/title'
@@ -21,103 +32,104 @@ class imdbPopular(object):
             'at': 0,
             'sort': 'moviemeter',
             'title_type': 'tv_series',
-            'year': '%s,%s' % (date.today().year - 1, date.today().year + 1)
+            'year': '%s,%s' % (date.today().year - 1, date.today().year + 1),
         }
 
-        self.session = helpers.make_session()
+    def _create_recommended_show(self, show_obj):
+        """Creates the RecommendedShow object from the returned showobj"""
+
+        tvdb_id = helpers.getTVDBFromID(show_obj.get('imdb_tt'), 'IMDB')
+        if not tvdb_id:
+            return None
+
+        rec_show = RecommendedShow(self,
+                                   show_obj.get('imdb_tt'),
+                                   show_obj.get('name'),
+                                   1,
+                                   int(tvdb_id),
+                                   **{'rating': show_obj.get('rating'),
+                                      'votes': show_obj.get('votes'),
+                                      'image_href': show_obj.get('imdb_url')}
+                                   )
+
+        if show_obj.get('image_url_large'):
+            rec_show.cache_image(show_obj.get('image_url_large'))
+
+        return rec_show
 
     def fetch_popular_shows(self):
-        """Get popular show information from IMDB"""
-
+        """Get popular show information from IMDB."""
         popular_shows = []
 
-        data = helpers.getURL(self.url, session=self.session, params=self.params, headers={'Referer': 'http://akas.imdb.com/'}, returns='text')
+        data = helpers.getURL(self.url, session=self.session, params=self.params,
+                              headers={'Referer': 'http://akas.imdb.com/'}, returns='text')
         if not data:
             return None
 
         soup = BeautifulSoup(data, 'html5lib')
-        results = soup.find("table", {"class": "results"})
-        rows = results.find_all("tr")
+        results = soup.find('div', class_='lister-list')
+        rows = results.find_all('div', class_='lister-item mode-advanced')
 
         for row in rows:
             show = {}
-            image_td = row.find("td", {"class": "image"})
 
-            if image_td:
-                image = image_td.find("img")
-                show['image_url_large'] = self.change_size(image['src'], 3)
-                show['image_path'] = ek(posixpath.join, 'images', 'imdb_popular', ek(os.path.basename, show['image_url_large']))
+            image_div = row.find('div', class_='lister-item-image float-left')
+            if image_div:
+                image = image_div.find('img')
+                show['image_url_large'] = self.change_size(image['loadlate'], 3)
+                show['image_path'] = posixpath.join('images', 'imdb_popular', os.path.basename(show['image_url_large']))
+                # self.cache_image(show['image_url_large'])
 
-                self.cache_image(show['image_url_large'])
+            content_div = row.find('div', class_='lister-item-content')
+            if content_div:
+                show_info = content_div.find('a')
+                show['name'] = show_info.get_text()
+                show['imdb_url'] = 'http://www.imdb.com' + show_info['href']
+                show['imdb_tt'] = show['imdb_url'][-25:][0:9]
+                show['year'] = content_div.find('span', class_='lister-item-year text-muted unbold').get_text()[1:5]
 
-            td = row.find("td", {"class": "title"})
+                rating_div = content_div.find('div', class_='ratings-bar')
+                if rating_div:
+                    show['rating'] = rating_div.find('strong').get_text()
 
-            if td:
-                show['name'] = td.find("a").contents[0]
-                show['imdb_url'] = "http://akas.imdb.com" + td.find("a")["href"]
-                show['imdb_tt'] = show['imdb_url'][-10:][0:9]
-                show['year'] = td.find("span", {"class": "year_type"}).contents[0].split(" ")[0][1:]
+                votes_p = content_div.find('p', class_='sort-num_votes-visible')
+                if votes_p:
+                    show['votes'] = votes_p.find('span', {'name': 'nv'}).get_text().replace(',', '')
 
-                rating_all = td.find("div", {"class": "user_rating"})
-                if rating_all:
-                    rating_string = rating_all.find("div", {"class": "rating rating-list"})
-                    if rating_string:
-                        rating_string = rating_string['title']
-
-                        match = re.search(r".* (.*)\/10.*\((.*)\).*", rating_string)
-                        if match:
-                            matches = match.groups()
-                            show['rating'] = matches[0]
-                            show['votes'] = matches[1]
-                        else:
-                            show['rating'] = None
-                            show['votes'] = None
-                else:
-                    show['rating'] = None
-                    show['votes'] = None
-
-                outline = td.find("span", {"class": "outline"})
-                if outline:
-                    show['outline'] = outline.contents[0]
-                else:
-                    show['outline'] = u''
+                text_p = content_div.find('p', class_='text-muted')
+                if text_p:
+                    show['outline'] = text_p.get_text(strip=True)
 
                 popular_shows.append(show)
 
-        return popular_shows
+        result = []
+        for show in popular_shows:
+            try:
+                recommended_show = self._create_recommended_show(show)
+                if recommended_show:
+                    result.append(recommended_show)
+            except Exception:
+                logger.log(u'Could not parse IMDB show, with exception: {0!r}'.format(traceback.format_exc()), logger.WARNING)
+
+        return result
 
     @staticmethod
     def change_size(image_url, factor=3):
-        match = re.search(r"^(.*)V1._(.{2})(.*?)_(.{2})(.*?),(.*?),(.*?),(.*?)_.jpg$", image_url)
+        """Change the size of the image we get from IMDB.
+
+        :param: image_url: Image source URL
+        :param: factor: Multiplier for the image size
+        """
+        match = re.search(r'(.+[X|Y])(\d+)(_CR\d+,\d+,)(\d+),(\d+)', image_url)
 
         if match:
             matches = match.groups()
-            ek(os.path.basename, image_url)
             matches = list(matches)
-            matches[2] = int(matches[2]) * factor
+            matches[1] = int(matches[1]) * factor
+            matches[3] = int(matches[3]) * factor
             matches[4] = int(matches[4]) * factor
-            matches[5] = int(matches[5]) * factor
-            matches[6] = int(matches[6]) * factor
-            matches[7] = int(matches[7]) * factor
 
-            return "%sV1._%s%s_%s%s,%s,%s,%s_.jpg" % (matches[0], matches[1], matches[2], matches[3], matches[4],
-                                                      matches[5], matches[6], matches[7])
+            return '{0}{1}{2}{3},{4}_AL_.jpg'.format(matches[0], matches[1], matches[2],
+                                                     matches[3], matches[4])
         else:
             return image_url
-
-    def cache_image(self, image_url):
-        """
-        Store cache of image in cache dir
-        :param image_url: Source URL
-        """
-        path = ek(os.path.abspath, ek(os.path.join, sickbeard.CACHE_DIR, 'images', 'imdb_popular'))
-
-        if not ek(os.path.exists, path):
-            ek(os.makedirs, path)
-
-        full_path = ek(os.path.join, path, ek(os.path.basename, image_url))
-
-        if not ek(os.path.isfile, full_path):
-            helpers.download_file(image_url, full_path, session=self.session)
-
-imdb_popular = imdbPopular()
