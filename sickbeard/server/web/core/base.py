@@ -250,7 +250,7 @@ class WebHandler(BaseHandler):
             method = getattr(self, route)
 
             # Configure the WEB_URL global, with the request protocol + host and WEB_ROOT if exists.
-            sickbeard.WEB_URL = self.request.protocol + "://" + self.request.host + sickbeard.WEB_ROOT
+            sickbeard.WEB_URL = self.request.protocol + '://' + self.request.host + sickbeard.WEB_ROOT
 
             results = yield self.async_call(method)
             self.finish(results)
