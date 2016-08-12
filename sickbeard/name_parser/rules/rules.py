@@ -1811,7 +1811,7 @@ class FixMultipleFormats(Rule):
             last_format = formats[-1]
             previous = matches.previous(last_format, predicate=lambda match: match.name == 'screen_size')
             next_range = matches.range(last_format.end, filepart.end,
-                                       lambda match: match.name in ('video_codec', 'release_group'))
+                                       lambda match: match.name in ('audio_codec', 'video_codec', 'release_group'))
             # If we have at least 3 matches near by, then discard the other formats
             if len(previous) + len(next_range) > 2:
                 invalid_formats = {f.value for f in formats[0:-1]}
