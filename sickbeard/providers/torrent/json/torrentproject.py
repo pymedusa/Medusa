@@ -91,7 +91,7 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     search_url = self.url
 
                 response = self.get_url(search_url, params=search_params, returns='response')
-                if not response:
+                if not response or not response.content:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
@@ -99,10 +99,6 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     jdata = response.json()
                 except ValueError:  # also catches JSONDecodeError if simplejson is installed
                     logger.log('No data returned from provider', logger.DEBUG)
-                    continue
-
-                if not jdata:
-                    logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                     continue
 
                 results += self.parse(jdata, mode)
