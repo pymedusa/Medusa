@@ -88,13 +88,8 @@ class BitCannonProvider(TorrentProvider):
                                (search=search_string), logger.DEBUG)
 
                 search_url = urljoin(url, 'api/search')
-                try:
-                    response = self.get_url(search_url, params=search_params, returns='response')
-                    response.raise_for_status()
-                except RequestException as msg:
-                    logger.log(u'Error while connecting to provider: {error}'.format(error=msg), logger.ERROR)
-                    continue
 
+                response = self.get_url(search_url, params=search_params, returns='response')
                 if not response or not response.content:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
