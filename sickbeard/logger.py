@@ -557,7 +557,8 @@ class BraceMessage(object):
         :return:
         :rtype: str
         """
-        return str(self.fmt).format(*self.args, **self.kwargs)
+        result = str(self.fmt)
+        return result.format(*self.args, **self.kwargs) if self.args or self.kwargs else result
 
 
 class StyleAdapter(logging.LoggerAdapter):
