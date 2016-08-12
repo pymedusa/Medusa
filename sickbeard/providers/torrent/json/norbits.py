@@ -88,21 +88,22 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     'search': search_string,
                 }
 
-                self._check_auth()
-                response = self.get_url(self.urls['search'], post_data=sickbeard.providers.torrent.json.dumps(post_data), returns='response')
+                response = self.get_url(self.urls['search'], post_data=sickbeard.providers.torrent.json.dumps(post_data),
+                                        returns='response')
                 if not response or not response.content:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                if self._check_auth_from_data(response.json()):
+                try:
+                    jdata = response.json()
+                except ValueError:  # also catches JSONDecodeError if simplejson is installed
+                    logger.log('No data returned from provider', logger.DEBUG)
+                    continue
+
+                if self._check_auth_from_data(jdata):
                     return results
 
-                json_items = parsed_json
-                if not json_items:
-                    logger.log('Resulting JSON from provider is not correct, '
-                               'not parsing it', logger.ERROR)
-
-            results += self.parse(response.json(), mode)
+            results += self.parse(jdata, mode)
 
         return results
 
