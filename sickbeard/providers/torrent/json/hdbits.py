@@ -84,7 +84,7 @@ class HDBitsProvider(TorrentProvider):
             jdata = response.json()
         except ValueError:  # also catches JSONDecodeError if simplejson is installed
             logger.log('No data returned from provider', logger.DEBUG)
-            continue
+            return results
 
         results += self.parse(jdata, None)
 
