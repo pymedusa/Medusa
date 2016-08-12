@@ -105,7 +105,7 @@ class TorrentShackProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     search_params['searchstr'] = search_string
 
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
@@ -192,12 +192,12 @@ class TorrentShackProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             'login': 'Login',
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='text')
-        if not response:
+        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
-        if '<title>Login :: TorrentShack.me</title>' in response:
+        if '<title>Login :: TorrentShack.me</title>' in response.text:
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
 

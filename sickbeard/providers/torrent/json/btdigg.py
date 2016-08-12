@@ -95,11 +95,17 @@ class BTDiggProvider(TorrentProvider):
                     search_url = self.urls['api']
 
                 response = self.get_url(search_url, params=search_params, returns='response')
-                if not response.content:
+                if not response or not response.content:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                results += self.parse(response.json(), mode)
+                try:
+                    jdata = response.json()
+                except ValueError:  # also catches JSONDecodeError if simplejson is installed
+                    logger.log('No data returned from provider', logger.DEBUG)
+                    continue
+
+                results += self.parse(jdata, mode)
 
         return results
 

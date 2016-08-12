@@ -97,7 +97,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
                 max_page_number = 0
 
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
@@ -232,7 +232,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             add_dict_to_cookiejar(self.session.cookies, self.cookies)
         else:
             response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
-            if not response.text:
+            if not response or not response.text:
                 logger.log('Unable to connect to provider', logger.WARNING)
                 return False
 

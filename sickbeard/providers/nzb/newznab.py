@@ -138,13 +138,14 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
                 time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 
-                data = self.get_url(urljoin(self.url, 'api'), params=search_params, returns='text')
-                if not data:
-                    break
+                response = self.get_url(urljoin(self.url, 'api'), params=search_params, returns='response')
+                if not response or not response.text:
+                    logger.log('No data returned from provider', logger.DEBUG)
+                    continue
 
-                with BS4Parser(data, 'html5lib') as html:
+                with BS4Parser(response.text, 'html5lib') as html:
                     if not self._check_auth_from_data(html):
-                        break
+                        return items
 
                     try:
                         self.torznab = 'xmlns:torznab' in html.rss.attrs
@@ -387,13 +388,13 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         if self.needs_auth and self.key:
             url_params['apikey'] = self.key
 
-        data = self.get_url(urljoin(self.url, 'api'), params=url_params, returns='text')
-        if not data:
+        response = self.get_url(urljoin(self.url, 'api'), params=url_params, returns='response')
+        if not response or not response.text:
             error_string = 'Error getting caps xml for [{0}]'.format(self.name)
             logger.log(error_string, logger.WARNING)
             return False, return_categories, error_string
 
-        with BS4Parser(data, 'html5lib') as html:
+        with BS4Parser(response.text, 'html5lib') as html:
             if not html.find('categories'):
                 error_string = 'Error parsing caps xml for [{0}]'.format(self.name)
                 logger.log(error_string, logger.DEBUG)

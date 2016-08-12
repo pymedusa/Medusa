@@ -22,7 +22,6 @@ import validators
 import traceback
 
 from requests.compat import urljoin
-from requests.exceptions import RequestException
 
 from sickbeard import logger, tvcache
 
@@ -88,14 +87,9 @@ class BitCannonProvider(TorrentProvider):
                                (search=search_string), logger.DEBUG)
 
                 search_url = urljoin(url, 'api/search')
-                try:
-                    response = self.get_url(search_url, params=search_params, returns='response')
-                    response.raise_for_status()
-                except RequestException as msg:
-                    logger.log(u'Error while connecting to provider: {error}'.format(error=msg), logger.ERROR)
-                    continue
 
-                if not response.content:
+                response = self.get_url(search_url, params=search_params, returns='response')
+                if not response or not response.content:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
@@ -106,7 +100,7 @@ class BitCannonProvider(TorrentProvider):
                     continue
 
                 if not self._check_auth_from_data(jdata):
-                    continue
+                    return results
 
                 results += self.parse(jdata, mode)
 

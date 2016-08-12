@@ -102,7 +102,7 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
                 search_params['search'] = re.sub(r'[()]', '', search_string)
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
@@ -195,7 +195,7 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
-        if not response.text:
+        if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 

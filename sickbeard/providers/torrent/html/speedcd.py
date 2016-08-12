@@ -100,7 +100,7 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                 search_params['search'] = search_string
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
@@ -202,7 +202,7 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
-        if not response.text:
+        if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 

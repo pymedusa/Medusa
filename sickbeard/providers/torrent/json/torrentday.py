@@ -22,10 +22,9 @@ import re
 import traceback
 
 from requests.compat import urljoin
-from requests.exceptions import RequestException
 from requests.utils import dict_from_cookiejar
 
-from sickbeard import logger, tvcache, ui
+from sickbeard import logger, tvcache
 
 from sickrage.helper.common import convert_size
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
@@ -97,7 +96,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     post_data.update({'free': 'on'})
 
                 response = self.get_url(self.urls['search'], post_data=post_data, returns='response')
-                if not response.content:
+                if not response or not response.content:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
@@ -139,7 +138,8 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         for row in torrent_rows:
             try:
                 title = re.sub(r'\[.*=.*\].*\[/.*\]', '', row['name']) if row['name'] else None
-                download_url = urljoin(self.urls['download'], '{}/{}'.format(row['id'], row['fname'])) if row['id'] and row['fname'] else None
+                download_url = urljoin(self.urls['download'], '{}/{}'
+                                       .format(row['id'], row['fname'])) if row['id'] and row['fname'] else None
                 if not all([title, download_url]):
                     continue
 

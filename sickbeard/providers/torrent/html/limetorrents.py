@@ -92,7 +92,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     search_url = self.urls['rss'].format(page=1)
 
                 response = self.get_url(search_url, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 

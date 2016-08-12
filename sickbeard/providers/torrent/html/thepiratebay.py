@@ -103,7 +103,7 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     search_params = {}
 
                 response = self.get_url(search_url, params=search_params, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 

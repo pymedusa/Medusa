@@ -24,7 +24,8 @@ from requests.compat import urljoin
 
 from sickbeard import logger, tvcache
 
-from sickrage.helper.common import convert_size, try_int
+from sickrage.helper.common import convert_size
+
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
@@ -91,15 +92,14 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     search_params['search'] = None
 
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                if not response or not response.content:
+                    logger.log('No data returned from provider', logger.DEBUG)
+                    continue
+
                 try:
                     jdata = response.json()
                 except ValueError:
                     logger.log('No data returned from provider', logger.DEBUG)
-                    continue
-
-                # Continue only if at least one release is found
-                if not jdata:
-                    logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                     continue
 
                 error = jdata.get('error')

@@ -123,7 +123,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
 
                 search_url = self.urls['api']
                 response = self.get_url(search_url, params=search_params, returns='response')
-                if not response.content:
+                if not response or not response.content:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 

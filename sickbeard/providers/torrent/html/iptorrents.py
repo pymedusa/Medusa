@@ -93,7 +93,7 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 search_url += ';o=seeders' if mode != 'RSS' else ''
 
                 response = self.get_url(search_url, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
@@ -180,7 +180,7 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Initialize session with a GET to have cookies
         self.get_url(self.urls['login'], returns='response')
         response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
-        if not response.text:
+        if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 

@@ -83,10 +83,10 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
                 search_url = self.urls['verified'] if self.confirmed else self.urls['feed']
                 response = self.get_url(search_url, params={'q': search_string}, returns='response')
-                if not response.text:
+                if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
-                elif not response.text.startswith('<?xml'):
+                elif not response or not response.text.startswith('<?xml'):
                     logger.log('Expected xml but got something else, is your mirror failing?', logger.INFO)
                     continue
 
