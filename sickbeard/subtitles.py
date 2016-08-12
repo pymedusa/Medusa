@@ -43,7 +43,7 @@ from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
 from . import db, history, processTV
 from .common import cpu_presets
-from .helpers import isMediaFile, isRarFile, remove_non_release_groups
+from .helpers import isMediaFile, isRarFile
 
 logger = logging.getLogger(__name__)
 
@@ -639,29 +639,6 @@ def delete_unwanted_subtitles(dirpath, filename):
             logger.info(u"Couldn't delete subtitle: %s. Error: %s", filename, ex(error))
 
 
-def clear_non_release_groups(filepath, filename):
-    """Remove non release groups from the name of the given file path.
-
-    It also renames/moves the file to the path
-
-    :param filepath: the file path
-    :param filename: the file name
-    :type filepath: str
-    :return: the new file path
-    :rtype: str
-    """
-    try:
-        # Remove non release groups from video file. Needed to match subtitles
-        new_filename = remove_non_release_groups(filename)
-        if new_filename != filename:
-            os.rename(os.path.join(filepath, filename), os.path.join(filepath, new_filename))
-            filename = new_filename
-    except Exception as error:
-        logger.debug(u"Couldn't remove non release groups from video file. Error: %s", ex(error))
-
-    return filename
-
-
 class SubtitlesFinder(object):
     """The SubtitlesFinder will be executed every hour but will not necessarily search and download subtitles.
 
@@ -699,7 +676,6 @@ class SubtitlesFinder(object):
                 if not isMediaFile(filename):
                     continue
 
-                filename = clear_non_release_groups(root, filename)
                 video_path = os.path.join(root, filename)
                 tv_episode = TVEpisode.from_filepath(video_path)
 

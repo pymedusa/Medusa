@@ -20,26 +20,24 @@
 
 from __future__ import unicode_literals
 
-import time
 import datetime
-import operator
-import threading
-import traceback
 import errno
+import operator
+import re
+import threading
+import time
+import traceback
 from socket import timeout as SocketTimeout
+
 from requests import exceptions as requests_exceptions
 import sickbeard
-
-from sickbeard import db
-from sickbeard import logger
-from sickbeard.helpers import remove_non_release_groups
-from sickbeard.search import snatchEpisode
-from sickbeard.search import pickBestResult
-from sickbeard.common import DOWNLOADED, SNATCHED, SNATCHED_PROPER, Quality, cpu_presets
+from sickbeard import db, helpers, logger
+from sickbeard.common import DOWNLOADED, Quality, SNATCHED, cpu_presets
+from sickbeard.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from sickbeard.search import pickBestResult, snatchEpisode
+from sickrage.helper.common import enabled_providers
 from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.History import History
-from sickrage.helper.common import enabled_providers
-from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
 
 
 class ProperFinder(object):  # pylint: disable=too-few-public-methods
@@ -157,7 +155,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # if they haven't been added by a different provider than add the proper to the list
             for proper in cur_propers:
-                name = self._genericName(proper.name, remove=False)
+                name = self._sanitize_name(proper.name)
                 if name not in propers:
                     logger.log('Found new possible proper result: {name}'.format
                                (name=proper.name), logger.DEBUG)
@@ -180,7 +178,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             try:
-                parse_result = NameParser(False).parse(cur_proper.name)
+                parse_result = NameParser().parse(cur_proper.name)
             except (InvalidNameException, InvalidShowException) as error:
                 logger.log('{0}'.format(error), logger.DEBUG)
                 continue
@@ -318,16 +316,16 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # make sure that none of the existing history downloads are the same proper we're trying to download
             # if the result exists in history already we need to skip it
-            clean_proper_name = self._genericName(cur_proper.name, clean_proper=True)
-            if any(clean_proper_name == self._genericName(cur_result[b'resource'], clean_proper=True)
+            clean_proper_name = self._canonical_name(cur_proper.name, clear_extension=True)
+            if any(clean_proper_name == self._canonical_name(cur_result[b'resource'], clear_extension=True)
                    for cur_result in history_results):
                 logger.log('This proper {result!r} is already in history, skipping it'.format
                            (result=cur_proper.name), logger.DEBUG)
                 continue
             else:
                 # make sure that none of the existing history downloads are the same proper we're trying to download
-                clean_proper_name = self._genericName(cur_proper.name)
-                if any(clean_proper_name == self._genericName(cur_result[b'resource'])
+                clean_proper_name = self._canonical_name(cur_proper.name)
+                if any(clean_proper_name == self._canonical_name(cur_result[b'resource'])
                        for cur_result in history_results):
                     logger.log('This proper {result!r} is already in history, skipping it'.format
                                (result=cur_proper.name), logger.DEBUG)
@@ -357,10 +355,13 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 
     @staticmethod
-    def _genericName(name, **kwargs):
-        if kwargs.pop('remove', True):
-            name = remove_non_release_groups(name, clean_proper=kwargs.pop('clean_proper', False))
-        return name.replace('.', ' ').replace('-', ' ').replace('_', ' ').lower()
+    def _canonical_name(name, clear_extension=False):
+        ignore_list = {'website', 'mimetype'} | {'container'} if clear_extension else {}
+        return helpers.canonical_name(name, ignore_list=ignore_list).lower()
+
+    @staticmethod
+    def _sanitize_name(name):
+        return re.sub(r'[._\-]', ' ', name).lower()
 
     @staticmethod
     def _set_lastProperSearch(when):

@@ -603,7 +603,7 @@ class TVShow(TVObject):
             ep_file_name = ek(os.path.splitext, ep_file_name)[0]
 
             try:
-                parse_result = NameParser(False, showObj=self, tryIndexers=True).parse(ep_file_name)
+                parse_result = NameParser(show=self, try_indexers=True).parse(ep_file_name)
             except (InvalidNameException, InvalidShowException):
                 parse_result = None
 
@@ -828,7 +828,7 @@ class TVShow(TVObject):
                    (self.indexerid, filepath), logger.DEBUG)
 
         try:
-            parse_result = NameParser(showObj=self, tryIndexers=True, parse_method=(
+            parse_result = NameParser(show=self, try_indexers=True, parse_method=(
                 'normal', 'anime')[self.is_anime]).parse(filepath)
         except (InvalidNameException, InvalidShowException) as error:
             logger.log(u'{0}: {1}'.format(self.indexerid, error), logger.DEBUG)
@@ -1687,7 +1687,7 @@ class TVEpisode(TVObject):
         :rtype: TVEpisode
         """
         try:
-            parse_result = NameParser(True, tryIndexers=True).parse(filepath, cache_result=True)
+            parse_result = NameParser(try_indexers=True).parse(filepath, cache_result=True)
             results = []
             if parse_result.show.is_anime and parse_result.ab_episode_numbers:
                 results = [parse_result.show.get_episode(absolute_number=episode_number, should_cache=False)
@@ -2495,17 +2495,17 @@ class TVEpisode(TVObject):
 
         def release_name(name):
             if name:
-                name = helpers.remove_non_release_groups(remove_extension(name))
+                name = remove_extension(name)
             return name
 
         def release_group(show, name):
             if name:
-                name = helpers.remove_non_release_groups(remove_extension(name))
+                name = remove_extension(name)
             else:
                 return ''
 
             try:
-                parse_result = NameParser(name, showObj=show, naming_pattern=True).parse(name)
+                parse_result = NameParser(show=show, naming_pattern=True).parse(name)
             except (InvalidNameException, InvalidShowException) as e:
                 logger.log(u'Unable to get parse release_group: {}'.format(e), logger.DEBUG)
                 return ''

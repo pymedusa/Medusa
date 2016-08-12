@@ -47,18 +47,19 @@ import adba
 from cachecontrol import CacheControl
 import certifi
 from contextlib2 import closing, suppress
+import guessit
 import requests
 from requests.compat import urlparse
 import shutil_custom
 import sickbeard
 from sickbeard import classes, db
 from sickbeard.common import USER_AGENT
-from sickrage.helper.common import (episode_num, http_code_description, media_extensions, pretty_file_size,
-                                    remove_strings, subtitle_extensions)
+from sickrage.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, \
+    subtitle_extensions
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
-from six import iteritems, text_type
+from six import string_types, text_type
 from six.moves import http_client
 
 
@@ -99,89 +100,6 @@ def indentXML(elem, level=0):
     else:
         if level and (not elem.tail or not elem.tail.strip()):
             elem.tail = i
-
-
-def remove_non_release_groups(name, clean_proper=False):
-    """Remove non release groups from name."""
-    if not name:
-        return name
-
-    # Do not remove all [....] suffixes, or it will break anime releases ## Need to verify this is true now
-    # Check your database for funky release_names and add them here, to improve failed handling, archiving, and history.
-    # select release_name from tv_episodes WHERE LENGTH(release_name);
-    # [eSc], [SSG], [GWC] are valid release groups for non-anime
-    removeWordsList = {
-        r'\[rartv\]$': 'searchre',
-        r'\[rarbg\]$': 'searchre',
-        r'\.\[eztv\]$': 'searchre',
-        r'\[eztv\]$': 'searchre',
-        r'\[ettv\]$': 'searchre',
-        r'\[cttv\]$': 'searchre',
-        r'\.?[[.]vtv\]?$': 'searchre',
-        r'\[EtHD\]$': 'searchre',
-        r'\[GloDLS\]$': 'searchre',
-        r'\[silv4\]$': 'searchre',
-        r'\[Seedbox\]$': 'searchre',
-        r'\[PublicHD\]$': 'searchre',
-        r'\[REQ\]\s$': 'searchre',
-        r'\.\[PublicHD\]$': 'searchre',
-        r'\.\[NO.RAR\]$': 'searchre',
-        r'\[NO.RAR\]$': 'searchre',
-        r'-\=\{SPARROW\}\=-$': 'searchre',
-        r'\=\{SPARR$': 'searchre',
-        r'\.\[\d*(P|p)\]\[HEVC\]$': 'searchre',
-        r'\[AndroidTwoU\]$': 'searchre',
-        r'\[brassetv\]$': 'searchre',
-        r'\[Talamasca32\]$': 'searchre',
-        r'\(musicbolt\.com\)$': 'searchre',
-        r'\.\(NLsub\)$': 'searchre',
-        r'\(NLsub\)$': 'searchre',
-        r'\.\[BT\]$': 'searchre',
-        r' \[1044\]$': 'searchre',
-        r'\.RiPSaLoT$': 'searchre',
-        r'\.GiuseppeTnT$': 'searchre',
-        r'\.Renc$': 'searchre',
-        r'\.gz$': 'searchre',
-        r'\.English$': 'searchre',
-        r'\.German$': 'searchre',
-        r'\.\.Italian$': 'searchre',
-        r'\.Italian$': 'searchre',
-        r'(?<![57])\.1$': 'searchre',
-        r'-NZBGEEK$': 'searchre',
-        r'-Siklopentan$': 'searchre',
-        r'-Chamele0n$': 'searchre',
-        r'-Obfuscated$': 'searchre',
-        r'-BUYMORE$': 'searchre',
-        r'-\[SpastikusTV\]$': 'searchre',
-        r'-RP$': 'searchre',
-        r'-20-40$': 'searchre',
-        r'\.\[www\.usabit\.com\]$': 'searchre',
-        r'^\[www\.Cpasbien\.pe\] ': 'searchre',
-        r'^\[www\.Cpasbien\.com\] ': 'searchre',
-        r'^\[ www\.Cpasbien\.pw \] ': 'searchre',
-        r'^\.www\.Cpasbien\.pw': 'searchre',
-        r'^\[www\.newpct1\.com\]': 'searchre',
-        r'^\[ www\.Cpasbien\.com \] ': 'searchre',
-        r'- \{ www\.SceneTime\.com \}$': 'searchre',
-        r'^\{ www\.SceneTime\.com \} - ': 'searchre',
-        r'^\]\.\[www\.tensiontorrent.com\] - ': 'searchre',
-        r'^\]\.\[ www\.tensiontorrent.com \] - ': 'searchre',
-        r'- \[ www\.torrentday\.com \]$': 'searchre',
-        r'^\[ www\.TorrentDay\.com \] - ': 'searchre',
-        r'\[NO-RAR\] - \[ www\.torrentday\.com \]$': 'searchre',
-    }
-
-    _name = name
-    for remove_string, remove_type in iteritems(removeWordsList):
-        if remove_type == 'search':
-            _name = _name.replace(remove_string, '')
-        elif remove_type == 'searchre':
-            _name = re.sub(r'(?i)' + remove_string, '', _name)
-
-    if clean_proper:
-        _name = remove_strings(_name, ['.mkv', '.avi', '.mp4'])
-
-    return _name
 
 
 def isMediaFile(filename):
@@ -1586,6 +1504,37 @@ def is_ip_private(ip):
     return priv_lo.match(ip) or priv_24.match(ip) or priv_20.match(ip) or priv_16.match(ip)
 
 
+def unicodify(value):
+    """Return the value as unicode.
+
+    :param value:
+    :type value: str
+    :return:
+    :rtype: str
+    """
+    if isinstance(value, string_types) and not isinstance(value, text_type):
+        return text_type(value, 'utf-8', 'replace')
+
+    return value
+
+
+def single_or_list(value, allow_multi):
+    """Return a single value or a list.
+
+    If value is a list with more than one element and allow_multi is False then it returns None.
+    :param value:
+    :type value: list
+    :param allow_multi: if False, multiple values will return None
+    :type allow_multi: bool
+    :rtype: list or str or int
+    """
+    if not isinstance(value, list):
+        return value
+
+    if allow_multi:
+        return sorted(value)
+
+
 def ensure_list(value):
     """Return a list.
 
@@ -1594,3 +1543,21 @@ def ensure_list(value):
     :rtype: list
     """
     return sorted(value) if isinstance(value, list) else [value] if value is not None else []
+
+
+def canonical_name(obj, fmt='{key}:{value}', separator='|', ignore_list=frozenset()):
+    """Create a canonical name from a release name or a guessed dictionary.
+
+    :param obj:
+    :type obj: str or dict
+    :param fmt:
+    :type fmt: str or unicode
+    :param separator:
+    :type separator: str or unicode
+    :param ignore_list:
+    :type ignore_list: set
+    :return:
+    :rtype: str
+    """
+    guess = obj if isinstance(obj, dict) else guessit.guessit(obj)
+    return str(separator.join([fmt.format(key=k, value=v) for k, v in guess.items() if k not in ignore_list]))

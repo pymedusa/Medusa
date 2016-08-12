@@ -1210,9 +1210,9 @@
   release_group: Group
   type: episode
 
-# AnimeWithSeasonAbsoluteEpisodeNumbers (options show_type='regular', it disables this rule since it's only for animes)
+# AnimeWithSeasonAbsoluteEpisodeNumbers (options show_type='normal', it disables this rule since it's only for animes)
 ? "[Group].Show.Name.S2.-.19.[1080p]"
-: options: {show_type: regular}
+: options: {show_type: normal}
   title: Show Name
   season: 2
   episode_title: '19'
@@ -1229,9 +1229,9 @@
   release_group: Group
   type: episode
 
-# AnimeAbsoluteEpisodeNumbers (options show_type='regular', it disables this rule since it's only for animes)
+# AnimeAbsoluteEpisodeNumbers (options show_type='normal', it disables this rule since it's only for animes)
 ? "[Group].Show.Name.-.102.[720p]"
-: options: {show_type: regular}
+: options: {show_type: normal}
   title: Show Name
   season: 1
   episode: 2
@@ -1247,9 +1247,9 @@
   screen_size: 720p
   type: episode
 
-# AbsoluteEpisodeNumbers (options show_type='regular', it disables this rule since it's only for animes)
+# AbsoluteEpisodeNumbers (options show_type='normal', it disables this rule since it's only for animes)
 ? Show.Name.10.720p
-: options: {show_type: regular}
+: options: {show_type: normal}
   title: Show Name
   episode: 10
   screen_size: 720p
@@ -1995,9 +1995,9 @@
   release_group: GOOD
   type: episode
 
-# FixAnimeReleaseGroup (options = show_type: regular
+# FixAnimeReleaseGroup (options = show_type: normal
 ? "[FakeGroup].Show.Name.[720p].[RealGroup]"
-: options: {show_type: regular}
+: options: {show_type: normal}
   title: Show Name
   screen_size: 720p
   release_group: RealGroup
