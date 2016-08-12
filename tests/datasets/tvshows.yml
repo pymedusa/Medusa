@@ -2981,3 +2981,19 @@
   container: MP4
   release_group: Group
   type: episode
+
+# FixMultipleFormats: regression test for https://github.com/pymedusa/SickRage/issues/876
+? "/volume1/video/Series/Show Name/Season 02/Show.Name.S02E01.eps2.0_title-pt1.tc.1080p.WEB-DL.DD5.1.H.264.mkv"
+: title: Show Name
+  season: 2
+  episode: 1
+  episode_title: eps2 0 title
+  part: 1 # not a big issue
+  screen_size: 1080p
+  format: WEB-DL
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
