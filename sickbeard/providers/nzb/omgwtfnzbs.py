@@ -83,7 +83,7 @@ class OmgwtfnzbsProvider(NZBProvider):
                     continue
 
                 if not self._check_auth_from_data(response, is_XML=False):
-                    break
+                    return items
 
                 for item in response:
                     try:
