@@ -1561,3 +1561,18 @@ def canonical_name(obj, fmt='{key}:{value}', separator='|', ignore_list=frozense
     """
     guess = obj if isinstance(obj, dict) else guessit.guessit(obj)
     return str(separator.join([fmt.format(key=k, value=v) for k, v in guess.items() if k not in ignore_list]))
+
+
+def get_broken_providers():
+    """Get broken providers from cdn.pymedusa.com."""
+    url = 'https://cdn.pymedusa.com/providers/broken_providers.txt'
+    response = getURL(url, session=make_session(), returns='response')
+
+    if not response or not response.text:
+        logger.debug('Unable to update broken providers')
+        return []
+
+    broken_providers = []
+    for line in response.text.splitlines():
+        broken_providers.append(line.strip())
+    return broken_providers

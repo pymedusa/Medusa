@@ -146,6 +146,8 @@ NEWS_LAST_READ = None
 NEWS_LATEST = None
 NEWS_UNREAD = 0
 
+BROKEN_PROVIDERS = ''
+
 INIT_LOCK = Lock()
 started = False
 
@@ -662,7 +664,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             AUTOPOSTPROCESSOR_FREQUENCY, SHOWUPDATE_HOUR, \
             ANIME_DEFAULT, NAMING_ANIME, ANIMESUPPORT, USE_ANIDB, ANIDB_USERNAME, ANIDB_PASSWORD, ANIDB_USE_MYLIST, \
             ANIME_SPLIT_HOME, SCENE_DEFAULT, DOWNLOAD_URL, BACKLOG_DAYS, GIT_USERNAME, GIT_PASSWORD, \
-            DEVELOPER, gh, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, SOCKET_TIMEOUT, RECENTLY_DELETED, \
+            DEVELOPER, gh, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, BROKEN_PROVIDERS, SOCKET_TIMEOUT, RECENTLY_DELETED, \
             FANART_BACKGROUND, FANART_BACKGROUND_OPACITY
 
         if __INITIALIZED__:
@@ -960,6 +962,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         NEWS_LAST_READ = check_setting_str(CFG, 'General', 'news_last_read', '1970-01-01')
         NEWS_LATEST = NEWS_LAST_READ
+
+        BROKEN_PROVIDERS = check_setting_str(CFG, 'General', 'broken_providers', ','.join(helpers.get_broken_providers()) or BROKEN_PROVIDERS)
 
         NZB_DIR = check_setting_str(CFG, 'Blackhole', 'nzb_dir', '')
         TORRENT_DIR = check_setting_str(CFG, 'Blackhole', 'torrent_dir', '')
@@ -1751,6 +1755,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['developer'] = int(DEVELOPER)
     new_config['General']['display_all_seasons'] = int(DISPLAY_ALL_SEASONS)
     new_config['General']['news_last_read'] = NEWS_LAST_READ
+    new_config['General']['broken_providers'] = ','.join(helpers.get_broken_providers()) or BROKEN_PROVIDERS
 
     new_config['Blackhole'] = {}
     new_config['Blackhole']['nzb_dir'] = NZB_DIR
