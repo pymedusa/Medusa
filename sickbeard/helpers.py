@@ -1253,24 +1253,6 @@ def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=N
                                hooks=hooks, stream=stream, headers=headers, cookies=cookies, proxies=proxies,
                                verify=verify)
 
-        if not resp.ok:
-            logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
-                         (url=url, status=resp.status_code, desc=http_code_description(resp.status_code)))
-            return None
-
-        if not response_type or response_type == u'response':
-            return resp
-        else:
-            warnings.warn(u'Returning {0} instead of {1} will be deprecated in the near future!'.format
-                          (response_type, 'response'), PendingDeprecationWarning)
-            if response_type == u'json':
-                try:
-                    return resp.json()
-                except ValueError:
-                    return {}
-            else:
-                return getattr(resp, response_type, resp)
-
     except requests.exceptions.RequestException as e:
         logger.debug(u'Error requesting url {url}. Error: {msg}', url=url, msg=e)
         return None
@@ -1281,6 +1263,24 @@ def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=N
             logger.info(u'Unknown exception in url {url}. Error: {msg}', url=url, msg=e)
             logger.debug(traceback.format_exc())
         return None
+
+    if not resp.ok:
+        logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
+                     (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
+        return None
+
+    if not response_type or response_type == u'response':
+        return resp
+    else:
+        warnings.warn(u'Returning {0} instead of {1} will be deprecated in the near future!'.format
+                      (response_type, 'response'), PendingDeprecationWarning)
+        if response_type == u'json':
+            try:
+                return resp.json()
+            except ValueError:
+                return {}
+        else:
+            return getattr(resp, response_type, None)
 
 
 def download_file(url, filename, session=None, headers=None, **kwargs):
