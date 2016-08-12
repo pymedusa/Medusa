@@ -99,7 +99,13 @@ class BTDiggProvider(TorrentProvider):
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                results += self.parse(response.json(), mode)
+                try:
+                    jdata = response.json()
+                except ValueError:  # also catches JSONDecodeError if simplejson is installed
+                    logger.log('No data returned from provider', logger.DEBUG)
+                    continue
+
+                results += self.parse(jdata, mode)
 
         return results
 
