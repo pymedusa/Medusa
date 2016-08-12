@@ -75,7 +75,7 @@ $('#config-components').tabs();
                                     curURL = curProvider.url
                             %>
                             <li class="ui-state-default ${('nzb-provider', 'torrent-provider')[bool(curProvider.provider_type == GenericProvider.TORRENT)]}" id="${curName}">
-                                <input type="checkbox" id="enable_${curName}" class="provider_enabler" ${'checked="checked"' if curProvider.is_enabled() is True else ''}/>
+                                <input type="checkbox" id="enable_${curName}" class="provider_enabler" ${'checked="checked"' if curProvider.is_enabled() is True and curProvider.get_id() not in broken_providers else ''}/>
                                 <a href="${anon_url(curURL)}" class="imgLink" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><img src="${srRoot}/images/providers/${curProvider.image_name()}" alt="${curProvider.name}" title="${curProvider.name}" width="16" height="16" style="vertical-align:middle;"/></a>
                                 <span style="vertical-align:middle;">${curProvider.name}</span>
                                 ${('<span class="red-text">*</span>', '')[bool(curProvider.supports_backlog)]}
