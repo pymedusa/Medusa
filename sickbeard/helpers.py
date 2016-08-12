@@ -1172,13 +1172,13 @@ def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=N
                                verify=verify)
 
     except requests.exceptions.RequestException as e:
-        logger.debug(u'Error requesting url {url}. Error: {msg}', url=url, msg=e)
+        logger.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
         return None
     except Exception as e:
         if u'ECONNRESET' in e or (hasattr(e, u'errno') and e.errno == errno.ECONNRESET):
-            logger.warning(u'Connection reset by peer accessing url {url}. Error: {msg}'.format(url=url, msg=ex(e)))
+            logger.warning(u'Connection reset by peer accessing url {url}. Error: {err_msg}'.format(url=url, err_msg=e))
         else:
-            logger.info(u'Unknown exception in url {url}. Error: {msg}', url=url, msg=e)
+            logger.info(u'Unknown exception in url {url}. Error: {err_msg}', url=url, err_msg=e)
             logger.debug(traceback.format_exc())
         return None
 
