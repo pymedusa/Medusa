@@ -738,11 +738,13 @@
                                         % for branch in sickbeard.GIT_RESET_BRANCHES:
                                             <option value="${branch}" selected="selected">${branch}</option>
                                         % endfor
-                                        % for branch in gh_branch:
-                                            % if branch not in sickbeard.GIT_RESET_BRANCHES:
-                                            <option value="${branch}">${branch}</option>
-                                            % endif
-                                        % endfor
+                                        % if gh_branch:
+                                            % for branch in gh_branch:
+                                                % if branch not in sickbeard.GIT_RESET_BRANCHES:
+                                                <option value="${branch}">${branch}</option>
+                                                % endif
+                                            % endfor
+                                        % endif
                                     </select>
                                 </span>
                                 <div class="clear-left">
