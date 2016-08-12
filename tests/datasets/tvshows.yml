@@ -3016,3 +3016,14 @@
   container: mkv
   mimetype: video/x-matroska
   type: episode
+
+# Scene release groups should drop all words after dash
+? Show.Name.S06E05.720p.HDTV.x264-GROUP-BUYMORE
+: title: Show Name
+  season: 6
+  episode: 5
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: GROUP
+  type: episode
