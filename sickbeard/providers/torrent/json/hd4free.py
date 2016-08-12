@@ -102,11 +102,6 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                # Continue only if at least one release is found
-                if not jdata:
-                    logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
-                    continue
-
                 error = jdata.get('error')
                 if error:
                     logger.log('{0}'.format(error), logger.DEBUG)
