@@ -22,7 +22,6 @@ import validators
 import traceback
 
 from requests.compat import urljoin
-from requests.exceptions import RequestException
 
 from sickbeard import logger, tvcache
 
