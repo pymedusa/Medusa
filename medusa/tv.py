@@ -1739,12 +1739,15 @@ class TVShow(TVObject):
         # if we are re-downloading then we only want it if it's in our
         # preferred_qualities list and better than what we have, or we only have
         # one bestQuality and we do not have that quality yet
+        logger.log('preferred_qualities: {0}. allowed_qualities: {1}'.format(preferred_qualities, allowed_qualities), logger.WARNING)
+        logger.log('ep status: {0}. quality: {1}. cur_quality: {2}'.format(ep_status, quality, cur_quality), logger.WARNING)
         if ep_status in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER and \
-                quality in preferred_qualities and (quality > cur_quality or cur_quality not in preferred_qualities):
-            logger.log(u'{id}: Episode already exists with quality {existing_quality} but the found result'
-                       u' quality {new_quality} is wanted more, getting found result for {show} {ep}'.format
-                       (id=self.indexerid, existing_quality=Quality.qualityStrings[cur_quality],
-                        new_quality=Quality.qualityStrings[quality], show=self.name,
+                (quality in preferred_qualities and (quality > cur_quality or cur_quality not in preferred_qualities) or \
+                (quality > cur_quality and cur_quality not in [allowed_qualities, preferred_qualities])):
+            logger.log(u'Episode already exists with quality {existing_quality} but the found result'
+                       u' quality {new_quality} is wanted more, getting found result for {name} {ep}'.format
+                       (existing_quality=Quality.qualityStrings[cur_quality],
+                        new_quality=Quality.qualityStrings[quality], name=self.name,
                         ep=episode_num(season, episode)), logger.DEBUG)
             return True
         elif cur_quality == Quality.UNKNOWN and forced_search:
