@@ -1739,13 +1739,11 @@ class TVShow(TVObject):
         # if we are re-downloading then we only want it if it's in our
         # preferred_qualities list and better than what we have, or we only have
         # one bestQuality and we do not have that quality yet
-        logger.log('preferred_qualities: {0}. allowed_qualities: {1}'.format(preferred_qualities, allowed_qualities), logger.WARNING)
-        logger.log('ep status: {0}. quality: {1}. cur_quality: {2}'.format(ep_status, quality, cur_quality), logger.WARNING)
-        if ep_status in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER and \
-                (quality in preferred_qualities and (quality > cur_quality or cur_quality not in preferred_qualities) or \
-                (quality > cur_quality and cur_quality not in [allowed_qualities, preferred_qualities])):
-            logger.log(u'Episode already exists with quality {existing_quality} but the found result'
-                       u' quality {new_quality} is wanted more, getting found result for {name} {ep}'.format
+        logger.log('Preferred_qualities: {0}. Allowed_qualities: {1}'.format(preferred_qualities, allowed_qualities), logger.DEBUG)
+        logger.log('Ep status: {0}. Current quality: {1}. New quality: {2}'.format(ep_status, cur_quality, quality), logger.DEBUG)
+        if TVEpisode.should_replace(ep_status, cur_quality, quality, allowed_qualities, preferred_qualities):
+            logger.log(u'Episode already exists with quality {existing_quality} but found a '
+                       u'better or preferred quality {new_quality} for {name} {ep}'.format
                        (existing_quality=Quality.qualityStrings[cur_quality],
                         new_quality=Quality.qualityStrings[quality], name=self.name,
                         ep=episode_num(season, episode)), logger.DEBUG)
@@ -3280,3 +3278,37 @@ class TVEpisode(TVObject):
         except Exception:
             logger.log(u"{id}: Failed to modify date of '{location}'".format
                        (id=self.show.indexerid, location=os.path.basename(self.location)), logger.WARNING)
+
+    @staticmethod
+    def should_replace(ep_status, cur_quality, new_quality, allowed_qualities, preferred_qualities):
+        """Return true if the new quality should replace current quality.
+
+        :param ep_status:
+        :type ep_status: int
+        :param cur_quality:
+        :type cur_quality: int
+        :param new_quality:
+        :type new_quality: int
+        :param allowed_qualities:
+        :type allowed_qualities: list of int
+        :param preferred_qualities:
+        :type preferred_qualities: list of int
+        :return:
+        :rtype: bool
+        """
+        if ep_status not in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER:
+            return False
+
+        if new_quality in preferred_qualities:
+            if cur_quality in preferred_qualities:
+                return new_quality > cur_quality
+            return True
+
+        if new_quality in allowed_qualities:
+            if cur_quality in preferred_qualities:
+                return False
+            if cur_quality in allowed_qualities:
+                return new_quality > cur_quality
+            return True
+
+        return False
