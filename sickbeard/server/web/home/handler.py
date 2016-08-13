@@ -654,6 +654,13 @@ class Home(WebRoot):
             ui.notifications.message('Already on branch: ', branch)
             return self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
 
+    def branchForceUpdate(self):
+        return {
+            'currentBranch': sickbeard.BRANCH,
+            'resetBranches': sickbeard.GIT_RESET_BRANCHES,
+            'branches': [branch for branch in sickbeard.versionCheckScheduler.action.list_remote_branches() if branch not in sickbeard.GIT_RESET_BRANCHES]
+        }
+
     @staticmethod
     def getDBcompare():
 
