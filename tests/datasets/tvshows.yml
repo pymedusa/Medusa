@@ -3004,3 +3004,15 @@
   season: 1
   episode: 1
   type: episode
+
+# Show containing numbers in the title; 2 parts (folder and filename) that matches expected title; + episode title with number!
+# regression test: guessit exception was happening
+? Show '70s Name/Season 07/Show '70s Name - S07E22 - 2000 Episode Title.mkv
+: title: Show '70s Name
+  season: 7
+  episode: 22
+  episode_title: Episode Title
+  year: 2000 # not a big issue for us
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
