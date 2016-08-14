@@ -462,9 +462,9 @@
             % endif
             ${epResult["name"]}
             </td>
-            <td class="col-name">${epLoc}</td>
+            <td class="col-name">${epLoc if epResult['status'] in [DOWNLOADED, ARCHIVED] else ''}</td>
             <td class="col-ep">
-                % if epResult["file_size"]:
+                % if epResult["file_size"] and epResult['status'] in [DOWNLOADED, ARCHIVED]:
                     ${pretty_file_size(epResult["file_size"])}
                 % endif
             </td>
@@ -482,7 +482,7 @@
                 % endif
             </td>
             <td>
-                % if sickbeard.DOWNLOAD_URL and epResult['location']:
+                % if sickbeard.DOWNLOAD_URL and epResult['location'] and epResult['status'] in [DOWNLOADED, ARCHIVED]:
                     <%
                         filename = epResult['location']
                         for rootDir in sickbeard.ROOT_DIRS.split('|'):
@@ -495,7 +495,7 @@
             </td>
             <td class="col-subtitles" align="center">
             % for flag in (epResult["subtitles"] or '').split(','):
-                % if flag.strip():
+                % if flag.strip() and epResult['status'] in [DOWNLOADED, ARCHIVED]:
                     <img src="${srRoot}/images/subtitles/flags/${flag}.png" width="16" height="11" alt="${subtitles.name_from_code(flag)}" onError="this.onerror=null;this.src='/images/flags/unknown.png';" />
                 % endif
             % endfor
