@@ -91,6 +91,10 @@ class PageTemplate(MakoTemplate):
             'newsBadge': '',
             'toolsBadge': '',
             'toolsBadgeClass': '',
+            'base_url': urljoin(rh.request.protocol + '://' + rh.request.host,
+                                sickbeard.WEB_ROOT) +
+                          ('', '/')
+                          [urljoin(rh.request.protocol + '://' + rh.request.host, sickbeard.WEB_ROOT)[-1] not in '/'],
         }
 
         if rh.request.headers['Host'][0] == '[':
