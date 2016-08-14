@@ -32,44 +32,35 @@ def sut(stream_handler):
     return sut
 
 
-def test_logger__using_brackets(sut, handler_write, handler_error):
+@pytest.mark.parametrize('p', [
+    {  # p0: curly brackets style
+        'message': 'This is an example: {arg1} {arg2}',
+        'args': [],
+        'kwargs': dict(arg1='hello', arg2='world'),
+        'expected': 'This is an example: hello world'
+    },
+    {  # p1: legacy formatter
+        'message': 'This is an example: %s %s',
+        'args': ['hello', 'world'],
+        'kwargs': dict(),
+        'expected': 'This is an example: hello world'
+    },
+    {  # p2: regression test: https://github.com/pymedusa/SickRage/issues/876
+        'message': "{'type': 'episode', 'season': 5}",
+        'args': [],
+        'kwargs': dict(),
+        'expected': "{'type': 'episode', 'season': 5}"
+    },
+])
+def test_logger__various_messages(sut, handler_write, handler_error, p):
     # Given
-    message = '{arg1} {arg2}'
-    args = {'arg1': 'hello', 'arg2': 'world'}
-    expected = (('hello world\n', ), {})
+    message = p['message']
+    args = p['args']
+    kwargs = p['kwargs']
+    expected = (('%s\n' % p['expected'], ), {})
 
     # When
-    sut.error(message, **args)
-
-    # Then
-    assert not handler_error.called
-    assert handler_write.called
-    assert handler_write.call_args == expected
-
-
-def test_logger__legacy_formatter(sut, handler_write, handler_error):
-    # Given
-    message = '%s %s'
-    args = ['hello', 'world']
-    expected = (('hello world\n', ), {})
-
-    # When
-    sut.error(message, *args)
-
-    # Then
-    assert not handler_error.called
-    assert handler_write.called
-    assert handler_write.call_args == expected
-
-
-def test_logger__regression_876(sut, handler_write, handler_error):
-    """Regression for https://github.com/pymedusa/SickRage/issues/876 issue."""
-    # Given
-    message = "{'type': 'episode', 'season': 5}"
-    expected = (("{'type': 'episode', 'season': 5}\n", ), {})
-
-    # When
-    sut.error(message)
+    sut.error(message, *args, **kwargs)
 
     # Then
     assert not handler_error.called
