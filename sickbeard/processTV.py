@@ -25,6 +25,7 @@ import sickbeard
 from sickbeard import postProcessor
 from sickbeard import db, helpers
 from sickbeard import logger
+from sickbeard import notifiers
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
 from sickbeard import common
 from sickbeard import failedProcessor
@@ -322,6 +323,11 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
 
     if result.aggresult:
         result.output += logHelper(u"Successfully processed")
+
+        # Clean library from KODI after PP ended
+        if sickbeard.KODI_LIBRARY_CLEAN_PENDING and notifiers.kodi_notifier.clean_library():
+            sickbeard.KODI_LIBRARY_CLEAN_PENDING = False
+
         if result.missedfiles:
             result.output += logHelper(u"I did encounter some unprocessable items: ")
             for missedfile in result.missedfiles:

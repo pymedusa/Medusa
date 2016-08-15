@@ -1061,7 +1061,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         for cur_ep in [ep_obj] + ep_obj.related_episodes:
             try:
                 self._delete(cur_ep.location, associated_files=True)
-
+                sickbeard.KODI_LIBRARY_CLEAN_PENDING = True
                 # clean up any left over folders
                 if cur_ep.location:
                     helpers.delete_empty_folders(ek(os.path.dirname, cur_ep.location), keep_dir=ep_obj.show._location)  # pylint: disable=protected-access

@@ -94,11 +94,20 @@
                                     </label>
                                 </div>
                                 <div class="field-pair">
+                                    <label for="kodi_clean_library">
+                                        <span class="component-title">Clean library</span>
+                                        <span class="component-desc">
+                                            <input type="checkbox" name="kodi_clean_library" id="kodi_clean_library" ${'checked="checked"' if sickbeard.KODI_CLEAN_LIBRARY else ''}/>
+                                            <p>clean KODI library when replaces a already downloaded episode?</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
                                     <label for="kodi_update_onlyfirst">
                                         <span class="component-title">Only update first host</span>
                                         <span class="component-desc">
                                             <input type="checkbox" name="kodi_update_onlyfirst" id="kodi_update_onlyfirst" ${'checked="checked"' if sickbeard.KODI_UPDATE_ONLYFIRST else ''}/>
-                                            <p>only send library updates to the first active host?</p>
+                                            <p>only send library updates/clean to the first active host?</p>
                                         </span>
                                     </label>
                                 </div>
