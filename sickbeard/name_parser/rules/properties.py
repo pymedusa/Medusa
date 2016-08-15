@@ -11,6 +11,22 @@ from rebulk.rebulk import Rebulk
 from rebulk.rules import RemoveMatch, Rule
 
 
+def episode():
+    """Episode property.
+
+    :return:
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE)
+    rebulk.defaults(name='episode', formatter={'season': int, 'episode': int},
+                    tags=['SxxExx'], abbreviations=[alt_dash], children=True, private_parent=True)
+
+    # S00EP00 pattern
+    rebulk.regex(r'S(?P<season>\d+)@?(?:EP)@?(?P<episode>\d+)')
+
+    return rebulk
+
+
 def blacklist():
     """Blacklisted patterns.
 

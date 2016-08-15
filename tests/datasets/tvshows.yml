@@ -3027,3 +3027,10 @@
   video_codec: h264
   release_group: GROUP
   type: episode
+
+# French releases uses SxxEPxx instead of SxxExx
+? Show.Name.S01EP02
+: title: Show Name
+  season: 1
+  episode: 2
+  type: episode
