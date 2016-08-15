@@ -1676,6 +1676,9 @@ class ExpectedTitlePostProcessor(Rule):
             # Remove all dots from the title
             new_title = copy.copy(title)  # IMPORTANT - never change the value. Better to remove and add it
             new_title.value = cleanup(title.value)
+            # important to remove tags from title: equivalent-ignore. Otherwise guessit exception might occur
+            # when more than 2 equivalent titles are found and episode title has number that conflicts with year
+            title.tags = []
             to_remove.append(title)
             to_append.append(new_title)
 

@@ -8,6 +8,7 @@ import os
 import guessit
 import pytest
 import sickbeard.name_parser.guessit_parser as sut
+from six import text_type
 import yaml
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -33,6 +34,8 @@ def show_list(create_tvshow):
         create_tvshow(indexerid=13, name='The 123 Show'),
         create_tvshow(indexerid=14, name=r"The.Someone's.Show.**.2.**"),
         create_tvshow(indexerid=15, name='The Show (UK)'),
+        create_tvshow(indexerid=16, name='3 Show på (abc2)'),  # unicode characters, numbers and parenthesis
+        create_tvshow(indexerid=16, name="Show '70s Name"),
     ]
 
 
@@ -44,7 +47,7 @@ def _format_param(param):
     if isinstance(param, int):
         return param
 
-    return str(param)
+    return text_type(param)
 
 
 def _parameters(files, single_test=None):
