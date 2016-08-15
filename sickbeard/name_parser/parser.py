@@ -84,6 +84,7 @@ class NameParser(object):
         # if we have an air-by-date show and the result is air-by-date,
         # then get the real season/episode numbers
         if result.show.air_by_date and result.is_air_by_date:
+            logger.debug('Show {name} is air by date', name=show.name)
             airdate = result.air_date.toordinal()
             main_db_con = db.DBConnection()
             sql_result = main_db_con.select(
@@ -96,8 +97,11 @@ class NameParser(object):
             if sql_result:
                 season_number = int(sql_result[0][0])
                 episode_numbers = [int(sql_result[0][1])]
+                logger.debug('Database info for show {name}: S{season} E{episodes}',
+                             name=show.name, season=season_number, episodes=episode_numbers)
 
             if season_number is None or not episode_numbers:
+                logger.debug('Show {name} has no season or episodes, using indexer...', name=show.name)
                 indexer_api = sickbeard.indexerApi(result.show.indexer)
                 try:
                     indexer_api_params = indexer_api.api_params.copy()
@@ -110,9 +114,11 @@ class NameParser(object):
 
                     season_number = int(tv_episode['seasonnumber'])
                     episode_numbers = [int(tv_episode['episodenumber'])]
+                    logger.debug('Indexer info for show {name}: S{season}E{episodes}',
+                                 name=show.name, season=season_number, episodes=episode_numbers)
                 except sickbeard.indexer_episodenotfound:
-                    logger.warn('Unable to find episode with date {date} for show {show.name} skipping',
-                                date=result.air_date, show=show.name)
+                    logger.warn('Unable to find episode with date {date} for show {name} skipping',
+                                date=result.air_date, name=show.name)
                     episode_numbers = []
                 except sickbeard.indexer_error as e:
                     logger.warn('Unable to contact {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
@@ -127,10 +133,13 @@ class NameParser(object):
                                                                    result.show.indexer,
                                                                    season_number,
                                                                    episode_number)
+                    logger.debug('Scene show {name}, using indexer numbering: S{season}E{episodes}',
+                                 name=show.name, season=s, episodes=e)
                 new_episode_numbers.append(e)
                 new_season_numbers.append(s)
 
         elif result.show.is_anime and result.is_anime:
+            logger.debug('Scene show {name} is anime', name=show.name)
             scene_season = scene_exceptions.get_scene_exception_by_name(result.series_name)[1]
             for absolute_episode in result.ab_episode_numbers:
                 a = absolute_episode
@@ -141,6 +150,8 @@ class NameParser(object):
                                                                        True, scene_season)
 
                 (s, e) = helpers.get_all_episodes_from_absolute_number(result.show, [a])
+                logger.debug('Scene show {name} using indexer for absolute {absolute}: S{season}E{episodes}',
+                             name=show.name, absolute=a, season=s, episodes=e)
 
                 new_absolute_numbers.append(a)
                 new_episode_numbers.extend(e)
@@ -156,10 +167,15 @@ class NameParser(object):
                                                                    result.show.indexer,
                                                                    result.season_number,
                                                                    episode_number)
+                    logger.debug('Scene show {name} using indexer numbering: S{season}E{episodes}',
+                                 name=show.name, season=s, episodes=e)
+
                 if result.show.is_anime:
                     a = helpers.get_absolute_number_from_season_and_episode(result.show, s, e)
                     if a:
                         new_absolute_numbers.append(a)
+                        logger.debug('Scene anime show {name} using indexer with absolute {absolute}: S{season}E{episodes}',
+                                     name=show.name, absolute=a, season=s, episodes=e)
 
                 new_episode_numbers.append(e)
                 new_season_numbers.append(s)
