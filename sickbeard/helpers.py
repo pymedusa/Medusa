@@ -1565,14 +1565,10 @@ def canonical_name(obj, fmt='{key}:{value}', separator='|', ignore_list=frozense
 
 def get_broken_providers():
     """Get broken providers from cdn.pymedusa.com."""
-    url = 'https://cdn.pymedusa.com/providers/broken_providers.txt'
-    response = getURL(url, session=make_session(), returns='response')
-
-    if not response or not response.text:
+    url = 'https://cdn.pymedusa.com/providers/broken_providers.json'
+    response = getURL(url, session=make_session(), returns='json')
+    if not response:
         logger.debug('Unable to update broken providers')
         return []
 
-    broken_providers = []
-    for line in response.text.splitlines():
-        broken_providers.append(line.strip())
-    return broken_providers
+    return list(response)
