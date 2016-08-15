@@ -91,5 +91,3 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
                 logger.log('Could not parse Anidb show, with exception: {0!r}'.format(traceback.format_exc()), logger.WARNING)
 
         return result
-
-anidb_popular = AnidbPopular()
