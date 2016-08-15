@@ -5,7 +5,7 @@ from tornado.web import RequestHandler
 
 
 class BaseRequestHandler(RequestHandler):
-    """A base class used for shared RequestHandler methods"""
+    """A base class used for shared RequestHandler methods."""
 
     def prepare(self):
         web_username = sickbeard.WEB_USERNAME
