@@ -1,11 +1,12 @@
-import sickbeard
 import base64
+import sickbeard
 
 from tornado.web import RequestHandler
-from tornado.routes import route
+
 
 class BaseRequestHandler(RequestHandler):
     """A base class used for shared RequestHandler methods"""
+
     def prepare(self):
         web_username = sickbeard.WEB_USERNAME
         web_password = sickbeard.WEB_PASSWORD

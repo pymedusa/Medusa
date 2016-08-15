@@ -2,6 +2,7 @@ from BaseRequestHandler import BaseRequestHandler
 
 import sickbeard
 
+
 class InfoHandler(BaseRequestHandler):
     def get(self, query=""):
         info_query = query.split("/")[0]

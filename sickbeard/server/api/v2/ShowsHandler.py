@@ -1,40 +1,25 @@
-import sickbeard
-
 from BaseRequestHandler import BaseRequestHandler
 
-from tornado.routes import route
+import sickbeard
 
 from sickbeard import (
-    classes, db, helpers, image_cache, logger, network_timezones,
-    processTV, sbdatetime, search_queue, ui
+    helpers, network_timezones, sbdatetime
 )
-from sickbeard.common import (
-    Overview, Quality, statusStrings,
-    ARCHIVED, DOWNLOADED, FAILED, IGNORED, SKIPPED, SNATCHED, SNATCHED_PROPER,
-    UNAIRED, UNKNOWN, WANTED
-)
-from sickbeard.versionChecker import CheckVersion
+
+from sickbeard.server.api.v1.core import CMD_ShowCache, CMD_ShowSeasonList, _map_quality
 
 from sickrage.helper.common import (
-    dateFormat, dateTimeFormat, pretty_file_size,
-    sanitize_filename, timeFormat, try_int)
-from sickrage.helper.encoding import ek
+    dateFormat, timeFormat, try_int
+)
+
 from sickrage.helper.exceptions import (
-    ex, CantUpdateShowException, ShowDirectoryNotFoundException
+    ShowDirectoryNotFoundException
 )
 
 from sickrage.helper.quality import get_quality_string
-from sickrage.media.ShowFanArt import ShowFanArt
-from sickrage.media.ShowNetworkLogo import ShowNetworkLogo
-from sickrage.media.ShowPoster import ShowPoster
-from sickrage.media.ShowBanner import ShowBanner
-from sickrage.show.ComingEpisodes import ComingEpisodes
-from sickrage.show.History import History
-from sickrage.show.Show import Show
-from sickrage.system.Restart import Restart
-from sickrage.system.Shutdown import Shutdown
 
-from sickbeard.server.api.v1.core import CMD_ShowSeasonList, CMD_ShowCache, _map_quality
+from sickrage.show.Show import Show
+
 
 class ShowsHandler(BaseRequestHandler):
     def get(self, query=""):
@@ -144,7 +129,9 @@ class ShowsHandler(BaseRequestHandler):
                 }
 
                 if try_int(show.nextaired, 1) > 693595:  # 1900
-                    dt_episode_airs = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(show.nextaired, show.airs, show_dict["network"]))
+                    dt_episode_airs = sbdatetime.sbdatetime.convert_to_setting(
+                        network_timezones.parse_date_time(show.nextaired, show.airs, show_dict["network"])
+                    )
                     show_dict["next_ep_airdate"] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
                 else:
                     show_dict["next_ep_airdate"] = ""
