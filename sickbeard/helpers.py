@@ -1570,5 +1570,4 @@ def get_broken_providers():
     if not response:
         logger.debug('Unable to update broken providers')
         return []
-
-    return list(response)
+    return response
