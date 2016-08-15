@@ -85,7 +85,7 @@ class ErrorLogs(WebRoot):
             },
         ]
 
-    def index(self, level=logger.ERROR):
+    def index(self, level=logger.ERROR, **kwargs):
         """Default index page."""
         try:
             level = int(level)
@@ -150,7 +150,7 @@ class ErrorLogs(WebRoot):
 
         return final_data
 
-    def viewlog(self, minLevel=logger.INFO, logFilter='<NONE>', logSearch=None, maxLines=1000):
+    def viewlog(self, minLevel=logger.INFO, logFilter='<NONE>', logSearch=None, maxLines=1000, **kwargs):
         """View the log given the specified filters."""
         min_level = int(minLevel)
         log_filter = logFilter if logFilter in log_name_filters else '<NONE>'
