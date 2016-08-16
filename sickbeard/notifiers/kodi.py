@@ -408,11 +408,11 @@ class Notifier(object):
         """Handles clean library KODI host via HTTP JSON-RPC."""
         clean_library = True
         for host in [x.strip() for x in sickbeard.KODI_HOST.split(',')]:
-            logger.log(u'Updating KODI library via JSON method for host: {0}'.format(host), logger.DEBUG)
+            logger.log(u'Cleaning KODI library via JSON method for host: {0}'.format(host), logger.DEBUG)
             update_command = '{"jsonrpc":"2.0","method":"VideoLibrary.Clean","id":1}'
             request = self._send_to_kodi_json(update_command, host)
             if not request:
-                logger.log(u'Kodi clean library failed for host: {0}'.format(host), logger.WARNING)
+                logger.log(u'KODI library clean failed for host: {0}'.format(host), logger.WARNING)
                 clean_library = False
 
             # catch if there was an error in the returned request
