@@ -113,7 +113,7 @@
                                     <span class="component-desc">Wait to process a file until subtitles are present</span>
                                     <span class="component-desc">Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span>
                                     <span class="component-desc">&nbsp;</span>
-                                    <span class="component-desc"><b>NOTE:</b> Automatic post processor should be disabled to avoid keep processing files without subtitle associated.</span>
+                                    <span class="component-desc"><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles to be processed over and over.</span>
                                     <span class="component-desc">If you have any active show with subtitle search disabled, you must enable Automatic post processor.</span>
                                 </label>
                             </div>
