@@ -1255,7 +1255,7 @@ class Home(WebRoot):
         show_obj.exceptions = get_scene_exceptions(show_obj.indexerid)
 
         if try_int(quality_preset, None):
-            preferred_qualities = []
+            allowed_qualities = []
 
         if not location and not allowed_qualities and not preferred_qualities and not flatten_folders:
             t = PageTemplate(rh=self, filename='editShow.mako')
