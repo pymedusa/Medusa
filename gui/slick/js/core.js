@@ -298,6 +298,22 @@ var SICKRAGE = {
                     }
                 });
             });
+
+            $('#branchForceUpdate').on('click', function() {
+                $('#branchForceUpdate').attr('disabled', 'disabled');
+                $('#git_reset_branches').attr('disabled', 'disabled');
+                $.getJSON(srRoot + '/home/branchForceUpdate', function(data) {
+                    $('#git_reset_branches').empty();
+                    data.resetBranches.forEach(function(branch) {
+                        $('#git_reset_branches').append('<option value="' + branch + '" selected="selected" >' + branch + '</option>');
+                    });
+                    data.branches.forEach(function(branch) {
+                        $('#git_reset_branches').append('<option value="' + branch + '" >' + branch + '</option>');
+                    });
+                    $('#git_reset_branches').attr('disabled', false);
+                    $('#branchForceUpdate').attr('disabled', false);
+                });
+            });
         },
         index: function() {
             if ($('input[name=\'proxy_setting\']').val().length === 0) {

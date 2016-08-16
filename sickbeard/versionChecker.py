@@ -63,6 +63,9 @@ class CheckVersion(object):
 
         self.amActive = True
 
+        # Update remote branches and store in sickbeard.GIT_REMOTE_BRANCHES
+        self.list_remote_branches()
+
         if self.updater:
             # set current branch version
             sickbeard.BRANCH = self.get_branch()
@@ -341,8 +344,8 @@ class CheckVersion(object):
                 return self.updater.update()
 
     def list_remote_branches(self):
-        if self.updater:
-            return self.updater.list_remote_branches()
+        sickbeard.GIT_REMOTE_BRANCHES = self.updater.list_remote_branches()
+        return sickbeard.GIT_REMOTE_BRANCHES
 
     def get_branch(self):
         if self.updater:

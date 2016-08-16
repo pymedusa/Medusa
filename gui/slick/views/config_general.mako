@@ -10,7 +10,7 @@
     from sickbeard import metadata
     from sickbeard.metadata.generic import GenericMetadata
     from sickbeard.helpers import anon_url
-    gh_branch = sickbeard.versionCheckScheduler.action.list_remote_branches()
+    gh_branch = sickbeard.GIT_REMOTE_BRANCHES or sickbeard.versionCheckScheduler.action.list_remote_branches()
 %>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -734,7 +734,7 @@
                             <label for="git_reset_branches">
                                 <span class="component-title">Branches to reset</span>
                                 <span class="component-desc">
-                                    <select id="git_reset_branches" name="git_reset_branches" multiple="multiple" style="min-width:200px;height:99px;">
+                                    <select id="git_reset_branches" name="git_reset_branches" multiple="multiple" class="form-control form-control-inline input-sm pull-left" style="height:99px;">
                                         % for branch in sickbeard.GIT_RESET_BRANCHES:
                                             <option value="${branch}" selected="selected">${branch}</option>
                                         % endfor
@@ -746,6 +746,7 @@
                                             % endfor
                                         % endif
                                     </select>
+                                    <input class="btn btn-inline" style="margin-left: 6px;" type="button" id="branchForceUpdate" value="Update Branches">
                                 </span>
                                 <div class="clear-left">
                                     <span class="component-desc"><b>NOTE:</b> Empty selection means that any branch could be reset.</span>
