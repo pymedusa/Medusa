@@ -1,24 +1,27 @@
 # coding=utf-8
 from __future__ import unicode_literals
 
-import re
 import os
 import posixpath
+import re
 import traceback
 from datetime import date
+
 from bs4 import BeautifulSoup
 
 import sickbeard
 from sickbeard import (helpers, logger)
 
-from .recommended import RecommendedShow
 from simpleanidb import Anidb
+
+from .recommended import RecommendedShow
 
 
 class ImdbPopular(object):
-    def __init__(self):
-        """Gets a list of most popular TV series from imdb"""
+    """Gets a list of most popular TV series from imdb."""
 
+    def __init__(self):
+        """Constructor for ImdbPopular."""
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
         self.session = helpers.make_session()
         self.recommender = 'IMDB Popular'
@@ -36,8 +39,7 @@ class ImdbPopular(object):
         }
 
     def _create_recommended_show(self, show_obj):
-        """Creates the RecommendedShow object from the returned showobj"""
-
+        """Create the RecommendedShow object from the returned showobj."""
         tvdb_id = helpers.getTVDBFromID(show_obj.get('imdb_tt'), 'IMDB')
         if not tvdb_id:
             return None
@@ -61,12 +63,12 @@ class ImdbPopular(object):
         """Get popular show information from IMDB."""
         popular_shows = []
 
-        data = helpers.getURL(self.url, session=self.session, params=self.params,
-                              headers={'Referer': 'http://akas.imdb.com/'}, returns='text')
-        if not data:
+        response = helpers.getURL(self.url, session=self.session, params=self.params,
+                                  headers={'Referer': 'http://akas.imdb.com/'}, returns='response')
+        if not response or not response.text:
             return None
 
-        soup = BeautifulSoup(data, 'html5lib')
+        soup = BeautifulSoup(response.text, 'html5lib')
         results = soup.find('div', class_='lister-list')
         rows = results.find_all('div', class_='lister-item mode-advanced')
 
@@ -76,8 +78,9 @@ class ImdbPopular(object):
             image_div = row.find('div', class_='lister-item-image float-left')
             if image_div:
                 image = image_div.find('img')
-                show['image_url_large'] = self.change_size(image['loadlate'], 3)
-                show['image_path'] = posixpath.join('images', 'imdb_popular', os.path.basename(show['image_url_large']))
+                show['image_url_large'] = self.change_size(image['loadlate'])
+                show['image_path'] = posixpath.join('images', 'imdb_popular',
+                                                    os.path.basename(show['image_url_large']))
                 # self.cache_image(show['image_url_large'])
 
             content_div = row.find('div', class_='lister-item-content')
@@ -85,12 +88,14 @@ class ImdbPopular(object):
                 show_info = content_div.find('a')
                 show['name'] = show_info.get_text()
                 show['imdb_url'] = 'http://www.imdb.com' + show_info['href']
-                show['imdb_tt'] = show['imdb_url'][-25:][0:9]
+                show['imdb_tt'] = row.find('div', class_='ribbonize')['data-tconst']
                 show['year'] = content_div.find('span', class_='lister-item-year text-muted unbold').get_text()[1:5]
 
                 rating_div = content_div.find('div', class_='ratings-bar')
                 if rating_div:
-                    show['rating'] = rating_div.find('strong').get_text()
+                    rating_strong = rating_div.find('strong')
+                    if rating_strong:
+                        show['rating'] = rating_strong.get_text()
 
                 votes_p = content_div.find('p', class_='sort-num_votes-visible')
                 if votes_p:
@@ -109,7 +114,8 @@ class ImdbPopular(object):
                 if recommended_show:
                     result.append(recommended_show)
             except Exception:
-                logger.log(u'Could not parse IMDB show, with exception: {0!r}'.format(traceback.format_exc()), logger.WARNING)
+                logger.log(u'Could not parse IMDB show, with exception: {0!r}'.format
+                           (traceback.format_exc()), logger.WARNING)
 
         return result
 
@@ -123,8 +129,7 @@ class ImdbPopular(object):
         match = re.search(r'(.+[X|Y])(\d+)(_CR\d+,\d+,)(\d+),(\d+)', image_url)
 
         if match:
-            matches = match.groups()
-            matches = list(matches)
+            matches = list(match.groups())
             matches[1] = int(matches[1]) * factor
             matches[3] = int(matches[3]) * factor
             matches[4] = int(matches[4]) * factor
