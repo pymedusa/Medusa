@@ -17,7 +17,7 @@ class ImdbPopular(object):
     """This class contains everything for the IMDB popular page."""
 
     def __init__(self):
-        """Get a list of most popular TV series from imdb."""
+        """Constructor for ImdbPopular."""
         # Use akas.imdb.com, just like the imdb lib.
         self.url = 'http://akas.imdb.com/search/title'
 
@@ -34,12 +34,12 @@ class ImdbPopular(object):
         """Get popular show information from IMDB."""
         popular_shows = []
 
-        data = helpers.getURL(self.url, session=self.session, params=self.params,
-                              headers={'Referer': 'http://akas.imdb.com/'}, returns='text')
-        if not data:
+        response = helpers.getURL(self.url, session=self.session, params=self.params,
+                                  headers={'Referer': 'http://akas.imdb.com/'}, returns='response')
+        if not response or not response.text:
             return None
 
-        soup = BeautifulSoup(data, 'html5lib')
+        soup = BeautifulSoup(response.text, 'html5lib')
         results = soup.find('div', class_='lister-list')
         rows = results.find_all('div', class_='lister-item mode-advanced')
 
@@ -49,7 +49,7 @@ class ImdbPopular(object):
             image_div = row.find('div', class_='lister-item-image float-left')
             if image_div:
                 image = image_div.find('img')
-                show['image_url_large'] = self.change_size(image['loadlate'], 3)
+                show['image_url_large'] = self.change_size(image['loadlate'])
                 show['image_path'] = ek(posixpath.join, 'images', 'imdb_popular', ek(os.path.basename,
                                                                                      show['image_url_large']))
                 self.cache_image(show['image_url_large'])
@@ -59,12 +59,14 @@ class ImdbPopular(object):
                 show_info = content_div.find('a')
                 show['name'] = show_info.get_text()
                 show['imdb_url'] = 'http://www.imdb.com' + show_info['href']
-                show['imdb_tt'] = show['imdb_url'][-25:][0:9]
+                show['imdb_tt'] = row.find('div', class_='ribbonize')['data-tconst']
                 show['year'] = content_div.find('span', class_='lister-item-year text-muted unbold').get_text()[1:5]
 
                 rating_div = content_div.find('div', class_='ratings-bar')
                 if rating_div:
-                    show['rating'] = rating_div.find('strong').get_text()
+                    rating_strong = rating_div.find('strong')
+                    if rating_strong:
+                        show['rating'] = rating_strong.get_text()
 
                 votes_p = content_div.find('p', class_='sort-num_votes-visible')
                 if votes_p:
@@ -89,9 +91,7 @@ class ImdbPopular(object):
         match = re.search('(.+[X|Y])(\d+)(_CR\d+,\d+,)(\d+),(\d+)', image_url)
 
         if match:
-            matches = match.groups()
-            ek(os.path.basename, image_url)
-            matches = list(matches)
+            matches = list(match.groups())
             matches[1] = int(matches[1]) * factor
             matches[3] = int(matches[3]) * factor
             matches[4] = int(matches[4]) * factor
