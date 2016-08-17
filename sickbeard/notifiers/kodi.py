@@ -409,7 +409,7 @@ class Notifier(object):
         clean_library = True
         for host in [x.strip() for x in sickbeard.KODI_HOST.split(',')]:
             logger.log(u'Cleaning KODI library via JSON method for host: {0}'.format(host), logger.DEBUG)
-            update_command = '{"jsonrpc":"2.0","method":"VideoLibrary.Clean","id":1}'
+            update_command = '{"jsonrpc":"2.0","method":"VideoLibrary.Clean","params": {"showdialogs": False},"id":1}'
             request = self._send_to_kodi_json(update_command, host)
             if not request:
                 logger.log(u'KODI library clean failed for host: {0}'.format(host), logger.WARNING)
