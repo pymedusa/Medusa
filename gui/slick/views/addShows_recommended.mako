@@ -114,7 +114,7 @@
                         
                         <div class="recommendedShowTitleIcons">
                             % if cur_result.show_in_list:
-                                <a href="${srRoot}/home/displayShow?show=${cur_result.indexer_id}" class="btn btn-xs">In List</a>
+                                <a href="" class="btn btn-xs">In List</a>
                             % else:
                                 <a href="${srRoot}/addShows/addShowByID?show=${cur_result.indexer_id}" class="btn btn-xs" data-isanime="1" data-indexer="TVDB" data-indexer-id="${cur_result.indexer_id}" data-show-name="${cur_result.title | u}" data-add-show>Add Show</a>
                             % endif
