@@ -414,6 +414,10 @@ class Notifier(object):
             if not request:
                 logger.log(u'KODI library clean failed for host: {0}'.format(host), logger.WARNING)
                 clean_library = False
+                if sickbeard.KODI_UPDATE_ONLYFIRST:
+                    break
+                else:
+                    continue
 
             # catch if there was an error in the returned request
             for r in request:
