@@ -147,7 +147,7 @@ class TraktApi(object):
                 raise ResourceUnavailable(u'Trakt error (404) the resource does not exist: %s', url + path)
             else:
                 log.error(u'Unknown Trakt request exception. Code error: %s', code)
-                return {}
+                raise
 
         # check and confirm trakt call did not fail
         if isinstance(resp, dict) and resp.get('status', False) == 'failure':
