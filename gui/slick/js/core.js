@@ -232,14 +232,14 @@ var SICKRAGE = {
                     def = '%x';
                 }
 
-                $('#date_presets').attr('name', 'date_preset_old');
-                $('#date_presets').attr('id', 'date_presets_old');
+                $('#date_presets').prop('name', 'date_preset_old');
+                $('#date_presets').prop('id', 'date_presets_old');
 
-                $('#date_presets_na').attr('name', 'date_preset');
-                $('#date_presets_na').attr('id', 'date_presets');
+                $('#date_presets_na').prop('name', 'date_preset');
+                $('#date_presets_na').prop('id', 'date_presets');
 
-                $('#date_presets_old').attr('name', 'date_preset_na');
-                $('#date_presets_old').attr('id', 'date_presets_na');
+                $('#date_presets_old').prop('name', 'date_preset_na');
+                $('#date_presets_old').prop('id', 'date_presets_na');
 
                 if (def) {
                     $('#date_presets').val(def);
@@ -250,7 +250,7 @@ var SICKRAGE = {
             $('#configForm').ajaxForm({
                 beforeSubmit: function() {
                     $('.config_submitter .config_submitter_refresh').each(function() {
-                        $(this).attr('disabled', 'disabled');
+                        $(this).prop('disabled', true);
                         $(this).after('<span><img src="' + srRoot + '/images/loading16' + themeSpinner + '.gif"> Saving...</span>');
                         $(this).hide();
                     });
@@ -300,8 +300,8 @@ var SICKRAGE = {
             });
 
             $('#branchForceUpdate').on('click', function() {
-                $('#branchForceUpdate').attr('disabled', 'disabled');
-                $('#git_reset_branches').attr('disabled', 'disabled');
+                $('#branchForceUpdate').prop('disabled', true);
+                $('#git_reset_branches').prop('disabled', true);
                 $.getJSON(srRoot + '/home/branchForceUpdate', function(data) {
                     $('#git_reset_branches').empty();
                     data.resetBranches.forEach(function(branch) {
@@ -310,8 +310,8 @@ var SICKRAGE = {
                     data.branches.forEach(function(branch) {
                         $('#git_reset_branches').append('<option value="' + branch + '" >' + branch + '</option>');
                     });
-                    $('#git_reset_branches').attr('disabled', false);
-                    $('#branchForceUpdate').attr('disabled', false);
+                    $('#git_reset_branches').prop('disabled', false);
+                    $('#branchForceUpdate').prop('disabled', false);
                 });
             });
         },
@@ -334,25 +334,25 @@ var SICKRAGE = {
         },
         backupRestore: function() {
             $('#Backup').on('click', function() {
-                $('#Backup').attr('disabled', true);
+                $('#Backup').prop('disabled', true);
                 $('#Backup-result').html(loading);
                 var backupDir = $('#backupDir').val();
                 $.get(srRoot + '/config/backuprestore/backup', {
                     backupDir: backupDir
                 }).done(function (data) {
                     $('#Backup-result').html(data);
-                    $('#Backup').attr('disabled', false);
+                    $('#Backup').prop('disabled', false);
                 });
             });
             $('#Restore').on('click', function() {
-                $('#Restore').attr('disabled', true);
+                $('#Restore').prop('disabled', true);
                 $('#Restore-result').html(loading);
                 var backupFile = $('#backupFile').val();
                 $.get(srRoot + '/config/backuprestore/restore', {
                     backupFile: backupFile
                 }).done(function (data) {
                     $('#Restore-result').html(data);
-                    $('#Restore').attr('disabled', false);
+                    $('#Restore').prop('disabled', false);
                 });
             });
 
@@ -593,12 +593,12 @@ var SICKRAGE = {
                         $('#nmj_mount').val(JSONData.mount);
 
                         if (JSONData.database) {
-                            $('#nmj_database').attr('readonly', true);
+                            $('#nmj_database').prop('readonly', true);
                         } else {
                             $('#nmj_database').removeAttr('readonly');
                         }
                         if (JSONData.mount) {
-                            $('#nmj_mount').attr('readonly', true);
+                            $('#nmj_mount').prop('readonly', true);
                         } else {
                             $('#nmj_mount').removeAttr('readonly');
                         }
@@ -658,7 +658,7 @@ var SICKRAGE = {
                         $('#nmjv2_database').val(JSONData.database);
 
                         if (JSONData.database) {
-                            $('#nmjv2_database').attr('readonly', true);
+                            $('#nmjv2_database').prop('readonly', true);
                         } else {
                             $('#nmjv2_database').removeAttr('readonly');
                         }
@@ -1517,21 +1517,21 @@ var SICKRAGE = {
                         curMostProvider = generatorName;
                     }
 
-                    $('#' + generatorName + '_eg_show_metadata').attr('class', showMetadata ? 'enabled' : 'disabled');
-                    $('#' + generatorName + '_eg_episode_metadata').attr('class', episodeMetadata ? 'enabled' : 'disabled');
-                    $('#' + generatorName + '_eg_fanart').attr('class', fanart ? 'enabled' : 'disabled');
-                    $('#' + generatorName + '_eg_poster').attr('class', poster ? 'enabled' : 'disabled');
-                    $('#' + generatorName + '_eg_banner').attr('class', banner ? 'enabled' : 'disabled');
-                    $('#' + generatorName + '_eg_episode_thumbnails').attr('class', episodeThumbnails ? 'enabled' : 'disabled');
-                    $('#' + generatorName + '_eg_season_posters').attr('class', seasonPosters ? 'enabled' : 'disabled');
-                    $('#' + generatorName + '_eg_season_banners').attr('class', seasonBanners ? 'enabled' : 'disabled');
-                    $('#' + generatorName + '_eg_season_all_poster').attr('class', seasonAllPoster ? 'enabled' : 'disabled');
-                    $('#' + generatorName + '_eg_season_all_banner').attr('class', seasonAllBanner ? 'enabled' : 'disabled');
+                    $('#' + generatorName + '_eg_show_metadata').prop('class', showMetadata ? 'enabled' : 'disabled');
+                    $('#' + generatorName + '_eg_episode_metadata').prop('class', episodeMetadata ? 'enabled' : 'disabled');
+                    $('#' + generatorName + '_eg_fanart').prop('class', fanart ? 'enabled' : 'disabled');
+                    $('#' + generatorName + '_eg_poster').prop('class', poster ? 'enabled' : 'disabled');
+                    $('#' + generatorName + '_eg_banner').prop('class', banner ? 'enabled' : 'disabled');
+                    $('#' + generatorName + '_eg_episode_thumbnails').prop('class', episodeThumbnails ? 'enabled' : 'disabled');
+                    $('#' + generatorName + '_eg_season_posters').prop('class', seasonPosters ? 'enabled' : 'disabled');
+                    $('#' + generatorName + '_eg_season_banners').prop('class', seasonBanners ? 'enabled' : 'disabled');
+                    $('#' + generatorName + '_eg_season_all_poster').prop('class', seasonAllPoster ? 'enabled' : 'disabled');
+                    $('#' + generatorName + '_eg_season_all_banner').prop('class', seasonAllBanner ? 'enabled' : 'disabled');
                     $('#' + generatorName + '_data').val(configArray.join('|'));
                 });
 
                 if (curMostProvider !== '' && first) {
-                    $('#metadataType option[value=' + curMostProvider + ']').attr('selected', 'selected');
+                    $('#metadataType option[value=' + curMostProvider + ']').prop('selected', true);
                     $(this).showHideMetadata();
                 }
             };
@@ -1745,7 +1745,7 @@ var SICKRAGE = {
                         $('#torrent_password_option').hide();
                         $('#torrent_password').prop('value', '');
                         $('#torrent_auth_type_option').hide();
-                        $('#torrent_auth_type option[value=none]').attr('selected', 'selected');
+                        $('#torrent_auth_type option[value=none]').prop('selected', true);
                     } else {
                         $('#torrent_username_option').show();
                         $('#torrent_password_option').show();
@@ -2172,12 +2172,12 @@ var SICKRAGE = {
             });
 
             $('#prevShow').on('click', function() {
-                $('#pickShow option:selected').prev('option').prop('selected', 'selected');
+                $('#pickShow option:selected').prev('option').prop('selected', true);
                 $('#pickShow').change();
             });
 
             $('#nextShow').on('click', function() {
-                $('#pickShow option:selected').next('option').prop('selected', 'selected');
+                $('#pickShow option:selected').next('option').prop('selected', true);
                 $('#pickShow').change();
             });
 
@@ -2566,13 +2566,13 @@ var SICKRAGE = {
             $('body').on('click', '.epManualSearch', function(event) {
                 event.preventDefault();
                 var link = this;
-                $(link).children('img').attr('src', srRoot + '/images/loading16.gif');
+                $(link).children('img').prop('src', srRoot + '/images/loading16.gif');
                 $.getJSON(this.href,
                     function (data) {
                         if (data.result === 'success') {
-                            $(link).children('img').attr('src', srRoot + '/images/save.png');
+                            $(link).children('img').prop('src', srRoot + '/images/save.png');
                         } else {
-                            $(link).children('img').attr('src', srRoot + '/images/no16.png');
+                            $(link).children('img').prop('src', srRoot + '/images/no16.png');
                         }
                     });
             });
@@ -2643,14 +2643,14 @@ var SICKRAGE = {
                         if (data.result === 'searching') {
                             // ep is searched, you will get a results any minute now
                             pollInterval = 5000;
-                            $('.manualSearchButton').attr('disabled', true);
+                            $('.manualSearchButton').prop('disabled', true);
                             updateSpinner(spinner, 'The episode is being searched, please wait......', true);
                             initTableSorter('#showTable');
                         }
                         if (data.result === 'queued') {
                             // ep is queued, this might take some time to get results
                             pollInterval = 7000;
-                            $('.manualSearchButton').attr('disabled', true);
+                            $('.manualSearchButton').prop('disabled', true);
                             updateSpinner(spinner, 'The episode has been queued, because another search is taking place. please wait..', true);
                             initTableSorter('#showTable');
                         }
@@ -2688,7 +2688,7 @@ var SICKRAGE = {
             // Click event for the reload results and force search buttons
             $('body').on('click', '.manualSearchButton', function(event) {
                 event.preventDefault();
-                $('.manualSearchButton').attr('disabled', true);
+                $('.manualSearchButton').prop('disabled', true);
                 var show = $('meta[data-last-prov-updates]').attr('data-show');
                 var season = $('meta[data-last-prov-updates]').attr('data-season');
                 var episode = $('meta[data-last-prov-updates]').attr('data-episode');
@@ -2733,11 +2733,11 @@ var SICKRAGE = {
             $(function() {
                 $('body').on('hide.bs.collapse', '.collapse.toggle', function () {
                     $('#showhistory').text('Show History');
-                    $('#wrapper').attr('data-history-toggle', 'hide');
+                    $('#wrapper').prop('data-history-toggle', 'hide');
                 });
                 $('body').on('show.bs.collapse', '.collapse.toggle', function () {
                     $('#showhistory').text('Hide History');
-                    $('#wrapper').attr('data-history-toggle', 'show');
+                    $('#wrapper').prop('data-history-toggle', 'show');
                 });
             });
         },
@@ -2965,7 +2965,7 @@ var SICKRAGE = {
                             });
                         });
                     });
-                    $(this).attr('data-clicked', 1);
+                    $(this).prop('data-clicked', 1);
                     $(this).prop('value', 'Collapse');
                 }
             });
@@ -3014,7 +3014,7 @@ var SICKRAGE = {
                             });
                         });
                     });
-                    $(this).attr('data-clicked', 1);
+                    $(this).prop('data-clicked', 1);
                     $(this).prop('value', 'Collapse');
                 } else {
                     if (action === 'Collapse') {
@@ -3164,7 +3164,7 @@ var SICKRAGE = {
                 $('.ep_summary').hide();
                 $('.ep_summaryTrigger').click(function() {
                     $(this).next('.ep_summary').slideToggle('normal', function() {
-                        $(this).prev('.ep_summaryTrigger').attr('src', function(i, src) {
+                        $(this).prev('.ep_summaryTrigger').prop('src', function(i, src) {
                             return $(this).next('.ep_summary').is(':visible') ? src.replace('plus', 'minus') : src.replace('minus', 'plus');
                         });
                     });
@@ -3265,7 +3265,7 @@ var SICKRAGE = {
                     // Whe're going to add this show, let's remove the anchor and button desc, so it can't be added twice!
                     if ( $(this).attr('disabled') === 'disabled' ) { return false; }
 
-                    $(this).html('Added').attr('disabled', 'disabled');
+                    $(this).html('Added').prop('disabled', true);
 
                     var anyQualArray = [];
                     var bestQualArray = [];
@@ -3325,7 +3325,7 @@ var SICKRAGE = {
                         defaultStatusAfter: $('#statusSelectAfter').val(),
                     });
 
-                    $(this).attr('disabled', true);
+                    $(this).prop('disabled', true);
                     new PNotify({
                         title: 'Saved Defaults',
                         text: 'Your "add show" defaults have been set to your current selections.',
@@ -3334,7 +3334,7 @@ var SICKRAGE = {
                 });
 
                 $('#statusSelect, #qualityPreset, #flatten_folders, #anyQualities, #bestQualities, #subtitles, #scene, #anime, #statusSelectAfter').change(function () {
-                    $('#saveDefaultsButton').attr('disabled', false);
+                    $('#saveDefaultsButton').prop('disabled', false);
                 });
 
                 $('#qualityPreset').on('change', function() {
@@ -3357,7 +3357,7 @@ var SICKRAGE = {
                             if (data.result === 'success') {
                                 $.each(data.groups, function(i, group) {
                                     var option = $('<option>');
-                                    option.attr('value', group.name);
+                                    option.prop('value', group.name);
                                     option.html(group.name + ' | ' + group.rating + ' | ' + group.range);
                                     option.appendTo('#pool');
                                 });
@@ -3427,9 +3427,9 @@ var SICKRAGE = {
                 // also toggle the add show button
                 if (($('#rootDirs option:selected').length || ($('#fullShowPath').length && $('#fullShowPath').val().length)) &&
                     ($('input:radio[name=whichSeries]:checked').length) || ($('input:hidden[name=whichSeries]').length && $('input:hidden[name=whichSeries]').val().length)) {
-                    $('#addShowButton').attr('disabled', false);
+                    $('#addShowButton').prop('disabled', false);
                 } else {
-                    $('#addShowButton').attr('disabled', true);
+                    $('#addShowButton').prop('disabled', true);
                 }
             }
 

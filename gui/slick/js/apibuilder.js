@@ -34,7 +34,7 @@ $(document).ready(function() {
             $(urlId).text(url + (jsonp ? '&jsonp=foo' : ''));
 
             if(responseType.slice(0, 6) === 'image/') {
-                target.html($('<img/>').attr('src', url));
+                target.html($('<img/>').prop('src', url));
             } else {
                 var json = JSON.stringify(data, null, 4);
 

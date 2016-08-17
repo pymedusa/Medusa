@@ -4,13 +4,13 @@ function generateBlackWhiteList() { // jshint ignore:line
     $('#white option').each(function(i, selected) {
         realvalues[i] = $(selected).val();
     });
-    $("#whitelist").val(realvalues.join(","));
+    $('#whitelist').val(realvalues.join(','));
 
     realvalues = [];
     $('#black option').each(function(i, selected) {
         realvalues[i] = $(selected).val();
     });
-    $("#blacklist").val(realvalues.join(","));
+    $('#blacklist').val(realvalues.join(','));
 }
 
 function updateBlackWhiteList(showName) { // jshint ignore:line
@@ -23,8 +23,8 @@ function updateBlackWhiteList(showName) { // jshint ignore:line
         }, function (data) {
             if (data.result === 'success') {
                 $.each(data.groups, function(i, group) {
-                    var option = $("<option>");
-                    option.attr("value", group.name);
+                    var option = $('<option>');
+                    option.prop('value', group.name);
                     option.html(group.name + ' | ' + group.rating + ' | ' + group.range);
                     option.appendTo('#pool');
                 });
@@ -57,7 +57,7 @@ $('#addToWhite').click(function() {
     var group = $('#addToPoolText').val();
     if(group !== '') {
         var option = $('<option>');
-        option.attr('value',group);
+        option.prop('value',group);
         option.html(group);
         option.appendTo('#white');
         $('#addToPoolText').val('');
@@ -68,7 +68,7 @@ $('#addToBlack').click(function() {
     var group = $('#addToPoolText').val();
     if(group !== '') {
         var option = $('<option>');
-        option.attr('value',group);
+        option.prop('value',group);
         option.html(group);
         option.appendTo('#black');
         $('#addToPoolText').val('');
