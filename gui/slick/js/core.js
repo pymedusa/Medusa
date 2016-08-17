@@ -250,7 +250,7 @@ var SICKRAGE = {
             $('#configForm').ajaxForm({
                 beforeSubmit: function() {
                     $('.config_submitter .config_submitter_refresh').each(function() {
-                        $(this).prop('disabled', 'disabled');
+                        $(this).prop('disabled', true);
                         $(this).after('<span><img src="' + srRoot + '/images/loading16' + themeSpinner + '.gif"> Saving...</span>');
                         $(this).hide();
                     });
@@ -300,8 +300,8 @@ var SICKRAGE = {
             });
 
             $('#branchForceUpdate').on('click', function() {
-                $('#branchForceUpdate').prop('disabled', 'disabled');
-                $('#git_reset_branches').prop('disabled', 'disabled');
+                $('#branchForceUpdate').prop('disabled', true);
+                $('#git_reset_branches').prop('disabled', true);
                 $.getJSON(srRoot + '/home/branchForceUpdate', function(data) {
                     $('#git_reset_branches').empty();
                     data.resetBranches.forEach(function(branch) {

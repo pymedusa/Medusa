@@ -144,9 +144,9 @@ $(document).ready(function(){
             isDefault = 0;
             $('#newznab_add_div').show();
             $('#newznab_update_div').hide();
-            $('#newznab_cat').prop('disabled','disabled');
-            $('#newznab_cap').prop('disabled','disabled');
-            $('#newznab_cat_update').prop('disabled','disabled');
+            $('#newznab_cat').prop('disabled', true);
+            $('#newznab_cap').prop('disabled', true);
+            $('#newznab_cat_update').prop('disabled', true);
             $('#newznabcapdiv').hide();
 
             $("#newznab_cat option").each(function() {
@@ -196,11 +196,11 @@ $(document).ready(function(){
             $('#newznab_name').removeAttr("disabled");
             $('#newznab_url').removeAttr("disabled");
         } else {
-            $('#newznab_name').prop("disabled", "disabled");
+            $('#newznab_name').prop('disabled', true);
 
             if (isDefault) {
-                $('#newznab_url').prop("disabled", "disabled");
-                $('#newznab_delete').prop("disabled", "disabled");
+                $('#newznab_url').prop('disabled', true);
+                $('#newznab_delete').prop('disabled', true);
             } else {
                 $('#newznab_url').removeAttr("disabled");
                 $('#newznab_delete').removeAttr("disabled");
@@ -281,9 +281,9 @@ $(document).ready(function(){
             $('#torrentrss_cookies').removeAttr("disabled");
             $('#torrentrss_titleTAG').removeAttr("disabled");
         } else {
-            $('#torrentrss_name').prop("disabled", "disabled");
+            $('#torrentrss_name').prop('disabled', true);
             $('#torrentrss_url').removeAttr("disabled");
-            $('#torrentrss_cookies').prop("disabled", "disabled");
+            $('#torrentrss_cookies').prop('disabled', true);
             $('#torrentrss_titleTAG').removeAttr("disabled");
             $('#torrentrss_delete').removeAttr("disabled");
         }
