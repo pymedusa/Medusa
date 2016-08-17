@@ -17,6 +17,10 @@ class MissingTokenException(TraktException):
     """A Generic Trakt Missing Token Exception"""
 
 
+class TokenExpiredException(TraktException):
+    """A 410 the token has expired Exception"""
+
+
 class TraktIOError(TraktException, IOError):
     """A Generic Trakt IOError Exception"""
 
