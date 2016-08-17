@@ -36,7 +36,8 @@ class InfoHandler(BaseRequestHandler):
             'fanartBackgroundOpacity': sickbeard.FANART_BACKGROUND_OPACITY
         }
 
-        self.api_finish({
-            'status': 200,
-            'data': info_data[info_query] if info_query else info_data
-        })
+        if info_query:
+            if info_query not in info_data:
+                return self.api_finish(status=404, error='{key} not found'.format(key=info_query))
+
+        self.api_finish(data=info_data[info_query] if info_query else info_data)

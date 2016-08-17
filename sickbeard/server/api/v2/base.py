@@ -25,22 +25,17 @@ class BaseRequestHandler(RequestHandler):
             api_key = api_username
 
         if (web_username != api_username and web_password != api_password) and (sickbeard.API_KEY != api_key):
-            self.api_finish({
-                'status': 401,
-                'error': 'Invalid API key'
+            self.api_finish(status=401, error='Invalid API key')
+
+    def api_finish(self, status=None, error=None, data=None, **kwargs):
+        """End the api request writing error or data to http response."""
+        if error is not None and status is not None:
+            self.finish({
+                'status': status,
+                'error': error
             })
-
-    def api_finish(self, error=None, **data):
-        """End the api request writing error or data to http response.
-
-        :param error:
-        :type error: str
-        :param data:
-        """
-        if error is not None:
-            self.finish(error)
         else:
             self.finish({
                 'status': 200,
-                'data': data
+                'data': data if data is not None else kwargs
             })

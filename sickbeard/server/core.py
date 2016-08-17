@@ -14,7 +14,7 @@ import sickbeard
 from sickbeard import logger
 from sickbeard.helpers import create_https_certificates, generateApiKey
 from sickbeard.server.api.v1.core import ApiHandler
-from sickbeard.server.api.v2.shows import ShowsHandler
+from sickbeard.server.api.v2.show import ShowHandler
 from sickbeard.server.api.v2.info import InfoHandler
 from sickbeard.server.web import LoginHandler, LogoutHandler, KeyHandler, CalendarHandler
 from sickrage.helper.encoding import ek
@@ -112,7 +112,7 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         # API v2 handlers
         self.app.add_handlers('.*$', [
             # Shows handler
-            (r'{base}/shows/?([0-9]*)/?'.format(base=self.options['api_v2_root']), ShowsHandler),
+            (r'{base}/shows/?([0-9]*)/?'.format(base=self.options['api_v2_root']), ShowHandler),
             (r'{base}/info/?([A-Za-z0-9_-]*)/?'.format(base=self.options['api_v2_root']), InfoHandler)
         ])
 
