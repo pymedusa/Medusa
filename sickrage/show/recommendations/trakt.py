@@ -73,7 +73,6 @@ class TraktPopular(object):
         """Fetch shows from trakt and store the refresh token when needed."""
         try:
             library_shows = trakt_api.request(path) or []
-            raise TokenExpiredException('Token expired!')
             if trakt_api.access_token_refreshed:
                 sickbeard.TRAKT_ACCESS_TOKEN = trakt_api.access_token
                 sickbeard.TRAKT_REFRESH_TOKEN = trakt_api.refresh_token
