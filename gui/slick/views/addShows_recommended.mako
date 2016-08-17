@@ -76,6 +76,13 @@
             <p>${exception}</p>
         </div>
     % else:
+
+        % if not context.get('trakt_blacklist'):
+            <% trakt_b = False %>
+        % else:
+            <% trakt_b = context.get('trakt_blacklist') %>
+        % endif
+
         % for cur_result in recommended_shows:
             
             <% cur_rating = 0 %>
@@ -88,7 +95,7 @@
             % if cur_result.votes:
                 <% cur_votes = cur_result.votes %>
             % endif
-
+			
             <div class="show-row" data-name="${cur_result.title}" data-rating="${cur_rating}" data-votes="${cur_votes}" data-anime="${cur_result.is_anime}">
                 <div class="recommended-container default-poster ${('', 'show-in-list')[cur_result.show_in_list]}">
                     <div class="recommended-image">
@@ -116,7 +123,12 @@
                             % if cur_result.show_in_list:
                                 <a href="${srRoot}/home/displayShow?show=${cur_result.indexer_id}" class="btn btn-xs">In List</a>
                             % else:
-                                <a href="${srRoot}/addShows/addShowByID" class="btn btn-xs" data-isanime="1" data-indexer="TVDB" data-indexer-id="${cur_result.indexer_id}" data-show-name="${cur_result.title | u}" data-add-show>Add Show</a>
+                                <a href="${srRoot}/addShows/addShowByID" class="btn btn-xs" data-isanime="1" data-indexer="TVDB" 
+                                data-indexer-id="${cur_result.indexer_id}" data-show-name="${cur_result.title | u}" 
+                                data-add-show>Add</a>
+                            % endif
+                            % if trakt_b:
+                                <a href="${srRoot}/addShows/addShowToBlacklist?indexer_id=${cur_result.indexer_id}" class="btn btn-xs">Blacklist</a>
                             % endif
                         </div>
                     </div>

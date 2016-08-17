@@ -38,7 +38,7 @@
             <i>${cur_show['show']['votes']} votes</i>
             <div class="traktShowTitleIcons">
                 <a href="${srRoot}/addShows/addShowByID?indexer_id=${cur_show['show']['ids']['tvdb']}&amp;show_name=${cur_show['show']['title'] | u}" class="btn btn-xs" data-no-redirect>Add Show</a>
-                % if blacklist:
+                % if trakt_blacklist:
                 <a href="${srRoot}/addShows/addShowToBlacklist?indexer_id=${cur_show['show']['ids']['tvdb'] or cur_show['show']['ids']['tvrage']}" class="btn btn-xs">Remove Show</a>
                 % endif
             </div>
