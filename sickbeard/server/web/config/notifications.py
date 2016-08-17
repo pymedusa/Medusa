@@ -40,7 +40,7 @@ class ConfigNotifications(Config):
                           kodi_notify_ondownload=None,
                           kodi_notify_onsubtitledownload=None, kodi_update_onlyfirst=None,
                           kodi_update_library=None, kodi_update_full=None, kodi_host=None, kodi_username=None,
-                          kodi_password=None,
+                          kodi_password=None, kodi_clean_library=None,
                           use_plex_server=None, plex_notify_onsnatch=None, plex_notify_ondownload=None,
                           plex_notify_onsubtitledownload=None, plex_update_library=None,
                           plex_server_host=None, plex_server_token=None, plex_client_host=None, plex_server_username=None, plex_server_password=None,
@@ -102,6 +102,7 @@ class ConfigNotifications(Config):
         sickbeard.KODI_HOST = config.clean_hosts(kodi_host)
         sickbeard.KODI_USERNAME = kodi_username
         sickbeard.KODI_PASSWORD = kodi_password
+        sickbeard.KODI_CLEAN_LIBRARY = config.checkbox_to_value(kodi_clean_library)
 
         sickbeard.USE_PLEX_SERVER = config.checkbox_to_value(use_plex_server)
         sickbeard.PLEX_NOTIFY_ONSNATCH = config.checkbox_to_value(plex_notify_onsnatch)
