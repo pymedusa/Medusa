@@ -25,7 +25,7 @@ from sickrage.helper.common import try_int
 from sickrage.helper.exceptions import ex
 from sickrage.helper.exceptions import MultipleShowObjectsException
 from simpleanidb import Anidb
-from traktor import (AuthException, TraktApi, TraktException)
+from traktor import (AuthException, TraktApi, TraktException, TokenExpiredException)
 from .recommended import RecommendedShow
 
 
@@ -73,11 +73,13 @@ class TraktPopular(object):
         """Fetch shows from trakt and store the refresh token when needed."""
         try:
             library_shows = trakt_api.request(path) or []
+            raise TokenExpiredException('Token expired!')
             if trakt_api.access_token_refreshed:
                 sickbeard.TRAKT_ACCESS_TOKEN = trakt_api.access_token
                 sickbeard.TRAKT_REFRESH_TOKEN = trakt_api.refresh_token
-        except AuthException:
-            return []
+        except TokenExpiredException:
+            sickbeard.TRAKT_ACCESS_TOKEN = ''
+            raise
 
         return library_shows
 
@@ -148,5 +150,6 @@ class TraktPopular(object):
 
         except TraktException as e:
             logger.log('Could not connect to Trakt service: %s' % ex(e), logger.WARNING)
+            raise
 
         return (blacklist, trending_shows)
