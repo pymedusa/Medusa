@@ -10,18 +10,18 @@ $(document).ready(function() {
         $('#anyQualities option').each(function() {
             var result = preset & $(this).val(); // jshint ignore:line
             if (result > 0) {
-                $(this).attr('selected', 'selected');
+                $(this).prop('selected', true);
             } else {
-                $(this).attr('selected', false);
+                $(this).prop('selected', false);
             }
         });
 
         $('#bestQualities option').each(function() {
             var result = preset & ($(this).val() << 16); // jshint ignore:line
             if (result > 0) {
-                $(this).attr('selected', 'selected');
+                $(this).prop('selected', true);
             } else {
-                $(this).attr('selected', false);
+                $(this).prop('selected', false);
             }
         });
 
