@@ -24,7 +24,7 @@ function updateBlackWhiteList(showName) { // jshint ignore:line
             if (data.result === 'success') {
                 $.each(data.groups, function(i, group) {
                     var option = $("<option>");
-                    option.attr("value", group.name);
+                    option.prop("value", group.name);
                     option.html(group.name + ' | ' + group.rating + ' | ' + group.range);
                     option.appendTo('#pool');
                 });
@@ -57,7 +57,7 @@ $('#addToWhite').click(function() {
     var group = $('#addToPoolText').val();
     if(group !== '') {
         var option = $('<option>');
-        option.attr('value',group);
+        option.prop('value',group);
         option.html(group);
         option.appendTo('#white');
         $('#addToPoolText').val('');
@@ -68,7 +68,7 @@ $('#addToBlack').click(function() {
     var group = $('#addToPoolText').val();
     if(group !== '') {
         var option = $('<option>');
-        option.attr('value',group);
+        option.prop('value',group);
         option.html(group);
         option.appendTo('#black');
         $('#addToPoolText').val('');

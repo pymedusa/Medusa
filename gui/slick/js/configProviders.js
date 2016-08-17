@@ -1,7 +1,7 @@
 $(document).ready(function(){
     $.fn.showHideProviders = function() {
         $('.providerDiv').each(function(){
-            var providerName = $(this).attr('id');
+            var providerName = $(this).prop('id');
             var selectedProvider = $('#editAProvider :selected').val();
 
             if (selectedProvider + 'Div' == providerName) { // jshint ignore:line
@@ -144,9 +144,9 @@ $(document).ready(function(){
             isDefault = 0;
             $('#newznab_add_div').show();
             $('#newznab_update_div').hide();
-            $('#newznab_cat').attr('disabled','disabled');
-            $('#newznab_cap').attr('disabled','disabled');
-            $('#newznab_cat_update').attr('disabled','disabled');
+            $('#newznab_cat').prop('disabled','disabled');
+            $('#newznab_cap').prop('disabled','disabled');
+            $('#newznab_cat_update').prop('disabled','disabled');
             $('#newznabcapdiv').hide();
 
             $("#newznab_cat option").each(function() {
@@ -196,11 +196,11 @@ $(document).ready(function(){
             $('#newznab_name').removeAttr("disabled");
             $('#newznab_url').removeAttr("disabled");
         } else {
-            $('#newznab_name').attr("disabled", "disabled");
+            $('#newznab_name').prop("disabled", "disabled");
 
             if (isDefault) {
-                $('#newznab_url').attr("disabled", "disabled");
-                $('#newznab_delete').attr("disabled", "disabled");
+                $('#newznab_url').prop("disabled", "disabled");
+                $('#newznab_delete').prop("disabled", "disabled");
             } else {
                 $('#newznab_url').removeAttr("disabled");
                 $('#newznab_delete').removeAttr("disabled");
@@ -281,9 +281,9 @@ $(document).ready(function(){
             $('#torrentrss_cookies').removeAttr("disabled");
             $('#torrentrss_titleTAG').removeAttr("disabled");
         } else {
-            $('#torrentrss_name').attr("disabled", "disabled");
+            $('#torrentrss_name').prop("disabled", "disabled");
             $('#torrentrss_url').removeAttr("disabled");
-            $('#torrentrss_cookies').attr("disabled", "disabled");
+            $('#torrentrss_cookies').prop("disabled", "disabled");
             $('#torrentrss_titleTAG').removeAttr("disabled");
             $('#torrentrss_delete').removeAttr("disabled");
         }
@@ -338,7 +338,7 @@ $(document).ready(function(){
     };
 
     $(this).on('change', '.newznab_key', function(){
-        var providerId = $(this).attr('id');
+        var providerId = $(this).prop('id');
         providerId = providerId.substring(0, providerId.length-'_hash'.length);
 
         var url = $('#'+providerId+'_url').val();
@@ -489,8 +489,8 @@ $(document).ready(function(){
     });
 
     $(this).on('change', "[class='providerDiv_tip'] input", function(){
-        $('div .providerDiv ' + "[name=" + $(this).attr('name') + "]").replaceWith($(this).clone());
-        $('div .providerDiv ' + "[newznab_name=" + $(this).attr('id') + "]").replaceWith($(this).clone());
+        $('div .providerDiv ' + "[name=" + $(this).prop('name') + "]").replaceWith($(this).clone());
+        $('div .providerDiv ' + "[newznab_name=" + $(this).prop('id') + "]").replaceWith($(this).clone());
     });
 
     $(this).on('change', "[class='providerDiv_tip'] select", function(){
@@ -501,16 +501,16 @@ $(document).ready(function(){
                 $(this).prop('defaultSelected', false);
             }
         });
-        $('div .providerDiv ' + "[name=" + $(this).attr('name') + "]").empty().replaceWith($(this).clone());
+        $('div .providerDiv ' + "[name=" + $(this).prop('name') + "]").empty().replaceWith($(this).clone());
     });
 
     $(this).on('change', '.enabler', function(){
         if ($(this).is(':checked')) {
-            $('.content_'+$(this).attr('id')).each( function() {
+            $('.content_'+$(this).prop('id')).each( function() {
                 $(this).show();
             });
         } else {
-            $('.content_'+$(this).attr('id')).each( function() {
+            $('.content_'+$(this).prop('id')).each( function() {
                 $(this).hide();
             });
         }
@@ -518,9 +518,9 @@ $(document).ready(function(){
 
     $(".enabler").each(function(){
         if (!$(this).is(':checked')) {
-            $('.content_'+$(this).attr('id')).hide();
+            $('.content_'+$(this).prop('id')).hide();
         } else {
-            $('.content_'+$(this).attr('id')).show();
+            $('.content_'+$(this).prop('id')).show();
         }
     });
 
@@ -534,7 +534,7 @@ $(document).ready(function(){
     };
 
     $(this).on('change', '.seed_option', function(){
-        var providerId = $(this).attr('id').split('_')[0];
+        var providerId = $(this).prop('id').split('_')[0];
         $(this).makeTorrentOptionString(providerId);
     });
 
@@ -545,7 +545,7 @@ $(document).ready(function(){
         self = this;
 
         $.each(options, function(index, option) {
-            $option = $("<option></option>").attr("value", option.value).text(option.text);
+            $option = $("<option></option>").prop("value", option.value).text(option.text);
             self.append($option);
         });
     };

@@ -53,7 +53,7 @@ $("#addSceneName").click(function() {
 
     $("#SceneException").show();
 
-    option.attr("value",sceneEx);
+    option.prop("value", sceneEx);
     option.html(sceneEx);
     return option.appendTo("#exceptions_list");
 });

@@ -45,7 +45,7 @@ $(document).ready(function() {
         // re-sync option ids
         var i = 0;
         $('#rootDirs option').each(function() {
-            $(this).attr('id', 'rd-'+(i++));
+            $(this).prop('id', 'rd-'+(i++));
         });
     }
 
