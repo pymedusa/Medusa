@@ -25,7 +25,7 @@ from sickrage.helper.common import try_int
 from sickrage.helper.exceptions import ex
 from sickrage.helper.exceptions import MultipleShowObjectsException
 from simpleanidb import Anidb
-from traktor import (AuthException, TraktApi, TraktException, TokenExpiredException)
+from traktor import (TokenExpiredException, TraktApi, TraktException)
 from .recommended import RecommendedShow
 
 
