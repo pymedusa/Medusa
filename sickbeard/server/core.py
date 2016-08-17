@@ -14,7 +14,7 @@ import sickbeard
 from sickbeard import logger
 from sickbeard.helpers import create_https_certificates, generateApiKey
 from sickbeard.server.api.v1.core import ApiHandler
-from sickbeard.server.api.v2.show import ShowsHandler
+from sickbeard.server.api.v2.shows import ShowsHandler
 from sickbeard.server.api.v2.info import InfoHandler
 from sickbeard.server.web import LoginHandler, LogoutHandler, KeyHandler, CalendarHandler
 from sickrage.helper.encoding import ek
