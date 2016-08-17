@@ -52,8 +52,8 @@ class TraktPopular(object):
                                    **{'rating': show_obj['show']['rating'],
                                       'votes': try_int(show_obj['show']['votes'], '0'),
                                       'image_href': 'http://www.trakt.tv/shows/{0}'.format(show_obj['show']['ids']['slug']),
-                                      # Adds like: {u'tmdb': 62126, u'tvdb': 304219, u'trakt': 79382, u'imdb': u'tt3322314',
-                                      # u'tvrage': None, u'slug': u'marvel-s-luke-cage'}
+                                      # Adds like: {'tmdb': 62126, 'tvdb': 304219, 'trakt': 79382, 'imdb': 'tt3322314',
+                                      # 'tvrage': None, 'slug': 'marvel-s-luke-cage'}
                                       'ids': show_obj['show']['ids']
                                       }
                                    )
@@ -90,33 +90,34 @@ class TraktPopular(object):
         :throw: ``Exception`` if an Exception is thrown not handled by the libtrats exceptions
         """
         trending_shows = []
+        blacklist = ''
 
         # Create a trakt settings dict
-        trakt_settings = {"trakt_api_secret": sickbeard.TRAKT_API_SECRET, "trakt_api_key": sickbeard.TRAKT_API_KEY,
-                          "trakt_access_token": sickbeard.TRAKT_ACCESS_TOKEN}
+        trakt_settings = {'trakt_api_secret': sickbeard.TRAKT_API_SECRET, 'trakt_api_key': sickbeard.TRAKT_API_KEY,
+                          'trakt_access_token': sickbeard.TRAKT_ACCESS_TOKEN}
 
         trakt_api = TraktApi(timeout=sickbeard.TRAKT_TIMEOUT, ssl_verify=sickbeard.SSL_VERIFY, **trakt_settings)
 
         try:  # pylint: disable=too-many-nested-blocks
-            not_liked_show = ""
+            not_liked_show = ''
             if sickbeard.TRAKT_ACCESS_TOKEN != '':
-                library_shows = self.fetch_and_refresh_token(trakt_api, "sync/collection/shows?extended=full")
+                library_shows = self.fetch_and_refresh_token(trakt_api, 'sync/collection/shows?extended=full')
 
                 if sickbeard.TRAKT_BLACKLIST_NAME is not None and sickbeard.TRAKT_BLACKLIST_NAME:
-                    not_liked_show = trakt_api.request("users/" + sickbeard.TRAKT_USERNAME + "/lists/" +
-                                                       sickbeard.TRAKT_BLACKLIST_NAME + "/items") or []
+                    not_liked_show = trakt_api.request('users/' + sickbeard.TRAKT_USERNAME + '/lists/' +
+                                                       sickbeard.TRAKT_BLACKLIST_NAME + '/items') or []
                 else:
-                    logger.log(u"Trakt blacklist name is empty", logger.DEBUG)
+                    logger.log('Trakt blacklist name is empty', logger.DEBUG)
 
-            if trakt_list not in ["recommended", "newshow", "newseason"]:
-                limit_show = "?limit=" + str(100 + len(not_liked_show)) + "&"
+            if trakt_list not in ['recommended', 'newshow', 'newseason']:
+                limit_show = '?limit=' + str(100 + len(not_liked_show)) + '&'
             else:
-                limit_show = "?"
+                limit_show = '?'
 
-            shows = self.fetch_and_refresh_token(trakt_api, page_url + limit_show + "extended=full,images") or []
+            shows = self.fetch_and_refresh_token(trakt_api, page_url + limit_show + 'extended=full,images') or []
 
             if sickbeard.TRAKT_ACCESS_TOKEN != '':
-                library_shows = self.fetch_and_refresh_token(trakt_api, "sync/collection/shows?extended=full") or []
+                library_shows = self.fetch_and_refresh_token(trakt_api, 'sync/collection/shows?extended=full') or []
 
             for show in shows:
                 try:
@@ -146,6 +147,6 @@ class TraktPopular(object):
             blacklist = sickbeard.TRAKT_BLACKLIST_NAME not in ''
 
         except TraktException as e:
-            logger.log(u"Could not connect to Trakt service: %s" % ex(e), logger.WARNING)
+            logger.log('Could not connect to Trakt service: %s' % ex(e), logger.WARNING)
 
         return (blacklist, trending_shows)
