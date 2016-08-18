@@ -3,12 +3,12 @@ $(document).ready(function() {
         if (parseInt(preset) === 0) {
             $('#customQuality').show();
             return;
-        } else {
-            $('#customQuality').hide();
         }
 
+        $('#customQuality').hide();
+
         $('#anyQualities option').each(function() {
-            var result = preset & $(this).val(); // jshint ignore:line
+            var result = preset & $(this).val();
             if (result > 0) {
                 $(this).prop('selected', true);
             } else {
@@ -17,7 +17,7 @@ $(document).ready(function() {
         });
 
         $('#bestQualities option').each(function() {
-            var result = preset & ($(this).val() << 16); // jshint ignore:line
+            var result = preset & ($(this).val() << 16);
             if (result > 0) {
                 $(this).prop('selected', true);
             } else {
