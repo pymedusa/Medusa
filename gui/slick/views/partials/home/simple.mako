@@ -29,7 +29,7 @@
     </thead>
     <tfoot class="hidden-print">
         <tr>
-            <th rowspan="1" colspan="1" align="center"><a href="${srRoot}/addShows/">Add ${('Show', 'Anime')[curListType == 'Anime']}</a></th>
+            <th rowspan="1" colspan="1" align="center"><a href="addShows/">Add ${('Show', 'Anime')[curListType == 'Anime']}</a></th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>
@@ -128,7 +128,7 @@
         % else:
             <td align="center" class="nowrap"></td>
         % endif
-            <td class="tvShow"><a href="${srRoot}/home/displayShow?show=${curShow.indexerid}">${curShow.name}</a></td>
+            <td class="tvShow"><a href="home/displayShow?show=${curShow.indexerid}">${curShow.name}</a></td>
             <td>
                 <span title="${curShow.network}">${curShow.network}</span>
             </td>
@@ -142,7 +142,7 @@
             <td align="center" data-show-size="${show_size}">${pretty_file_size(show_size)}</td>
             <td align="center">
                 <% paused = int(curShow.paused) == 0 and curShow.status == 'Continuing' %>
-                <img src="/images/${('no16.png', 'yes16.png')[bool(paused)]}" alt="${('No', 'Yes')[bool(paused)]}" width="16" height="16" />
+                <img src="images/${('no16.png', 'yes16.png')[bool(paused)]}" alt="${('No', 'Yes')[bool(paused)]}" width="16" height="16" />
             </td>
             <td align="center">
             <%

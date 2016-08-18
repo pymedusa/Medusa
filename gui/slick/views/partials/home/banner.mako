@@ -29,7 +29,7 @@
     </thead>
     <tfoot class="hidden-print">
         <tr>
-            <th rowspan="1" colspan="1" align="center"><a href="${srRoot}/addShows/">Add ${('Show', 'Anime')[curListType == 'Anime']}</a></th>
+            <th rowspan="1" colspan="1" align="center"><a href="addShows/">Add ${('Show', 'Anime')[curListType == 'Anime']}</a></th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>
@@ -131,16 +131,16 @@
             <td>
                 <span style="display: none;">${curShow.name}</span>
                 <div class="imgbanner banner">
-                    <a href="${srRoot}/home/displayShow?show=${curShow.indexerid}">
-                    <img src="/showPoster/?show=${curShow.indexerid}&amp;which=banner" class="banner" alt="${curShow.indexerid}" title="${curShow.name}"/>
+                    <a href="home/displayShow?show=${curShow.indexerid}">
+                    <img src="showPoster/?show=${curShow.indexerid}&amp;which=banner" class="banner" alt="${curShow.indexerid}" title="${curShow.name}"/>
                 </div>
             </td>
             <td align="center">
             % if curShow.network:
-                <span title="${curShow.network}" class="hidden-print"><img id="network" width="54" height="27" src="/showPoster/?show=${curShow.indexerid}&amp;which=network" alt="${curShow.network}" title="${curShow.network}" /></span>
+                <span title="${curShow.network}" class="hidden-print"><img id="network" width="54" height="27" src="showPoster/?show=${curShow.indexerid}&amp;which=network" alt="${curShow.network}" title="${curShow.network}" /></span>
                 <span class="visible-print-inline">${curShow.network}</span>
             % else:
-                <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="/images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
+                <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
                 <span class="visible-print-inline">No Network</span>
             % endif
             </td>
@@ -154,7 +154,7 @@
             <td align="center" data-show-size="${show_size}">${pretty_file_size(show_size)}</td>
             <td align="center">
                 <% paused = int(curShow.paused) == 0 and curShow.status == 'Continuing' %>
-                <img src="/images/${('no16.png', 'yes16.png')[bool(paused)]}" alt="${('No', 'Yes')[bool(paused)]}" width="16" height="16" />
+                <img src="images/${('no16.png', 'yes16.png')[bool(paused)]}" alt="${('No', 'Yes')[bool(paused)]}" width="16" height="16" />
             </td>
             <td align="center">
             <%

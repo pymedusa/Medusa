@@ -15,6 +15,7 @@
     <meta name="theme-color" content="#333333">
     % endif
     <title>Medusa - BRANCH:[${sickbeard.BRANCH}] - ${title}</title>
+    <base href="${base_url}">
     <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -38,26 +39,26 @@
     <meta data-var="sickbeard.SORT_ARTICLE" data-content="${sickbeard.SORT_ARTICLE}">
     <meta data-var="sickbeard.TIME_PRESET" data-content="${sickbeard.TIME_PRESET}">
     <meta data-var="sickbeard.TRIM_ZERO" data-content="${sickbeard.TRIM_ZERO}">
-    <link rel="shortcut icon" href="${srRoot}/images/ico/favicon.ico">
-    <link rel="icon" sizes="16x16 32x32 64x64" href="${srRoot}/images/ico/favicon.ico">
-    <link rel="icon" type="image/png" sizes="196x196" href="${srRoot}/images/ico/favicon-196.png">
-    <link rel="icon" type="image/png" sizes="160x160" href="${srRoot}/images/ico/favicon-160.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="${srRoot}/images/ico/favicon-96.png">
-    <link rel="icon" type="image/png" sizes="64x64" href="${srRoot}/images/ico/favicon-64.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="${srRoot}/images/ico/favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="${srRoot}/images/ico/favicon-16.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="${srRoot}/images/ico/favicon-152.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="${srRoot}/images/ico/favicon-144.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="${srRoot}/images/ico/favicon-120.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="${srRoot}/images/ico/favicon-114.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="${srRoot}/images/ico/favicon-76.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="${srRoot}/images/ico/favicon-72.png">
-    <link rel="apple-touch-icon" href="${srRoot}/images/ico/favicon-57.png">
-    <link rel="stylesheet" type="text/css" href="${srRoot}/css/vender.min.css?${sbPID}"/>
-    <link rel="stylesheet" type="text/css" href="${srRoot}/css/browser.css?${sbPID}" />
-    <link rel="stylesheet" type="text/css" href="${srRoot}/css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
-    <link rel="stylesheet" type="text/css" href="${srRoot}/css/style.css?${sbPID}"/>
-    <link rel="stylesheet" type="text/css" href="${srRoot}/css/${sbThemeName}.css?${sbPID}" />
+    <link rel="shortcut icon" href="images/ico/favicon.ico">
+    <link rel="icon" sizes="16x16 32x32 64x64" href="images/ico/favicon.ico">
+    <link rel="icon" type="image/png" sizes="196x196" href="images/ico/favicon-196.png">
+    <link rel="icon" type="image/png" sizes="160x160" href="images/ico/favicon-160.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="images/ico/favicon-96.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="images/ico/favicon-64.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/ico/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/ico/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="images/ico/favicon-152.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="images/ico/favicon-144.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="images/ico/favicon-120.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/ico/favicon-114.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="images/ico/favicon-76.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/ico/favicon-72.png">
+    <link rel="apple-touch-icon" href="images/ico/favicon-57.png">
+    <link rel="stylesheet" type="text/css" href="css/vender.min.css?${sbPID}"/>
+    <link rel="stylesheet" type="text/css" href="css/browser.css?${sbPID}" />
+    <link rel="stylesheet" type="text/css" href="css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
+    <link rel="stylesheet" type="text/css" href="css/style.css?${sbPID}"/>
+    <link rel="stylesheet" type="text/css" href="css/${sbThemeName}.css?${sbPID}" />
 </head>
 <body>
 <nav class="navbar navbar-default navbar-fixed-top hidden-print" role="navigation">
@@ -69,8 +70,8 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="${srRoot}/apibuilder/" title="Medusa">
-                <img alt="Medusa" src="/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" />
+            <a class="navbar-brand" href="apibuilder/" title="Medusa">
+                <img alt="Medusa" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left" />
                 <p class="navbar-text hidden-xs">${title}</p>
             </a>
         </div>
@@ -84,10 +85,10 @@
                 </label>
             </div>
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="${srRoot}/home/">Back to Medusa</a></li>
+                <li><a href="home/">Back to Medusa</a></li>
                 <li class="hidden-xs">
                     <a href="https://github.com/PyMedusa/SickRage/wiki/Donations" rel="noreferrer" onclick="window.open('${sickbeard.ANON_REDIRECT}' + this.href); return false;">
-                        <img src="/images/donate.jpg" alt="[donate]" class="navbaricon" />
+                        <img src="images/donate.jpg" alt="[donate]" class="navbaricon" />
                     </a>
                 </li>
             </ul>
@@ -163,9 +164,9 @@
 var commands = ${sorted(commands)};
 var episodes = ${episodes};
 </script>
-<script type="text/javascript" src="/js/vender.min.js?${sbPID}"></script>
-<script type="text/javascript" src="/js/core.min.js?${sbPID}"></script>
-<script type="text/javascript" src="/js/apibuilder.js?${sbPID}"></script>
+<script type="text/javascript" src="js/vender.min.js?${sbPID}"></script>
+<script type="text/javascript" src="js/core.min.js?${sbPID}"></script>
+<script type="text/javascript" src="js/apibuilder.js?${sbPID}"></script>
 </body>
 </html>
 <%def name="display_parameters_doc(parameters, required)">

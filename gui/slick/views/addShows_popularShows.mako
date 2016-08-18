@@ -55,10 +55,10 @@
                         ${cur_result['name'] or '<span>&nbsp;</span>'}
                     </div>
                     <div class="clearfix">
-                        <p>${int(cur_rating*10)}% <img src="/images/heart.png"></p>
+                        <p>${int(cur_rating*10)}% <img src="images/heart.png"></p>
                         <i>${'{x} votes'.format(x=cur_votes) if cur_votes else '0 votes'}</i>
                         <div class="traktShowTitleIcons">
-                            <a href="${srRoot}/addShows/addShowByID?indexer_id=${cur_result['imdb_tt']}&amp;show_name=${cur_result['name'] | u}&amp;indexer=IMDB" class="btn btn-xs" data-no-redirect>Add Show</a>
+                            <a href="addShows/addShowByID?indexer_id=${cur_result['imdb_tt']}&amp;show_name=${cur_result['name'] | u}&amp;indexer=IMDB" class="btn btn-xs" data-no-redirect>Add Show</a>
                         </div>
                     </div>
                 </div>

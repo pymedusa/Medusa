@@ -4,7 +4,7 @@
 var themeSpinner;
 var anonURL;
 var loading;
-var topImageHtml = '<img src="/images/top.gif" width="31" height="11" alt="Jump to top" />'; // eslint-disable-line no-unused-vars
+var topImageHtml = '<img src="images/top.gif" width="31" height="11" alt="Jump to top" />'; // eslint-disable-line no-unused-vars
 var webRoot = $('base').attr('href');
 var apiRoot = $('body').attr('api-root');
 var apiKey = $('body').attr('api-key');
@@ -218,7 +218,7 @@ var SICKRAGE = {
                 beforeSubmit: function() {
                     $('.config_submitter .config_submitter_refresh').each(function() {
                         $(this).prop('disabled', 'disabled');
-                        $(this).after('<span><img src="/images/loading16' + themeSpinner + '.gif"> Saving...</span>');
+                        $(this).after('<span><img src="images/loading16' + themeSpinner + '.gif"> Saving...</span>');
                         $(this).hide();
                     });
                 },
@@ -1797,7 +1797,7 @@ var SICKRAGE = {
                 }
 
                 if ($('#service_order_list > #'+id).length === 0 && showService !== false) {
-                    var toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="service_enabler" CHECKED> <a href="' + anonURL + url + '" class="imgLink" target="_new"><img src="/images/services/newznab.gif" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>';
+                    var toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="service_enabler" CHECKED> <a href="' + anonURL + url + '" class="imgLink" target="_new"><img src="images/services/newznab.gif" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>';
 
                     $('#service_order_list').append(toAdd);
                     $('#service_order_list').sortable('refresh');
@@ -2137,7 +2137,7 @@ var SICKRAGE = {
         },
         displayShow: function() {
             if (SICKRAGE.info['fanartBackground']) {
-                $.backstretch('/showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
+                $.backstretch('showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
                 $('.backstretch').css('opacity', SICKRAGE.info['fanartBackgroundOpacity']).fadeIn("500");
             }
             $('#webRoot').ajaxEpSearch({
@@ -2521,13 +2521,13 @@ var SICKRAGE = {
         },
         snatchSelection: function() {
             if (SICKRAGE.info['fanartBackground']) {
-                 $.backstretch('/showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
+                 $.backstretch('showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
                  $('.backstretch').css('opacity', SICKRAGE.info['fanartBackgroundOpacity']).fadeIn('500');
             }
             var spinner = $('#searchNotification');
             var updateSpinner = function(spinner, message, showSpinner) {
                 if (showSpinner) {
-                    $(spinner).html('<img id="searchingAnim" src="/images/loading32' + themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message);
+                    $(spinner).html('<img id="searchingAnim" src="images/loading32' + themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message);
                 } else {
                     $(spinner).empty().html(message);
                 }
@@ -2808,7 +2808,7 @@ var SICKRAGE = {
                     subtitles = subtitles.split(',');
                     for (var i in subtitles) {
                         if (subtitles.hasOwnProperty(i)) {
-                            row += '<img src="/images/subtitles/flags/' + subtitles[i] + '.png" width="16" height="11" alt="' + subtitles[i] + '" />&nbsp;';
+                            row += '<img src="images/subtitles/flags/' + subtitles[i] + '.png" width="16" height="11" alt="' + subtitles[i] + '" />&nbsp;';
                         }
                     }
                     row += '</td>';
@@ -3241,7 +3241,7 @@ var SICKRAGE = {
             };
 
             $.fn.loadRemoteShows = function(path, loadingTxt, errorTxt) {
-                $(this).html('<img id="searchingAnim" src="/images/loading32' + themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
+                $(this).html('<img id="searchingAnim" src="images/loading32' + themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
                 $(this).load(path + ' #container', function(response, status) {
                     if (status === 'error') {
                         $(this).empty().html(errorTxt);
@@ -3443,7 +3443,7 @@ var SICKRAGE = {
                 }
 
                 var searchingFor = $('#nameToSearch').val().trim() + ' on ' + $('#providedIndexer option:selected').text() + ' in ' + $('#indexerLangSelect').val();
-                $('#searchResults').empty().html('<img id="searchingAnim" src="/images/loading32' + themeSpinner + '.gif" height="32" width="32" /> searching ' + searchingFor + '...');
+                $('#searchResults').empty().html('<img id="searchingAnim" src="images/loading32' + themeSpinner + '.gif" height="32" width="32" /> searching ' + searchingFor + '...');
 
                 searchRequestXhr = $.ajax({
                     url: 'addShows/searchIndexersForShowName',
@@ -3610,7 +3610,7 @@ var SICKRAGE = {
                     }
                 });
 
-                $('#tableDiv').html('<img id="searchingAnim" src="/images/loading32.gif" height="32" width="32" /> loading folders...');
+                $('#tableDiv').html('<img id="searchingAnim" src="images/loading32.gif" height="32" width="32" /> loading folders...');
                 $.get('addShows/massAddTable/', url, function(data) {
                     $('#tableDiv').html(data);
                     $('#addRootDirTable').tablesorter({
@@ -3727,7 +3727,7 @@ $.ajax({
         SICKRAGE.info = data.data;
         themeSpinner = SICKRAGE.info['themeName'] === 'dark' ? '-dark' : '';
         anonURL = SICKRAGE.info['anonURL'];
-        loading = '<img src="/images/loading16' + themeSpinner + '.gif" height="16" width="16" />';
+        loading = '<img src="images/loading16' + themeSpinner + '.gif" height="16" width="16" />';
 
         if (navigator.userAgent.indexOf('PhantomJS') === -1) {
             $(document).ready(UTIL.init);

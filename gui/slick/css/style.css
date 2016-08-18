@@ -204,7 +204,7 @@ inc_top.mako
 }
 
 [class^="menu-icon-"], [class*=" menu-icon-"] {
-    background: url("../images/menu/16x_sprite_colored_menu_icons.png");
+    background: url("images/menu/16x_sprite_colored_menu_icons.png");
     height: 16px;
     width: 16px;
     display: inline-block;
@@ -613,7 +613,7 @@ span.show-option {
 }
 
 .show-attributes {
-	margin: 4px 4px 0px 4px;
+    margin: 4px 4px 0px 4px;
 }
 
 .show-title:after {
@@ -880,12 +880,12 @@ home_recommendedShows.mako
 }
 
 .recommended-container {
-	left: -4px;
+    left: -4px;
     position: relative;
 }
 
 div.recommended-image {
-	background-color: #DFDACF;
+    background-color: #DFDACF;
 }
 
 .show-in-list div.recommended-image {
@@ -933,12 +933,12 @@ div.recommended-image {
 }
 
 .recommended-container .anidb-url {
-	float: right;
-	padding-right: 4px;
+    float: right;
+    padding-right: 4px;
 }
 
 .anidb-inline {
-	height: 16px;
+    height: 16px;
 }
 
 .recommended-container .default-poster {
@@ -1222,7 +1222,7 @@ span.snatched b {
 }
 
 .summaryFanArt {
-   opacity: 0.9; 
+   opacity: 0.9;
 }
 
 .displayShowTableFanArt th.row-seasonheader {
@@ -1355,30 +1355,30 @@ td.col-legend {
 
 th.col-search,
 td.col-search {
-	width: 65px;
+    width: 65px;
 }
 
 td.col-date {
-	min-width: 104px;
-	text-align: center;
-	white-space: nowrap;
+    min-width: 104px;
+    text-align: center;
+    white-space: nowrap;
 }
 
 td.col-size {
-	min-width: 79px;
-	text-align: center;
-	white-space: nowrap;
+    min-width: 79px;
+    text-align: center;
+    white-space: nowrap;
 }
 
 td.col-provider {
-	min-width: 133px;
-	text-align: center;
-	white-space: nowrap;
+    min-width: 133px;
+    text-align: center;
+    white-space: nowrap;
 }
 
 td.col-group {
-	min-width: 90px;
-	text-align: center;
+    min-width: 90px;
+    text-align: center;
 }
 
 .showLegend {
@@ -1407,11 +1407,11 @@ div.season-scene-exception {
 #showBanner {
     float:right;
     height:50px;
-    border:1px solid black; 
+    border:1px solid black;
 }
 
 .fanart {
-    margin-top: -1px; 
+    margin-top: -1px;
     vertical-align:middle;
 }
 
@@ -2288,19 +2288,19 @@ span.true {
 }
 
 span.break-word {
-	word-break: break-all;
+    word-break: break-all;
 }
 span.required {
-	color: green;
+    color: green;
 }
 span.preferred {
-	color: blue;
+    color: blue;
 }
 span.undesired {
-	color: orange;
+    color: orange;
 }
 span.ignored {
-	color: red;
+    color: red;
 }
 
 a.wiki {
@@ -3598,7 +3598,7 @@ snatchSelection.mako
 ========================================================================== */
 
 div#searchNotification {
-	display: inline-block;
+    display: inline-block;
 }
 
 .summaryTable tr td {

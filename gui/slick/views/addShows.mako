@@ -11,7 +11,7 @@
     <h1 class="title">${title}</h1>
 % endif
 <div id="addShowPortal">
-    <a href="/addShows/newShow/" id="btnNewShow" class="btn btn-large">
+    <a href="addShows/newShow/" id="btnNewShow" class="btn btn-large">
         <div class="button"><div class="add-list-icon-addnewshow"></div></div>
         <div class="buttontext">
             <h3>Add New Show</h3>
@@ -19,7 +19,7 @@
         </div>
     </a>
     <br><br>
-    <a href="/addShows/trendingShows/?traktList=anticipated" id="btnNewShow" class="btn btn-large">
+    <a href="addShows/trendingShows/?traktList=anticipated" id="btnNewShow" class="btn btn-large">
         <div class="button"><div class="add-list-icon-addtrakt"></div></div>
         <div class="buttontext">
             <h3>Add From Trakt Lists</h3>
@@ -27,7 +27,7 @@
         </div>
     </a>
     <br><br>
-    <a href="/addShows/popularShows/" id="btnNewShow" class="btn btn-large">
+    <a href="addShows/popularShows/" id="btnNewShow" class="btn btn-large">
         <div class="button"><div class="add-list-icon-addimdb"></div></div>
         <div class="buttontext">
             <h3>Add From IMDB's Popular Shows</h3>
@@ -35,7 +35,7 @@
         </div>
     </a>
     <br><br>
-    <a href="/addShows/existingShows/" id="btnExistingShow" class="btn btn-large">
+    <a href="addShows/existingShows/" id="btnExistingShow" class="btn btn-large">
         <div class="button"><div class="add-list-icon-addexistingshow"></div></div>
         <div class="buttontext">
             <h3>Add Existing Shows</h3>

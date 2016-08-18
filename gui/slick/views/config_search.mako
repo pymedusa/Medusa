@@ -23,7 +23,7 @@
                 <div id="episode-search">
                         <div class="component-group-desc">
                             <h3>General Search Settings</h3>
-                            <p>How to manage searching with <a href="${srRoot}/config/providers">providers</a>.</p>
+                            <p>How to manage searching with <a href="config/providers">providers</a>.</p>
                         </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">

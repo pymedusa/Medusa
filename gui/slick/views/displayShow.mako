@@ -209,7 +209,7 @@
                 <!-- Option table right -->
                 <table class="showOptions">
                     <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %>
-                    <tr><td class="showLegend">Info Language:</td><td><img src="images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='/images/flags/unknown.png';"/></td></tr>
+                    <tr><td class="showLegend">Info Language:</td><td><img src="images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/></td></tr>
                     % if sickbeard.USE_SUBTITLES:
                     <tr><td class="showLegend">Subtitles: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.subtitles)]}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
                     % endif
@@ -496,7 +496,7 @@
             <td class="col-subtitles" align="center">
             % for flag in (epResult["subtitles"] or '').split(','):
                 % if flag.strip() and Quality.splitCompositeStatus(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
-                    <img src="images/subtitles/flags/${flag}.png" width="16" height="11" alt="${subtitles.name_from_code(flag)}" onError="this.onerror=null;this.src='/images/flags/unknown.png';" />
+                    <img src="images/subtitles/flags/${flag}.png" width="16" height="11" alt="${subtitles.name_from_code(flag)}" onError="this.onerror=null;this.src='images/flags/unknown.png';" />
                 % endif
             % endfor
             </td>

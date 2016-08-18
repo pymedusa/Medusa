@@ -42,7 +42,7 @@ $(document).ready(function(){
 
         var params = {url: url, name: name, key: key};
 
-        $(".updating_categories").wrapInner('<span><img src="/images/loading16' + themeSpinner + '.gif"> Updating Categories ...</span>');
+        $(".updating_categories").wrapInner('<span><img src="images/loading16' + themeSpinner + '.gif"> Updating Categories ...</span>');
         var jqxhr = $.getJSON('/config/providers/getNewznabCategories', params, function(data){
             $(this).updateNewznabCaps( data, selectedProvider );
             console.debug(data.tv_categories); // jshint ignore:line
@@ -75,7 +75,7 @@ $(document).ready(function(){
         $('#editANewznabProvider').addOption(id, name);
 
         if ($('#provider_order_list > #'+id).length === 0 && showProvider !== false) {
-            var toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="provider_enabler" CHECKED> <a href="' + anonURL + url + '" class="imgLink" target="_new"><img src="/images/providers/newznab.png" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>';
+            var toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="provider_enabler" CHECKED> <a href="' + anonURL + url + '" class="imgLink" target="_new"><img src="images/providers/newznab.png" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>';
 
             $('#provider_order_list').append(toAdd);
             $('#provider_order_list').sortable("refresh");
