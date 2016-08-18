@@ -302,14 +302,15 @@ class HomeAddShows(Home):
             page_url = "shows/anticipated"
 
         try:
-            (trakt_blacklist, recommended_shows) = TraktPopular().fetch_popular_shows(page_url=page_url, trakt_list=traktList)
+            (trakt_blacklist, recommended_shows, removed_from_medusa) = TraktPopular().fetch_popular_shows(page_url=page_url, trakt_list=traktList)
         except Exception as e:
             # print traceback.format_exc()
             trakt_blacklist = False
             recommended_shows = None
+            removed_from_medusa = None
 
-        return t.render(trakt_blacklist=trakt_blacklist, recommended_shows=recommended_shows, exception=e,
-                        enable_anime_options=False, blacklist=[], whitelist=[])
+        return t.render(trakt_blacklist=trakt_blacklist, recommended_shows=recommended_shows, removed_from_medusa=removed_from_medusa,
+                        exception=e, enable_anime_options=False, blacklist=[], whitelist=[])
 
     def popularShows(self):
         """

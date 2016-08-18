@@ -81,6 +81,12 @@
             <% trakt_b = context.get('trakt_blacklist') %>
         % endif
 
+        % if not context.get('removed_from_medusa'):
+            <% removed_from_medusa = [] %>
+        % else:
+            <% removed_from_medusa = context.get('removed_from_medusa') %>
+        % endif
+ 
         % for cur_result in recommended_shows:
 
             <% cur_rating = 0 %>
@@ -95,7 +101,7 @@
             % endif
 
             <div class="show-row" data-name="${cur_result.title}" data-rating="${cur_rating}" data-votes="${cur_votes}" data-anime="${cur_result.is_anime}">
-                <div class="recommended-container default-poster ${('', 'show-in-list')[cur_result.show_in_list]}">
+                <div class="recommended-container default-poster ${('', 'show-in-list')[cur_result.show_in_list or cur_result.indexer_id in removed_from_medusa]}">
                     <div class="recommended-image">
                         <a href="${anon_url(cur_result.image_href)}" target="_blank">
                             <img alt="" class="recommended-image" src="cache/${cur_result.image_src}" height="273px" width="186px"/>
@@ -120,12 +126,14 @@
                         <div class="recommendedShowTitleIcons">
                             % if cur_result.show_in_list:
                                 <button href="home/displayShow?show=${cur_result.indexer_id}" class="btn btn-xs">In List</a>
+                            % elif cur_result.indexer_id in removed_from_medusa:
+                                <button href="home/displayShow?show=${cur_result.indexer_id}" class="btn btn-xs">Watched</a>
                             % else:
                                 <button class="btn btn-xs" data-isanime="1" data-indexer="TVDB"
                                 data-indexer-id="${cur_result.indexer_id}" data-show-name="${cur_result.title | u}"
                                 data-add-show>Add</a>
                             % endif
-                            % if trakt_b and not cur_result.show_in_list:
+                            % if trakt_b and (not cur_result.show_in_list or cur_result.indexer_id in removed_from_medusa):
                                 <button data-indexer-id="${cur_result.indexer_id}" class="btn btn-xs" data-blacklist-show>Blacklist</a>
                             % endif
                         </div>

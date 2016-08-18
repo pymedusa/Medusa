@@ -91,6 +91,7 @@ class TraktPopular(object):
         :throw: ``Exception`` if an Exception is thrown not handled by the libtrats exceptions
         """
         trending_shows = []
+        removed_from_medusa = []
         blacklist = ''
 
         # Create a trakt settings dict
@@ -102,7 +103,11 @@ class TraktPopular(object):
         try:  # pylint: disable=too-many-nested-blocks
             not_liked_show = ''
             if sickbeard.TRAKT_ACCESS_TOKEN != '':
-                library_shows = self.fetch_and_refresh_token(trakt_api, 'sync/collection/shows?extended=full')
+                library_shows = self.fetch_and_refresh_token(trakt_api, 'sync/watched/shows?extended=noseasons') + \
+                    self.fetch_and_refresh_token(trakt_api, 'sync/collection/shows?extended=full')
+
+                medusa_shows = [show.indexerid for show in sickbeard.showList if show.indexerid]
+                removed_from_medusa = [lshow['show']['ids']['tvdb'] for lshow in library_shows if lshow['show']['ids']['tvdb'] not in medusa_shows]
 
                 if sickbeard.TRAKT_BLACKLIST_NAME is not None and sickbeard.TRAKT_BLACKLIST_NAME:
                     not_liked_show = trakt_api.request('users/' + sickbeard.TRAKT_USERNAME + '/lists/' +
@@ -117,30 +122,17 @@ class TraktPopular(object):
 
             shows = self.fetch_and_refresh_token(trakt_api, page_url + limit_show + 'extended=full,images') or []
 
-            if sickbeard.TRAKT_ACCESS_TOKEN != '':
-                library_shows = self.fetch_and_refresh_token(trakt_api, 'sync/collection/shows?extended=full') or []
-
             for show in shows:
                 try:
                     if 'show' not in show:
                         show['show'] = show
 
-                    if sickbeard.TRAKT_ACCESS_TOKEN != '':
-                        if show['show']['ids']['tvdb'] not in (lshow['show']['ids']['tvdb']
-                                                               for lshow in library_shows):
-                            if not_liked_show:
-                                if show['show']['ids']['tvdb'] not in (show['show']['ids']['tvdb']
-                                                                       for show in not_liked_show if show['type'] == 'show'):
-                                    trending_shows.append(self._create_recommended_show(show))
-                            else:
-                                trending_shows.append(self._create_recommended_show(show))
-                    else:
-                        if not_liked_show:
-                            if show['show']['ids']['tvdb'] not in (show['show']['ids']['tvdb']
-                                                                   for show in not_liked_show if show['type'] == 'show'):
-                                trending_shows.append(self._create_recommended_show(show))
-                        else:
+                    if not_liked_show:
+                        if show['show']['ids']['tvdb'] not in (show['show']['ids']['tvdb']
+                                                               for show in not_liked_show if show['type'] == 'show'):
                             trending_shows.append(self._create_recommended_show(show))
+                    else:
+                        trending_shows.append(self._create_recommended_show(show))
 
                 except MultipleShowObjectsException:
                     continue
@@ -151,4 +143,4 @@ class TraktPopular(object):
             logger.log('Could not connect to Trakt service: %s' % ex(e), logger.WARNING)
             raise
 
-        return (blacklist, trending_shows)
+        return (blacklist, trending_shows, removed_from_medusa)
