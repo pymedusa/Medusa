@@ -9,7 +9,7 @@ $(document).ready(function () {
             bestQualArray.push($(d).val());
         });
 
-        $.get('/config/general/saveAddShowDefaults', {
+        $.get('config/general/saveAddShowDefaults', {
             defaultStatus: $('#statusSelect').val(),
             anyQualities: anyQualArray.join(','),
             bestQualities: bestQualArray.join(','),

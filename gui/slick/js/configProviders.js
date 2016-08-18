@@ -43,7 +43,7 @@ $(document).ready(function(){
         var params = {url: url, name: name, key: key};
 
         $(".updating_categories").wrapInner('<span><img src="images/loading16' + themeSpinner + '.gif"> Updating Categories ...</span>');
-        var jqxhr = $.getJSON('/config/providers/getNewznabCategories', params, function(data){
+        var jqxhr = $.getJSON('config/providers/getNewznabCategories', params, function(data){
             $(this).updateNewznabCaps( data, selectedProvider );
             console.debug(data.tv_categories); // jshint ignore:line
         });

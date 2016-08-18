@@ -204,7 +204,7 @@ inc_top.mako
 }
 
 [class^="menu-icon-"], [class*=" menu-icon-"] {
-    background: url("images/menu/16x_sprite_colored_menu_icons.png");
+    background: url("../images/menu/16x_sprite_colored_menu_icons.png");
     height: 16px;
     width: 16px;
     display: inline-block;
@@ -848,7 +848,7 @@ ul#rootDirStaticList li {
     margin: 2px;
     list-style: none outside none;
     cursor: pointer;
-    background: url('../css/lib/images/ui-bg_highlight-soft_75_efefef_1x100.png') repeat-x scroll 50% 50% rgb(239, 239, 239);
+    background: url("../css/lib/images/ui-bg_highlight-soft_75_efefef_1x100.png") repeat-x scroll 50% 50% rgb(239, 239, 239);
 }
 
 ul#rootDirStaticList li label {
@@ -897,7 +897,7 @@ div.recommended-image {
 
 .show-in-list div#check-overlay {
     opacity: 0.8;
-    background-image: url(../images/green-check.png);
+    background-image: url("../images/green-check.png");
     background-repeat: no-repeat;
     background-position: 90% 5%;
     background-size: 100px;
@@ -944,7 +944,7 @@ div.recommended-image {
 .recommended-container .default-poster {
     display: block;
     z-index: 0;
-    background-image: url(../images/poster-dark.jpg)
+    background-image: url("../images/poster-dark.jpg")
 }
 
 
@@ -1025,7 +1025,7 @@ span.imdbstars {
 
 span.imdbstars, span.imdbstars > * {
     height: 12px;
-    background: url(../images/rating.png) 0 -12px repeat-x;
+    background: url("../images/rating.png") 0 -12px repeat-x;
     width: 120px;
     display: inline-block;
     vertical-align: top;
@@ -1047,7 +1047,7 @@ ul.tags li {
     margin-right: 4px;
     margin-bottom: 5px;
     padding: 3px 4px 3px 25px;
-    background: url(../images/tag.png) no-repeat scroll 5px 4px rgb(85, 85, 85);
+    background: url("../images/tag.png") no-repeat scroll 5px 4px rgb(85, 85, 85);
     border-radius: 3px;
     border: 1px solid rgb(17, 17, 17);
     color: rgb(255, 255, 255);
@@ -3131,19 +3131,19 @@ tablesorter.css
     background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAAP///////yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
     background-position: center right;
     background-repeat: no-repeat;
-    /* background-image: url(../images/tablesorter/bg.gif); */
+    /* background-image: url("../images/tablesorter/bg.gif"); */
 }
 
 .tablesorter thead .tablesorter-headerDesc {
     background-color: rgb(85, 85, 85);
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
-    /* background-image: url(../images/tablesorter/asc.gif); */
+    /* background-image: url("../images/tablesorter/asc.gif"); */
 }
 
 .tablesorter thead .tablesorter-headerAsc {
   background-color: rgb(85, 85, 85);
   background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
-  /* background-image: url(../images/tablesorter/desc.gif); */
+  /* background-image: url("../images/tablesorter/desc.gif"); */
 }
 
 .tablesorter thead .sorter-false {
@@ -3364,7 +3364,7 @@ jquery.confirm.css
     position: fixed;
     top: 0;
     left: 0;
-    background: url('../images/bg.gif');
+    background: url("../images/bg.gif");
     background: -moz-linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)) repeat-x rgba(0,0,0,0.5);
     background:-webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(0,0,0,0.5)), to(rgba(0,0,0,0.5))) repeat-x rgba(0,0,0,0.5);
     z-index: 100000;
