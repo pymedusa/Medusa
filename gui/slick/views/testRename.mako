@@ -9,7 +9,7 @@
     import re
 %>
 <%block name="scripts">
-<script type="text/javascript" src="${srRoot}/js/testRename.js"></script>
+<script type="text/javascript" src="js/testRename.js"></script>
 </%block>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -44,8 +44,8 @@
         </tr>
     </thead>
 </table>
-<br />
-<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="${srRoot}/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
+<br>
+<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
 
 <table id="testRenameTable" class="sickbeardTable ${"summaryFanArt" if sickbeard.FANART_BACKGROUND else ""}" cellspacing="1" border="0" cellpadding="0">
 % for cur_ep_obj in ep_obj_list:
@@ -58,7 +58,7 @@
     <thead>
         <tr class="seasonheader" id="season-${cur_ep_obj.season}">
             <td colspan="4">
-                 <br />
+                 <br>
                 <h2>${'Specials' if int(cur_ep_obj.season) == 0 else 'Season '+str(cur_ep_obj.season)}</h2>
             </td>
         </tr>
@@ -91,6 +91,6 @@ if len(epList) > 1:
         </tr>
     </tbody>
 % endfor
-</table><br />
-<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="${srRoot}/home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
+</table><br>
+<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
 </%block>

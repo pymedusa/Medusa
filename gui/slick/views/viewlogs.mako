@@ -49,11 +49,11 @@ pre {
         <input type="text" name="logSearch" placeholder="clear to reset" id="logSearch" value="${('', logSearch)[bool(logSearch)]}" class="form-control form-control-inline input-sm"/>
     </span>
 </div> <!-- End form group -->
-<br />
+<br>
 <div class="align-left">
 <pre>
 ${logLines}
 </pre>
 </div>
-<br />
+<br>
 </%block>

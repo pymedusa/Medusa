@@ -1,4 +1,4 @@
-$(document).ready(function(){
+$(document).ready(function() {
     // initialise combos for dirty page refreshes
     $('#showsort').val('original');
     $('#showsortdirection').val('asc');
@@ -12,15 +12,15 @@ $(document).ready(function(){
             getSortData: {
                 name: function(itemElem) {
                     var name = $(itemElem).attr('data-name') || '';
-                    return (metaToBool('sickbeard.SORT_ARTICLE') ? name : name.replace(/^(The|A|An)\s/i, '')).toLowerCase();
+                    return (SICKRAGE.info.sortArticle ? name : name.replace(/^(The|A|An)\s/i, '')).toLowerCase();
                 },
                 rating: '[data-rating] parseInt',
-                votes: '[data-votes] parseInt',
+                votes: '[data-votes] parseInt'
             }
         });
     });
 
-    $('#showsort').on( 'change', function() {
+    $('#showsort').on('change', function() {
         var sortCriteria;
         switch (this.value) {
             case 'original':
@@ -43,10 +43,14 @@ $(document).ready(function(){
                 sortCriteria = 'name';
                 break;
         }
-        $('#container').isotope({sortBy: sortCriteria});
+        $('#container').isotope({
+            sortBy: sortCriteria
+        });
     });
 
-    $('#showsortdirection').on( 'change', function() {
-        $('#container').isotope({sortAscending: ('asc' === this.value)});
+    $('#showsortdirection').on('change', function() {
+        $('#container').isotope({
+            sortAscending: (this.value === 'asc')
+        });
     });
 });

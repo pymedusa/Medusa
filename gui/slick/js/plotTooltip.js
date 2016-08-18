@@ -1,11 +1,11 @@
 $(function () {
     $('.plotInfo').each(function () {
-        var match = $(this).attr("id").match(/^plot_info_(\d+)_(\d+)_(\d+)$/);
+        var match = $(this).attr('id').match(/^plot_info_(\d+)_(\d+)_(\d+)$/);
         $(this).qtip({
             content: {
                 text: 'Loading...',
                 ajax: {
-                    url: $("#srRoot").val() + '/home/plotDetails',
+                    url: webRoot + 'home/plotDetails',
                     type: 'GET',
                     data: {
                         show: match[1],

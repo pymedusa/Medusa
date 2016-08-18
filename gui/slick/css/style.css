@@ -613,7 +613,7 @@ span.show-option {
 }
 
 .show-attributes {
-	margin: 4px 4px 0px 4px;
+    margin: 4px 4px 0px 4px;
 }
 
 .show-title:after {
@@ -848,7 +848,7 @@ ul#rootDirStaticList li {
     margin: 2px;
     list-style: none outside none;
     cursor: pointer;
-    background: url('../css/lib/images/ui-bg_highlight-soft_75_efefef_1x100.png') repeat-x scroll 50% 50% rgb(239, 239, 239);
+    background: url("../css/lib/images/ui-bg_highlight-soft_75_efefef_1x100.png") repeat-x scroll 50% 50% rgb(239, 239, 239);
 }
 
 ul#rootDirStaticList li label {
@@ -880,12 +880,12 @@ home_recommendedShows.mako
 }
 
 .recommended-container {
-	left: -4px;
+    left: -4px;
     position: relative;
 }
 
 div.recommended-image {
-	background-color: #DFDACF;
+    background-color: #DFDACF;
 }
 
 .show-in-list div.recommended-image {
@@ -897,7 +897,7 @@ div.recommended-image {
 
 .show-in-list div#check-overlay {
     opacity: 0.8;
-    background-image: url(../images/green-check.png);
+    background-image: url("../images/green-check.png");
     background-repeat: no-repeat;
     background-position: 90% 5%;
     background-size: 100px;
@@ -933,18 +933,18 @@ div.recommended-image {
 }
 
 .recommended-container .anidb-url {
-	float: right;
-	padding-right: 4px;
+    float: right;
+    padding-right: 4px;
 }
 
 .anidb-inline {
-	height: 16px;
+    height: 16px;
 }
 
 .recommended-container .default-poster {
     display: block;
     z-index: 0;
-    background-image: url(../images/poster-dark.jpg)
+    background-image: url("../images/poster-dark.jpg")
 }
 
 
@@ -1025,7 +1025,7 @@ span.imdbstars {
 
 span.imdbstars, span.imdbstars > * {
     height: 12px;
-    background: url(../images/rating.png) 0 -12px repeat-x;
+    background: url("../images/rating.png") 0 -12px repeat-x;
     width: 120px;
     display: inline-block;
     vertical-align: top;
@@ -1047,7 +1047,7 @@ ul.tags li {
     margin-right: 4px;
     margin-bottom: 5px;
     padding: 3px 4px 3px 25px;
-    background: url(../images/tag.png) no-repeat scroll 5px 4px rgb(85, 85, 85);
+    background: url("../images/tag.png") no-repeat scroll 5px 4px rgb(85, 85, 85);
     border-radius: 3px;
     border: 1px solid rgb(17, 17, 17);
     color: rgb(255, 255, 255);
@@ -1222,7 +1222,7 @@ span.snatched b {
 }
 
 .summaryFanArt {
-   opacity: 0.9; 
+   opacity: 0.9;
 }
 
 .displayShowTableFanArt th.row-seasonheader {
@@ -1355,30 +1355,30 @@ td.col-legend {
 
 th.col-search,
 td.col-search {
-	width: 65px;
+    width: 65px;
 }
 
 td.col-date {
-	min-width: 104px;
-	text-align: center;
-	white-space: nowrap;
+    min-width: 104px;
+    text-align: center;
+    white-space: nowrap;
 }
 
 td.col-size {
-	min-width: 79px;
-	text-align: center;
-	white-space: nowrap;
+    min-width: 79px;
+    text-align: center;
+    white-space: nowrap;
 }
 
 td.col-provider {
-	min-width: 133px;
-	text-align: center;
-	white-space: nowrap;
+    min-width: 133px;
+    text-align: center;
+    white-space: nowrap;
 }
 
 td.col-group {
-	min-width: 90px;
-	text-align: center;
+    min-width: 90px;
+    text-align: center;
 }
 
 .showLegend {
@@ -1407,11 +1407,11 @@ div.season-scene-exception {
 #showBanner {
     float:right;
     height:50px;
-    border:1px solid black; 
+    border:1px solid black;
 }
 
 .fanart {
-    margin-top: -1px; 
+    margin-top: -1px;
     vertical-align:middle;
 }
 
@@ -2288,19 +2288,19 @@ span.true {
 }
 
 span.break-word {
-	word-break: break-all;
+    word-break: break-all;
 }
 span.required {
-	color: green;
+    color: green;
 }
 span.preferred {
-	color: blue;
+    color: blue;
 }
 span.undesired {
-	color: orange;
+    color: orange;
 }
 span.ignored {
-	color: red;
+    color: red;
 }
 
 a.wiki {
@@ -3131,19 +3131,19 @@ tablesorter.css
     background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAAP///////yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
     background-position: center right;
     background-repeat: no-repeat;
-    /* background-image: url(../images/tablesorter/bg.gif); */
+    /* background-image: url("../images/tablesorter/bg.gif"); */
 }
 
 .tablesorter thead .tablesorter-headerDesc {
     background-color: rgb(85, 85, 85);
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
-    /* background-image: url(../images/tablesorter/asc.gif); */
+    /* background-image: url("../images/tablesorter/asc.gif"); */
 }
 
 .tablesorter thead .tablesorter-headerAsc {
   background-color: rgb(85, 85, 85);
   background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
-  /* background-image: url(../images/tablesorter/desc.gif); */
+  /* background-image: url("../images/tablesorter/desc.gif"); */
 }
 
 .tablesorter thead .sorter-false {
@@ -3364,7 +3364,7 @@ jquery.confirm.css
     position: fixed;
     top: 0;
     left: 0;
-    background: url('../images/bg.gif');
+    background: url("../images/bg.gif");
     background: -moz-linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)) repeat-x rgba(0,0,0,0.5);
     background:-webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(0,0,0,0.5)), to(rgba(0,0,0,0.5))) repeat-x rgba(0,0,0,0.5);
     z-index: 100000;
@@ -3598,7 +3598,7 @@ snatchSelection.mako
 ========================================================================== */
 
 div#searchNotification {
-	display: inline-block;
+    display: inline-block;
 }
 
 .summaryTable tr td {

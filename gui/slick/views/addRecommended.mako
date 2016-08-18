@@ -13,7 +13,7 @@
 
 <div id="addShowPortal">
     <br><br>
-    <a href="${srRoot}/addShows/trendingShows/?traktList=anticipated" id="btnNewShow" class="btn btn-large">
+    <a href="addShows/trendingShows/?traktList=anticipated" id="btnNewShow" class="btn btn-large">
         <div class="button"><div class="add-list-icon-addtrakt"></div></div>
         <div class="buttontext">
             <h3>Add From Trakt Lists</h3>
@@ -23,7 +23,7 @@
 
     <br><br>
 
-    <a href="${srRoot}/addShows/popularShows/" id="btnNewShow" class="btn btn-large">
+    <a href="addShows/popularShows/" id="btnNewShow" class="btn btn-large">
         <div class="button"><div class="add-list-icon-addimdb"></div></div>
         <div class="buttontext">
             <h3>Add From IMDB's Popular Shows</h3>
@@ -33,7 +33,7 @@
 
     <br><br>
 
-    <a href="${srRoot}/addShows/popularAnime" id="btnNewShow" class="btn btn-large">
+    <a href="addShows/popularAnime" id="btnNewShow" class="btn btn-large">
         <div class="button"><div class="add-list-icon-addanime"></div></div>
         <div class="buttontext">
             <h3>Add From Anidb's Hot Anime list</h3>

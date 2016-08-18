@@ -14,14 +14,16 @@
         <form id="configForm" action="saveSearch" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="#episode-search">Episode Search</a></li>
-                    <li><a href="#nzb-search">NZB Search</a></li>
-                    <li><a href="#torrent-search">Torrent Search</a></li>
+                    ## @TODO: This needs to be fixed, this is a hack to to jQuery-ui tabs from reloading as a base href causes
+                    ##        it to think the tabs are external links
+                    <script>document.write('<li><a href="' + document.location.href + '#episode-search">Episode Search</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#nzb-search">NZB Search</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#torrent-search">Torrent Search</a></li>');</script>
                 </ul>
                 <div id="episode-search">
                         <div class="component-group-desc">
                             <h3>General Search Settings</h3>
-                            <p>How to manage searching with <a href="${srRoot}/config/providers">providers</a>.</p>
+                            <p>How to manage searching with <a href="config/providers">providers</a>.</p>
                         </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
@@ -99,7 +101,7 @@
                                     <span class="component-title">Trackers list</span>
                                     <span class="component-desc">
                                         <input type="text" name="trackers_list" value="${sickbeard.TRACKERS_LIST}" class="form-control input-sm input350"/>
-                                        <div class="clear-left">Trackers that will be added to magnets without trackers<br />
+                                        <div class="clear-left">Trackers that will be added to magnets without trackers<br>
                                         separate trackers with a comma, e.g. "tracker1,tracker2,tracker3"
                                         </div>
                                     </span>
@@ -119,7 +121,7 @@
                                     <span class="component-title">Use Failed Downloads</span>
                                     <span class="component-desc">
                                         <input id="use_failed_downloads" type="checkbox" class="enabler" name="use_failed_downloads" ${'checked="checked"' if sickbeard.USE_FAILED_DOWNLOADS else ''} />
-                                        Use Failed Download Handling?<br />
+                                        Use Failed Download Handling?<br>
                                         Will only work with snatched/downloaded episodes after enabling this
                                     </span>
                                 </label>
@@ -129,7 +131,7 @@
                                     <span class="component-title">Delete Failed</span>
                                     <span class="component-desc">
                                         <input id="delete_failed" type="checkbox" name="delete_failed" ${'checked="checked"' if sickbeard.DELETE_FAILED else ''}/>
-                                        Delete files left over from a failed download?<br />
+                                        Delete files left over from a failed download?<br>
                                         <b>NOTE:</b> This only works if Use Failed Downloads is enabled.
                                     </span>
                                 </label>
@@ -139,7 +141,7 @@
                                     <span class="component-title">Cache Trimming</span>
                                     <span class="component-desc">
                                         <input id="cache_trimming" type="checkbox" name="cache_trimming" ${'checked="checked"' if sickbeard.CACHE_TRIMMING else ''}/>
-                                        Enable trimming of provider cache<br />
+                                        Enable trimming of provider cache<br>
                                     </span>
                                 </label>
                             </div><!-- cache trimming -->
@@ -148,8 +150,8 @@
                                     <span class="component-title">Cache Retention</span>
                                     <span class="component-desc">
                                         <input type="number" min="1" step="1" name="max_cache_age" id="max_cache_age" value="${sickbeard.MAX_CACHE_AGE}" class="form-control input-sm input75"/>
-                                        days<br />
-                                        <br />
+                                        days<br>
+                                        <br>
                                         Number of days to retain results in cache.  Results older than this will be removed if cache trimming is enabled.
                                     </span>
                                 </label>
@@ -168,7 +170,7 @@
                                     <span class="component-title">Ignore words</span>
                                     <span class="component-desc">
                                         <input type="text" name="ignore_words" value="${sickbeard.IGNORE_WORDS}" class="form-control input-sm input350"/>
-                                        <div class="clear-left">results with any words from this list will be ignored<br />
+                                        <div class="clear-left">results with any words from this list will be ignored<br>
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
                                     </span>
@@ -179,7 +181,7 @@
                                     <span class="component-title">Undesired words</span>
                                     <span class="component-desc">
                                         <input type="text" name="undesired_words" value="${sickbeard.UNDESIRED_WORDS}" class="form-control input-sm input350"/>
-                                        <div class="clear-left">results with words from this list will only be selected as a last resort<br />
+                                        <div class="clear-left">results with words from this list will only be selected as a last resort<br>
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
                                     </span>
@@ -190,7 +192,7 @@
                                     <span class="component-title">Preferred words</span>
                                     <span class="component-desc">
                                         <input type="text" name="preferred_words" value="${sickbeard.PREFERRED_WORDS}" class="form-control input-sm input350"/>
-                                        <div class="clear-left">results with one or more word from this list will be chosen over others<br />
+                                        <div class="clear-left">results with one or more word from this list will be chosen over others<br>
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
                                     </span>
@@ -201,7 +203,7 @@
                                     <span class="component-title">Require words</span>
                                     <span class="component-desc">
                                         <input type="text" name="require_words" value="${sickbeard.REQUIRE_WORDS}" class="form-control input-sm input350"/>
-                                        <div class="clear-left">results must include at least one word from this list<br />
+                                        <div class="clear-left">results must include at least one word from this list<br>
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
                                     </span>
@@ -212,8 +214,8 @@
                                     <span class="component-title">Ignore language names in subbed results</span>
                                     <span class="component-desc">
                                         <input type="text" name="ignored_subs_list" value="${sickbeard.IGNORED_SUBS_LIST}" class="form-control input-sm input350"/>
-                                        <div class="clear-left">Ignore subbed releases based on language names <br />
-                                        Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br />
+                                        <div class="clear-left">Ignore subbed releases based on language names <br>
+                                        Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br>
                                         separate languages with a comma, e.g. "lang1,lang2,lang3
                                         </div>
                                     </span>
@@ -224,7 +226,7 @@
                                     <span class="component-title">Ignore unknown subbed releases</span>
                                     <span class="component-desc">
                                         <input type="checkbox" name="ignore_und_subs" id="ignore_und_subs" ${'checked="checked"' if sickbeard.IGNORE_UND_SUBS else ''}/>
-                                        Ignore subbed releases without language names <br />
+                                        Ignore subbed releases without language names <br>
                                         Filter words: subbed, subpack, subbed, subs, etc.)
                                     </span>
                                 </label>
@@ -452,7 +454,7 @@
                         </div>
                         <div class="testNotification" id="testSABnzbd_result">Click below to test</div>
                             <input class="btn" type="button" value="Test SABnzbd" id="testSABnzbd" class="btn test-button"/>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br />
+                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                         </div><!-- /content_use_nzbs //-->
                     </fieldset>
                 </div><!-- /component-group2 //-->
@@ -495,7 +497,7 @@
                                             </span>
                                         </label>
                                     </div>
-                                    <input type="submit" class="btn config_submitter" value="Save Changes" /><br />
+                                    <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                                 </div>
                             </div>
                             <div id="options_torrent_clients">
@@ -630,12 +632,12 @@
                                 </div>
                                 <div class="testNotification" id="test_torrent_result">Click below to test</div>
                                     <input class="btn" type="button" value="Test Connection" id="test_torrent" class="btn test-button"/>
-                                    <input type="submit" class="btn config_submitter" value="Save Changes" /><br />
+                                    <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                                 </div>
                         </div><!-- /content_use_torrents //-->
                     </fieldset>
                 </div><!-- /component-group3 //-->
-                <br />
+                <br>
                 <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${sickbeard.DATA_DIR}</span></b> </h6>
                 <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
             </div><!-- /config-components //-->

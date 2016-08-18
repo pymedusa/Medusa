@@ -3,10 +3,8 @@
     import sickbeard
 %>
 <%block name="scripts">
-    <script type="text/javascript" src="${srRoot}/js/qualityChooser.js?${sbPID}"></script>
-% if enable_anime_options:
-    <script type="text/javascript" src="${srRoot}/js/blackwhite.js?${sbPID}"></script>
-% endif
+<script type="text/javascript" src="js/rootDirs.js?${sbPID}"></script>
+<script type="text/javascript" src="js/plotTooltip.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -15,37 +13,17 @@
     <h1 class="title">${title}</h1>
 % endif
 <div id="tabs">
-        <fieldset class="component-group-list">
-        <div class="field-pair">
-            <label class="clearfix" for="content_configure_show_options">
-                <span class="component-title">Configure Show Options</span>
-                <span class="component-desc">
-                    <input type="checkbox" class="enabler" name="configure_show_options" id="configure_show_options" />
-                    <p>Recommended shows will be added using your default options. Use this option if you want to change the options for that show.</p>
-                </span>
-            </label>
-        </div>
-        <div id="content_configure_show_options">
-            <div class="field-pair">
-
-                <label class="clearfix" for="configure_show_options">
-                <ul>
-                    <li><a href="#tabs-1">Manage Directories</a></li>
-                    <li><a href="#tabs-2">Customize Options</a></li>
-                </ul>
-                <div id="tabs-1" class="existingtabs">
-                    <%include file="/inc_rootDirs.mako"/>
-                    <br/>
-                </div>
-                <div id="tabs-2" class="existingtabs">
-                    <%include file="/inc_addShowOptions.mako"/>
-                </div>
-                </label>
-
-            </div>
-        </div>  <!-- /content_configure_show_options //-->
-    </fieldset>
-
+    <ul>
+        <li><a href="#tabs-1">Manage Directories</a></li>
+        <li><a href="#tabs-2">Customize Options</a></li>
+    </ul>
+    <div id="tabs-1" class="existingtabs">
+        <%include file="/inc_rootDirs.mako"/>
+    </div>
+    <div id="tabs-2" class="existingtabs">
+        <%include file="/inc_addShowOptions.mako"/>
+    </div>
+    <br>
     <span>Sort By:</span>
     <select id="showsort" class="form-control form-control-inline input-sm">
         <option value="name">Name</option>
@@ -74,9 +52,9 @@
 % endif
     </select>
 </div>
-<br />
+<br>
 <div id="trendingShows"></div>
-<br />
+<br>
 % if traktList:
     <input type="hidden" name="traktList" id="traktList" value="${traktList}" />
 % endif

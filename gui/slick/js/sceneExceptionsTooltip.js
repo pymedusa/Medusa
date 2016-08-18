@@ -1,11 +1,11 @@
 $(function () {
     $('.title a').each(function () {
-        var match = $(this).parent().attr("id").match(/^scene_exception_(\d+)$/);
+        var match = $(this).parent().attr('id').match(/^scene_exception_(\d+)$/);
         $(this).qtip({
             content: {
                 text: 'Loading...',
                 ajax: {
-                    url: $("#srRoot").val() + '/home/sceneExceptions',
+                    url: webRoot + 'home/sceneExceptions',
                     type: 'GET',
                     data: {
                         show: match[1]

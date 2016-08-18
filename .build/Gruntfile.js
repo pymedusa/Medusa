@@ -4,7 +4,7 @@ module.exports = function(grunt) {
     grunt.initConfig({
         clean: {
             dist: './dist/',
-            bower_components: './bower_components', // jshint ignore:line
+            bower_components: './bower_components',
             fonts: '../gui/slick/css/*.ttf',
             options: {
                 force: true
@@ -17,7 +17,7 @@ module.exports = function(grunt) {
                 }
             }
         },
-        bower_concat: { // jshint ignore:line
+        bower_concat: {
             all: {
                 dest: {
                     js: './dist/bower.js',
@@ -153,11 +153,9 @@ module.exports = function(grunt) {
         'uglify',
         'sass',
         'cssmin',
-        'jshint',
         'mocha'
     ]);
     grunt.registerTask('travis', [
-        'jshint',
         'mocha'
     ]);
 };

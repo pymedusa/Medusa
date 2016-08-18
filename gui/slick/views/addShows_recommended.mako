@@ -121,14 +121,14 @@
                         
                         <div class="recommendedShowTitleIcons">
                             % if cur_result.show_in_list:
-                                <a href="${srRoot}/home/displayShow?show=${cur_result.indexer_id}" class="btn btn-xs">In List</a>
+                                <a href="home/displayShow?show=${cur_result.indexer_id}" class="btn btn-xs">In List</a>
                             % else:
-                                <a href="${srRoot}/addShows/addShowByID" class="btn btn-xs" data-isanime="1" data-indexer="TVDB" 
+                                <a href="addShows/addShowByID" class="btn btn-xs" data-isanime="1" data-indexer="TVDB" 
                                 data-indexer-id="${cur_result.indexer_id}" data-show-name="${cur_result.title | u}" 
                                 data-add-show>Add</a>
                             % endif
                             % if trakt_b:
-                                <a href="${srRoot}/addShows/addShowToBlacklist?indexer_id=${cur_result.indexer_id}" class="btn btn-xs">Blacklist</a>
+                                <a href="addShows/addShowToBlacklist?indexer_id=${cur_result.indexer_id}" class="btn btn-xs">Blacklist</a>
                             % endif
                         </div>
                     </div>

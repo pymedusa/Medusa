@@ -39,6 +39,13 @@
     "rules": {
       "space-before-function-paren": 0
     },
-    "envs": ["browser", "jquery"]
+    "envs": [
+      "browser",
+      "jquery"
+    ],
+    "globals": [
+      "SICKRAGE",
+      "PNotify"
+    ]
   }
 }

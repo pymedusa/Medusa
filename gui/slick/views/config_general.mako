@@ -24,12 +24,14 @@
 % endif
 <div id="config">
     <div id="config-content">
-        <form id="configForm" action="saveGeneral" method="post">
+        <form id="configForm" action="config/general/saveGeneral" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="#misc">Misc</a></li>
-                    <li><a href="#interface">Interface</a></li>
-                    <li><a href="#advanced-settings">Advanced Settings</a></li>
+                    ## @TODO: This needs to be fixed, this is a hack to to jQuery-ui tabs from reloading as a base href causes
+                    ##        it to think the tabs are external links
+                    <script>document.write('<li><a href="' + document.location.href + '#misc">Misc</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#interface">Interface</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#advanced-settings">Advanced Settings</a></li>');</script>
                 </ul>
                 <div id="misc">
                         <div class="component-group-desc">
@@ -367,7 +369,7 @@
                                     <input class="btn btn-inline" type="button" id="generate_new_apikey" value="Generate">
                                     <div class="clear-left">
                                         <p>used to give 3rd party programs limited access to Medusa</p>
-                                        <p>you can try all the features of the API <a href="${srRoot}/apibuilder/">here</a></p>
+                                        <p>you can try all the features of the API <a href="apibuilder/">here</a></p>
                                     </div>
                                 </span>
                             </label>
@@ -460,7 +462,7 @@
                                 <span class="component-title">Reverse proxy headers</span>
                                 <span class="component-desc">
                                     <input type="checkbox" name="handle_reverse_proxy" id="handle_reverse_proxy" ${'checked="checked"' if sickbeard.HANDLE_REVERSE_PROXY else ''}/>
-                                    <p>accept the following reverse proxy headers (advanced)...<br />(X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto)</p>
+                                    <p>accept the following reverse proxy headers (advanced)...<br>(X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto)</p>
                                 </span>
                             </label>
                         </div>
@@ -639,8 +641,8 @@
                                     <span>
                                         Set the level of log-filtering.
                                         Normal (default).
-                                        <br />NOTE: A restart may be required to take effect.
-                                        <br />WARNING: Setting to "DISABLED" will show sensitive information such as passwords in the logs!
+                                        <br>NOTE: A restart may be required to take effect.
+                                        <br>WARNING: Setting to "DISABLED" will show sensitive information such as passwords in the logs!
                                     </span>
                                 </span>
                             </label>
@@ -757,7 +759,7 @@
                     </fieldset>
                 </div>
                 </div><!-- /component-group3 //-->
-                <br />
+                <br>
                 <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${sickbeard.DATA_DIR}</span></b> </h6>
                 <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
             </div><!-- /config-components -->

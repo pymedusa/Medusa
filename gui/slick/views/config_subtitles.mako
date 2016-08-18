@@ -12,8 +12,8 @@ $(document).ready(function() {
         hintText: "Write to search a language and select it",
         preventDuplicates: true,
         prePopulate: [${','.join("{\"id\": \"" + code + "\", name: \"" + subtitles.name_from_code(code) + "\"}" for code in subtitles.wanted_languages())}],
-        resultsFormatter: function(item){ return "<li><img src='${srRoot}/images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"${srRoot}/images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>" },
-        tokenFormatter: function(item)  { return "<li><img src='${srRoot}/images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"${srRoot}/images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>" },
+        resultsFormatter: function(item){ return "<li><img src='${srRoot}/images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"${srRoot}images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>" },
+        tokenFormatter: function(item)  { return "<li><img src='${srRoot}/images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"${srRoot}images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>" },
     });
 });
 $('#config-components').tabs();
@@ -31,9 +31,11 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
 <form id="configForm" action="saveSubtitles" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="#subtitles-search">Subtitles Search</a></li>
-                    <li><a href="#subtitles-plugin">Subtitles Plugin</a></li>
-                    <li><a href="#plugin-settings">Plugin Settings</a></li>
+                    ## @TODO: This needs to be fixed, this is a hack to to jQuery-ui tabs from reloading as a base href causes
+                    ##        it to think the tabs are external links
+                    <script>document.write('<li><a href="' + document.location.href + '#subtitles-search">Subtitles Search</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#subtitles-plugin">Subtitles Plugin</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#plugin-settings">Plugin Settings</a></li>');</script>
                 </ul>
                 <div id="subtitles-search" class="component-group">
                     <div class="component-group-desc">
@@ -198,7 +200,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                         </label>
                                 </div>
                         </div>
-                        <br /><input type="submit" class="btn config_submitter" value="Save Changes" /><br />
+                        <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group1 //-->
                 <div id="subtitles-plugin" class="component-group">
@@ -214,7 +216,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                             <li class="ui-state-default" id="${curService['name']}">
                                 <input type="checkbox" id="enable_${curService['name']}" class="service_enabler" ${('', 'checked="checked"')[curService['enabled'] is True]}/>
                                 <a href="${anon_url(curService['url'])}" class="imgLink" target="_new">
-                                    <img src="${srRoot}/images/subtitles/${curService['image']}" alt="${curService['url']}" title="${curService['url']}" width="16" height="16" style="vertical-align:middle;"/>
+                                    <img src="images/subtitles/${curService['image']}" alt="${curService['url']}" title="${curService['url']}" width="16" height="16" style="vertical-align:middle;"/>
                                 </a>
                             <span style="vertical-align:middle;">${curService['name'].capitalize()}</span>
                             <span class="ui-icon ui-icon-arrowthick-2-n-s pull-right" style="vertical-align:middle;"></span>
@@ -222,7 +224,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                         % endfor
                         </ul>
                         <input type="hidden" name="service_order" id="service_order" value="${' '.join(['%s:%d' % (x['name'], x['enabled']) for x in sickbeard.subtitles.sorted_service_list()])}"/>
-                        <br /><input type="submit" class="btn config_submitter" value="Save Changes" /><br />
+                        <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group2 //-->
                 <div id="plugin-settings" class="component-group">
@@ -259,10 +261,10 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                 </label>
                             </div>
                         % endfor
-                        <br /><input type="submit" class="btn config_submitter" value="Save Changes" /><br />
+                        <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group3 //-->
-                <br /><input type="submit" class="btn config_submitter" value="Save Changes" /><br />
+                <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
             </div><!-- /config-components //-->
 </form>
 </div>

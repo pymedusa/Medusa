@@ -1,17 +1,21 @@
 $(document).ready(function(){
-    $('.submitMassEdit').on('click', function(){
+    $('.submitMassEdit').on('click', function() {
         var editArr = [];
 
         $('.editCheck').each(function() {
-            if(this.checked === true) { editArr.push($(this).attr('id').split('-')[1]); }
+            if(this.checked === true) {
+                editArr.push($(this).attr('id').split('-')[1]);
+            }
         });
 
-        if(editArr.length === 0) { return; }
+        if(editArr.length === 0) {
+            return;
+        }
 
-        window.location.href = 'massEdit?toEdit='+editArr.join('|');
+        window.location.href = 'manage/massEdit?toEdit=' + editArr.join('|');
     });
 
-    $('.submitMassUpdate').on('click', function(){
+    $('.submitMassUpdate').on('click', function() {
         var updateArr = [];
         var refreshArr = [];
         var renameArr = [];
@@ -43,37 +47,62 @@ $(document).ready(function(){
         var deleteCount = 0;
 
         $('.deleteCheck').each(function() {
-            if(this.checked === true) { deleteCount++; }
+            if (this.checked === true) {
+                deleteCount++;
+            }
         });
 
-        if(deleteCount >= 1) {
+        if (deleteCount >= 1) {
             $.confirm({
-                title: "Delete Shows",
-                text: "You have selected to delete " + deleteCount + " show(s).  Are you sure you wish to continue? All files will be removed from your system.",
-                confirmButton: "Yes",
-                cancelButton: "Cancel",
-                dialogClass: "modal-dialog",
+                title: 'Delete Shows',
+                text: 'You have selected to delete ' + deleteCount + ' show(s).  Are you sure you wish to continue? All files will be removed from your system.',
+                confirmButton: 'Yes',
+                cancelButton: 'Cancel',
+                dialogClass: 'modal-dialog',
                 post: false,
                 confirm: function() {
                     $('.deleteCheck').each(function() {
-                        if(this.checked === true) {
+                        if (this.checked === true) {
                             deleteArr.push($(this).attr('id').split('-')[1]);
                         }
                     });
-                    if(updateArr.length+refreshArr.length+renameArr.length+subtitleArr.length+deleteArr.length+removeArr.length+metadataArr.length === 0) { return false; }
-                    window.location.href = 'massUpdate?toUpdate='+updateArr.join('|')+'&toRefresh='+refreshArr.join('|')+'&toRename='+renameArr.join('|')+'&toSubtitle='+subtitleArr.join('|')+'&toDelete='+deleteArr.join('|')+'&toRemove='+removeArr.join('|')+'&toMetadata='+metadataArr.join('|');
+                    if (updateArr.length + refreshArr.length + renameArr.length + subtitleArr.length + deleteArr.length + removeArr.length + metadataArr.length === 0) {
+                        return false;
+                    }
+                    var params = $.param({
+                        toUpdate: updateArr.join('|'),
+                        toRefresh: refreshArr.join('|'),
+                        toRename: renameArr.join('|'),
+                        toSubtitle: subtitleArr.join('|'),
+                        toDelete: deleteArr.join('|'),
+                        toRemove: removeArr.join('|'),
+                        toMetadata: metadataArr.join('|')
+                    });
+
+                    window.location.href = 'massUpdate?' + params;
                 }
             });
         }
-        if(updateArr.length+refreshArr.length+renameArr.length+subtitleArr.length+deleteArr.length+removeArr.length+metadataArr.length === 0) { return false; }
-        window.location.href = 'massUpdate?toUpdate='+updateArr.join('|')+'&toRefresh='+refreshArr.join('|')+'&toRename='+renameArr.join('|')+'&toSubtitle='+subtitleArr.join('|')+'&toDelete='+deleteArr.join('|')+'&toRemove='+removeArr.join('|')+'&toMetadata='+metadataArr.join('|');
+        if (updateArr.length + refreshArr.length + renameArr.length + subtitleArr.length + deleteArr.length + removeArr.length + metadataArr.length === 0) {
+            return false;
+        }
+        var params = $.param({
+            toUpdate: updateArr.join('|'),
+            toRefresh: refreshArr.join('|'),
+            toRename: renameArr.join('|'),
+            toSubtitle: subtitleArr.join('|'),
+            toDelete: deleteArr.join('|'),
+            toRemove: removeArr.join('|'),
+            toMetadata: metadataArr.join('|')
+        });
+        window.location.href = 'manage/massUpdate?' + params;
     });
 
     ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck'].forEach(function(name) {
         var lastCheck = null;
 
         $(name).on('click', function(event) {
-            if(!lastCheck || !event.shiftKey) {
+            if (!lastCheck || !event.shiftKey) {
                 lastCheck = this;
                 return;
             }
@@ -82,11 +111,17 @@ $(document).ready(function(){
             var found = 0;
 
             $(name).each(function() {
-                switch (found) {
-                    case 2: return false;
-                    case 1: if(!this.disabled) { this.checked = lastCheck.checked; }
+                if (found === 1) {
+                    if (!this.disabled) {
+                        this.checked = lastCheck.checked;
+                    }
                 }
-                if(this === check || this === lastCheck) { found++; }
+                if (found === 2) {
+                    return false;
+                }
+                if (this === check || this === lastCheck) {
+                    found++;
+                }
             });
         });
     });
