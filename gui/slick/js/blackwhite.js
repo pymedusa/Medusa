@@ -19,7 +19,7 @@ function updateBlackWhiteList(showName) {
     $('#blackwhitelist').show();
     if (showName) {
         $.getJSON('home/fetch_releasegroups', {
-            'show_name': showName
+            show_name: showName // eslint-disable-line camelcase
         }, function (data) {
             if (data.result === 'success') {
                 $.each(data.groups, function(i, group) {

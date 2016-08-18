@@ -11,7 +11,7 @@
                 title: 'loading'
             }));
             $.getJSON($(this).attr('href'), function(data) {
-                if (data.result.toLowerCase() !== "failure" && data.result.toLowerCase() !== "no subtitles downloaded") {
+                if (data.result.toLowerCase() !== 'failure' && data.result.toLowerCase() !== 'no subtitles downloaded') {
                     // clear and update the subtitles column with new informations
                     var subtitles = data.subtitles.split(',');
                     subtitlesTd.empty();
@@ -19,10 +19,10 @@
                         if (language !== '') {
                             if (index !== subtitles.length - 1) {
                                 subtitlesTd.append($('<img/>').prop({
-                                    'src': 'images/subtitles/flags/' + language + '.png',
-                                    'alt': language,
-                                    'width': 16,
-                                    'height': 11
+                                    src: 'images/subtitles/flags/' + language + '.png',
+                                    alt: language,
+                                    width: 16,
+                                    height: 11
                                 }));
                             } else {
                                 subtitlesTd.append($('<img/>').prop({

@@ -1,16 +1,14 @@
 var allExceptions = [];
 
-function metaToBool(pyVar){
+function metaToBool(pyVar) {
     var meta = $('meta[data-var="' + pyVar + '"]').data('content');
-    if(typeof meta === 'undefined'){
+    if (typeof meta === 'undefined') {
         console.log(pyVar + ' is empty, did you forget to add this to main.mako?');
         return meta;
-    } else {
-        meta = (isNaN(meta) ? meta.toLowerCase() : meta.toString());
-        return !(meta === 'false' || meta === 'none' || meta === '0');
     }
+    meta = (isNaN(meta) ? meta.toLowerCase() : meta.toString());
+    return !(meta === 'false' || meta === 'none' || meta === '0');
 }
-
 
 $('#location').fileBrowser({
     title: 'Select Show Location'
@@ -20,12 +18,12 @@ $('#submit').click(function() {
     var allExceptions = [];
 
     $('#exceptions_list option').each(function() {
-        allExceptions.push( $(this).val() );
+        allExceptions.push($(this).val());
     });
 
     $('#exceptions_list').val(allExceptions);
 
-    if(metaToBool['show.is_anime']) {
+    if (metaToBool['show.is_anime']) {
         generateBlackWhiteList();
     }
 });
@@ -40,7 +38,9 @@ $('#addSceneName').click(function() {
 
     $('#SceneName').val('');
 
-    if ($.inArray(sceneEx, allExceptions) > -1 || (sceneEx === '')) { return; }
+    if ($.inArray(sceneEx, allExceptions) > -1 || (sceneEx === '')) {
+        return;
+    }
 
     $('#SceneException').show();
 
@@ -58,11 +58,11 @@ $('#removeSceneName').click(function() {
 $.fn.toggleSceneException = function() {
     allExceptions = [];
 
-    $('#exceptions_list option').each  ( function() {
-        allExceptions.push( $(this).val() );
+    $('#exceptions_list option').each(function() {
+        allExceptions.push($(this).val());
     });
 
-    if (allExceptions === ''){
+    if (allExceptions === '') {
         $('#SceneException').hide();
     } else {
         $('#SceneException').show();

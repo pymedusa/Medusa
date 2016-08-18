@@ -89,7 +89,7 @@ $(document).ready(function() {
             for (var season in episodes[show]) {
                 select.append($('<option>', {
                     value: season,
-                    label: (season === 0) ? 'Specials' : 'Season ' + season,
+                    label: (season === 0) ? 'Specials' : 'Season ' + season
                 }));
             }
         }

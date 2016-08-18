@@ -4,11 +4,10 @@ $.tablesorter.addParser({
         return false;
     },
     format: function(s) {
-        if (0 === s.indexOf('Loading...')){
+        if (s.indexOf('Loading...') === 0) {
             return s.replace('Loading...', '000');
-        } else {
-            return (SICKRAGE.info['sortArticle'] ? (s || '') : (s || '').replace(/^(The|A|An)\s/i,''));
         }
+        return (SICKRAGE.info.sortArticle ? (s || '') : (s || '').replace(/^(The|A|An)\s/i, ''));
     },
     type: 'text'
 });
@@ -65,21 +64,27 @@ $.tablesorter.addParser({
     format: function(s) {
         var match = s.match(/^(.*)/);
 
-        if (match === null || match[1] === "?") { return -10; }
+        if (match === null || match[1] === '?') {
+            return -10;
+        }
 
-        var nums = match[1].split(" / ");
-        if (nums[0].indexOf("+") !== -1) {
-            var numParts = nums[0].split("+");
+        var nums = match[1].split(' / ');
+        if (nums[0].indexOf('+') !== -1) {
+            var numParts = nums[0].split('+');
             nums[0] = numParts[0];
         }
 
         nums[0] = parseInt(nums[0]);
         nums[1] = parseInt(nums[1]);
 
-        if (nums[0] === 0) { return nums[1]; }
-        var finalNum = parseInt((getMeta('max_download_count'))*nums[0]/nums[1]);
-        var pct = Math.round((nums[0]/nums[1])*100) / 1000;
-        if (finalNum > 0) { finalNum += nums[0]; }
+        if (nums[0] === 0) {
+            return nums[1];
+        }
+        var finalNum = parseInt(($('meta[data-var="max_download_count"]').data('content')) * nums[0] / nums[1]);
+        var pct = Math.round((nums[0] / nums[1]) * 100) / 1000;
+        if (finalNum > 0) {
+            finalNum += nums[0];
+        }
 
         return finalNum + pct;
     },
