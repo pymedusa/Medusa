@@ -24,7 +24,7 @@ import requests
 import certifi
 from .exceptions import (TraktConnectionException, MissingTokenException, AuthException,
                          UnavailableException, ResourceUnavailable, TraktException,
-                         TimeoutException, TraktTooManyRedirects)
+                         TimeoutException, TraktTooManyRedirects, TokenExpiredException)
 
 # from model import RecommendedShow  # Next step is to map all results to show objects, so it can use one template
 
@@ -145,9 +145,12 @@ class TraktApi(object):
             elif code == 404:
                 log.error(u'Trakt error (404) the resource does not exist: %s', url + path)
                 raise ResourceUnavailable(u'Trakt error (404) the resource does not exist: %s', url + path)
+            elif code == 410:
+                log.error(u'Trakt error (410) Expired - the tokens have expired, restart the process: %s', url + path)
+                raise TokenExpiredException(u'Trakt error (410) Expired - the tokens have expired, restart the process: %s', url + path)
             else:
                 log.error(u'Unknown Trakt request exception. Code error: %s', code)
-                return {}
+                raise
 
         # check and confirm trakt call did not fail
         if isinstance(resp, dict) and resp.get('status', False) == 'failure':

@@ -302,13 +302,14 @@ class HomeAddShows(Home):
             page_url = "shows/anticipated"
 
         try:
-            (blacklist, recommended_shows) = TraktPopular().fetch_popular_shows(page_url=page_url, trakt_list=traktList)
+            (trakt_blacklist, recommended_shows) = TraktPopular().fetch_popular_shows(page_url=page_url, trakt_list=traktList)
         except Exception as e:
             # print traceback.format_exc()
-            blacklist = None
+            trakt_blacklist = False
             recommended_shows = None
 
-        return t.render(blacklist=blacklist, recommended_shows=recommended_shows, exception=e, enable_anime_options=False)
+        return t.render(trakt_blacklist=trakt_blacklist, recommended_shows=recommended_shows, exception=e,
+                        enable_anime_options=False, blacklist=[], whitelist=[])
 
     def popularShows(self):
         """
@@ -350,9 +351,13 @@ class HomeAddShows(Home):
         # URL parameters
         data = {'shows': [{'ids': {'tvdb': indexer_id}}]}
 
-        trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
+        trakt_settings = {'trakt_api_secret': sickbeard.TRAKT_API_SECRET,
+                          'trakt_api_key': sickbeard.TRAKT_API_KEY,
+                          'trakt_access_token': sickbeard.TRAKT_ACCESS_TOKEN}
 
-        trakt_api.trakt_request("users/" + sickbeard.TRAKT_USERNAME + "/lists/" + sickbeard.TRAKT_BLACKLIST_NAME + "/items", data, method='POST')
+        trakt_api = TraktApi(timeout=sickbeard.TRAKT_TIMEOUT, ssl_verify=sickbeard.SSL_VERIFY, **trakt_settings)
+
+        trakt_api.request("users/" + sickbeard.TRAKT_USERNAME + "/lists/" + sickbeard.TRAKT_BLACKLIST_NAME + "/items", data, method='POST')
 
         return self.redirect('/addShows/trendingShows/')
 

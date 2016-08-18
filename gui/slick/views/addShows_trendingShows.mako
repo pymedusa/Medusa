@@ -62,15 +62,15 @@
     <span style="margin-left:12px;">Select Trakt List:</span>
     <select id="traktlistselection" class="form-control form-control-inline input-sm">
         <option value="anticipated" ${' selected="selected"' if traktList == "anticipated" else ''}>Most Anticipated</option>
-        <option value="newshow" ${' selected="selected"' if traktList == "newshow" else ''}>New Shows</option>
-        <option value="newseason" ${' selected="selected"' if traktList == "newseason" else ''}>Season Premieres</option>
-        <option value="trending" ${' selected="selected"' if traktList == "trending" else ''}>Trending</option>
-        <option value="popular" ${' selected="selected"' if traktList == "popular" else ''}>Popular</option>
-        <option value="watched" ${' selected="selected"' if traktList == "watched" else '' }>Most Watched</option>
-        <option value="played" ${' selected="selected"' if traktList == "played" else '' }>Most Played</option>
-        <option value="collected" ${' selected="selected"' if traktList == "collected" else ''}>Most Collected</option>
+        <option value="newshow" ${'selected="selected"' if traktList == "newshow" else ''}>New Shows</option>
+        <option value="newseason" ${'selected="selected"' if traktList == "newseason" else ''}>Season Premieres</option>
+        <option value="trending" ${'selected="selected"' if traktList == "trending" else ''}>Trending</option>
+        <option value="popular" ${'selected="selected"' if traktList == "popular" else ''}>Popular</option>
+        <option value="watched" ${'selected="selected"' if traktList == "watched" else '' }>Most Watched</option>
+        <option value="played" ${'selected="selected"' if traktList == "played" else '' }>Most Played</option>
+        <option value="collected" ${'selected="selected"' if traktList == "collected" else ''}>Most Collected</option>
 % if sickbeard.TRAKT_ACCESS_TOKEN:
-        <option value="recommended"  ${' selected="selected"' if traktList == "recommended" else ''}>Recommended</option>
+        <option value="recommended"  ${'selected="selected"' if traktList == "recommended" else ''}>Recommended</option>
 % endif
     </select>
 </div>
