@@ -9,7 +9,7 @@
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<form name="massUpdateForm" method="post" action="massUpdate">
+<form name="massUpdateForm" method="post" action="manage/massUpdate">
 <table style="width: 100%;" class="home-header">
     <tr>
         <td nowrap>
