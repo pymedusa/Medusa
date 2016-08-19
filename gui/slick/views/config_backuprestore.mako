@@ -22,7 +22,7 @@
 % endif
 <div id="config">
     <div id="config-content">
-        <form name="configForm" method="post" action="backuprestore">
+        <form name="configForm" method="post" action="config/backuprestore">
             <div id="config-components">
                 <ul>
                     ## @TODO: This needs to be fixed, this is a hack to to jQuery-ui tabs from reloading as a base href causes

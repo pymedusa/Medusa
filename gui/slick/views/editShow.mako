@@ -26,7 +26,7 @@
 % endif
 <div id="config" ${"class=\"summaryFanArt\"" if sickbeard.FANART_BACKGROUND else ""}>
     <div id="config-content">
-        <form action="editShow" method="post">
+        <form action="home/editShow" method="post">
         <div id="config-components">
             <ul>
                 ## @TODO: This needs to be fixed, this is a hack to to jQuery-ui tabs from reloading as a base href causes

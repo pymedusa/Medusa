@@ -8,7 +8,7 @@
     <h1 class="header">${header}</h1>
     <div id="config">
         <div id="config-content">
-            <form id="configForm" action="saveAnime" method="post">
+            <form id="configForm" action="config/anime/saveAnime" method="post">
                 <div id="config-components">
                     <ul>
                         ## @TODO: This needs to be fixed, this is a hack to to jQuery-ui tabs from reloading as a base href causes
