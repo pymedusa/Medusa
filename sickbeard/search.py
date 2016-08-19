@@ -41,6 +41,7 @@ from sickbeard import common
 
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import AuthException, ex
+from sickrage.helper.common import episode_num
 from sickrage.providers.GenericProvider import GenericProvider
 from sickrage.helper.common import enabled_providers
 
@@ -173,6 +174,7 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
             sql_l.append(curEpObj.get_sql())
 
         if curEpObj.status not in Quality.DOWNLOADED:
+            # TODO: Remove this broad catch when all notifiers handle exceptions
             try:
                 notify_message = curEpObj.formatted_filename('%SN - %Sx%0E - %EN - %QN')
                 if all([sickbeard.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
@@ -181,20 +183,20 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
                                             (notify_message, result.seeders, result.leechers, result.provider.name), is_proper)
                 else:
                     notifiers.notify_snatch("{0} from {1}".format(notify_message, result.provider.name), is_proper)
-            except Exception:
+            except Exception as e:
                 # Without this, when notification fail, it crashes the snatch thread and Medusa will
                 # keep snatching until notification is sent
                 logger.log(u"Failed to send snatch notification. Error: {0}".format(e), logger.DEBUG)
 
-            trakt_data.append((curEpObj.season, curEpObj.episode))
+            if sickbeard.USE_TRAKT and sickbeard.TRAKT_SYNC_WATCHLIST:
+                trakt_data.append((curEpObj.season, curEpObj.episode))
+                logger.log(u'Adding {0} {1} to Trakt watchlist'.format
+                           (result.show.name, episode_num(curEpObj.season, curEpObj.episode)), logger.INFO)
 
-    data = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
-
-    if sickbeard.USE_TRAKT and sickbeard.TRAKT_SYNC_WATCHLIST:
-        logger.log(u"Add episodes, showid: indexerid " + str(result.show.indexerid) + u", Title " +
-                   str(result.show.name) + u" to Traktv Watchlist", logger.DEBUG)
-        if data:
-            notifiers.trakt_notifier.update_watchlist(result.show, data_episode=data, update="add")
+    if trakt_data:
+        data_episode = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
+        if data_episode:
+            notifiers.trakt_notifier.update_watchlist(result.show, data_episode=data_episode, update="add")
 
     if sql_l:
         main_db_con = db.DBConnection()
