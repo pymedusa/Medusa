@@ -3720,7 +3720,9 @@ var UTIL = {
 
 $.ajaxSetup({
     beforeSend: function(xhr, options) {
-        options.url = webRoot + options.url
+        if(/^https?:\/\/|^\/\//i.test(options.url) === false){
+            options.url = webRoot + options.url
+        }
     }
 });
 
