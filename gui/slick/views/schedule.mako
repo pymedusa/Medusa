@@ -26,26 +26,26 @@
 % else:
     <span>Sort By:
         <select name="sort" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="${srRoot}/setScheduleSort/?sort=date" ${'selected="selected"' if sickbeard.COMING_EPS_SORT == 'date' else ''} >Date</option>
-            <option value="${srRoot}/setScheduleSort/?sort=network" ${'selected="selected"' if sickbeard.COMING_EPS_SORT == 'network' else ''} >Network</option>
-            <option value="${srRoot}/setScheduleSort/?sort=show" ${'selected="selected"' if sickbeard.COMING_EPS_SORT == 'show' else ''} >Show</option>
+            <option value="setScheduleSort/?sort=date" ${'selected="selected"' if sickbeard.COMING_EPS_SORT == 'date' else ''} >Date</option>
+            <option value="setScheduleSort/?sort=network" ${'selected="selected"' if sickbeard.COMING_EPS_SORT == 'network' else ''} >Network</option>
+            <option value="setScheduleSort/?sort=show" ${'selected="selected"' if sickbeard.COMING_EPS_SORT == 'show' else ''} >Show</option>
         </select>
     </span>
 % endif
     &nbsp;
     <span>View Paused:
         <select name="viewpaused" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="${srRoot}/toggleScheduleDisplayPaused" ${'selected="selected"' if not bool(sickbeard.COMING_EPS_DISPLAY_PAUSED) else ''}>Hidden</option>
-            <option value="${srRoot}/toggleScheduleDisplayPaused" ${'selected="selected"' if sickbeard.COMING_EPS_DISPLAY_PAUSED else ''}>Shown</option>
+            <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if not bool(sickbeard.COMING_EPS_DISPLAY_PAUSED) else ''}>Hidden</option>
+            <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if sickbeard.COMING_EPS_DISPLAY_PAUSED else ''}>Shown</option>
         </select>
     </span>
     &nbsp;
     <span>Layout:
         <select name="layout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="${srRoot}/setScheduleLayout/?layout=poster" ${'selected="selected"' if sickbeard.COMING_EPS_LAYOUT == 'poster' else ''} >Poster</option>
-            <option value="${srRoot}/setScheduleLayout/?layout=calendar" ${'selected="selected"' if sickbeard.COMING_EPS_LAYOUT == 'calendar' else ''} >Calendar</option>
-            <option value="${srRoot}/setScheduleLayout/?layout=banner" ${'selected="selected"' if sickbeard.COMING_EPS_LAYOUT == 'banner' else ''} >Banner</option>
-            <option value="${srRoot}/setScheduleLayout/?layout=list" ${'selected="selected"' if sickbeard.COMING_EPS_LAYOUT == 'list' else ''} >List</option>
+            <option value="setScheduleLayout/?layout=poster" ${'selected="selected"' if sickbeard.COMING_EPS_LAYOUT == 'poster' else ''} >Poster</option>
+            <option value="setScheduleLayout/?layout=calendar" ${'selected="selected"' if sickbeard.COMING_EPS_LAYOUT == 'calendar' else ''} >Calendar</option>
+            <option value="setScheduleLayout/?layout=banner" ${'selected="selected"' if sickbeard.COMING_EPS_LAYOUT == 'banner' else ''} >Banner</option>
+            <option value="setScheduleLayout/?layout=list" ${'selected="selected"' if sickbeard.COMING_EPS_LAYOUT == 'list' else ''} >List</option>
         </select>
     </span>
 </div>
@@ -64,7 +64,6 @@
 % if 'list' == layout:
 <!-- start list view //-->
 <% show_div = 'listing-default' %>
-<input type="hidden" id="srRoot" value="${srRoot}" />
 <table id="showListTable" class="sickbeardTable tablesorter seasonstyle" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr>
@@ -314,7 +313,6 @@
 <br>
 <br>
 <div class="calendarWrapper">
-<input type="hidden" id="srRoot" value="${srRoot}" />
     % for day in dates:
     <% tbl_day += 1 %>
         <table class="sickbeardTable tablesorter calendarTable ${'cal-%s' % (('even', 'odd')[bool(tbl_day % 2)])}" cellspacing="0" border="0" cellpadding="0">

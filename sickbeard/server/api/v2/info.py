@@ -16,7 +16,6 @@ class InfoHandler(BaseRequestHandler):
         """
         info_query = query.split('/')[0]
         info_data = {
-            'srRoot': sickbeard.WEB_ROOT,
             'anonRedirect': sickbeard.ANON_REDIRECT,
             'anonSplitHome': sickbeard.ANIME_SPLIT_HOME,
             'comingEpsLayout': sickbeard.COMING_EPS_LAYOUT,

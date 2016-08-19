@@ -28,7 +28,6 @@
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<input type="hidden" id="srRoot" value="${srRoot}" />
 <input type="hidden" id="showID" value="${show.indexerid}" />
     <div class="clearfix"></div><!-- div.clearfix //-->
     <div id="showtitle" data-showname="${show.name}">
@@ -80,7 +79,7 @@
                 </a>
             % endif
                 <a href="${anon_url(sickbeard.indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title='${sickbeard.indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}'>
-                    <img alt="${sickbeard.indexerApi(show.indexer).name}" height="16" width="16" src='${srRoot}/images/${sickbeard.indexerApi(show.indexer).config["icon"]}' style="margin-top: -1px; vertical-align:middle;"/>
+                    <img alt="${sickbeard.indexerApi(show.indexer).name}" height="16" width="16" src='images/${sickbeard.indexerApi(show.indexer).config["icon"]}' style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
             % if xem_numbering or xem_absolute_numbering:
                 <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
