@@ -69,7 +69,7 @@
     <div id="container">
     % if not recommended_shows:
         <div class="recommended_show" style="width:100%; margin-top:20px">
-            <p class="red-text">Fetching of Recommender Data failed. Are you online?
+            <p class="red-text">Fetching of Recommender Data failed.
             <strong>Exception:</strong>
             <p>${exception}</p>
         </div>
