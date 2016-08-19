@@ -61,9 +61,8 @@ class Notifier(object):
         # Create a trakt settings dict
         trakt_settings = {'trakt_api_secret': sickbeard.TRAKT_API_SECRET,
                           'trakt_api_key': sickbeard.TRAKT_API_KEY,
-                          'trakt_access_token': sickbeard.TRAKT_ACCESS_TOKEN,
-                          'trakt_api_url': sickbeard.TRAKT_API_URL,
-                          'trakt_auth_url': sickbeard.TRAKT_OAUTH_URL}
+                          'trakt_access_token': sickbeard.TRAKT_ACCESS_TOKEN}
+
         trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
 
         if sickbeard.USE_TRAKT:
@@ -118,7 +117,11 @@ class Notifier(object):
         update: type o action add or remove
         """
 
-        trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
+        trakt_settings = {'trakt_api_secret': sickbeard.TRAKT_API_SECRET,
+                          'trakt_api_key': sickbeard.TRAKT_API_KEY,
+                          'trakt_access_token': sickbeard.TRAKT_ACCESS_TOKEN}
+
+        trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
 
         if sickbeard.USE_TRAKT:
 
@@ -240,8 +243,10 @@ class Notifier(object):
         Returns: True if the request succeeded, False otherwise
         """
         try:
-            trakt_settings = {'trakt_access_token': sickbeard.TRAKT_ACCESS_TOKEN,
-                              'trakt_api_key': sickbeard.TRAKT_API_KEY}
+            trakt_settings = {'trakt_api_secret': sickbeard.TRAKT_API_SECRET,
+                              'trakt_api_key': sickbeard.TRAKT_API_KEY,
+                              'trakt_access_token': sickbeard.TRAKT_ACCESS_TOKEN}
+
             trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
             trakt_api.validate_account()
             if blacklist_name and blacklist_name is not None:
