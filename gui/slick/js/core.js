@@ -3112,7 +3112,7 @@ var SICKRAGE = {
                 $('#minLevel').prop('disabled', true);
                 $('#logFilter').prop('disabled', true);
                 document.body.style.cursor = 'wait';
-                var url = webRoot + 'errorlogs/viewlog/?minLevel='+$('select[name=minLevel]').val()+'&logFilter='+$('select[name=logFilter]').val()+'&logSearch='+$('#logSearch').val();
+                var url = 'errorlogs/viewlog/?minLevel='+$('select[name=minLevel]').val()+'&logFilter='+$('select[name=logFilter]').val()+'&logSearch='+$('#logSearch').val();
                 $.get(url, function(data){
                     history.pushState('data', '', url);
                     $('pre').html($(data).find('pre').html());
