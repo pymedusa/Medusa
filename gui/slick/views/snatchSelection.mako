@@ -28,7 +28,6 @@
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<input type="hidden" id="srRoot" value="${srRoot}" />
 <input type="hidden" id="showID" value="${show.indexerid}" />
     <div class="clearfix"></div><!-- div.clearfix //-->
     <div id="showtitle" data-showname="${show.name}">
@@ -80,7 +79,7 @@
                 </a>
             % endif
                 <a href="${anon_url(sickbeard.indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title='${sickbeard.indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}'>
-                    <img alt="${sickbeard.indexerApi(show.indexer).name}" height="16" width="16" src='${srRoot}/images/${sickbeard.indexerApi(show.indexer).config["icon"]}' style="margin-top: -1px; vertical-align:middle;"/>
+                    <img alt="${sickbeard.indexerApi(show.indexer).name}" height="16" width="16" src='images/${sickbeard.indexerApi(show.indexer).config["icon"]}' style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
             % if xem_numbering or xem_absolute_numbering:
                 <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
@@ -270,8 +269,8 @@
             <table style="width:180px; float: right; vertical-align: middle; height: 100%;">
                 <%
                     info_flag = subtitles.code_from_code(show.lang) if show.lang else ''
-                    yes_img = '<img src="' + srRoot + '/images/yes16.png" alt="Y" width="16" height="16" />'
-                    no_img = '<img src="' + srRoot + '/images/no16.png" alt="N" width="16" height="16" />'
+                    yes_img = '<img src="images/yes16.png" alt="Y" width="16" height="16" />'
+                    no_img = '<img src="images/no16.png" alt="N" width="16" height="16" />'
                 %>
                 <tr>
                     <td class="showLegend">
@@ -540,7 +539,7 @@
                         <td class="col-size">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
                         <td align="center">${hItem["provider_type"]}</td>
                         <td class="col-date">${datetime.fromtimestamp(hItem["time"]).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</td>
-                        <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='${srRoot}/home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
+                        <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                     </tr>
                 % endfor
                 </tbody>

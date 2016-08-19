@@ -20,7 +20,6 @@
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<input type="hidden" id="srRoot" value="${srRoot}" />
     <div class="pull-left form-inline">
         Change Show:
         <div class="navShow"><img id="prevShow" src="images/prev.png" alt="&lt;&lt;" title="Prev Show" /></div>

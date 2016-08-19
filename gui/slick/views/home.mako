@@ -39,25 +39,25 @@
                         </span>
                         <span class="show-option"> Sort By:
                             <select id="postersort" class="form-control form-control-inline input-sm">
-                                <option value="name" data-sort="${srRoot}/setPosterSortBy/?sort=name" ${'selected="selected"' if sickbeard.POSTER_SORTBY == 'name' else ''}>Name</option>
-                                <option value="date" data-sort="${srRoot}/setPosterSortBy/?sort=date" ${'selected="selected"' if sickbeard.POSTER_SORTBY == 'date' else ''}>Next Episode</option>
-                                <option value="network" data-sort="${srRoot}/setPosterSortBy/?sort=network" ${'selected="selected"' if sickbeard.POSTER_SORTBY == 'network' else ''}>Network</option>
-                                <option value="progress" data-sort="${srRoot}/setPosterSortBy/?sort=progress" ${'selected="selected"' if sickbeard.POSTER_SORTBY == 'progress' else ''}>Progress</option>
+                                <option value="name" data-sort="setPosterSortBy/?sort=name" ${'selected="selected"' if sickbeard.POSTER_SORTBY == 'name' else ''}>Name</option>
+                                <option value="date" data-sort="setPosterSortBy/?sort=date" ${'selected="selected"' if sickbeard.POSTER_SORTBY == 'date' else ''}>Next Episode</option>
+                                <option value="network" data-sort="setPosterSortBy/?sort=network" ${'selected="selected"' if sickbeard.POSTER_SORTBY == 'network' else ''}>Network</option>
+                                <option value="progress" data-sort="setPosterSortBy/?sort=progress" ${'selected="selected"' if sickbeard.POSTER_SORTBY == 'progress' else ''}>Progress</option>
                             </select>
                         </span>
                         <span class="show-option"> Direction:
                             <select id="postersortdirection" class="form-control form-control-inline input-sm">
-                                <option value="true" data-sort="${srRoot}/setPosterSortDir/?direction=1" ${'selected="selected"' if sickbeard.POSTER_SORTDIR == 1 else ''}>Ascending </option>
-                                <option value="false" data-sort="${srRoot}/setPosterSortDir/?direction=0" ${'selected="selected"' if sickbeard.POSTER_SORTDIR == 0 else ''}>Descending</option>
+                                <option value="true" data-sort="setPosterSortDir/?direction=1" ${'selected="selected"' if sickbeard.POSTER_SORTDIR == 1 else ''}>Ascending </option>
+                                <option value="false" data-sort="setPosterSortDir/?direction=0" ${'selected="selected"' if sickbeard.POSTER_SORTDIR == 0 else ''}>Descending</option>
                             </select>
                         </span>
                     % endif
                     <span class="show-option"> Layout:
                         <select name="layout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-                            <option value="${srRoot}/setHomeLayout/?layout=poster" ${'selected="selected"' if sickbeard.HOME_LAYOUT == 'poster' else ''}>Poster</option>
-                            <option value="${srRoot}/setHomeLayout/?layout=small" ${'selected="selected"' if sickbeard.HOME_LAYOUT == 'small' else ''}>Small Poster</option>
-                            <option value="${srRoot}/setHomeLayout/?layout=banner" ${'selected="selected"' if sickbeard.HOME_LAYOUT == 'banner' else ''}>Banner</option>
-                            <option value="${srRoot}/setHomeLayout/?layout=simple" ${'selected="selected"' if sickbeard.HOME_LAYOUT == 'simple' else ''}>Simple</option>
+                            <option value="setHomeLayout/?layout=poster" ${'selected="selected"' if sickbeard.HOME_LAYOUT == 'poster' else ''}>Poster</option>
+                            <option value="setHomeLayout/?layout=small" ${'selected="selected"' if sickbeard.HOME_LAYOUT == 'small' else ''}>Small Poster</option>
+                            <option value="setHomeLayout/?layout=banner" ${'selected="selected"' if sickbeard.HOME_LAYOUT == 'banner' else ''}>Banner</option>
+                            <option value="setHomeLayout/?layout=simple" ${'selected="selected"' if sickbeard.HOME_LAYOUT == 'simple' else ''}>Simple</option>
                         </select>
                     </span>
                 </div>

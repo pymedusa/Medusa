@@ -12,8 +12,8 @@ $(document).ready(function() {
         hintText: "Write to search a language and select it",
         preventDuplicates: true,
         prePopulate: [${','.join("{\"id\": \"" + code + "\", name: \"" + subtitles.name_from_code(code) + "\"}" for code in subtitles.wanted_languages())}],
-        resultsFormatter: function(item){ return "<li><img src='${srRoot}/images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"${srRoot}images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>" },
-        tokenFormatter: function(item)  { return "<li><img src='${srRoot}/images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"${srRoot}images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>" },
+        resultsFormatter: function(item){ return "<li><img src='images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>" },
+        tokenFormatter: function(item)  { return "<li><img src='images/subtitles/flags/" + item.id + ".png' onError='this.onerror=null;this.src=\"images/flags/unknown.png\";' style='vertical-align: middle !important;' /> " + item.name + "</li>" },
     });
 });
 $('#config-components').tabs();

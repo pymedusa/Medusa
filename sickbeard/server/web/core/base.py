@@ -69,7 +69,6 @@ class PageTemplate(MakoTemplate):
         self.template = lookup.get_template(filename)
 
         self.arguments = {
-            'srRoot': sickbeard.WEB_ROOT,
             'sbHttpPort': sickbeard.WEB_PORT,
             'sbHttpsPort': sickbeard.WEB_PORT,
             'sbHttpsEnabled': sickbeard.ENABLE_HTTPS,
