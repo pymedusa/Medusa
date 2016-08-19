@@ -45,7 +45,7 @@ class TraktApi(object):
         self.ssl_verify = certifi.where() if ssl_verify else False
         self.timeout = timeout if timeout else None
         self.auth_url = trakt_settings.get('trakt_auth_url', 'https://trakt.tv/')  # oauth url
-        self.api_url = trakt_settings.get('trakt_api_url', 'https://api-v2launch.trakt.tv/')  # api url
+        self.api_url = trakt_settings.get('trakt_api_url', 'https://api.trakt.tv/')  # api url
         self.access_token = trakt_settings.get('trakt_access_token', '')
         self.refresh_token = None
         self.access_token_refreshed = False
