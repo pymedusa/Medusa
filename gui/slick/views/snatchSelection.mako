@@ -270,8 +270,8 @@
             <table style="width:180px; float: right; vertical-align: middle; height: 100%;">
                 <%
                     info_flag = subtitles.code_from_code(show.lang) if show.lang else ''
-                    yes_img = '<img src="' + srRoot + '/images/yes16.png" alt="Y" width="16" height="16" />'
-                    no_img = '<img src="' + srRoot + '/images/no16.png" alt="N" width="16" height="16" />'
+                    yes_img = '<img src="images/yes16.png" alt="Y" width="16" height="16" />'
+                    no_img = '<img src="images/no16.png" alt="N" width="16" height="16" />'
                 %>
                 <tr>
                     <td class="showLegend">
@@ -540,7 +540,7 @@
                         <td class="col-size">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
                         <td align="center">${hItem["provider_type"]}</td>
                         <td class="col-date">${datetime.fromtimestamp(hItem["time"]).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</td>
-                        <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='${srRoot}/home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
+                        <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                     </tr>
                 % endfor
                 </tbody>

@@ -21,9 +21,8 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     <meta name="msapplication-TileColor" content="#FFFFFF">
-    <meta name="msapplication-TileImage" content="${srRoot}/images/ico/favicon-144.png">
-    <meta name="msapplication-config" content="${srRoot}/css/browserconfig.xml">
-    <meta data-var="srRoot" data-content="${srRoot}">
+    <meta name="msapplication-TileImage" content="images/ico/favicon-144.png">
+    <meta name="msapplication-config" content="css/browserconfig.xml">
     <meta data-var="themeSpinner" data-content="${'-dark' if sickbeard.THEME_NAME == 'dark' else ''}">
     <meta data-var="anonURL" data-content="${sickbeard.ANON_REDIRECT}">
     <meta data-var="sickbeard.ANIME_SPLIT_HOME" data-content="${sickbeard.ANIME_SPLIT_HOME}">

@@ -4,9 +4,9 @@
     import sickbeard
 %>
 <%block name="scripts">
-    <script type="text/javascript" src="${srRoot}/js/qualityChooser.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/qualityChooser.js?${sbPID}"></script>
 % if enable_anime_options:
-    <script type="text/javascript" src="${srRoot}/js/blackwhite.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif
 </%block>
 <%block name="content">
@@ -98,7 +98,7 @@
                 <div class="recommended-container default-poster ${('', 'show-in-list')[cur_result.show_in_list]}">
                     <div class="recommended-image">
                         <a href="${anon_url(cur_result.image_href)}" target="_blank">
-                            <img alt="" class="recommended-image" src="${srRoot}/cache/${cur_result.image_src}" height="273px" width="186px"/>
+                            <img alt="" class="recommended-image" src="cache/${cur_result.image_src}" height="273px" width="186px"/>
                         </a>
                     </div>
                     <div id="check-overlay"></div>
@@ -108,10 +108,10 @@
                     </div>
 
                     <div class="clearfix show-attributes">
-                        <p>${int(float(cur_rating)*10)}% <img src="${srRoot}/images/heart.png">
+                        <p>${int(float(cur_rating)*10)}% <img src="images/heart.png">
                             % if cur_result.is_anime and cur_result.ids.get('aid'):
                                 <a class="anidb-url" href='${anon_url("https://anidb.net/a{0}".format(cur_result.ids["aid"]))}'>
-                                    <img src="${srRoot}/images/anidb_inline_refl.png" class="anidb-inline" alt=""/>
+                                    <img src="images/anidb_inline_refl.png" class="anidb-inline" alt=""/>
                                 </a>
                             % endif
                         </p>

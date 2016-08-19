@@ -34,8 +34,8 @@
     </select>
     <span> Layout:
         <select name="HistoryLayout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="${srRoot}/setHistoryLayout/?layout=compact"  ${'selected="selected"' if sickbeard.HISTORY_LAYOUT == 'compact' else ''}>Compact</option>
-            <option value="${srRoot}/setHistoryLayout/?layout=detailed" ${'selected="selected"' if sickbeard.HISTORY_LAYOUT == 'detailed' else ''}>Detailed</option>
+            <option value="setHistoryLayout/?layout=compact"  ${'selected="selected"' if sickbeard.HISTORY_LAYOUT == 'compact' else ''}>Compact</option>
+            <option value="setHistoryLayout/?layout=detailed" ${'selected="selected"' if sickbeard.HISTORY_LAYOUT == 'detailed' else ''}>Detailed</option>
         </select>
     </span>
 </div>

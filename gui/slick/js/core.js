@@ -279,7 +279,7 @@ var SICKRAGE = {
             $('#branchForceUpdate').on('click', function() {
                 $('#branchForceUpdate').prop('disabled', true);
                 $('#git_reset_branches').prop('disabled', true);
-                $.getJSON(srRoot + '/home/branchForceUpdate', function(data) {
+                $.getJSON('home/branchForceUpdate', function(data) {
                     $('#git_reset_branches').empty();
                     data.resetBranches.forEach(function(branch) {
                         $('#git_reset_branches').append('<option value="' + branch + '" selected="selected" >' + branch + '</option>');
@@ -788,7 +788,7 @@ var SICKRAGE = {
 
             $('#forceSync').on('click', function () {
                 $('#testTrakt-result').html(loading);
-                $.getJSON(srRoot + '/home/forceTraktSync', function(data) {
+                $.getJSON('home/forceTraktSync', function(data) {
                   $('#testTrakt-result').html(data.result);
                 });
             });
@@ -2168,7 +2168,6 @@ var SICKRAGE = {
             });
 
             $('#changeStatus').on('click', function() {
-                var srRoot = $('#srRoot').val();
                 var epArr = [];
 
                 $('.epCheck').each(function () {
@@ -2958,7 +2957,7 @@ var SICKRAGE = {
                         $(this).prop('value', 'Collapse');
                     }
                 } else {
-                    $.getJSON(srRoot + '/manage/showEpisodeStatuses', {
+                    $.getJSON('manage/showEpisodeStatuses', {
                         'indexer_id': curIndexerId,
                         whichStatus: $('#oldStatus').val()
                     }, function (data) {
@@ -3319,7 +3318,7 @@ var SICKRAGE = {
                         bestQualArray.push($(d).val());
                     });
 
-                    $.get(srRoot + '/config/general/saveAddShowDefaults', {
+                    $.get('config/general/saveAddShowDefaults', {
                         defaultStatus: $('#statusSelect').val(),
                         anyQualities: anyQualArray.join(','),
                         bestQualities: bestQualArray.join(','),
