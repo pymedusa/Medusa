@@ -1,4 +1,4 @@
-$(document).ready(function(){
+$(document).ready(function() {
     $.fn.showHideProviders = function() {
         $('.providerDiv').each(function() {
             var providerName = $(this).prop('id');
@@ -92,7 +92,7 @@ $(document).ready(function(){
 
         if ($('#provider_order_list > #' + id).length === 0) {
             $('#provider_order_list').append('<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="provider_enabler" CHECKED> <a href="' + anonURL + url + '" class="imgLink" target="_new"><img src="images/providers/torrentrss.png" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>');
-            $('#provider_order_list').sortable("refresh");
+            $('#provider_order_list').sortable('refresh');
         }
 
         $(this).makeTorrentRssProviderString();
@@ -240,8 +240,8 @@ $(document).ready(function(){
                     newzNabCap.categories.forEach(function(categorySet) {
                         if (categorySet.id && categorySet.name) {
                             newCapOptions.push({
-                                value : categorySet.id,
-                                text : categorySet.name + '(' + categorySet.id + ')'
+                                value: categorySet.id,
+                                text: categorySet.name + '(' + categorySet.id + ')'
                             });
                         }
                     });
@@ -311,7 +311,7 @@ $(document).ready(function(){
         var idArr = $('#provider_order_list').sortable('toArray');
         var finalArr = [];
         $.each(idArr, function(key, val) {
-            var checked = + $('#enable_' + val).prop('checked') ? '1' : '0';
+            var checked = $('#enable_' + val).is(':checked') ? '1' : '0';
             finalArr.push(val + ':' + checked);
         });
 
@@ -500,38 +500,38 @@ $(document).ready(function(){
     });
 
     $(this).on('change', '[class="providerDiv_tip"] input', function() {
-        $('div .providerDiv ' + '[name=' + $(this).prop('name') + ']').replaceWith($(this).clone());
-        $('div .providerDiv ' + '[newznab_name=' + $(this).prop('id') + ']').replaceWith($(this).clone());
+        $('div .providerDiv [name=' + $(this).prop('name') + ']').replaceWith($(this).clone());
+        $('div .providerDiv [newznab_name=' + $(this).prop('id') + ']').replaceWith($(this).clone());
     });
 
     $(this).on('change', '[class="providerDiv_tip"] select', function() {
-        $(this).find('option').each( function() {
+        $(this).find('option').each(function() {
             if ($(this).is(':selected')) {
                 $(this).prop('defaultSelected', true);
             } else {
                 $(this).prop('defaultSelected', false);
             }
         });
-        $('div .providerDiv ' + '[name=' + $(this).prop('name') + ']').empty().replaceWith($(this).clone());
+        $('div .providerDiv [name=' + $(this).prop('name') + ']').empty().replaceWith($(this).clone());
     });
 
     $(this).on('change', '.enabler', function() {
         if ($(this).is(':checked')) {
-            $('.content_' + $(this).prop('id')).each( function() {
+            $('.content_' + $(this).prop('id')).each(function() {
                 $(this).show();
             });
         } else {
-            $('.content_' + $(this).prop('id')).each( function() {
+            $('.content_' + $(this).prop('id')).each(function() {
                 $(this).hide();
             });
         }
     });
 
-    $(".enabler").each(function() {
-        if (!$(this).is(':checked')) {
-            $('.content_' + $(this).prop('id')).hide();
-        } else {
+    $('.enabler').each(function() {
+        if ($(this).is(':checked')) {
             $('.content_' + $(this).prop('id')).show();
+        } else {
+            $('.content_' + $(this).prop('id')).hide();
         }
     });
 

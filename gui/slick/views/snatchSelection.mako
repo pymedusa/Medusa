@@ -22,9 +22,9 @@
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
-<script type="text/javascript" src="js/plotTooltip.js?${sbPID}"></script>
-<script type="text/javascript" src="js/ratingTooltip.js?${sbPID}"></script>
-<script type="text/javascript" src="js/ajaxEpSubtitles.js?${sbPID}"></script>
+<script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
+<script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
+<script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>

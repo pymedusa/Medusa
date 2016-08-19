@@ -4,9 +4,9 @@
     from sickbeard.helpers import anon_url
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/qualityChooser.js?${sbPID}"></script>
-<script type="text/javascript" src="js/addShowOptions.js?${sbPID}"></script>
-<script type="text/javascript" src="js/rootDirs.js?${sbPID}"></script>
+<script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
+<script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
+<script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
 <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 </%block>
 <%block name="content">
@@ -71,7 +71,7 @@
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Customize options</legend>
                     <div class="stepDiv">
-                        <%include file="/inc_addShowOptions.mako"/>
+                        <%include file="/inc_add-show-options.mako"/>
                     </div>
                 </fieldset>
                 % for curNextDir in other_shows:

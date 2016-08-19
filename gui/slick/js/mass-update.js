@@ -1,14 +1,14 @@
-$(document).ready(function(){
+$(document).ready(function() {
     $('.submitMassEdit').on('click', function() {
         var editArr = [];
 
         $('.editCheck').each(function() {
-            if(this.checked === true) {
+            if (this.checked === true) {
                 editArr.push($(this).attr('id').split('-')[1]);
             }
         });
 
-        if(editArr.length === 0) {
+        if (editArr.length === 0) {
             return;
         }
 
@@ -25,23 +25,33 @@ $(document).ready(function(){
         var metadataArr = [];
 
         $('.updateCheck').each(function() {
-            if(this.checked === true) { updateArr.push($(this).attr('id').split('-')[1]); }
+            if (this.checked === true) {
+                updateArr.push($(this).attr('id').split('-')[1]);
+            }
         });
 
         $('.refreshCheck').each(function() {
-            if(this.checked === true) { refreshArr.push($(this).attr('id').split('-')[1]); }
+            if (this.checked === true) {
+                refreshArr.push($(this).attr('id').split('-')[1]);
+            }
         });
 
         $('.renameCheck').each(function() {
-            if(this.checked === true) { renameArr.push($(this).attr('id').split('-')[1]); }
+            if (this.checked === true) {
+                renameArr.push($(this).attr('id').split('-')[1]);
+            }
         });
 
         $('.subtitleCheck').each(function() {
-            if(this.checked === true) { subtitleArr.push($(this).attr('id').split('-')[1]); }
+            if (this.checked === true) {
+                subtitleArr.push($(this).attr('id').split('-')[1]);
+            }
         });
 
         $('.removeCheck').each(function() {
-            if(this.checked === true) { removeArr.push($(this).attr('id').split('-')[1]); }
+            if (this.checked === true) {
+                removeArr.push($(this).attr('id').split('-')[1]);
+            }
         });
 
         var deleteCount = 0;

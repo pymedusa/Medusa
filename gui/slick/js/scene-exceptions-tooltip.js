@@ -5,7 +5,7 @@ $(function () {
             content: {
                 text: 'Loading...',
                 ajax: {
-                    url: webRoot + 'home/sceneExceptions',
+                    url: 'home/sceneExceptions',
                     type: 'GET',
                     data: {
                         show: match[1]

@@ -122,7 +122,7 @@ module.exports = function(grunt) {
             all: [
                 '../gui/slick/js/**/*.js',
                 '!../gui/slick/js/lib/**/*.js',
-                '!../gui/slick/js/ajaxNotifications.js',
+                '!../gui/slick/js/ajax-notifications.js',
                 '!../gui/slick/js/**/*.min.js', // We use this because ignores doesn't seem to work :(
             ]
         },

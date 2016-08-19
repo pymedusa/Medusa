@@ -8,8 +8,8 @@
     import re
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/ajaxEpSearch.js?${sbPID}"></script>
-<script type="text/javascript" src="js/plotTooltip.js?${sbPID}"></script>
+<script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
+<script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 </%block>
 <%block name="css">
 <style type="text/css">

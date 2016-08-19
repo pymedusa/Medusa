@@ -122,19 +122,15 @@ $(document).ready(function () {
 });
 
 (function() {
-    $.ajaxEpSearch = {
-        defaults: {
+    $.ajaxEpSearch = function(options) {
+        options = $.extend({}, {
             size: 16,
             colorRow: false,
             loadingImage: 'loading16.gif',
             queuedImage: 'queued.png',
             noImage: 'no16.png',
             yesImage: 'yes16.png'
-        }
-    };
-
-    $.fn.ajaxEpSearch = function(options) {
-        options = $.extend({}, $.ajaxEpSearch.defaults, options);
+        }, options);
 
         $('.epRetry').on('click', function(event) {
             event.preventDefault();
@@ -192,7 +188,7 @@ $(document).ready(function () {
                     }
                     // applying the quality class
                     var rSearchTerm = /(\w+)\s\((.+?)\)/;
-                    htmlContent = data.result.replace(rSearchTerm, "$1" + ' <span class="quality ' + data.quality + '">' + "$2" + '</span>');
+                    htmlContent = data.result.replace(rSearchTerm, '$1 <span class="quality ' + data.quality + '">$2</span>');
                     // update the status column if it exists
                     parent.siblings('.col-status').html(htmlContent);
                     // Only if the queuing was successful, disable the onClick event of the loading image
