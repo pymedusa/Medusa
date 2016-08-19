@@ -5,7 +5,7 @@
     from sickbeard.common import statusStrings
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/massUpdate.js?${sbPID}"></script>
+<script type="text/javascript" src="js/mass-update.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>

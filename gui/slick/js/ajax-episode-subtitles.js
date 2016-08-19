@@ -1,5 +1,5 @@
 (function(){
-    $.fn.ajaxEpSubtitlesSearch = function() {
+    $.ajaxEpSubtitlesSearch = function() {
         $('.epSubtitlesSearch').on('click', function() {
             var subtitlesTd = $(this).parent().siblings('.col-subtitles');
             var subtitlesSearchLink = $(this);
@@ -47,7 +47,7 @@
     };
 
     $.fn.ajaxEpMergeSubtitles = function() {
-        $('.epMergeSubtitles').click(function() {
+        $('.epMergeSubtitles').on('click', function() {
             var subtitlesMergeLink = $(this);
             // fill with the ajax loading gif
             subtitlesMergeLink.empty();

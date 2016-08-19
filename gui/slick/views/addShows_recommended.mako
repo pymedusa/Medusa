@@ -4,7 +4,7 @@
     import sickbeard
 %>
 <%block name="scripts">
-    <script type="text/javascript" src="js/qualityChooser.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 % if enable_anime_options:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif
@@ -39,7 +39,7 @@
                     <br/>
                 </div>
                 <div id="tabs-2" class="existingtabs">
-                    <%include file="/inc_addShowOptions.mako"/>
+                    <%include file="/inc_add-show-options.mako"/>
                 </div>
                 </label>
 
@@ -119,14 +119,14 @@
 
                         <div class="recommendedShowTitleIcons">
                             % if cur_result.show_in_list:
-                                <a href="home/displayShow?show=${cur_result.indexer_id}" class="btn btn-xs">In List</a>
+                                <button href="home/displayShow?show=${cur_result.indexer_id}" class="btn btn-xs">In List</a>
                             % else:
-                                <a href="addShows/addShowByID" class="btn btn-xs" data-isanime="1" data-indexer="TVDB"
+                                <button class="btn btn-xs" data-isanime="1" data-indexer="TVDB"
                                 data-indexer-id="${cur_result.indexer_id}" data-show-name="${cur_result.title | u}"
                                 data-add-show>Add</a>
                             % endif
                             % if trakt_b:
-                                <a href="addShows/addShowToBlacklist?indexer_id=${cur_result.indexer_id}" class="btn btn-xs">Blacklist</a>
+                                <button href="addShows/addShowToBlacklist?indexer_id=${cur_result.indexer_id}" class="btn btn-xs">Blacklist</a>
                             % endif
                         </div>
                     </div>

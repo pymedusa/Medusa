@@ -5,7 +5,7 @@ $(function () {
             content: {
                 text: 'Loading...',
                 ajax: {
-                    url: webRoot + 'home/plotDetails',
+                    url: 'home/plotDetails',
                     type: 'GET',
                     data: {
                         show: match[1],

@@ -5,7 +5,7 @@
     from sickrage.providers.GenericProvider import GenericProvider
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/configProviders.js"></script>
+<script type="text/javascript" src="js/config-providers.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
     % if sickbeard.USE_NZBS:

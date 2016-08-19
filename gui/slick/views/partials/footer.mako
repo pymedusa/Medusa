@@ -64,10 +64,10 @@
     <script type="text/javascript" src="js/lib/jquery.selectboxes.min.js?${sbPID}"></script>
     <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
     <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
-    <script type="text/javascript" src="js/rootDirs.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
     <script type="text/javascript" src="js/core.js?${sbPID}"></script>
     <script type="text/javascript" src="js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
     <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
-    <script type="text/javascript" src="js/ajaxNotifications.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/ajax-notifications.js?${sbPID}"></script>
 % endif
 <!-- END FOOTER -->

@@ -3,8 +3,8 @@
     import sickbeard
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/rootDirs.js?${sbPID}"></script>
-<script type="text/javascript" src="js/plotTooltip.js?${sbPID}"></script>
+<script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
+<script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -21,7 +21,7 @@
         <%include file="/inc_rootDirs.mako"/>
     </div>
     <div id="tabs-2" class="existingtabs">
-        <%include file="/inc_addShowOptions.mako"/>
+        <%include file="/inc_add-show-options.mako"/>
     </div>
     <br>
     <span>Sort By:</span>
