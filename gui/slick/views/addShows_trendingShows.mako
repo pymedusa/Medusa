@@ -5,6 +5,7 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
 <script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
+<script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 % if not header is UNDEFINED:

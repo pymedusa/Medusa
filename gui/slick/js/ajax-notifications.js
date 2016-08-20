@@ -16,7 +16,7 @@ PNotify.prototype.options.width = '340px';
 PNotify.desktop.permission();
 
 function displayPNotify(type, title, message) {
-    PNotify({
+    new PNotify({
         type: type,
         title: title,
         text: message.replace(/<br[\s\/]*(?:\s[^>]*)?>/ig, '\n')
