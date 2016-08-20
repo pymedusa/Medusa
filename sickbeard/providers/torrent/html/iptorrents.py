@@ -27,8 +27,8 @@ from requests.utils import dict_from_cookiejar
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 
-from sickrage.helper.exceptions import AuthException
 from sickrage.helper.common import convert_size
+from sickrage.helper.exceptions import AuthException
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
@@ -116,7 +116,7 @@ class IPTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('table', attrs={'class': 'torrents'})
+            torrent_table = html.find('table', id='torrents')
             torrents = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
