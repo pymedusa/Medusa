@@ -71,7 +71,7 @@
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Customize options</legend>
                     <div class="stepDiv">
-                        <%include file="/inc_add-show-options.mako"/>
+                        <%include file="/inc_addShowOptions.mako"/>
                     </div>
                 </fieldset>
                 % for curNextDir in other_shows:
