@@ -17,7 +17,7 @@ except NameError:
     themeSpinner = sickbeard.THEME_NAME
 %>
 <h2>Performing Restart</h2>
-<div default-page="${sbDefaultPage}" current-pid="${srPID}" class="messages">
+<div default-page="${sbDefaultPage}" current-pid="${sbPID}" class="messages">
     <div id="shut_down_message">
         Waiting for Medusa to shut down:
         <img src="images/loading16-${themeSpinner}.gif" height="16" width="16" id="shut_down_loading" />
