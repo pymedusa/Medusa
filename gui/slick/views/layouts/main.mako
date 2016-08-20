@@ -46,7 +46,7 @@
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
         <%block name="css" />
     </head>
-    <body data-controller="${controller}" data-action="${action}" api-key="${sickbeard.API_KEY}" api-root="api/v2/">
+    <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + sickbeard.API_KEY +'"  api-root="api/v2/"', '')[title == 'Login']}>
         <%include file="/partials/header.mako"/>
         % if submenu:
         <%include file="/partials/submenu.mako"/>
