@@ -355,11 +355,18 @@ class HomeAddShows(Home):
                           'trakt_api_key': sickbeard.TRAKT_API_KEY,
                           'trakt_access_token': sickbeard.TRAKT_ACCESS_TOKEN}
 
-        trakt_api = TraktApi(timeout=sickbeard.TRAKT_TIMEOUT, ssl_verify=sickbeard.SSL_VERIFY, **trakt_settings)
-
-        trakt_api.request("users/" + sickbeard.TRAKT_USERNAME + "/lists/" + sickbeard.TRAKT_BLACKLIST_NAME + "/items", data, method='POST')
-
-        return self.redirect('/addShows/trendingShows/')
+        show_name = get_showname_from_indexer(1, indexer_id)
+        try:
+            trakt_api = TraktApi(timeout=sickbeard.TRAKT_TIMEOUT, ssl_verify=sickbeard.SSL_VERIFY, **trakt_settings)
+            trakt_api.request('users/{0}/lists/{1}/items'.format
+                              (sickbeard.TRAKT_USERNAME, sickbeard.TRAKT_BLACKLIST_NAME), data, method='POST')
+            ui.notifications.message('Success!',
+                                     "Added show '{0}' to blacklist".format(show_name))
+        except Exception as e:
+            ui.notifications.error('Error!',
+                                   "Unable to add show '{0}' to blacklist. Check logs.".format(show_name))
+            logger.log("Error while adding show '{0}' to trakt blacklist: {1}".format
+                       (show_name, e), logger.WARNING)
 
     def existingShows(self):
         """
