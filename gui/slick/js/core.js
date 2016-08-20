@@ -3716,6 +3716,7 @@ var SICKRAGE = {
             });
 
             $.initAddShowById();
+            $.initBlackListShowById();
         },
         popularShows: function() {
             $.initRemoteShowGrid();
