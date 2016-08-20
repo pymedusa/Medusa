@@ -203,9 +203,6 @@ var SICKRAGE = {
 
             // bind 'myForm' and provide a simple callback function
             $('#configForm').ajaxForm({
-                beforeSerialize: function($form, options) {
-                    options.url = options.url.replace(document.location.protocol + '//' + document.location.host + '/', '');
-                },
                 beforeSubmit: function() {
                     $('.config_submitter .config_submitter_refresh').each(function() {
                         $(this).prop('disabled', 'disabled');
