@@ -36,6 +36,7 @@ from sickrage.helper.exceptions import EpisodeDeletedException, ex, MultipleShow
 from sickrage.helper.exceptions import ShowDirectoryNotFoundException
 from sickbeard.helpers import get_showname_from_indexer
 from traktor import TraktApi
+from traktor import TraktException
 from sickrage.helper.encoding import ek
 from sickbeard.helpers import makeDir, chmodAsParent
 from sickrage.helper.common import sanitize_filename
@@ -409,7 +410,10 @@ class QueueItemAdd(ShowQueueItem):
                 else:
                     data['shows'][0]['ids']['tvrage'] = self.indexer_id
 
-                trakt_api.traktRequest("sync/watchlist/remove", data, method='POST')
+                try:
+                    trakt_api.traktRequest("sync/watchlist/remove", data, method='POST')
+                except TraktException as e:
+                    logger.log("Could not remove show '{0}' from watchlist. Error: {1}".format(title, e), logger.WARNING)
 
             self._finishEarly()
             return
