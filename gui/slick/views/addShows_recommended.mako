@@ -133,7 +133,7 @@
                                 data-indexer-id="${cur_result.indexer_id}" data-show-name="${cur_result.title | u}"
                                 data-add-show>Add</a>
                             % endif
-                            % if trakt_b and (not cur_result.show_in_list or cur_result.indexer_id in removed_from_medusa):
+                            % if trakt_b and not (cur_result.show_in_list or cur_result.indexer_id in removed_from_medusa):
                                 <button data-indexer-id="${cur_result.indexer_id}" class="btn btn-xs" data-blacklist-show>Blacklist</a>
                             % endif
                         </div>
