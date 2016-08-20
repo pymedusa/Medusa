@@ -2,7 +2,7 @@
 // @TODO Move these into common.ini when possible,
 //       currently we can't do that as browser.js and a few others need it before this is loaded
 var themeSpinner;
-var anonURL;
+var anonRedirect;
 var loading;
 var topImageHtml = '<img src="images/top.gif" width="31" height="11" alt="Jump to top" />'; // eslint-disable-line no-unused-vars
 var webRoot = $('base').attr('href');
@@ -1780,7 +1780,7 @@ var SICKRAGE = {
                 }
 
                 if ($('#service_order_list > #'+id).length === 0 && showService !== false) {
-                    var toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="service_enabler" CHECKED> <a href="' + anonURL + url + '" class="imgLink" target="_new"><img src="images/services/newznab.gif" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>';
+                    var toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="service_enabler" CHECKED> <a href="' + anonRedirect + url + '" class="imgLink" target="_new"><img src="images/services/newznab.gif" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>';
 
                     $('#service_order_list').append(toAdd);
                     $('#service_order_list').sortable('refresh');
@@ -3506,9 +3506,9 @@ var SICKRAGE = {
 
                                 resultStr += '<input type="radio" id="whichSeries" name="whichSeries" value="' + whichSeries.replace(/"/g, '') + '"' + checked + ' /> ';
                                 if (data.langid && data.langid !== '') {
-                                    resultStr += '<a href="' + anonURL + obj[2] + obj[3] + '&lid=' + data.langid + '" onclick=\"window.open(this.href, \'_blank\'); return false;\" ><b>' + obj[4] + '</b></a>';
+                                    resultStr += '<a href="' + anonRedirect + obj[2] + obj[3] + '&lid=' + data.langid + '" onclick=\"window.open(this.href, \'_blank\'); return false;\" ><b>' + obj[4] + '</b></a>';
                                 } else {
-                                    resultStr += '<a href="' + anonURL + obj[2] + obj[3] + '" onclick=\"window.open(this.href, \'_blank\'); return false;\" ><b>' + obj[4] + '</b></a>';
+                                    resultStr += '<a href="' + anonRedirect + obj[2] + obj[3] + '" onclick=\"window.open(this.href, \'_blank\'); return false;\" ><b>' + obj[4] + '</b></a>';
                                 }
 
                                 if (obj[5] !== null) {
@@ -3761,7 +3761,7 @@ $.ajax({
     if (data.status === 200) {
         SICKRAGE.info = data.data;
         themeSpinner = SICKRAGE.info.themeName === 'dark' ? '-dark' : '';
-        anonURL = SICKRAGE.info.anonURL;
+        anonRedirect = SICKRAGE.info.anonRedirect;
         loading = '<img src="images/loading16' + themeSpinner + '.gif" height="16" width="16" />';
 
         if (navigator.userAgent.indexOf('PhantomJS') === -1) {
