@@ -125,7 +125,7 @@
                                 data-indexer-id="${cur_result.indexer_id}" data-show-name="${cur_result.title | u}"
                                 data-add-show>Add</a>
                             % endif
-                            % if trakt_b:
+                            % if trakt_b and not cur_result.show_in_list:
                                 <button data-indexer-id="${cur_result.indexer_id}" class="btn btn-xs" data-blacklist-show>Blacklist</a>
                             % endif
                         </div>
