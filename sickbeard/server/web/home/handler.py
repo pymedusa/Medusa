@@ -10,6 +10,7 @@ import time
 
 import adba
 from traktor import TraktApi
+from traktor import (MissingTokenException, TokenExpiredException, TraktException)
 from requests.compat import unquote_plus, quote_plus
 from six import iteritems
 from tornado.routes import route
@@ -434,13 +435,22 @@ class Home(WebRoot):
         trakt_settings = {"trakt_api_key": sickbeard.TRAKT_API_KEY,
                           "trakt_api_secret": sickbeard.TRAKT_API_SECRET}
         trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
-        (access_token, refresh_token) = trakt_api.get_token(sickbeard.TRAKT_REFRESH_TOKEN, trakt_pin=trakt_pin)
+        try:
+            (access_token, refresh_token) = trakt_api.get_token(sickbeard.TRAKT_REFRESH_TOKEN, trakt_pin=trakt_pin)
+        except (MissingTokenException, TokenExpiredException):
+            ui.notifications.error('Wrong PIN. Reload the page to get new token!')
+            return 'Wrong PIN. Reload the page to get new token!'
+        except TraktException:
+            ui.notifications.error('Connection error. Reload the page to get new token!')
+            return 'Error while connection to Trakt. Reload the page to get new token!'
         if access_token:
             sickbeard.TRAKT_ACCESS_TOKEN = access_token
             sickbeard.TRAKT_REFRESH_TOKEN = refresh_token
         response = trakt_api.validate_account()
         if response:
+            ui.notifications.message('Trakt Authorized')
             return "Trakt Authorized"
+        ui.notifications.error('Connection error. Reload the page to get new token!')
         return "Trakt Not Authorized!"
 
     @staticmethod
