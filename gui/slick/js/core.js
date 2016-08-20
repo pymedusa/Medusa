@@ -533,7 +533,7 @@ var SICKRAGE = {
                 $('#twitter_key').addRemoveWarningClass(twitter.key);
                 if (twitter.key) {
                     $('#testTwitter-result').html(loading);
-                    $.get('/home/twitterStep2', {
+                    $.get('home/twitterStep2', {
                         key: twitter.key
                     }, function(data) {
                         $('#testTwitter-result').html(data);
@@ -761,7 +761,7 @@ var SICKRAGE = {
                 $('#trakt_blacklist_name').removeClass('warning');
                 $(this).prop('disabled', true);
                 $('#testTrakt-result').html(loading);
-                $.get('/home/testTrakt', {
+                $.get('home/testTrakt', {
                     username: trakt.username,
                     blacklist_name: trakt.trendingBlacklist // eslint-disable-line camelcase
                 }).done(function (data) {
@@ -881,7 +881,7 @@ var SICKRAGE = {
                 $('#pushbullet_api').removeClass('warning');
                 $(this).prop('disabled', true);
                 $('#testPushbullet-result').html(loading);
-                $.get('/home/testPushbullet', {
+                $.get('home/testPushbullet', {
                     api: pushbullet.api
                 }).done(function (data) {
                     $('#testPushbullet-result').html(data);
@@ -903,7 +903,7 @@ var SICKRAGE = {
                     return false;
                 }
 
-                $.get('/home/getPushbulletDevices', {
+                $.get('home/getPushbulletDevices', {
                     api: pushbullet.api
                 }, function (data) {
                     pushbullet.devices = $.parseJSON(data).devices;
@@ -999,13 +999,13 @@ var SICKRAGE = {
             $('#prowl_show').on('notify', loadShowNotifyLists);
 
             $('#email_show_save').on('click', function() {
-                $.post('/home/saveShowNotifyList', {
+                $.post('home/saveShowNotifyList', {
                     show: $('#email_show').val(),
                     emails: $('#email_show_list').val()
                 }, loadShowNotifyLists);
             });
             $('#prowl_show_save').on('click', function() {
-                $.post('/home/saveShowNotifyList', {
+                $.post('home/saveShowNotifyList', {
                     show: $('#prowl_show').val(),
                     prowlAPIs: $('#prowl_show_list').val()
                 }, function() {
@@ -3268,19 +3268,38 @@ var SICKRAGE = {
             };
 
             /*
-             * Add's shows by by indexer and indexer_id with a number of optional parameters
-             * The show can be added as an anime show, by providing the data attribute: data-isanime="1"
+             * Blacklist a show by indexer and indexer_id
+             */
+            $.initBlackListShowById = function() {
+                $(document.body).on('click', 'button[data-blacklist-show]', function(e) {
+                    e.preventDefault();
+
+                    if ($(this).is(':disabled')) {
+                        return false;
+                    }
+
+                    $(this).html('Blacklisted').prop('disabled', true);
+                    $(this).parent().find('button[data-add-show]').prop('disabled', true);
+
+                    $.get('addShows/addShowToBlacklist?indexer_id=' + $(this).attr('data-indexer-id'));
+                    return false;
+                });
+            };
+
+            /*
+             * Adds show by indexer and indexer_id with a number of optional parameters
+             * The show can be added as an anime show by providing the data attribute: data-isanime="1"
              */
             $.initAddShowById = function() {
                 $(document.body).on('click', 'button[data-add-show]', function(e) {
                     e.preventDefault();
 
-                    // We're going to add this show so let's remove the anchor and button desc so it can't be added twice!
                     if ($(this).is(':disabled')) {
                         return false;
                     }
 
                     $(this).html('Added').prop('disabled', true);
+                    $(this).parent().find('button[data-blacklist-show]').prop('disabled', true);
 
                     var anyQualArray = [];
                     var bestQualArray = [];
@@ -3335,7 +3354,7 @@ var SICKRAGE = {
                     });
 
                     $(this).prop('disabled', true);
-                    PNotify({
+                    new PNotify({
                         title: 'Saved Defaults',
                         text: 'Your "add show" defaults have been set to your current selections.',
                         shadow: false
@@ -3672,6 +3691,7 @@ var SICKRAGE = {
             );
 
             $.initAddShowById();
+            $.initBlackListShowById();
             $.initRemoteShowGrid();
         },
 

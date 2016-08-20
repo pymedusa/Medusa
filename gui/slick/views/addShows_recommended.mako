@@ -126,7 +126,7 @@
                                 data-add-show>Add</a>
                             % endif
                             % if trakt_b:
-                                <button href="addShows/addShowToBlacklist?indexer_id=${cur_result.indexer_id}" class="btn btn-xs">Blacklist</a>
+                                <button data-indexer-id="${cur_result.indexer_id}" class="btn btn-xs" data-blacklist-show>Blacklist</a>
                             % endif
                         </div>
                     </div>
