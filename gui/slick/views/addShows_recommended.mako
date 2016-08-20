@@ -39,7 +39,7 @@
                     <br/>
                 </div>
                 <div id="tabs-2" class="existingtabs">
-                    <%include file="/inc_add-show-options.mako"/>
+                    <%include file="/inc_addShowOptions.mako"/>
                 </div>
                 </label>
 
