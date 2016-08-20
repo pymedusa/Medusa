@@ -3707,7 +3707,7 @@ var SICKRAGE = {
 
             $('#traktlistselection').on('change', function(e) {
                 var traktList = e.target.value;
-                window.history.replaceState({}, document.title, '?traktList=' + traktList);
+                window.history.replaceState({}, document.title, 'addShows/trendingShows/?traktList=' + traktList);
                 $('#trendingShows').loadRemoteShows(
                     'addShows/getTrendingShows/?traktList=' + traktList,
                     'Loading trending shows...',
