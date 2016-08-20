@@ -2762,6 +2762,7 @@ var SICKRAGE = {
         },
         restart: function() {
             var currentPid = $('.messages').attr('current-pid');
+            var defaultPage = $('.messages').attr('default-page');
             var checkIsAlive = setInterval(function() {
                 $.get('home/is_alive/', function(data) {
                     if (data.msg.toLowerCase() === 'nope') {
@@ -2777,7 +2778,7 @@ var SICKRAGE = {
                         $('#restart_success').show();
                         $('#refresh_message').show();
                         setTimeout(function() {
-                            window.location = $('.messages').attr('default-page') + '/';
+                            window.location = defaultPage + '/';
                         }, 5000);
                     }
                 }, 'jsonp');
