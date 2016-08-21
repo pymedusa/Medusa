@@ -90,10 +90,8 @@ class PageTemplate(MakoTemplate):
             'newsBadge': '',
             'toolsBadge': '',
             'toolsBadgeClass': '',
-            'base_url': urljoin(rh.request.protocol + '://' + rh.request.host,
-                                sickbeard.WEB_ROOT) +
-                          ('', '/')
-                          [urljoin(rh.request.protocol + '://' + rh.request.host, sickbeard.WEB_ROOT)[-1] not in '/'],
+            'base_url': rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
+            rh.request.headers.get('X-Forwarded-Host', rh.request.host) + sickbeard.WEB_ROOT + '/',
         }
 
         if rh.request.headers['Host'][0] == '[':
