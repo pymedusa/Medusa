@@ -3135,7 +3135,7 @@ var SICKRAGE = {
 
         },
         index: function() {
-            if (isMeta('COMING_EPS_LAYOUT', ['list'])) {
+            if (isMeta('comingEpsLayout', ['list'])) {
                 var sortCodes = {
                     date: 0,
                     show: 2,
