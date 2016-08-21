@@ -21,35 +21,29 @@
 
 from __future__ import unicode_literals
 
+import datetime
 import io
-import locale
 import logging
-from logging import NullHandler
-from logging.handlers import RotatingFileHandler
 import os
 import pkgutil
-import platform
 import re
 import sys
 
-import tornado
-import subliminal
-import traktor
+from inspect import getargspec
+from logging import NullHandler
+from logging.handlers import RotatingFileHandler
 
 from requests.compat import quote
-from six import itervalues, text_type
-from github import Github, InputFileContent  # pylint: disable=import-error
-from github.GithubException import BadCredentialsException, RateLimitExceededException
-
 import sickbeard
 from sickbeard import classes
-
 import sickrage
-from sickrage.helper.encoding import ss, ek
-from sickrage.helper.exceptions import ex
 from sickrage.helper.common import dateTimeFormat
+from sickrage.helper.encoding import ek
+from six import itervalues, text_type
+import subliminal
+import tornado
+import traktor
 
-from inspect import getargspec
 
 ADAPTER_MEMBERS = [attr for attr in dir(logging.LoggerAdapter) if not callable(attr) and not attr.startswith('__')]
 RESERVED_KEYWORDS = getargspec(logging.Logger._log).args[1:]
@@ -69,6 +63,8 @@ LOGGING_LEVELS = {
     'DEBUG': DEBUG,
     'DB': DB,
 }
+
+FORMATTER_PATTERN = '%(asctime)s %(levelname)-8s %(threadName)s :: [%(curhash)s] %(message)s'
 
 LEVEL_STEP = INFO - DEBUG
 
@@ -139,10 +135,11 @@ class UIViewHandler(logging.Handler):
         if level not in (WARNING, ERROR):
             return
 
+        logline = LogLine.from_line(message)
         if level == WARNING:
-            classes.WarningViewer.add(classes.UIError(message))
+            classes.WarningViewer.add(logline)
         elif level == ERROR:
-            classes.ErrorViewer.add(classes.UIError(message))
+            classes.ErrorViewer.add(logline)
 
 
 class CensoredFormatter(logging.Formatter, object):
@@ -186,11 +183,9 @@ class CensoredFormatter(logging.Formatter, object):
         # set of censored items and urlencoded counterparts
         censored = censored | {quote(item) for item in censored}
         # convert set items to unicode and typecast to list
-        censored = list({
-                            item.decode(self.encoding, 'replace')
-                            if not isinstance(item, text_type) else item
-                            for item in censored
-                            })
+        censored = list({item.decode(self.encoding, 'replace')
+                         if not isinstance(item, text_type) else item
+                         for item in censored})
         # sort the list in order of descending length so that entire item is censored
         # e.g. password and password_1 both get censored instead of getting ********_1
         censored.sort(key=len, reverse=True)
@@ -226,7 +221,217 @@ def get_loggers(package):
     return [logging.getLogger(modname) for modname in list_modules(package)]
 
 
-class Logger(object):  # pylint: disable=too-many-instance-attributes
+def read_loglines(log_file=None, traceback_lines=None, modification_time=None):
+    """A generator that returns the lines of all consolidated log files in descending order.
+
+    :param log_file:
+    :type log_file: str or unicode
+    :param traceback_lines: mostly used in recursion call.
+    :type traceback_lines: list of str
+    :param modification_time:
+    :type modification_time: datetime.datetime
+    :return:
+    :rtype: collections.Iterable of LogLine
+    """
+    log_file = log_file or _wrapper.instance.log_file
+    log_files = [log_file] + ['{file}.{index}'.format(file=log_file, index=i) for i in range(1, int(sickbeard.LOG_NR))]
+    traceback_lines = traceback_lines or []
+    for f in log_files:
+        if not ek(os.path.isfile, f):
+            continue
+        if modification_time:
+            log_mtime = ek(os.path.getmtime, f)
+            if log_mtime and log_mtime < log_mtime:
+                continue
+
+        for line in reverse_readlines(f):
+            logline = LogLine.from_line(line)
+            if logline:
+                if traceback_lines:
+                    logline.traceback_lines = list(reversed(traceback_lines))
+                    del traceback_lines[:]
+                yield logline
+            elif len(traceback_lines) > 200:  # Limiting the maximum traceback depth to 200
+                message = '\n'.join(reversed(traceback_lines))
+                del traceback_lines[:]
+                yield LogLine(line, message=message)
+            else:
+                traceback_lines.append(line)
+
+    if traceback_lines:
+        message = '\n'.join(reversed(traceback_lines))
+        yield LogLine(message, message=message)
+
+
+def reverse_readlines(filename, buf_size=512 * 1024, encoding='utf-8'):
+    """A generator that returns the lines of a file in reverse order.
+
+    Thanks to Andomar: http://stackoverflow.com/a/23646049
+
+    :param filename:
+    :type filename: str
+    :param encoding:
+    :type encoding: str
+    :param buf_size:
+    :return:
+    :rtype: collections.Iterable of str
+    """
+    with io.open(filename, 'r', encoding=encoding) as fh:
+        segment = None
+        offset = 0
+        fh.seek(0, os.SEEK_END)
+        file_size = remaining_size = fh.tell()
+        while remaining_size > 0:
+            offset = min(file_size, offset + buf_size)
+            fh.seek(file_size - offset)
+            buf = fh.read(min(remaining_size, buf_size))
+            remaining_size -= buf_size
+            lines = buf.split('\n')
+            # the first line of the buffer is probably not a complete line so
+            # we'll save it and append it to the last line of the next buffer
+            # we read
+            if segment is not None:
+                # if the previous chunk starts right from the beginning of line
+                # do not concact the segment to the last line of new chunk
+                # instead, yield the segment first
+                if buf[-1] is not '\n':
+                    lines[-1] += segment
+                else:
+                    yield segment
+            segment = lines[0]
+            for index in range(len(lines) - 1, 0, -1):
+                if len(lines[index]):
+                    yield lines[index]
+        # Don't yield None if the file was empty
+        if segment is not None:
+            yield segment
+
+
+class LogLine(object):
+    """Represent a log line."""
+
+    # log regular expression: 2016-08-06 15:58:34 ERROR    DAILYSEARCHER :: [d4ea5af] Exception generated in thread DAILYSEARCHER
+    log_re = re.compile(r'^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})\s+'
+                        r'(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})(?:,(?P<microsecond>\d{3}))?\s+'
+                        r'(?P<level_name>[A-Z]+)\s+(?P<thread_name>.+?)(?:-(?P<thread_id>)\d+)?\s+'
+                        r'(?:(?P<extra>.+?)\s+::)?::\s+\[(?P<curhash>[a-f0-9]{7})?\]\s+'
+                        r'(?P<message>.*)$')
+
+    def __init__(self, line, message=None, timestamp=None, level_name=None, thread_name=None,
+                 thread_id=None, extra=None, curhash=None, traceback_lines=None):
+        """Log Line Construtor.
+
+        :param line:
+        :type line: str or unicode
+        :param message:
+        :type message: str or unicode
+        :param timestamp:
+        :type timestamp: datetime.datetime
+        :param level_name:
+        :type level_name: str
+        :param thread_name:
+        :type thread_name: str
+        :param thread_id:
+        :type thread_id: int
+        :param extra:
+        :type extra: str
+        :param curhash:
+        :type curhash: str
+        :param traceback_lines:
+        :type traceback_lines: list of str
+        """
+        self.line = line
+        self.message = message
+        self.timestamp = timestamp
+        self.level_name = level_name
+        self.thread_name = thread_name
+        self.thread_id = thread_id
+        self.extra = extra
+        self.curhash = curhash
+        self.traceback_lines = traceback_lines
+
+    @property
+    def key(self):
+        """Return the key for this logline.
+
+        Important to not duplicate errors in ui view.
+        """
+        return '{extra} {message}'.format(extra=self.extra, message=self.message) if self.extra else self.message
+
+    def is_loglevel_valid(self, min_level=None):
+        """Return true if the log level is valid and supported also taking into consideration min_level if defined.
+
+        :param min_level:
+        :type min_level: int
+        :return:
+        :rtype: bool
+        """
+        return self.level_name and self.level_name in LOGGING_LEVELS and (
+            min_level is None or min_level <= LOGGING_LEVELS[self.level_name])
+
+    def get_context_loglines(self, numberdelta=100, timedelta=datetime.timedelta(seconds=45)):
+        """Return the n log lines before current log line or log lines within the timedelta specified.
+
+        :param numberdelta:
+        :type numberdelta: int
+        :param timedelta:
+        :type timedelta: datetime.timedelta
+        :return:
+        :rtype: list of LogLine
+        """
+        if not self.timestamp:
+            raise ValueError('Log line does not have timestamp: {logline}'.format(logline=str(self)))
+
+        start_timestamp = self.timestamp - timedelta if timedelta else self.timestamp
+
+        result = []
+        found = False
+        for logline in read_loglines(modification_time=start_timestamp):
+            if not found:
+                if logline.timestamp == self.timestamp and logline.message == self.message:
+                    found = True
+                    result.append(logline)
+                continue
+            if logline.timestamp < start_timestamp:
+                break
+
+            result.append(logline)
+            if len(result) >= numberdelta:
+                break
+
+        return reversed(result)
+
+    @staticmethod
+    def from_line(line):
+        """Create a Log Line from a string line.
+
+        :param line:
+        :type line: str
+        :return:
+        :rtype: LogLine or None
+        """
+        lines = line.split('\n')
+        match = LogLine.log_re.match(lines[0])
+        if not match:
+            print(line)
+            return
+
+        g = match.groupdict()
+        return LogLine(line=lines[0], message=g['message'], level_name=g['level_name'], extra=g.get('extra'), curhash=g['curhash'],
+                       thread_name=g['thread_name'], thread_id=int(g['thread_id']) if g['thread_id'] else None, traceback_lines=lines[1:],
+                       timestamp=datetime.datetime(year=int(g['year']), month=int(g['month']), day=int(g['day']),
+                                                   hour=int(g['hour']), minute=int(g['minute']), second=int(g['second'])))
+
+    def __repr__(self):
+        """Object representation."""
+        return "%s(%r)" % (self.__class__, self.__dict__)
+
+    def __str__(self):
+        """String representation."""
+        return '\n'.join([self.line] + (self.traceback_lines or []))
+
+
+class Logger(object):
     """Custom Logger."""
 
     def __init__(self):
@@ -267,13 +472,9 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         logging.getLogger().addHandler(NullHandler())  # nullify root logger
 
         log_filter = ContextFilter()
-        view_log_pattern = '%(threadName)s :: [%(curhash)s] %(message)s'
-        console_log_pattern = '%(asctime)s %(levelname)s::%(threadName)s :: [%(curhash)s] %(message)s'
-        file_log_pattern = '%(asctime)s %(levelname)-8s %(threadName)s :: [%(curhash)s] %(message)s'
-
         ui_handler = UIViewHandler()
         ui_handler.setLevel(INFO)
-        ui_handler.setFormatter(CensoredFormatter(view_log_pattern))
+        ui_handler.setFormatter(CensoredFormatter(FORMATTER_PATTERN))  # using file to have only one regex to extract info
 
         # set custom root logger
         for logger in self.loggers:
@@ -294,7 +495,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         # console log handler
         if self.console_logging:
             console = logging.StreamHandler()
-            console.setFormatter(CensoredFormatter(console_log_pattern, '%H:%M:%S'))
+            console.setFormatter(CensoredFormatter(FORMATTER_PATTERN, dateTimeFormat))
             console.setLevel(log_level)
 
             for logger in self.loggers:
@@ -306,7 +507,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
             rfh = RotatingFileHandler(
                 self.log_file, maxBytes=int(sickbeard.LOG_SIZE * 1048576), backupCount=sickbeard.LOG_NR,
                 encoding='utf-8')
-            rfh.setFormatter(CensoredFormatter(file_log_pattern, dateTimeFormat))
+            rfh.setFormatter(CensoredFormatter(FORMATTER_PATTERN, dateTimeFormat))
             rfh.setLevel(log_level)
 
             for logger in self.loggers:
@@ -365,177 +566,6 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
             sys.exit(error_msg.encode(sickbeard.SYS_ENCODING, 'xmlcharrefreplace'))
         else:
             sys.exit(1)
-
-    def submit_errors(self):  # pylint: disable=too-many-branches,too-many-locals
-        """Submit errors to github."""
-        submitter_result = ''
-        issue_id = None
-
-        if not (sickbeard.GIT_USERNAME and sickbeard.GIT_PASSWORD and
-                sickbeard.DEBUG and len(classes.ErrorViewer.errors) > 0):
-            submitter_result = ('Please set your GitHub username and password in the config and enable debug. '
-                                'Unable to submit issue ticket to GitHub!')
-            return submitter_result, issue_id
-
-        try:
-            from sickbeard.versionChecker import CheckVersion
-            checkversion = CheckVersion()
-            checkversion.check_for_new_version()
-            commits_behind = checkversion.updater.get_num_commits_behind()
-        except Exception:  # pylint: disable=broad-except
-            submitter_result = 'Could not check if your SickRage is updated, unable to submit issue ticket to GitHub!'
-            return submitter_result, issue_id
-
-        if commits_behind is None or commits_behind > 0:
-            submitter_result = ('Please update SickRage, '
-                                'unable to submit issue ticket to GitHub with an outdated version!')
-            return submitter_result, issue_id
-
-        if self.submitter_running:
-            submitter_result = 'Issue submitter is running, please wait for it to complete'
-            return submitter_result, issue_id
-
-        self.submitter_running = True
-
-        gh_org = sickbeard.GIT_ORG
-        gh_repo = sickbeard.GIT_REPO
-
-        git = Github(login_or_token=sickbeard.GIT_USERNAME, password=sickbeard.GIT_PASSWORD, user_agent='SickRage')
-
-        try:
-            # read log file
-            log_data = None
-
-            if ek(os.path.isfile, self.log_file):
-                with io.open(self.log_file, encoding='utf-8') as log_f:
-                    log_data = log_f.readlines()
-
-            for i in range(1, int(sickbeard.LOG_NR)):
-                f_name = '%s.%i' % (self.log_file, i)
-                if ek(os.path.isfile, f_name) and (len(log_data) <= 500):
-                    with io.open(f_name, encoding='utf-8') as log_f:
-                        log_data += log_f.readlines()
-
-            log_data = [line for line in reversed(log_data)]
-
-            # parse and submit errors to issue tracker
-            for cur_error in sorted(classes.ErrorViewer.errors, key=lambda error: error.time, reverse=True)[:500]:
-                try:
-                    title_error = ss(str(cur_error.title))
-                    if not title_error or title_error == 'None':
-                        # Match: SEARCHQUEUE-FORCEDSEARCH-262407 :: [HDTorrents] :: [ea015c6] Error1
-                        # Match: MAIN :: [ea015c6] Error1
-                        # We only need Error title
-                        title_error = re.match(r'^(?:.*)(?:\[[\w]{7}\]\s*)(.*)$', ss(cur_error.message)).group(1)
-
-                    if len(title_error) > 1000:
-                        title_error = title_error[0:1000]
-
-                except Exception as err_msg:  # pylint: disable=broad-except
-                    self.log('Unable to get error title : %s' % ex(err_msg), ERROR)
-                    continue
-
-                gist = None
-                regex = r'^(%s)\s*([A-Z]+)\s*(.*)\s*::\s*(\[[\w]{7}\])\s*(.*)$' % cur_error.time
-                for i, data in enumerate(log_data):
-                    match = re.match(regex, data)
-                    if match:
-                        level = match.group(2)
-                        if LOGGING_LEVELS[level] == ERROR:
-                            paste_data = ''.join(log_data[i:i + 50])
-                            if paste_data:
-                                gist = git.get_user().create_gist(False, {'sickrage.log': InputFileContent(paste_data)})
-                            break
-                    else:
-                        gist = 'No ERROR found'
-
-                try:
-                    locale_name = locale.getdefaultlocale()[1]
-                except Exception:  # pylint: disable=broad-except
-                    locale_name = 'unknown'
-
-                if gist and gist != 'No ERROR found':
-                    log_link = 'Link to Log: %s' % gist.html_url
-                else:
-                    log_link = 'No Log available with ERRORS:'
-
-                msg = [
-                    '### INFO',
-                    'Python Version: **%s**' % sys.version[:120].replace('\n', ''),
-                    'Operating System: **%s**' % platform.platform(),
-                    'Locale: %s' % locale_name,
-                    'Branch: **%s**' % sickbeard.BRANCH,
-                    'Commit: PyMedusa/SickRage@%s' % sickbeard.CUR_COMMIT_HASH,
-                    log_link,
-                    '### ERROR',
-                    '```',
-                    cur_error.message,
-                    '```',
-                    '---',
-                    '_STAFF NOTIFIED_: @pymedusa/support @pymedusa/moderators',
-                ]
-
-                message = '\n'.join(msg)
-                title_error = '[APP SUBMITTED]: %s' % title_error
-                reports = git.get_organization(gh_org).get_repo(gh_repo).get_issues(state='all')
-
-                def is_ascii_error(title):
-                    # [APP SUBMITTED]:
-                    #   'ascii' codec can't encode characters in position 00-00: ordinal not in range(128)
-                    # [APP SUBMITTED]:
-                    #   'charmap' codec can't decode byte 0x00 in position 00: character maps to <undefined>
-                    return re.search(r'.* codec can\'t .*code .* in position .*:', title) is not None
-
-                def is_malformed_error(title):
-                    # [APP SUBMITTED]: not well-formed (invalid token): line 0, column 0
-                    return re.search(r'.* not well-formed \(invalid token\): line .* column .*', title) is not None
-
-                ascii_error = is_ascii_error(title_error)
-                malformed_error = is_malformed_error(title_error)
-
-                issue_found = False
-                for report in reports:
-                    if title_error.rsplit(' :: ')[-1] in report.title or (
-                            malformed_error and is_malformed_error(report.title)) or (
-                            ascii_error and is_ascii_error(report.title)):
-
-                        issue_id = report.number
-                        if not report.raw_data['locked']:
-                            if report.create_comment(message):
-                                submitter_result = 'Commented on existing issue #%s successfully!' % issue_id
-                            else:
-                                submitter_result = 'Failed to comment on found issue #%s!' % issue_id
-                        else:
-                            submitter_result = ('Issue #%s is locked, '
-                                                'check GitHub to find info about the error.' % issue_id)
-
-                        issue_found = True
-                        break
-
-                if not issue_found:
-                    issue = git.get_organization(gh_org).get_repo(gh_repo).create_issue(title_error, message)
-                    if issue:
-                        issue_id = issue.number
-                        submitter_result = 'Your issue ticket #%s was submitted successfully!' % issue_id
-                    else:
-                        submitter_result = 'Failed to create a new issue!'
-
-                if issue_id and cur_error in classes.ErrorViewer.errors:
-                    # clear error from error list
-                    classes.ErrorViewer.errors.remove(cur_error)
-        except BadCredentialsException:
-            submitter_result = 'Please check your Github credentials in Medusa settings. Bad Credentials error'
-            issue_id = None
-        except RateLimitExceededException:
-            submitter_result = 'Please wait before submit new issues. Github Rate Limit Exceeded error'
-            issue_id = None
-        except Exception as e:  # pylint: disable=broad-except
-            submitter_result = 'Exception generated in issue submitter. Error: {0}'.format(ex(e))
-            issue_id = None
-        finally:
-            self.submitter_running = False
-
-        return submitter_result, issue_id
 
 
 class BraceMessage(object):
@@ -647,4 +677,5 @@ standard_logger = logging.getLogger
 # Replaces logging.getLogger with our custom one
 logging.getLogger = custom_get_logger
 
-_globals = sys.modules[__name__] = Wrapper(sys.modules[__name__])  # pylint: disable=invalid-name
+_wrapper = Wrapper(sys.modules[__name__])
+_globals = sys.modules[__name__] = _wrapper  # pylint: disable=invalid-name
