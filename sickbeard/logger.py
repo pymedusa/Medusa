@@ -34,6 +34,7 @@ import sys
 
 import tornado
 import subliminal
+import traktor
 
 from requests.compat import quote
 from six import itervalues, text_type
@@ -236,6 +237,7 @@ class Logger(object):  # pylint: disable=too-many-instance-attributes
         self.loggers.extend(get_loggers(sickbeard))
         self.loggers.extend(get_loggers(subliminal))
         self.loggers.extend(get_loggers(tornado))
+        self.loggers.extend(get_loggers(traktor))
         self.console_logging = False
         self.file_logging = False
         self.debug_logging = False
