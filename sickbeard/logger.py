@@ -264,7 +264,7 @@ def read_loglines(log_file=None, traceback_lines=None, modification_time=None):
         yield LogLine(message, message=message)
 
 
-def reverse_readlines(filename, buf_size=512 * 1024, encoding='utf-8'):
+def reverse_readlines(filename, buf_size=2097152, encoding='utf-8'):
     """A generator that returns the lines of a file in reverse order.
 
     Thanks to Andomar: http://stackoverflow.com/a/23646049
@@ -358,6 +358,11 @@ class LogLine(object):
         Important to not duplicate errors in ui view.
         """
         return '{extra} {message}'.format(extra=self.extra, message=self.message) if self.extra else self.message
+
+    @property
+    def issue_title(self):
+        result = self.traceback_lines[-1] if self.traceback_lines else self.message
+        return result[:1000]
 
     def is_loglevel_valid(self, min_level=None):
         """Return true if the log level is valid and supported also taking into consideration min_level if defined.

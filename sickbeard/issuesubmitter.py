@@ -104,7 +104,8 @@ class IssueSubmitter(object):
         """
         reports = git_repo.get_issues(state='all')
         for report in reports:
-            if logline.message in report.title or any([p.search(report.title) and p.search(logline.message) for p in IssueSubmitter.KNOWN_ISSUES]):
+            if (logline.issue_title in report.title or
+                    any([p.search(report.title) and p.search(logline.issue_title) for p in IssueSubmitter.KNOWN_ISSUES])):
                 return report
 
     def submit_github_issue(self, version_checker):
@@ -139,7 +140,7 @@ class IssueSubmitter(object):
             results = []
             # parse and submit errors to issue tracker
             for logline in ErrorViewer.errors[:500]:
-                title_error = logline.message[:1000]
+                title_error = logline.issue_title
 
                 gist = IssueSubmitter.create_gist(git, logline)
                 message = IssueSubmitter.create_issue_data(logline, log_url=gist.html_url if gist else None)
