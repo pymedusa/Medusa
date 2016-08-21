@@ -414,7 +414,6 @@ class LogLine(object):
         lines = line.split('\n')
         match = LogLine.log_re.match(lines[0])
         if not match:
-            print(line)
             return
 
         g = match.groupdict()
