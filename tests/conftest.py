@@ -1,10 +1,15 @@
 """Configuration for pytest."""
+import logging
+from logging.handlers import RotatingFileHandler
 
 from babelfish.language import Language
 import pytest
 from sickbeard.common import DOWNLOADED, Quality
 from sickbeard.indexers.indexer_config import INDEXER_TVDB
+from sickbeard.logger import ContextFilter, FORMATTER_PATTERN, read_loglines
 from sickbeard.tv import TVEpisode, TVShow
+from sickbeard.versionChecker import CheckVersion
+from sickrage.helper.common import dateTimeFormat
 from subliminal.subtitle import Subtitle
 from subliminal.video import Video
 import yaml
@@ -103,3 +108,57 @@ def create_tvepisode(monkeypatch):
         return _patch_object(monkeypatch, target, **kwargs)
 
     return create
+
+
+@pytest.fixture
+def create_file(tmpdir):
+    def create(filename, lines=None, **kwargs):
+        f = tmpdir.ensure(filename)
+        f.write('\n'.join(lines or []))
+        return str(f)
+
+    return create
+
+
+@pytest.fixture
+def version_checker(monkeypatch):
+    target = CheckVersion()
+    monkeypatch.setattr(target, 'need_update', lambda: False)
+    return target
+
+
+@pytest.fixture
+def commit_hash(monkeypatch):
+    target = 'abcdef0'
+    monkeypatch.setattr('sickbeard.CUR_COMMIT_HASH', target)
+    return target
+
+
+@pytest.fixture
+def logfile(tmpdir):
+    return str(tmpdir.ensure('logfile.log'))
+
+
+@pytest.fixture
+def rotating_file_handler(logfile):
+    handler = RotatingFileHandler(logfile, maxBytes=512 * 1024, backupCount=10, encoding='utf-8')
+    handler.setFormatter(logging.Formatter(FORMATTER_PATTERN, dateTimeFormat))
+    handler.setLevel(logging.DEBUG)
+    return handler
+
+
+@pytest.fixture
+def logger(rotating_file_handler, commit_hash):
+    print('Using commit_hash {}'.format(commit_hash))
+    target = logging.getLogger('testing_logger')
+    target.addFilter(ContextFilter())
+    target.addHandler(rotating_file_handler)
+    target.propagate = False
+    target.setLevel(logging.DEBUG)
+
+    return target
+
+
+@pytest.fixture
+def loglines(logfile):
+    return read_loglines(logfile)

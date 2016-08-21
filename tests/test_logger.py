@@ -1,89 +1,144 @@
 # coding=utf-8
 """Tests for sickbeard.logger.py."""
 
-import logging
-
-from mock.mock import Mock
 import pytest
-from sickbeard.logger import custom_get_logger as get_logger
+
+import sickbeard.logger as sut
 
 
-@pytest.fixture
-def handler_write():
-    return Mock()
+class TestStandardLoggingApi(object):
+    @pytest.mark.parametrize('p', [
+        {  # p0: curly brackets style
+            'message': 'This is an example: {arg1} {arg2}',
+            'args': [],
+            'kwargs': dict(arg1='hello', arg2='world'),
+            'expected': 'This is an example: hello world'
+        },
+        {  # p1: legacy formatter
+            'message': 'This is an example: %s %s',
+            'args': ['hello', 'world'],
+            'kwargs': dict(),
+            'expected': 'This is an example: hello world'
+        },
+        {  # p2: regression test: https://github.com/pymedusa/SickRage/issues/876
+            'message': "{'type': 'episode', 'season': 5}",
+            'args': [],
+            'kwargs': dict(),
+            'expected': "{'type': 'episode', 'season': 5}"
+        },
+    ])
+    def test_logger__various_messages(self, logger, loglines, p):
+        # Given
+        message = p['message']
+        args = p['args']
+        kwargs = p['kwargs']
+
+        # When
+        logger.error(message, *args, **kwargs)
+
+        # Then
+        loglines = list(loglines)
+        assert len(loglines) == 1
+        assert loglines[0].message == p['expected']
+
+    @pytest.mark.parametrize('level', [
+        'debug',
+        'info',
+        'warn',
+        'warning',
+        'error',
+        'exception',
+        'critical',
+        'fatal',
+    ])
+    def test_logger__various_levels(self, logger, level):
+        # Given
+        method = getattr(logger, level)
+
+        # When
+        method('{param} message', param='test')
+
+        # Then
+        # no exception
 
 
-@pytest.fixture
-def handler_error():
-    return Mock()
+def describe_logline(logline):
+    return {
+        'message': logline.message,
+        'timestamp': logline.timestamp,
+        'level_name': logline.level_name,
+        'thread_name': logline.thread_name,
+        'thread_id': logline.thread_id,
+        'extra': logline.extra,
+        'curhash': logline.curhash,
+        'traceback_lines': logline.traceback_lines
+    }
 
 
-@pytest.fixture
-def stream_handler(monkeypatch, handler_write, handler_error):
-    stream_handler = logging.StreamHandler(Mock(write=handler_write))
-    monkeypatch.setattr(stream_handler, 'handleError', handler_error)
-    return stream_handler
-
-
-@pytest.fixture
-def sut(stream_handler):
-    sut = get_logger('sickbeard')
-    sut.addHandler(stream_handler)
-    return sut
-
-
-@pytest.mark.parametrize('p', [
-    {  # p0: curly brackets style
-        'message': 'This is an example: {arg1} {arg2}',
-        'args': [],
-        'kwargs': dict(arg1='hello', arg2='world'),
-        'expected': 'This is an example: hello world'
-    },
-    {  # p1: legacy formatter
-        'message': 'This is an example: %s %s',
-        'args': ['hello', 'world'],
-        'kwargs': dict(),
-        'expected': 'This is an example: hello world'
-    },
-    {  # p2: regression test: https://github.com/pymedusa/SickRage/issues/876
-        'message': "{'type': 'episode', 'season': 5}",
-        'args': [],
-        'kwargs': dict(),
-        'expected': "{'type': 'episode', 'season': 5}"
-    },
-])
-def test_logger__various_messages(sut, handler_write, handler_error, p):
+def test_reverse_readlines(create_file):
     # Given
-    message = p['message']
-    args = p['args']
-    kwargs = p['kwargs']
-    expected = (('%s\n' % p['expected'], ), {})
+    no_lines = 10000
+    line_pattern = 'This is a example of log line with number {n}'
+    filename = create_file(filename='samplefile.log', lines=[line_pattern.format(n=i) for i in range(0, no_lines)])
+    expected = [line_pattern.format(n=no_lines - i - 1) for i in range(0, no_lines)]
 
     # When
-    sut.error(message, *args, **kwargs)
+    actual = list(sut.reverse_readlines(filename, buf_size=1024))
 
     # Then
-    assert not handler_error.called
-    assert handler_write.called
-    assert handler_write.call_args == expected
+    assert expected == actual
 
 
-@pytest.mark.parametrize('level', [
-    'debug',
-    'info',
-    'warn',
-    'warning',
-    'error',
-    'exception',
-    'critical',
-    'fatal',
-])
-def test_logger__various_levels(sut, level):
+def test_read_loglines(logger, commit_hash, logfile):
     # Given
-    method = getattr(sut, level)
+    no_msgs = 200
+    line_pattern = 'This is a example of log line with number {n}'
+    for i in range(0, no_msgs):
+        logger.warning(line_pattern.format(n=i + 1))
 
     # When
-    method('{param} message', param='test')
+    actual = list(sut.read_loglines(logfile))
 
     # Then
-    # no exception
+    assert no_msgs == len(actual)
+    for i, logline in enumerate(actual):
+        assert commit_hash == logline.curhash
+        assert logline.timestamp is not None
+        assert 'WARNING' == logline.level_name
+        assert logline.extra is None
+        assert logline.thread_name is not None
+        assert logline.thread_id is None
+        assert line_pattern.format(n=no_msgs - i) == logline.message
+
+
+def test_read_loglines__with_traceback(logger, commit_hash, logfile):
+    # Given
+    line1 = 'Everything seems good'
+    line2 = 'Still fine'
+    logger.info(line1)
+    logger.debug(line2)
+    try:
+        1 / 0
+    except ZeroDivisionError as e:
+        logger.exception(e.message)
+
+    # When
+    actual = list(sut.read_loglines(logfile))
+
+    # Then
+    assert 3 == len(actual)
+    assert 'integer division or modulo by zero' == actual[0].message
+    assert 'ERROR' == actual[0].level_name
+    assert actual[0].timestamp is not None
+    assert commit_hash == actual[0].curhash
+    assert len(actual[0].traceback_lines) > 3
+    assert 'Traceback (most recent call last):' == actual[0].traceback_lines[0]
+    assert 'ZeroDivisionError: integer division or modulo by zero' == actual[0].traceback_lines[3]
+
+    assert line2 == actual[1].message
+    assert 'DEBUG' == actual[1].level_name
+    assert [] == actual[1].traceback_lines
+
+    assert line1 == actual[2].message
+    assert 'INFO' == actual[2].level_name
+    assert [] == actual[2].traceback_lines
