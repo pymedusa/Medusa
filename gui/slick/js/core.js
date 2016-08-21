@@ -2071,8 +2071,8 @@ var SICKRAGE = {
 
                         var height = 438;
                         var width = 250;
-                        var newTop = ((origTop + poster.height()) / 2) - (height / 2);
-                        var newLeft = ((origLeft + poster.width()) / 2) - (width / 2);
+                        var newTop = (origTop + (poster.height() / 2)) - (height / 2);
+                        var newLeft = (origLeft + (poster.width() / 2)) - (width / 2);
 
                         // Make sure the popup isn't outside the viewport
                         var margin = 5;
