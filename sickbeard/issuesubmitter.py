@@ -124,7 +124,7 @@ class IssueSubmitter(object):
             logger.info(IssueSubmitter.NO_ISSUES)
             return [(IssueSubmitter.NO_ISSUES, None)]
 
-        if version_checker.need_update():
+        if not sickbeard.DEVELOPER and version_checker.need_update():
             logger.warning(IssueSubmitter.UNSUPPORTED_VERSION)
             return [(IssueSubmitter.UNSUPPORTED_VERSION, None)]
 
