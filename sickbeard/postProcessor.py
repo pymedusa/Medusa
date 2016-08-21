@@ -945,6 +945,12 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
         return False
 
+    def flag_kodi_clean_library(self):
+        """Set flag to Clean Kodi's library if Kodi is enabled."""
+        if sickbeard.USE_KODI:
+            self._log(u"Setting to clean Kodi library as we are going to replace file")
+            sickbeard.KODI_LIBRARY_CLEAN_PENDING = True
+
     def process(self):  # pylint: disable=too-many-return-statements, too-many-locals, too-many-branches, too-many-statements
         """
         Post-process a given file
@@ -1021,12 +1027,17 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                     existing_file_status != PostProcessor.DOESNT_EXIST]):
                 if self.is_proper and new_ep_quality == old_ep_quality:
                     self._log(u'New file is a proper/repack, marking it safe to replace')
+                    self.flag_kodi_clean_library()
                 else:
                     _, preferred_qualities = common.Quality.splitQuality(int(show.quality))
                     if new_ep_quality not in preferred_qualities:
                         self._log(u'File exists and new file quality is not in a preferred quality list, '
                                   u'marking it unsafe to replace')
                         return False
+                    else:
+                        self._log(u'File exists and new file quality is in a preferred quality list, '
+                                  u'marking it safe to replace')
+                        self.flag_kodi_clean_library()
 
             # Check if the processed file season is already in our indexer. If not,
             # the file is most probably mislabled/fake and will be skipped.
@@ -1046,6 +1057,9 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
         # if the file is priority then we're going to replace it even if it exists
         else:
+            # Set to clean Kodi if file exists and it is priority_download
+            if existing_file_status != PostProcessor.DOESNT_EXIST:
+                self.flag_kodi_clean_library()
             self._log(u"This download is marked a priority download so I'm going to replace "
                       u"an existing file if I find one")
 
@@ -1061,7 +1075,6 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         for cur_ep in [ep_obj] + ep_obj.related_episodes:
             try:
                 self._delete(cur_ep.location, associated_files=True)
-                sickbeard.KODI_LIBRARY_CLEAN_PENDING = True
                 # clean up any left over folders
                 if cur_ep.location:
                     helpers.delete_empty_folders(ek(os.path.dirname, cur_ep.location), keep_dir=ep_obj.show._location)  # pylint: disable=protected-access
