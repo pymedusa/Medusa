@@ -1703,7 +1703,7 @@ class TVEpisode(TVObject):
                 return episode  # only root episode has related_episodes
 
         except (InvalidNameException, InvalidShowException):
-            logger.log(logger.INFO, u'Cannot create TVEpisode from path {path}'.format(path=filepath))
+            logger.log(u'Cannot create TVEpisode from path {path}'.format(path=filepath), logger.INFO)
 
     @property
     def location(self):
