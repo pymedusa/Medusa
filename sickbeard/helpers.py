@@ -277,7 +277,10 @@ def copyFile(src_file, dest_file):
     except (SpecialFileError, Error) as error:
         logger.warning(u'{error}', error=error)
     except Exception as error:
-        logger.error(u'{error}', error=error)
+        if 'No space left on device' in error:
+            logger.warning(u'{error}', error=error)
+        else:
+            logger.error(u'{error}', error=error)
     else:
         try:
             ek(shutil.copymode, src_file, dest_file)
