@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 
+from datetime import datetime, timedelta
 from mako.filters import html_escape
 from sickbeard import logger, ui
 from sickbeard.classes import ErrorViewer, WarningViewer
@@ -41,6 +42,13 @@ log_name_filters = {
     'TORNADO': 'Tornado',
     'Thread': 'Thread',
     'MAIN': 'Main',
+}
+
+log_periods = {
+    'all': None,
+    'one_day': timedelta(days=1),
+    'three_days': timedelta(days=3),
+    'one_week': timedelta(days=7),
 }
 
 
@@ -127,30 +135,31 @@ class ErrorLogs(WebRoot):
 
         if search_query:
             search_query = search_query.lower()
-            if (not logline.message or search_query not in logline.message) and (not logline.extra or search_query not in logline.extra):
+            if (not logline.message or search_query not in logline.message.lower()) and (
+                    not logline.extra or search_query not in logline.extra.lower()):
                 return False
 
         return not thread_name or thread_name in ('<NONE>', logline.thread_name)
 
-    def viewlog(self, minLevel=logger.INFO, logFilter=None, logSearch=None, maxLines=1000, **kwargs):
+    def viewlog(self, min_level=logger.INFO, log_filter=None, log_search=None, max_lines=1000, log_period='all', **kwargs):
         """View the log given the specified filters."""
-        min_level = int(minLevel)
-        log_filter = logFilter if logFilter in log_name_filters else '<NONE>'
-        log_search = logSearch
-        max_lines = maxLines
+        min_level = int(min_level)
+        log_filter = log_filter if log_filter in log_name_filters else '<NONE>'
 
         t = PageTemplate(rh=self, filename='viewlogs.mako')
 
+        period = log_periods.get(log_period)
+        modification_time = datetime.now() - period if period else None
         data = []
-        for logline in read_loglines():
+        for logline in read_loglines(modification_time=modification_time):
             if ErrorLogs.match_filter(logline, min_level=min_level, thread_name=log_filter, search_query=log_search):
                 data.append(str(logline))
 
             if len(data) >= max_lines:
                 break
 
-        return t.render(header='Log File', title='Logs', topmenu='system', logLines='\n'.join([html_escape(line) for line in data]),
-                        minLevel=min_level, logNameFilters=log_name_filters, logFilter=log_filter, logSearch=log_search,
+        return t.render(header='Log File', title='Logs', topmenu='system', log_lines='\n'.join([html_escape(line) for line in data]),
+                        min_level=min_level, log_name_filters=log_name_filters, log_filter=log_filter, log_search=log_search, log_period=log_period,
                         controller='errorlogs', action='viewlogs')
 
     def submit_errors(self):

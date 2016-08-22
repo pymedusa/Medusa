@@ -6,6 +6,7 @@ import locale
 import logging
 import platform
 import sys
+from datetime import datetime, timedelta
 
 from github import InputFileContent
 from github.GithubException import BadCredentialsException, RateLimitExceededException
@@ -90,7 +91,7 @@ class IssueSubmitter(object):
         :return:
         :rtype: github.Issue.Issue
         """
-        reports = git_repo.get_issues(state='all')
+        reports = git_repo.get_issues(state='all', since=datetime.now() - timedelta(days=90))
         for report in reports:
             if logline.is_title_similar_to(report.title):
                 return report

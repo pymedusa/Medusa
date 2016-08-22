@@ -233,12 +233,14 @@ def read_loglines(log_file=None, traceback_lines=None, modification_time=None):
             continue
         if modification_time:
             log_mtime = ek(os.path.getmtime, f)
-            if log_mtime and log_mtime < log_mtime:
+            if log_mtime and datetime.datetime.fromtimestamp(log_mtime) < modification_time:
                 continue
 
         for line in reverse_readlines(f):
             logline = LogLine.from_line(line)
             if logline:
+                if logline.timestamp and modification_time and logline.timestamp < modification_time:
+                    return
                 if traceback_lines:
                     logline.traceback_lines = list(reversed(traceback_lines))
                     del traceback_lines[:]
