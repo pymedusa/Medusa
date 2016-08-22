@@ -28,11 +28,10 @@
         </div>
         <div id="content_configure_show_options">
             <div class="field-pair">
-
                 <label class="clearfix" for="configure_show_options">
                 <ul>
-                    <li><a href="#tabs-1">Manage Directories</a></li>
-                    <li><a href="#tabs-2">Customize Options</a></li>
+                    <li><a href="${base_url + 'addShows/' + realpage + '/'}#tabs-1">Manage Directories</a></li>
+                    <li><a href="${base_url + 'addShows/' + realpage + '/'}#tabs-2">Customize Options</a></li>
                 </ul>
                 <div id="tabs-1" class="existingtabs">
                     <%include file="/inc_rootDirs.mako"/>
@@ -86,7 +85,7 @@
         % else:
             <% removed_from_medusa = context.get('removed_from_medusa') %>
         % endif
- 
+
         % for cur_result in recommended_shows:
 
             <% cur_rating = 0 %>

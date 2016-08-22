@@ -92,6 +92,7 @@ class PageTemplate(MakoTemplate):
             'toolsBadgeClass': '',
             'base_url': rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
             rh.request.headers.get('X-Forwarded-Host', rh.request.host) + sickbeard.WEB_ROOT + '/',
+            'realpage': '',
         }
 
         if rh.request.headers['Host'][0] == '[':
