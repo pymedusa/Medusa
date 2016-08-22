@@ -29,11 +29,9 @@
         <form action="home/editShow" method="post">
         <div id="config-components">
             <ul>
-                ## @TODO: This needs to be fixed, this is a hack to to jQuery-ui tabs from reloading as a base href causes
-                ##        it to think the tabs are external links
-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group1">Main</a></li>');</script>
-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group2">Format</a></li>');</script>
-                <script>document.write('<li><a href="' + document.location.href + '#core-component-group3">Advanced</a></li>');</script>
+                <li><a href="${base_url}home/editShow?show=${show.indexerid}#core-component-group1">Main</a></li>
+                <li><a href="${base_url}home/editShow?show=${show.indexerid}#core-component-group2">Format</a></li>
+                <li><a href="${base_url}home/editShow?show=${show.indexerid}#core-component-group3">Advanced</a></li>
             </ul>
             <div id="core-component-group1">
                 <div class="component-group">

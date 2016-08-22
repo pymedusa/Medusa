@@ -23,9 +23,7 @@
         <form action="manage/massEditSubmit" method="post">
             <input type="hidden" name="toEdit" value="${showList}" />
             <div id="config-components">
-                ## @TODO: This needs to be fixed, this is a hack to to jQuery-ui tabs from reloading as a base href causes
-                ##        it to think the tabs are external links
-                <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Main</a></li></ul>');</script>
+                <ul><li><a href="${base_url}manage/#core-component-group1">Main</a></li></ul>');</script>
                 <div id="core-component-group1">
                     <div class="component-group">
                         <h3>Main Settings</h3>

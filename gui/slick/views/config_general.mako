@@ -27,11 +27,9 @@
         <form id="configForm" action="config/general/saveGeneral" method="post">
             <div id="config-components">
                 <ul>
-                    ## @TODO: This needs to be fixed, this is a hack to to jQuery-ui tabs from reloading as a base href causes
-                    ##        it to think the tabs are external links
-                    <script>document.write('<li><a href="' + document.location.href + '#misc">Misc</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#interface">Interface</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#advanced-settings">Advanced Settings</a></li>');</script>
+                    <li><a href="${base_url}config/general/#misc">Misc</a></li>
+                    <li><a href="${base_url}config/general/#interface">Interface</a></li>
+                    <li><a href="${base_url}config/general/#advanced-settings">Advanced Settings</a></li>
                 </ul>
                 <div id="misc">
                         <div class="component-group-desc">
