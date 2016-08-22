@@ -276,7 +276,7 @@ def copyFile(src_file, dest_file):
         ek(shutil.copyfile, src_file, dest_file)
     except (SpecialFileError, Error) as error:
         logger.warning(u'{error}', error=error)
-    except Exception as error:
+    except OSError as error:
         if 'No space left on device' in error:
             logger.warning(u'{error}', error=error)
         else:
@@ -530,6 +530,9 @@ def chmodAsParent(child_path):
         return
 
     child_path = ek(os.path.join, parent_path, ek(os.path.basename, child_path))
+
+    if not ek(os.path.exists, child_path):
+        return
 
     parent_path_stat = ek(os.stat, parent_path)
     parent_mode = stat.S_IMODE(parent_path_stat[stat.ST_MODE])
