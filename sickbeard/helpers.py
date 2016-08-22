@@ -1568,6 +1568,7 @@ def get_broken_providers():
     url = 'https://cdn.pymedusa.com/providers/broken_providers.json'
     response = getURL(url, session=make_session(), returns='json')
     if not response:
-        logger.debug('Unable to update broken providers')
+        logger.warning('Unable to update broken providers. You may have provider errors if a broken provider is enabled')
         return []
+    logger.info('Broken providers found: {0}'.format(response))
     return response
