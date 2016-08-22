@@ -121,11 +121,11 @@ class TraktApi(object):
             log.warning(u'Timeout connecting to Trakt. Try to increase timeout value in Trakt settings')
             raise TimeoutException(u'Timeout connecting to Trakt. Try to increase timeout value in Trakt settings')
         except TraktConnectionException:
-            log.error(u'Could not connect to Trakt.')
-            raise TraktConnectionException()
+            log.warning(u'Could not connect to Trakt.')
+            raise TraktConnectionException(u'Could not connect to Trakt.')
         except TraktTooManyRedirects:
-            log.error(u'Too many redirections while connection to Trakt.')
-            raise TraktTooManyRedirects()
+            log.warning(u'Too many redirections while connection to Trakt.')
+            raise TraktTooManyRedirects(u'Too many redirections while connection to Trakt.')
         except requests.RequestException as e:
             code = getattr(e.response, 'status_code', None)
             if code == 502:
@@ -149,8 +149,12 @@ class TraktApi(object):
                 log.error(u'Trakt error (410) Expired - the tokens have expired, restart the process: %s', url + path)
                 raise TokenExpiredException(u'Trakt error (410) Expired - the tokens have expired, restart the process: %s', url + path)
             else:
-                log.error(u'Unknown Trakt request exception. Code error: %s', code)
-                raise
+                if code:
+                    log.error(u'Unknown Trakt request exception. Code error: %s', code)
+                    raise TraktException(u'Unknown Trakt request exception. Code error: %s', code)
+                else:
+                    log.warning(u'Could not connect to Trakt. No http status code')
+                    raise TraktException(u'Could not connect to Trakt. No http status code')
 
         # check and confirm trakt call did not fail
         if isinstance(resp, dict) and resp.get('status', False) == 'failure':
