@@ -310,7 +310,7 @@ class HomeAddShows(Home):
             removed_from_medusa = None
 
         return t.render(trakt_blacklist=trakt_blacklist, recommended_shows=recommended_shows, removed_from_medusa=removed_from_medusa,
-                        exception=e, enable_anime_options=False, blacklist=[], whitelist=[])
+                        exception=e, enable_anime_options=False, blacklist=[], whitelist=[], realpage="getTrendingShows")
 
     def popularShows(self):
         """
@@ -328,7 +328,7 @@ class HomeAddShows(Home):
         return t.render(title="Popular Shows", header="Popular Shows",
                         recommended_shows=recommended_shows, exception=e, groups=[],
                         topmenu="home", enable_anime_options=True, blacklist=[], whitelist=[],
-                        controller="addShows", action="recommendedShows")
+                        controller="addShows", action="recommendedShows", realpage="popularShows")
 
     def popularAnime(self, list_type=REQUEST_HOT):
         """
@@ -346,7 +346,7 @@ class HomeAddShows(Home):
         return t.render(title="Popular Anime Shows", header="Popular Anime Shows",
                         recommended_shows=recommended_shows, exception=e, groups=[],
                         topmenu="home", enable_anime_options=True, blacklist=[], whitelist=[],
-                        controller="addShows", action="recommendedShows")
+                        controller="addShows", action="recommendedShows", realpage="popularAnime")
 
     def addShowToBlacklist(self, indexer_id):
         # URL parameters
