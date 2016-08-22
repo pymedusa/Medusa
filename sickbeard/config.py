@@ -610,6 +610,7 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
     if privacy_level >= censor_level or (cfg_name, item_name) in iteritems(logger.censored_items):
         if not item_name.endswith('custom_url'):
             logger.censored_items[cfg_name, item_name] = my_val
+            logger.rebuild_censored_list()
 
     if not silent:
         logger.log(item_name + " -> " + my_val, logger.DEBUG)

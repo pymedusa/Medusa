@@ -3,10 +3,14 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 from babelfish.language import Language
+from github.MainClass import Github
+from github.Organization import Organization
+from github.Repository import Repository
+from mock.mock import Mock
 import pytest
 from sickbeard.common import DOWNLOADED, Quality
 from sickbeard.indexers.indexer_config import INDEXER_TVDB
-from sickbeard.logger import ContextFilter, FORMATTER_PATTERN, read_loglines
+from sickbeard.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, read_loglines
 from sickbeard.tv import TVEpisode, TVShow
 from sickbeard.versionChecker import CheckVersion
 from sickrage.helper.common import dateTimeFormat
@@ -142,7 +146,7 @@ def logfile(tmpdir):
 @pytest.fixture
 def rotating_file_handler(logfile):
     handler = RotatingFileHandler(logfile, maxBytes=512 * 1024, backupCount=10, encoding='utf-8')
-    handler.setFormatter(logging.Formatter(FORMATTER_PATTERN, dateTimeFormat))
+    handler.setFormatter(CensoredFormatter(FORMATTER_PATTERN, dateTimeFormat))
     handler.setLevel(logging.DEBUG)
     return handler
 
@@ -162,3 +166,17 @@ def logger(rotating_file_handler, commit_hash):
 @pytest.fixture
 def loglines(logfile):
     return read_loglines(logfile)
+
+
+@pytest.fixture
+def github_organization(monkeypatch):
+    target = Organization(Mock(), Mock(), dict(), True)
+    monkeypatch.setattr(Github, 'get_organization', lambda m, org: target)
+    return target
+
+
+@pytest.fixture
+def github_repo(monkeypatch, github_organization):
+    target = Repository(Mock(), Mock(), dict(), True)
+    monkeypatch.setattr(github_organization, 'get_repo', lambda repo: target)
+    return target

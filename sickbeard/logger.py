@@ -22,6 +22,7 @@
 from __future__ import unicode_literals
 
 import datetime
+import difflib
 import io
 import logging
 import os
@@ -45,10 +46,6 @@ import tornado
 import traktor
 
 
-ADAPTER_MEMBERS = {attr: attr for attr in dir(logging.LoggerAdapter) if not callable(attr) and not attr.startswith('__')}
-ADAPTER_MEMBERS.update({'warn': 'warning', 'fatal': 'critical'})
-RESERVED_KEYWORDS = getargspec(logging.Logger._log).args[1:]
-
 # log levels
 CRITICAL = logging.CRITICAL
 ERROR = logging.ERROR
@@ -67,31 +64,43 @@ LOGGING_LEVELS = {
 
 FORMATTER_PATTERN = '%(asctime)s %(levelname)-8s %(threadName)s :: [%(curhash)s] %(message)s'
 
-LEVEL_STEP = INFO - DEBUG
+censored_items = {}
+censored = []
 
-SSL_ERRORS = {
-    r'error \[Errno \d+\] _ssl.c:\d+: error:\d+\s*:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert internal error',
-    r'error \[SSL: SSLV3_ALERT_HANDSHAKE_FAILURE\] sslv3 alert handshake failure \(_ssl\.c:\d+\)',
-}
 
-SSL_ERRORS_WIKI_URL = 'https://git.io/vVaIj'
-SSL_ERROR_HELP_MSG = 'See: {0}'.format(SSL_ERRORS_WIKI_URL)
+def rebuild_censored_list():
+    """Rebuild the censored list."""
+    # set of censored items
+    results = {value for value in itervalues(censored_items) if value}
+    # set of censored items and urlencoded counterparts
+    results = results | {quote(item) for item in results}
+    # convert set items to unicode and typecast to list
+    results = list({item.decode('utf-8', 'replace')
+                    if not isinstance(item, text_type) else item for item in results})
+    # sort the list in order of descending length so that entire item is censored
+    # e.g. password and password_1 both get censored instead of getting ********_1
+    results.sort(key=len, reverse=True)
 
-censored_items = {}  # pylint: disable=invalid-name
-
-level_mapping = {
-    'subliminal': LEVEL_STEP,
-    'subliminal.providers.addic7ed': 2 * LEVEL_STEP,
-    'subliminal.providers.itasa': 2 * LEVEL_STEP,
-    'subliminal.providers.tvsubtitles': 2 * LEVEL_STEP,
-    'subliminal.refiners.omdb': 2 * LEVEL_STEP,
-    'subliminal.refiners.metadata': 2 * LEVEL_STEP,
-    'subliminal.refiners.tvdb': 2 * LEVEL_STEP,
-}
+    # replace
+    censored[:] = results
 
 
 class ContextFilter(logging.Filter):
     """This is a filter which injects contextual information into the log, in our case: commit hash."""
+
+    # level step
+    level_step = INFO - DEBUG
+
+    # level mapping to decrease library log levels
+    level_mapping = {
+        'subliminal': level_step,
+        'subliminal.providers.addic7ed': 2 * level_step,
+        'subliminal.providers.itasa': 2 * level_step,
+        'subliminal.providers.tvsubtitles': 2 * level_step,
+        'subliminal.refiners.omdb': 2 * level_step,
+        'subliminal.refiners.metadata': 2 * level_step,
+        'subliminal.refiners.tvdb': 2 * level_step,
+    }
 
     def filter(self, record):
         """Filter to add commit hash to log record, adjust log level and to add exception traceback for errors.
@@ -106,7 +115,7 @@ class ContextFilter(logging.Filter):
 
         fullname = record.name
         basename = fullname.split('.')[0]
-        decrease = level_mapping.get(fullname) or level_mapping.get(basename) or 0
+        decrease = self.level_mapping.get(fullname) or self.level_mapping.get(basename) or 0
         level = max(DEBUG, record.levelno - decrease)
         if record.levelno != level:
             record.levelno = level
@@ -120,31 +129,18 @@ class ContextFilter(logging.Filter):
         return True
 
 
-class UIViewHandler(logging.Handler):
-    """Log Handler to add errors and warnings to UI viewer."""
-
-    def __init__(self):
-        """Default constructor."""
-        super(UIViewHandler, self).__init__(WARNING)
-
-    def emit(self, record):
-        """Add errors and warnings to the UI viewer."""
-        # SSL errors might change the record.levelno to WARNING
-        message = self.format(record)
-
-        level = record.levelno
-        if level not in (WARNING, ERROR):
-            return
-
-        logline = LogLine.from_line(message)
-        if level == WARNING:
-            classes.WarningViewer.add(logline)
-        elif level == ERROR:
-            classes.ErrorViewer.add(logline)
-
-
 class CensoredFormatter(logging.Formatter, object):
     """Censor information such as API keys, user names, and passwords from the Log."""
+
+    ssl_errors = {
+        re.compile(r'error \[Errno \d+\] _ssl.c:\d+: error:\d+\s*:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert internal error'),
+        re.compile(r'error \[SSL: SSLV3_ALERT_HANDSHAKE_FAILURE\] sslv3 alert handshake failure \(_ssl\.c:\d+\)')
+    }
+
+    absurd_re = re.compile(r'[\d\w]')
+
+    # Needed because Newznab apikey isn't stored as key=value in a section.
+    apikey_re = re.compile(r'(?P<before>[&?]r|[&?]apikey|[&?]api_key)(?:=|%3D)([^&]*)(?P<after>[&\w]?)', re.IGNORECASE)
 
     def __init__(self, fmt=None, datefmt=None, encoding='utf-8'):
         """Constructor."""
@@ -161,41 +157,36 @@ class CensoredFormatter(logging.Formatter, object):
         """
         privacy_level = sickbeard.common.privacy_levels[sickbeard.PRIVACY_LEVEL]
         if not privacy_level:
-            return super(CensoredFormatter, self).format(record)
+            msg = super(CensoredFormatter, self).format(record)
         elif privacy_level == sickbeard.common.privacy_levels['absurd']:
-            return re.sub(r'[\d\w]', '*', super(CensoredFormatter, self).format(record))
+            msg = self.absurd_re.sub('*', super(CensoredFormatter, self).format(record))
         else:
             msg = super(CensoredFormatter, self).format(record)
+            if not isinstance(msg, text_type):
+                msg = msg.decode(self.encoding, 'replace')  # Convert to unicode
 
-        if not isinstance(msg, text_type):
-            msg = msg.decode(self.encoding, 'replace')  # Convert to unicode
+            # Change the SSL error to a warning with a link to information about how to fix it.
+            # Check for u'error [SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] sslv3 alert handshake failure (_ssl.c:590)'
+            for ssl_error in self.ssl_errors:
+                if ssl_error.findall(msg):
+                    record.levelno = WARNING
+                    record.levelname = logging.getLevelName(record.levelno)
+                    msg = super(CensoredFormatter, self).format(record)
+                    msg = ssl_error.sub('See: https://git.io/vVaIj', msg)
 
-        # Change the SSL error to a warning with a link to information about how to fix it.
-        # Check for u'error [SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] sslv3 alert handshake failure (_ssl.c:590)'
-        for ssl_error in SSL_ERRORS:
-            if re.findall(ssl_error, msg):
-                record.levelno = WARNING
-                record.levelname = logging.getLevelName(record.levelno)
-                msg = super(CensoredFormatter, self).format(record)
-                msg = re.sub(ssl_error, SSL_ERROR_HELP_MSG, msg)
+            for item in censored:
+                msg = msg.replace(item, '**********')  # must not give any hint about the length
 
-        # set of censored items
-        censored = {value for value in itervalues(censored_items) if value}
-        # set of censored items and urlencoded counterparts
-        censored = censored | {quote(item) for item in censored}
-        # convert set items to unicode and typecast to list
-        censored = list({item.decode(self.encoding, 'replace')
-                         if not isinstance(item, text_type) else item
-                         for item in censored})
-        # sort the list in order of descending length so that entire item is censored
-        # e.g. password and password_1 both get censored instead of getting ********_1
-        censored.sort(key=len, reverse=True)
+            msg = self.apikey_re.sub(r'\g<before>=**********\g<after>', msg)
 
-        for item in censored:
-            msg = msg.replace(item, len(item) * '*')
+        level = record.levelno
+        if level in (WARNING, ERROR):
+            logline = LogLine.from_line(msg)
+            if level == WARNING:
+                classes.WarningViewer.add(logline)
+            elif level == ERROR:
+                classes.ErrorViewer.add(logline)
 
-        # Needed because Newznab apikey isn't stored as key=value in a section.
-        msg = re.sub(r'([&?]r|[&?]apikey|[&?]api_key)(?:=|%3D)[^&]*([&\w]?)', r'\1=**********\2', msg, re.I)
         return msg
 
 
@@ -365,6 +356,16 @@ class LogLine(object):
         result = self.traceback_lines[-1] if self.traceback_lines else self.message
         return result[:1000]
 
+    def is_title_similar_to(self, title):
+        """Return wheter the logline title is similar to.
+
+        :param title:
+        :type title: str
+        :return:
+        :rtype: bool
+        """
+        return difflib.SequenceMatcher(None, self.issue_title, title).ratio() >= 0.9
+
     def is_loglevel_valid(self, min_level=None):
         """Return true if the log level is valid and supported also taking into consideration min_level if defined.
 
@@ -478,14 +479,10 @@ class Logger(object):
         logging.getLogger().addHandler(NullHandler())  # nullify root logger
 
         log_filter = ContextFilter()
-        ui_handler = UIViewHandler()
-        ui_handler.setLevel(INFO)
-        ui_handler.setFormatter(CensoredFormatter(FORMATTER_PATTERN))  # using file to have only one regex to extract info
 
         # set custom root logger
         for logger in self.loggers:
             logger.addFilter(log_filter)
-            logger.addHandler(ui_handler)
 
             if logger is not self.logger:
                 logger.root = self.logger
@@ -602,6 +599,10 @@ class BraceMessage(object):
 class StyleAdapter(logging.LoggerAdapter):
     """Logger Adapter with new string format style."""
 
+    adapter_members = {attr: attr for attr in dir(logging.LoggerAdapter) if not callable(attr) and not attr.startswith('__')}
+    adapter_members.update({'warn': 'warning', 'fatal': 'critical'})
+    reserved_keywords = getargspec(logging.Logger._log).args[1:]
+
     def __init__(self, target_logger, extra=None):
         """Constructor.
 
@@ -619,10 +620,10 @@ class StyleAdapter(logging.LoggerAdapter):
         :type name: str
         :return:
         """
-        if name not in ADAPTER_MEMBERS:
+        if name not in self.adapter_members:
             return getattr(self.logger, name)
 
-        return getattr(self, ADAPTER_MEMBERS[name])
+        return getattr(self, self.adapter_members[name])
 
     def process(self, msg, kwargs):
         """Enhance default process to use BraceMessage and remove unsupported keyword args for the actual logger method.
@@ -631,7 +632,7 @@ class StyleAdapter(logging.LoggerAdapter):
         :param kwargs:
         :return:
         """
-        return BraceMessage(msg, (), kwargs), {k: kwargs[k] for k in RESERVED_KEYWORDS if k in kwargs}
+        return BraceMessage(msg, (), kwargs), {k: kwargs[k] for k in self.reserved_keywords if k in kwargs}
 
 
 class Wrapper(object):

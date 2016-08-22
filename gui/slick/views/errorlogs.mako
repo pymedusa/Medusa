@@ -25,8 +25,8 @@ pre {
 <div class="align-left">
 <pre>
 % if errors:
-% for curError in errors[:500]:
-${curError.timestamp} ${curError.message}
+% for logline in errors[:500]:
+${logline}
 % endfor
 % else:
 There are no events to display.

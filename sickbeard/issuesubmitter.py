@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import locale
 import logging
 import platform
-import re
 import sys
 
 from github import InputFileContent
@@ -27,17 +26,6 @@ class IssueSubmitter(object):
     BAD_CREDENTIALS = 'Please check your Github credentials in Medusa settings. Bad Credentials error'
     RATE_LIMIT = 'Please wait before submit new issues. Github Rate Limit Exceeded error'
     UNABLE_CREATE_ISSUE = 'Failed to create a new issue!'
-
-    KNOWN_ISSUES = {
-        # [APP SUBMITTED]:
-        #   'ascii' codec can't encode characters in position 00-00: ordinal not in range(128)
-        # [APP SUBMITTED]:
-        #   'charmap' codec can't decode byte 0x00 in position 00: character maps to <undefined>
-        re.compile(r'.* codec can\'t .*code .* in position .*:'),
-
-        # [APP SUBMITTED]: not well-formed (invalid token): line 0, column 0
-        re.compile(r'.* not well-formed \(invalid token\): line .* column .*'),
-    }
 
     def __init__(self):
         """Default constructor."""
@@ -104,8 +92,7 @@ class IssueSubmitter(object):
         """
         reports = git_repo.get_issues(state='all')
         for report in reports:
-            if (logline.issue_title in report.title or
-                    any([p.search(report.title) and p.search(logline.issue_title) for p in IssueSubmitter.KNOWN_ISSUES])):
+            if logline.is_title_similar_to(report.title):
                 return report
 
     def submit_github_issue(self, version_checker):
@@ -124,7 +111,7 @@ class IssueSubmitter(object):
             logger.info(IssueSubmitter.NO_ISSUES)
             return [(IssueSubmitter.NO_ISSUES, None)]
 
-        if version_checker.need_update():
+        if not sickbeard.DEVELOPER and version_checker.need_update():
             logger.warning(IssueSubmitter.UNSUPPORTED_VERSION)
             return [(IssueSubmitter.UNSUPPORTED_VERSION, None)]
 
@@ -140,8 +127,6 @@ class IssueSubmitter(object):
             results = []
             # parse and submit errors to issue tracker
             for logline in ErrorViewer.errors[:500]:
-                title_error = logline.issue_title
-
                 gist = IssueSubmitter.create_gist(git, logline)
                 message = IssueSubmitter.create_issue_data(logline, log_url=gist.html_url if gist else None)
                 similar_issue = IssueSubmitter.find_similar_issue(git_repo, logline)
@@ -159,7 +144,7 @@ class IssueSubmitter(object):
                         submitter_result = 'Failed to comment on found issue #{number}!'.format(number=similar_issue.number)
                         logger.warning(submitter_result)
                 else:
-                    issue = git_repo.create_issue(title_error, message)
+                    issue = git_repo.create_issue(logline.issue_title, message)
                     if issue:
                         issue_id = issue.number
                         submitter_result = 'Your issue ticket #{number} was submitted successfully!'.format(number=issue_id)
