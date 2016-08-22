@@ -22,7 +22,6 @@ class BaseRequestHandler(RequestHandler):
             auth_header = self.request.headers.get('Authorization')
             auth_decoded = base64.decodestring(auth_header[6:])
             api_username, api_password = auth_decoded.split(':', 2)
-            api_key = api_username
 
         if (web_username != api_username and web_password != api_password) and (sickbeard.API_KEY != api_key):
             self.api_finish(status=401, error='Invalid API key')
