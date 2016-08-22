@@ -19,8 +19,8 @@
             <form id="addShowForm" method="post" action="addShows/addNewShow" accept-charset="utf-8">
                 <div id="tabs">
                     <ul>
-                        <li><a href="#tabs-1">Manage Directories</a></li>
-                        <li><a href="#tabs-2">Customize Options</a></li>
+                        <li><a href="${base_url}addShows/existingShows/#tabs-1">Manage Directories</a></li>
+                        <li><a href="${base_url}addShows/existingShows/#tabs-2">Customize Options</a></li>
                     </ul>
                     <div id="tabs-1" class="existingtabs">
                         <%include file="/inc_rootDirs.mako"/>

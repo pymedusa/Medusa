@@ -11,10 +11,8 @@
             <form id="configForm" action="config/anime/saveAnime" method="post">
                 <div id="config-components">
                     <ul>
-                        ## @TODO: This needs to be fixed, this is a hack to to jQuery-ui tabs from reloading as a base href causes
-                        ##        it to think the tabs are external links
-                        <script>document.write('<li><a href="' + document.location.href + '#animedb-settings">AnimeDB Settings</a></li>');</script>
-                        <script>document.write('<li><a href="' + document.location.href + '#anime-look-feel">Look &amp; Feel</a></li>');</script>
+                        <li><a href="${base_url}config/anime/#animedb-settings">AnimeDB Settings</a></li>
+                        <li><a href="${base_url}config/anime/#anime-look-feel">Look &amp; Feel</a></li>
                     </ul>
                     <div id="animedb-settings" class="tab-pane active component-group">
                         <div class="component-group-desc">

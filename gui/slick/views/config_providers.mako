@@ -8,6 +8,7 @@
 <script type="text/javascript" src="js/config-providers.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
+    // @TODO: This needs to be moved to an API function
     % if sickbeard.USE_NZBS:
         var show_nzb_providers = ${("false", "true")[bool(sickbeard.USE_NZBS)]};
         % for curNewznabProvider in sickbeard.newznabProviderList:
@@ -34,15 +35,13 @@ $('#config-components').tabs();
         <form id="configForm" action="config/providers/saveProviders" method="post">
             <div id="config-components">
                 <ul>
-                    ## @TODO: This needs to be fixed, this is a hack to to jQuery-ui tabs from reloading as a base href causes
-                    ##        it to think the tabs are external links
-                    <script>document.write('<li><a href="' + document.location.href + '#provider-priorities">Provider Priorities</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#provider-options">Provider Options</a></li>');</script>
+                    <li><a href="${base_url}config/providers/#provider-priorities">Provider Priorities</a></li>
+                    <li><a href="${base_url}config/providers/#provider-options">Provider Options</a></li>
                   % if sickbeard.USE_NZBS:
-                    <script>document.write('<li><a href="' + document.location.href + '#custom-newznab">Configure Custom Newznab Providers</a></li>');</script>
+                    <li><a href="${base_url}config/providers/#custom-newznab">Configure Custom Newznab Providers</a></li>
                   % endif
                   % if sickbeard.USE_TORRENTS:
-                    <script>document.write('<li><a href="' + document.location.href + '#custom-torrent">Configure Custom Torrent Providers</a></li>');</script>
+                    <li><a href="${base_url}config/providers/#custom-torrent">Configure Custom Torrent Providers</a></li>
                   % endif
                 </ul>
                 <div id="provider-priorities" class="component-group" style='min-height: 550px;'>

@@ -25,10 +25,8 @@
         <form name="configForm" method="post" action="config/backuprestore">
             <div id="config-components">
                 <ul>
-                    ## @TODO: This needs to be fixed, this is a hack to to jQuery-ui tabs from reloading as a base href causes
-                    ##        it to think the tabs are external links
-                    <script>document.write('<li><a href="' + document.location.href + '#backup">Backup</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#restore">Restore</a></li>');</script>
+                    <li><a href="${base_url}config/backuprestore/#backup">Backup</a></li>
+                    <li><a href="${base_url}config/backuprestore/#backup">Restore</a></li>
                 </ul>
                 <div id="backup" class="component-group clearfix">
                     <div class="component-group-desc">
