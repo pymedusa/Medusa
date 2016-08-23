@@ -81,20 +81,27 @@ class IssueSubmitter(object):
         ])
 
     @staticmethod
-    def find_similar_issue(git_repo, logline):
-        """Find a similar issue in GitHub repo.
+    def find_similar_issues(git_repo, loglines):
+        """Find similar issues in GitHub repo.
 
         :param git_repo:
         :type git_repo: github.Repository.Repository
-        :param logline:
-        :type logline: sickbeard.logger.LogLine
+        :param loglines:
+        :type loglines: list of sickbeard.logger.LogLine
         :return:
-        :rtype: github.Issue.Issue
+        :rtype: dict(str, github.Issue.Issue)
         """
-        reports = git_repo.get_issues(state='all', since=datetime.now() - timedelta(days=90))
+        results = dict()
+        reports = git_repo.get_issues(state='all', since=datetime.now() - timedelta(days=180))
         for report in reports:
-            if logline.is_title_similar_to(report.title):
-                return report
+            for logline in loglines:
+                if logline.is_title_similar_to(report.title):
+                    results[logline.key] = report
+
+            if len(results) >= len(loglines):
+                break
+
+        return results
 
     def submit_github_issue(self, version_checker):
         """Submit errors to github.
@@ -126,11 +133,13 @@ class IssueSubmitter(object):
             git_repo = git.get_organization(sickbeard.GIT_ORG).get_repo(sickbeard.GIT_REPO)
 
             results = []
+            loglines = ErrorViewer.errors[:500]
+            similar_issues = IssueSubmitter.find_similar_issues(git_repo, loglines)
             # parse and submit errors to issue tracker
-            for logline in ErrorViewer.errors[:500]:
+            for logline in loglines:
                 gist = IssueSubmitter.create_gist(git, logline)
                 message = IssueSubmitter.create_issue_data(logline, log_url=gist.html_url if gist else None)
-                similar_issue = IssueSubmitter.find_similar_issue(git_repo, logline)
+                similar_issue = similar_issues[logline.key]
                 issue_id = None
                 if similar_issue:
                     if similar_issue.raw_data['locked']:
