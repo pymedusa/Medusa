@@ -129,6 +129,7 @@ def change_LOG_DIR(log_dir, web_log):
 
     if sickbeard.WEB_LOG != web_log_value or log_dir_changed is True:
         sickbeard.WEB_LOG = web_log_value
+        logger.reconfigure()
 
     return True
 

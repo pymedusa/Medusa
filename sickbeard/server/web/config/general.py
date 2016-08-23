@@ -122,7 +122,7 @@ class ConfigGeneral(Config):
 
         # Reconfigure the logger only if subliminal setting changed
         if sickbeard.SUBLIMINAL_LOG != config.checkbox_to_value(subliminal_log):
-            logger.reconfigure_levels()
+            logger.reconfigure()
         sickbeard.SUBLIMINAL_LOG = config.checkbox_to_value(subliminal_log)
 
         sickbeard.PRIVACY_LEVEL = privacy_level.lower()

@@ -42,7 +42,7 @@ from sickrage.helper.common import dateTimeFormat
 from sickrage.helper.encoding import ek
 from six import itervalues, text_type
 import subliminal
-import tornado
+from tornado.log import access_log, app_log, gen_log
 import traktor
 
 
@@ -450,7 +450,7 @@ class Logger(object):
         self.loggers.extend(get_loggers(sickrage))
         self.loggers.extend(get_loggers(sickbeard))
         self.loggers.extend(get_loggers(subliminal))
-        self.loggers.extend(get_loggers(tornado))
+        self.loggers.extend([access_log, app_log, gen_log])
         self.loggers.extend(get_loggers(traktor))
         self.console_logging = False
         self.file_logging = False
@@ -532,9 +532,14 @@ class Logger(object):
         default_level = self.get_default_level()
         mapping = dict()
 
-        if not sickbeard.SUBLIMINAL_LOG:
-            modname = 'subliminal'
-            mapping.update({modname: CRITICAL})
+        modules_config = {
+            'subliminal': sickbeard.SUBLIMINAL_LOG,
+            'tornado': sickbeard.WEB_LOG
+        }
+
+        for modname, active in modules_config.items():
+            if not active:
+                mapping.update({modname: CRITICAL})
 
         for logger in self.loggers:
             fullname = logger.name
@@ -678,6 +683,11 @@ def custom_get_logger(name=None):
     :return:
     """
     return StyleAdapter(standard_logger(name))
+
+
+def reconfigure():
+    """Shortcut to reconfigure log levels."""
+    _wrapper.instance.reconfigure_levels()
 
 
 # Keeps the standard logging.getLogger to be used by SylteAdapter
