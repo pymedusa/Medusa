@@ -85,11 +85,6 @@
             </div>
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="home/">Back to Medusa</a></li>
-                <li class="hidden-xs">
-                    <a href="https://github.com/PyMedusa/SickRage/wiki/Donations" rel="noreferrer" onclick="window.open('${sickbeard.ANON_REDIRECT}' + this.href); return false;">
-                        <img src="images/donate.jpg" alt="[donate]" class="navbaricon" />
-                    </a>
-                </li>
             </ul>
             <form class="navbar-form navbar-right">
                 <div class="form-group">
@@ -164,7 +159,6 @@ var commands = ${sorted(commands)};
 var episodes = ${episodes};
 </script>
 <script type="text/javascript" src="js/vender.min.js?${sbPID}"></script>
-<script type="text/javascript" src="js/core.min.js?${sbPID}"></script>
 <script type="text/javascript" src="js/apibuilder.js?${sbPID}"></script>
 </body>
 </html>
