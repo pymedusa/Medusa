@@ -332,10 +332,14 @@ def hardlinkFile(src_file, dest_file):
     try:
         ek(link, src_file, dest_file)
         fixSetGroupID(dest_file)
-    except Exception as e:
-        logger.warning(u'Failed to create hardlink of {source} at {dest}. Error: {error!r}. Copying instead',
-                       source=src_file, dest=dest_file, error=e)
-        copyFile(src_file, dest_file)
+    except OSError as e:
+        if hasattr(e, 'errno') and e.errno == 17:  # File exists. Don't fallback to copy
+            logger.warning(u'Failed to create hardlink of {source} at {dest}. Error: {error!r}',
+                           source=src_file, dest=dest_file, error=e)
+        else:
+            logger.warning(u'Failed to create hardlink of {source} at {dest}. Error: {error!r}. Copying instead',
+                           source=src_file, dest=dest_file, error=e)
+            copyFile(src_file, dest_file)
 
 
 def symlink(src, dst):
@@ -368,10 +372,14 @@ def moveAndSymlinkFile(src_file, dest_file):
         ek(shutil.move, src_file, dest_file)
         fixSetGroupID(dest_file)
         ek(symlink, dest_file, src_file)
-    except Exception as e:
-        logger.warning(u'Failed to create symlink of {source} at {dest}. Error: {error!r}. Copying instead',
-                       source=src_file, dest=dest_file, error=e)
-        copyFile(src_file, dest_file)
+    except OSError as e:
+        if hasattr(e, 'errno') and e.errno == 17:  # File exists. Don't fallback to copy
+            logger.warning(u'Failed to create symlink of {source} at {dest}. Error: {error!r}',
+                           source=src_file, dest=dest_file, error=e)
+        else:
+            logger.warning(u'Failed to create symlink of {source} at {dest}. Error: {error!r}. Copying instead',
+                           source=src_file, dest=dest_file, error=e)
+            copyFile(src_file, dest_file)
 
 
 def make_dirs(path):
