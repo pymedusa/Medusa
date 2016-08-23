@@ -1212,6 +1212,7 @@ class CMD_Logs(ApiCall):
             with io.open(logger.log_file, 'r', encoding='utf-8') as f:
                 data = f.readlines()
 
+        # TODO: Change this regex to use new ratoaq2 code
         regex = r"^(\d\d\d\d)\-(\d\d)\-(\d\d)\s*(\d\d)\:(\d\d):(\d\d)\s*([A-Z]+)\s*(.+?)\s*\:\:\s*(.*)$"
 
         final_data = []
@@ -1226,6 +1227,13 @@ class CMD_Logs(ApiCall):
 
             if match:
                 level = match.group(7)
+                thread = match.group(8)
+
+                # Don't show API and TORNADO log lines because
+                # it will only show those after some log API calls
+                if thread in ('API', 'TORNADO'):
+                    continue
+
                 if level not in logger.LOGGING_LEVELS:
                     last_line = False
                     continue
