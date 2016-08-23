@@ -29,23 +29,21 @@
         <div id="content_configure_show_options">
             <div class="field-pair">
                 <label class="clearfix" for="configure_show_options">
-                <ul>
-                    <li><a href="${base_url + 'addShows/' + realpage + '/'}#tabs-1">Manage Directories</a></li>
-                    <li><a href="${base_url + 'addShows/' + realpage + '/'}#tabs-2">Customize Options</a></li>
-                </ul>
-                <div id="tabs-1" class="existingtabs">
-                    <%include file="/inc_rootDirs.mako"/>
-                    <br/>
-                </div>
-                <div id="tabs-2" class="existingtabs">
-                    <%include file="/inc_addShowOptions.mako"/>
-                </div>
+                    <ul>
+                        <li><a href="${base_url + 'addShows/' + realpage + '/'}#tabs-1">Manage Directories</a></li>
+                        <li><a href="${base_url + 'addShows/' + realpage + '/'}#tabs-2">Customize Options</a></li>
+                    </ul>
+                    <div id="tabs-1" class="existingtabs">
+                        <%include file="/inc_rootDirs.mako"/>
+                        <br/>
+                    </div>
+                    <div id="tabs-2" class="existingtabs">
+                        <%include file="/inc_addShowOptions.mako"/>
+                    </div>
                 </label>
-
             </div>
         </div>  <!-- /content_configure_show_options //-->
     </fieldset>
-
 
     <span>Sort By:</span>
     <select id="showsort" class="form-control form-control-inline input-sm">

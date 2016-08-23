@@ -112,7 +112,7 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         # API v2 handlers
         self.app.add_handlers('.*$', [
             # Shows handler
-            (r'{base}/shows/?([0-9]*)/?'.format(base=self.options['api_v2_root']), ShowHandler),
+            (r'{base}/show/?([0-9]*)/?'.format(base=self.options['api_v2_root']), ShowHandler),
             (r'{base}/info/?([A-Za-z0-9_-]*)/?'.format(base=self.options['api_v2_root']), InfoHandler)
         ])
 

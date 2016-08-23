@@ -22,4 +22,4 @@ from .exceptions import (TraktException, AuthException, ServerBusy, MissingToken
                          UnavailableException, ResourceUnavailable, TraktTooManyRedirects,
                          TokenExpiredException)
 
-from .trakt import (TraktApi, TraktRecommender)
+from .trakt import TraktApi

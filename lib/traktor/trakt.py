@@ -26,7 +26,6 @@ from .exceptions import (TraktConnectionException, MissingTokenException, AuthEx
                          UnavailableException, ResourceUnavailable, TraktException,
                          TimeoutException, TraktTooManyRedirects, TokenExpiredException)
 
-# from model import RecommendedShow  # Next step is to map all results to show objects, so it can use one template
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -176,10 +175,3 @@ class TraktApi(object):
         if 'account' in resp:
             return True
         return False
-
-
-class TraktRecommender(TraktApi):
-    """Trakt Recommended helper class, should only return A list of Trakt recommended shows. WIP"""
-    def __init__(self, ssl_verify=True, timeout=30, **trakt_settings):
-        self.trakt_settings = trakt_settings
-        super(TraktRecommender, self).__init__(timeout=timeout, ssl_verify=ssl_verify, **trakt_settings)
