@@ -104,7 +104,7 @@ class ConfigGeneral(Config):
         sickbeard.CALENDAR_UNPROTECTED = config.checkbox_to_value(calendar_unprotected)
         sickbeard.CALENDAR_ICONS = config.checkbox_to_value(calendar_icons)
         sickbeard.NO_RESTART = config.checkbox_to_value(no_restart)
-        sickbeard.DEBUG = config.checkbox_to_value(debug)
+
         sickbeard.SSL_VERIFY = config.checkbox_to_value(ssl_verify)
         # sickbeard.LOG_DIR is set in config.change_LOG_DIR()
         sickbeard.COMING_EPS_MISSED_RANGE = try_int(coming_eps_missed_range, 7)
@@ -121,8 +121,9 @@ class ConfigGeneral(Config):
         sickbeard.WEB_PASSWORD = web_password
 
         # Reconfigure the logger only if subliminal setting changed
-        if sickbeard.SUBLIMINAL_LOG != config.checkbox_to_value(subliminal_log):
+        if sickbeard.SUBLIMINAL_LOG != config.checkbox_to_value(subliminal_log) or sickbeard.DEBUG != config.checkbox_to_value(debug):
             logger.reconfigure()
+        sickbeard.DEBUG = config.checkbox_to_value(debug)
         sickbeard.SUBLIMINAL_LOG = config.checkbox_to_value(subliminal_log)
 
         sickbeard.PRIVACY_LEVEL = privacy_level.lower()

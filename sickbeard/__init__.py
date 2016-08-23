@@ -714,7 +714,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             fileLogging = False
 
         # init logging
-        logger.init_logging(console_logging=consoleLogging, file_logging=fileLogging, debug_logging=DEBUG, database_logging=DBDEBUG)
+        logger.init_logging(console_logging=consoleLogging, file_logging=fileLogging)
 
         try:
             if GIT_USERNAME and GIT_PASSWORD:
@@ -1294,7 +1294,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         DISPLAY_ALL_SEASONS = bool(check_setting_int(CFG, 'General', 'display_all_seasons', 1))
 
         # reconfigure the logger
-        logger.reconfigure_levels()
+        logger.reconfigure()
 
         # initialize NZB and TORRENT providers
         providerList = providers.makeProviderList()

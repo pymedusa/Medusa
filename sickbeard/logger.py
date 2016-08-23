@@ -454,28 +454,20 @@ class Logger(object):
         self.loggers.extend(get_loggers(traktor))
         self.console_logging = False
         self.file_logging = False
-        self.debug_logging = False
-        self.database_logging = False
         self.log_file = None
         self.submitter_running = False
 
-    def init_logging(self, console_logging=False, file_logging=False, debug_logging=False, database_logging=False):
+    def init_logging(self, console_logging=False, file_logging=False):
         """Initialize logging.
 
         :param console_logging: True if logging to console
         :type console_logging: bool
         :param file_logging: True if logging to file
         :type file_logging: bool
-        :param debug_logging: True if debug logging is enabled
-        :type debug_logging: bool
-        :param database_logging: True if logging database access
-        :type database_logging: bool
         """
         self.log_file = self.log_file or ek(os.path.join, sickbeard.LOG_DIR, 'sickrage.log')
-        self.debug_logging = debug_logging
         self.console_logging = console_logging
         self.file_logging = file_logging
-        self.database_logging = database_logging
 
         logging.addLevelName(DB, 'DB')  # add a new logging level DB
         logging.getLogger().addHandler(NullHandler())  # nullify root logger
@@ -518,14 +510,14 @@ class Logger(object):
             for logger in self.loggers:
                 logger.addHandler(rfh)
 
-    # TODO: Read the user configuration instead of using the initial config
-    def get_default_level(self):
-        """Return the default log level to be used based on the initial user configuration.
+    @staticmethod
+    def get_default_level():
+        """Return the default log level to be used based on the user configuration.
 
         :return: the default log level
         :rtype: int
         """
-        return DB if self.database_logging else DEBUG if self.debug_logging else INFO
+        return DB if sickbeard.DBDEBUG else DEBUG if sickbeard.DEBUG else INFO
 
     def reconfigure_levels(self):
         """Adjust the log levels for some modules."""
