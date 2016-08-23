@@ -295,11 +295,6 @@
                             <label for="date_presets">
                                 <span class="component-title">Date style:</span>
                                 <span class="component-desc">
-                                    <select class="form-control input-sm ${' metadataDiv' if sickbeard.FUZZY_DATING else ''}" id="date_presets${'' if sickbeard.FUZZY_DATING else '_na'}" name="date_preset${'' if sickbeard.FUZZY_DATING else '_na'}">
-                                        % for cur_preset in date_presets:
-                                            <option value="${cur_preset}" ${'selected="selected"' if sickbeard.DATE_PRESET == cur_preset or "%x" == sickbeard.DATE_PRESET and cur_preset == '%a, %b %d, %Y' else ''}>${datetime.datetime(datetime.datetime.now().year, 12, 31, 14, 30, 47).strftime(cur_preset)}</option>
-                                        % endfor
-                                    </select>
                                     <select class="form-control input-sm ${'' if not sickbeard.FUZZY_DATING else ' metadataDiv'}" id="date_presets${'' if not sickbeard.FUZZY_DATING else ' metadataDiv'}" name="date_preset${'' if not sickbeard.FUZZY_DATING else '_na'}">
                                         <option value="%x" ${'selected="selected"' if sickbeard.DATE_PRESET == '%x' else ''}>Use System Default</option>
                                         % for cur_preset in date_presets:
