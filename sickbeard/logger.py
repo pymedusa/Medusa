@@ -63,7 +63,7 @@ LOGGING_LEVELS = {
 }
 
 FORMATTER_PATTERN = '%(asctime)s %(levelname)-8s %(threadName)s :: [%(curhash)s] %(message)s'
-
+default_encoding = 'utf-8'
 censored_items = {}
 censored = []
 
@@ -75,7 +75,7 @@ def rebuild_censored_list():
     # set of censored items and urlencoded counterparts
     results = results | {quote(item) for item in results}
     # convert set items to unicode and typecast to list
-    results = list({item.decode('utf-8', 'replace')
+    results = list({item.decode(default_encoding, 'replace')
                     if not isinstance(item, text_type) else item for item in results})
     # sort the list in order of descending length so that entire item is censored
     # e.g. password and password_1 both get censored instead of getting ********_1
@@ -83,111 +83,6 @@ def rebuild_censored_list():
 
     # replace
     censored[:] = results
-
-
-class ContextFilter(logging.Filter):
-    """This is a filter which injects contextual information into the log, in our case: commit hash."""
-
-    # level step
-    level_step = INFO - DEBUG
-
-    # level mapping to decrease library log levels
-    level_mapping = {
-        'subliminal': level_step,
-        'subliminal.providers.addic7ed': 2 * level_step,
-        'subliminal.providers.itasa': 2 * level_step,
-        'subliminal.providers.tvsubtitles': 2 * level_step,
-        'subliminal.refiners.omdb': 2 * level_step,
-        'subliminal.refiners.metadata': 2 * level_step,
-        'subliminal.refiners.tvdb': 2 * level_step,
-    }
-
-    def filter(self, record):
-        """Filter to add commit hash to log record, adjust log level and to add exception traceback for errors.
-
-        :param record:
-        :type record: logging.LogRecord
-        :return:
-        :rtype: bool
-        """
-        cur_commit_hash = sickbeard.CUR_COMMIT_HASH
-        record.curhash = cur_commit_hash[:7] if cur_commit_hash and len(cur_commit_hash) > 6 else ''
-
-        fullname = record.name
-        basename = fullname.split('.')[0]
-        decrease = self.level_mapping.get(fullname) or self.level_mapping.get(basename) or 0
-        level = max(DEBUG, record.levelno - decrease)
-        if record.levelno != level:
-            record.levelno = level
-            record.levelname = logging.getLevelName(record.levelno)
-
-        # add exception traceback for errors
-        if record.levelno == ERROR:
-            exc_info = sys.exc_info()
-            record.exc_info = exc_info if exc_info != (None, None, None) else None
-
-        return True
-
-
-class CensoredFormatter(logging.Formatter, object):
-    """Censor information such as API keys, user names, and passwords from the Log."""
-
-    ssl_errors = {
-        re.compile(r'error \[Errno \d+\] _ssl.c:\d+: error:\d+\s*:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert internal error'),
-        re.compile(r'error \[SSL: SSLV3_ALERT_HANDSHAKE_FAILURE\] sslv3 alert handshake failure \(_ssl\.c:\d+\)')
-    }
-
-    absurd_re = re.compile(r'[\d\w]')
-
-    # Needed because Newznab apikey isn't stored as key=value in a section.
-    apikey_re = re.compile(r'(?P<before>[&?]r|[&?]apikey|[&?]api_key)(?:=|%3D)([^&]*)(?P<after>[&\w]?)', re.IGNORECASE)
-
-    def __init__(self, fmt=None, datefmt=None, encoding='utf-8'):
-        """Constructor."""
-        super(CensoredFormatter, self).__init__(fmt, datefmt)
-        self.encoding = encoding
-
-    def format(self, record):
-        """Strip censored items from string.
-
-        :param record: to censor
-        :type record: logging.LogRecord
-        :return:
-        :rtype: str
-        """
-        privacy_level = sickbeard.common.privacy_levels[sickbeard.PRIVACY_LEVEL]
-        if not privacy_level:
-            msg = super(CensoredFormatter, self).format(record)
-        elif privacy_level == sickbeard.common.privacy_levels['absurd']:
-            msg = self.absurd_re.sub('*', super(CensoredFormatter, self).format(record))
-        else:
-            msg = super(CensoredFormatter, self).format(record)
-            if not isinstance(msg, text_type):
-                msg = msg.decode(self.encoding, 'replace')  # Convert to unicode
-
-            # Change the SSL error to a warning with a link to information about how to fix it.
-            # Check for u'error [SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] sslv3 alert handshake failure (_ssl.c:590)'
-            for ssl_error in self.ssl_errors:
-                if ssl_error.findall(msg):
-                    record.levelno = WARNING
-                    record.levelname = logging.getLevelName(record.levelno)
-                    msg = super(CensoredFormatter, self).format(record)
-                    msg = ssl_error.sub('See: https://git.io/vVaIj', msg)
-
-            for item in censored:
-                msg = msg.replace(item, '**********')  # must not give any hint about the length
-
-            msg = self.apikey_re.sub(r'\g<before>=**********\g<after>', msg)
-
-        level = record.levelno
-        if level in (WARNING, ERROR):
-            logline = LogLine.from_line(msg)
-            if level == WARNING:
-                classes.WarningViewer.add(logline)
-            elif level == ERROR:
-                classes.ErrorViewer.add(logline)
-
-        return msg
 
 
 def list_modules(package):
@@ -257,7 +152,7 @@ def read_loglines(log_file=None, traceback_lines=None, modification_time=None):
         yield LogLine(message, message=message)
 
 
-def reverse_readlines(filename, buf_size=2097152, encoding='utf-8'):
+def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
     """A generator that returns the lines of a file in reverse order.
 
     Thanks to Andomar: http://stackoverflow.com/a/23646049
@@ -299,6 +194,15 @@ def reverse_readlines(filename, buf_size=2097152, encoding='utf-8'):
         # Don't yield None if the file was empty
         if segment is not None:
             yield segment
+
+
+def get_default_level():
+    """Return the default log level to be used based on the user configuration.
+
+    :return: the default log level
+    :rtype: int
+    """
+    return DB if sickbeard.DBDEBUG else DEBUG if sickbeard.DEBUG else INFO
 
 
 class LogLine(object):
@@ -411,8 +315,8 @@ class LogLine(object):
 
         return reversed(result)
 
-    @staticmethod
-    def from_line(line):
+    @classmethod
+    def from_line(cls, line):
         """Create a Log Line from a string line.
 
         :param line:
@@ -440,6 +344,111 @@ class LogLine(object):
         return '\n'.join([self.line] + (self.traceback_lines or []))
 
 
+class ContextFilter(logging.Filter):
+    """This is a filter which injects contextual information into the log, in our case: commit hash."""
+
+    # level step
+    level_step = INFO - DEBUG
+
+    # level mapping to decrease library log levels
+    level_mapping = {
+        'subliminal': level_step,
+        'subliminal.providers.addic7ed': 2 * level_step,
+        'subliminal.providers.itasa': 2 * level_step,
+        'subliminal.providers.tvsubtitles': 2 * level_step,
+        'subliminal.refiners.omdb': 2 * level_step,
+        'subliminal.refiners.metadata': 2 * level_step,
+        'subliminal.refiners.tvdb': 2 * level_step,
+    }
+
+    def filter(self, record):
+        """Filter to add commit hash to log record, adjust log level and to add exception traceback for errors.
+
+        :param record:
+        :type record: logging.LogRecord
+        :return:
+        :rtype: bool
+        """
+        cur_commit_hash = sickbeard.CUR_COMMIT_HASH
+        record.curhash = cur_commit_hash[:7] if cur_commit_hash and len(cur_commit_hash) > 6 else ''
+
+        fullname = record.name
+        basename = fullname.split('.')[0]
+        decrease = self.level_mapping.get(fullname) or self.level_mapping.get(basename) or 0
+        level = max(DEBUG, record.levelno - decrease)
+        if record.levelno != level:
+            record.levelno = level
+            record.levelname = logging.getLevelName(record.levelno)
+
+        # add exception traceback for errors
+        if record.levelno == ERROR:
+            exc_info = sys.exc_info()
+            record.exc_info = exc_info if exc_info != (None, None, None) else None
+
+        return True
+
+
+class CensoredFormatter(logging.Formatter, object):
+    """Censor information such as API keys, user names, and passwords from the Log."""
+
+    ssl_errors = {
+        re.compile(r'error \[Errno \d+\] _ssl.c:\d+: error:\d+\s*:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert internal error'),
+        re.compile(r'error \[SSL: SSLV3_ALERT_HANDSHAKE_FAILURE\] sslv3 alert handshake failure \(_ssl\.c:\d+\)')
+    }
+
+    absurd_re = re.compile(r'[\d\w]')
+
+    # Needed because Newznab apikey isn't stored as key=value in a section.
+    apikey_re = re.compile(r'(?P<before>[&?]r|[&?]apikey|[&?]api_key)(?:=|%3D)([^&]*)(?P<after>[&\w]?)', re.IGNORECASE)
+
+    def __init__(self, fmt=None, datefmt=None, encoding=default_encoding):
+        """Constructor."""
+        super(CensoredFormatter, self).__init__(fmt, datefmt)
+        self.encoding = encoding
+
+    def format(self, record):
+        """Strip censored items from string.
+
+        :param record: to censor
+        :type record: logging.LogRecord
+        :return:
+        :rtype: str
+        """
+        privacy_level = sickbeard.common.privacy_levels[sickbeard.PRIVACY_LEVEL]
+        if not privacy_level:
+            msg = super(CensoredFormatter, self).format(record)
+        elif privacy_level == sickbeard.common.privacy_levels['absurd']:
+            msg = self.absurd_re.sub('*', super(CensoredFormatter, self).format(record))
+        else:
+            msg = super(CensoredFormatter, self).format(record)
+            if not isinstance(msg, text_type):
+                msg = msg.decode(self.encoding, 'replace')  # Convert to unicode
+
+            # Change the SSL error to a warning with a link to information about how to fix it.
+            # Check for u'error [SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] sslv3 alert handshake failure (_ssl.c:590)'
+            for ssl_error in self.ssl_errors:
+                if ssl_error.findall(msg):
+                    record.levelno = WARNING
+                    record.levelname = logging.getLevelName(record.levelno)
+                    msg = super(CensoredFormatter, self).format(record)
+                    msg = ssl_error.sub('See: https://git.io/vVaIj', msg)
+
+            for item in censored:
+                msg = msg.replace(item, '**********')  # must not give any hint about the length
+
+            msg = self.apikey_re.sub(r'\g<before>=**********\g<after>', msg)
+
+        level = record.levelno
+        if level in (WARNING, ERROR):
+            logline = LogLine.from_line(msg)
+            if level == WARNING:
+                classes.WarningViewer.add(logline)
+            elif level == ERROR:
+                classes.ErrorViewer.add(logline)
+
+        return msg
+
+
 class Logger(object):
     """Custom Logger."""
 
@@ -452,26 +461,19 @@ class Logger(object):
         self.loggers.extend(get_loggers(subliminal))
         self.loggers.extend([access_log, app_log, gen_log])
         self.loggers.extend(get_loggers(traktor))
-        self.console_logging = False
-        self.file_logging = False
+        self.log_level = None
         self.log_file = None
-        self.submitter_running = False
+        self.file_handler = None
+        self.console_handler = None
 
-    def init_logging(self, console_logging=False, file_logging=False):
+    def init_logging(self, console_logging):
         """Initialize logging.
 
         :param console_logging: True if logging to console
         :type console_logging: bool
-        :param file_logging: True if logging to file
-        :type file_logging: bool
         """
-        self.log_file = self.log_file or ek(os.path.join, sickbeard.LOG_DIR, 'sickrage.log')
-        self.console_logging = console_logging
-        self.file_logging = file_logging
-
         logging.addLevelName(DB, 'DB')  # add a new logging level DB
         logging.getLogger().addHandler(NullHandler())  # nullify root logger
-
         log_filter = ContextFilter()
 
         # set custom root logger
@@ -483,45 +485,40 @@ class Logger(object):
                 logger.parent = self.logger
                 logger.propagate = False
 
-        log_level = self.get_default_level()
-
-        # set minimum logging level allowed for loggers
-        for logger in self.loggers:
-            logger.setLevel(log_level)
-
         # console log handler
-        if self.console_logging:
+        if console_logging:
             console = logging.StreamHandler()
             console.setFormatter(CensoredFormatter(FORMATTER_PATTERN, dateTimeFormat))
-            console.setLevel(log_level)
 
             for logger in self.loggers:
                 logger.addHandler(console)
+            self.console_handler = console
 
-        # rotating log file handler
-        if self.file_logging:
+        self.reconfigure_levels()
+        self.reconfigure_file_handler()
 
-            rfh = RotatingFileHandler(
-                self.log_file, maxBytes=int(sickbeard.LOG_SIZE * 1048576), backupCount=sickbeard.LOG_NR,
-                encoding='utf-8')
-            rfh.setFormatter(CensoredFormatter(FORMATTER_PATTERN, dateTimeFormat))
-            rfh.setLevel(log_level)
+    def reconfigure_file_handler(self):
+        """Reconfigure rotating file handler."""
+        target_file = ek(os.path.join, sickbeard.LOG_DIR, 'sickrage.log')
+        target_size = int(sickbeard.LOG_SIZE * 1024 * 1024)
+        target_number = int(sickbeard.LOG_NR)
+        if not self.file_handler or self.log_file != target_file or self.file_handler.backupCount != target_number or self.file_handler.maxBytes != target_size:
+            file_handler = RotatingFileHandler(target_file, maxBytes=target_size, backupCount=target_number, encoding=default_encoding)
+            file_handler.setFormatter(CensoredFormatter(FORMATTER_PATTERN, dateTimeFormat))
+            file_handler.setLevel(self.log_level)
 
             for logger in self.loggers:
-                logger.addHandler(rfh)
+                if self.file_handler:
+                    logger.removeHandler(self.file_handler)
+                    self.file_handler.close()
+                logger.addHandler(file_handler)
 
-    @staticmethod
-    def get_default_level():
-        """Return the default log level to be used based on the user configuration.
-
-        :return: the default log level
-        :rtype: int
-        """
-        return DB if sickbeard.DBDEBUG else DEBUG if sickbeard.DEBUG else INFO
+            self.log_file = target_file
+            self.file_handler = file_handler
 
     def reconfigure_levels(self):
         """Adjust the log levels for some modules."""
-        default_level = self.get_default_level()
+        self.log_level = get_default_level()
         mapping = dict()
 
         modules_config = {
@@ -536,8 +533,12 @@ class Logger(object):
         for logger in self.loggers:
             fullname = logger.name
             basename = fullname.split('.')[0]
-            level = mapping.get(fullname) or mapping.get(basename) or default_level
+            level = mapping.get(fullname) or mapping.get(basename) or self.log_level
             logger.setLevel(level)
+
+        for handler in (self.console_handler, self.file_handler):
+            if handler:
+                handler.setLevel(self.log_level)
 
     @staticmethod
     def shutdown():
@@ -564,7 +565,7 @@ class Logger(object):
         """
         self.log(error_msg, ERROR, *args, **kwargs)
 
-        if not self.console_logging:
+        if not self.console_handler:
             sys.exit(error_msg.encode(sickbeard.SYS_ENCODING, 'xmlcharrefreplace'))
         else:
             sys.exit(1)
@@ -677,9 +678,15 @@ def custom_get_logger(name=None):
     return StyleAdapter(standard_logger(name))
 
 
+def init_logging(console_logging):
+    """Shortcut to init logging."""
+    _wrapper.instance.init_logging(console_logging)
+
+
 def reconfigure():
-    """Shortcut to reconfigure log levels."""
+    """Shortcut to reconfigure logging."""
     _wrapper.instance.reconfigure_levels()
+    _wrapper.instance.reconfigure_file_handler()
 
 
 # Keeps the standard logging.getLogger to be used by SylteAdapter
