@@ -266,7 +266,8 @@ class HomeAddShows(Home):
         t = PageTemplate(rh=self, filename="addShows_trendingShows.mako")
         return t.render(title=page_title, header=page_title,
                         enable_anime_options=True, blacklist=[], whitelist=[], groups=[],
-                        traktList=traktList, controller="addShows", action="trendingShows")
+                        traktList=traktList, controller="addShows", action="trendingShows",
+                        realpage="trendingShows")
 
     def getTrendingShows(self, traktList=None):
         """
