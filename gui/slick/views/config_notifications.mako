@@ -17,9 +17,10 @@
         <form id="configForm" action="config/notifications/saveNotifications" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="${base_url}config/notifications/#home-theater-nas">Home Theater / NAS</a></li>
-                    <li><a href="${base_url}config/notifications/#devices">Devices</a></li>
-                    <li><a href="${base_url}config/notifications/#social">Social</a></li>
+                    ## @TODO: Fix this stupid hack
+                    <script>document.write('<li><a href="' + document.location.href + '#home-theater-nas">Home Theater / NAS</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#devices">Devices</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#social">Social</a></li>');</script>
                 </ul>
                 <div id="home-theater-nas">
                     <div class="component-group-desc">
