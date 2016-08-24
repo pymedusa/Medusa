@@ -25,8 +25,9 @@
         <form name="configForm" method="post" action="config/backuprestore">
             <div id="config-components">
                 <ul>
-                    <li><a href="${base_url}config/backuprestore/#backup">Backup</a></li>
-                    <li><a href="${base_url}config/backuprestore/#backup">Restore</a></li>
+                    ## @TODO: Fix this stupid hack
+                    <script>document.write('<li><a href="' + document.location.href + '#backup">Backup</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#restore">Restore</a></li>');</script>
                 </ul>
                 <div id="backup" class="component-group clearfix">
                     <div class="component-group-desc">
