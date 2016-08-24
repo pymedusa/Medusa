@@ -15,6 +15,8 @@
 <div id="newShowPortal">
     <div id="config-components">
         <ul><li><a href="${base_url}addShows/existingShows/#core-component-group1">Add Existing Show</a></li></ul>
+        ## @TODO: Fix this stupid hack
+        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Add Existing Show</a></li></ul>')</script>
         <div id="core-component-group1" class="tab-pane active component-group">
             <form id="addShowForm" method="post" action="addShows/addNewShow" accept-charset="utf-8">
                 <div id="tabs">
