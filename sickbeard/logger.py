@@ -108,7 +108,9 @@ def get_loggers(package):
     return [logging.getLogger(modname) for modname in list_modules(package)]
 
 
-def read_loglines(log_file=None, traceback_lines=None, modification_time=None):
+def read_loglines(log_file=None, traceback_lines=None, modification_time=None, max_lines=None,
+                  predicate=lambda logline: True,
+                  formatter=lambda logline: logline):
     """A generator that returns the lines of all consolidated log files in descending order.
 
     :param log_file:
@@ -117,12 +119,19 @@ def read_loglines(log_file=None, traceback_lines=None, modification_time=None):
     :type traceback_lines: list of str
     :param modification_time:
     :type modification_time: datetime.datetime
+    :param max_lines:
+    :type max_lines: int
+    :param predicate: filter function to accept or not the logline
+    :type predicate: function
+    :param formatter: function to format the logline
+    :type formatter: function
     :return:
     :rtype: collections.Iterable of LogLine
     """
     log_file = log_file or _wrapper.instance.log_file
     log_files = [log_file] + ['{file}.{index}'.format(file=log_file, index=i) for i in range(1, int(sickbeard.LOG_NR))]
     traceback_lines = traceback_lines or []
+    counter = 0
     for f in log_files:
         if not ek(os.path.isfile, f):
             continue
@@ -139,17 +148,29 @@ def read_loglines(log_file=None, traceback_lines=None, modification_time=None):
                 if traceback_lines:
                     logline.traceback_lines = list(reversed(traceback_lines))
                     del traceback_lines[:]
-                yield logline
+                if predicate(logline):
+                    counter += 1
+                    yield formatter(logline)
+                    if max_lines is not None and counter >= max_lines:
+                        return
+
             elif len(traceback_lines) > 200:  # Limiting the maximum traceback depth to 200
                 message = '\n'.join(reversed(traceback_lines))
                 del traceback_lines[:]
-                yield LogLine(line, message=message)
+                logline = LogLine(line, message=message)
+                if predicate(logline):
+                    counter += 1
+                    yield formatter(logline)
+                    if max_lines is not None and counter >= max_lines:
+                        return
             else:
                 traceback_lines.append(line)
 
     if traceback_lines:
         message = '\n'.join(reversed(traceback_lines))
-        yield LogLine(message, message=message)
+        logline = LogLine(message, message=message)
+        if predicate(logline):
+            yield formatter(logline)
 
 
 def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
@@ -194,6 +215,38 @@ def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
         # Don't yield None if the file was empty
         if segment is not None:
             yield segment
+
+
+def filter_logline(logline, min_level=None, thread_name=None, search_query=None):
+    """Return if logline matches the defined filter.
+
+    :param logline:
+    :type logline: sickbeard.logger.LogLine
+    :param min_level:
+    :type min_level: int
+    :param thread_name:
+    :type thread_name: str or function
+    :param search_query:
+    :type search_query: str
+    :return:
+    :rtype: bool
+    """
+    if not logline.is_loglevel_valid(min_level=min_level):
+        return False
+
+    if search_query:
+        search_query = search_query.lower()
+        if (not logline.message or search_query not in logline.message.lower()) and (
+                not logline.extra or search_query not in logline.extra.lower()):
+            return False
+
+    if not thread_name:
+        return True
+
+    if callable(thread_name):
+        return thread_name(logline.thread_name)
+
+    return thread_name == logline.thread_name
 
 
 def get_default_level():
@@ -294,7 +347,7 @@ class LogLine(object):
         :rtype: list of LogLine
         """
         if not self.timestamp:
-            raise ValueError('Log line does not have timestamp: {logline}'.format(logline=str(self)))
+            raise ValueError('Log line does not have timestamp: {logline}'.format(logline=text_type(self)))
 
         start_timestamp = self.timestamp - timedelta if timedelta else self.timestamp
 
@@ -592,7 +645,7 @@ class BraceMessage(object):
         :return:
         :rtype: str
         """
-        result = str(self.fmt)
+        result = text_type(self.fmt)
         return result.format(*self.args, **self.kwargs) if self.args or self.kwargs else result
 
 

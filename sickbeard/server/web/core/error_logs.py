@@ -4,19 +4,21 @@
 from __future__ import unicode_literals
 
 from datetime import datetime, timedelta
+
 from mako.filters import html_escape
 from sickbeard import logger, ui
 from sickbeard.classes import ErrorViewer, WarningViewer
 from sickbeard.issuesubmitter import IssueSubmitter
-from sickbeard.logger import read_loglines
+from sickbeard.logger import filter_logline, read_loglines
 from sickbeard.server.web.core.base import PageTemplate, WebRoot
 from sickbeard.versionChecker import CheckVersion
+from six import text_type
 from tornado.routes import route
 
 
 # log name filters
 log_name_filters = {
-    '<NONE>': html_escape('<No Filter>'),
+    None: html_escape('<No Filter>'),
     'DAILYSEARCHER': 'Daily Searcher',
     'BACKLOG': 'Backlog',
     'SHOWUPDATER': 'Show Updater',
@@ -115,48 +117,17 @@ class ErrorLogs(WebRoot):
 
         return self.redirect('/errorlogs/viewlog/')
 
-    @staticmethod
-    def match_filter(logline, min_level=None, thread_name=None, search_query=None):
-        """Return if logline matches the defined filter.
-
-        :param logline:
-        :type logline: sickbeard.logger.LogLine
-        :param min_level:
-        :type min_level: int
-        :param thread_name:
-        :type thread_name: str
-        :param search_query:
-        :type search_query: str
-        :return:
-        :rtype: bool
-        """
-        if not logline.is_loglevel_valid(min_level=min_level):
-            return False
-
-        if search_query:
-            search_query = search_query.lower()
-            if (not logline.message or search_query not in logline.message.lower()) and (
-                    not logline.extra or search_query not in logline.extra.lower()):
-                return False
-
-        return not thread_name or thread_name in ('<NONE>', logline.thread_name)
-
     def viewlog(self, min_level=logger.INFO, log_filter=None, log_search=None, max_lines=1000, log_period='all', **kwargs):
         """View the log given the specified filters."""
         min_level = int(min_level)
-        log_filter = log_filter if log_filter in log_name_filters else '<NONE>'
+        log_filter = log_filter if log_filter in log_name_filters else None
 
         t = PageTemplate(rh=self, filename='viewlogs.mako')
 
         period = log_periods.get(log_period)
         modification_time = datetime.now() - period if period else None
-        data = []
-        for logline in read_loglines(modification_time=modification_time):
-            if ErrorLogs.match_filter(logline, min_level=min_level, thread_name=log_filter, search_query=log_search):
-                data.append(str(logline))
-
-            if len(data) >= max_lines:
-                break
+        data = [line for line in read_loglines(modification_time=modification_time, formatter=text_type,
+                                               predicate=lambda l: filter_logline(l, min_level=min_level, thread_name=log_filter, search_query=log_search))]
 
         return t.render(header='Log File', title='Logs', topmenu='system', log_lines='\n'.join([html_escape(line) for line in data]),
                         min_level=min_level, log_name_filters=log_name_filters, log_filter=log_filter, log_search=log_search, log_period=log_period,
