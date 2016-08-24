@@ -117,7 +117,7 @@ class ErrorLogs(WebRoot):
 
         return self.redirect('/errorlogs/viewlog/')
 
-    def viewlog(self, min_level=logger.INFO, log_filter=None, log_search=None, max_lines=1000, log_period='all', **kwargs):
+    def viewlog(self, min_level=logger.INFO, log_filter=None, log_search=None, max_lines=1000, log_period='one_day', **kwargs):
         """View the log given the specified filters."""
         min_level = int(min_level)
         log_filter = log_filter if log_filter in log_name_filters else None
@@ -126,7 +126,7 @@ class ErrorLogs(WebRoot):
 
         period = log_periods.get(log_period)
         modification_time = datetime.now() - period if period else None
-        data = [line for line in read_loglines(modification_time=modification_time, formatter=text_type,
+        data = [line for line in read_loglines(modification_time=modification_time, formatter=text_type, max_lines=max_lines,
                                                predicate=lambda l: filter_logline(l, min_level=min_level, thread_name=log_filter, search_query=log_search))]
 
         return t.render(header='Log File', title='Logs', topmenu='system', log_lines='\n'.join([html_escape(line) for line in data]),
