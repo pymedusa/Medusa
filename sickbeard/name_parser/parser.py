@@ -117,8 +117,8 @@ class NameParser(object):
                     logger.debug('Indexer info for show {name}: S{season}E{episodes}',
                                  name=show.name, season=season_number, episodes=episode_numbers)
                 except sickbeard.indexer_episodenotfound:
-                    logger.warn('Unable to find episode with date {date} for show {name} skipping',
-                                date=result.air_date, name=show.name)
+                    logger.warn('Unable to find episode with date {air_date} for show {name} skipping',
+                                air_date=result.air_date, name=show.name)
                     episode_numbers = []
                 except sickbeard.indexer_error as e:
                     logger.warn('Unable to contact {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
@@ -206,7 +206,7 @@ class NameParser(object):
 
         if result.show.is_scene:
             logger.debug('Converted parsed result {original} into {result}', original=result.original_name,
-                         result=str(result).decode('utf-8', 'xmlcharrefreplace'))
+                         result=str(result))
 
         # CPU sleep
         time.sleep(0.02)
@@ -238,7 +238,7 @@ class NameParser(object):
         if cache_result:
             name_parser_cache.add(name, result)
 
-        logger.debug('Parsed {name} into {result}', name=name, result=str(result).decode('utf-8', 'xmlcharrefreplace'))
+        logger.debug('Parsed {name} into {result}', name=name, result=str(result))
         return result
 
     @staticmethod
