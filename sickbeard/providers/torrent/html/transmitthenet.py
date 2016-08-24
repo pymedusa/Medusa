@@ -148,13 +148,13 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     download_url = urljoin(self.url, download_item['href'])
 
                     temp_anchor = row.find('a', {'data-src': True})
-                    title = temp_anchor['data-src'].rsplit('.', 1)[0]
+                    title = temp_anchor['data-src']
                     if not all([title, download_url]):
                         continue
 
                     cells = row('td')
-                    seeders = try_int(cells[8].text.strip())
-                    leechers = try_int(cells[9].text.strip())
+                    seeders = try_int(cells[5].text.strip())
+                    leechers = try_int(cells[6].text.strip())
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
