@@ -29,9 +29,10 @@
         <form action="home/editShow" method="post">
         <div id="config-components">
             <ul>
-                <li><a href="${base_url}home/editShow?show=${show.indexerid}#core-component-group1">Main</a></li>
-                <li><a href="${base_url}home/editShow?show=${show.indexerid}#core-component-group2">Format</a></li>
-                <li><a href="${base_url}home/editShow?show=${show.indexerid}#core-component-group3">Advanced</a></li>
+                ## @TODO: Fix this stupid hack
+                <script>document.write('<li><a href="' + document.location.href + '#core-component-group1">Main</a></li>');</script>
+                <script>document.write('<li><a href="' + document.location.href + '#core-component-group2">Format</a></li>');</script>
+                <script>document.write('<li><a href="' + document.location.href + '#core-component-group3">Advanced</a></li>');</script>
             </ul>
             <div id="core-component-group1">
                 <div class="component-group">
