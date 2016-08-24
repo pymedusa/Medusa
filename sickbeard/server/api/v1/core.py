@@ -1196,7 +1196,7 @@ class CMD_Logs(ApiCall):
     def __init__(self, args, kwargs):
         # required
         # optional
-        self.min_level, args = self.check_params(args, kwargs, "min_level", "error", False, "string",
+        self.min_level, args = self.check_params(args, kwargs, "min_level", "info", False, "string",
                                                  ["error", "warning", "info", "debug"])
         # super, missing, help
         ApiCall.__init__(self, args, kwargs)
