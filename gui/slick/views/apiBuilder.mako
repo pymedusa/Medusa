@@ -14,7 +14,7 @@
     % elif sbThemeName == "light":
     <meta name="theme-color" content="#333333">
     % endif
-    <title>Medusa - BRANCH:[${sickbeard.BRANCH}] - ${title}</title>
+    <title>Medusa - ${title}</title>
     <base href="${base_url}">
     <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -23,21 +23,6 @@
     <meta name="msapplication-TileColor" content="#FFFFFF">
     <meta name="msapplication-TileImage" content="images/ico/favicon-144.png">
     <meta name="msapplication-config" content="css/browserconfig.xml">
-    <meta data-var="themeSpinner" data-content="${'-dark' if sickbeard.THEME_NAME == 'dark' else ''}">
-    <meta data-var="anonURL" data-content="${sickbeard.ANON_REDIRECT}">
-    <meta data-var="sickbeard.ANIME_SPLIT_HOME" data-content="${sickbeard.ANIME_SPLIT_HOME}">
-    <meta data-var="sickbeard.COMING_EPS_LAYOUT" data-content="${sickbeard.COMING_EPS_LAYOUT}">
-    <meta data-var="sickbeard.COMING_EPS_SORT" data-content="${sickbeard.COMING_EPS_SORT}">
-    <meta data-var="sickbeard.DATE_PRESET" data-content="${sickbeard.DATE_PRESET}">
-    <meta data-var="sickbeard.FUZZY_DATING" data-content="${sickbeard.FUZZY_DATING}">
-    <meta data-var="sickbeard.HISTORY_LAYOUT" data-content="${sickbeard.HISTORY_LAYOUT}">
-    <meta data-var="sickbeard.HOME_LAYOUT" data-content="${sickbeard.HOME_LAYOUT}">
-    <meta data-var="sickbeard.POSTER_SORTBY" data-content="${sickbeard.POSTER_SORTBY}">
-    <meta data-var="sickbeard.POSTER_SORTDIR" data-content="${sickbeard.POSTER_SORTDIR}">
-    <meta data-var="sickbeard.ROOT_DIRS" data-content="${sickbeard.ROOT_DIRS}">
-    <meta data-var="sickbeard.SORT_ARTICLE" data-content="${sickbeard.SORT_ARTICLE}">
-    <meta data-var="sickbeard.TIME_PRESET" data-content="${sickbeard.TIME_PRESET}">
-    <meta data-var="sickbeard.TRIM_ZERO" data-content="${sickbeard.TRIM_ZERO}">
     <link rel="shortcut icon" href="images/ico/favicon.ico">
     <link rel="icon" sizes="16x16 32x32 64x64" href="images/ico/favicon.ico">
     <link rel="icon" type="image/png" sizes="196x196" href="images/ico/favicon-196.png">
@@ -57,9 +42,9 @@
     <link rel="stylesheet" type="text/css" href="css/browser.css?${sbPID}" />
     <link rel="stylesheet" type="text/css" href="css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
     <link rel="stylesheet" type="text/css" href="css/style.css?${sbPID}"/>
-    <link rel="stylesheet" type="text/css" href="css/${sbThemeName}.css?${sbPID}" />
+    <link rel="stylesheet" type="text/css" href="css/${sickbeard.THEME_NAME}.css?${sbPID}" />
 </head>
-<body>
+<body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + sickbeard.API_KEY +'"  api-root="api/v2/"', '')[title == 'Login']}>
 <nav class="navbar navbar-default navbar-fixed-top hidden-print" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header">
@@ -128,7 +113,7 @@
                     </table>
                     % endif
                     <h4>Playground</h4>
-                    URL: <kbd id="command-${command_id}-base-url">${base_url}api/${apikey}/?cmd=${command}</kbd><br>
+                    URL: <kbd id="command-${command_id}-base-url">/api/v1/${apikey}/?cmd=${command}</kbd><br>
                     % if help['data']['requiredParameters']:
                         Required parameters: ${display_parameters_playground(help['data']['requiredParameters'], True, command_id)}<br>
                     % endif
@@ -159,6 +144,7 @@ var commands = ${sorted(commands)};
 var episodes = ${episodes};
 </script>
 <script type="text/javascript" src="js/vender.min.js?${sbPID}"></script>
+<script type="text/javascript" src="js/core.js?${sbPID}"></script>
 <script type="text/javascript" src="js/apibuilder.js?${sbPID}"></script>
 </body>
 </html>
