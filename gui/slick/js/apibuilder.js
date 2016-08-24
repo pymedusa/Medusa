@@ -26,7 +26,7 @@ $(document).ready(function() {
         }
 
         var requestTime = new Date().getTime();
-        $.get(url, function (data, textStatus, jqXHR) {
+        $.get(url.replace('/api/', 'api/'), function (data, textStatus, jqXHR) {
             var responseTime = new Date().getTime() - requestTime;
             var jsonp = $('#option-jsonp').is(':checked');
             var responseType = jqXHR.getResponseHeader('content-type') || '';
