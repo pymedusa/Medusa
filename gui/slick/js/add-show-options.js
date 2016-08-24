@@ -21,7 +21,7 @@ $(document).ready(function() {
         });
 
         $(this).attr('disabled', true);
-        PNotify({
+        new PNotify({
             title: 'Saved Defaults',
             text: 'Your "add show" defaults have been set to your current selections.',
             shadow: false
