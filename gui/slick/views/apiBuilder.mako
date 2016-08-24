@@ -128,7 +128,7 @@
                     </table>
                     % endif
                     <h4>Playground</h4>
-                    URL: <kbd id="command-${command_id}-base-url">/api/${apikey}/?cmd=${command}</kbd><br>
+                    URL: <kbd id="command-${command_id}-base-url">${base_url}api/${apikey}/?cmd=${command}</kbd><br>
                     % if help['data']['requiredParameters']:
                         Required parameters: ${display_parameters_playground(help['data']['requiredParameters'], True, command_id)}<br>
                     % endif
