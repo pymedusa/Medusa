@@ -429,7 +429,6 @@ def searchForNeededEpisodes():
         # nothing wanted so early out, ie: avoid whatever abritrarily
         # complex thing a provider cache update entails, for example,
         # reading rss feeds
-        logger.log(u"No episodes needed.", logger.INFO)
         return foundResults.values()
 
     original_thread_name = threading.currentThread().name
