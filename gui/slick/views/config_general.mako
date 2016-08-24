@@ -27,9 +27,10 @@
         <form id="configForm" action="config/general/saveGeneral" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="${base_url}config/general/#misc">Misc</a></li>
-                    <li><a href="${base_url}config/general/#interface">Interface</a></li>
-                    <li><a href="${base_url}config/general/#advanced-settings">Advanced Settings</a></li>
+                    ## @TODO: Fix this stupid hack
+                    <script>document.write('<li><a href="' + document.location.href + '#misc">Misc</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#interface">Interface</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#advanced-settings">Advanced Settings</a></li>');</script>
                 </ul>
                 <div id="misc">
                         <div class="component-group-desc">
