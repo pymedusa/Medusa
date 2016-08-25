@@ -64,18 +64,18 @@ class IssueSubmitter(object):
         except ValueError:
             locale_name = 'unknown'
 
+        commit = sickbeard.CUR_COMMIT_HASH
+        base_url = '../blob/{commit}'.format(commit=commit) if commit else None
         return '\n'.join([
             '### INFO',
             '**Python Version**: `{python_version}`'.format(python_version=sys.version[:120].replace('\n', '')),
             '**Operating System**: `{os}`'.format(os=platform.platform()),
             '**Locale**: `{locale}`'.format(locale=locale_name),
-            '**Branch**: `{branch}`'.format(branch=sickbeard.BRANCH),
-            '**Commit**: PyMedusa/SickRage@{commit}'.format(commit=sickbeard.CUR_COMMIT_HASH),
+            '**Branch**: [{branch}](../tree/{branch})'.format(branch=sickbeard.BRANCH),
+            '**Commit**: PyMedusa/SickRage@{commit}'.format(commit=commit),
             '**Link to Log**: {log_url}'.format(log_url=log_url) if log_url else '**No Log available**',
             '### ERROR',
-            '```',
-            str(logline),
-            '```',
+            logline.format_to_html(base_url=base_url),
             '---',
             '_STAFF NOTIFIED_: @pymedusa/support @pymedusa/moderators',
         ])

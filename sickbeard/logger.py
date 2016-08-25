@@ -268,6 +268,8 @@ class LogLine(object):
                         r'(?:(?P<extra>.+?)\s+::)?::\s+\[(?P<curhash>[a-f0-9]{7})?\]\s+'
                         r'(?P<message>.*)$')
 
+    tracebackline_re = re.compile(r'(?P<before>\s*File ")(?P<file>.+)(?P<middle>", line )(?P<line>\d+)(?P<after>, in .+)')
+
     def __init__(self, line, message=None, timestamp=None, level_name=None, thread_name=None,
                  thread_id=None, extra=None, curhash=None, traceback_lines=None):
         """Log Line Construtor.
@@ -387,6 +389,37 @@ class LogLine(object):
                        thread_name=g['thread_name'], thread_id=int(g['thread_id']) if g['thread_id'] else None, traceback_lines=lines[1:],
                        timestamp=datetime.datetime(year=int(g['year']), month=int(g['month']), day=int(g['day']),
                                                    hour=int(g['hour']), minute=int(g['minute']), second=int(g['second'])))
+
+    def format_to_html(self, base_url):
+        """Format logline to html."""
+        results = ['<pre>', self.line]
+
+        cwd = os.getcwd() + '/'
+        fmt = '{before}{cwd}<a href="{base_url}/{relativepath}#L{line}">{relativepath}</a>{middle}{line}{after}'
+        for traceback_line in self.traceback_lines or []:
+            if not base_url:
+                results.append(traceback_line)
+                continue
+
+            match = self.tracebackline_re.match(traceback_line)
+            if not match:
+                results.append(traceback_line)
+                continue
+
+            d = match.groupdict()
+            filepath = d['file']
+            if not filepath.startswith(cwd):
+                results.append(traceback_line)
+                continue
+
+            relativepath = filepath[len(cwd):]
+            result = fmt.format(cwd=cwd, base_url=base_url, relativepath=relativepath,
+                                before=d['before'], line=d['line'], middle=d['middle'], after=d['after'])
+
+            results.append(result)
+
+        results.append('</pre>')
+        return '\n'.join(results)
 
     def __repr__(self):
         """Object representation."""
