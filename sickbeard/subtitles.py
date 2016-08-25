@@ -32,7 +32,7 @@ import traceback
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
 import sickbeard
-from sickrage.helper.common import dateTimeFormat, episode_num, subtitle_extensions
+from sickrage.helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
 from six import iteritems, string_types, text_type
@@ -688,8 +688,15 @@ class SubtitlesFinder(object):
                     run_post_process = True
                     continue
 
-                # 'postpone' should not consider existing subtitles from db.
-                tv_episode.subtitles = []
+                # Should not consider existing subtitles from db if is a replace
+                new_release_name = remove_extension(filename)
+                if tv_episode.release_name and new_release_name != tv_episode.release_name:
+                    logger.debug(u"As this is a release replace I'm not going to consider existing"
+                                 "subtitles and release name from database to refine new release")
+                    logger.debug(u"Replacing old release name '%s' with new release name '%s'",
+                                 tv_episode.release_name, new_release_name)
+                    tv_episode.subtitles = []
+                    tv_episode.release_name = new_release_name
                 downloaded_languages = download_subtitles(tv_episode, video_path=video_path,
                                                           subtitles=False, embedded_subtitles=False)
 
