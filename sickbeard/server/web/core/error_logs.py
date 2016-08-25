@@ -111,7 +111,7 @@ class ErrorLogs(WebRoot):
         else:
             classes.ErrorViewer.clear()
 
-        return self.redirect('/errorlogs/viewlog/')
+        return self.redirect('/errorlogs/')
 
     @staticmethod
     def _get_data(lines, min_level, log_filter, log_search, num_lines, max_lines):
