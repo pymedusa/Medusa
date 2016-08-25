@@ -23,7 +23,8 @@
         <form action="manage/massEditSubmit" method="post">
             <input type="hidden" name="toEdit" value="${showList}" />
             <div id="config-components">
-                <ul><li><a href="${base_url}manage/#core-component-group1">Main</a></li></ul>');</script>
+                ## @TODO: Fix this stupid hack
+                <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Main</a></li></ul>');</script>
                 <div id="core-component-group1">
                     <div class="component-group">
                         <h3>Main Settings</h3>
