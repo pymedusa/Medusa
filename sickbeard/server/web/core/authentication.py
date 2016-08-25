@@ -82,7 +82,11 @@ class LoginHandler(BaseHandler):
             logger.log('User attempted a failed login to the Medusa web interface from IP: {ip}'.format
                        (ip=self.request.remote_ip), logger.WARNING)
 
-        self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
+        redirect_page = self.get_argument('next', None)
+        if redirect_page:
+            self.redirect('{page}'.format(page=self.get_argument('next')))
+        else:
+            self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
 
 
 class LogoutHandler(BaseHandler):
