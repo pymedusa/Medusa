@@ -1,9 +1,11 @@
 # coding=utf-8
 """Tests for sickbeard.logger.py."""
+from datetime import datetime
 
 import pytest
 
 import sickbeard.logger as sut
+from sickbeard.logger import LogLine
 
 
 class TestStandardLoggingApi(object):
@@ -142,3 +144,56 @@ def test_read_loglines__with_traceback(logger, commit_hash, logfile):
     assert line1 == actual[2].message
     assert 'INFO' == actual[2].level_name
     assert [] == actual[2].traceback_lines
+
+
+@pytest.mark.parametrize('p', [
+    {  # p0: common case
+        'line': '2016-08-24 07:42:39 DEBUG    CHECKVERSION :: [7d1534c] git ls-remote --heads origin : returned successful',
+        'expected': {
+            'message': 'git ls-remote --heads origin : returned successful',
+            'timestamp': datetime(year=2016, month=8, day=24, hour=7, minute=42, second=39),
+            'level_name': 'DEBUG',
+            'thread_name': 'CHECKVERSION',
+            'thread_id': None,
+            'extra': None,
+            'curhash': '7d1534c',
+            'traceback_lines': []
+        }
+    },
+    {  # p1: with provider name and thread id
+        'line': '2016-08-25 20:12:03 INFO     SEARCHQUEUE-MANUAL-290853 :: [ProviderName] :: [d4ea5af] Performing episode search for Show Name',
+        'expected': {
+            'message': 'Performing episode search for Show Name',
+            'timestamp': datetime(year=2016, month=8, day=25, hour=20, minute=12, second=3),
+            'level_name': 'INFO',
+            'thread_name': 'SEARCHQUEUE-MANUAL',
+            'thread_id': 290853,
+            'extra': 'ProviderName',
+            'curhash': 'd4ea5af',
+            'traceback_lines': []
+        }
+    },
+    {  # p1: without hash
+        'line': '2016-08-25 20:12:03 INFO     SEARCHQUEUE-MANUAL-290853 :: [ProviderName] :: [] Performing episode search for Show Name',
+        'expected': {
+            'message': 'Performing episode search for Show Name',
+            'timestamp': datetime(year=2016, month=8, day=25, hour=20, minute=12, second=3),
+            'level_name': 'INFO',
+            'thread_name': 'SEARCHQUEUE-MANUAL',
+            'thread_id': 290853,
+            'extra': 'ProviderName',
+            'curhash': None,
+            'traceback_lines': []
+        }
+    }
+])
+def test_from_line(p):
+    # Given
+    line = p['line']
+    expected = p['expected']
+
+    # When
+    actual = LogLine.from_line(line)
+
+    # Then
+    assert expected == describe_logline(actual)
