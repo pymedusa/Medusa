@@ -51,7 +51,8 @@ from sickrage.helper.common import dateTimeFormat
 
 from inspect import getargspec
 
-ADAPTER_MEMBERS = [attr for attr in dir(logging.LoggerAdapter) if not callable(attr) and not attr.startswith('__')]
+ADAPTER_MEMBERS = {attr: attr for attr in dir(logging.LoggerAdapter) if not callable(attr) and not attr.startswith('__')}
+ADAPTER_MEMBERS.update({'warn': 'warning', 'fatal': 'critical'})
 RESERVED_KEYWORDS = getargspec(logging.Logger._log).args[1:]
 
 # log levels
@@ -586,7 +587,7 @@ class StyleAdapter(logging.LoggerAdapter):
         if name not in ADAPTER_MEMBERS:
             return getattr(self.logger, name)
 
-        return getattr(self, name)
+        return getattr(self, ADAPTER_MEMBERS[name])
 
     def process(self, msg, kwargs):
         """Enhance default process to use BraceMessage and remove unsupported keyword args for the actual logger method.

@@ -66,3 +66,24 @@ def test_logger__various_messages(sut, handler_write, handler_error, p):
     assert not handler_error.called
     assert handler_write.called
     assert handler_write.call_args == expected
+
+
+@pytest.mark.parametrize('level', [
+    'debug',
+    'info',
+    'warn',
+    'warning',
+    'error',
+    'exception',
+    'critical',
+    'fatal',
+])
+def test_logger__various_levels(sut, level):
+    # Given
+    method = getattr(sut, level)
+
+    # When
+    method('{param} message', param='test')
+
+    # Then
+    # no exception

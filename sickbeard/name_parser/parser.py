@@ -117,8 +117,8 @@ class NameParser(object):
                     logger.debug('Indexer info for show {name}: S{season}E{episodes}',
                                  name=show.name, season=season_number, episodes=episode_numbers)
                 except sickbeard.indexer_episodenotfound:
-                    logger.warn('Unable to find episode with date {air_date} for show {name} skipping',
-                                air_date=result.air_date, name=show.name)
+                    logger.warn('Unable to find episode with date {date} for show {name} skipping',
+                                date=result.air_date, name=show.name)
                     episode_numbers = []
                 except sickbeard.indexer_error as e:
                     logger.warn('Unable to contact {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
