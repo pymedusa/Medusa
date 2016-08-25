@@ -22,7 +22,6 @@
 from __future__ import unicode_literals
 
 import datetime
-import difflib
 import io
 import logging
 import os
@@ -317,16 +316,6 @@ class LogLine(object):
         """Return the expected issue title for this logline."""
         result = self.traceback_lines[-1] if self.traceback_lines else self.message
         return result[:1000]
-
-    def is_title_similar_to(self, title):
-        """Return wheter the logline title is similar to.
-
-        :param title:
-        :type title: str
-        :return:
-        :rtype: bool
-        """
-        return difflib.SequenceMatcher(None, self.issue_title, title).ratio() >= 0.9
 
     def is_loglevel_valid(self, min_level=None):
         """Return true if the log level is valid and supported also taking into consideration min_level if defined.

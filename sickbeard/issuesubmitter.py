@@ -2,6 +2,7 @@
 """GitHub issue submitter."""
 from __future__ import unicode_literals
 
+import difflib
 import locale
 import logging
 import platform
@@ -27,6 +28,8 @@ class IssueSubmitter(object):
     BAD_CREDENTIALS = 'Please check your Github credentials in Medusa settings. Bad Credentials error'
     RATE_LIMIT = 'Please wait before submit new issues. Github Rate Limit Exceeded error'
     UNABLE_CREATE_ISSUE = 'Failed to create a new issue!'
+
+    TITLE_PREFIX = '[APP SUBMITTED]: '
 
     def __init__(self):
         """Default constructor."""
@@ -94,14 +97,35 @@ class IssueSubmitter(object):
         results = dict()
         reports = git_repo.get_issues(state='all', since=datetime.now() - timedelta(days=180))
         for report in reports:
+            report_title = report.title
+            if report_title.startswith(IssueSubmitter.TITLE_PREFIX):
+                report_title = report_title[len(IssueSubmitter.TITLE_PREFIX):]
+
             for logline in loglines:
-                if logline.is_title_similar_to(report.title):
+                log_title = logline.issue_title
+                if log_title.startswith(IssueSubmitter.TITLE_PREFIX):
+                    log_title = log_title[len(IssueSubmitter.TITLE_PREFIX):]
+
+                if IssueSubmitter.similar(log_title, report_title):
                     results[logline.key] = report
 
             if len(results) >= len(loglines):
                 break
 
         return results
+
+    @staticmethod
+    def similar(title1, title2):
+        """Return wheter the title1 is similar to title2.
+
+        :param title1:
+        :type title1: str
+        :param title2:
+        :type title2: str
+        :return:
+        :rtype: bool
+        """
+        return difflib.SequenceMatcher(None, title1, title2).ratio() >= 0.9
 
     def submit_github_issue(self, version_checker):
         """Submit errors to github.
@@ -154,7 +178,7 @@ class IssueSubmitter(object):
                         submitter_result = 'Failed to comment on found issue #{number}!'.format(number=similar_issue.number)
                         logger.warning(submitter_result)
                 else:
-                    issue = git_repo.create_issue(logline.issue_title, message)
+                    issue = git_repo.create_issue('{prefix}{title}'.format(prefix=IssueSubmitter.TITLE_PREFIX, title=logline.issue_title), message)
                     if issue:
                         issue_id = issue.number
                         submitter_result = 'Your issue ticket #{number} was submitted successfully!'.format(number=issue_id)
