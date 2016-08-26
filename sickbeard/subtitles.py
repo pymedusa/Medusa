@@ -688,11 +688,11 @@ class SubtitlesFinder(object):
                     run_post_process = True
                     continue
 
-                # Should not consider existing subtitles from db if is a replace
+                # Should not consider existing subtitles from db if it's a replacement
                 new_release_name = remove_extension(filename)
                 if tv_episode.release_name and new_release_name != tv_episode.release_name:
-                    logger.debug(u"As this is a release replace I'm not going to consider existing"
-                                 "subtitles and release name from database to refine new release")
+                    logger.debug(u"As this is a release replacement I'm not going to consider existing "
+                                 u"subtitles or release name from database to refine the new release")
                     logger.debug(u"Replacing old release name '%s' with new release name '%s'",
                                  tv_episode.release_name, new_release_name)
                     tv_episode.subtitles = []
