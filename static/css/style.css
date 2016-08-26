@@ -6,6 +6,12 @@ strong.warning {
 inc_top.mako
 ========================================================================== */
 
+.header {
+	display: block;
+	clear: right;
+	margin-top: 15px;
+}
+
 .navbaricon {
     margin-top: -15px;
     margin-bottom: -15px;
@@ -41,11 +47,13 @@ inc_top.mako
     background-position: -80px -224px;
 }
 
+/*
 .ui-accordion-content,
 .ui-tabs-panel {
     background: rgb(237, 237, 237) !important;
     background-image: none !important;
 }
+*/
 
 .ui-widget {
     font-family: inherit;
@@ -162,7 +170,7 @@ inc_top.mako
     border-radius: 0;
 }
 
-.ui-tabs .ui-tabs-panel {
+/*.ui-tabs .ui-tabs-panel {
     background-color: rgb(247, 247, 247) !important;
     border: 1px solid rgb(204, 204, 204) !important;
     padding: 1em;
@@ -171,7 +179,7 @@ inc_top.mako
 .ui-tabs .ui-tabs-nav li.ui-tabs-active {
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
-}
+}*/
 
 .ui-tabs-nav > :not(.ui-tabs-active) {
     border-top-left-radius: 5px;
@@ -180,7 +188,7 @@ inc_top.mako
 
 #content {
     width: 95%;
-    min-width: 875px;
+    /*min-width: 875px;*/
     padding: 15px;
     margin-left: auto;
     margin-right: auto;
@@ -3698,4 +3706,153 @@ viewLog.mako
 /* Because the H1 has a margin of 20px withing the column col-sm-2 of 20px we need to configure the same for the columns which are used for the filter inputs. */
 .log-filter {
     margin-top: 20px;
+}
+
+/* Some css helper classes */
+
+.top-5 {
+    margin-top: 5px;
+}
+
+.top-10 {
+	margin-top: 10px;
+}
+
+.top-15 {
+    margin-top: 15px;
+}
+
+.top-20 {
+    margin-top: 20px;
+}
+
+.top-25 {
+    margin-top: 25px;
+}
+
+.bottom-5 {
+    margin-bottom: 5px;
+}
+
+.bottom-10 {
+    margin-bottom: 10px;
+}
+
+.bottom-15 {
+    margin-bottom: 15px;
+}
+
+.bottom-20 {
+    margin-bottom: 20px;
+}
+
+.bottom-25 {
+    margin-bottom: 25px;
+}
+
+
+.ui-widget-header {
+    background: rgb(255, 255, 255) url("../css/lib/images/ui-bg_flat_0_ffffff_40x100.png") 50% 50% repeat-x;
+}
+
+.ui-tabs .ui-tabs-nav {
+    margin: 0;
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    margin-left: 0px;
+    padding: .2em .2em 0;
+}
+
+.ui-tabs .ui-tabs-nav .ui-tabs-anchor {
+    float: left;
+    padding: .5em 1em;
+    padding-top: 0.5em;
+    padding-right: 1em;
+    padding-bottom: 0.5em;
+    padding-left: 1em;
+    text-decoration: none;
+}
+
+.ui-tabs .ui-tabs-panel {
+    background-color: rgb(247, 247, 247) !important;
+    border: 1px solid rgb(204, 204, 204) !important;
+    padding: 1em;
+}
+.ui-tabs .ui-tabs-panel {
+    display: block;
+    border-width: 0;
+    padding: 1em 1.4em;
+    background: none;
+}
+
+.ui-helper-clearfix:after {
+    clear: both;
+}
+.ui-helper-clearfix:before, .ui-helper-clearfix:after {
+    content: "";
+    display: table;
+    border-collapse: collapse;
+}
+
+.ui-helper-reset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    line-height: 1.3;
+    text-decoration: none;
+    font-size: 100%;
+    list-style: none;
+}
+
+.ui-tabs-nav > :not(.ui-tabs-active) {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom: 1px solid rgb(247, 247, 247);
+}
+
+.ui-tabs .ui-tabs-nav {
+    padding-left: 0;
+    background: transparent;
+    border-width: 0 0 0 0;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+}
+
+.ui-tabs .ui-tabs-nav li {
+    list-style: none;
+    float: left;
+    position: relative;
+    top: 0;
+    margin: 1px .2em 0 0;
+    padding: 0;
+    white-space: nowrap;
+    border-bottom: none;
+}
+
+.ui-state-default {
+	border-bottom-color: rgb(247, 247, 247);
+}
+
+.ui-tabs-active li, .ui-widget-content .ui-tabs-active li, .ui-widget-header .ui-tabs-active li{
+    background: rgb(247, 247, 247);
+    border-bottom-width: 1px;
+    border-bottom: 1px solid rgb(247, 247, 247)!important;
+}
+
+.ui-tabs-nav > :not(.ui-tabs-active) li {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom: 1px solid rgb(247, 247, 247);
+}
+
+.ui-tabs .ui-tabs-nav li.ui-tabs-active {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+.ui-tabs .ui-tabs-nav li.ui-tabs-active {
+    margin-bottom: -1px;
+    padding-bottom: 1px;
 }

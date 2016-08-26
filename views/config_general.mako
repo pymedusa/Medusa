@@ -13,6 +13,8 @@
     gh_branch = app.GIT_REMOTE_BRANCHES or app.versionCheckScheduler.action.list_remote_branches()
 %>
 <%block name="content">
+
+
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
 % else:
@@ -22,17 +24,23 @@
 % if app.INDEXER_DEFAULT:
     <% indexer = app.INDEXER_DEFAULT %>
 % endif
+<script type="text/javascript" src="js/customTabs.js?${sbPID}"></script>
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="config/general/saveGeneral" method="post">
-            <div id="config-components">
-                <ul>
-                    ## @TODO: Fix this stupid hack
-                    <script>document.write('<li><a href="' + document.location.href + '#misc">Misc</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#interface">Interface</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#advanced-settings">Advanced Settings</a></li>');</script>
+            <div id="config-components" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
+                <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all" role="tablist">
+                    <li class="ui-state-default ui-corner-top ui-tabs-active ui-state-active" data-labelled="1">
+                        <a class="ui-tabs-anchor" href="${base_url}config/general/#misc" role="tab">Misc</a>
+                    </li>
+                    <li class="ui-state-default ui-corner-top" data-labelled="2">
+                        <a class="ui-tabs-anchor" href="${base_url}config/general/#interface" role="tab">Interface</a>
+                    </li>
+                    <li class="ui-state-default ui-corner-top" data-labelled="3">
+                        <a class="ui-tabs-anchor" href="${base_url}config/general/#advanced-settings">Advanced Settings</a>
+                    </li>
                 </ul>
-                <div id="misc">
+                <div id="misc" class="ui-tabs-panel ui-widget-content ui-corner-bottom" data-labelled-by="1">
                         <div class="component-group-desc">
                             <h3>Misc</h3>
                             <p>Startup options. Indexer options. Log and show file locations.</p>
@@ -206,148 +214,148 @@
                         </fieldset>
                     </div>
                 </div><!-- /component-group1 //-->
-                <div id="interface">
+                <div id="interface" class="ui-tabs-panel ui-widget-content ui-corner-bottom" data-labelled-by="2">
                     <div class="component-group-desc">
                         <h3>User Interface</h3>
                         <p>Options for visual appearance.</p>
                     </div>
-                <div class="component-group">
-                    <fieldset class="component-group-list">
-                        <div class="field-pair">
-                            <label for="theme_name">
-                                <span class="component-title">Display theme:</span>
-                                <span class="component-desc">
-                                    <select id="theme_name" name="theme_name" class="form-control input-sm">
-                                        <option value="dark" ${'selected="selected"' if app.THEME_NAME == 'dark' else ''}>Dark</option>
-                                        <option value="light" ${'selected="selected"' if app.THEME_NAME == 'light' else ''}>Light</option>
-                                    </select>
-                                    <span class="red-text">for appearance to take effect, save then refresh your browser</span>
-                                </span>
-                            </label>
-                        </div>
-
-                        <div class="field-pair">
-                            <label for="fanart_background">
-                                <span class="component-title">Show fanart in the background</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" class="enabler" name="fanart_background" id="fanart_background" ${('', 'checked="checked"')[bool(app.FANART_BACKGROUND)]}>
-                                    <p>on the show summary page</p>
-                                </span>
-                            </label>
-                        </div>
-                        <div id="content_fanart_background">
+                    <div class="component-group">
+                        <fieldset class="component-group-list">
                             <div class="field-pair">
-                                <label for="fanart_background_opacity">
-                                    <span class="component-title">Fanart transparency</span>
+                                <label for="theme_name">
+                                    <span class="component-title">Display theme:</span>
                                     <span class="component-desc">
-                                    <input type="number" step="0.1" min="0.1" max="1.0" name="fanart_background_opacity" id="fanart_background_opacity" value="${app.FANART_BACKGROUND_OPACITY}" class="form-control input-sm input75" />
-                                    <p>Transparency of the fanart in the background</p>
+                                        <select id="theme_name" name="theme_name" class="form-control input-sm">
+                                            <option value="dark" ${'selected="selected"' if app.THEME_NAME == 'dark' else ''}>Dark</option>
+                                            <option value="light" ${'selected="selected"' if app.THEME_NAME == 'light' else ''}>Light</option>
+                                        </select>
+                                        <span class="red-text">for appearance to take effect, save then refresh your browser</span>
                                     </span>
                                 </label>
                             </div>
-                        </div>
 
-                        <div class="field-pair">
-                            <label for="display_all_seasons">
-                                <span class="component-title">Show all seasons</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="display_all_seasons" id="display_all_seasons" ${'checked="checked"' if app.DISPLAY_ALL_SEASONS else ''}>
-                                    <p>on the show summary page</p>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="field-pair">
-                            <label for="sort_article">
-                                <span class="component-title">Sort with "The", "A", "An"</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="sort_article" id="sort_article" ${'checked="checked"' if app.SORT_ARTICLE else ''}/>
-                                    <p>include articles ("The", "A", "An") when sorting show lists</p>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="field-pair">
-                            <label for="coming_eps_missed_range">
-                                <span class="component-title">Missed episodes range</span>
-                                <span class="component-desc">
-                                    <input type="number" step="1" min="7" name="coming_eps_missed_range" id="coming_eps_missed_range" value="${app.COMING_EPS_MISSED_RANGE}" class="form-control input-sm input75" />
-                                    <p>Set the range in days of the missed episodes in the Schedule page</p>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="field-pair">
-                            <label for="fuzzy_dating">
-                                <span class="component-title">Display fuzzy dates</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="fuzzy_dating" id="fuzzy_dating" class="viewIf datePresets" ${'checked="checked"' if app.FUZZY_DATING else ''}/>
-                                    <p>move absolute dates into tooltips and display e.g. "Last Thu", "On Tue"</p>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="field-pair show_if_fuzzy_dating ${'' if not app.FUZZY_DATING else ' metadataDiv'}">
-                            <label for="trim_zero">
-                                <span class="component-title">Trim zero padding</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="trim_zero" id="trim_zero" ${'checked="checked"' if app.TRIM_ZERO else ''}/>
-                                    <p>remove the leading number "0" shown on hour of day, and date of month</p>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="field-pair">
-                            <label for="date_presets">
-                                <span class="component-title">Date style:</span>
-                                <span class="component-desc">
-                                    <select class="form-control input-sm ${'' if not app.FUZZY_DATING else ' metadataDiv'}" id="date_presets${'' if not app.FUZZY_DATING else ' metadataDiv'}" name="date_preset${'' if not app.FUZZY_DATING else '_na'}">
-                                        <option value="%x" ${'selected="selected"' if app.DATE_PRESET == '%x' else ''}>Use System Default</option>
-                                        % for cur_preset in date_presets:
-                                            <option value="${cur_preset}" ${'selected="selected"' if app.DATE_PRESET == cur_preset else ''}>${datetime.datetime(datetime.datetime.now().year, 12, 31, 14, 30, 47).strftime(cur_preset)}</option>
-                                        % endfor
-                                    </select>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="field-pair">
-                            <label for="time_presets">
-                                <span class="component-title">Time style:</span>
-                                <span class="component-desc">
-                                    <select id="time_presets" name="time_preset" class="form-control input-sm">
-                                         % for cur_preset in time_presets:
-                                            <option value="${cur_preset}" ${'selected="selected"' if app.TIME_PRESET_W_SECONDS == cur_preset else ''}>${sbdatetime.now().sbftime(show_seconds=True, t_preset=cur_preset)}</option>
-                                         % endfor
-                                    </select>
-                                    <span><b>note:</b> seconds are only shown on the History page</span>
-                                </span>
-                            </label>
-                        </div>
-                        <div class="field-pair">
-                            <span class="component-title">Timezone:</span>
-                            <span class="component-desc">
-                                <label for="local" class="space-right">
-                                    <input type="radio" name="timezone_display" id="local" value="local" ${'checked="checked"' if app.TIMEZONE_DISPLAY == "local" else ''} />Local
+                            <div class="field-pair">
+                                <label for="fanart_background">
+                                    <span class="component-title">Show fanart in the background</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" class="enabler" name="fanart_background" id="fanart_background" ${('', 'checked="checked"')[bool(app.FANART_BACKGROUND)]}>
+                                        <p>on the show summary page</p>
+                                    </span>
                                 </label>
-                                <label for="network">
-                                    <input type="radio" name="timezone_display" id="network" value="network" ${'checked="checked"' if app.TIMEZONE_DISPLAY == "network" else ''} />Network
+                            </div>
+                            <div id="content_fanart_background">
+                                <div class="field-pair">
+                                    <label for="fanart_background_opacity">
+                                        <span class="component-title">Fanart transparency</span>
+                                        <span class="component-desc">
+                                        <input type="number" step="0.1" min="0.1" max="1.0" name="fanart_background_opacity" id="fanart_background_opacity" value="${app.FANART_BACKGROUND_OPACITY}" class="form-control input-sm input75" />
+                                        <p>Transparency of the fanart in the background</p>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="field-pair">
+                                <label for="display_all_seasons">
+                                    <span class="component-title">Show all seasons</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="display_all_seasons" id="display_all_seasons" ${'checked="checked"' if app.DISPLAY_ALL_SEASONS else ''}>
+                                        <p>on the show summary page</p>
+                                    </span>
                                 </label>
-                                <div class="clear-left">
-                                <p>display dates and times in either your timezone or the shows network timezone</p>
-                                </div>
-                                <div class="clear-left">
-                                <p> <b>Note:</b> Use local timezone to start searching for episodes minutes after show ends (depends on your dailysearch frequency)</p>
-                                </div>
-                            </span>
-                        </div>
-                        <div class="field-pair">
-                            <label for="download_url">
-                                <span class="component-title">Download url</span>
-                                <input type="text" name="download_url" id="download_url" value="${app.DOWNLOAD_URL}" size="35"/>
-                            </label>
-                            <label>
-                                <span class="component-title">&nbsp;</span>
-                            <span class="component-desc">URL where the shows can be downloaded.</span>
-                            </label>
-                        </div>
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
-                    </fieldset>
-                </div><!-- /User interface component-group -->
+                            </div>
+                            <div class="field-pair">
+                                <label for="sort_article">
+                                    <span class="component-title">Sort with "The", "A", "An"</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="sort_article" id="sort_article" ${'checked="checked"' if app.SORT_ARTICLE else ''}/>
+                                        <p>include articles ("The", "A", "An") when sorting show lists</p>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="coming_eps_missed_range">
+                                    <span class="component-title">Missed episodes range</span>
+                                    <span class="component-desc">
+                                        <input type="number" step="1" min="7" name="coming_eps_missed_range" id="coming_eps_missed_range" value="${app.COMING_EPS_MISSED_RANGE}" class="form-control input-sm input75" />
+                                        <p>Set the range in days of the missed episodes in the Schedule page</p>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="fuzzy_dating">
+                                    <span class="component-title">Display fuzzy dates</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="fuzzy_dating" id="fuzzy_dating" class="viewIf datePresets" ${'checked="checked"' if app.FUZZY_DATING else ''}/>
+                                        <p>move absolute dates into tooltips and display e.g. "Last Thu", "On Tue"</p>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair show_if_fuzzy_dating ${'' if not app.FUZZY_DATING else ' metadataDiv'}">
+                                <label for="trim_zero">
+                                    <span class="component-title">Trim zero padding</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="trim_zero" id="trim_zero" ${'checked="checked"' if app.TRIM_ZERO else ''}/>
+                                        <p>remove the leading number "0" shown on hour of day, and date of month</p>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="date_presets">
+                                    <span class="component-title">Date style:</span>
+                                    <span class="component-desc">
+                                        <select class="form-control input-sm ${'' if not app.FUZZY_DATING else ' metadataDiv'}" id="date_presets${'' if not app.FUZZY_DATING else ' metadataDiv'}" name="date_preset${'' if not app.FUZZY_DATING else '_na'}">
+                                            <option value="%x" ${'selected="selected"' if app.DATE_PRESET == '%x' else ''}>Use System Default</option>
+                                            % for cur_preset in date_presets:
+                                                <option value="${cur_preset}" ${'selected="selected"' if app.DATE_PRESET == cur_preset else ''}>${datetime.datetime(datetime.datetime.now().year, 12, 31, 14, 30, 47).strftime(cur_preset)}</option>
+                                            % endfor
+                                        </select>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="time_presets">
+                                    <span class="component-title">Time style:</span>
+                                    <span class="component-desc">
+                                        <select id="time_presets" name="time_preset" class="form-control input-sm">
+                                             % for cur_preset in time_presets:
+                                                <option value="${cur_preset}" ${'selected="selected"' if app.TIME_PRESET_W_SECONDS == cur_preset else ''}>${sbdatetime.now().sbftime(show_seconds=True, t_preset=cur_preset)}</option>
+                                             % endfor
+                                        </select>
+                                        <span><b>note:</b> seconds are only shown on the History page</span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <span class="component-title">Timezone:</span>
+                                <span class="component-desc">
+                                    <label for="local" class="space-right">
+                                        <input type="radio" name="timezone_display" id="local" value="local" ${'checked="checked"' if app.TIMEZONE_DISPLAY == "local" else ''} />Local
+                                    </label>
+                                    <label for="network">
+                                        <input type="radio" name="timezone_display" id="network" value="network" ${'checked="checked"' if app.TIMEZONE_DISPLAY == "network" else ''} />Network
+                                    </label>
+                                    <div class="clear-left">
+                                    <p>display dates and times in either your timezone or the shows network timezone</p>
+                                    </div>
+                                    <div class="clear-left">
+                                    <p> <b>Note:</b> Use local timezone to start searching for episodes minutes after show ends (depends on your dailysearch frequency)</p>
+                                    </div>
+                                </span>
+                            </div>
+                            <div class="field-pair">
+                                <label for="download_url">
+                                    <span class="component-title">Download url</span>
+                                    <input type="text" name="download_url" id="download_url" value="${app.DOWNLOAD_URL}" size="35"/>
+                                </label>
+                                <label>
+                                    <span class="component-title">&nbsp;</span>
+                                <span class="component-desc">URL where the shows can be downloaded.</span>
+                                </label>
+                            </div>
+                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        </fieldset>
+                    </div><!-- /User interface component-group -->
                     <div class="component-group-desc">
                         <h3>Web Interface</h3>
                         <p>It is recommended that you enable a username and password to secure Medusa from being tampered with remotely.</p>
@@ -464,7 +472,7 @@
                     </fieldset>
                 </div><!-- /component-group2 //-->
                 </div>
-                <div id="advanced-settings" class="component-group">
+                <div id="advanced-settings" class="component-group ui-tabs-panel ui-widget-content ui-corner-bottom" data-labelled-by="3">
                     <div class="component-group-desc">
                         <h3>Advanced Settings</h3>
                     </div>
