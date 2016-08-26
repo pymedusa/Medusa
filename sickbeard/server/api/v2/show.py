@@ -17,12 +17,13 @@ MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 class ShowHandler(BaseRequestHandler):
     """Shows request handler."""
 
-    def get(self, show_id):
+    def get(self, query=''):
         """Query show information.
 
-        :param show_id:
-        :type show_id: str
+        :param query:
+        :type query: str
         """
+        show_id = query.split('/')[0]
         # This should be completely replaced with show_id
         indexerid = show_id
 
@@ -91,11 +92,11 @@ class ShowHandler(BaseRequestHandler):
 
         self.api_finish(**{'shows': shows})
 
-    def put(self, show_id):
+    def put(self, item_id):
         """Update show information.
 
-        :param show_id:
-        :type show_id: int
+        :param item_id:
+        :type item_id: int
         """
         return self.finish({
         })
@@ -105,11 +106,11 @@ class ShowHandler(BaseRequestHandler):
         return self.finish({
         })
 
-    def delete(self, show_id):
+    def delete(self, item_id):
         """Delete a show.
 
-        :param show_id:
-        :type show_id: int
+        :param item_id:
+        :type item_id: int
         """
         return self.finish({
         })
