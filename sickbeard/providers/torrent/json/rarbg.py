@@ -137,13 +137,13 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                 error_code = jdata.get('error_code')
                 if error:
                     # List of errors: https://github.com/rarbg/torrentapi/issues/1#issuecomment-114763312
-                    if error_code not in (8, 10, 12, 14, 20):
+                    if error_code == 5:
+                        # 5 = Too many requests per second
+                        log_level = logger.INFO
+                    elif error_code not in (8, 10, 12, 14, 20):
                         # 8, 10, 12, 14 = Cant find * in database. Are you sure this * exists?
                         # 20 = No results found
                         log_level = logger.WARNING
-                    elif error_code == 5:
-                        # 5 = Too many requests per second
-                        log_level = logger.INFO
                     else:
                         log_level = logger.DEBUG
                     logger.log('{msg} Code: {code}'.format(msg=error, code=error_code), log_level)
