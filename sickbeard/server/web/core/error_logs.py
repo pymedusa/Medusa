@@ -65,13 +65,13 @@ class ErrorLogs(WebRoot):
         return [
             {  # Clear Errors
                 'title': 'Clear Errors',
-                'path': 'errorlogs/clearerrors/',
+                'path': '/api/v2/log/',
                 'requires': self._has_errors() and level == logger.ERROR,
                 'icon': 'ui-icon ui-icon-trash'
             },
             {  # Clear Warnings
                 'title': 'Clear Warnings',
-                'path': 'errorlogs/clearerrors/?level={level}'.format(level=logger.WARNING),
+                'path': '/api/v2/log/{level}'.format(level=logger.WARNING),
                 'requires': self._has_warnings() and level == logger.WARNING,
                 'icon': 'ui-icon ui-icon-trash'
             },
