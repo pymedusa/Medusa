@@ -42,40 +42,40 @@ MEDUSA.common.init = function() {
         text: 'Are you sure you want to submit these errors ?<br><br><span class="red-text">Make sure Medusa is updated and trigger<br> this error with debug enabled before submitting</span>'
     });
 
-    $('#config-components').tabs({
-        activate: function (event, ui) {
-            var lastOpenedPanel = $(this).data('lastOpenedPanel');
-
-            if (!lastOpenedPanel) {
-                lastOpenedPanel = $(ui.oldPanel);
-            }
-
-            if (!$(this).data('topPositionTab')) {
-                $(this).data('topPositionTab', $(ui.newPanel).position().top);
-            }
-
-            // Dont use the builtin fx effects. This will fade in/out both tabs, we dont want that
-            // Fadein the new tab yourself
-            $(ui.newPanel).hide().fadeIn(0);
-
-            if (lastOpenedPanel) {
-                // 1. Show the previous opened tab by removing the jQuery UI class
-                // 2. Make the tab temporary position:absolute so the two tabs will overlap
-                // 3. Set topposition so they will overlap if you go from tab 1 to tab 0
-                // 4. Remove position:absolute after animation
-                lastOpenedPanel
-                    .toggleClass('ui-tabs-hide')
-                    .css('position', 'absolute')
-                    .css('top', $(this).data('topPositionTab') + 'px')
-                    .fadeOut(0, function () {
-                        $(this).css('position', '');
-                    });
-            }
-
-            // Saving the last tab has been opened
-            $(this).data('lastOpenedPanel', $(ui.newPanel));
-        }
-    });
+//    $('#config-components').tabs({
+//        activate: function (event, ui) {
+//            var lastOpenedPanel = $(this).data('lastOpenedPanel');
+//
+//            if (!lastOpenedPanel) {
+//                lastOpenedPanel = $(ui.oldPanel);
+//            }
+//
+//            if (!$(this).data('topPositionTab')) {
+//                $(this).data('topPositionTab', $(ui.newPanel).position().top);
+//            }
+//
+//            // Dont use the builtin fx effects. This will fade in/out both tabs, we dont want that
+//            // Fadein the new tab yourself
+//            $(ui.newPanel).hide().fadeIn(0);
+//
+//            if (lastOpenedPanel) {
+//                // 1. Show the previous opened tab by removing the jQuery UI class
+//                // 2. Make the tab temporary position:absolute so the two tabs will overlap
+//                // 3. Set topposition so they will overlap if you go from tab 1 to tab 0
+//                // 4. Remove position:absolute after animation
+//                lastOpenedPanel
+//                    .toggleClass('ui-tabs-hide')
+//                    .css('position', 'absolute')
+//                    .css('top', $(this).data('topPositionTab') + 'px')
+//                    .fadeOut(0, function () {
+//                        $(this).css('position', '');
+//                    });
+//            }
+//
+//            // Saving the last tab has been opened
+//            $(this).data('lastOpenedPanel', $(ui.newPanel));
+//        }
+//    });
 
     // @TODO Replace this with a real touchscreen check
     // hack alert: if we don't have a touchscreen, and we are already hovering the mouse, then click should link instead of toggle
