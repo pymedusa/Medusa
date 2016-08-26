@@ -1,8 +1,4 @@
 $(document).ready(function() {
-    if (SICKRAGE.info.fanArtBackground) {
-        $.backstretch('showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
-        $('.backstretch').css('opacity', SICKRAGE.info.fanartBackgroundOpacity).fadeIn(500);
-    }
     $('.seriesCheck').on('click', function() {
         var serCheck = this;
 
