@@ -741,7 +741,7 @@ class SubtitlesFinder(object):
                 ret = ret.replace('minutes', 'minute')
             return ret.rstrip(', ')
 
-        if sickbeard.SUBTITLES_DOWNLOAD_IN_PP:
+        if sickbeard.POSTPONE_IF_NO_SUBS:
             self.subtitles_download_in_pp()
 
         logger.info(u'Checking for missed subtitles')

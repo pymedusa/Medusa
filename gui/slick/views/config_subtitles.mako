@@ -120,17 +120,6 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     </label>
                                 </div>
                                 <div class="field-pair">
-                                    <label class="clearfix" for="subtitles_download_in_pp">
-                                        <span class="component-title">Subtitles in Post-Process folder</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="subtitles_download_in_pp" id="subtitles_download_in_pp" ${'checked="checked"' if sickbeard.SUBTITLES_DOWNLOAD_IN_PP else ''}/>
-                                            <p>Download subtitles in post-process folder</p>
-                                            <p>Useful if you only want the episode to be post-processed when it has subtitles associated</p>
-                                            <p>You might also want to enable the post-process setting 'Postpone if no subtitle'</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
                                     <label class="clearfix" for="subtitles_keep_only_wanted">
                                         <span class="component-title">Delete unwanted subtitles</span>
                                         <span class="component-desc">
