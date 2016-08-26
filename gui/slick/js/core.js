@@ -3104,9 +3104,10 @@ var SICKRAGE = {
 
         },
         index: function() {
+
         },
         viewlogs: function() {
-            $('#minLevel,#logFilter,#logSearch').on('keyup change', _.debounce(function() {
+            $('#minLevel,#logFilter,#logSearch').on('keyup change', _.debounce(function () {
                 if ($('#logSearch').val().length > 0) {
                     $('#logFilter option[value="<NONE>"]').prop('selected', true);
                     $('#minLevel option[value=5]').prop('selected', true);
