@@ -3104,10 +3104,22 @@ var SICKRAGE = {
 
         },
         index: function() {
-
+            $('[href^="/api/v2/log/"]').on('click', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: 'api/v2/log/?api_key=' + apiKey,
+                    type: 'DELETE',
+                    success: function(result) {
+                        console.log(result);
+                        if (result.status === 200) {
+                            document.location.href = 'errorlogs/viewlog/';
+                        }
+                    }
+                });
+            });
         },
         viewlogs: function() {
-            $('#minLevel,#logFilter,#logSearch').on('keyup change', _.debounce(function () {
+            $('#minLevel,#logFilter,#logSearch').on('keyup change', _.debounce(function() {
                 if ($('#logSearch').val().length > 0) {
                     $('#logFilter option[value="<NONE>"]').prop('selected', true);
                     $('#minLevel option[value=5]').prop('selected', true);
