@@ -233,6 +233,8 @@ class TVCache(object):
             logger.log('Error while searching {0}, skipping: {1!r}'.format(self.provider.name, e), logger.DEBUG)
 
     def update_cache_manual_search(self, manual_data=None):
+        # clear cache
+        self._clearCache()
 
         try:
             cl = []
