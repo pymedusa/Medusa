@@ -1,47 +1,6 @@
 MEDUSA.config.init = function() {
-    //$('#config-components').tabs();
-    uiTabs = function(tab, defaultTab) {
-        self = this;
-        self.tabs = {};
-        self.tabs = $(tab).find('li.ui-state-default');
-        //initialize the tabs (li elements)
-        
-        //
-        switchTab = function(clickedId) {
-            var toggleClasses = 'ui-tabs-active ui-state-active';
-            self.tabs.each(function(index){
-               if ($(this).attr('data-labelled') === clickedId) {
-                   // enable the button
-                   $(this).addClass(toggleClasses);
-
-                   // enable the tabs panel
-                   $('div[data-labelled-by="' + $(this).attr('data-labelled') + '"]').show();
-
-
-               } else {
-                   $(this).removeClass(toggleClasses);
-                   $('div[data-labelled-by="' + $(this).attr('data-labelled') + '"]').hide();
-               }
-            });
-        }
-
-        self.tabs.on('click', function(){
-            self.switchTab($(this).attr('data-labelled'));
-            return false;
-        })
-
-        // Page loaded, check for intra page hyperlink
-        var intraPageHyperlink = window.location.hash;
-        if (!intraPageHyperlink) {return}
-
-        // Get tab with the lablled by id
-        labelledBy = $(window.location.hash).attr("data-labelled-by")
-        self.switchTab(labelledBy);
-    };
-
-    //Initialize all the ui tabs elements
-    var foundUiTab = $('.ui-tabs')[0];
-    tabObj = uiTabs(foundUiTab);
+    // Initialize all the ui tabs elements
+    $('.ui-tabs').uiTabs();
 
     $('.viewIf').on('click', function() {
         if ($(this).prop('checked')) {

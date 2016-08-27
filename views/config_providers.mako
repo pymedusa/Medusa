@@ -21,7 +21,6 @@ $(document).ready(function(){
         % endfor
     % endif
 });
-$('#config-components').tabs();
 </script>
 </%block>
 <%block name="content">
@@ -33,19 +32,18 @@ $('#config-components').tabs();
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="config/providers/saveProviders" method="post">
-            <div id="config-components">
+            <div id="config-components" class="ui-tabs">
                 <ul>
-                    ## @TODO: Fix this stupid hack
-                    <script>document.write('<li><a href="' + document.location.href + '#provider-priorities">Provider Priorities</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#provider-options">Provider Options</a></li>');</script>
+                    <li><a href="config/providers/#provider-priorities">Provider Priorities</a></li>
+                    <li><a href="config/providers/#provider-options">Provider Options</a></li>
                   % if app.USE_NZBS:
-                    <script>document.write('<li><a href="' + document.location.href + '#custom-newznab">Configure Custom Newznab Providers</a></li>');</script>
+                    <li><a href="config/providers/#custom-newznab">Configure Custom Newznab Providers</a></li>
                   % endif
                   % if app.USE_TORRENTS:
-                    <li><a href="${base_url}config/providers/#custom-torrent">Configure Custom Torrent Providers</a></li>
+                    <li><a href="config/providers/#custom-torrent">Configure Custom Torrent Providers</a></li>
                   % endif
                 </ul>
-                <div id="provider-priorities" class="component-group" style='min-height: 550px;'>
+                <div data-tab-id="provider-priorities" class="component-group" style='min-height: 550px;'>
                     <div class="component-group-desc">
                         <h3>Provider Priorities</h3>
                         <p>Check off and drag the providers into the order you want them to be used.</p>
@@ -93,7 +91,7 @@ $('#config-components').tabs();
                         <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group1 //-->
-                <div id="provider-options" class="component-group">
+                <div data-tab-id="provider-options" class="component-group">
                     <div class="component-group-desc">
                         <h3>Provider Options</h3>
                         <p>Configure individual provider settings here.</p>
@@ -614,7 +612,7 @@ $('#config-components').tabs();
                     </fieldset>
                 </div><!-- /component-group2 //-->
                 % if app.USE_NZBS:
-                <div id="custom-newznab" class="component-group">
+                <div data-tab-id="custom-newznab" class="component-group">
                     <div class="component-group-desc">
                         <h3>Configure Custom<br>Newznab Providers</h3>
                         <p>Add and setup or remove custom Newznab providers.</p>
@@ -682,67 +680,67 @@ $('#config-components').tabs();
                 </div><!-- /component-group3 //-->
                 % endif
                 % if app.USE_TORRENTS:
-                <div id="custom-torrent" class="component-group">
-                <div class="component-group-desc">
-                    <h3>Configure Custom Torrent Providers</h3>
-                    <p>Add and setup or remove custom RSS providers.</p>
-                </div>
-                <fieldset class="component-group-list">
-                    <div class="field-pair">
-                        <label for="torrentrss_string">
-                            <span class="component-title">Select provider:</span>
-                            <span class="component-desc">
-                            <input type="hidden" name="torrentrss_string" id="torrentrss_string" />
-                                <select id="editATorrentRssProvider" class="form-control input-sm">
-                                    <option value="addTorrentRss">-- add new provider --</option>
-                                </select>
-                            </span>
-                        </label>
+                <div data-tab-id="custom-torrent" class="component-group">
+                    <div class="component-group-desc">
+                        <h3>Configure Custom Torrent Providers</h3>
+                        <p>Add and setup or remove custom RSS providers.</p>
                     </div>
-                    <div class="torrentRssProviderDiv" id="addTorrentRss">
+                    <fieldset class="component-group-list">
                         <div class="field-pair">
-                            <label for="torrentrss_name">
-                                <span class="component-title">Provider name:</span>
-                                <input type="text" id="torrentrss_name" class="form-control input-sm input200"/>
+                            <label for="torrentrss_string">
+                                <span class="component-title">Select provider:</span>
+                                <span class="component-desc">
+                                <input type="hidden" name="torrentrss_string" id="torrentrss_string" />
+                                    <select id="editATorrentRssProvider" class="form-control input-sm">
+                                        <option value="addTorrentRss">-- add new provider --</option>
+                                    </select>
+                                </span>
                             </label>
                         </div>
-                        <div class="field-pair">
-                            <label for="torrentrss_url">
-                                <span class="component-title">RSS URL:</span>
-                                <input type="text" id="torrentrss_url" class="form-control input-sm input350"/>
-                            </label>
+                        <div class="torrentRssProviderDiv" id="addTorrentRss">
+                            <div class="field-pair">
+                                <label for="torrentrss_name">
+                                    <span class="component-title">Provider name:</span>
+                                    <input type="text" id="torrentrss_name" class="form-control input-sm input200"/>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="torrentrss_url">
+                                    <span class="component-title">RSS URL:</span>
+                                    <input type="text" id="torrentrss_url" class="form-control input-sm input350"/>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="torrentrss_cookies">
+                                    <span class="component-title">Cookies:</span>
+                                    <input type="text" id="torrentrss_cookies" class="form-control input-sm input350" disabled="disabled"/>
+                                </label>
+                                <label>
+                                    <span class="component-title">&nbsp;</span>
+                                    <span class="component-desc">eg. uid=xx;pass=yy, please use "Provider options" to reconfigure!</span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="torrentrss_titleTAG">
+                                    <span class="component-title">Search element:</span>
+                                    <input type="text" id="torrentrss_titleTAG" class="form-control input-sm input200" value="title"/>
+                                </label>
+                                <label>
+                                    <span class="component-title">&nbsp;</span>
+                                    <span class="component-desc">eg: title</span>
+                                </label>
+                            </div>
+                            <div id="torrentrss_add_div">
+                                <input type="button" class="btn torrentrss_save" id="torrentrss_add" value="Add" />
+                            </div>
+                            <div id="torrentrss_update_div" style="display: none;">
+                                <input type="button" class="btn btn-danger torrentrss_delete" id="torrentrss_delete" value="Delete" />
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="torrentrss_cookies">
-                                <span class="component-title">Cookies:</span>
-                                <input type="text" id="torrentrss_cookies" class="form-control input-sm input350" disabled="disabled"/>
-                            </label>
-                            <label>
-                                <span class="component-title">&nbsp;</span>
-                                <span class="component-desc">eg. uid=xx;pass=yy, please use "Provider options" to reconfigure!</span>
-                            </label>
-                        </div>
-                        <div class="field-pair">
-                            <label for="torrentrss_titleTAG">
-                                <span class="component-title">Search element:</span>
-                                <input type="text" id="torrentrss_titleTAG" class="form-control input-sm input200" value="title"/>
-                            </label>
-                            <label>
-                                <span class="component-title">&nbsp;</span>
-                                <span class="component-desc">eg: title</span>
-                            </label>
-                        </div>
-                        <div id="torrentrss_add_div">
-                            <input type="button" class="btn torrentrss_save" id="torrentrss_add" value="Add" />
-                        </div>
-                        <div id="torrentrss_update_div" style="display: none;">
-                            <input type="button" class="btn btn-danger torrentrss_delete" id="torrentrss_delete" value="Delete" />
-                        </div>
-                    </div>
-                </fieldset>
-            </div><!-- /component-group4 //-->
-            % endif
-            <br><input type="submit" class="btn config_submitter_refresh" value="Save Changes" /><br>
+                    </fieldset>
+                </div><!-- /component-group4 //-->
+                % endif
+                <br><input type="submit" class="btn config_submitter_refresh" value="Save Changes" /><br>
             </div><!-- /config-components //-->
         </form>
     </div>
