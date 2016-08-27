@@ -107,19 +107,18 @@ def get_loggers(package):
     return [logging.getLogger(modname) for modname in list_modules(package)]
 
 
-def read_loglines(log_file=None, traceback_lines=None, modification_time=None, max_lines=None,
-                  predicate=lambda logline: True,
-                  formatter=lambda logline: logline):
+def read_loglines(log_file=None, modification_time=None, max_lines=None, max_traceback_depth=100,
+                  predicate=lambda logline: True, formatter=lambda logline: logline):
     """A generator that returns the lines of all consolidated log files in descending order.
 
     :param log_file:
     :type log_file: str or unicode
-    :param traceback_lines: mostly used in recursion call.
-    :type traceback_lines: list of str
     :param modification_time:
     :type modification_time: datetime.datetime
     :param max_lines:
     :type max_lines: int
+    :param max_traceback_depth:
+    :type max_traceback_depth: int
     :param predicate: filter function to accept or not the logline
     :type predicate: function
     :param formatter: function to format the logline
@@ -127,12 +126,12 @@ def read_loglines(log_file=None, traceback_lines=None, modification_time=None, m
     :return:
     :rtype: collections.Iterable of LogLine
     """
-    log_file = log_file or _wrapper.instance.log_file
+    log_file = log_file or instance.log_file
     log_files = [log_file] + ['{file}.{index}'.format(file=log_file, index=i) for i in range(1, int(sickbeard.LOG_NR))]
-    traceback_lines = traceback_lines or []
+    traceback_lines = []
     counter = 0
     for f in log_files:
-        if not ek(os.path.isfile, f):
+        if not f or not ek(os.path.isfile, f):
             continue
         if modification_time:
             log_mtime = ek(os.path.getmtime, f)
@@ -153,10 +152,10 @@ def read_loglines(log_file=None, traceback_lines=None, modification_time=None, m
                     if max_lines is not None and counter >= max_lines:
                         return
 
-            elif len(traceback_lines) > 200:  # Limiting the maximum traceback depth to 200
-                message = '\n'.join(reversed(traceback_lines))
+            elif len(traceback_lines) > max_traceback_depth:
+                message = traceback_lines[-1]
+                logline = LogLine(line, message=message, traceback_lines=list(reversed(traceback_lines[:-1])))
                 del traceback_lines[:]
-                logline = LogLine(line, message=message)
                 if predicate(logline):
                     counter += 1
                     yield formatter(logline)
@@ -166,8 +165,8 @@ def read_loglines(log_file=None, traceback_lines=None, modification_time=None, m
                 traceback_lines.append(line)
 
     if traceback_lines:
-        message = '\n'.join(reversed(traceback_lines))
-        logline = LogLine(message, message=message)
+        message = traceback_lines[-1]
+        logline = LogLine(message, message=message, traceback_lines=list(reversed(traceback_lines[:-1])))
         if predicate(logline):
             yield formatter(logline)
 
@@ -309,7 +308,7 @@ class LogLine(object):
 
         Important to not duplicate errors in ui view.
         """
-        return '{extra} {message}'.format(extra=self.extra, message=self.message) if self.extra else self.message
+        return '[{extra}] {message}'.format(extra=self.extra, message=self.message) if self.extra else self.message
 
     @property
     def issue_title(self):
@@ -328,11 +327,11 @@ class LogLine(object):
         return self.level_name and self.level_name in LOGGING_LEVELS and (
             min_level is None or min_level <= LOGGING_LEVELS[self.level_name])
 
-    def get_context_loglines(self, numberdelta=100, timedelta=datetime.timedelta(seconds=45)):
+    def get_context_loglines(self, max_lines=100, timedelta=datetime.timedelta(seconds=45)):
         """Return the n log lines before current log line or log lines within the timedelta specified.
 
-        :param numberdelta:
-        :type numberdelta: int
+        :param max_lines:
+        :type max_lines: int
         :param timedelta:
         :type timedelta: datetime.timedelta
         :return:
@@ -355,7 +354,7 @@ class LogLine(object):
                 break
 
             result.append(logline)
-            if len(result) >= numberdelta:
+            if len(result) >= max_lines:
                 break
 
         return reversed(result)
@@ -714,8 +713,6 @@ class StyleAdapter(logging.LoggerAdapter):
 class Wrapper(object):
     """Wrapper that delegates all calls to the actual Logger instance."""
 
-    instance = Logger()
-
     def __init__(self, wrapped):
         """Constructor with the actual module instance.
 
@@ -756,13 +753,13 @@ def custom_get_logger(name=None):
 
 def init_logging(console_logging):
     """Shortcut to init logging."""
-    _wrapper.instance.init_logging(console_logging)
+    instance.init_logging(console_logging)
 
 
 def reconfigure():
     """Shortcut to reconfigure logging."""
-    _wrapper.instance.reconfigure_levels()
-    _wrapper.instance.reconfigure_file_handler()
+    instance.reconfigure_levels()
+    instance.reconfigure_file_handler()
 
 
 # Keeps the standard logging.getLogger to be used by SylteAdapter
@@ -771,5 +768,5 @@ standard_logger = logging.getLogger
 # Replaces logging.getLogger with our custom one
 logging.getLogger = custom_get_logger
 
-_wrapper = Wrapper(sys.modules[__name__])
-_globals = sys.modules[__name__] = _wrapper  # pylint: disable=invalid-name
+instance = Logger()
+_globals = sys.modules[__name__] = Wrapper(sys.modules[__name__])  # pylint: disable=invalid-name

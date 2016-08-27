@@ -3,6 +3,9 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 from babelfish.language import Language
+from github.AuthenticatedUser import AuthenticatedUser
+from github.Gist import Gist
+from github.Issue import Issue
 from github.MainClass import Github
 from github.Organization import Organization
 from github.Repository import Repository
@@ -10,7 +13,8 @@ from mock.mock import Mock
 import pytest
 from sickbeard.common import DOWNLOADED, Quality
 from sickbeard.indexers.indexer_config import INDEXER_TVDB
-from sickbeard.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, read_loglines
+from sickbeard.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance
+from sickbeard.logger import read_loglines as logger_read_loglines
 from sickbeard.tv import TVEpisode, TVShow
 from sickbeard.versionChecker import CheckVersion
 from sickrage.helper.common import dateTimeFormat
@@ -57,6 +61,8 @@ def _construct_mapping(self, node, deep=False):
 
 
 yaml.Loader.add_constructor('tag:yaml.org,2002:map', _construct_mapping)
+
+sequence_number = 1
 
 
 def _patch_object(monkeypatch, target, **kwargs):
@@ -140,7 +146,9 @@ def commit_hash(monkeypatch):
 
 @pytest.fixture
 def logfile(tmpdir):
-    return str(tmpdir.ensure('logfile.log'))
+    target = str(tmpdir.ensure('logfile.log'))
+    instance.log_file = target
+    return target
 
 
 @pytest.fixture
@@ -164,19 +172,64 @@ def logger(rotating_file_handler, commit_hash):
 
 
 @pytest.fixture
-def loglines(logfile):
-    return read_loglines(logfile)
+def read_loglines(logfile):
+    return logger_read_loglines(logfile)
 
 
 @pytest.fixture
-def github_organization(monkeypatch):
+def github(monkeypatch, github_user, github_organization):
+    target = Github(login_or_token='_test_user_', password='_test_password_', user_agent='MedusaTests')
+    monkeypatch.setattr(target, 'get_user', lambda *args, **kwargs: github_user)
+    monkeypatch.setattr(target, 'get_organization', lambda login: github_organization)
+    return target
+
+
+@pytest.fixture
+def github_user(monkeypatch):
+    target = AuthenticatedUser(Mock(), Mock(), dict(), True)
+
+    def create_gist(public, files):
+        _patch_object(monkeypatch, target, public=public,
+                      files={name: fc._identity['content'] for name, fc in files.items()})
+        return target
+
+    monkeypatch.setattr(target, 'create_gist', create_gist)
+    return target
+
+
+@pytest.fixture
+def github_gist():
+    return Gist(Mock(), Mock(), dict(), True)
+
+
+@pytest.fixture
+def github_organization(monkeypatch, github_repo):
     target = Organization(Mock(), Mock(), dict(), True)
-    monkeypatch.setattr(Github, 'get_organization', lambda m, org: target)
+    monkeypatch.setattr(target, 'get_repo', lambda name: github_repo)
     return target
 
 
 @pytest.fixture
-def github_repo(monkeypatch, github_organization):
-    target = Repository(Mock(), Mock(), dict(), True)
-    monkeypatch.setattr(github_organization, 'get_repo', lambda repo: target)
-    return target
+def github_repo():
+    return Repository(Mock(), Mock(), dict(), True)
+
+
+@pytest.fixture
+def create_github_issue(monkeypatch):
+    def create(title, body=None, locked=False, number=1, **kwargs):
+        target = Issue(Mock(), Mock(), dict(), True)
+        raw_data = {
+            'locked': locked
+        }
+        _patch_object(monkeypatch, target, number=number, title=title, body=body, raw_data=raw_data)
+        return target
+
+    return create
+
+
+@pytest.fixture
+def raise_github_exception():
+    def raise_ex(exception_type, http_status):
+        raise exception_type(http_status, {})
+
+    return raise_ex

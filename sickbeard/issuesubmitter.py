@@ -27,7 +27,9 @@ class IssueSubmitter(object):
     ALREADY_RUNNING = 'An issue is already being submitted, please wait for it to complete.'
     BAD_CREDENTIALS = 'Please check your Github credentials in Medusa settings. Bad Credentials error'
     RATE_LIMIT = 'Please wait before submit new issues. Github Rate Limit Exceeded error'
-    UNABLE_CREATE_ISSUE = 'Failed to create a new issue!'
+    EXISTING_ISSUE_LOCKED = 'Issue #{number} is locked, check GitHub to find info about the error.'
+    COMMENTED_EXISTING_ISSUE = 'Commented on existing issue #{number} successfully!'
+    ISSUE_CREATED = 'Your issue ticket #{number} was submitted successfully!'
 
     TITLE_PREFIX = '[APP SUBMITTED]: '
 
@@ -36,11 +38,11 @@ class IssueSubmitter(object):
         self.running = False
 
     @staticmethod
-    def create_gist(git, logline):
+    def create_gist(github, logline):
         """Create a private gist with log data for the specified logline.
 
-        :param git:
-        :type git: Github
+        :param github:
+        :type github: Github
         :param logline:
         :type logline: sickbeard.logger.LogLine
         :return:
@@ -49,7 +51,7 @@ class IssueSubmitter(object):
         context_loglines = logline.get_context_loglines()
         if context_loglines:
             content = '\n'.join([str(ll) for ll in context_loglines])
-            return git.get_user().create_gist(False, {'sickrage.log': InputFileContent(content)})
+            return github.get_user().create_gist(False, {'sickrage.log': InputFileContent(content)})
 
     @staticmethod
     def create_issue_data(logline, log_url):
@@ -84,30 +86,29 @@ class IssueSubmitter(object):
         ])
 
     @staticmethod
-    def find_similar_issues(git_repo, loglines):
+    def find_similar_issues(github_repo, loglines, max_age=timedelta(days=180)):
         """Find similar issues in GitHub repo.
 
-        :param git_repo:
-        :type git_repo: github.Repository.Repository
+        :param github_repo:
+        :type github_repo: github.Repository.Repository
         :param loglines:
         :type loglines: list of sickbeard.logger.LogLine
+        :param max_age:
+        :type max_age: timedelta
         :return:
         :rtype: dict(str, github.Issue.Issue)
         """
         results = dict()
-        reports = git_repo.get_issues(state='all', since=datetime.now() - timedelta(days=180))
-        for report in reports:
-            report_title = report.title
-            if report_title.startswith(IssueSubmitter.TITLE_PREFIX):
-                report_title = report_title[len(IssueSubmitter.TITLE_PREFIX):]
+        issues = github_repo.get_issues(state='all', since=datetime.now() - max_age)
+        for issue in issues:
+            issue_title = issue.title
+            if issue_title.startswith(IssueSubmitter.TITLE_PREFIX):
+                issue_title = issue_title[len(IssueSubmitter.TITLE_PREFIX):]
 
             for logline in loglines:
                 log_title = logline.issue_title
-                if log_title.startswith(IssueSubmitter.TITLE_PREFIX):
-                    log_title = log_title[len(IssueSubmitter.TITLE_PREFIX):]
-
-                if IssueSubmitter.similar(log_title, report_title):
-                    results[logline.key] = report
+                if IssueSubmitter.similar(log_title, issue_title):
+                    results[logline.key] = issue
 
             if len(results) >= len(loglines):
                 break
@@ -115,23 +116,27 @@ class IssueSubmitter(object):
         return results
 
     @staticmethod
-    def similar(title1, title2):
+    def similar(title1, title2, ratio=0.9):
         """Return wheter the title1 is similar to title2.
 
         :param title1:
         :type title1: str
         :param title2:
         :type title2: str
+        :param ratio:
+        :type ratio: float
         :return:
         :rtype: bool
         """
-        return difflib.SequenceMatcher(None, title1, title2).ratio() >= 0.9
+        return difflib.SequenceMatcher(None, title1, title2).ratio() >= ratio
 
-    def submit_github_issue(self, version_checker):
+    def submit_github_issue(self, version_checker, max_issues=500):
         """Submit errors to github.
 
         :param version_checker:
         :type version_checker: CheckVersion
+        :param max_issues:
+        :type max_issues: int
         :return: user message and issue number
         :rtype: list of tuple(str, str)
         """
@@ -153,43 +158,12 @@ class IssueSubmitter(object):
 
         self.running = True
         try:
-            git = Github(login_or_token=sickbeard.GIT_USERNAME, password=sickbeard.GIT_PASSWORD, user_agent='Medusa')
-            git_repo = git.get_organization(sickbeard.GIT_ORG).get_repo(sickbeard.GIT_REPO)
+            github = Github(login_or_token=sickbeard.GIT_USERNAME, password=sickbeard.GIT_PASSWORD, user_agent='Medusa')
+            github_repo = github.get_organization(sickbeard.GIT_ORG).get_repo(sickbeard.GIT_REPO)
+            loglines = ErrorViewer.errors[:max_issues]
+            similar_issues = IssueSubmitter.find_similar_issues(github_repo, loglines)
 
-            results = []
-            loglines = ErrorViewer.errors[:500]
-            similar_issues = IssueSubmitter.find_similar_issues(git_repo, loglines)
-            # parse and submit errors to issue tracker
-            for logline in loglines:
-                gist = IssueSubmitter.create_gist(git, logline)
-                message = IssueSubmitter.create_issue_data(logline, log_url=gist.html_url if gist else None)
-                similar_issue = similar_issues[logline.key]
-                issue_id = None
-                if similar_issue:
-                    if similar_issue.raw_data['locked']:
-                        submitter_result = 'Issue #{number} is locked, check GitHub to find info about the error.'.format(number=similar_issue.number)
-                        logger.warning(submitter_result)
-                    elif similar_issue.create_comment(message):
-                        issue_id = similar_issue.number
-                        submitter_result = 'Commented on existing issue #{number} successfully!'.format(number=issue_id)
-                        logger.info(submitter_result)
-                        ErrorViewer.remove(logline)
-                    else:
-                        submitter_result = 'Failed to comment on found issue #{number}!'.format(number=similar_issue.number)
-                        logger.warning(submitter_result)
-                else:
-                    issue = git_repo.create_issue('{prefix}{title}'.format(prefix=IssueSubmitter.TITLE_PREFIX, title=logline.issue_title), message)
-                    if issue:
-                        issue_id = issue.number
-                        submitter_result = 'Your issue ticket #{number} was submitted successfully!'.format(number=issue_id)
-                        logger.info(submitter_result)
-                        ErrorViewer.remove(logline)
-                    else:
-                        submitter_result = IssueSubmitter.UNABLE_CREATE_ISSUE
-                        logger.warning(submitter_result)
-                results.append((submitter_result, issue_id))
-
-            return results
+            return IssueSubmitter.submit_issues(github, github_repo, loglines, similar_issues)
         except BadCredentialsException:
             logger.warning(IssueSubmitter.BAD_CREDENTIALS)
             return [(IssueSubmitter.BAD_CREDENTIALS, None)]
@@ -198,3 +172,44 @@ class IssueSubmitter(object):
             return [(IssueSubmitter.RATE_LIMIT, None)]
         finally:
             self.running = False
+
+    @staticmethod
+    def submit_issues(github, github_repo, loglines, similar_issues):
+        """Submit issues to github.
+
+        :param github:
+        :type github: Github
+        :param github_repo:
+        :type github_repo: github.Repository.Repository
+        :param loglines:
+        :type loglines: list of sickbeard.logger.LogLine
+        :param similar_issues:
+        :type similar_issues: dict(str, github.Issue.Issue)
+        :return:
+        :rtype: list of tuple(str, str)
+        """
+        results = []
+        for logline in loglines:
+            gist = IssueSubmitter.create_gist(github, logline)
+            message = IssueSubmitter.create_issue_data(logline, log_url=gist.html_url if gist else None)
+            similar_issue = similar_issues.get(logline.key)
+            issue_id = None
+            if similar_issue:
+                if similar_issue.raw_data['locked']:
+                    submitter_result = IssueSubmitter.EXISTING_ISSUE_LOCKED.format(number=similar_issue.number)
+                    logger.warning(submitter_result)
+                else:
+                    similar_issue.create_comment(message)
+                    issue_id = similar_issue.number
+                    submitter_result = IssueSubmitter.COMMENTED_EXISTING_ISSUE.format(number=issue_id)
+                    logger.info(submitter_result)
+                    ErrorViewer.remove(logline)
+            else:
+                issue = github_repo.create_issue('{prefix}{title}'.format(prefix=IssueSubmitter.TITLE_PREFIX, title=logline.issue_title), message)
+                issue_id = issue.number
+                submitter_result = IssueSubmitter.ISSUE_CREATED.format(number=issue_id)
+                logger.info(submitter_result)
+                ErrorViewer.remove(logline)
+            results.append((submitter_result, issue_id))
+
+        return results
