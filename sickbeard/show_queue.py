@@ -571,7 +571,7 @@ class QueueItemRefresh(ShowQueueItem):
     def run(self):
         ShowQueueItem.run(self)
 
-        logger.log(u"Performing refresh on " + self.show.name)
+        logger.log(u"{id}: Performing refresh on {show}".format(id=self.show.indexerid, show=self.show.name))
 
         self.show.refresh_dir()
         self.show.write_metadata()
@@ -649,52 +649,59 @@ class QueueItemUpdate(ShowQueueItem):
 
         ShowQueueItem.run(self)
 
-        logger.log(u"Beginning update of " + self.show.name, logger.DEBUG)
+        logger.log(u'{id}: Beginning update of {show}'.format
+                   (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
 
-        logger.log(u"Retrieving show info from " + sickbeard.indexerApi(self.show.indexer).name + "", logger.DEBUG)
+        logger.log(u'{id}: Retrieving show info from {indexer}'.format
+                   (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.show.indexer).name),
+                   logger.DEBUG)
         try:
             self.show.load_from_indexer(cache=not self.force)
         except sickbeard.indexer_error as e:
-            logger.log(u"Unable to contact " + sickbeard.indexerApi(self.show.indexer).name + ", aborting: " + ex(e),
-                       logger.WARNING)
+            logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
+                       (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.show.indexer).name,
+                        error_msg=ex(e)), logger.WARNING)
             return
         except sickbeard.indexer_attributenotfound as e:
-            logger.log(u"Data retrieved from " + sickbeard.indexerApi(
-                self.show.indexer).name + " was incomplete, aborting: " + ex(e), logger.ERROR)
+            logger.log(u'{id}: Data retrieved from {indexer} was incomplete. Aborting: {error_msg}'.format
+                       (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.show.indexer).name,
+                        error_msg=ex(e)), logger.WARNING)
             return
 
-        logger.log(u"Retrieving show info from IMDb", logger.DEBUG)
+        logger.log(u'{id}: Retrieving show info from IMDb'.format(id=self.show.indexerid), logger.DEBUG)
         try:
             self.show.load_imdb_info()
         except imdb_exceptions.IMDbError as e:
-            logger.log(u"Something wrong on IMDb api: " + ex(e), logger.WARNING)
+            logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
+                       (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
         except Exception as e:
-            logger.log(u"Error loading IMDb info: " + ex(e), logger.ERROR)
-            logger.log(traceback.format_exc(), logger.DEBUG)
+            logger.log(u'{id}: Error loading IMDb info: {error_msg}'.format
+                       (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
 
         # have to save show before reading episodes from db
         try:
             self.show.save_to_db()
         except Exception as e:
-            logger.log(u"Error saving show info to the database: " + ex(e), logger.ERROR)
-            logger.log(traceback.format_exc(), logger.DEBUG)
+            logger.log(u"Error saving show info to the database: {0!r}".format(ex(e)), logger.WARNING)
+            logger.log(traceback.format_exc(), logger.ERROR)
 
         # get episode list from DB
-        logger.log(u"Loading all episodes from the database", logger.DEBUG)
         DBEpList = self.show.load_episodes_from_db()
 
         # get episode list from TVDB
-        logger.log(u"Loading all episodes from " + sickbeard.indexerApi(self.show.indexer).name + "", logger.DEBUG)
         try:
             IndexerEpList = self.show.load_episodes_from_indexer(cache=not self.force)
         except sickbeard.indexer_exception as e:
-            logger.log(u"Unable to get info from " + sickbeard.indexerApi(
-                self.show.indexer).name + ", the show info will not be refreshed: " + ex(e), logger.ERROR)
+            logger.log(u'{id}: Unable to get info from {indexer}. The show info will not be refreshed. '
+                       u'Error: {error_msg}'.format
+                       (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.show.indexer).name, error_msg=ex(e)),
+                       logger.WARNING)
             IndexerEpList = None
 
         if IndexerEpList is None:
-            logger.log(u"No data returned from " + sickbeard.indexerApi(
-                self.show.indexer).name + ", unable to update this show", logger.ERROR)
+            logger.log(u'{id}: No data returned from {indexer}. Unable to update this show'.format
+                       (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.show.indexer).name),
+                       logger.WARNING)
         else:
             # for each ep we found on the Indexer delete it from the DB list
             for curSeason in IndexerEpList:

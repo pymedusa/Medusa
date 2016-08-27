@@ -633,7 +633,7 @@ class TVShow(TVObject):
         :return:
         :rtype: dict(int -> dict(int -> bool))
         """
-        logger.log(u'Loading all episodes from the DB', logger.DEBUG)
+        logger.log(u'{id}: Loading all episodes from the DB'.format(id=self.indexerid), logger.DEBUG)
         scanned_eps = {}
 
         try:
@@ -648,14 +648,16 @@ class TVShow(TVObject):
                    b'  showid = indexer_id and showid = ?')
             sql_results = main_db_con.select(sql, [self.indexerid])
         except Exception as error:
-            logger.log(u'Could not load episodes from the DB. Error: %s' % error, logger.ERROR)
+            logger.log(u'{id}: Could not load episodes from the DB. Error: {error_msg}'.format
+                       (id=self.indexerid, error_msg=error), logger.ERROR)
             return scanned_eps
 
         indexer_api_params = sickbeard.indexerApi(self.indexer).api_params.copy()
 
         if self.lang:
             indexer_api_params[b'language'] = self.lang
-            logger.log(u'Using language: ' + str(self.lang), logger.DEBUG)
+            logger.log(u'{id}: Using language from show settings: {lang}'.format
+                       (id=self.indexerid, lang=self.lang), logger.DEBUG)
 
         if self.dvdorder != 0:
             indexer_api_params[b'dvdorder'] = True
@@ -674,26 +676,24 @@ class TVShow(TVObject):
             cur_show_id = int(cur_result[b'showid'])
             cur_show_name = text_type(cur_result[b'show_name'])
 
-            logger.log(u'%s: Loading %s episodes from DB' % (cur_show_id, cur_show_name), logger.DEBUG)
             delete_ep = False
+
+            logger.log(u'{id}: Loading {show} {ep} from the DB'.format
+                       (id=cur_show_id, show=cur_show_name, ep=episode_num(cur_season, cur_episode)),
+                       logger.DEBUG)
 
             if cur_season not in cached_seasons:
                 try:
                     cached_seasons[cur_season] = cached_show[cur_season]
                 except sickbeard.indexer_seasonnotfound as error:
-                    logger.log(u'%s: %s (unaired/deleted) in the indexer %s for %s. '
-                               u'Removing existing records from database' %
-                               (cur_show_id, error.message, sickbeard.indexerApi(self.indexer).name, cur_show_name),
-                               logger.DEBUG)
+                    logger.log(u'{id}: {error_msg} (unaired/deleted) in the indexer {indexer} for {show}. '
+                               u'Removing existing records from database'.format
+                               (id=cur_show_id, error_msg=error.message, indexer=sickbeard.indexerApi(self.indexer).name,
+                                show=cur_show_name), logger.DEBUG)
                     delete_ep = True
 
             if cur_season not in scanned_eps:
-                logger.log(u'{id}: Not cur_season in scanned_eps'.format(id=cur_show_id), logger.DEBUG)
                 scanned_eps[cur_season] = {}
-
-            logger.log(u'{id}: Loading {show} {ep} from the DB'.format
-                       (id=cur_show_id, show=cur_show_name, ep=episode_num(cur_season, cur_episode)),
-                       logger.DEBUG)
 
             try:
                 cur_ep = self.get_episode(cur_season, cur_episode)
@@ -746,9 +746,8 @@ class TVShow(TVObject):
                        sickbeard.indexerApi(self.indexer).name, logger.WARNING)
             return None
 
-        logger.log(
-            str(self.indexerid) + u': Loading all episodes from ' + sickbeard.indexerApi(self.indexer).name + u'..',
-            logger.DEBUG)
+        logger.log(u'{id}: Loading all episodes from {indexer}'.format
+                   (id=self.indexerid, indexer=sickbeard.indexerApi(self.indexer).name), logger.DEBUG)
 
         scanned_eps = {}
 
@@ -777,7 +776,6 @@ class TVShow(TVObject):
 
                 with ep.lock:
                     ep.load_from_indexer(season, episode, tvapi=t)
-
                     sql_l.append(ep.get_sql())
 
                 scanned_eps[season][episode] = True
@@ -1856,7 +1854,7 @@ class TVEpisode(TVObject):
         if len(sql_results) > 1:
             raise MultipleEpisodesInDatabaseException('Your DB has two records for the same show somehow.')
         elif not sql_results:
-            logger.log(u'{id}: Episode {ep} not found in the database'.format
+            logger.log(u'{id}: {ep} not found in the database'.format
                        (id=self.show.indexerid, ep=episode_num(self.season, self.episode)),
                        logger.DEBUG)
             return False
@@ -1966,37 +1964,38 @@ class TVEpisode(TVObject):
                 my_ep = t[self.show.indexerid][season][episode]
 
         except (sickbeard.indexer_error, IOError) as e:
-            logger.log(u'' + sickbeard.indexerApi(self.indexer).name + u' threw up an error: ' + ex(e), logger.DEBUG)
+            logger.log(u'{id}: {indexer} threw up an error: {error_msg}'.format
+                       (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.indexer).name, error_msg=ex(e)), logger.WARNING)
             # if the episode is already valid just log it, if not throw it up
             if self.name:
-                logger.log(u'' + sickbeard.indexerApi(self.indexer).name +
-                           u' timed out but we have enough info from other sources, allowing the error', logger.DEBUG)
+                logger.log(u'{id}: {indexer} timed out but we have enough info from other sources, allowing the error'.format
+                           (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.indexer).name), logger.DEBUG)
                 return
             else:
-                logger.log(u'' + sickbeard.indexerApi(self.indexer).name + u' timed out, unable to create the episode',
-                           logger.ERROR)
+                logger.log(u'{id}: {indexer} timed out, unable to create the episode'.format
+                           (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.indexer).name), logger.WARNING)
                 return False
         except (sickbeard.indexer_episodenotfound, sickbeard.indexer_seasonnotfound):
-            logger.log(u'Unable to find the episode on ' + sickbeard.indexerApi(
-                self.indexer).name + u'... has it been removed? Should I delete from db?', logger.DEBUG)
+            logger.log(u'{id}: Unable to find the episode on {indexer}. Deleting it from db'.format
+                       (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.indexer).name), logger.DEBUG)
             # if I'm no longer on the Indexers but I once was then delete myself from the DB
             if self.indexerid != -1:
                 self.delete_episode()
             return
 
         if getattr(my_ep, 'episodename', None) is None:
-            logger.log(u'This episode {show} - {ep} has no name on {indexer}. Setting to an empty string'.format
-                       (show=self.show.name, ep=episode_num(season, episode),
+            logger.log(u'{id}: {show} {ep} has no name on {indexer}. Setting to an empty string'.format
+                       (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
                         indexer=sickbeard.indexerApi(self.indexer).name))
             setattr(my_ep, 'episodename', '')
 
         if getattr(my_ep, 'absolute_number', None) is None:
-            logger.log(u'{id}: This episode {show} - {ep} has no absolute number on {indexer}'.format
+            logger.log(u'{id}: {show} {ep} has no absolute number on {indexer}'.format
                        (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
                         indexer=sickbeard.indexerApi(self.indexer).name), logger.DEBUG)
         else:
-            logger.log(u'{id}: The absolute number for {ep} is: {absolute} '.format
-                       (id=self.show.indexerid, ep=episode_num(season, episode), absolute=my_ep['absolute_number']),
+            logger.log(u'{id}: {show} {ep} has absolute number: {absolute} '.format
+                       (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode), absolute=my_ep['absolute_number']),
                        logger.DEBUG)
             self.absolute_number = int(my_ep['absolute_number'])
 
@@ -2048,13 +2047,13 @@ class TVEpisode(TVObject):
         # don't update show status if show dir is missing, unless it's missing on purpose
         if not self.show.is_location_valid() and \
                 not sickbeard.CREATE_MISSING_SHOW_DIRS and not sickbeard.ADD_SHOWS_WO_DIR:
-            logger.log(u'The show dir %s is missing, not bothering to change the episode statuses '
-                       u"since it'd probably be invalid" % self.show.raw_location)
+            logger.log(u"The show {show} dir '{location}' is missing. Keeping current episode statuses".format
+                       (show=self.show.name, location=self.show.raw_location), logger.WARNING)
             return
 
         if self.location:
-            logger.log(u'{id}: Setting status for {ep} based on status {status} and location {location}'.format
-                       (id=self.show.indexerid, ep=episode_num(season, episode),
+            logger.log(u'{id}: Setting status for {show} {ep} based on status {status} and location {location}'.format
+                       (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
                         status=statusStrings[self.status], location=self.location), logger.DEBUG)
 
         if not ek(os.path.isfile, self.location):
@@ -2065,31 +2064,36 @@ class TVEpisode(TVObject):
                 # If is a leaked episode and user manually snatched, it will respect status
                 # If is a fake (manually snatched), when user set as FAILED, status will be WANTED
                 # and code below will make it UNAIRED again
-                logger.log(u'%s: Episode airs in the future or has no airdate, marking it %s' %
-                           (self.show.indexerid, statusStrings[UNAIRED]), logger.DEBUG)
+                logger.log(u'{id}: {show} {ep} airs in the future or has no airdate, marking it {status}'.format
+                           (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
+                            status=statusStrings[UNAIRED]), logger.DEBUG)
                 self.status = UNAIRED
             elif self.status in (UNAIRED, UNKNOWN):
                 # Only do UNAIRED/UNKNOWN, it could already be snatched/ignored/skipped,
                 # or downloaded/archived to disconnected media
-                logger.log(u'Episode has already aired, marking it %s' %
-                           statusStrings[self.show.default_ep_status], logger.DEBUG)
+                logger.log(u'{id}: {show} {ep} has already aired, marking it {status}'.format
+                           (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
+                            status=statusStrings[self.status]), logger.DEBUG)
                 self.status = self.show.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
             else:
-                logger.log(u'Not touching status [ %s ] It could be skipped/ignored/snatched/archived' %
-                           statusStrings[self.status], logger.DEBUG)
+                logger.log(u'{id}: {show} {ep} status untouched: {status}'.format
+                           (status=statusStrings[self.status], id=self.show.indexerid, show=self.show.name,
+                            ep=episode_num(season, episode)), logger.DEBUG)
 
         # if we have a media file then it's downloaded
         elif sickbeard.helpers.isMediaFile(self.location):
             # leave propers alone, you have to either post-process them or manually change them back
             if self.status not in Quality.SNATCHED_PROPER + Quality.DOWNLOADED + Quality.SNATCHED + Quality.ARCHIVED:
-                logger.log(
-                    u'5 Status changes from ' + str(self.status) + u' to ' + str(Quality.statusFromName(self.location)),
-                    logger.DEBUG)
+                logger.log(u"{id}: {show} {ep} status changed from '{old_status}' to '{new_status}'".format
+                           (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode), old_status=self.status,
+                            new_status=Quality.statusFromName(self.location, anime=self.show.is_anime)), logger.DEBUG)
                 self.status = Quality.statusFromName(self.location, anime=self.show.is_anime)
 
         # shouldn't get here probably
         else:
-            logger.log(u'6 Status changes from ' + str(self.status) + u' to ' + str(UNKNOWN), logger.DEBUG)
+            logger.log(u"{id}: {show} {ep} status changed from {old_status} to 'UNKNOWN".format
+                       (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
+                        old_status=self.status), logger.DEBUG)
             self.status = UNKNOWN
 
     def __load_from_nfo(self, location):
@@ -2229,16 +2233,19 @@ class TVEpisode(TVObject):
 
     def delete_episode(self):
         """Delete episode from database."""
-        logger.log(u'Deleting {show} {ep} from the DB'.format
-                   (show=self.show.name, ep=episode_num(self.season, self.episode)), logger.DEBUG)
+        logger.log(u'{id}: Deleting {show} {ep} from the DB'.format
+                   (id=self.show.indexerid, show=self.show.name,
+                    ep=episode_num(self.season, self.episode)), logger.DEBUG)
 
         # remove myself from the show dictionary
         if self.show.get_episode(self.season, self.episode, no_create=True) == self:
-            logger.log(u"Removing myself from my show's list", logger.DEBUG)
+            logger.log(u"{id}: Removing myself from my show's list".format
+                       (id=self.show.indexerid), logger.DEBUG)
             del self.show.episodes[self.season][self.episode]
 
         # delete myself from the DB
-        logger.log(u'Deleting myself from the database', logger.DEBUG)
+        logger.log(u'{id}: Deleting myself from the database'.format
+                   (id=self.show.indexerid), logger.DEBUG)
         main_db_con = db.DBConnection()
         sql = b'DELETE FROM tv_episodes WHERE showid=' + str(self.show.indexerid) + b' AND season=' + str(
             self.season) + b' AND episode=' + str(self.episode)
