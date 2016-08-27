@@ -13,8 +13,6 @@
     gh_branch = app.GIT_REMOTE_BRANCHES or app.versionCheckScheduler.action.list_remote_branches()
 %>
 <%block name="content">
-
-
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
 % else:
@@ -24,28 +22,27 @@
 % if app.INDEXER_DEFAULT:
     <% indexer = app.INDEXER_DEFAULT %>
 % endif
-<script type="text/javascript" src="js/customTabs.js?${sbPID}"></script>
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="config/general/saveGeneral" method="post">
-            <div id="config-components" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
-                <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all" role="tablist">
-                    <li class="ui-state-default ui-corner-top ui-tabs-active ui-state-active" data-labelled="1">
-                        <a class="ui-tabs-anchor" href="${base_url}config/general/#misc" role="tab">Misc</a>
+            <div id="config-components" class="ui-tabs">
+                <ul>
+                    <li>
+                        <a href="config/general/#misc">Misc</a>
                     </li>
-                    <li class="ui-state-default ui-corner-top" data-labelled="2">
-                        <a class="ui-tabs-anchor" href="${base_url}config/general/#interface" role="tab">Interface</a>
+                    <li>
+                        <a href="config/general/#interface">Interface</a>
                     </li>
-                    <li class="ui-state-default ui-corner-top" data-labelled="3">
-                        <a class="ui-tabs-anchor" href="${base_url}config/general/#advanced-settings">Advanced Settings</a>
+                    <li>
+                        <a href="config/general/#advanced-settings">Advanced Settings</a>
                     </li>
                 </ul>
-                <div id="misc" class="ui-tabs-panel ui-widget-content ui-corner-bottom" data-labelled-by="1">
-                        <div class="component-group-desc">
-                            <h3>Misc</h3>
-                            <p>Startup options. Indexer options. Log and show file locations.</p>
-                            <p><b>Some options may require a manual restart to take effect.</b></p>
-                        </div>
+                <div data-tab-id="misc">
+                    <div class="component-group-desc">
+                        <h3>Misc</h3>
+                        <p>Startup options. Indexer options. Log and show file locations.</p>
+                        <p><b>Some options may require a manual restart to take effect.</b></p>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -214,7 +211,7 @@
                         </fieldset>
                     </div>
                 </div><!-- /component-group1 //-->
-                <div id="interface" class="ui-tabs-panel ui-widget-content ui-corner-bottom" data-labelled-by="2">
+                <div data-tab-id="interface">
                     <div class="component-group-desc">
                         <h3>User Interface</h3>
                         <p>Options for visual appearance.</p>
@@ -472,7 +469,7 @@
                     </fieldset>
                 </div><!-- /component-group2 //-->
                 </div>
-                <div id="advanced-settings" class="component-group ui-tabs-panel ui-widget-content ui-corner-bottom" data-labelled-by="3">
+                <div data-tab-id="advanced-settings" class="component-group">
                     <div class="component-group-desc">
                         <h3>Advanced Settings</h3>
                     </div>
@@ -608,9 +605,9 @@
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
-                    <div class="component-group-desc">
-                        <h3>Logging</h3>
-                    </div>
+                <div class="component-group-desc">
+                    <h3>Logging</h3>
+                </div>
                 <div class="component-group">
                     <fieldset class="component-group-list">
                         <div class="field-pair">
@@ -652,10 +649,10 @@
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
-                    <div class="component-group-desc">
-                        <h3>GitHub</h3>
-                        <p>Options for github related features.</p>
-                    </div>
+                <div class="component-group-desc">
+                    <h3>GitHub</h3>
+                    <p>Options for github related features.</p>
+                </div>
                 <div class="component-group">
                     <fieldset class="component-group-list">
                         <div class="field-pair">

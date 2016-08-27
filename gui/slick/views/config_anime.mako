@@ -9,13 +9,12 @@
     <div id="config">
         <div id="config-content">
             <form id="configForm" action="config/anime/saveAnime" method="post">
-                <div id="config-components">
+                <div id="config-components" class="ui-tabs">
                     <ul>
-                        ## @TODO: Fix this stupid hack
-                        <script>document.write('<li><a href="' + document.location.href + '#animedb-settings">AnimeDB Settings</a></li>');</script>
-                        <script>document.write('<li><a href="' + document.location.href + '#anime-look-feel">Look &amp; Feel</a></li>');</script>
+                        <li><a href="config/anime/#animedb-settings">AnimeDB Settings</a></li>
+                        <li><a href="config/anime/#anime-look-feel">Look &amp; Feel</a></li>
                     </ul>
-                    <div id="animedb-settings" class="tab-pane active component-group">
+                    <div data-tab-id="animedb-settings" class="component-group">
                         <div class="component-group-desc">
                             <span class="icon-notifiers-anime" title="AniDB"></span>
                             <h3>
@@ -64,7 +63,7 @@
                             <input type="submit" class="btn config_submitter" value="Save Changes" />
                         </fieldset><!-- .component-group-list //-->
                     </div><!-- #animedb-settings //-->
-                    <div id="anime-look-feel" class="tab-pane component-group">
+                    <div data-tab-id="anime-look-feel" class="component-group">
                         <div class="component-group-desc">
                             <span class="icon-notifiers-look" title="look"></span>
                             <h3>Look and Feel</h3>

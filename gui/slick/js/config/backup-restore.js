@@ -31,5 +31,4 @@ MEDUSA.config.backupRestore = function() {
         key: 'backupFile',
         includeFiles: 1
     });
-    $('#config-components').tabs();
 };
