@@ -4,11 +4,20 @@
 from __future__ import unicode_literals
 
 import re
+from datetime import timedelta
 
-from guessit.api import default_api
+from dogpile.cache.region import make_region
+
 from guessit.rules.common.date import valid_year
 import sickbeard
-import six
+from sickbeard.helpers import normalize
+from .rules import default_api
+
+
+region = make_region()
+region.configure('dogpile.cache.memory')
+
+EXPECTED_TITLES_EXPIRATION_TIME = timedelta(days=1).total_seconds()
 
 # hardcoded expected titles
 fixed_expected_titles = {
@@ -17,7 +26,7 @@ fixed_expected_titles = {
 }
 
 # release group exception list
-expected_groups = {
+expected_groups = normalize({
     # https://github.com/guessit-io/guessit/issues/297
     # guessit blacklists parts of the name for the following groups
     r're:\bbyEMP\b',
@@ -42,9 +51,9 @@ expected_groups = {
     r're:\bPtM\b',
     r're:\bTGNF4ST\b',
     r're:\bTV2LAX9\b',
-}
+})
 
-allowed_languages = {
+allowed_languages = normalize({
     'de',
     'en',
     'es',
@@ -60,12 +69,12 @@ allowed_languages = {
     'ru',
     'sv',
     'uk',
-}
+})
 
-allowed_countries = {
+allowed_countries = normalize({
     'us',
     'gb',
-}
+})
 
 series_re = re.compile(r'^(?P<series>.*?)(?: \(?(?:(?P<year>\d{4})|(?P<country>[A-Z]{2}))\)?)?$')
 
@@ -83,41 +92,27 @@ def guessit(name, options=None):
     final_options = dict(options) if options else dict()
     final_options.update(dict(type='episode', implicit=True,
                               episode_prefer_number=final_options.get('show_type') == 'anime',
-                              expected_title=normalize(get_expected_titles()),
-                              expected_group=normalize(expected_groups),
-                              allowed_languages=normalize(allowed_languages),
-                              allowed_countries=normalize(allowed_countries)))
+                              expected_title=get_expected_titles(sickbeard.showList),
+                              expected_group=expected_groups,
+                              allowed_languages=allowed_languages,
+                              allowed_countries=allowed_countries))
     return default_api.guessit(name, options=final_options)
 
 
-def normalize(strings):
-    """Normalize string as expected by guessit.
-
-    Remove when https://github.com/guessit-io/guessit/issues/326 is fixed.
-    :param strings:
-    :rtype: list of str
-    """
-    result = []
-    for string in strings:
-        if six.PY2 and isinstance(string, six.text_type):
-            string = string.encode('utf-8')
-        elif six.PY3 and isinstance(string, six.binary_type):
-            string = string.decode('ascii')
-        result.append(string)
-    return result
-
-
-def get_expected_titles():
+@region.cache_on_arguments(expiration_time=EXPECTED_TITLES_EXPIRATION_TIME)
+def get_expected_titles(show_list):
     """Return expected titles to be used by guessit.
 
     It iterates over user's show list and only returns a regex for titles that contains numbers
     (since they can confuse guessit).
 
+    :param show_list:
+    :type show_list: list of sickbeard.tv.TVShow
     :return:
     :rtype: list of str
     """
     expected_titles = list(fixed_expected_titles)
-    for show in sickbeard.showList:
+    for show in show_list:
         names = [show.name] + show.exceptions
         for name in names:
             match = series_re.match(name)
@@ -139,7 +134,7 @@ def get_expected_titles():
             fmt = r're:\b{name}\b' if show.is_anime else r're:(?<![^/\\\.]){name}\b'
             expected_titles.append(fmt.format(name=prepare(series)))
 
-    return expected_titles
+    return normalize(expected_titles)
 
 
 def prepare(string):
