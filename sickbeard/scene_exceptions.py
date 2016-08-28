@@ -240,7 +240,6 @@ def combine_exceptions(custom_exceptions, *external_exceptions):
 
     for ex_id in other_exceptions:
         if ex_id in custom_exceptions:
-            logger.log(ex_id, logger.WARNING)
             unique_exceptions = [x for x in other_exceptions[ex_id] if x not in custom_exceptions[ex_id]]
             custom_exceptions[ex_id].extend(unique_exceptions)
         else:
