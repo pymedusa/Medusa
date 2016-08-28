@@ -69,8 +69,6 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
 
         self.amActive = True
 
-        logger.log('Searching for newly released episodes ...')
-
         if not network_dict:
             update_network_dict()
 
@@ -126,8 +124,6 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         if new_releases:
             main_db_con = DBConnection()
             main_db_con.mass_action(new_releases)
-        else:
-            logger.log('No newly released episodes found ...')
 
         # queue episode for daily search
         sickbeard.searchQueueScheduler.action.add_item(
