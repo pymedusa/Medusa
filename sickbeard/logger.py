@@ -531,11 +531,6 @@ class Logger(object):
         """Default Constructor."""
         self.logger = logging.getLogger('sickrage')
         self.loggers = [self.logger]
-        self.loggers.extend(get_loggers(sickrage))
-        self.loggers.extend(get_loggers(sickbeard))
-        self.loggers.extend(get_loggers(subliminal))
-        self.loggers.extend([access_log, app_log, gen_log])
-        self.loggers.extend(get_loggers(traktor))
         self.log_level = None
         self.log_file = None
         self.file_handler = None
@@ -547,6 +542,12 @@ class Logger(object):
         :param console_logging: True if logging to console
         :type console_logging: bool
         """
+        self.loggers.extend(get_loggers(sickrage))
+        self.loggers.extend(get_loggers(sickbeard))
+        self.loggers.extend(get_loggers(subliminal))
+        self.loggers.extend([access_log, app_log, gen_log])
+        self.loggers.extend(get_loggers(traktor))
+
         logging.addLevelName(DB, 'DB')  # add a new logging level DB
         logging.getLogger().addHandler(NullHandler())  # nullify root logger
         log_filter = ContextFilter()
