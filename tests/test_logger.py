@@ -317,4 +317,4 @@ def test_format_to_html(logger, read_loglines):
     actual = logline.format_to_html(base_url)
 
     # Then
-    assert '<a href="../base/test_logger.py#' in actual
+    assert '<a href="../base/' in actual
