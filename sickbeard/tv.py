@@ -709,18 +709,15 @@ class TVShow(TVObject):
 
         return scanned_eps
 
-    def load_episodes_from_indexer(self, cache=True):
+    def load_episodes_from_indexer(self):
         """Load episodes from indexer.
 
-        :param cache:
-        :type cache: bool
         :return:
         :rtype: dict(int -> dict(int -> bool))
         """
         indexer_api_params = sickbeard.indexerApi(self.indexer).api_params.copy()
 
-        if not cache:
-            indexer_api_params['cache'] = False
+        indexer_api_params['cache'] = False
 
         if self.lang:
             indexer_api_params['language'] = self.lang
@@ -1017,11 +1014,9 @@ class TVShow(TVObject):
         self.reset_dirty()
         return True
 
-    def load_from_indexer(self, cache=True, tvapi=None):
+    def load_from_indexer(self, tvapi=None):
         """Load show from indexer.
 
-        :param cache:
-        :type cache: bool
         :param tvapi:
         """
         if self.indexer == INDEXER_TVRAGE:
@@ -1037,8 +1032,7 @@ class TVShow(TVObject):
         else:
             indexer_api_params = sickbeard.indexerApi(self.indexer).api_params.copy()
 
-            if not cache:
-                indexer_api_params['cache'] = False
+            indexer_api_params['cache'] = False
 
             if self.lang:
                 indexer_api_params['language'] = self.lang
@@ -1939,15 +1933,13 @@ class TVEpisode(TVObject):
             self.reset_dirty()
             return True
 
-    def load_from_indexer(self, season=None, episode=None, cache=True, tvapi=None, cached_season=None):
+    def load_from_indexer(self, season=None, episode=None, tvapi=None, cached_season=None):
         """Load episode information from indexer.
 
         :param season:
         :type season: int
         :param episode:
         :type episode: int
-        :param cache:
-        :type cache: bool
         :param tvapi:
         :param cached_season:
         :return:
@@ -1969,8 +1961,7 @@ class TVEpisode(TVObject):
                 else:
                     indexer_api_params = sickbeard.indexerApi(self.indexer).api_params.copy()
 
-                    if not cache:
-                        indexer_api_params['cache'] = False
+                    indexer_api_params['cache'] = False
 
                     if indexer_lang:
                         indexer_api_params['language'] = indexer_lang

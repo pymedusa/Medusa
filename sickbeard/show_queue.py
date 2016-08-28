@@ -654,7 +654,7 @@ class QueueItemUpdate(ShowQueueItem):
                    (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.show.indexer).name),
                    logger.DEBUG)
         try:
-            self.show.load_from_indexer(cache=not self.force)
+            self.show.load_from_indexer()
         except sickbeard.indexer_error as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
                        (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.show.indexer).name,
@@ -690,7 +690,7 @@ class QueueItemUpdate(ShowQueueItem):
 
         # get episode list from TVDB
         try:
-            IndexerEpList = self.show.load_episodes_from_indexer(cache=not self.force)
+            IndexerEpList = self.show.load_episodes_from_indexer()
         except sickbeard.indexer_exception as e:
             logger.log(u'{id}: Unable to get info from {indexer}. The show info will not be refreshed. '
                        u'Error: {error_msg}'.format
