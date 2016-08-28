@@ -228,8 +228,6 @@ def retrieve_exceptions():
     if queries:
         cache_db_con.mass_action(queries)
         logger.log('Updated scene exceptions.', logger.INFO)
-    else:
-        logger.log('No scene exceptions update needed.', logger.INFO)
 
 
 def combine_exceptions(custom_exceptions, *external_exceptions):
