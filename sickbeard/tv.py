@@ -697,7 +697,6 @@ class TVShow(TVObject):
                     cur_ep.delete_episode()
 
                 cur_ep.load_from_db(cur_season, cur_episode)
-                cur_ep.load_from_indexer(tvapi=t, cached_season=cached_seasons[cur_season])
                 scanned_eps[cur_season][cur_episode] = True
             except EpisodeDeletedException:
                 logger.log(u'{id}: Tried loading {show} {ep} from the DB that should have been deleted, '
@@ -767,7 +766,6 @@ class TVShow(TVObject):
                         continue
 
                 with ep.lock:
-                    ep.load_from_indexer(season, episode, tvapi=t)
                     sql_l.append(ep.get_sql())
 
                 scanned_eps[season][episode] = True
