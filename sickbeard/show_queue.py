@@ -39,7 +39,7 @@ from traktor import TraktApi
 from traktor import TraktException
 from sickrage.helper.encoding import ek
 from sickbeard.helpers import makeDir, chmodAsParent
-from sickrage.helper.common import sanitize_filename
+from sickrage.helper.common import episode_num, sanitize_filename
 
 
 class ShowQueue(generic_queue.GenericQueue):
@@ -156,7 +156,8 @@ class ShowQueue(generic_queue.GenericQueue):
 
         queueItemObj = QueueItemRefresh(show, force=force)
 
-        logger.log(u"Queueing show refresh for " + show.name, logger.DEBUG)
+        logger.log(u"{id}: Queueing show refresh for {show}".format
+                   (id=show.indexerid, show=show.name), logger.DEBUG)
 
         self.add_item(queueItemObj)
 
@@ -633,7 +634,8 @@ class QueueItemSubtitle(ShowQueueItem):
     def run(self):
         ShowQueueItem.run(self)
 
-        logger.log(u"Downloading subtitles for " + self.show.name)
+        logger.log(u'{id}: Downloading subtitles for {show}'.format
+                   (id=self.show.indexerid, show=self.show.name), logger.INFO)
 
         self.show.download_subtitles()
         self.finish()
@@ -680,9 +682,11 @@ class QueueItemUpdate(ShowQueueItem):
 
         # have to save show before reading episodes from db
         try:
+            logger.log(u'{id}: Saving new IMDb show info to database'.format(id=self.show.indexerid))
             self.show.save_to_db()
         except Exception as e:
-            logger.log(u"Error saving show info to the database: {0!r}".format(ex(e)), logger.WARNING)
+            logger.log(u"{id}: Error saving new IMDb show info to database: {error_msg}".format
+                       (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
             logger.log(traceback.format_exc(), logger.ERROR)
 
         # get episode list from DB
@@ -704,20 +708,21 @@ class QueueItemUpdate(ShowQueueItem):
                        logger.WARNING)
         else:
             # for each ep we found on the Indexer delete it from the DB list
-            for curSeason in IndexerEpList:
-                for curEpisode in IndexerEpList[curSeason]:
-                    curEp = self.show.get_episode(curSeason, curEpisode)
+            for cur_season in IndexerEpList:
+                for cur_episode in IndexerEpList[cur_season]:
+                    curEp = self.show.get_episode(cur_season, cur_episode)
                     curEp.save_to_db()
 
-                    if curSeason in DBEpList and curEpisode in DBEpList[curSeason]:
-                        del DBEpList[curSeason][curEpisode]
+                    if cur_season in DBEpList and cur_episode in DBEpList[cur_season]:
+                        del DBEpList[cur_season][cur_episode]
 
             # remaining episodes in the DB list are not on the indexer, just delete them from the DB
-            for curSeason in DBEpList:
-                for curEpisode in DBEpList[curSeason]:
-                    logger.log(u"Permanently deleting episode " + str(curSeason) + "x" + str(
-                        curEpisode) + " from the database", logger.INFO)
-                    curEp = self.show.get_episode(curSeason, curEpisode)
+            for cur_season in DBEpList:
+                for cur_episode in DBEpList[cur_season]:
+                    logger.log(u'{id}: Permanently deleting episode {show} {ep} from the database'.format
+                               (id=self.show.indexerid, show=self.show.name, ep=episode_num(cur_season, cur_episode)),
+                               logger.INFO)
+                    curEp = self.show.get_episode(cur_season, cur_episode)
                     try:
                         curEp.delete_episode()
                     except EpisodeDeletedException:
@@ -725,13 +730,15 @@ class QueueItemUpdate(ShowQueueItem):
 
         # save show again, in case episodes have changed
         try:
+            logger.log(u'{id}: Saving all updated show info to database'.format(id=self.show.indexerid))
             self.show.save_to_db()
         except Exception as e:
-            logger.log(u"Error saving show info to the database: " + ex(e), logger.ERROR)
-            logger.log(traceback.format_exc(), logger.DEBUG)
+            logger.log(u'{id}: Error saving all updated show info to database: {error_msg}'.format
+                       (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
+            logger.log(traceback.format_exc(), logger.ERROR)
 
-        logger.log(u"Finished update of " + self.show.name, logger.DEBUG)
-
+        logger.log(u'{id}: Finished update of {show}'.format
+                   (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
         sickbeard.showQueueScheduler.action.refreshShow(self.show, self.force)
         self.finish()
 
@@ -753,15 +760,17 @@ class QueueItemRemove(ShowQueueItem):
 
     def run(self):
         ShowQueueItem.run(self)
-        logger.log(u"Removing %s" % self.show.name)
+        logger.log(u'{id}: Removing {show}'.format(id=self.show.indexerid, show=self.show.name))
 
         # Need to first remove the episodes from the Trakt collection, because we need the list of
         # Episodes from the db to know which eps to remove.
         if sickbeard.USE_TRAKT:
             try:
                 sickbeard.traktCheckerScheduler.action.remove_show_trakt_library(self.show)
-            except Exception as e:
-                logger.log(u"Unable to delete show '{}' from Trakt. Please remove manually otherwise it will be added again. Error: {}".format(self.show.name, ex(e)), logger.WARNING)
+            except TraktException as e:
+                logger.log(u'{id}: Unable to delete show {show} from Trakt. '
+                           u'Please remove manually otherwise it will be added again. Error: {error_msg}'.format
+                           (id=self.show.indexerid, show=self.show.name, error_msg=ex(e)), logger.WARNING)
 
         self.show.delete_show(full=self.full)
 
