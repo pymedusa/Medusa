@@ -1666,6 +1666,7 @@ class TVEpisode(TVObject):
         self.scene_absolute_number = 0
         self.related_episodes = []
         self.wanted_quality = []
+        self.loaded = False
         if show:
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
@@ -1852,6 +1853,8 @@ class TVEpisode(TVObject):
         :return:
         :rtype: bool
         """
+        if self.loaded:
+            return True
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             b'SELECT '
@@ -1931,6 +1934,7 @@ class TVEpisode(TVObject):
                 self.release_group = sql_results[0][b'release_group']
 
             self.reset_dirty()
+            self.loaded = True
             return True
 
     def load_from_indexer(self, season=None, episode=None, tvapi=None, cached_season=None):
@@ -2435,6 +2439,7 @@ class TVEpisode(TVObject):
         # use a custom update/insert method to get the data into the DB
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_episodes', new_value_dict, control_value_dict)
+        self.loaded = False
 
     def full_path(self):
         """Return episode full path.
