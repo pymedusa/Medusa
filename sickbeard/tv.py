@@ -1020,7 +1020,7 @@ class TVShow(TVObject):
         sql_results = main_db_con.select(b'SELECT * FROM imdb_info WHERE indexer_id = ?', [self.indexerid])
 
         if not sql_results:
-            logger.log(u'{0}: Unable to find IMDb show info in the database'.format(self.indexerid))
+            logger.log(u'Unable to find the following IMDb show info in the database: {0} '.format(self.indexerid))
             return
         else:
             self.imdb_info = dict(zip(sql_results[0].keys(), sql_results[0]))
