@@ -181,7 +181,7 @@ class Notifier(object):
         register.add_header('Application-Icon', sickbeard.LOGO_URL)
 
         register.add_notification('Test', True)
-        register.add_notification(common.notifyStrings[common.NOTIFY_SNATCH, True)
+        register.add_notification(common.notifyStrings[common.NOTIFY_SNATCH], True)
         register.add_notification(common.notifyStrings[common.NOTIFY_DOWNLOAD], True)
         register.add_notification(common.notifyStrings[common.NOTIFY_GIT_UPDATE], True)
 
