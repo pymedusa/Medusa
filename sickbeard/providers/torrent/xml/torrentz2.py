@@ -41,7 +41,7 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
         self.public = True
 
         # URLs
-        self.url = 'http://torrentz2.eu/'
+        self.url = 'https://torrentz2.eu/'
         self.urls = {
             'base': self.url,
             'verified': urljoin(self.url, 'feed_verified'),
