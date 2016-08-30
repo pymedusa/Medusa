@@ -1,5 +1,4 @@
 # coding=utf-8
-# Author: Dustyn Gibson <miigotu@gmail.com>
 #
 # This file is part of Medusa.
 #
@@ -25,24 +24,23 @@ from requests.compat import urljoin
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
-from sickbeard.common import USER_AGENT
 
 from sickrage.helper.common import convert_size
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
-class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """Torrentz Torrent provider"""
+class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+    """Torrentz2 Torrent provider"""
     def __init__(self):
 
         # Provider Init
-        TorrentProvider.__init__(self, "Torrentz")
+        TorrentProvider.__init__(self, 'Torrentz2')
 
         # Credentials
         self.public = True
 
         # URLs
-        self.url = 'https://torrentz.eu/'
+        self.url = 'http://torrentz2.eu/'
         self.urls = {
             'base': self.url,
             'verified': urljoin(self.url, 'feed_verified'),
@@ -53,7 +51,6 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
         # Miscellaneous Options
         self.confirmed = True
-        self.headers.update({'User-Agent': USER_AGENT})
 
         # Torrent Stats
         self.minseed = None
@@ -86,7 +83,7 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
-                elif not response or not response.text.startswith('<?xml'):
+                elif not response.text.startswith('<?xml'):
                     logger.log('Expected xml but got something else, is your mirror failing?', logger.INFO)
                     continue
 
@@ -159,4 +156,4 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         return int(match[0]) * 1024 ** 2, int(match[1]), int(match[2])
 
 
-provider = TorrentzProvider()
+provider = Torrentz2Provider()
