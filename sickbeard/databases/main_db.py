@@ -438,7 +438,7 @@ class AddSizeAndSceneNameFields(InitialSchema):
             for cur_name in (nzb_name, file_name):
                 logger.log(u"Checking if " + cur_name + " is actually a good release name", logger.DEBUG)
                 try:
-                    parse_result = NameParser(False).parse(cur_name)
+                    parse_result = NameParser().parse(cur_name)
                 except (InvalidNameException, InvalidShowException):
                     continue
 
@@ -462,7 +462,7 @@ class AddSizeAndSceneNameFields(InitialSchema):
                 continue
 
             try:
-                parse_result = NameParser(False).parse(ep_file_name)
+                parse_result = NameParser().parse(ep_file_name)
             except (InvalidNameException, InvalidShowException):
                 continue
 

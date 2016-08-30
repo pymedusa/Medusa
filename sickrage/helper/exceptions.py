@@ -65,7 +65,7 @@ class SickRageException(Exception):
 
 class AuthException(SickRageException):
     """
-    Your authentication information are incorrect
+    Authentication information is incorrect
     """
 
 
@@ -77,7 +77,7 @@ class CantRefreshShowException(SickRageException):
 
 class CantRemoveShowException(SickRageException):
     """
-    The show can't removed right now
+    The show can't be removed right now
     """
 
 

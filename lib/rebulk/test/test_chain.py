@@ -240,4 +240,3 @@ def test_matches_4():
     assert matches[0].value == 1
     assert matches[1].value == 2
     assert matches[2].value == 3
-

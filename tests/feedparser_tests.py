@@ -13,7 +13,7 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from sickbeard.providers.womble import provider as womble
+from sickbeard.providers.nzb.womble import provider as womble
 
 
 class FeedParserTests(unittest.TestCase):

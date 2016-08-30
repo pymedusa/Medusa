@@ -13,7 +13,10 @@ from tornado.web import Application, StaticFileHandler, RedirectHandler
 import sickbeard
 from sickbeard import logger
 from sickbeard.helpers import create_https_certificates, generateApiKey
-from sickbeard.server.api.core import ApiHandler
+from sickbeard.server.api.v1.core import ApiHandler
+from sickbeard.server.api.v2.show import ShowHandler
+from sickbeard.server.api.v2.info import InfoHandler
+from sickbeard.server.api.v2.log import LogHandler
 from sickbeard.server.web import LoginHandler, LogoutHandler, KeyHandler, CalendarHandler
 from sickrage.helper.encoding import ek
 
@@ -52,7 +55,8 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         # api root
         if not sickbeard.API_KEY:
             sickbeard.API_KEY = generateApiKey()
-        self.options['api_root'] = r'{root}/api/{key}'.format(root=sickbeard.WEB_ROOT, key=sickbeard.API_KEY)
+        self.options['api_root'] = r'{root}/api/(?:v1/)?{key}'.format(root=sickbeard.WEB_ROOT, key=sickbeard.API_KEY)
+        self.options['api_v2_root'] = r'{root}/api/v2'.format(root=sickbeard.WEB_ROOT)
 
         # tornado setup
         self.enable_https = self.options['enable_https']
@@ -84,19 +88,19 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
             login_url=r'{root}/login/'.format(root=self.options['web_root']),
         )
 
-        # Main Handlers
+        # API v1 handlers
         self.app.add_handlers('.*$', [
-            # webapi handler
+            # Main handler
             (r'{base}(/?.*)'.format(base=self.options['api_root']), ApiHandler),
 
-            # webapi key retrieval
+            # Key retrieval
             (r'{base}/getkey(/?.*)'.format(base=self.options['web_root']), KeyHandler),
 
-            # webapi builder redirect
+            # Builder redirect
             (r'{base}/api/builder'.format(base=self.options['web_root']),
              RedirectHandler, {'url': '{base}/apibuilder/'.format(base=self.options['web_root'])}),
 
-            # webui login/logout handlers
+            # Webui login/logout handlers
             (r'{base}/login(/?)'.format(base=self.options['web_root']), LoginHandler),
             (r'{base}/logout(/?)'.format(base=self.options['web_root']), LogoutHandler),
 
@@ -105,6 +109,14 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
 
             # webui handlers
         ] + route.get_routes(self.options['web_root']))
+
+        # API v2 handlers
+        self.app.add_handlers('.*$', [
+            # Shows handler
+            (r'{base}/show/?([0-9]*)/?'.format(base=self.options['api_v2_root']), ShowHandler),
+            (r'{base}/info/?([A-Za-z0-9_-]*)/?'.format(base=self.options['api_v2_root']), InfoHandler),
+            (r'{base}/log/?(?P<log_level>[0-9]*)/?'.format(base=self.options['api_v2_root']), LogHandler)
+        ])
 
         # Static File Handlers
         self.app.add_handlers('.*$', [

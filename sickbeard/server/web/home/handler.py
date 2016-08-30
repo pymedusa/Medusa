@@ -9,7 +9,8 @@ import os
 import time
 
 import adba
-from libtrakt import TraktAPI
+from traktor import TraktApi
+from traktor import (MissingTokenException, TokenExpiredException, TraktException)
 from requests.compat import unquote_plus, quote_plus
 from six import iteritems
 from tornado.routes import route
@@ -431,15 +432,35 @@ class Home(WebRoot):
     @staticmethod
     def getTraktToken(trakt_pin=None):
 
-        trakt_api = TraktAPI(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
-        response = trakt_api.traktToken(trakt_pin)
+        trakt_settings = {"trakt_api_key": sickbeard.TRAKT_API_KEY,
+                          "trakt_api_secret": sickbeard.TRAKT_API_SECRET}
+        trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
+        try:
+            (access_token, refresh_token) = trakt_api.get_token(sickbeard.TRAKT_REFRESH_TOKEN, trakt_pin=trakt_pin)
+        except (MissingTokenException, TokenExpiredException):
+            ui.notifications.error('Wrong PIN. Reload the page to get new token!')
+            return 'Wrong PIN. Reload the page to get new token!'
+        except TraktException:
+            ui.notifications.error('Connection error. Reload the page to get new token!')
+            return 'Error while connection to Trakt. Reload the page to get new token!'
+        if access_token:
+            sickbeard.TRAKT_ACCESS_TOKEN = access_token
+            sickbeard.TRAKT_REFRESH_TOKEN = refresh_token
+        response = trakt_api.validate_account()
         if response:
-            return 'Trakt Authorized'
-        return 'Trakt Not Authorized!'
+            ui.notifications.message('Trakt Authorized')
+            return "Trakt Authorized"
+        ui.notifications.error('Connection error. Reload the page to get new token!')
+        return "Trakt Not Authorized!"
 
     @staticmethod
     def testTrakt(username=None, blacklist_name=None):
         return notifiers.trakt_notifier.test_notify(username, blacklist_name)
+
+    @staticmethod
+    def forceTraktSync():
+        """Force a trakt sync, depending on the notification settings, library is synced with watchlist and/or collection."""
+        return json.dumps({'result': ('Could not start sync', 'Sync Started')[sickbeard.traktCheckerScheduler.forceRun()]})
 
     @staticmethod
     def loadShowNotifyLists():
@@ -642,6 +663,13 @@ class Home(WebRoot):
         else:
             ui.notifications.message('Already on branch: ', branch)
             return self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
+
+    def branchForceUpdate(self):
+        return {
+            'currentBranch': sickbeard.BRANCH,
+            'resetBranches': sickbeard.GIT_RESET_BRANCHES,
+            'branches': [branch for branch in sickbeard.versionCheckScheduler.action.list_remote_branches() if branch not in sickbeard.GIT_RESET_BRANCHES]
+        }
 
     @staticmethod
     def getDBcompare():

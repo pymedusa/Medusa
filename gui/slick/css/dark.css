@@ -236,10 +236,10 @@ ul#rootDirStaticList li {
 }
 
 /* =======================================================================
-home_trendingShows.mako
+home_recommendedShows.mako
 ========================================================================== */
 
-.traktContainer {
+.recommended-container {
     margin: 12px;
     width: 188px;
     background-color: rgb(51, 51, 51);

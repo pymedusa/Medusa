@@ -27,7 +27,7 @@ import sickbeard
 from sickbeard import (
     classes, db, helpers, logger, network_timezones, ui
 )
-from sickbeard.server.api.core import function_mapper
+from sickbeard.server.api.v1.core import function_mapper
 
 from sickrage.helper.encoding import ek
 from sickrage.media.ShowBanner import ShowBanner
@@ -69,7 +69,6 @@ class PageTemplate(MakoTemplate):
         self.template = lookup.get_template(filename)
 
         self.arguments = {
-            'srRoot': sickbeard.WEB_ROOT,
             'sbHttpPort': sickbeard.WEB_PORT,
             'sbHttpsPort': sickbeard.WEB_PORT,
             'sbHttpsEnabled': sickbeard.ENABLE_HTTPS,
@@ -91,6 +90,9 @@ class PageTemplate(MakoTemplate):
             'newsBadge': '',
             'toolsBadge': '',
             'toolsBadgeClass': '',
+            'base_url': rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
+            rh.request.headers.get('X-Forwarded-Host', rh.request.host) + sickbeard.WEB_ROOT + '/',
+            'realpage': '',
         }
 
         if rh.request.headers['Host'][0] == '[':

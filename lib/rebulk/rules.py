@@ -373,6 +373,3 @@ def toposort_rules(rules):
                     dependencies.add(dependency)
         graph[rule] = dependencies
     return toposort(graph)
-
-
-

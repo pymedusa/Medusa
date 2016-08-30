@@ -1,30 +1,30 @@
-function generateBlackWhiteList() { // jshint ignore:line
+function generateBlackWhiteList() {
     var realvalues = [];
 
     $('#white option').each(function(i, selected) {
         realvalues[i] = $(selected).val();
     });
-    $("#whitelist").val(realvalues.join(","));
+    $('#whitelist').val(realvalues.join(','));
 
     realvalues = [];
     $('#black option').each(function(i, selected) {
         realvalues[i] = $(selected).val();
     });
-    $("#blacklist").val(realvalues.join(","));
+    $('#blacklist').val(realvalues.join(','));
 }
 
-function updateBlackWhiteList(showName) { // jshint ignore:line
+function updateBlackWhiteList(showName) {
     $('#pool').children().remove();
 
     $('#blackwhitelist').show();
     if (showName) {
-        $.getJSON(srRoot + '/home/fetch_releasegroups', {
-            'show_name': showName
+        $.getJSON('home/fetch_releasegroups', {
+            show_name: showName // eslint-disable-line camelcase
         }, function (data) {
             if (data.result === 'success') {
                 $.each(data.groups, function(i, group) {
-                    var option = $("<option>");
-                    option.attr("value", group.name);
+                    var option = $('<option>');
+                    option.prop('value', group.name);
                     option.html(group.name + ' | ' + group.rating + ' | ' + group.range);
                     option.appendTo('#pool');
                 });
@@ -34,30 +34,30 @@ function updateBlackWhiteList(showName) { // jshint ignore:line
 }
 
 $('#removeW').click(function() {
-    !$('#white option:selected').remove().appendTo('#pool'); // jshint ignore:line
+    !$('#white option:selected').remove().appendTo('#pool');
 });
 
 $('#addW').click(function() {
-    !$('#pool option:selected').remove().appendTo('#white'); // jshint ignore:line
+    !$('#pool option:selected').remove().appendTo('#white');
 });
 
 $('#addB').click(function() {
-    !$('#pool option:selected').remove().appendTo('#black'); // jshint ignore:line
+    !$('#pool option:selected').remove().appendTo('#black');
 });
 
 $('#removeP').click(function() {
-    !$('#pool option:selected').remove(); // jshint ignore:line
+    !$('#pool option:selected').remove();
 });
 
 $('#removeB').click(function() {
-    !$('#black option:selected').remove().appendTo('#pool'); // jshint ignore:line
+    !$('#black option:selected').remove().appendTo('#pool');
 });
 
 $('#addToWhite').click(function() {
     var group = $('#addToPoolText').val();
-    if(group !== '') {
+    if (group !== '') {
         var option = $('<option>');
-        option.attr('value',group);
+        option.prop('value', group);
         option.html(group);
         option.appendTo('#white');
         $('#addToPoolText').val('');
@@ -66,9 +66,9 @@ $('#addToWhite').click(function() {
 
 $('#addToBlack').click(function() {
     var group = $('#addToPoolText').val();
-    if(group !== '') {
+    if (group !== '') {
         var option = $('<option>');
-        option.attr('value',group);
+        option.prop('value', group);
         option.html(group);
         option.appendTo('#black');
         $('#addToPoolText').val('');

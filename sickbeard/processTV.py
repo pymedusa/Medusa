@@ -25,6 +25,7 @@ import sickbeard
 from sickbeard import postProcessor
 from sickbeard import db, helpers
 from sickbeard import logger
+from sickbeard import notifiers
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
 from sickbeard import common
 from sickbeard import failedProcessor
@@ -322,6 +323,11 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
 
     if result.aggresult:
         result.output += logHelper(u"Successfully processed")
+
+        # Clean library from KODI after PP ended
+        if sickbeard.KODI_LIBRARY_CLEAN_PENDING and notifiers.kodi_notifier.clean_library():
+            sickbeard.KODI_LIBRARY_CLEAN_PENDING = False
+
         if result.missedfiles:
             result.output += logHelper(u"I did encounter some unprocessable items: ")
             for missedfile in result.missedfiles:
@@ -522,7 +528,7 @@ def already_postprocessed(dirName, videofile, force, result):  # pylint: disable
     # Needed if we have downloaded the same episode @ different quality
     # But we need to make sure we check the history of the episode we're going to PP, and not others
     try:  # if it fails to find any info (because we're doing an unparsable folder (like the TV root dir) it will throw an exception, which we want to ignore
-        parse_result = NameParser(dirName, tryIndexers=True).parse(dirName)
+        parse_result = NameParser(try_indexers=True).parse(dirName)
     except (InvalidNameException, InvalidShowException):  # ignore the exception, because we kind of expected it, but create parse_result anyway so we can perform a check on it.
         parse_result = False
 

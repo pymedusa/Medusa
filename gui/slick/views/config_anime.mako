@@ -8,11 +8,12 @@
     <h1 class="header">${header}</h1>
     <div id="config">
         <div id="config-content">
-            <form id="configForm" action="saveAnime" method="post">
+            <form id="configForm" action="config/anime/saveAnime" method="post">
                 <div id="config-components">
                     <ul>
-                        <li><a href="#animedb-settings">AnimeDB Settings</a></li>
-                        <li><a href="#anime-look-feel">Look &amp; Feel</a></li>
+                        ## @TODO: Fix this stupid hack
+                        <script>document.write('<li><a href="' + document.location.href + '#animedb-settings">AnimeDB Settings</a></li>');</script>
+                        <script>document.write('<li><a href="' + document.location.href + '#anime-look-feel">Look &amp; Feel</a></li>');</script>
                     </ul>
                     <div id="animedb-settings" class="tab-pane active component-group">
                         <div class="component-group-desc">
@@ -80,9 +81,9 @@
                             <input type="submit" class="btn config_submitter" value="Save Changes" />
                        </fieldset><!-- .component-group-list //-->
                     </div><!-- #anime-look-feel //-->
-                    <br />
+                    <br>
                     <input type="submit" class="btn config_submitter" value="Save Changes" />
-                    <br />
+                    <br>
                 </div><!-- #config-components //-->
             </form><!-- #configForm //-->
         </div><!-- #config-content //-->

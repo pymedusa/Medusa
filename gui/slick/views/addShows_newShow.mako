@@ -4,10 +4,10 @@
     from sickbeard.helpers import anon_url
 %>
 <%block name="scripts">
-<script type="text/javascript" src="${srRoot}/js/qualityChooser.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/addShowOptions.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/rootDirs.js?${sbPID}"></script>
-<script type="text/javascript" src="${srRoot}/js/blackwhite.js?${sbPID}"></script>
+<script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
+<script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
+<script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
+<script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -17,13 +17,12 @@
 % endif
 <div id="newShowPortal">
     <div id="config-components">
-        <ul>
-            <li><a href="#core-component-group1">Add New Show</a></li>
-        </ul>
+        ## @TODO: Fix this stupid hack
+        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Add New Show</a></li></ul>')</script>
         <div id="core-component-group1" class="tab-pane active component-group">
             <div id="displayText"></div>
-            <br />
-            <form id="addShowForm" method="post" action="${srRoot}/addShows/addNewShow" accept-charset="utf-8">
+            <br>
+            <form id="addShowForm" method="post" action="addShows/addNewShow" accept-charset="utf-8">
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Find a show on theTVDB</legend>
                     <div class="stepDiv">
@@ -50,10 +49,10 @@
                             </select>
                             &nbsp;
                             <input class="btn btn-inline" type="button" id="searchName" value="Search" />
-                            <br /><br />
-                            <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br />
-                            This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!<br /><br />
-                            <div id="searchResults" style="height: 100%;"><br /></div>
+                            <br><br>
+                            <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
+                            This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!<br><br>
+                            <div id="searchResults" style="height: 100%;"><br></div>
                         % endif
                     </div>
                 </fieldset>
@@ -61,8 +60,8 @@
                     <legend class="legendStep">Pick the parent folder</legend>
                     <div class="stepDiv">
                         % if provided_show_dir:
-                            Pre-chosen Destination Folder: <b>${provided_show_dir}</b> <br />
-                            <input type="hidden" id="fullShowPath" name="fullShowPath" value="${provided_show_dir}" /><br />
+                            Pre-chosen Destination Folder: <b>${provided_show_dir}</b> <br>
+                            <input type="hidden" id="fullShowPath" name="fullShowPath" value="${provided_show_dir}" /><br>
                         % else:
                             <%include file="/inc_rootDirs.mako"/>
                         % endif
@@ -79,7 +78,7 @@
                 % endfor
                 <input type="hidden" name="skipShow" id="skipShow" value="" />
             </form>
-            <br />
+            <br>
             <div style="width: 100%; text-align: center;">
                 <input class="btn" type="button" id="addShowButton" value="Add Show" disabled="disabled" />
                 % if provided_show_dir:

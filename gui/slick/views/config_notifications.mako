@@ -14,19 +14,20 @@
 % endif
 <div id="config">
     <div id="config-content">
-        <form id="configForm" action="saveNotifications" method="post">
+        <form id="configForm" action="config/notifications/saveNotifications" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="#tabs-1">Home Theater / NAS</a></li>
-                    <li><a href="#tabs-2">Devices</a></li>
-                    <li><a href="#tabs-3">Social</a></li>
+                    ## @TODO: Fix this stupid hack
+                    <script>document.write('<li><a href="' + document.location.href + '#home-theater-nas">Home Theater / NAS</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#devices">Devices</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#social">Social</a></li>');</script>
                 </ul>
-                <div id="tabs-1">
-                        <div class="component-group-desc">
-                            <span class="icon-notifiers-kodi" title="KODI"></span>
-                            <h3><a href="${anon_url('http://kodi.tv/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">KODI</a></h3>
-                            <p>A free and open source cross-platform media center and home entertainment system software with a 10-foot user interface designed for the living-room TV.</p>
-                        </div>
+                <div id="home-theater-nas">
+                    <div class="component-group-desc">
+                        <span class="icon-notifiers-kodi" title="KODI"></span>
+                        <h3><a href="${anon_url('http://kodi.tv/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">KODI</a></h3>
+                        <p>A free and open source cross-platform media center and home entertainment system software with a 10-foot user interface designed for the living-room TV.</p>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -94,11 +95,20 @@
                                     </label>
                                 </div>
                                 <div class="field-pair">
+                                    <label for="kodi_clean_library">
+                                        <span class="component-title">Clean library</span>
+                                        <span class="component-desc">
+                                            <input type="checkbox" name="kodi_clean_library" id="kodi_clean_library" ${'checked="checked"' if sickbeard.KODI_CLEAN_LIBRARY else ''}/>
+                                            <p>clean KODI library when replaces a already downloaded episode?</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
                                     <label for="kodi_update_onlyfirst">
                                         <span class="component-title">Only update first host</span>
                                         <span class="component-desc">
                                             <input type="checkbox" name="kodi_update_onlyfirst" id="kodi_update_onlyfirst" ${'checked="checked"' if sickbeard.KODI_UPDATE_ONLYFIRST else ''}/>
-                                            <p>only send library updates to the first active host?</p>
+                                            <p>only send library updates/clean to the first active host?</p>
                                         </span>
                                     </label>
                                 </div>
@@ -213,7 +223,7 @@
                                                 <span class="component-desc">
                                                     <input type="text" name="plex_server_host" id="plex_server_host" value="${re.sub(r'\b,\b', ', ', sickbeard.PLEX_SERVER_HOST)}" class="form-control input-sm input350"/>
                                                     <div class="clear-left">
-                                                        <p>one or more hosts running Plex Media Server<br />(eg. 192.168.1.1:32400, 192.168.1.2:32400)</p>
+                                                        <p>one or more hosts running Plex Media Server<br>(eg. 192.168.1.1:32400, 192.168.1.2:32400)</p>
                                                     </div>
                                                 </span>
                                             </label>
@@ -238,10 +248,10 @@
                             </div><!-- /content_use_plex_server -->
                         </fieldset>
                     </div><!-- /plex media server component-group -->
-                        <div class="component-group-desc">
-                            <span class="icon-notifiers-plexth" title="Plex Home Theater"></span>
-                            <h3><a href="${anon_url('http://www.plexapp.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Plex Home Theater</a></h3>
-                        </div>
+                    <div class="component-group-desc">
+                        <span class="icon-notifiers-plexth" title="Plex Home Theater"></span>
+                        <h3><a href="${anon_url('http://www.plexapp.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Plex Home Theater</a></h3>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -287,7 +297,7 @@
                                         <span class="component-desc">
                                             <input type="text" name="plex_client_host" id="plex_client_host" value="${sickbeard.PLEX_CLIENT_HOST}" class="form-control input-sm input350"/>
                                             <div class="clear-left">
-                                                <p>one or more hosts running Plex Home Theater<br />(eg. 192.168.1.100:3000, 192.168.1.101:3000)</p>
+                                                <p>one or more hosts running Plex Home Theater<br>(eg. 192.168.1.100:3000, 192.168.1.101:3000)</p>
                                             </div>
                                         </span>
                                     </label>
@@ -322,11 +332,11 @@
                             </div><!-- /content_use_plex_client -->
                         </fieldset>
                     </div><!-- /Plex Home Theater component-group -->
-                        <div class="component-group-desc">
-                            <span class="icon-notifiers-emby" title="Emby"></span>
-                            <h3><a href="${anon_url('http://emby.media/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Emby</a></h3>
-                            <p>A home media server built using other popular open source technologies.</p>
-                        </div>
+                    <div class="component-group-desc">
+                        <span class="icon-notifiers-emby" title="Emby"></span>
+                        <h3><a href="${anon_url('http://emby.media/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Emby</a></h3>
+                        <p>A home media server built using other popular open source technologies.</p>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -361,11 +371,11 @@
                             </div><!-- /content_use_emby //-->
                         </fieldset>
                     </div><!-- /emby component-group //-->
-                        <div class="component-group-desc">
-                            <span class="icon-notifiers-nmj" title="Networked Media Jukebox"></span>
-                            <h3><a href="${anon_url('http://www.popcornhour.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">NMJ</a></h3>
-                            <p>The Networked Media Jukebox, or NMJ, is the official media jukebox interface made available for the Popcorn Hour 200-series.</p>
-                        </div>
+                    <div class="component-group-desc">
+                        <span class="icon-notifiers-nmj" title="Networked Media Jukebox"></span>
+                        <h3><a href="${anon_url('http://www.popcornhour.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">NMJ</a></h3>
+                        <p>The Networked Media Jukebox, or NMJ, is the official media jukebox interface made available for the Popcorn Hour 200-series.</p>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -424,11 +434,11 @@
                             </div><!-- /content_use_nmj //-->
                         </fieldset>
                     </div><!-- /nmj component-group //-->
-                        <div class="component-group-desc">
-                            <span class="icon-notifiers-nmj" title="Networked Media Jukebox v2"></span>
-                            <h3><a href="${anon_url('http://www.popcornhour.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">NMJv2</a></h3>
-                            <p>The Networked Media Jukebox, or NMJv2, is the official media jukebox interface made available for the Popcorn Hour 300 & 400-series.</p>
-                        </div>
+                    <div class="component-group-desc">
+                        <span class="icon-notifiers-nmj" title="Networked Media Jukebox v2"></span>
+                        <h3><a href="${anon_url('http://www.popcornhour.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">NMJv2</a></h3>
+                        <p>The Networked Media Jukebox, or NMJv2, is the official media jukebox interface made available for the Popcorn Hour 300 & 400-series.</p>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -641,13 +651,13 @@
                             </div><!-- /content_use_pytivo //-->
                         </fieldset>
                     </div><!-- /component-group //-->
-                </div><!-- #tabs-1 //-->
-                <div id="tabs-2">
-                        <div class="component-group-desc">
-                            <span class="icon-notifiers-growl" title="Growl"></span>
-                            <h3><a href="${anon_url('http://growl.info/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Growl</a></h3>
-                            <p>A cross-platform unobtrusive global notification system.</p>
-                        </div>
+                </div><!-- #home-theater-nas //-->
+                <div id="devices">
+                    <div class="component-group-desc">
+                        <span class="icon-notifiers-growl" title="Growl"></span>
+                        <h3><a href="${anon_url('http://growl.info/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Growl</a></h3>
+                        <p>A cross-platform unobtrusive global notification system.</p>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -774,10 +784,10 @@
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">Prowl API(s) listed here, separated by commas if applicable, will<br /> receive notifications for <b>all</b> shows.
+                                        <span class="component-desc">Prowl API(s) listed here, separated by commas if applicable, will<br> receive notifications for <b>all</b> shows.
                                                                      Your Prowl API key is available at:
                                                                      <a href="${anon_url('https://www.prowlapp.com/api_settings.php')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">
-                                                                     https://www.prowlapp.com/api_settings.php</a><br />
+                                                                     https://www.prowlapp.com/api_settings.php</a><br>
                                                                      (This field may be blank except when testing.)</span>
                                     </label>
                                 </div>
@@ -1261,7 +1271,7 @@
                         <div class="component-group-desc">
                             <span class="icon-notifiers-freemobile" title="Free Mobile"></span>
                             <h3><a href="${anon_url('http://mobile.free.fr/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Free Mobile</a></h3>
-                            <p>Free Mobile is a famous French cellular network provider.<br /> It provides to their customer a free SMS API.</p>
+                            <p>Free Mobile is a famous French cellular network provider.<br> It provides to their customer a free SMS API.</p>
                         </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
@@ -1398,13 +1408,13 @@
                             </div><!-- /content_use_telegram //-->
                         </fieldset>
                     </div><!-- /telegram component-group //-->
-                </div><!-- #tabs-2 //-->
-                <div id="tabs-3">
-                        <div class="component-group-desc">
-                            <span class="icon-notifiers-twitter" title="Twitter"></span>
-                            <h3><a href="${anon_url('http://www.twitter.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Twitter</a></h3>
-                            <p>A social networking and microblogging service, enabling its users to send and read other users' messages called tweets.</p>
-                        </div>
+                </div><!-- #devices //-->
+                <div id="social">
+                    <div class="component-group-desc">
+                        <span class="icon-notifiers-twitter" title="Twitter"></span>
+                        <h3><a href="${anon_url('http://www.twitter.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Twitter</a></h3>
+                        <p>A social networking and microblogging service, enabling its users to send and read other users' messages called tweets.</p>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -1471,7 +1481,7 @@
                                         <span class="component-title">Step One</span>
                                     </label>
                                     <label>
-                                        <span style="font-size: 11px;">Click the "Request Authorization" button.<br /> This will open a new page containing an auth key.<br /> <b>Note:</b> if nothing happens check your popup blocker.<br /></span>
+                                        <span style="font-size: 11px;">Click the "Request Authorization" button.<br> This will open a new page containing an auth key.<br> <b>Note:</b> if nothing happens check your popup blocker.<br></span>
                                         <input class="btn" type="button" value="Request Authorization" id="twitterStep1" />
                                     </label>
                                 </div>
@@ -1480,7 +1490,7 @@
                                         <span class="component-title">Step Two</span>
                                     </label>
                                     <label>
-                                        <span style="font-size: 11px;">Enter the key Twitter gave you below, and click "Verify Key".<br /><br /></span>
+                                        <span style="font-size: 11px;">Enter the key Twitter gave you below, and click "Verify Key".<br><br></span>
                                         <input type="text" id="twitter_key" value="" class="form-control input-sm input350"/>
                                         <input class="btn btn-inline" type="button" value="Verify Key" id="twitterStep2" />
                                     </label>
@@ -1770,8 +1780,8 @@
                                     <label>
                                         <span class="component-title">&nbsp;</span>
                                         <span class="component-desc">
-                                            Email addresses listed here, separated by commas if applicable, will<br />
-                                            receive notifications for <b>all</b> shows.<br />
+                                            Email addresses listed here, separated by commas if applicable, will<br>
+                                            receive notifications for <b>all</b> shows.<br>
                                             (This field may be blank except when testing.)
                                         </span>
                                     </label>
@@ -1784,7 +1794,7 @@
                                     <label>
                                         <span class="component-title">&nbsp;</span>
                                         <span class="component-desc">
-                                            Use a custom subject for some privacy protection?<br />
+                                            Use a custom subject for some privacy protection?<br>
                                             (Leave blank for the default Medusa subject)
                                         </span>
                                     </label>
@@ -1821,10 +1831,10 @@
                             </div><!-- #content_use_email //-->
                         </fieldset><!-- .component-group-list //-->
                     </div><!-- email .component-group //-->
-                </div><!-- #tabs-3 //-->
+                </div><!-- #social //-->
             </div><!-- #config-components //-->
         </form><!-- #configForm //-->
-        <br /><input type="submit" class="config_submitter btn" value="Save Changes" /><br />
+        <br><input type="submit" class="config_submitter btn" value="Save Changes" /><br>
     </div><!-- #config-content //-->
 </div><!-- #config //-->
 <div class="clearfix"></div>

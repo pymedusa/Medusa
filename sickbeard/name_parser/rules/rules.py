@@ -35,7 +35,7 @@ from guessit.rules.common.validators import int_coercable
 from guessit.rules.properties.release_group import clean_groupname
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
-from rebulk.rules import Rule, AppendMatch, RemoveMatch, RenameMatch
+from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule
 
 
 simple_separator = ('.', 'and', ',.', '.,', '.,.', ',')
@@ -91,7 +91,7 @@ class FixAnimeReleaseGroup(Rule):
         :type context: dict
         :return:
         """
-        if context.get('show_type') == 'regular':
+        if context.get('show_type') == 'normal':
             return
 
         fileparts = matches.markers.named('path')
@@ -183,10 +183,10 @@ class SpanishNewpctReleaseName(Rule):
         if not season:
             return
 
-        alternative_titles = matches.named('alternative_title', predicate=
-                                           lambda match: self.season_re.match(match.value.lower()))
-        episode_titles = matches.named('episode_title', predicate=
-                                       lambda match: self.season_re.match(match.value.lower()))
+        alternative_titles = matches.named('alternative_title',
+                                           predicate=lambda match: self.season_re.match(match.value.lower()))
+        episode_titles = matches.named('episode_title',
+                                       predicate=lambda match: self.season_re.match(match.value.lower()))
 
         # skip if there isn't an alternative_title or episode_title with the word season in spanish
         if not alternative_titles and not episode_titles:
@@ -207,7 +207,7 @@ class SpanishNewpctReleaseName(Rule):
 
                 if not context.get('show_type'):
                     # fix the show_type as this is not anime
-                    context['show_type'] = 'regular'
+                    context['show_type'] = 'normal'
 
                 to_remove = []
                 to_append = []
@@ -381,8 +381,8 @@ class FixInvalidTitleOrAlternativeTitle(Rule):
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
             # retrieve all problematic titles
-            problematic_titles = matches.range(filepart.start, filepart.end, predicate=
-                                               lambda match: match.name in self.properties)
+            problematic_titles = matches.range(filepart.start, filepart.end,
+                                               predicate=lambda match: match.name in self.properties)
 
             to_remove = []
             to_append = []
@@ -487,8 +487,8 @@ class FixWrongTitleDueToFilmTitle(Rule):
 
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
-            film_title = matches.range(filepart.start, filepart.end, index=0, predicate=
-                                       lambda match: match.name == 'film_title' and not match.raw.isdigit())
+            film_title = matches.range(filepart.start, filepart.end, index=0,
+                                       predicate=lambda match: match.name == 'film_title' and not match.raw.isdigit())
             if film_title:
                 title = matches.range(filepart.start, filepart.end,
                                       predicate=lambda match: match.name == 'title', index=0)
@@ -596,12 +596,12 @@ class CreateAliasWithAlternativeTitles(Rule):
             if not title:
                 continue
 
-            if matches.range(filepart.start, filepart.end, predicate=
-                             lambda match: match.name == 'alternative_title' and match.value.lower() in self.blacklist):
+            if matches.range(filepart.start, filepart.end, predicate=lambda match:
+                             (match.name == 'alternative_title' and match.value.lower() in self.blacklist)):
                 continue
 
-            alternative_titles = matches.range(filepart.start, filepart.end, predicate=
-                                               lambda match: match.name == 'alternative_title')
+            alternative_titles = matches.range(filepart.start, filepart.end,
+                                               predicate=lambda match: match.name == 'alternative_title')
             if not alternative_titles:
                 continue
 
@@ -680,8 +680,9 @@ class CreateAliasWithCountryOrYear(Rule):
             if not title:
                 continue
 
-            after_title = matches.next(title, index=0, predicate=
-                                       lambda match: match.end <= filepart.end and match.name in self.affected_names)
+            after_title = matches.next(title, index=0,
+                                       predicate=lambda match: (
+                                           match.end <= filepart.end and match.name in self.affected_names))
 
             # only if there's a country or year
             if not after_title:
@@ -692,8 +693,8 @@ class CreateAliasWithCountryOrYear(Rule):
                 continue
 
             # Only add country or year if the next match is season, episode or date
-            next_match = matches.next(after_title, index=0, predicate=
-                                      lambda match: match.name in ('season', 'episode', 'date'))
+            next_match = matches.next(after_title, index=0,
+                                      predicate=lambda match: match.name in ('season', 'episode', 'date'))
             if next_match:
                 alias = copy.copy(title)
                 alias.name = 'alias'
@@ -756,8 +757,8 @@ class FixWrongTitlesWithCompleteKeyword(Rule):
         titles.extend(matches.named('episode_titles'))
 
         for title in titles:
-            complete = matches.next(title, index=0, predicate=
-                                    lambda match: match.name == 'other' and match.value.lower() == 'complete')
+            complete = matches.next(title, index=0,
+                                    predicate=lambda match: match.name == 'other' and match.value.lower() == 'complete')
             title_raw = title.raw + complete.raw if complete else title.raw
             m = self.complete_re.search(title_raw)
             if not m:
@@ -832,8 +833,7 @@ class FixTvChaosUkWorkaround(Rule):
 
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
-            video_codecs = matches.range(filepart.start, filepart.end, predicate=
-                                         lambda match: match.name == 'video_codec')
+            video_codecs = matches.range(filepart.start, filepart.end, lambda match: match.name == 'video_codec')
             formats = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'format')
             if len(video_codecs) != 2 or len(formats) != 1:
                 continue
@@ -898,7 +898,7 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
         :type context: dict
         :return:
         """
-        if context.get('show_type') == 'regular' or not matches.tagged('anime') or matches.tagged('newpct'):
+        if context.get('show_type') == 'normal' or not matches.tagged('anime') or matches.tagged('newpct'):
             return
 
         fileparts = matches.markers.named('path')
@@ -908,12 +908,12 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
                 if not season.parent or not season.parent.private:
                     continue
 
-                title = matches.previous(season, index=-1, predicate=
-                                         lambda match: match.name == 'title' and match.end <= filepart.end)
-                episode_title = matches.next(season, index=0, predicate=
-                                             lambda match: (match.name == 'episode_title' and
-                                                            match.end <= filepart.end and
-                                                            match.value.isdigit()))
+                title = matches.previous(season, index=-1,
+                                         predicate=lambda match: match.name == 'title' and match.end <= filepart.end)
+                episode_title = matches.next(season, index=0,
+                                             predicate=lambda match: (match.name == 'episode_title' and
+                                                                      match.end <= filepart.end and
+                                                                      match.value.isdigit()))
 
                 # the previous match before the season is the series name and
                 # the match after season is episode title and episode title is a number
@@ -994,18 +994,18 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
         :return:
         """
         # only for shows that seems to be animes
-        if context.get('show_type') == 'regular' or not matches.tagged('anime') or \
+        if context.get('show_type') == 'normal' or not matches.tagged('anime') or \
                 not matches.tagged('weak-duplicate') or matches.tagged('newpct'):
             return
 
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
-            season = matches.range(filepart.start, filepart.end, index=0, predicate=
-                                   lambda match: match.name == 'season' and match.raw.isdigit())
-            episode = matches.next(season, index=0, predicate=
-                                   lambda match: (match.name == 'episode' and
-                                                  match.end <= filepart.end and
-                                                  match.raw.isdigit()))
+            season = matches.range(filepart.start, filepart.end, index=0,
+                                   predicate=lambda match: match.name == 'season' and match.raw.isdigit())
+            episode = matches.next(season, index=0,
+                                   predicate=lambda match: (match.name == 'episode' and
+                                                            match.end <= filepart.end and
+                                                            match.raw.isdigit()))
 
             # there should be season and episode and the episode should start right after the season and both raw values
             # should be digit
@@ -1069,7 +1069,7 @@ class AbsoluteEpisodeNumbers(Rule):
         :return:
         """
         # if it seems to be anime and it doesn't have season
-        if context.get('show_type') != 'regular' and not matches.named('season') and not matches.tagged('newpct'):
+        if context.get('show_type') != 'normal' and not matches.named('season') and not matches.tagged('newpct'):
             episodes = matches.named('episode')
             to_remove = []
             to_append = []
@@ -1150,8 +1150,15 @@ class PartsAsEpisodeNumbers(Rule):
         :return:
         """
         # only if there's no season and no episode
-        if not matches.named('season') and not matches.named('episode') and not matches.named('date'):
-            return matches.named('part')
+        to_rename = []
+        fileparts = matches.markers.named('path')
+        for filepart in marker_sorted(fileparts, matches):
+            parts = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'part')
+            if parts and not matches.range(filepart.start, filepart.end,
+                                           predicate=lambda match: match.name in ('season', 'episode', 'date')):
+                to_rename.extend(parts)
+
+        return to_rename
 
 
 class FixSeasonNotDetected(Rule):
@@ -1292,7 +1299,7 @@ class FixWrongSeasonRangeDetectionDueToEpisode(Rule):
 
             current_season = seasons[0]
             while current_season:
-                next_match = matches.next(current_season, index=0, predicate= lambda match:
+                next_match = matches.next(current_season, index=0, predicate=lambda match:
                                           (match.end <= filepart.end and match.name in ('episode', 'episode_title')))
 
                 if not next_match:
@@ -1300,8 +1307,8 @@ class FixWrongSeasonRangeDetectionDueToEpisode(Rule):
 
                 if next_match.name == 'episode_title':
                     separator = next_match
-                    next_season = matches.next(next_match, index=0, predicate=
-                                               lambda match: match.end <= filepart.end and match.name == 'episode')
+                    next_season = matches.next(next_match, index=0, predicate=lambda match:
+                                               (match.end <= filepart.end and match.name == 'episode'))
                 elif next_match.name == 'episode':
                     separator = matches.holes(current_season.end, next_match.start, index=0)
                     next_season = next_match
@@ -1669,6 +1676,9 @@ class ExpectedTitlePostProcessor(Rule):
             # Remove all dots from the title
             new_title = copy.copy(title)  # IMPORTANT - never change the value. Better to remove and add it
             new_title.value = cleanup(title.value)
+            # important to remove tags from title: equivalent-ignore. Otherwise guessit exception might occur
+            # when more than 2 equivalent titles are found and episode title has number that conflicts with year
+            title.tags = []
             to_remove.append(title)
             to_append.append(new_title)
 
@@ -1804,7 +1814,7 @@ class FixMultipleFormats(Rule):
             last_format = formats[-1]
             previous = matches.previous(last_format, predicate=lambda match: match.name == 'screen_size')
             next_range = matches.range(last_format.end, filepart.end,
-                                       lambda match: match.name in ('video_codec', 'release_group'))
+                                       lambda match: match.name in ('audio_codec', 'video_codec', 'release_group'))
             # If we have at least 3 matches near by, then discard the other formats
             if len(previous) + len(next_range) > 2:
                 invalid_formats = {f.value for f in formats[0:-1]}
@@ -2051,6 +2061,9 @@ class ReleaseGroupPostProcessor(Rule):
                 value = regex.sub(' ', value).strip()
                 if not value:
                     break
+
+            if value and matches.tagged('scene') and not matches.next(release_group):
+                value = value.split('-')[0]
 
             if release_group.value != value:
                 to_remove.append(release_group)
