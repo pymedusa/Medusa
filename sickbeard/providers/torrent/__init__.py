@@ -58,7 +58,7 @@ from .rss import (
 from .xml import (
     bitsnoop,
     kat,
-    torrentz,
+    torrentz2,
 )
 
 __all__ = [
@@ -71,5 +71,5 @@ __all__ = [
     'transmitthenet', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon',
     'btdigg', 'btn', 'hd4free', 'hdbits', 'norbits', 'rarbg', 't411',
     'torrentday', 'torrentproject', 'nyaatorrents', 'rsstorrent',
-    'shazbat', 'bitsnoop', 'kat', 'torrentz'
+    'shazbat', 'bitsnoop', 'kat', 'torrentz2'
 ]
