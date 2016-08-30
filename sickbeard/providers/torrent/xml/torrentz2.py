@@ -34,7 +34,7 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
     def __init__(self):
 
         # Provider Init
-        TorrentProvider.__init__(self, "Torrentz2")
+        TorrentProvider.__init__(self, 'Torrentz2')
 
         # Credentials
         self.public = True
@@ -83,7 +83,7 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
-                elif not response or not response.text.startswith('<?xml'):
+                elif not response.text.startswith('<?xml'):
                     logger.log('Expected xml but got something else, is your mirror failing?', logger.INFO)
                     continue
 
