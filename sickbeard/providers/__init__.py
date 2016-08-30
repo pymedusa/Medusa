@@ -28,7 +28,7 @@ from sickbeard.providers.torrent import (
     elitetorrent, extratorrent, freshontv, gftracker, hd4free, hdbits, hdspace, hdtorrents, hounddawgs, ilovetorrents,
     iptorrents, kat, limetorrents, morethantv, newpct, norbits, nyaatorrents, pretome, rarbg, scc, scenetime, shazbat,
     speedcd, t411, thepiratebay, tntvillage, tokyotoshokan, torrentbytes, torrentday, torrentleech, torrentproject,
-    torrentshack, torrentz, transmitthenet, tvchaosuk, xthor, zooqle,
+    torrentshack, torrentz, transmitthenet, tvchaosuk, xthor, zooqle, torrentz2
 )
 
 from .nzb.newznab import NewznabProvider
@@ -43,7 +43,8 @@ __all__ = [
     'xthor', 'abnormal', 'scenetime', 'btdigg', 'transmitthenet', 'tvchaosuk',
     'torrentproject', 'extratorrent', 'bitcannon', 'torrentz', 'pretome', 'gftracker',
     'hdspace', 'newpct', 'elitetorrent', 'bitsnoop', 'danishbits', 'hd4free', 'limetorrents',
-    'norbits', 'ilovetorrents', 'anizb', 'bithdtv', 'zooqle', 'animebytes', 'torrentshack'
+    'norbits', 'ilovetorrents', 'anizb', 'bithdtv', 'zooqle', 'animebytes', 'torrentshack',
+    'torrentz2'
 ]
 
 
