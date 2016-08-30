@@ -50,7 +50,7 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
         # Proper Strings
 
         # Miscellaneous Options
-        self.confirmed = True
+        #self.confirmed = True
 
         # Torrent Stats
         self.minseed = None
@@ -78,7 +78,8 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
 
-                search_url = self.urls['verified'] if self.confirmed else self.urls['feed']
+                #search_url = self.urls['verified'] if self.confirmed else self.urls['feed']
+                search_url = self.urls['feed']
                 response = self.get_url(search_url, params={'q': search_string}, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
