@@ -1,4 +1,5 @@
 # coding=utf-8
+# Authorship: The Medusa Team
 #
 # This file is part of Medusa.
 #
