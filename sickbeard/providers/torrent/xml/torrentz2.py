@@ -80,7 +80,7 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
                 #search_url = self.urls['verified'] if self.confirmed else self.urls['feed']
                 search_url = self.urls['feed']
-                response = self.get_url(search_url, params={'q': search_string}, returns='response')
+                response = self.get_url(search_url, params={'f': search_string}, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
