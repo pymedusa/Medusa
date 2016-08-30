@@ -334,6 +334,9 @@ class CheckVersion(object):
 
         return news
 
+    def need_update(self):
+        return self.updater.need_update()
+
     def update(self):
         if self.updater:
             # update branch with current config branch value
@@ -400,6 +403,9 @@ class GitUpdateManager(UpdateManager):
 
     def get_num_commits_behind(self):
         return self._num_commits_behind
+
+    def get_num_commits_ahead(self):
+        return self._num_commits_ahead
 
     @staticmethod
     def _git_error():
@@ -735,6 +741,7 @@ class SourceUpdateManager(UpdateManager):
         self._cur_commit_hash = sickbeard.CUR_COMMIT_HASH
         self._newest_commit_hash = None
         self._num_commits_behind = 0
+        self._num_commits_ahead = 0
 
         self.session = helpers.make_session()
 
@@ -759,6 +766,9 @@ class SourceUpdateManager(UpdateManager):
     def get_num_commits_behind(self):
         return self._num_commits_behind
 
+    def get_num_commits_ahead(self):
+        return self._num_commits_ahead
+
     def need_update(self):
         # need this to run first to set self._newest_commit_hash
         try:
@@ -771,7 +781,7 @@ class SourceUpdateManager(UpdateManager):
             logger.log(u"Branch checkout: " + self._find_installed_branch() + "->" + self.branch, logger.DEBUG)
             return True
 
-        if not self._cur_commit_hash or self._num_commits_behind > 0:
+        if not self._cur_commit_hash or self._num_commits_behind > 0 or self._num_commits_ahead > 0:
             return True
 
         return False
@@ -801,9 +811,11 @@ class SourceUpdateManager(UpdateManager):
                 branch_compared = sickbeard.gh.compare(base=self.branch, head=self._cur_commit_hash)
                 self._newest_commit_hash = branch_compared.base_commit.sha
                 self._num_commits_behind = branch_compared.behind_by
+                self._num_commits_ahead = branch_compared.ahead_by
             except Exception:  # UnknownObjectException
                 self._newest_commit_hash = ""
                 self._num_commits_behind = 0
+                self._num_commits_ahead = 0
                 self._cur_commit_hash = ""
 
         # fall back and iterate over last 100 (items per page in gh_api) commits

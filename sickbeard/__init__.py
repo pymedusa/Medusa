@@ -707,14 +707,13 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         if LOG_SIZE > 100:
             LOG_SIZE = 10.0
-        fileLogging = True
 
         if not helpers.makeDir(LOG_DIR):
-            sys.stderr.write("!!! No log folder, logging to screen only!\n")
-            fileLogging = False
+            sys.stderr.write('Unable to create log folder {folder}'.format(folder=LOG_DIR))
+            sys.exit(7)
 
         # init logging
-        logger.init_logging(console_logging=consoleLogging, file_logging=fileLogging, debug_logging=DEBUG, database_logging=DBDEBUG)
+        logger.init_logging(console_logging=consoleLogging)
 
         try:
             if GIT_USERNAME and GIT_PASSWORD:
@@ -1294,7 +1293,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         DISPLAY_ALL_SEASONS = bool(check_setting_int(CFG, 'General', 'display_all_seasons', 1))
 
         # reconfigure the logger
-        logger.reconfigure_levels()
+        logger.reconfigure()
 
         # initialize NZB and TORRENT providers
         providerList = providers.makeProviderList()

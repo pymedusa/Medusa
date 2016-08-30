@@ -3106,24 +3106,23 @@ var SICKRAGE = {
         index: function() {
         },
         viewlogs: function() {
-            $('#minLevel,#logFilter,#logSearch').on('keyup change', _.debounce(function() {
-                if ($('#logSearch').val().length > 0) {
-                    $('#logFilter option[value="<NONE>"]').prop('selected', true);
-                    $('#minLevel option[value=5]').prop('selected', true);
-                }
-                $('#minLevel').prop('disabled', true);
-                $('#logFilter').prop('disabled', true);
+            $('#min_level,#log_filter,#log_search,#log_period').on('keyup change', _.debounce(function() {
+                $('#min_level').prop('disabled', true);
+                $('#log_filter').prop('disabled', true);
+                $('#log_period').prop('disabled', true);
                 document.body.style.cursor = 'wait';
                 var params = $.param({
-                    minLevel: $('select[name=minLevel]').val(),
-                    logFilter: $('select[name=logFilter]').val(),
-                    logSearch: $('#logSearch').val()
+                    min_level: $('select[name=min_level]').val(),
+                    log_filter: $('select[name=log_filter]').val(),
+                    log_period: $('select[name=log_period]').val(),
+                    log_search: $('#log_search').val()
                 });
                 $.get('errorlogs/viewlog/?' + params, function(data) {
                     history.pushState('data', '', 'errorlogs/viewlog/?' + params);
                     $('pre').html($(data).find('pre').html());
-                    $('#minLevel').prop('disabled', false);
-                    $('#logFilter').prop('disabled', false);
+                    $('#min_level').prop('disabled', false);
+                    $('#log_filter').prop('disabled', false);
+                    $('#log_period').prop('disabled', false);
                     document.body.style.cursor = 'default';
                 });
             }, 500));

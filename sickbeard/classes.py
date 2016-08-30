@@ -18,25 +18,19 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
-import sys
-
-from six.moves.urllib.request import FancyURLopener
-
-import sickbeard
-from sickbeard.common import USER_AGENT, Quality
-from sickrage.helper.common import dateTimeFormat
 from dateutil import parser
+import sickbeard
+from sickbeard.common import Quality, USER_AGENT
+from sickrage.helper.common import dateTimeFormat
+from six.moves.urllib.request import FancyURLopener
 
 
 class SickBeardURLopener(FancyURLopener, object):
     version = USER_AGENT
 
 
-class SearchResult(object):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
-    """
-    Represents a search result from an indexer.
-    """
+class SearchResult(object):
+    """Represents a search result from an indexer."""
 
     def __init__(self, episodes):
         self.provider = None
@@ -113,36 +107,32 @@ class SearchResult(object):  # pylint: disable=too-few-public-methods, too-many-
         return u'{}.{}'.format(self.episodes[0].pretty_name(), self.resultType)
 
 
-class NZBSearchResult(SearchResult):  # pylint: disable=too-few-public-methods
-    """
-    Regular NZB result with an URL to the NZB
-    """
+class NZBSearchResult(SearchResult):
+    """Regular NZB result with an URL to the NZB."""
+
     def __init__(self, episodes):
         super(NZBSearchResult, self).__init__(episodes)
         self.resultType = u'nzb'
 
 
-class NZBDataSearchResult(SearchResult):  # pylint: disable=too-few-public-methods
-    """
-    NZB result where the actual NZB XML data is stored in the extraInfo
-    """
+class NZBDataSearchResult(SearchResult):
+    """NZB result where the actual NZB XML data is stored in the extraInfo."""
+
     def __init__(self, episodes):
         super(NZBDataSearchResult, self).__init__(episodes)
         self.resultType = u'nzbdata'
 
 
-class TorrentSearchResult(SearchResult):  # pylint: disable=too-few-public-methods
-    """
-    Torrent result with an URL to the torrent
-    """
+class TorrentSearchResult(SearchResult):
+    """Torrent result with an URL to the torrent."""
+
     def __init__(self, episodes):
         super(TorrentSearchResult, self).__init__(episodes)
         self.resultType = u'torrent'
 
 
 class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
-    """
-    This class is for indexer api.
+    """This class is for indexer api.
 
     Instead of prompting with a UI to pick the desired result out of a
     list of shows it tries to be smart about it based on what shows
@@ -184,8 +174,7 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
 
 
 class ShowListUI(object):  # pylint: disable=too-few-public-methods
-    """
-    This class is for tvdb-api.
+    """This class is for tvdb-api.
 
     Instead of prompting with a UI to pick the desired result out of a
     list of shows it tries to be smart about it based on what shows
@@ -240,62 +229,46 @@ class Proper(object):
             series_id=self.indexerid, indexer=sickbeard.indexerApi(self.indexer).name)
 
 
-class ErrorViewer(object):
-    """
-    Keeps a static list of UIErrors to be displayed on the UI and allows
-    the list to be cleared.
-    """
-
-    errors = []
+class Viewer(object):
+    """Keep the Errors to be displayed in the UI."""
 
     def __init__(self):
-        ErrorViewer.errors = []
+        """Default constructor."""
+        self._errors = dict()
 
-    @staticmethod
-    def add(error):
-        ErrorViewer.errors = [e for e in ErrorViewer.errors if e.message != error.message]
-        ErrorViewer.errors.append(error)
+    def add(self, logline):
+        """Add the logline to the collection.
 
-    @staticmethod
-    def clear():
-        ErrorViewer.errors = []
+        :param logline:
+        :type logline: sickbeard.logger.LogLine
+        """
+        self._errors[logline.key] = logline
 
-    @staticmethod
-    def get():
-        return ErrorViewer.errors
+    def remove(self, logline):
+        """Remove the logline from the collection.
 
+        :param logline:
+        :type logline: sickbeard.logger.LogLine
+        """
+        if logline.key in self._errors:
+            del self._errors[logline.key]
 
-class WarningViewer(object):
-    """
-    Keeps a static list of (warning) UIErrors to be displayed on the UI and allows
-    the list to be cleared.
-    """
+    def clear(self):
+        """Clear the logline collection."""
+        self._errors.clear()
 
-    errors = []
+    @property
+    def errors(self):
+        """Return the logline values sorted in descending order.
 
-    def __init__(self):
-        WarningViewer.errors = []
-
-    @staticmethod
-    def add(error):
-        WarningViewer.errors = [e for e in WarningViewer.errors if e.message != error.message]
-        WarningViewer.errors.append(error)
-
-    @staticmethod
-    def clear():
-        WarningViewer.errors = []
-
-    @staticmethod
-    def get():
-        return WarningViewer.errors
+        :return:
+        :rtype: list of sickbeard.logger.LogLine
+        """
+        return sorted(self._errors.values(), key=lambda error: error.timestamp, reverse=True)
 
 
-class UIError(object):  # pylint: disable=too-few-public-methods
-    """
-    Represents an error to be displayed in the web UI.
-    """
+# The warning viewer: TODO: Change CamelCase to snake_case
+WarningViewer = Viewer()
 
-    def __init__(self, message):
-        self.title = sys.exc_info()[-2] or message
-        self.message = message
-        self.time = datetime.datetime.now().strftime(dateTimeFormat)
+# The error viewer: TODO: Change CamelCase to snake_case
+ErrorViewer = Viewer()
