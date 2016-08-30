@@ -59,7 +59,7 @@ from sickrage.helper.common import episode_num, http_code_description, media_ext
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
-from six import string_types, text_type
+from six import PY2, PY3, binary_type, string_types, text_type
 from six.moves import http_client
 
 
@@ -1530,6 +1530,23 @@ def unicodify(value):
         return text_type(value, 'utf-8', 'replace')
 
     return value
+
+
+def normalize(strings):
+    """Normalize string as expected by guessit.
+
+    Remove when https://github.com/guessit-io/guessit/issues/326 is fixed.
+    :param strings:
+    :rtype: list of str
+    """
+    result = []
+    for string in strings:
+        if PY2 and isinstance(string, text_type):
+            string = string.encode('utf-8')
+        elif PY3 and isinstance(string, binary_type):
+            string = string.decode('ascii')
+        result.append(string)
+    return result
 
 
 def single_or_list(value, allow_multi):
