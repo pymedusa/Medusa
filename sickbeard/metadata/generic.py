@@ -707,9 +707,12 @@ class GenericMetadata(object):
             outFile.close()
             helpers.chmodAsParent(image_path)
         except IOError as e:
-            logger.log(
-                u"Unable to write image to " + image_path + " - are you sure the show folder is writable? " + ex(e),
-                logger.ERROR)
+            if hasattr(e, 'errno') and e.errno in (13, 28):  # Permission denied and No space left on device
+                msg_level = logger.WARNING
+            else:
+                msg_level = logger.ERROR
+            logger.log(u'Unable to write image to {0}. Error: {1}'.format
+                       (image_path, e), msg_level)
             return False
 
         return True

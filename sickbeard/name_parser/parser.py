@@ -17,419 +17,213 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+"""Parser module which contains NameParser class."""
 
 from __future__ import unicode_literals
 
-import guessit
-import os
-import re
+import logging
 import time
+from collections import OrderedDict
 
-import dateutil
-
-from six import string_types, text_type
+import guessit
 
 import sickbeard
-from sickbeard.name_parser import regexes
-from sickbeard import logger, helpers, scene_numbering, common, scene_exceptions, db
-from sickbeard.helpers import remove_non_release_groups
-
-from sickrage.helper.common import remove_extension
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex
+from .. import common, db, helpers, scene_exceptions, scene_numbering
 
 
-pre_cleanup_re = re.compile(r'(\.vol\d+\+\d+)?((\.par2\b)|(\.nzb\b)|(\.mkv\b)).*((\d+\.of\.\d+)|(\(\d+/\d+\))).*$',
-                            flags=re.IGNORECASE)
+logger = logging.getLogger(__name__)
 
 
 class NameParser(object):
-    ALL_REGEX = 0
-    NORMAL_REGEX = 1
-    ANIME_REGEX = 2
+    """Responsible to parse release names."""
 
-    def __init__(self, file_name=True, showObj=None, tryIndexers=False,  # pylint: disable=too-many-arguments
-                 naming_pattern=False, parse_method=None, allow_multi_season=False):
+    def __init__(self, show=None, try_indexers=False, naming_pattern=False, parse_method=None,
+                 allow_multi_season=False):
+        """The NameParser constructor.
 
-        self.file_name = file_name
-        self.showObj = showObj
-        self.tryIndexers = tryIndexers
-
-        self.naming_pattern = naming_pattern
-        self.use_guessit = not sickbeard.USE_LEGACY_NAME_PARSER
-        self.allow_multi_season = allow_multi_season
-
-        if (self.showObj and not self.showObj.is_anime) or parse_method == 'normal':
-            self._compile_regexes(self.NORMAL_REGEX)
-            self.show_type = 'regular'
-        elif (self.showObj and self.showObj.is_anime) or parse_method == 'anime':
-            self._compile_regexes(self.ANIME_REGEX)
-            self.show_type = 'anime'
-        else:
-            self._compile_regexes(self.ALL_REGEX)
-            self.show_type = None
-
-    @staticmethod
-    def clean_series_name(series_name):
-        """Cleans up series name by removing any . and _
-        characters, along with any trailing hyphens.
-
-        Is basically equivalent to replacing all _ and . with a
-        space, but handles decimal numbers in string, for example:
-
-        >>> cleanRegexedSeriesName("an.example.1.0.test")
-        'an example 1.0 test'
-        >>> cleanRegexedSeriesName("an_example_1.0_test")
-        'an example 1.0 test'
-
-        Stolen from dbr's tvnamer
+        :param show:
+        :type show: sickbeard.tv.TVShow
+        :param try_indexers:
+        :type try_indexers: bool
+        :param naming_pattern:
+        :type naming_pattern: bool
+        :param parse_method: normal or anime
+        :type parse_method: str or None
+        :param allow_multi_season:
+        :type allow_multi_season: bool
         """
+        self.show = show
+        self.try_indexers = try_indexers
+        self.naming_pattern = naming_pattern
+        self.allow_multi_season = allow_multi_season
+        self.show_type = parse_method or ('anime' if show and show.is_anime else ('normal' if show else None))
 
-        series_name = re.sub(r'(\D)\.(?!\s)(\D)', '\\1 \\2', series_name)
-        series_name = re.sub(r'(\d)\.(\d{4})', '\\1 \\2', series_name)  # if it ends in a year then don't keep the dot
-        series_name = re.sub(r'(\D)\.(?!\s)', '\\1 ', series_name)
-        series_name = re.sub(r'\.(?!\s)(\D)', ' \\1', series_name)
-        series_name = series_name.replace('_', ' ')
-        series_name = re.sub(r'-$', '', series_name)
-        series_name = re.sub(r'^\[.*\]', '', series_name)
-        return series_name.strip()
-
-    def _compile_regexes(self, regexMode):
-        if regexMode == self.ANIME_REGEX:
-            dbg_str = 'ANIME'
-            uncompiled_regex = [regexes.anime_regexes]
-        elif regexMode == self.NORMAL_REGEX:
-            dbg_str = 'NORMAL'
-            uncompiled_regex = [regexes.normal_regexes]
-        else:
-            dbg_str = 'ALL'
-            uncompiled_regex = [regexes.normal_regexes, regexes.anime_regexes]
-
-        self.compiled_regexes = []
-        for regexItem in uncompiled_regex:
-            for cur_pattern_num, (cur_pattern_name, cur_pattern) in enumerate(regexItem):
-                try:
-                    cur_regex = re.compile(cur_pattern, re.VERBOSE | re.IGNORECASE)
-                except re.error as msg:
-                    logger.log('WARNING: Invalid episode_pattern using {0} regexs, {1}. {2}'.format(dbg_str, msg, cur_pattern))
-                else:
-                    self.compiled_regexes.append((cur_pattern_num, cur_pattern_name, cur_regex))
-
-    def _parse_string(self, name):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-        if not name:
-            return
-
-        matches = []
-        bestResult = None
+    def _parse_string(self, name):
         guess = guessit.guessit(name, dict(show_type=self.show_type))
-        if self.use_guessit:
-            result = self.to_parse_result(name, guess)
-            matches.append(result)
+        result = self.to_parse_result(name, guess)
 
-        # Remove non release groups from filename
-        else:
-            name = remove_non_release_groups(name)
+        show = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
 
-            for (cur_regex_num, cur_regex_name, cur_regex) in self.compiled_regexes:
-                match = cur_regex.match(name)
+        # confirm passed in show object indexer id matches result show object indexer id
+        show = None if show and self.show and show.indexerid != self.show.indexerid else show
+        result.show = show or self.show
 
-                if not match:
-                    continue
+        # if this is a naming pattern test or result doesn't have a show object then return best result
+        if not result.show or self.naming_pattern:
+            return result
 
-                result = ParseResult(name)
-                result.which_regex = [cur_regex_name]
-                result.score = 0 - cur_regex_num
-                result.proper_tags = ensure_list(guess.get('proper_tag'))
+        # get quality
+        result.quality = common.Quality.nameQuality(name, result.show.is_anime)
+        if result.quality == common.Quality.UNKNOWN:
+            result.quality = common.Quality.from_guessit(guess)
 
-                named_groups = match.groupdict().keys()
+        new_episode_numbers = []
+        new_season_numbers = []
+        new_absolute_numbers = []
 
-                if 'series_name' in named_groups:
-                    result.series_name = match.group('series_name')
-                    if result.series_name:
-                        result.series_name = self.clean_series_name(result.series_name)
-                        result.score += 1
+        # if we have an air-by-date show and the result is air-by-date,
+        # then get the real season/episode numbers
+        if result.show.air_by_date and result.is_air_by_date:
+            logger.debug('Show {name} is air by date', name=show.name)
+            airdate = result.air_date.toordinal()
+            main_db_con = db.DBConnection()
+            sql_result = main_db_con.select(
+                b'SELECT season, episode FROM tv_episodes WHERE showid = ? and indexer = ? and airdate = ?',
+                [result.show.indexerid, result.show.indexer, airdate])
 
-                if 'series_num' in named_groups and match.group('series_num'):
-                    result.score += 1
+            season_number = None
+            episode_numbers = []
 
-                if 'season_num' in named_groups:
-                    tmp_season = int(match.group('season_num'))
-                    if cur_regex_name == 'bare' and tmp_season in (19, 20):
-                        continue
-                    result.season_number = tmp_season
-                    result.score += 1
+            if sql_result:
+                season_number = int(sql_result[0][0])
+                episode_numbers = [int(sql_result[0][1])]
+                logger.debug('Database info for show {name}: S{season} E{episodes}',
+                             name=show.name, season=season_number, episodes=episode_numbers)
 
-                if 'ep_num' in named_groups:
-                    ep_num = self._convert_number(match.group('ep_num'))
-                    if 'extra_ep_num' in named_groups and match.group('extra_ep_num'):
-                        result.episode_numbers = range(ep_num, self._convert_number(match.group('extra_ep_num')) + 1)
-                        result.score += 1
-                    else:
-                        result.episode_numbers = [ep_num]
-                    result.score += 1
+            if season_number is None or not episode_numbers:
+                logger.debug('Show {name} has no season or episodes, using indexer...', name=show.name)
+                indexer_api = sickbeard.indexerApi(result.show.indexer)
+                try:
+                    indexer_api_params = indexer_api.api_params.copy()
 
-                if 'ep_ab_num' in named_groups:
-                    ep_ab_num = self._convert_number(match.group('ep_ab_num'))
-                    if 'extra_ab_ep_num' in named_groups and match.group('extra_ab_ep_num'):
-                        result.ab_episode_numbers = range(ep_ab_num,
-                                                          self._convert_number(match.group('extra_ab_ep_num')) + 1)
-                        result.score += 1
-                    else:
-                        result.ab_episode_numbers = [ep_ab_num]
-                    result.score += 1
+                    if result.show.lang:
+                        indexer_api_params['language'] = result.show.lang
 
-                if 'air_date' in named_groups:
-                    air_date = match.group('air_date')
-                    try:
-                        result.air_date = dateutil.parser.parse(air_date, fuzzy_with_tokens=True)[0].date()
-                        result.score += 1
-                    except Exception:
-                        continue
+                    t = sickbeard.indexerApi(result.show.indexer).indexer(**indexer_api_params)
+                    tv_episode = t[result.show.indexerid].airedOn(result.air_date)[0]
 
-                if 'extra_info' in named_groups:
-                    tmp_extra_info = match.group('extra_info')
+                    season_number = int(tv_episode['seasonnumber'])
+                    episode_numbers = [int(tv_episode['episodenumber'])]
+                    logger.debug('Indexer info for show {name}: S{season}E{episodes}',
+                                 name=show.name, season=season_number, episodes=episode_numbers)
+                except sickbeard.indexer_episodenotfound:
+                    logger.warn('Unable to find episode with date {date} for show {name} skipping',
+                                date=result.air_date, name=show.name)
+                    episode_numbers = []
+                except sickbeard.indexer_error as e:
+                    logger.warn('Unable to contact {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
+                    episode_numbers = []
 
-                    # Show.S04.Special or Show.S05.Part.2.Extras is almost certainly not every episode in the season
-                    if tmp_extra_info and cur_regex_name == 'season_only' and re.search(
-                            r'([. _-]|^)(special|extra)s?\w*([. _-]|$)', tmp_extra_info, re.I):
-                        continue
-                    result.extra_info = tmp_extra_info
-                    result.score += 1
+            for episode_number in episode_numbers:
+                s = season_number
+                e = episode_number
 
-                if 'release_group' in named_groups:
-                    result.release_group = match.group('release_group')
-                    result.score += 1
+                if result.show.is_scene:
+                    (s, e) = scene_numbering.get_indexer_numbering(result.show.indexerid,
+                                                                   result.show.indexer,
+                                                                   season_number,
+                                                                   episode_number)
+                    logger.debug('Scene show {name}, using indexer numbering: S{season}E{episodes}',
+                                 name=show.name, season=s, episodes=e)
+                new_episode_numbers.append(e)
+                new_season_numbers.append(s)
 
-                if 'version' in named_groups:
-                    # assigns version to anime file if detected using anime regex. Non-anime regex receives -1
-                    version = match.group('version')
-                    if version:
-                        result.version = version
-                    else:
-                        result.version = 1
-                else:
-                    result.version = -1
+        elif result.show.is_anime and result.is_anime:
+            logger.debug('Scene show {name} is anime', name=show.name)
+            scene_season = scene_exceptions.get_scene_exception_by_name(result.series_name)[1]
+            for absolute_episode in result.ab_episode_numbers:
+                a = absolute_episode
 
-                matches.append(result)
+                if result.show.is_scene:
+                    a = scene_numbering.get_indexer_absolute_numbering(result.show.indexerid,
+                                                                       result.show.indexer, absolute_episode,
+                                                                       True, scene_season)
 
-        if matches:
-            # pick best match with highest score based on placement
-            bestResult = max(sorted(matches, reverse=True, key=lambda x: x.which_regex), key=lambda x: x.score)
+                (s, e) = helpers.get_all_episodes_from_absolute_number(result.show, [a])
+                logger.debug('Scene show {name} using indexer for absolute {absolute}: S{season}E{episodes}',
+                             name=show.name, absolute=a, season=s, episodes=e)
 
-            show = None
-            if not self.naming_pattern:
-                # try and create a show object for this result
-                show = helpers.get_show(bestResult.series_name, self.tryIndexers)
+                new_absolute_numbers.append(a)
+                new_episode_numbers.extend(e)
+                new_season_numbers.append(s)
 
-            # confirm passed in show object indexer id matches result show object indexer id
-            if show:
-                if self.showObj and show.indexerid != self.showObj.indexerid:
-                    show = None
-                bestResult.show = show
-            elif not show and self.showObj:
-                bestResult.show = self.showObj
+        elif result.season_number and result.episode_numbers:
+            for episode_number in result.episode_numbers:
+                s = result.season_number
+                e = episode_number
 
-            # if this is a naming pattern test or result doesn't have a show object then return best result
-            if not bestResult.show or self.naming_pattern:
-                return bestResult
+                if result.show.is_scene:
+                    (s, e) = scene_numbering.get_indexer_numbering(result.show.indexerid,
+                                                                   result.show.indexer,
+                                                                   result.season_number,
+                                                                   episode_number)
+                    logger.debug('Scene show {name} using indexer numbering: S{season}E{episodes}',
+                                 name=show.name, season=s, episodes=e)
 
-            # get quality
-            bestResult.quality = common.Quality.nameQuality(name, bestResult.show.is_anime)
-            if bestResult.quality == common.Quality.UNKNOWN and guess is not None:
-                bestResult.quality = common.Quality.from_guessit(guess)
+                if result.show.is_anime:
+                    a = helpers.get_absolute_number_from_season_and_episode(result.show, s, e)
+                    if a:
+                        new_absolute_numbers.append(a)
+                        logger.debug('Scene anime show {name} using indexer with absolute {absolute}: S{season}E{episodes}',
+                                     name=show.name, absolute=a, season=s, episodes=e)
 
-            new_episode_numbers = []
-            new_season_numbers = []
-            new_absolute_numbers = []
+                new_episode_numbers.append(e)
+                new_season_numbers.append(s)
 
-            # if we have an air-by-date show and the result is air-by-date,
-            # then get the real season/episode numbers
-            if bestResult.show.air_by_date and bestResult.is_air_by_date:
-                airdate = bestResult.air_date.toordinal()
-                main_db_con = db.DBConnection()
-                sql_result = main_db_con.select(
-                    b'SELECT season, episode FROM tv_episodes WHERE showid = ? and indexer = ? and airdate = ?',
-                    [bestResult.show.indexerid, bestResult.show.indexer, airdate])
+        # need to do a quick sanity check heregex.  It's possible that we now have episodes
+        # from more than one season (by tvdb numbering), and this is just too much
+        # for sickbeard, so we'd need to flag it.
+        new_season_numbers = list(set(new_season_numbers))  # remove duplicates
+        if len(new_season_numbers) > 1:
+            raise InvalidNameException('Scene numbering results episodes from seasons {seasons}, (i.e. more than one) '
+                                       'and Medusa does not support this. Sorry.'.format(seasons=new_season_numbers))
 
-                season_number = None
-                episode_numbers = []
+        # I guess it's possible that we'd have duplicate episodes too, so lets
+        # eliminate them
+        new_episode_numbers = list(set(new_episode_numbers))
+        new_episode_numbers.sort()
 
-                if sql_result:
-                    season_number = int(sql_result[0][0])
-                    episode_numbers = [int(sql_result[0][1])]
+        # maybe even duplicate absolute numbers so why not do them as well
+        new_absolute_numbers = list(set(new_absolute_numbers))
+        new_absolute_numbers.sort()
 
-                if season_number is None or not episode_numbers:
-                    try:
-                        lINDEXER_API_PARMS = sickbeard.indexerApi(bestResult.show.indexer).api_params.copy()
+        if new_absolute_numbers:
+            result.ab_episode_numbers = new_absolute_numbers
 
-                        if bestResult.show.lang:
-                            lINDEXER_API_PARMS['language'] = bestResult.show.lang
+        if new_season_numbers and new_episode_numbers:
+            result.episode_numbers = new_episode_numbers
+            result.season_number = new_season_numbers[0]
 
-                        t = sickbeard.indexerApi(bestResult.show.indexer).indexer(**lINDEXER_API_PARMS)
-
-                        epObj = t[bestResult.show.indexerid].airedOn(bestResult.air_date)[0]
-
-                        season_number = int(epObj['seasonnumber'])
-                        episode_numbers = [int(epObj['episodenumber'])]
-                    except sickbeard.indexer_episodenotfound:
-                        logger.log('Unable to find episode with date {0} for show {1} skipping'.format(bestResult.air_date, bestResult.show.name), logger.WARNING)
-                        episode_numbers = []
-                    except sickbeard.indexer_error as e:
-                        logger.log('Unable to contact {0}: {1}'.format(sickbeard.indexerApi(bestResult.show.indexer).name, ex(e)), logger.WARNING)
-                        episode_numbers = []
-
-                for epNo in episode_numbers:
-                    s = season_number
-                    e = epNo
-
-                    if bestResult.show.is_scene:
-                        (s, e) = scene_numbering.get_indexer_numbering(bestResult.show.indexerid,
-                                                                       bestResult.show.indexer,
-                                                                       season_number,
-                                                                       epNo)
-                    new_episode_numbers.append(e)
-                    new_season_numbers.append(s)
-
-            elif bestResult.show.is_anime and bestResult.ab_episode_numbers:
-                scene_season = scene_exceptions.get_scene_exception_by_name(bestResult.series_name)[1]
-                for epAbsNo in bestResult.ab_episode_numbers:
-                    a = epAbsNo
-
-                    if bestResult.show.is_scene:
-                        a = scene_numbering.get_indexer_absolute_numbering(bestResult.show.indexerid,
-                                                                           bestResult.show.indexer, epAbsNo,
-                                                                           True, scene_season)
-
-                    (s, e) = helpers.get_all_episodes_from_absolute_number(bestResult.show, [a])
-
-                    new_absolute_numbers.append(a)
-                    new_episode_numbers.extend(e)
-                    new_season_numbers.append(s)
-
-            elif bestResult.season_number and bestResult.episode_numbers:
-                for epNo in bestResult.episode_numbers:
-                    s = bestResult.season_number
-                    e = epNo
-
-                    if bestResult.show.is_scene:
-                        (s, e) = scene_numbering.get_indexer_numbering(bestResult.show.indexerid,
-                                                                       bestResult.show.indexer,
-                                                                       bestResult.season_number,
-                                                                       epNo)
-                    if bestResult.show.is_anime:
-                        a = helpers.get_absolute_number_from_season_and_episode(bestResult.show, s, e)
-                        if a:
-                            new_absolute_numbers.append(a)
-
-                    new_episode_numbers.append(e)
-                    new_season_numbers.append(s)
-
-            # need to do a quick sanity check heregex.  It's possible that we now have episodes
-            # from more than one season (by tvdb numbering), and this is just too much
-            # for sickbeard, so we'd need to flag it.
-            new_season_numbers = list(set(new_season_numbers))  # remove duplicates
-            if len(new_season_numbers) > 1:
-                raise InvalidNameException('Scene numbering results episodes from '
-                                           'seasons {0}, (i.e. more than one) and '
-                                           'sickrage does not support this.  '
-                                           'Sorry.'.format(new_season_numbers))
-
-            # I guess it's possible that we'd have duplicate episodes too, so lets
-            # eliminate them
-            new_episode_numbers = list(set(new_episode_numbers))
-            new_episode_numbers.sort()
-
-            # maybe even duplicate absolute numbers so why not do them as well
-            new_absolute_numbers = list(set(new_absolute_numbers))
-            new_absolute_numbers.sort()
-
-            if new_absolute_numbers:
-                bestResult.ab_episode_numbers = new_absolute_numbers
-
-            if new_season_numbers and new_episode_numbers:
-                bestResult.episode_numbers = new_episode_numbers
-                bestResult.season_number = new_season_numbers[0]
-
-            if bestResult.show.is_scene:
-                logger.log(
-                    'Converted parsed result {0} into {1}'.
-                    format(bestResult.original_name,
-                           str(bestResult).decode('utf-8', 'xmlcharrefreplace')),
-                    logger.DEBUG)
+        if result.show.is_scene:
+            logger.debug('Converted parsed result {original} into {result}', original=result.original_name,
+                         result=str(result))
 
         # CPU sleep
         time.sleep(0.02)
 
-        return bestResult
-
-    @staticmethod
-    def _combine_results(first, second, attr):
-        # if the first doesn't exist then return the second or nothing
-        if not first:
-            if not second:
-                return None
-            else:
-                return getattr(second, attr)
-
-        # if the second doesn't exist then return the first
-        if not second:
-            return getattr(first, attr)
-
-        a = getattr(first, attr)
-        b = getattr(second, attr)
-
-        # if a is good use it
-        if a is not None or (isinstance(a, list) and a):
-            return a
-        # if not use b (if b isn't set it'll just be default)
-        else:
-            return b
-
-    @staticmethod
-    def _unicodify(obj, encoding='utf-8'):
-        if isinstance(obj, string_types) and not isinstance(obj, text_type):
-            return text_type(obj, encoding, 'replace')
-        else:
-            return obj
-
-    @staticmethod
-    def _convert_number(org_number):
-        """
-         Convert org_number into an integer
-         org_number: integer or representation of a number: string or unicode
-         Try force converting to int first, on error try converting from Roman numerals
-         returns integer or 0
-         """
-
-        try:
-            # try forcing to int
-            if org_number:
-                number = int(org_number)
-            else:
-                number = 0
-
-        except Exception:
-            # on error try converting from Roman numerals
-            roman_to_int_map = (
-                ('M', 1000), ('CM', 900), ('D', 500), ('CD', 400), ('C', 100),
-                ('XC', 90), ('L', 50), ('XL', 40), ('X', 10),
-                ('IX', 9), ('V', 5), ('IV', 4), ('I', 1)
-            )
-
-            roman_numeral = str(org_number).upper()
-            number = 0
-            index = 0
-
-            for numeral, integer in roman_to_int_map:
-                while roman_numeral[index:index + len(numeral)] == numeral:
-                    number += integer
-                    index += len(numeral)
-
-        return number
+        return result
 
     def parse(self, name, cache_result=True):
-        name = self._unicodify(name)
-        name = pre_cleanup_re.sub('', name)
+        """Parse the name into a ParseResult.
+
+        :param name:
+        :type name: str
+        :param cache_result:
+        :type cache_result: bool
+        :return:
+        :rtype: ParseResult
+        """
+        name = helpers.unicodify(name)
 
         if self.naming_pattern:
             cache_result = False
@@ -438,66 +232,14 @@ class NameParser(object):
         if cached:
             return cached
 
-        # break it into parts if there are any (dirname, file name, extension)
-        dir_name, file_name = ek(os.path.split, name) if not self.use_guessit else ('', name)
-
-        if self.file_name:
-            base_file_name = remove_extension(file_name)
-        else:
-            base_file_name = file_name
-
-        # set up a result to use
-        final_result = ParseResult(name)
-
-        # try parsing the file name
-        file_name_result = self._parse_string(base_file_name)
-
-        # use only the direct parent dir
-        dir_name = ek(os.path.basename, dir_name)
-
-        # parse the dirname for extra info if needed
-        dir_name_result = self._parse_string(dir_name)
-
-        final_result.guess = file_name_result.guess if file_name_result else None
-
-        # build the ParseResult object
-        final_result.air_date = self._combine_results(file_name_result, dir_name_result, 'air_date')
-
-        # anime absolute numbers
-        final_result.ab_episode_numbers = self._combine_results(file_name_result, dir_name_result, 'ab_episode_numbers')
-
-        # season and episode numbers
-        final_result.season_number = self._combine_results(file_name_result, dir_name_result, 'season_number')
-        final_result.episode_numbers = self._combine_results(file_name_result, dir_name_result, 'episode_numbers')
-
-        # if the dirname has a release group/show name I believe it over the filename
-        final_result.series_name = self._combine_results(dir_name_result, file_name_result, 'series_name')
-        final_result.extra_info = self._combine_results(dir_name_result, file_name_result, 'extra_info')
-        final_result.release_group = self._combine_results(dir_name_result, file_name_result, 'release_group')
-        final_result.version = self._combine_results(dir_name_result, file_name_result, 'version')
-        final_result.proper_tags =  self._combine_results(dir_name_result, file_name_result, 'proper_tags')
-
-        final_result.which_regex = []
-        if final_result == file_name_result:
-            final_result.which_regex = file_name_result.which_regex
-        elif final_result == dir_name_result:
-            final_result.which_regex = dir_name_result.which_regex
-        else:
-            if file_name_result:
-                final_result.which_regex += file_name_result.which_regex
-            if dir_name_result:
-                final_result.which_regex += dir_name_result.which_regex
-
-        final_result.show = self._combine_results(file_name_result, dir_name_result, 'show')
-        final_result.quality = self._combine_results(file_name_result, dir_name_result, 'quality')
-
-        self.assert_supported(final_result)
+        result = self._parse_string(name)
+        self.assert_supported(result)
 
         if cache_result:
-            name_parser_cache.add(name, final_result)
+            name_parser_cache.add(name, result)
 
-        logger.log('Parsed {0} into {1}'.format(name, str(final_result).decode('utf-8', 'xmlcharrefreplace')), logger.DEBUG)
-        return final_result
+        logger.debug('Parsed {name} into {result}', name=name, result=str(result))
+        return result
 
     @staticmethod
     def assert_supported(result):
@@ -507,18 +249,18 @@ class NameParser(object):
         :type result: ParseResult
         """
         if not result.show:
-            raise InvalidShowException('Unable to match {name} to a show in your database. '
-                                       'Parser result: {result}'.format(name=result.original_name, result=result))
+            raise InvalidShowException('Unable to match {result.original_name} to a show in your database. '
+                                       'Parser result: {result}'.format(result=result))
 
         if result.season_number is None and not result.episode_numbers and \
                 result.air_date is None and not result.ab_episode_numbers and not result.series_name:
-            raise InvalidNameException('Unable to parse {name}. No episode numbering info. '
-                                       'Parser result: {result}'.format(name=result.original_name, result=result))
+            raise InvalidNameException('Unable to parse {result.original_name}. No episode numbering info. '
+                                       'Parser result: {result}'.format(result=result))
 
         if result.season_number is not None and not result.episode_numbers and \
                 not result.ab_episode_numbers and result.is_episode_special:
-            raise InvalidNameException('Discarding {name}. Season special is not supported yet. '
-                                       'Parser result: {result}'.format(name=result.original_name, result=result))
+            raise InvalidNameException('Discarding {result.original_name}. Season special is not supported yet. '
+                                       'Parser result: {result}'.format(result=result))
 
     def to_parse_result(self, name, guess):
         """Guess the episode information from a given release name.
@@ -529,154 +271,147 @@ class NameParser(object):
         :param guess:
         :type guess: dict
         :return:
-        :rtype: dict
+        :rtype: ParseResult
         """
-        adapted = {
-            'series_name': guess.get('alias') or guess.get('title'),
-            'season_number': single_or_list(guess.get('season'), self.allow_multi_season),
-            'release_group': guess.get('release_group'),
-            'air_date': guess.get('date'),
-            'version': guess.get('version', -1),
-            'extra_info': ' '.join(ensure_list(guess.get('other', ''))),
-            'episode_numbers': ensure_list(guess.get('episode'))
-            if guess.get('episode') != guess.get('absolute_episode') else [],
-            'ab_episode_numbers': ensure_list(guess.get('absolute_episode')),
-            'proper_tags': ensure_list(guess.get('proper_tag'))
-        }
-
-        result = ParseResult(name)
-        result.guess = guess
-        for key, value in adapted.items():
-            setattr(result, key, value)
-
-        return result
+        return ParseResult(guess, original_name=name, series_name=guess.get('alias') or guess.get('title'),
+                           season_number=helpers.single_or_list(guess.get('season'), self.allow_multi_season),
+                           episode_numbers=helpers.ensure_list(guess.get('episode'))
+                           if guess.get('episode') != guess.get('absolute_episode') else [],
+                           ab_episode_numbers=helpers.ensure_list(guess.get('absolute_episode')),
+                           air_date=guess.get('date'), release_group=guess.get('release_group'),
+                           proper_tags=helpers.ensure_list(guess.get('proper_tag')), version=guess.get('version', -1))
 
 
-def single_or_list(value, allow_multi):
-    """Return a single value or a list.
+class ParseResult(object):
+    """Represent the release information for a given name."""
 
-    If value is a list with more than one element and allow_multi is False then it returns None.
-    :param value:
-    :type value: list
-    :param allow_multi: if False, multiple values will return None
-    :type allow_multi: bool
-    :rtype: list
-    """
-    if not isinstance(value, list):
-        return value
+    def __init__(self, guess, series_name=None, season_number=None, episode_numbers=None, ab_episode_numbers=None,
+                 air_date=None, release_group=None, proper_tags=None, version=None, original_name=None):
+        """The ParseResult constructor.
 
-    if allow_multi:
-        return sorted(value)
-
-
-def ensure_list(value):
-    """Return a list.
-
-    When value is not a list, return a list containing the single value.
-    :param value:
-    :rtype: list
-    """
-    return sorted(value) if isinstance(value, list) else [value] if value is not None else []
-
-
-class ParseResult(object):  # pylint: disable=too-many-instance-attributes
-    def __init__(self, original_name, series_name=None, season_number=None,  # pylint: disable=too-many-arguments
-                 episode_numbers=None, extra_info=None, release_group=None,
-                 air_date=None, ab_episode_numbers=None, show=None,
-                 score=None, quality=None, version=None, proper_tags=None, guess=None):
+        :param guess:
+        :type guess: dict
+        :param series_name:
+        :type series_name: str
+        :param season_number:
+        :type season_number: int
+        :param episode_numbers:
+        :type episode_numbers: list of int
+        :param ab_episode_numbers:
+        :type ab_episode_numbers: list of int
+        :param air_date:
+        :type air_date: date
+        :param release_group:
+        :type release_group: str
+        :param proper_tags:
+        :type proper_tags: list of str
+        :param version:
+        :type version: int
+        :param original_name:
+        :type original_name: str
+        """
         self.original_name = original_name
         self.series_name = series_name
         self.season_number = season_number
         self.episode_numbers = episode_numbers if episode_numbers else []
         self.ab_episode_numbers = ab_episode_numbers if ab_episode_numbers else []
-        self.quality = quality if quality else common.Quality.UNKNOWN
-        self.extra_info = extra_info
+        self.quality = common.Quality.UNKNOWN
         self.release_group = release_group
         self.air_date = air_date
-        self.which_regex = []
-        self.show = show
-        self.score = score
+        self.show = None
         self.version = version
         self.proper_tags = proper_tags
         self.guess = guess
 
     def __eq__(self, other):
+        """Equal implementation.
+
+        :param other:
+        :return:
+        :rtype: bool
+        """
         return other and all([
             self.series_name == other.series_name,
             self.season_number == other.season_number,
             self.episode_numbers == other.episode_numbers,
-            self.extra_info == other.extra_info,
             self.release_group == other.release_group,
             self.air_date == other.air_date,
             self.ab_episode_numbers == other.ab_episode_numbers,
             self.show == other.show,
-            self.score == other.score,
             self.quality == other.quality,
             self.version == other.version,
-            self.proper_tags == other.proper_tags
+            self.proper_tags == other.proper_tags,
+            self.is_episode_special == other.is_episode_special
         ])
 
     def __str__(self):
-        if self.series_name is not None:
-            to_return = '{0} - '.format(self.series_name)
-        else:
-            to_return = ''
-        if self.season_number is not None:
-            to_return += 'S{0}'.format(str(self.season_number).zfill(2))
-        if self.episode_numbers:
-            for e in self.episode_numbers:
-                to_return += 'E{0}'.format(str(e).zfill(2))
+        """String.
 
-        if self.is_air_by_date:
-            to_return += str(self.air_date)
-        if self.ab_episode_numbers:
-            to_return += ' [ABS: {0}]'.format(str(self.ab_episode_numbers))
-        if self.version and self.is_anime is True:
-            to_return += ' [ANIME VER: {0}]'.format(self.version)
-
-        if self.release_group:
-            to_return += ' [GROUP: {0}]'.format(self.release_group)
-
-        if self.proper_tags:
-            to_return += ' [PROPER TAGs: {0}]'.format('|'.join(self.proper_tags))
-
-        to_return += ' [ABD: {0}]'.format(self.is_air_by_date)
-        to_return += ' [ANIME: {0}]'.format(self.is_anime)
-
-        if not self.guess:
-            to_return += ' [whichReg: {0}]'.format(self.which_regex)
-
-        return to_return.encode('utf-8')
+        :return:
+        :rtype: str
+        """
+        obj = OrderedDict(self.guess, **dict(season=self.season_number,
+                                             episode=self.episode_numbers,
+                                             absolute_episode=self.ab_episode_numbers,
+                                             quality=common.Quality.qualityStrings[self.quality]))
+        return helpers.canonical_name(obj, fmt='{key}: {value}', separator=', ')
 
     @property
     def is_air_by_date(self):
-        if self.air_date:
-            return True
-        return False
+        """Whether or not this episode has air date.
+
+        :return:
+        :rtype: bool
+        """
+        return bool(self.air_date)
 
     @property
     def is_anime(self):
-        if self.ab_episode_numbers:
-            return True
-        return False
+        """Whether or not this episode is an anime.
+
+        :return:
+        :rtype: bool
+        """
+        return bool(self.ab_episode_numbers)
 
     @property
     def is_episode_special(self):
-        return self.guess.get('episode_details') == 'Special' if self.guess else False
+        """Whether or not it represents a special episode.
+
+        :return:
+        :rtype: bool
+        """
+        return self.guess.get('episode_details') == 'Special'
 
 
 class NameParserCache(object):
+    """Name parser cache."""
+
     _previous_parsed = {}
     _cache_size = 100
 
     def add(self, name, parse_result):
+        """Add the result to the parser cache.
+
+        :param name:
+        :type name: str
+        :param parse_result:
+        :type parse_result: ParseResult
+        """
         self._previous_parsed[name] = parse_result
         while len(self._previous_parsed) > self._cache_size:
             del self._previous_parsed[self._previous_parsed.keys()[0]]
 
     def get(self, name):
+        """Return the cached parsed result.
+
+        :param name:
+        :type name: str
+        :return:
+        :rtype: ParseResult
+        """
         if name in self._previous_parsed:
-            logger.log('Using cached parse result for: {0}'.format(name), logger.DEBUG)
+            logger.debug('Using cached parse result for {name}', name=name)
             return self._previous_parsed[name]
 
 
@@ -684,8 +419,8 @@ name_parser_cache = NameParserCache()
 
 
 class InvalidNameException(Exception):
-    """The given release name is not valid"""
+    """The given release name is not valid."""
 
 
 class InvalidShowException(Exception):
-    """The given show name is not valid"""
+    """The given show name is not valid."""

@@ -6,3 +6,4 @@ from sickbeard.server.web.home.change_log import HomeChangeLog
 from sickbeard.server.web.home.irc import HomeIRC
 from sickbeard.server.web.home.news import HomeNews
 from sickbeard.server.web.home.post_process import HomePostProcess
+from sickbeard.server.web.home.add_recommended import HomeAddRecommended

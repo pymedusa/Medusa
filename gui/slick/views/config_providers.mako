@@ -5,9 +5,10 @@
     from sickrage.providers.GenericProvider import GenericProvider
 %>
 <%block name="scripts">
-<script type="text/javascript" src="${srRoot}/js/configProviders.js"></script>
+<script type="text/javascript" src="js/config-providers.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
+    // @TODO: This needs to be moved to an API function
     % if sickbeard.USE_NZBS:
         var show_nzb_providers = ${("false", "true")[bool(sickbeard.USE_NZBS)]};
         % for curNewznabProvider in sickbeard.newznabProviderList:
@@ -31,16 +32,17 @@ $('#config-components').tabs();
 % endif
 <div id="config">
     <div id="config-content">
-        <form id="configForm" action="saveProviders" method="post">
+        <form id="configForm" action="config/providers/saveProviders" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="#provider-priorities">Provider Priorities</a></li>
-                    <li><a href="#provider-options">Provider Options</a></li>
+                    ## @TODO: Fix this stupid hack
+                    <script>document.write('<li><a href="' + document.location.href + '#provider-priorities">Provider Priorities</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#provider-options">Provider Options</a></li>');</script>
                   % if sickbeard.USE_NZBS:
-                    <li><a href="#custom-newznab">Configure Custom Newznab Providers</a></li>
+                    <script>document.write('<li><a href="' + document.location.href + '#custom-newznab">Configure Custom Newznab Providers</a></li>');</script>
                   % endif
                   % if sickbeard.USE_TORRENTS:
-                    <li><a href="#custom-torrent">Configure Custom Torrent Providers</a></li>
+                    <li><a href="${base_url}config/providers/#custom-torrent">Configure Custom Torrent Providers</a></li>
                   % endif
                 </ul>
                 <div id="provider-priorities" class="component-group" style='min-height: 550px;'>
@@ -49,9 +51,9 @@ $('#config-components').tabs();
                         <p>Check off and drag the providers into the order you want them to be used.</p>
                         <p>At least one provider is required but two are recommended.</p>
                         % if not sickbeard.USE_NZBS or not sickbeard.USE_TORRENTS:
-                        <blockquote style="margin: 20px 0;">NZB/Torrent providers can be toggled in <b><a href="${srRoot}/config/search">Search Settings</a></b></blockquote>
+                        <blockquote style="margin: 20px 0;">NZB/Torrent providers can be toggled in <b><a href="config/search">Search Settings</a></b></blockquote>
                         % else:
-                        <br />
+                        <br>
                         % endif
                         <div>
                             <p class="note"><span class="red-text">*</span> Provider does not support backlog searches at this time.</p>
@@ -63,7 +65,6 @@ $('#config-components').tabs();
                         % for curProvider in sickbeard.providers.sortedProviderList():
                             <%
                                 ## These will show the '!' not saying they are broken
-                                broken_providers = {'btdigg','kickasstorrents'}
                                 if curProvider.provider_type == GenericProvider.NZB and not sickbeard.USE_NZBS:
                                     continue
                                 elif curProvider.provider_type == GenericProvider.TORRENT and not sickbeard.USE_TORRENTS:
@@ -75,11 +76,11 @@ $('#config-components').tabs();
                                     curURL = curProvider.url
                             %>
                             <li class="ui-state-default ${('nzb-provider', 'torrent-provider')[bool(curProvider.provider_type == GenericProvider.TORRENT)]}" id="${curName}">
-                                <input type="checkbox" id="enable_${curName}" class="provider_enabler" ${'checked="checked"' if curProvider.is_enabled() is True else ''}/>
-                                <a href="${anon_url(curURL)}" class="imgLink" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><img src="${srRoot}/images/providers/${curProvider.image_name()}" alt="${curProvider.name}" title="${curProvider.name}" width="16" height="16" style="vertical-align:middle;"/></a>
+                                <input type="checkbox" id="enable_${curName}" class="provider_enabler" ${'checked="checked"' if curProvider.is_enabled() is True and curProvider.get_id() not in sickbeard.BROKEN_PROVIDERS.split(',') else ''}/>
+                                <a href="${anon_url(curURL)}" class="imgLink" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><img src="images/providers/${curProvider.image_name()}" alt="${curProvider.name}" title="${curProvider.name}" width="16" height="16" style="vertical-align:middle;"/></a>
                                 <span style="vertical-align:middle;">${curProvider.name}</span>
                                 ${('<span class="red-text">*</span>', '')[bool(curProvider.supports_backlog)]}
-                                ${('<span class="red-text">!</span>', '')[bool(curProvider.get_id() not in broken_providers)]}
+                                ${('<span class="red-text">!</span>', '')[bool(curProvider.get_id() not in sickbeard.BROKEN_PROVIDERS.split(','))]}
                                 <span class="ui-icon ui-icon-arrowthick-2-n-s pull-right" style="vertical-align:middle;" title="Re-order provider"></span>
                                 <span class="ui-icon ${('ui-icon-locked','ui-icon-unlocked')[bool(curProvider.public)]} pull-right" style="vertical-align:middle;" title="Public or Private"></span>
                                 <span class="${('','ui-icon enable-manual-search-icon pull-right')[bool(curProvider.enable_manualsearch)]}" style="vertical-align:middle;" title="Enabled for Manual Searches"></span>
@@ -89,7 +90,7 @@ $('#config-components').tabs();
                         % endfor
                         </ul>
                         <input type="hidden" name="provider_order" id="provider_order" value="${" ".join([x.get_id()+':'+str(int(x.is_enabled())) for x in sickbeard.providers.sortedProviderList()])}"/>
-                        <br /><input type="submit" class="btn config_submitter" value="Save Changes" /><br />
+                        <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group1 //-->
                 <div id="provider-options" class="component-group">
@@ -421,7 +422,7 @@ $('#config-components').tabs();
                             <label>
                                 <span class="component-title">&nbsp;</span>
                                 <span class="component-desc">
-                                    <p>stop transfer when ratio is reached<br />(-1 Medusa default to seed forever, or leave blank for downloader default)</p>
+                                    <p>stop transfer when ratio is reached<br>(-1 Medusa default to seed forever, or leave blank for downloader default)</p>
                                 </span>
                             </label>
                         </div>
@@ -609,13 +610,13 @@ $('#config-components').tabs();
                     </div>
                     % endfor
                     <!-- end div for editing providers -->
-                    <input type="submit" class="btn config_submitter" value="Save Changes" /><br />
+                    <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group2 //-->
                 % if sickbeard.USE_NZBS:
                 <div id="custom-newznab" class="component-group">
                     <div class="component-group-desc">
-                        <h3>Configure Custom<br />Newznab Providers</h3>
+                        <h3>Configure Custom<br>Newznab Providers</h3>
                         <p>Add and setup or remove custom Newznab providers.</p>
                     </div>
                     <fieldset class="component-group-list">
@@ -741,7 +742,7 @@ $('#config-components').tabs();
                 </fieldset>
             </div><!-- /component-group4 //-->
             % endif
-            <br /><input type="submit" class="btn config_submitter_refresh" value="Save Changes" /><br />
+            <br><input type="submit" class="btn config_submitter_refresh" value="Save Changes" /><br>
             </div><!-- /config-components //-->
         </form>
     </div>

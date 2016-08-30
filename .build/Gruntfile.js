@@ -4,7 +4,7 @@ module.exports = function(grunt) {
     grunt.initConfig({
         clean: {
             dist: './dist/',
-            bower_components: './bower_components', // jshint ignore:line
+            bower_components: './bower_components',
             fonts: '../gui/slick/css/*.ttf',
             options: {
                 force: true
@@ -17,7 +17,7 @@ module.exports = function(grunt) {
                 }
             }
         },
-        bower_concat: { // jshint ignore:line
+        bower_concat: {
             all: {
                 dest: {
                     js: './dist/bower.js',
@@ -122,7 +122,7 @@ module.exports = function(grunt) {
             all: [
                 '../gui/slick/js/**/*.js',
                 '!../gui/slick/js/lib/**/*.js',
-                '!../gui/slick/js/ajaxNotifications.js',
+                '!../gui/slick/js/ajax-notifications.js',
                 '!../gui/slick/js/**/*.min.js', // We use this because ignores doesn't seem to work :(
             ]
         },
@@ -153,11 +153,9 @@ module.exports = function(grunt) {
         'uglify',
         'sass',
         'cssmin',
-        'jshint',
         'mocha'
     ]);
     grunt.registerTask('travis', [
-        'jshint',
         'mocha'
     ]);
 };

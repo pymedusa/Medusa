@@ -10,6 +10,7 @@
     from sickbeard import metadata
     from sickbeard.metadata.generic import GenericMetadata
     from sickbeard.helpers import anon_url
+    gh_branch = sickbeard.GIT_REMOTE_BRANCHES or sickbeard.versionCheckScheduler.action.list_remote_branches()
 %>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -23,12 +24,13 @@
 % endif
 <div id="config">
     <div id="config-content">
-        <form id="configForm" action="saveGeneral" method="post">
+        <form id="configForm" action="config/general/saveGeneral" method="post">
             <div id="config-components">
                 <ul>
-                    <li><a href="#misc">Misc</a></li>
-                    <li><a href="#interface">Interface</a></li>
-                    <li><a href="#advanced-settings">Advanced Settings</a></li>
+                    ## @TODO: Fix this stupid hack
+                    <script>document.write('<li><a href="' + document.location.href + '#misc">Misc</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#interface">Interface</a></li>');</script>
+                    <script>document.write('<li><a href="' + document.location.href + '#advanced-settings">Advanced Settings</a></li>');</script>
                 </ul>
                 <div id="misc">
                         <div class="component-group-desc">
@@ -223,7 +225,7 @@
                                 </span>
                             </label>
                         </div>
-              
+
                         <div class="field-pair">
                             <label for="fanart_background">
                                 <span class="component-title">Show fanart in the background</span>
@@ -294,11 +296,6 @@
                             <label for="date_presets">
                                 <span class="component-title">Date style:</span>
                                 <span class="component-desc">
-                                    <select class="form-control input-sm ${' metadataDiv' if sickbeard.FUZZY_DATING else ''}" id="date_presets${'' if sickbeard.FUZZY_DATING else '_na'}" name="date_preset${'' if sickbeard.FUZZY_DATING else '_na'}">
-                                        % for cur_preset in date_presets:
-                                            <option value="${cur_preset}" ${'selected="selected"' if sickbeard.DATE_PRESET == cur_preset or "%x" == sickbeard.DATE_PRESET and cur_preset == '%a, %b %d, %Y' else ''}>${datetime.datetime(datetime.datetime.now().year, 12, 31, 14, 30, 47).strftime(cur_preset)}</option>
-                                        % endfor
-                                    </select>
                                     <select class="form-control input-sm ${'' if not sickbeard.FUZZY_DATING else ' metadataDiv'}" id="date_presets${'' if not sickbeard.FUZZY_DATING else ' metadataDiv'}" name="date_preset${'' if not sickbeard.FUZZY_DATING else '_na'}">
                                         <option value="%x" ${'selected="selected"' if sickbeard.DATE_PRESET == '%x' else ''}>Use System Default</option>
                                         % for cur_preset in date_presets:
@@ -366,7 +363,7 @@
                                     <input class="btn btn-inline" type="button" id="generate_new_apikey" value="Generate">
                                     <div class="clear-left">
                                         <p>used to give 3rd party programs limited access to Medusa</p>
-                                        <p>you can try all the features of the API <a href="${srRoot}/apibuilder/">here</a></p>
+                                        <p>you can try all the features of the API <a href="apibuilder/">here</a></p>
                                     </div>
                                 </span>
                             </label>
@@ -459,7 +456,7 @@
                                 <span class="component-title">Reverse proxy headers</span>
                                 <span class="component-desc">
                                     <input type="checkbox" name="handle_reverse_proxy" id="handle_reverse_proxy" ${'checked="checked"' if sickbeard.HANDLE_REVERSE_PROXY else ''}/>
-                                    <p>accept the following reverse proxy headers (advanced)...<br />(X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto)</p>
+                                    <p>accept the following reverse proxy headers (advanced)...<br>(X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto)</p>
                                 </span>
                             </label>
                         </div>
@@ -600,15 +597,6 @@
                             </label>
                         </div>
 
-                        <div class="field-pair">
-                            <label for="use_legacy_name_parser">
-                                <span class="component-title">Use legacy name parser</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="use_legacy_name_parser" id="use_legacy_name_parser" ${('', 'checked="checked"')[bool(sickbeard.USE_LEGACY_NAME_PARSER)]}/>
-                                    <p>Use the legacy name parser. If disabled <a href=${anon_url("https://github.com/guessit-io/guessit")}>Guessit</a> is used for release and filename parsing.</p>
-                                </span>
-                            </label>
-                        </div>
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
@@ -647,8 +635,8 @@
                                     <span>
                                         Set the level of log-filtering.
                                         Normal (default).
-                                        <br />NOTE: A restart may be required to take effect.
-                                        <br />WARNING: Setting to "DISABLED" will show sensitive information such as passwords in the logs!
+                                        <br>NOTE: A restart may be required to take effect.
+                                        <br>WARNING: Setting to "DISABLED" will show sensitive information such as passwords in the logs!
                                     </span>
                                 </span>
                             </label>
@@ -667,7 +655,6 @@
                                 <span class="component-title">Branch version:</span>
                                 <span class="component-desc">
                                     <select id="branchVersion" class="form-control form-control-inline input-sm pull-left">
-                                    <% gh_branch = sickbeard.versionCheckScheduler.action.list_remote_branches() %>
                                     % if gh_branch:
                                         % for cur_branch in gh_branch:
                                             % if sickbeard.GIT_USERNAME and sickbeard.GIT_PASSWORD and sickbeard.DEVELOPER == 1:
@@ -730,7 +717,7 @@
                                 </span>
                             </label>
                         </div>
-                        <div class="field-pair" hidden>
+                        <div class="field-pair"${' hidden' if not sickbeard.DEVELOPER else ''}>
                             <label for="git_reset">
                                 <span class="component-title">Git reset</span>
                                 <span class="component-desc">
@@ -739,11 +726,34 @@
                                 </span>
                             </label>
                         </div>
+                        <div class="field-pair"${' hidden' if not sickbeard.DEVELOPER else ''}>
+                            <label for="git_reset_branches">
+                                <span class="component-title">Branches to reset</span>
+                                <span class="component-desc">
+                                    <select id="git_reset_branches" name="git_reset_branches" multiple="multiple" class="form-control form-control-inline input-sm pull-left" style="height:99px;">
+                                        % for branch in sickbeard.GIT_RESET_BRANCHES:
+                                            <option value="${branch}" selected="selected">${branch}</option>
+                                        % endfor
+                                        % if gh_branch:
+                                            % for branch in gh_branch:
+                                                % if branch not in sickbeard.GIT_RESET_BRANCHES:
+                                                <option value="${branch}">${branch}</option>
+                                                % endif
+                                            % endfor
+                                        % endif
+                                    </select>
+                                    <input class="btn btn-inline" style="margin-left: 6px;" type="button" id="branchForceUpdate" value="Update Branches">
+                                </span>
+                                <div class="clear-left">
+                                    <span class="component-desc"><b>NOTE:</b> Empty selection means that any branch could be reset.</span>
+                                </div>
+                            </label>
+                        </div>
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
                 </div><!-- /component-group3 //-->
-                <br />
+                <br>
                 <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${sickbeard.DATA_DIR}</span></b> </h6>
                 <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
             </div><!-- /config-components -->

@@ -4,12 +4,11 @@
 from __future__ import unicode_literals
 
 import re
-import sickbeard
-import six
 
 from guessit.api import default_api
 from guessit.rules.common.date import valid_year
-
+import sickbeard
+import six
 
 # hardcoded expected titles
 fixed_expected_titles = {
@@ -144,7 +143,7 @@ def get_expected_titles():
 
 
 def prepare(string):
-    """Prepare a string to be used as a regex in guessit expected_title
+    """Prepare a string to be used as a regex in guessit expected_title.
 
     :param string:
     :type string: str
@@ -152,11 +151,17 @@ def prepare(string):
     :rtype: str
     """
     # replace some special characters with space
-    characters = {'-', '.', ',', '*'}
+    characters = {'-', '.', ',', '*', '(', ')'}
     string = re.sub(r'[%s]' % re.escape(''.join(characters)), ' ', string)
+
+    # replace unicode characters with period
+    string = re.sub(r'[^\x00-\x7F]+', '.', string)
 
     # escape other characters that might be problematic
     string = re.escape(string)
+
+    # dots (the replacement of unicode characters) shouldn't be escaped and should match 1 or more characters
+    string = string.replace('\.', '.+')
 
     # ' should be optional
     string = string.replace(r"\'", r"'?")

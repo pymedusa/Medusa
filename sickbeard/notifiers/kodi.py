@@ -404,6 +404,36 @@ class Notifier(object):
                 logger.log(u"Warning: Couldn't contact %s JSON API at %s: %r" % (dest_app, ss(url), ex(e)), logger.WARNING)
             return False
 
+    def clean_library(self):
+        """Handles clean library KODI host via HTTP JSON-RPC."""
+        if not sickbeard.USE_KODI:
+            return True
+        clean_library = True
+        for host in [x.strip() for x in sickbeard.KODI_HOST.split(',')]:
+            logger.log(u'Cleaning KODI library via JSON method for host: {0}'.format(host), logger.INFO)
+            update_command = '{"jsonrpc":"2.0","method":"VideoLibrary.Clean","params": {"showdialogs": false},"id":1}'
+            request = self._send_to_kodi_json(update_command, host)
+            if not request:
+                if sickbeard.KODI_ALWAYS_ON:
+                    logger.log(u'KODI library clean failed for host: {0}'.format(host), logger.WARNING)
+                clean_library = False
+                if sickbeard.KODI_UPDATE_ONLYFIRST:
+                    break
+                else:
+                    continue
+
+            # catch if there was an error in the returned request
+            for r in request:
+                if 'error' in r:
+                    if sickbeard.KODI_ALWAYS_ON:
+                        logger.log(u'Error while attempting to clean library for host: {0}'.format(host), logger.WARNING)
+                    clean_library = False
+            if sickbeard.KODI_UPDATE_ONLYFIRST:
+                break
+
+        # If no errors, return True. Otherwise keep sending command until all hosts are cleaned
+        return clean_library
+
     def _update_library_json(self, host=None, showName=None):  # pylint: disable=too-many-return-statements, too-many-branches
         """Handles updating KODI host via HTTP JSON-RPC
 
@@ -423,7 +453,7 @@ class Notifier(object):
             logger.log(u'No KODI host passed, aborting update', logger.WARNING)
             return False
 
-        logger.log(u"Updating KODI library via JSON method for host: " + host, logger.DEBUG)
+        logger.log(u"Updating KODI library via JSON method for host: " + host, logger.INFO)
 
         # if we're doing per-show
         if showName:

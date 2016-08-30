@@ -20,12 +20,13 @@
     % endif
     <div id="config">
         <div id="config-content">
-            <form id="configForm" action="savePostProcessing" method="post">
+            <form id="configForm" action="config/postprocessing/savePostProcessing" method="post">
                 <div id="config-components">
                     <ul>
-                        <li><a href="#post-processing">Post-Processing</a></li>
-                        <li><a href="#episode-naming">Episode Naming</a></li>
-                        <li><a href="#metadata">Metadata</a></li>
+                        ## @TODO: Fix this stupid hack
+                        <script>document.write('<li><a href="' + document.location.href + '#post-processing">Post Processing</a></li>');</script>
+                        <script>document.write('<li><a href="' + document.location.href + '#episode-naming">Episode Naming</a></li>');</script>
+                        <script>document.write('<li><a href="' + document.location.href + '#metadata">Metadata</a></li>');</script>
                     </ul>
                     <div id="post-processing" class="component-group">
                         <div class="component-group-desc">
@@ -113,7 +114,8 @@
                                     <span class="component-desc">Wait to process a file until subtitles are present</span>
                                     <span class="component-desc">Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span>
                                     <span class="component-desc">&nbsp;</span>
-                                    <span class="component-desc"><b>NOTE:</b> Automatic post processor must be disabled</span>
+                                    <span class="component-desc"><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span>
+                                    <span class="component-desc">If you have any active show with subtitle search disabled, you must enable Automatic post processor.</span>
                                 </label>
                             </div>
                             <div class="field-pair">
@@ -227,7 +229,7 @@
                                     <span class="component-desc">See <a href="https://github.com/PyMedusa/SickRage/wiki/Post-Processing#extra-scripts" class="wikie"><strong>Wiki</strong></a> for script arguments description and usage.</span>
                                 </label>
                             </div>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br />
+                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                         </fieldset>
                     </div><!-- /component-group1 //-->
                     <div id="episode-naming" class="component-group">
@@ -262,7 +264,7 @@
                                         </span>
                                         <span class="component-desc">
                                             <input type="text" name="naming_pattern" id="naming_pattern" value="${sickbeard.NAMING_PATTERN}" class="form-control input-sm input350"/>
-                                            <img src="${srRoot}/images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_key" title="Toggle Naming Legend" class="legend" class="legend" />
+                                            <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_key" title="Toggle Naming Legend" class="legend" class="legend" />
                                         </span>
                                     </label>
                                     <label class="nocheck">
@@ -432,7 +434,7 @@
                                             </tr>
                                         </tbody>
                                       </table>
-                                      <br />
+                                      <br>
                                 </div>
                             </div>
                             <div class="field-pair">
@@ -452,14 +454,14 @@
                                 <div class="example">
                                     <span class="jumbo" id="naming_example">&nbsp;</span>
                                 </div>
-                                <br />
+                                <br>
                             </div>
                             <div id="naming_example_multi_div">
                                 <h3>Multi-EP sample:</h3>
                                 <div class="example">
                                     <span class="jumbo" id="naming_example_multi">&nbsp;</span>
                                 </div>
-                                <br />
+                                <br>
                             </div>
                             <div class="field-pair">
                                 <input type="checkbox" id="naming_strip_year"  name="naming_strip_year" ${'checked="checked"' if sickbeard.NAMING_STRIP_YEAR else ''}/>
@@ -506,7 +508,7 @@
                                             </span>
                                             <span class="component-desc">
                                                 <input type="text" name="naming_abd_pattern" id="naming_abd_pattern" value="${sickbeard.NAMING_ABD_PATTERN}" class="form-control input-sm input350"/>
-                                                <img src="${srRoot}/images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_abd_key" title="Toggle ABD Naming Legend" class="legend" />
+                                                <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_abd_key" title="Toggle ABD Naming Legend" class="legend" />
                                             </span>
                                         </label>
                                     </div>
@@ -632,7 +634,7 @@
                                                 </tr>
                                             </tbody>
                                           </table>
-                                          <br />
+                                          <br>
                                     </div>
                                 </div><!-- /naming_abd_custom -->
                                 <div id="naming_abd_example_div">
@@ -640,7 +642,7 @@
                                     <div class="example">
                                         <span class="jumbo" id="naming_abd_example">&nbsp;</span>
                                     </div>
-                                    <br />
+                                    <br>
                                 </div>
                             </div><!-- /naming_abd_different -->
                             <div class="field-pair">
@@ -677,7 +679,7 @@
                                             </span>
                                             <span class="component-desc">
                                                 <input type="text" name="naming_sports_pattern" id="naming_sports_pattern" value="${sickbeard.NAMING_SPORTS_PATTERN}" class="form-control input-sm input350"/>
-                                                <img src="${srRoot}/images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_sports_key" title="Toggle Sports Naming Legend" class="legend" />
+                                                <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_sports_key" title="Toggle Sports Naming Legend" class="legend" />
                                             </span>
                                         </label>
                                     </div>
@@ -803,7 +805,7 @@
                                                 </tr>
                                             </tbody>
                                           </table>
-                                          <br />
+                                          <br>
                                     </div>
                                 </div><!-- /naming_sports_custom -->
                                 <div id="naming_sports_example_div">
@@ -811,7 +813,7 @@
                                     <div class="example">
                                         <span class="jumbo" id="naming_sports_example">&nbsp;</span>
                                     </div>
-                                    <br />
+                                    <br>
                                 </div>
                             </div><!-- /naming_sports_different -->
                             <!-- naming_anime_custom -->
@@ -849,7 +851,7 @@
                                             </span>
                                             <span class="component-desc">
                                                 <input type="text" name="naming_anime_pattern" id="naming_anime_pattern" value="${sickbeard.NAMING_ANIME_PATTERN}" class="form-control input-sm input350"/>
-                                                <img src="${srRoot}/images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_anime_key" title="Toggle Anime Naming Legend" class="legend" />
+                                                <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_anime_key" title="Toggle Anime Naming Legend" class="legend" />
                                             </span>
                                         </label>
                                     </div>
@@ -970,7 +972,7 @@
                                                 </tr>
                                             </tbody>
                                           </table>
-                                          <br />
+                                          <br>
                                     </div>
                                 </div><!-- /naming_anime_custom -->
                                 <div class="field-pair">
@@ -990,14 +992,14 @@
                                     <div class="example">
                                         <span class="jumbo" id="naming_example_anime">&nbsp;</span>
                                     </div>
-                                    <br />
+                                    <br>
                                 </div>
                                 <div id="naming_example_multi_anime_div">
                                     <h3>Multi-EP Anime sample:</h3>
                                     <div class="example">
                                         <span class="jumbo" id="naming_example_multi_anime">&nbsp;</span>
                                     </div>
-                                    <br />
+                                    <br>
                                 </div>
                                 <div class="field-pair">
                                     <input type="radio" name="naming_anime" id="naming_anime" value="1" ${'checked="checked"' if sickbeard.NAMING_ANIME == 1 else ''}/>
@@ -1033,7 +1035,7 @@
                                     </label>
                                 </div>
                             </div><!-- /naming_anime_different -->
-                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br />
+                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                         </fieldset>
                     </div><!-- /component-group2 //-->
                     <div id="metadata" class="component-group">
@@ -1093,11 +1095,11 @@
                                 <input type="hidden" name="${cur_id}_data" id="${cur_id}_data" value="${cur_metadata_inst.get_config()}" />
                             </div>
                             % endfor
-                            <div class="clearfix"></div><br />
-                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br />
+                            <div class="clearfix"></div><br>
+                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                         </fieldset>
                     </div><!-- /component-group3 //-->
-                    <br />
+                    <br>
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${sickbeard.DATA_DIR}</span></b> </h6>
                     <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
             </form>

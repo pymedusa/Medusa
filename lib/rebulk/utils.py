@@ -3,9 +3,9 @@
 """
 Various utilities functions
 """
-from types import GeneratorType
-
 from collections import MutableSet
+
+from types import GeneratorType
 
 
 def find_all(string, sub, start=None, end=None, ignore_case=False):

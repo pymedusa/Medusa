@@ -18,44 +18,39 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 """TVShow and TVEpisode classes."""
 
-import os.path
 import datetime
-import threading
-import re
 import glob
-import stat
-import traceback
+import os.path
+import re
 import shutil
+import stat
+import threading
+import traceback
 
 from imdb import imdb
 import shutil_custom
-from six import text_type
-
 import sickbeard
-from sickbeard import (
-    db, helpers, logger, image_cache, notifiers, postProcessor, subtitles, network_timezones,
-)
-from sickbeard.blackandwhitelist import BlackAndWhiteList
-from sickbeard.common import (
-    Quality, Overview, statusStrings,
-    DOWNLOADED, SNATCHED, SNATCHED_PROPER, ARCHIVED, IGNORED, UNAIRED, WANTED, SKIPPED, UNKNOWN,
-    NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND, NAMING_SEPARATED_REPEAT, NAMING_LIMITED_EXTEND_E_PREFIXED,
-)
-from sickbeard.indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
-from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
-from sickbeard.scene_numbering import get_scene_absolute_numbering, get_scene_numbering, xem_refresh
-
 from sickrage.helper.common import (
-    dateTimeFormat, remove_extension, replace_extension, sanitize_filename, try_int, episode_num,
+    dateTimeFormat, episode_num, remove_extension, replace_extension, sanitize_filename, try_int
 )
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import (
-    EpisodeDeletedException, EpisodeNotFoundException, ex,
-    MultipleEpisodesInDatabaseException, MultipleShowsInDatabaseException, MultipleShowObjectsException,
-    NoNFOException, ShowDirectoryNotFoundException, ShowNotFoundException,
+    EpisodeDeletedException, EpisodeNotFoundException, MultipleEpisodesInDatabaseException,
+    MultipleShowObjectsException, MultipleShowsInDatabaseException, NoNFOException, ShowDirectoryNotFoundException,
+    ShowNotFoundException, ex
 )
 from sickrage.show.Show import Show
-
+from six import text_type
+from . import db, helpers, image_cache, logger, network_timezones, notifiers, postProcessor, subtitles
+from .blackandwhitelist import BlackAndWhiteList
+from .common import (
+    ARCHIVED, DOWNLOADED, IGNORED, NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND,
+    NAMING_LIMITED_EXTEND_E_PREFIXED, NAMING_SEPARATED_REPEAT, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER,
+    UNAIRED, UNKNOWN, WANTED, statusStrings
+)
+from .indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
+from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from .scene_numbering import get_scene_absolute_numbering, get_scene_numbering, xem_refresh
 
 try:
     import xml.etree.cElementTree as ETree
@@ -117,7 +112,7 @@ class TVObject(object):
 
     @property
     def tvdb_id(self):
-        """Return the tvdb_id
+        """Return the tvdb_id.
 
         :return:
         :rtype: int
@@ -143,7 +138,7 @@ class TVObject(object):
 class TVShow(TVObject):
     """Represent a TV Show."""
 
-    def __init__(self, indexer, indexerid, lang=''):
+    def __init__(self, indexer, indexerid, lang='', quality=None, flatten_folders=None, enabled_subtitles=None):
         """Instantiate a TVShow with database information based on indexerid.
 
         :param indexer:
@@ -161,14 +156,14 @@ class TVShow(TVObject):
         self.classification = ''
         self.runtime = 0
         self.imdb_info = {}
-        self.quality = int(sickbeard.QUALITY_DEFAULT)
-        self.flatten_folders = int(sickbeard.FLATTEN_FOLDERS_DEFAULT)
+        self.quality = quality or int(sickbeard.QUALITY_DEFAULT)
+        self.flatten_folders = flatten_folders or int(sickbeard.FLATTEN_FOLDERS_DEFAULT)
         self.status = 'Unknown'
         self.airs = ''
         self.startyear = 0
         self.paused = 0
         self.air_by_date = 0
-        self.subtitles = int(sickbeard.SUBTITLES_DEFAULT)
+        self.subtitles = enabled_subtitles or int(sickbeard.SUBTITLES_DEFAULT)
         self.dvdorder = 0
         self.lang = lang
         self.last_update_indexer = 1
@@ -608,7 +603,7 @@ class TVShow(TVObject):
             ep_file_name = ek(os.path.splitext, ep_file_name)[0]
 
             try:
-                parse_result = NameParser(False, showObj=self, tryIndexers=True).parse(ep_file_name)
+                parse_result = NameParser(show=self, try_indexers=True).parse(ep_file_name)
             except (InvalidNameException, InvalidShowException):
                 parse_result = None
 
@@ -833,7 +828,7 @@ class TVShow(TVObject):
                    (self.indexerid, filepath), logger.DEBUG)
 
         try:
-            parse_result = NameParser(showObj=self, tryIndexers=True, parse_method=(
+            parse_result = NameParser(show=self, try_indexers=True, parse_method=(
                 'normal', 'anime')[self.is_anime]).parse(filepath)
         except (InvalidNameException, InvalidShowException) as error:
             logger.log(u'{0}: {1}'.format(self.indexerid, error), logger.DEBUG)
@@ -1692,7 +1687,7 @@ class TVEpisode(TVObject):
         :rtype: TVEpisode
         """
         try:
-            parse_result = NameParser(True, tryIndexers=True).parse(filepath, cache_result=True)
+            parse_result = NameParser(try_indexers=True).parse(filepath, cache_result=True)
             results = []
             if parse_result.show.is_anime and parse_result.ab_episode_numbers:
                 results = [parse_result.show.get_episode(absolute_number=episode_number, should_cache=False)
@@ -1708,8 +1703,7 @@ class TVEpisode(TVObject):
                 return episode  # only root episode has related_episodes
 
         except (InvalidNameException, InvalidShowException):
-            logger.log(logger.INFO, u'Cannot create TVEpisode from path {path}'.format(path=filepath))
-
+            logger.log(u'Cannot create TVEpisode from path {path}'.format(path=filepath), logger.INFO)
 
     @property
     def location(self):
@@ -2501,17 +2495,17 @@ class TVEpisode(TVObject):
 
         def release_name(name):
             if name:
-                name = helpers.remove_non_release_groups(remove_extension(name))
+                name = remove_extension(name)
             return name
 
         def release_group(show, name):
             if name:
-                name = helpers.remove_non_release_groups(remove_extension(name))
+                name = remove_extension(name)
             else:
                 return ''
 
             try:
-                parse_result = NameParser(name, showObj=show, naming_pattern=True).parse(name)
+                parse_result = NameParser(show=show, naming_pattern=True).parse(name)
             except (InvalidNameException, InvalidShowException) as e:
                 logger.log(u'Unable to get parse release_group: {}'.format(e), logger.DEBUG)
                 return ''

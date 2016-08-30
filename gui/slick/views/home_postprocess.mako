@@ -10,7 +10,7 @@
     <h1 class="title">${title}</h1>
 % endif
 <div id="postProcess">
-    <form name="processForm" method="post" action="processEpisode" style="line-height: 40px;">
+    <form name="processForm" method="post" action="home/postprocess/processEpisode" style="line-height: 40px;">
     <table>
         <input type="hidden" id="type" name="type" value="manual">
         <tr>
@@ -57,7 +57,7 @@
                 <b>Delete files and folders:</b>
             </td>
             <td>
-                <input id="delete_on" name="delete_on" type="checkbox">
+                <input id="delete_on" name="delete_on" type="checkbox" ${'' if sickbeard.NO_DELETE else 'checked="checked"'}>
                 <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to delete files and folders like auto processing)</i></span>
             </td>
         </tr>

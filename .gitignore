@@ -70,7 +70,8 @@ lib/unrar2/UnRAR.exe
 # Unit test/Coverage #
 ######################
 .tox/
-.coverage
+.coverage*
+.cache
 htmlcov
 
 # Contrib #

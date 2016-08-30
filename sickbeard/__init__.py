@@ -42,23 +42,15 @@ from sickbeard.config import (
 from sickbeard import (
     searchBacklog, showUpdater, versionChecker, properFinder, auto_postprocessor, subtitles, traktChecker,
 )
-from sickbeard import db
-from sickbeard import helpers
-from sickbeard import scheduler
-from sickbeard import search_queue
-from sickbeard import show_queue
-from sickbeard import logger
-from sickbeard import naming
-from sickbeard import dailysearcher
+from sickbeard import db, helpers, scheduler, search_queue, show_queue, logger, naming, dailysearcher
 from sickbeard.indexers import indexer_api
-from sickbeard.indexers.indexer_exceptions import indexer_shownotfound, indexer_showincomplete, indexer_exception, \
-    indexer_error, indexer_episodenotfound, indexer_attributenotfound, indexer_seasonnotfound, indexer_userabort
-from sickbeard.common import SD
-from sickbeard.common import SKIPPED
-from sickbeard.common import WANTED
-from sickbeard.providers.rsstorrent import TorrentRssProvider
+from sickbeard.indexers.indexer_exceptions import (
+    indexer_shownotfound, indexer_showincomplete, indexer_exception, indexer_error, indexer_episodenotfound,
+    indexer_attributenotfound, indexer_seasonnotfound, indexer_userabort,
+)
+from sickbeard.common import SD, SKIPPED, WANTED
+from sickbeard.providers import NewznabProvider, TorrentRssProvider
 from sickbeard.databases import main_db, cache_db, failed_db
-from sickbeard.providers.newznab import NewznabProvider
 
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
@@ -136,6 +128,8 @@ CUR_COMMIT_HASH = None
 BRANCH = ''
 
 GIT_RESET = True
+GIT_RESET_BRANCHES = 'develop,master'
+GIT_REMOTE_BRANCHES = ''
 GIT_REMOTE = ''
 GIT_REMOTE_URL = ''
 CUR_COMMIT_BRANCH = ''
@@ -152,6 +146,8 @@ LOGO_URL = 'https://cdn.pymedusa.com/images/ico/favicon-64.png'
 NEWS_LAST_READ = None
 NEWS_LATEST = None
 NEWS_UNREAD = 0
+
+BROKEN_PROVIDERS = ''
 
 INIT_LOCK = Lock()
 started = False
@@ -261,7 +257,6 @@ CHECK_PROPERS_INTERVAL = None
 ALLOW_HIGH_PRIORITY = False
 SAB_FORCED = False
 RANDOMIZE_PROVIDERS = False
-USE_LEGACY_NAME_PARSER = False
 
 AUTOPOSTPROCESSOR_FREQUENCY = None
 DAILYSEARCH_FREQUENCY = None
@@ -356,6 +351,8 @@ KODI_UPDATE_ONLYFIRST = False
 KODI_HOST = ''
 KODI_USERNAME = None
 KODI_PASSWORD = None
+KODI_LIBRARY_CLEAN_PENDING = False
+KODI_CLEAN_LIBRARY = False
 
 USE_PLEX_SERVER = False
 PLEX_NOTIFY_ONSNATCH = False
@@ -556,7 +553,6 @@ SUBTITLES_FINDER_FREQUENCY = 1
 SUBTITLES_MULTI = False
 SUBTITLES_EXTRA_SCRIPTS = []
 SUBTITLES_PRE_SCRIPTS = []
-SUBTITLES_DOWNLOAD_IN_PP = False
 SUBTITLES_KEEP_ONLY_WANTED = False
 
 ADDIC7ED_USER = None
@@ -603,7 +599,7 @@ TRAKT_API_KEY = '5c65f55e11d48c35385d9e8670615763a605fad28374c8ae553a7b7a50651dd
 TRAKT_API_SECRET = 'b53e32045ac122a445ef163e6d859403301ffe9b17fb8321d428531b69022a82'
 TRAKT_PIN_URL = 'https://trakt.tv/pin/4562'
 TRAKT_OAUTH_URL = 'https://trakt.tv/'
-TRAKT_API_URL = 'https://api-v2launch.trakt.tv/'
+TRAKT_API_URL = 'https://api.trakt.tv/'
 
 FANART_API_KEY = '9b3afaf26f6241bdb57d6cc6bd798da7'
 
@@ -626,13 +622,13 @@ def get_backlog_cycle_time():
 def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     with INIT_LOCK:
         # pylint: disable=global-statement
-        global BRANCH, GIT_RESET, GIT_REMOTE, GIT_REMOTE_URL, CUR_COMMIT_HASH, CUR_COMMIT_BRANCH, ACTUAL_LOG_DIR, LOG_DIR, LOG_NR, LOG_SIZE, WEB_PORT, WEB_LOG, ENCRYPTION_VERSION, ENCRYPTION_SECRET, WEB_ROOT, WEB_USERNAME, WEB_PASSWORD, WEB_HOST, WEB_IPV6, WEB_COOKIE_SECRET, WEB_USE_GZIP, API_KEY, ENABLE_HTTPS, HTTPS_CERT, HTTPS_KEY, \
+        global BRANCH, GIT_RESET, GIT_RESET_BRANCHES, GIT_REMOTE, GIT_REMOTE_URL, CUR_COMMIT_HASH, CUR_COMMIT_BRANCH, ACTUAL_LOG_DIR, LOG_DIR, LOG_NR, LOG_SIZE, WEB_PORT, WEB_LOG, ENCRYPTION_VERSION, ENCRYPTION_SECRET, WEB_ROOT, WEB_USERNAME, WEB_PASSWORD, WEB_HOST, WEB_IPV6, WEB_COOKIE_SECRET, WEB_USE_GZIP, API_KEY, ENABLE_HTTPS, HTTPS_CERT, HTTPS_KEY, \
             HANDLE_REVERSE_PROXY, USE_NZBS, USE_TORRENTS, NZB_METHOD, NZB_DIR, DOWNLOAD_PROPERS, RANDOMIZE_PROVIDERS, CHECK_PROPERS_INTERVAL, ALLOW_HIGH_PRIORITY, SAB_FORCED, TORRENT_METHOD, NOTIFY_ON_LOGIN, SUBLIMINAL_LOG, PRIVACY_LEVEL, \
             SAB_USERNAME, SAB_PASSWORD, SAB_APIKEY, SAB_CATEGORY, SAB_CATEGORY_BACKLOG, SAB_CATEGORY_ANIME, SAB_CATEGORY_ANIME_BACKLOG, SAB_HOST, \
             NZBGET_USERNAME, NZBGET_PASSWORD, NZBGET_CATEGORY, NZBGET_CATEGORY_BACKLOG, NZBGET_CATEGORY_ANIME, NZBGET_CATEGORY_ANIME_BACKLOG, NZBGET_PRIORITY, NZBGET_HOST, NZBGET_USE_HTTPS, backlogSearchScheduler, \
             TORRENT_USERNAME, TORRENT_PASSWORD, TORRENT_HOST, TORRENT_PATH, TORRENT_SEED_TIME, TORRENT_PAUSED, TORRENT_HIGH_BANDWIDTH, TORRENT_LABEL, TORRENT_LABEL_ANIME, TORRENT_VERIFY_CERT, TORRENT_RPCURL, TORRENT_AUTH_TYPE, \
             USE_KODI, KODI_ALWAYS_ON, KODI_NOTIFY_ONSNATCH, KODI_NOTIFY_ONDOWNLOAD, KODI_NOTIFY_ONSUBTITLEDOWNLOAD, KODI_UPDATE_FULL, KODI_UPDATE_ONLYFIRST, \
-            KODI_UPDATE_LIBRARY, KODI_HOST, KODI_USERNAME, KODI_PASSWORD, BACKLOG_FREQUENCY, \
+            KODI_UPDATE_LIBRARY, KODI_HOST, KODI_USERNAME, KODI_PASSWORD, BACKLOG_FREQUENCY, KODI_LIBRARY_CLEAN_PENDING, KODI_CLEAN_LIBRARY, \
             USE_TRAKT, TRAKT_USERNAME, TRAKT_ACCESS_TOKEN, TRAKT_REFRESH_TOKEN, TRAKT_REMOVE_WATCHLIST, TRAKT_SYNC_WATCHLIST, TRAKT_REMOVE_SHOW_FROM_SICKRAGE, TRAKT_METHOD_ADD, TRAKT_START_PAUSED, traktCheckerScheduler, TRAKT_USE_RECOMMENDED, TRAKT_SYNC, TRAKT_SYNC_REMOVE, TRAKT_DEFAULT_INDEXER, TRAKT_REMOVE_SERIESLIST, TRAKT_TIMEOUT, TRAKT_BLACKLIST_NAME, \
             USE_PLEX_SERVER, PLEX_NOTIFY_ONSNATCH, PLEX_NOTIFY_ONDOWNLOAD, PLEX_NOTIFY_ONSUBTITLEDOWNLOAD, PLEX_UPDATE_LIBRARY, USE_PLEX_CLIENT, PLEX_CLIENT_USERNAME, PLEX_CLIENT_PASSWORD, \
             PLEX_SERVER_HOST, PLEX_SERVER_TOKEN, PLEX_CLIENT_HOST, PLEX_SERVER_USERNAME, PLEX_SERVER_PASSWORD, PLEX_SERVER_HTTPS, MIN_BACKLOG_FREQUENCY, SKIP_REMOVED_FILES, ALLOWED_EXTENSIONS, \
@@ -664,14 +660,14 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             GUI_NAME, HOME_LAYOUT, HISTORY_LAYOUT, DISPLAY_SHOW_SPECIALS, COMING_EPS_LAYOUT, COMING_EPS_SORT, COMING_EPS_DISPLAY_PAUSED, COMING_EPS_MISSED_RANGE, FUZZY_DATING, TRIM_ZERO, DATE_PRESET, TIME_PRESET, TIME_PRESET_W_SECONDS, THEME_NAME, \
             POSTER_SORTBY, POSTER_SORTDIR, HISTORY_LIMIT, CREATE_MISSING_SHOW_DIRS, ADD_SHOWS_WO_DIR, \
             METADATA_WDTV, METADATA_TIVO, METADATA_MEDE8ER, IGNORE_WORDS, PREFERRED_WORDS, UNDESIRED_WORDS, TRACKERS_LIST, IGNORED_SUBS_LIST, REQUIRE_WORDS, CALENDAR_UNPROTECTED, CALENDAR_ICONS, NO_RESTART, IGNORE_UND_SUBS, \
-            USE_SUBTITLES, SUBTITLES_LANGUAGES, SUBTITLES_DIR, SUBTITLES_SERVICES_LIST, SUBTITLES_SERVICES_ENABLED, SUBTITLES_HISTORY, SUBTITLES_FINDER_FREQUENCY, SUBTITLES_MULTI, SUBTITLES_DOWNLOAD_IN_PP, SUBTITLES_KEEP_ONLY_WANTED, EMBEDDED_SUBTITLES_ALL, SUBTITLES_EXTRA_SCRIPTS, SUBTITLES_PRE_SCRIPTS, SUBTITLES_PERFECT_MATCH, subtitlesFinderScheduler, EMBEDDED_SUBTITLES_UNKNOWN_LANG, SUBTITLES_STOP_AT_FIRST, \
+            USE_SUBTITLES, SUBTITLES_LANGUAGES, SUBTITLES_DIR, SUBTITLES_SERVICES_LIST, SUBTITLES_SERVICES_ENABLED, SUBTITLES_HISTORY, SUBTITLES_FINDER_FREQUENCY, SUBTITLES_MULTI, SUBTITLES_KEEP_ONLY_WANTED, EMBEDDED_SUBTITLES_ALL, SUBTITLES_EXTRA_SCRIPTS, SUBTITLES_PRE_SCRIPTS, SUBTITLES_PERFECT_MATCH, subtitlesFinderScheduler, EMBEDDED_SUBTITLES_UNKNOWN_LANG, SUBTITLES_STOP_AT_FIRST, \
             SUBTITLES_HEARING_IMPAIRED, ADDIC7ED_USER, ADDIC7ED_PASS, ITASA_USER, ITASA_PASS, LEGENDASTV_USER, LEGENDASTV_PASS, OPENSUBTITLES_USER, OPENSUBTITLES_PASS, \
             USE_FAILED_DOWNLOADS, DELETE_FAILED, ANON_REDIRECT, LOCALHOST_IP, DEBUG, DBDEBUG, DEFAULT_PAGE, SEEDERS_LEECHERS_IN_NOTIFY, PROXY_SETTING, PROXY_INDEXERS, \
             AUTOPOSTPROCESSOR_FREQUENCY, SHOWUPDATE_HOUR, \
             ANIME_DEFAULT, NAMING_ANIME, ANIMESUPPORT, USE_ANIDB, ANIDB_USERNAME, ANIDB_PASSWORD, ANIDB_USE_MYLIST, \
             ANIME_SPLIT_HOME, SCENE_DEFAULT, DOWNLOAD_URL, BACKLOG_DAYS, GIT_USERNAME, GIT_PASSWORD, \
-            DEVELOPER, gh, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, SOCKET_TIMEOUT, RECENTLY_DELETED, USE_LEGACY_NAME_PARSER, \
-            FANART_BACKGROUND, FANART_BACKGROUND_OPACITY
+            DEVELOPER, gh, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, BROKEN_PROVIDERS, SOCKET_TIMEOUT, RECENTLY_DELETED, \
+            FANART_BACKGROUND, FANART_BACKGROUND_OPACITY, GIT_REMOTE_BRANCHES
 
         if __INITIALIZED__:
             return False
@@ -736,6 +732,9 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # git reset on update
         GIT_RESET = bool(check_setting_int(CFG, 'General', 'git_reset', 1))
+        GIT_RESET_BRANCHES = check_setting_str(CFG, 'General', 'git_reset_branches', GIT_RESET_BRANCHES).split(',')
+        if GIT_RESET_BRANCHES[0] == '':
+            GIT_RESET_BRANCHES = []
 
         # current git branch
         BRANCH = check_setting_str(CFG, 'General', 'branch', '')
@@ -892,8 +891,6 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         PROVIDER_ORDER = check_setting_str(CFG, 'General', 'provider_order', '').split()
 
-        USE_LEGACY_NAME_PARSER = bool(check_setting_int(CFG, 'General', 'use_legacy_name_parser', 0))
-
         NAMING_PATTERN = check_setting_str(CFG, 'General', 'naming_pattern', 'Season %0S/%SN - S%0SE%0E - %EN')
         NAMING_ABD_PATTERN = check_setting_str(CFG, 'General', 'naming_abd_pattern', '%SN - %A.D - %EN')
         NAMING_CUSTOM_ABD = bool(check_setting_int(CFG, 'General', 'naming_custom_abd', 0))
@@ -968,6 +965,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         NEWS_LAST_READ = check_setting_str(CFG, 'General', 'news_last_read', '1970-01-01')
         NEWS_LATEST = NEWS_LAST_READ
 
+        BROKEN_PROVIDERS = check_setting_str(CFG, 'General', 'broken_providers', ','.join(helpers.get_broken_providers()) or BROKEN_PROVIDERS)
+
         NZB_DIR = check_setting_str(CFG, 'Blackhole', 'nzb_dir', '')
         TORRENT_DIR = check_setting_str(CFG, 'Blackhole', 'torrent_dir', '')
 
@@ -1041,6 +1040,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         KODI_HOST = check_setting_str(CFG, 'KODI', 'kodi_host', '', censor_log='high')
         KODI_USERNAME = check_setting_str(CFG, 'KODI', 'kodi_username', '', censor_log='normal')
         KODI_PASSWORD = check_setting_str(CFG, 'KODI', 'kodi_password', '', censor_log='low')
+        KODI_CLEAN_LIBRARY = bool(check_setting_int(CFG, 'KODI', 'kodi_clean_library', 0))
 
         USE_PLEX_SERVER = bool(check_setting_int(CFG, 'Plex', 'use_plex_server', 0))
         PLEX_NOTIFY_ONSNATCH = bool(check_setting_int(CFG, 'Plex', 'plex_notify_onsnatch', 0))
@@ -1220,7 +1220,6 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         SUBTITLES_HEARING_IMPAIRED = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_hearing_impaired', 0))
         SUBTITLES_FINDER_FREQUENCY = check_setting_int(CFG, 'Subtitles', 'subtitles_finder_frequency', 1)
         SUBTITLES_MULTI = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_multi', 1))
-        SUBTITLES_DOWNLOAD_IN_PP = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_download_in_pp', 0))
         SUBTITLES_KEEP_ONLY_WANTED = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_keep_only_wanted', 0))
         SUBTITLES_EXTRA_SCRIPTS = [x.strip() for x in check_setting_str(CFG, 'Subtitles', 'subtitles_extra_scripts', '').split('|') if x.strip()]
         SUBTITLES_PRE_SCRIPTS = [x.strip() for x in check_setting_str(CFG, 'Subtitles', 'subtitles_pre_scripts', '').split('|') if x.strip()]
@@ -1623,6 +1622,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['git_username'] = GIT_USERNAME
     new_config['General']['git_password'] = helpers.encrypt(GIT_PASSWORD, ENCRYPTION_VERSION)
     new_config['General']['git_reset'] = int(GIT_RESET)
+    new_config['General']['git_reset_branches'] = ','.join(GIT_RESET_BRANCHES)
     new_config['General']['branch'] = BRANCH
     new_config['General']['git_remote'] = GIT_REMOTE
     new_config['General']['git_remote_url'] = GIT_REMOTE_URL
@@ -1668,7 +1668,6 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['usenet_retention'] = int(USENET_RETENTION)
     new_config['General']['cache_trimming'] = int(CACHE_TRIMMING)
     new_config['General']['max_cache_age'] = int(MAX_CACHE_AGE)
-    new_config['General']['use_legacy_name_parser'] = int(USE_LEGACY_NAME_PARSER)
     new_config['General']['autopostprocessor_frequency'] = int(AUTOPOSTPROCESSOR_FREQUENCY)
     new_config['General']['dailysearch_frequency'] = int(DAILYSEARCH_FREQUENCY)
     new_config['General']['backlog_frequency'] = int(BACKLOG_FREQUENCY)
@@ -1758,6 +1757,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['developer'] = int(DEVELOPER)
     new_config['General']['display_all_seasons'] = int(DISPLAY_ALL_SEASONS)
     new_config['General']['news_last_read'] = NEWS_LAST_READ
+    new_config['General']['broken_providers'] = ','.join(helpers.get_broken_providers()) or BROKEN_PROVIDERS
 
     new_config['Blackhole'] = {}
     new_config['Blackhole']['nzb_dir'] = NZB_DIR
@@ -1861,6 +1861,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['KODI']['kodi_host'] = KODI_HOST
     new_config['KODI']['kodi_username'] = KODI_USERNAME
     new_config['KODI']['kodi_password'] = helpers.encrypt(KODI_PASSWORD, ENCRYPTION_VERSION)
+    new_config['KODI']['kodi_clean_library'] = int(KODI_CLEAN_LIBRARY)
 
     new_config['Plex'] = {}
     new_config['Plex']['use_plex_server'] = int(USE_PLEX_SERVER)
@@ -2082,7 +2083,6 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['Subtitles']['subtitles_multi'] = int(SUBTITLES_MULTI)
     new_config['Subtitles']['subtitles_extra_scripts'] = '|'.join(SUBTITLES_EXTRA_SCRIPTS)
     new_config['Subtitles']['subtitles_pre_scripts'] = '|'.join(SUBTITLES_PRE_SCRIPTS)
-    new_config['Subtitles']['subtitles_download_in_pp'] = int(SUBTITLES_DOWNLOAD_IN_PP)
     new_config['Subtitles']['subtitles_keep_only_wanted'] = int(SUBTITLES_KEEP_ONLY_WANTED)
     new_config['Subtitles']['addic7ed_username'] = ADDIC7ED_USER
     new_config['Subtitles']['addic7ed_password'] = helpers.encrypt(ADDIC7ED_PASS, ENCRYPTION_VERSION)
