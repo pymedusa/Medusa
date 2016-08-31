@@ -92,6 +92,38 @@ def _downloadResult(result):
 
     return newResult
 
+def _delete_non_propers(result):
+    """Delete non-propers from PP folder after snatch a PROPER.
+
+    :param result:
+    :type result: search result object
+    """
+    if not result:
+        return
+
+    main_db_con = db.DBConnection()
+    for curEpObj in result.episodes:
+        old_snatches = main_db_con.select("SELECT resource FROM history WHERE action LIKE '%2' AND showid=? AND season=? AND episode=?",
+                                          [curEpObj.show.indexerid, curEpObj.season, curEpObj.episode])
+        for old_snatch in old_snatches:
+            resource = str(old_snatch['resource'])
+            if resource:
+                logger.log('Found a non-proper snatch in post-processor folder: {0}'.format(resource))
+                resource = ek(os.path.join, sickbeard.TV_DOWNLOAD_DIR, resource)
+                try:
+                    if ek(os.path.isdir, resource):
+                        shutil.rmtree(resource)
+                        logger.log('Deleted the non-proper snatch in post-processor folder: {0}'.format(resource))
+                    else:
+                        for media_extension in media_extensions:
+                            # Resource column doesnt store extension
+                            resource_file = resource + '.' + media_extension
+                            if ek(os.path.isfile, resource_file):
+                                ek(os.remove, resource_file)
+                                logger.log('Deleted the non-proper snatch in post-processor folder: {0}'.format(resource_file))
+                                break
+                except OSError as e:
+                    logger.log(u'Unable to delete {resource}. Error: {error}', resource=resource, error=e)
 
 def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statements
     """
@@ -160,30 +192,8 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
 
     ui.notifications.message('Episode snatched', result.name)
 
-    if is_proper:
-        main_db_con = db.DBConnection()
-        for curEpObj in result.episodes:
-            old_snatches = main_db_con.select("SELECT resource FROM history WHERE action LIKE '%2' AND showid=? AND season=? AND episode=?",
-                                              [curEpObj.show.indexerid, curEpObj.season, curEpObj.episode])
-            for old_snatch in old_snatches:
-                resource = str(old_snatch['resource'])
-                if resource:
-                    logger.log('Found a non-proper snatch in post-processor folder: {0}'.format(resource))
-                    resource = ek(os.path.join, sickbeard.TV_DOWNLOAD_DIR, resource)
-                    try:
-                        if ek(os.path.isdir, resource):
-                            shutil.rmtree(resource)
-                            logger.log('Deleted the non-proper snatch in post-processor folder: {0}'.format(resource))
-                        else:
-                            for media_extension in media_extensions:
-                                # Resource column doesnt store extension
-                                resource_file = resource + '.' + media_extension
-                                if ek(os.path.isfile, resource_file):
-                                    ek(os.remove, resource_file)
-                                    logger.log('Deleted the non-proper snatch in post-processor folder: {0}'.format(resource_file))
-                                    break
-                    except OSError as e:
-                        logger.log(u'Unable to delete {resource}. Error: {error}', resource=resource, error=e)
+    if is_proper and sickbeard.DELETE_NON_PROPERS:
+        _delete_non_propers(result)
 
     history.logSnatch(result)
 
