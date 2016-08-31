@@ -86,6 +86,14 @@
 
     <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
 
+    <script type="text/javascript" src="js/home/display-show.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/home/edit-show.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/home/index.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/home/post-process.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/home/restart.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/home/snatch-selection.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/home/status.js?${sbPID}"></script>
+
     <script type="text/javascript" src="js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
     <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
     <script type="text/javascript" src="js/ajax-notifications.js?${sbPID}"></script>
