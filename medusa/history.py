@@ -25,7 +25,7 @@ from .helper.encoding import ss
 from .show.History import History
 
 
-def _logHistoryItem(action, showid, season, episode, quality, resource, provider, version=-1, proper_tags=''):
+def _logHistoryItem(action, showid, season, episode, quality, resource, provider, version=-1, proper_tags='', torrent_hash=None):
     """
     Insert a history item in DB
 
@@ -43,8 +43,8 @@ def _logHistoryItem(action, showid, season, episode, quality, resource, provider
 
     main_db_con = db.DBConnection()
     main_db_con.action(
-        "INSERT INTO history (action, date, showid, season, episode, quality, resource, provider, version, proper_tags) VALUES (?,?,?,?,?,?,?,?,?,?)",
-        [action, logDate, showid, season, episode, quality, resource, provider, version, proper_tags])
+        "INSERT INTO history (action, date, showid, season, episode, quality, resource, provider, version, proper_tags, torrent_hash) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        [action, logDate, showid, season, episode, quality, resource, provider, version, proper_tags, torrent_hash])
 
 
 def logSnatch(searchResult):
@@ -61,6 +61,7 @@ def logSnatch(searchResult):
         quality = searchResult.quality
         version = searchResult.version
         proper_tags = '|'.join(searchResult.proper_tags)
+        torrent_hash = searchResult.hash if searchResult.hash else None
 
         providerClass = searchResult.provider
         if providerClass is not None:
@@ -72,7 +73,7 @@ def logSnatch(searchResult):
 
         resource = searchResult.name
 
-        _logHistoryItem(action, showid, season, episode, quality, resource, provider, version, proper_tags)
+        _logHistoryItem(action, showid, season, episode, quality, resource, provider, version, proper_tags, torrent_hash)
 
 
 def logDownload(episode, filename, new_ep_quality, release_group=None, version=-1):

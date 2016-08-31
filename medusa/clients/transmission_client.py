@@ -186,5 +186,26 @@ class TransmissionAPI(GenericClient):
 
         return self.response.json()['result'] == 'success'
 
+    def remove_torrent(self, torrent_hash):
+        """Remove torrent from client using given torrent_hash.
+
+        :param torrent_hash:
+        :type torrent_hash: string
+        :return
+        :rtype: bool
+        """
+        arguments = {
+            'ids': [torrent_hash],
+            'delete-local-data': 1,
+        }
+
+        post_data = json.dumps({
+            'arguments': arguments,
+            'method': 'torrent-remove',
+        })
+
+        self._request(method='post', data=post_data)
+
+        return self.response.json()['result'] == 'success'
 
 api = TransmissionAPI
