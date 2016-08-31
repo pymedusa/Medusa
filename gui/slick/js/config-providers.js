@@ -1,4 +1,4 @@
-$(document).ready(function() {
+$(document).ready(function() { // eslint-disable-line max-lines
     $.fn.showHideProviders = function() {
         $('.providerDiv').each(function() {
             var providerName = $(this).prop('id');
@@ -41,7 +41,7 @@ $(document).ready(function() {
 
         var params = {url: url, name: name, key: key};
 
-        $('.updating_categories').wrapInner('<span><img src="images/loading16' + themeSpinner + '.gif"> Updating Categories ...</span>');
+        $('.updating_categories').wrapInner('<span><img src="images/loading16' + SICKRAGE.info.themeSpinner + '.gif"> Updating Categories ...</span>');
         var jqxhr = $.getJSON('config/providers/getNewznabCategories', params, function(data) {
             $(this).updateNewznabCaps(data, selectedProvider);
             console.debug(data.tv_categories);
@@ -54,7 +54,7 @@ $(document).ready(function() {
     var newznabProviders = [];
     var torrentRssProviders = [];
 
-    $.fn.addProvider = function(id, name, url, key, cat, isDefault, showProvider) {
+    $.fn.addProvider = function(id, name, url, key, cat, isDefault, showProvider) { // eslint-disable-line max-params
         url = $.trim(url);
         if (!url) {
             return;
@@ -83,7 +83,7 @@ $(document).ready(function() {
         $(this).makeNewznabProviderString();
     };
 
-    $.fn.addTorrentRssProvider = function(id, name, url, cookies, titleTAG) {
+    $.fn.addTorrentRssProvider = function(id, name, url, cookies, titleTAG) { // eslint-disable-line max-params
         var newData = [name, url, cookies, titleTAG];
         torrentRssProviders[id] = newData;
 
@@ -255,7 +255,7 @@ $(document).ready(function() {
         var provStrings = [];
 
         for (var id in newznabProviders) {
-            if (newznabProviders.hasOwnProperty(id)) {
+            if ({}.hasOwnProperty.call(newznabProviders, id)) {
                 provStrings.push(newznabProviders[id][1].join('|'));
             }
         }
@@ -299,7 +299,7 @@ $(document).ready(function() {
     $.fn.makeTorrentRssProviderString = function() {
         var provStrings = [];
         for (var id in torrentRssProviders) {
-            if (torrentRssProviders.hasOwnProperty(id)) {
+            if ({}.hasOwnProperty.call(torrentRssProviders, id)) {
                 provStrings.push(torrentRssProviders[id].join('|'));
             }
         }
@@ -458,7 +458,7 @@ $(document).ready(function() {
         // send to the form with ajax, get a return value
         $.getJSON('config/providers/canAddNewznabProvider', params, function(data) {
             if (data.error !== undefined) {
-                alert(data.error);
+                alert(data.error); // eslint-disable-line no-alert
                 return;
             }
             $(this).addProvider(data.success, name, url, key, cat, 0);
@@ -485,7 +485,7 @@ $(document).ready(function() {
         // send to the form with ajax, get a return value
         $.getJSON('config/providers/canAddTorrentRssProvider', params, function(data) {
             if (data.error !== undefined) {
-                alert(data.error);
+                alert(data.error); // eslint-disable-line no-alert
                 return;
             }
 

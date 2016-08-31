@@ -75,7 +75,7 @@ $.ajax({
     }
 });
 
-function isMeta(pyVar, result) {
+function isMeta(pyVar, result) { // eslint-disable-line no-unused-vars
     var reg = new RegExp(result.length > 1 ? result.join('|') : result);
     if (pyVar.match('sickbeard')) {
         pyVar.split('.')[1].toLowerCase().replace(/(_\w)/g, function(m) {
