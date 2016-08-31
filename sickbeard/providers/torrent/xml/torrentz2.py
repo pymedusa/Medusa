@@ -110,7 +110,7 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
             for row in torrent_rows:
                 try:
-                    if row.category and 'tv' not in row.category.get_text(strip=True):
+                    if row.category and 'tv' not in row.category.get_text(strip=True).lower():
                         continue
 
                     title_raw = row.title.text
