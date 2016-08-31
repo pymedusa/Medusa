@@ -102,6 +102,8 @@
     <script type="text/javascript" src="js/manage/mass-edit.js?${sbPID}"></script>
     <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
 
+    <script type="text/javascript" src="js/history/index.js?${sbPID}"></script>
+
     <script type="text/javascript" src="js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
     <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
     <script type="text/javascript" src="js/ajax-notifications.js?${sbPID}"></script>
