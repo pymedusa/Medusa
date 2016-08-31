@@ -71,6 +71,11 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
         """
         results = []
 
+        # Search Params
+        search_params = {
+            'f': 'tv added:2d',
+        }
+
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
@@ -78,10 +83,11 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
+                    search_params['f'] = search_string
 
                 # search_url = self.urls['verified'] if self.confirmed else self.urls['feed']
                 search_url = self.urls['feed']
-                response = self.get_url(search_url, params={'f': search_string}, returns='response')
+                response = self.get_url(search_url, params=search_params, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
