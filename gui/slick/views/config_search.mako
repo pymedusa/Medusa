@@ -59,6 +59,17 @@
                                     </label>
                                 </div>
                             </div><!-- check propers -->
+                            <div id="content_download_propers">
+                                <div class="field-pair">
+                                    <label for="delete_non_propers">
+                                        <span class="component-title">Delete non-propers</span>
+                                        <span class="component-desc">
+                                            <input type="checkbox" name="delete_non_propers" id="delete_non_propers" class="enabler" ${'checked="checked"' if sickbeard.DELETE_NON_PROPERS else ''}/>
+                                            <p>Delete snatched non-proper releases from post-processor folder when snatch a PROPER</p>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div><!-- delete non propers -->
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Backlog search day(s)</span>
