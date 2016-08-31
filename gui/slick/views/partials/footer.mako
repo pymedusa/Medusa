@@ -104,6 +104,8 @@
 
     <script type="text/javascript" src="js/history/index.js?${sbPID}"></script>
 
+    <script type="text/javascript" src="js/error-logs/viewlogs.js?${sbPID}"></script>
+
     <script type="text/javascript" src="js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
     <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
     <script type="text/javascript" src="js/ajax-notifications.js?${sbPID}"></script>
