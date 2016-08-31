@@ -82,6 +82,8 @@
     <script type="text/javascript" src="js/add-shows/recommended-shows.js?${sbPID}"></script>
     <script type="text/javascript" src="js/add-shows/trending-shows.js?${sbPID}"></script>
 
+    <script type="text/javascript" src="js/schedule/index.js?${sbPID}"></script>
+
     <script type="text/javascript" src="js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
     <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
     <script type="text/javascript" src="js/ajax-notifications.js?${sbPID}"></script>
