@@ -75,6 +75,13 @@
     <script type="text/javascript" src="js/config/search.js?${sbPID}"></script>
     <script type="text/javascript" src="js/config/subtitles.js?${sbPID}"></script>
 
+    <script type="text/javascript" src="js/add-shows/add-existing-show.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/add-shows/init.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/add-shows/new-show.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/add-shows/popular-shows.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/add-shows/recommended-shows.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/add-shows/trending-shows.js?${sbPID}"></script>
+
     <script type="text/javascript" src="js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
     <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
     <script type="text/javascript" src="js/ajax-notifications.js?${sbPID}"></script>
