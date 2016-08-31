@@ -43,7 +43,7 @@ class ConfigSearch(Config):
                    nzbget_category_anime_backlog=None, nzbget_priority=None, nzbget_host=None,
                    nzbget_use_https=None, backlog_days=None, backlog_frequency=None, dailysearch_frequency=None,
                    nzb_method=None, torrent_method=None, usenet_retention=None, download_propers=None,
-                   check_propers_interval=None, allow_high_priority=None, sab_forced=None, delete_non_propers = None,
+                   check_propers_interval=None, allow_high_priority=None, sab_forced=None, delete_non_propers=None,
                    randomize_providers=None, use_failed_downloads=None, delete_failed=None,
                    torrent_dir=None, torrent_username=None, torrent_password=None, torrent_host=None,
                    torrent_label=None, torrent_label_anime=None, torrent_path=None, torrent_verify_cert=None,
