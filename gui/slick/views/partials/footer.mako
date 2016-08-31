@@ -66,6 +66,15 @@
     <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
     <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
     <script type="text/javascript" src="js/core.js?${sbPID}"></script>
+
+    <script type="text/javascript" src="js/config/backup-restore.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/config/post-processing.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/config/search.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/config/subtitles.js?${sbPID}"></script>
+
     <script type="text/javascript" src="js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
     <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
     <script type="text/javascript" src="js/ajax-notifications.js?${sbPID}"></script>
