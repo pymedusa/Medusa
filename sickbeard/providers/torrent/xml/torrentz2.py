@@ -1,4 +1,5 @@
 # coding=utf-8
+# Authorship: The Medusa Team
 #
 # This file is part of Medusa.
 #
@@ -40,7 +41,7 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
         self.public = True
 
         # URLs
-        self.url = 'http://torrentz2.eu/'
+        self.url = 'https://torrentz2.eu/'
         self.urls = {
             'base': self.url,
             'verified': urljoin(self.url, 'feed_verified'),
@@ -50,7 +51,7 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
         # Proper Strings
 
         # Miscellaneous Options
-        self.confirmed = True
+        # self.confirmed = True
 
         # Torrent Stats
         self.minseed = None
@@ -70,6 +71,11 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
         """
         results = []
 
+        # Search Params
+        search_params = {
+            'f': 'tv added:2d',
+        }
+
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
@@ -77,9 +83,11 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
+                    search_params['f'] = search_string
 
-                search_url = self.urls['verified'] if self.confirmed else self.urls['feed']
-                response = self.get_url(search_url, params={'q': search_string}, returns='response')
+                # search_url = self.urls['verified'] if self.confirmed else self.urls['feed']
+                search_url = self.urls['feed']
+                response = self.get_url(search_url, params=search_params, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -108,7 +116,7 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
             for row in torrent_rows:
                 try:
-                    if row.category and 'tv' not in row.category.get_text(strip=True):
+                    if row.category and 'tv' not in row.category.get_text(strip=True).lower():
                         continue
 
                     title_raw = row.title.text
