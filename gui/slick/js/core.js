@@ -25,69 +25,8 @@ var SICKRAGE = {
     },
     home: {},
     manage: {},
-    history: {
-        index: function() {
-            $('#historyTable:has(tbody tr)').tablesorter({
-                widgets: ['zebra', 'filter'],
-                sortList: [[0, 1]],
-                textExtraction: (function() {
-                    if (isMeta('HISTORY_LAYOUT', ['detailed'])) {
-                        return {
-                            0: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
-                            4: function(node) { return $(node).find('span').text().toLowerCase(); } // eslint-disable-line brace-style
-                        };
-                    }
-                    return {
-                        0: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
-                        1: function(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
-                        2: function(node) { return $(node).attr('provider') == null ? null : $(node).attr('provider').toLowerCase(); }, // eslint-disable-line brace-style
-                        5: function(node) { return $(node).attr('quality').toLowerCase(); } // eslint-disable-line brace-style
-                    };
-                }()),
-                headers: (function() {
-                    if (isMeta('HISTORY_LAYOUT', ['detailed'])) {
-                        return {
-                            0: {sorter: 'realISODate'},
-                            4: {sorter: 'quality'}
-                        };
-                    }
-                    return {
-                        0: {sorter: 'realISODate'},
-                        4: {sorter: false},
-                        5: {sorter: 'quality'}
-                    };
-                }())
-            });
-
-            $('#history_limit').on('change', function() {
-                window.location.href = 'history/?limit=' + $(this).val();
-            });
-        }
-    },
-    errorlogs: {
-        viewlogs: function() {
-            $('#min_level,#log_filter,#log_search,#log_period').on('keyup change', _.debounce(function() {
-                $('#min_level').prop('disabled', true);
-                $('#log_filter').prop('disabled', true);
-                $('#log_period').prop('disabled', true);
-                document.body.style.cursor = 'wait';
-                var params = $.param({
-                    min_level: $('select[name=min_level]').val(),
-                    log_filter: $('select[name=log_filter]').val(),
-                    log_period: $('select[name=log_period]').val(),
-                    log_search: $('#log_search').val()
-                });
-                $.get('errorlogs/viewlog/?' + params, function(data) {
-                    history.pushState('data', '', 'errorlogs/viewlog/?' + params);
-                    $('pre').html($(data).find('pre').html());
-                    $('#min_level').prop('disabled', false);
-                    $('#log_filter').prop('disabled', false);
-                    $('#log_period').prop('disabled', false);
-                    document.body.style.cursor = 'default';
-                });
-            }, 500));
-        }
-    },
+    history: {},
+    errorlogs: {},
     schedule: {},
     addShows: {}
 };
