@@ -45,6 +45,7 @@ from itertools import cycle, izip
 import adba
 from cachecontrol import CacheControl
 import certifi
+import cfscrape
 from contextlib2 import closing, suppress
 import guessit
 import requests
@@ -802,7 +803,8 @@ def restoreVersionedFile(backup_file, version):
 
         shutil.move(new_file, new_file + '.' + 'r' + str(version))
     except Exception as e:
-        logger.warning(u"Error while trying to backup DB file %s before proceeding with restore: %r" % (restore_file, ex(e)))
+        logger.warning(u"Error while trying to backup DB file %s before proceeding with restore: %r" %
+                       (restore_file, ex(e)))
         return False
 
     while not ek(os.path.isfile, new_file):
@@ -972,7 +974,9 @@ def is_hidden_folder(folder):
 
 
 def real_path(path):
-    """Return the canonicalized absolute pathname. The resulting path will have no symbolic link, '/./' or '/../' components."""
+    """Return the canonicalized absolute pathname.
+
+    The resulting path will have no symbolic link, '/./' or '/../' components."""
     return ek(os.path.normpath, ek(os.path.normcase, ek(os.path.realpath, path)))
 
 
@@ -1187,6 +1191,26 @@ def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=N
                                hooks=hooks, stream=stream, headers=headers, cookies=cookies, proxies=proxies,
                                verify=verify)
 
+        if not resp.ok:
+            # Try to bypass CloudFlare's anti-bot protection
+            if resp.status_code == 503 and resp.headers.get('server') == u'cloudflare-nginx':
+                logger.debug(u'CloudFlare protection detected, trying to bypass it')
+                tokens, user_agent = cfscrape.get_tokens(url)
+                if cookies:
+                    cookies.update(tokens)
+                else:
+                    cookies = tokens
+                headers = {'user-agent': user_agent}
+                cf_resp = session.request(method, url, data=post_data, params=params, timeout=timeout,
+                                          allow_redirects=True, hooks=hooks, stream=stream, headers=headers,
+                                          cookies=cookies, proxies=proxies, verify=verify)
+                if cf_resp.ok:
+                    return cf_resp
+
+            logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
+                         (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
+            return None
+
     except requests.exceptions.RequestException as e:
         logger.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
         return None
@@ -1196,11 +1220,6 @@ def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=N
         else:
             logger.info(u'Unknown exception in url {url}. Error: {err_msg}', url=url, err_msg=e)
             logger.debug(traceback.format_exc())
-        return None
-
-    if not resp.ok:
-        logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
-                     (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
         return None
 
     if not response_type or response_type == u'response':
