@@ -37,13 +37,7 @@ var UTIL = {
     }
 };
 
-$.fn.extend({
-    addRemoveWarningClass: function(_) {
-        if (_) {
-            return $(this).removeClass('warning');
-        }
-        return $(this).addClass('warning');
-    },
+$.extend({
     isMeta: function(pyVar, result) { // eslint-disable-line no-unused-vars
         var reg = new RegExp(result.length > 1 ? result.join('|') : result);
         if (pyVar.match('sickbeard')) {
@@ -52,6 +46,15 @@ $.fn.extend({
             });
         }
         return (reg).test(SICKRAGE.info[pyVar]);
+    }
+});
+
+$.fn.extend({
+    addRemoveWarningClass: function(_) {
+        if (_) {
+            return $(this).removeClass('warning');
+        }
+        return $(this).addClass('warning');
     }
 });
 
