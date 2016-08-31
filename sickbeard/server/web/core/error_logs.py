@@ -3,28 +3,22 @@
 
 from __future__ import unicode_literals
 
-import io
-import os
-import re
+from datetime import datetime, timedelta
 
 from mako.filters import html_escape
-import sickbeard
-from sickbeard import (
-    classes, logger, ui,
-)
+from sickbeard import logger, ui
+from sickbeard.classes import ErrorViewer, WarningViewer
+from sickbeard.issuesubmitter import IssueSubmitter
+from sickbeard.logger import filter_logline, read_loglines
 from sickbeard.server.web.core.base import PageTemplate, WebRoot
-from sickrage.helper.encoding import ek
+from sickbeard.versionChecker import CheckVersion
+from six import text_type
 from tornado.routes import route
 
 
-# log regular expression: 2016-08-06 15:58:34 ERROR    DAILYSEARCHER :: [d4ea5af] Exception generated in thread DAILYSEARCHER
-log_re = re.compile(r'^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})\s+'
-                    r'(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})\s+'
-                    r'(?P<log_level>[A-Z]+)\s+(?P<log_name>.+?)\s+::\s+(?P<log_message>.*)$')
-
 # log name filters
 log_name_filters = {
-    '<NONE>': html_escape('<No Filter>'),
+    None: html_escape('<No Filter>'),
     'DAILYSEARCHER': 'Daily Searcher',
     'BACKLOG': 'Backlog',
     'SHOWUPDATER': 'Show Updater',
@@ -52,10 +46,20 @@ log_name_filters = {
     'MAIN': 'Main',
 }
 
+log_periods = {
+    'all': None,
+    'one_day': timedelta(days=1),
+    'three_days': timedelta(days=3),
+    'one_week': timedelta(days=7),
+}
+
 
 @route('/errorlogs(/?.*)')
 class ErrorLogs(WebRoot):
     """Route to errorlogs web page."""
+
+    # GitHub Issue submitter
+    issue_submitter = IssueSubmitter()
 
     def __init__(self, *args, **kwargs):
         """Default constructor."""
@@ -98,83 +102,42 @@ class ErrorLogs(WebRoot):
 
     @staticmethod
     def _has_errors():
-        return bool(classes.ErrorViewer.errors)
+        return bool(ErrorViewer.errors)
 
     @staticmethod
     def _has_warnings():
-        return bool(classes.WarningViewer.errors)
+        return bool(WarningViewer.errors)
 
     def clearerrors(self, level=logger.ERROR):
         """Clear the errors or warnings."""
         if int(level) == logger.WARNING:
-            classes.WarningViewer.clear()
+            WarningViewer.clear()
         else:
-            classes.ErrorViewer.clear()
+            ErrorViewer.clear()
 
         return self.redirect('/errorlogs/viewlog/')
 
-    @staticmethod
-    def _get_data(lines, min_level, log_filter, log_search, num_lines, max_lines):
-        last_line = False
-        num_to_show = min(max_lines, num_lines + len(lines))
-
-        final_data = []
-        for line in reversed(lines):
-            match = log_re.match(line)
-            if match:
-                level = match.group('log_level')
-                log_name = match.group('log_name')
-                if level not in logger.LOGGING_LEVELS:
-                    last_line = False
-                    continue
-
-                if log_search and log_search.lower() in line.lower():
-                    last_line = True
-                    final_data.append(line)
-                    num_lines += 1
-
-                elif not log_search and logger.LOGGING_LEVELS[level] >= min_level and (log_filter == '<NONE>' or log_name.startswith(log_filter)):
-                    last_line = True
-                    final_data.append(line)
-                    num_lines += 1
-                else:
-                    last_line = False
-                    continue
-
-            elif last_line:
-                final_data.append('AA' + line)
-                num_lines += 1
-
-            if num_lines >= num_to_show:
-                return final_data
-
-        return final_data
-
-    def viewlog(self, minLevel=logger.INFO, logFilter='<NONE>', logSearch=None, maxLines=1000, **kwargs):
+    def viewlog(self, min_level=logger.INFO, log_filter=None, log_search=None, max_lines=1000, log_period='one_day', **kwargs):
         """View the log given the specified filters."""
-        min_level = int(minLevel)
-        log_filter = logFilter if logFilter in log_name_filters else '<NONE>'
-        log_search = logSearch
-        max_lines = maxLines
+        min_level = int(min_level)
+        log_filter = log_filter if log_filter in log_name_filters else None
 
         t = PageTemplate(rh=self, filename='viewlogs.mako')
 
-        data = []
-        log_files = [logger.log_file] + ['{file}.{number}'.format(file=logger.log_file, number=i) for i in range(1, int(sickbeard.LOG_NR))]
-        for log_file in log_files:
-            if len(data) <= max_lines and ek(os.path.isfile, log_file):
-                with io.open(log_file, 'r', encoding='utf-8') as f:
-                    data += ErrorLogs._get_data(f.readlines(), min_level, log_filter, log_search, len(data), max_lines)
+        period = log_periods.get(log_period)
+        modification_time = datetime.now() - period if period else None
+        data = [line for line in read_loglines(modification_time=modification_time, formatter=text_type, max_lines=max_lines,
+                                               predicate=lambda l: filter_logline(l, min_level=min_level, thread_name=log_filter, search_query=log_search))]
 
-        return t.render(header='Log File', title='Logs', topmenu='system', logLines=''.join([html_escape(line) for line in data]),
-                        minLevel=min_level, logNameFilters=log_name_filters, logFilter=log_filter, logSearch=log_search,
+        return t.render(header='Log File', title='Logs', topmenu='system', log_lines='\n'.join([html_escape(line) for line in data]),
+                        min_level=min_level, log_name_filters=log_name_filters, log_filter=log_filter, log_search=log_search, log_period=log_period,
                         controller='errorlogs', action='viewlogs')
 
     def submit_errors(self):
         """Create an issue in medusa issue tracker."""
-        submitter_result, issue_id = logger.submit_errors()
-        logger.log(submitter_result, (logger.INFO, logger.WARNING)[issue_id is None])
-        submitter_notification = ui.notifications.error if issue_id is None else ui.notifications.message
-        submitter_notification(submitter_result)
+        results = self.issue_submitter.submit_github_issue(CheckVersion())
+        for submitter_result, issue_id in results:
+            submitter_notification = ui.notifications.error if issue_id is None else ui.notifications.message
+            submitter_notification(submitter_result)
 
         return self.redirect('/errorlogs/')

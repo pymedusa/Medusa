@@ -25,14 +25,13 @@
 
 from collections import OrderedDict
 from datetime import datetime, date
-import io
 import json
 import os
-import re
 import time
 import traceback
 
 from requests.compat import unquote_plus
+from sickbeard.logger import filter_logline, read_loglines
 from six import iteritems, text_type
 from tornado.web import RequestHandler
 
@@ -1197,7 +1196,7 @@ class CMD_Logs(ApiCall):
     def __init__(self, args, kwargs):
         # required
         # optional
-        self.min_level, args = self.check_params(args, kwargs, "min_level", "error", False, "string",
+        self.min_level, args = self.check_params(args, kwargs, "min_level", "info", False, "string",
                                                  ["error", "warning", "info", "debug"])
         # super, missing, help
         ApiCall.__init__(self, args, kwargs)
@@ -1206,46 +1205,10 @@ class CMD_Logs(ApiCall):
         """ Get the logs """
         # 10 = Debug / 20 = Info / 30 = Warning / 40 = Error
         min_level = logger.LOGGING_LEVELS[str(self.min_level).upper()]
-
-        data = []
-        if ek(os.path.isfile, logger.log_file):
-            with io.open(logger.log_file, 'r', encoding='utf-8') as f:
-                data = f.readlines()
-
-        regex = r"^(\d\d\d\d)\-(\d\d)\-(\d\d)\s*(\d\d)\:(\d\d):(\d\d)\s*([A-Z]+)\s*(.+?)\s*\:\:\s*(.*)$"
-
-        final_data = []
-
-        num_lines = 0
-        last_line = False
-        num_to_show = min(50, len(data))
-
-        for x in reversed(data):
-
-            match = re.match(regex, x)
-
-            if match:
-                level = match.group(7)
-                if level not in logger.LOGGING_LEVELS:
-                    last_line = False
-                    continue
-
-                if logger.LOGGING_LEVELS[level] >= min_level:
-                    last_line = True
-                    final_data.append(x.rstrip("\n"))
-                else:
-                    last_line = False
-                    continue
-
-            elif last_line:
-                final_data.append("AA" + x)
-
-            num_lines += 1
-
-            if num_lines >= num_to_show:
-                break
-
-        return _responds(RESULT_SUCCESS, final_data)
+        data = [line for line in read_loglines(formatter=text_type, max_lines=50,
+                                               predicate=lambda l: filter_logline(l, min_level=min_level,
+                                                                                  thread_name=lambda name: name != 'TORNADO'))]
+        return _responds(RESULT_SUCCESS, data)
 
 
 class CMD_LogsClear(ApiCall):

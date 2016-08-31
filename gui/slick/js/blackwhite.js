@@ -1,4 +1,4 @@
-function generateBlackWhiteList() {
+function generateBlackWhiteList() { // eslint-disable-line no-unused-vars
     var realvalues = [];
 
     $('#white option').each(function(i, selected) {
@@ -13,7 +13,7 @@ function generateBlackWhiteList() {
     $('#blacklist').val(realvalues.join(','));
 }
 
-function updateBlackWhiteList(showName) {
+function updateBlackWhiteList(showName) { // eslint-disable-line no-unused-vars
     $('#pool').children().remove();
 
     $('#blackwhitelist').show();
@@ -33,27 +33,27 @@ function updateBlackWhiteList(showName) {
     }
 }
 
-$('#removeW').click(function() {
-    !$('#white option:selected').remove().appendTo('#pool');
+$('#removeW').on('click', function() {
+    !$('#white option:selected').remove().appendTo('#pool');  // eslint-disable-line no-unused-expressions
 });
 
-$('#addW').click(function() {
-    !$('#pool option:selected').remove().appendTo('#white');
+$('#addW').on('click', function() {
+    !$('#pool option:selected').remove().appendTo('#white');  // eslint-disable-line no-unused-expressions
 });
 
-$('#addB').click(function() {
-    !$('#pool option:selected').remove().appendTo('#black');
+$('#addB').on('click', function() {
+    !$('#pool option:selected').remove().appendTo('#black');  // eslint-disable-line no-unused-expressions
 });
 
-$('#removeP').click(function() {
-    !$('#pool option:selected').remove();
+$('#removeP').on('click', function() {
+    !$('#pool option:selected').remove();  // eslint-disable-line no-unused-expressions
 });
 
-$('#removeB').click(function() {
-    !$('#black option:selected').remove().appendTo('#pool');
+$('#removeB').on('click', function() {
+    !$('#black option:selected').remove().appendTo('#pool');  // eslint-disable-line no-unused-expressions
 });
 
-$('#addToWhite').click(function() {
+$('#addToWhite').on('click', function() {
     var group = $('#addToPoolText').val();
     if (group !== '') {
         var option = $('<option>');
@@ -64,7 +64,7 @@ $('#addToWhite').click(function() {
     }
 });
 
-$('#addToBlack').click(function() {
+$('#addToBlack').on('click', function() {
     var group = $('#addToPoolText').val();
     if (group !== '') {
         var option = $('<option>');

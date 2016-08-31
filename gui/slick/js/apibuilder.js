@@ -67,11 +67,13 @@ $(document).ready(function() {
             select.removeClass('hidden');
             select.find('option:gt(0)').remove();
 
-            for (var episode in episodes[show][season]) {
-                select.append($('<option>', {
-                    value: episodes[show][season][episode],
-                    label: 'Episode ' + episodes[show][season][episode]
-                }));
+            for (var episode in episodes[show][season]) { // eslint-disable-line no-undef
+                if ({}.hasOwnProperty.call(episodes[show][season], episode)) {  // eslint-disable-line no-undef
+                    select.append($('<option>', {
+                        value: episodes[show][season][episode], // eslint-disable-line no-undef
+                        label: 'Episode ' + episodes[show][season][episode] // eslint-disable-line no-undef
+                    }));
+                }
             }
         }
     });
@@ -86,18 +88,20 @@ $(document).ready(function() {
             select.removeClass('hidden');
             select.find('option:gt(0)').remove();
 
-            for (var season in episodes[show]) {
-                select.append($('<option>', {
-                    value: season,
-                    label: (season === 0) ? 'Specials' : 'Season ' + season
-                }));
+            for (var season in episodes[show]) { // eslint-disable-line no-undef
+                if ({}.hasOwnProperty.call(episodes[show], season)) {  // eslint-disable-line no-undef
+                    select.append($('<option>', {
+                        value: season,
+                        label: (season === 0) ? 'Specials' : 'Season ' + season
+                    }));
+                }
             }
         }
     });
 
     // Enable command search
     $('#command-search').typeahead({
-        source: commands
+        source: commands // eslint-disable-line no-undef
     });
     $('#command-search').on('change', function() {
         var command = $(this).typeahead('getActive');

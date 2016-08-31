@@ -11,7 +11,7 @@
   },
   "homepage": "https://github.com/PyMedusa/SickRage#readme",
   "scripts": {
-    "test": "exit 0",
+    "test": "xo gui/slick/js/*.js",
     "security": "snyk test"
   },
   "devDependencies": {

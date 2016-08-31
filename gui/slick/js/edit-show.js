@@ -24,7 +24,7 @@ $('#submit').click(function() {
     $('#exceptions_list').val(allExceptions);
 
     if (metaToBool['show.is_anime']) {
-        generateBlackWhiteList();
+        generateBlackWhiteList(); // eslint-disable-line no-undef
     }
 });
 $('#addSceneName').click(function() {
