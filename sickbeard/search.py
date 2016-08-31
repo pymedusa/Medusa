@@ -92,6 +92,7 @@ def _downloadResult(result):
 
     return newResult
 
+
 def _delete_non_propers(result):
     """Delete non-propers from PP folder after snatch a PROPER.
 
@@ -124,6 +125,7 @@ def _delete_non_propers(result):
                                 break
                 except OSError as e:
                     logger.log(u'Unable to delete {resource}. Error: {error}', resource=resource, error=e)
+
 
 def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statements
     """
