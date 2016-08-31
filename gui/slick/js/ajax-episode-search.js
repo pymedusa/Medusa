@@ -57,7 +57,7 @@ function updateImages(data) {
 
                 // Update Status and Quality
                 rSearchTerm = /(\w+)\s\((.+?)\)/;
-                htmlContent = ep.status.replace(rSearchTerm, "$1" + ' <span class="quality ' + ep.quality + '">' + "$2" + '</span>');
+                htmlContent = ep.status.replace(rSearchTerm, "$1" + ' <span class="quality ' + ep.quality + '">' + "$2" + '</span>'); // eslint-disable-line quotes, no-useless-concat
                 parent.closest('tr').prop('class', ep.overview + ' season-' + ep.season + ' seasonstyle');
             }
             // update the status column if it exists

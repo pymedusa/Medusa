@@ -1,4 +1,4 @@
-(function(){
+(function() {
     $.ajaxEpSubtitlesSearch = function() {
         $('.epSubtitlesSearch').on('click', function() {
             var subtitlesTd = $(this).parent().siblings('.col-subtitles');
@@ -17,7 +17,7 @@
                     subtitlesTd.empty();
                     $.each(subtitles, function(index, language) {
                         if (language !== '') {
-                            if (index !== subtitles.length - 1) {
+                            if (index !== subtitles.length - 1) { // eslint-disable-line no-negated-condition
                                 subtitlesTd.append($('<img/>').prop({
                                     src: 'images/subtitles/flags/' + language + '.png',
                                     alt: language,
@@ -40,8 +40,6 @@
                     subtitlesSearchLink.remove();
                 }
             });
-
-            // don't follow the link
             return false;
         });
     };
