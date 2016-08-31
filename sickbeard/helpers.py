@@ -1201,7 +1201,10 @@ def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=N
                     cookies.update(tokens)
                 else:
                     cookies = tokens
-                headers = {'user-agent': user_agent}
+                if headers:
+                    headers.update({u'User-Agent': user_agent})
+                else:
+                    headers = {u'User-Agent': user_agent}
                 cf_resp = session.request(method, url, data=post_data, params=params, timeout=timeout,
                                           allow_redirects=True, hooks=hooks, stream=stream, headers=headers,
                                           cookies=cookies, proxies=proxies, verify=verify)
