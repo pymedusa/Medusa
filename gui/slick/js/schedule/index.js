@@ -1,5 +1,5 @@
 SICKRAGE.schedule.index = function() {
-    if (isMeta('comingEpsLayout', ['list'])) {
+    if ($.isMeta('comingEpsLayout', ['list'])) {
         var sortCodes = {
             date: 0,
             show: 2,
@@ -36,7 +36,7 @@ SICKRAGE.schedule.index = function() {
         $.ajaxEpSearch();
     }
 
-    if (isMeta('comingEpsLayout', ['banner', 'poster'])) {
+    if ($.isMeta('comingEpsLayout', ['banner', 'poster'])) {
         $.ajaxEpSearch({
             size: 16,
             loadingImage: 'loading16' + SICKRAGE.info.themeSpinner + '.gif'

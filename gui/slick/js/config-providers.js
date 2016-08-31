@@ -1,4 +1,5 @@
 $(document).ready(function() { // eslint-disable-line max-lines
+    console.log('This function need to be moved to config/providers.js but can\'t be as we\'ve got scope issues currently.');
     $.fn.showHideProviders = function() {
         $('.providerDiv').each(function() {
             var providerName = $(this).prop('id');

@@ -3,7 +3,7 @@ SICKRAGE.history.index = function() {
         widgets: ['zebra', 'filter'],
         sortList: [[0, 1]],
         textExtraction: (function() {
-            if (isMeta('HISTORY_LAYOUT', ['detailed'])) {
+            if ($.isMeta('HISTORY_LAYOUT', ['detailed'])) {
                 return {
                     0: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
                     4: function(node) { return $(node).find('span').text().toLowerCase(); } // eslint-disable-line brace-style
@@ -17,7 +17,7 @@ SICKRAGE.history.index = function() {
             };
         }()),
         headers: (function() {
-            if (isMeta('HISTORY_LAYOUT', ['detailed'])) {
+            if ($.isMeta('HISTORY_LAYOUT', ['detailed'])) {
                 return {
                     0: {sorter: 'realISODate'},
                     4: {sorter: 'quality'}

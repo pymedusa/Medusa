@@ -6,23 +6,9 @@ var webRoot = $('base').attr('href');
 var apiRoot = $('body').attr('api-root');
 var apiKey = $('body').attr('api-key');
 
-$.fn.extend({
-    addRemoveWarningClass: function (_) {
-        if (_) {
-            return $(this).removeClass('warning');
-        }
-        return $(this).addClass('warning');
-    }
-});
-
 var SICKRAGE = {
     common: {},
-    config: {
-        providers: function() {
-            // @TODO This function need to be filled with ConfigProviders.js but can't be as we've got scope issues currently.
-            console.log('This function need to be filled with ConfigProviders.js but can\'t be as we\'ve got scope issues currently.');
-        }
-    },
+    config: {},
     home: {},
     manage: {},
     history: {},
@@ -51,6 +37,24 @@ var UTIL = {
     }
 };
 
+$.fn.extend({
+    addRemoveWarningClass: function(_) {
+        if (_) {
+            return $(this).removeClass('warning');
+        }
+        return $(this).addClass('warning');
+    },
+    isMeta: function(pyVar, result) { // eslint-disable-line no-unused-vars
+        var reg = new RegExp(result.length > 1 ? result.join('|') : result);
+        if (pyVar.match('sickbeard')) {
+            pyVar.split('.')[1].toLowerCase().replace(/(_\w)/g, function(m) {
+                return m[1].toUpperCase();
+            });
+        }
+        return (reg).test(SICKRAGE.info[pyVar]);
+    }
+});
+
 $.ajaxSetup({
     beforeSend: function(xhr, options) {
         if (/^https?:\/\/|^\/\//i.test(options.url) === false) {
@@ -74,13 +78,3 @@ $.ajax({
         }
     }
 });
-
-function isMeta(pyVar, result) { // eslint-disable-line no-unused-vars
-    var reg = new RegExp(result.length > 1 ? result.join('|') : result);
-    if (pyVar.match('sickbeard')) {
-        pyVar.split('.')[1].toLowerCase().replace(/(_\w)/g, function(m) {
-            return m[1].toUpperCase();
-        });
-    }
-    return (reg).test(SICKRAGE.info[pyVar]);
-}
