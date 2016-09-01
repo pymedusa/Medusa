@@ -696,7 +696,7 @@ class Home(WebRoot):
                 'message': 'downgrade',
             })
         else:
-            logger.log(u'Checkout branch couldn\'t compare DB version.', logger.ERROR)
+            logger.log(u'Checkout branch couldn\'t compare DB version.', logger.WARNING)
             return json.dumps({
                 'status': 'error',
                 'message': 'General exception',
