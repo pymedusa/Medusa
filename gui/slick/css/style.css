@@ -1,6 +1,7 @@
 strong.warning {
     color: red;
 }
+
 /* =======================================================================
 inc_top.mako
 ========================================================================== */
@@ -17,7 +18,6 @@ inc_top.mako
 .icon-white {
     background-image: url("../images/glyphicons-halflings-white.png");
 }
-
 
 .ui-autocomplete-loading {
     background: rgb(255, 255, 255) url("../images/loading16.gif") right center no-repeat;
@@ -173,7 +173,7 @@ inc_top.mako
     border-top-right-radius: 5px;
 }
 
-.ui-tabs-nav > :not(.ui-tabs-active){
+.ui-tabs-nav > :not(.ui-tabs-active) {
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
 }
@@ -885,7 +885,7 @@ home_recommendedShows.mako
 }
 
 div.recommended-image {
-    background-color: #DFDACF;
+    background-color: #dfdacf;
 }
 
 .show-in-list div.recommended-image {
@@ -904,10 +904,12 @@ div.recommended-image {
     position: absolute;
     height: 273px;
     width: 187px;
-    top: 0px;
+    top: 0;
 }
 
-.recommended-container p, .recommended-container i, .recommended-container a {
+.recommended-container p,
+.recommended-container i,
+.recommended-container a {
     white-space: nowrap;
     font-size: 12px;
     overflow: hidden;
@@ -944,9 +946,8 @@ div.recommended-image {
 .recommended-container .default-poster {
     display: block;
     z-index: 0;
-    background-image: url("../images/poster-dark.jpg")
+    background-image: url("../images/poster-dark.jpg");
 }
-
 
 /* =======================================================================
 home_postprocess.mako
@@ -1023,7 +1024,8 @@ span.imdbstars {
     margin-top: 4px;
 }
 
-span.imdbstars, span.imdbstars > * {
+span.imdbstars,
+span.imdbstars > * {
     height: 12px;
     background: url("../images/rating.png") 0 -12px repeat-x;
     width: 120px;
@@ -1033,7 +1035,7 @@ span.imdbstars, span.imdbstars > * {
 
 span.imdbstars > * {
     background-position: 0 0;
-    max-width:120px;
+    max-width: 120px;
 }
 
 ul.tags {
@@ -1056,7 +1058,7 @@ ul.tags li {
     float: left;
 }
 
-ul.tags li a{
+ul.tags li a {
     color: rgb(255, 255, 255);
 }
 
@@ -1106,21 +1108,27 @@ ul.tags li a{
 .unaired {
     background-color: rgb(245, 241, 228);
 }
+
 .skipped {
     background-color: rgb(190, 222, 237);
 }
+
 .good {
     background-color: rgb(195, 227, 200);
 }
+
 .qual {
     background-color: rgb(255, 218, 138);
 }
+
 .wanted {
     background-color: rgb(255, 176, 176);
 }
+
 .snatched {
     background-color: rgb(235, 193, 234);
 }
+
 .failed {
     text-decoration: line-through;
     text-decoration-color: red;
@@ -1131,22 +1139,27 @@ span.unaired {
     color: rgb(88, 75, 32);
     border: 1px solid rgb(88, 75, 32);
 }
+
 span.skipped {
     color: rgb(29, 80, 104);
     border: 1px solid rgb(29, 80, 104);
 }
+
 span.good {
     color: rgb(41, 87, 48);
     border: 1px solid rgb(41, 87, 48);
 }
+
 span.qual {
     color: rgb(118, 81, 0);
     border: 1px solid rgb(118, 81, 0);
 }
+
 span.wanted {
     color: rgb(137, 0, 0);
     border: 1px solid rgb(137, 0, 0);
 }
+
 span.snatched {
     color: rgb(101, 33, 100);
     border: 1px solid rgb(101, 33, 100);
@@ -1189,7 +1202,7 @@ span.snatched b {
 }
 
 .displayShowTable.display_show {
-    clear:both;
+    clear: both;
 }
 
 .displayShowTable th.row-seasonheader {
@@ -1204,7 +1217,6 @@ span.snatched b {
     text-align: center;
 }
 
-
 .displayShowTableFanArt {
     table-layout: auto;
     width: 100%;
@@ -1217,7 +1229,7 @@ span.snatched b {
 }
 
 .displayShowTableFanArt.display_show {
-    clear:both;
+    clear: both;
     opacity: 0.9;
 }
 
@@ -1256,10 +1268,10 @@ span.snatched b {
 }
 
 .sickbeardTable.display_show {
-    clear:both;
+    clear: both;
 }
 
-.sickbeardTable th{
+.sickbeardTable th {
     color: rgb(255, 255, 255);
     text-align: center;
     background-color: rgb(51, 51, 51);
@@ -1405,18 +1417,18 @@ div.season-scene-exception {
 }
 
 #showBanner {
-    float:right;
-    height:50px;
-    border:1px solid black;
+    float: right;
+    height: 50px;
+    border: 1px solid black;
 }
 
 .fanart {
     margin-top: -1px;
-    vertical-align:middle;
+    vertical-align: middle;
 }
 
 .showOptions {
-    width:180px;
+    width: 180px;
     float: right;
     vertical-align: middle;
 }
@@ -1472,7 +1484,8 @@ span.listing-toofar {
     border: 1px solid rgb(29, 80, 104);
 }
 
-h2.day, h2.network {
+h2.day,
+h2.network {
     margin: 10px 0;
     font-size: 24px;
     line-height: 36px;
@@ -1502,7 +1515,10 @@ h2.day, h2.network {
     color: rgb(66, 139, 202);
 }
 
-.tvshowDiv a, .tvshowDiv a:link, .tvshowDiv a:visited, .tvshowDiv a:hover  {
+.tvshowDiv a,
+.tvshowDiv a:link,
+.tvshowDiv a:visited,
+.tvshowDiv a:hover {
     text-decoration: none;
     background: none;
 }
@@ -1569,46 +1585,46 @@ h2.day, h2.network {
 }
 
 .calendarWrapper {
-    width:1000px;
-    margin:0 auto;
-    padding:0 3px;
+    width: 1000px;
+    margin: 0 auto;
+    padding: 0 3px;
 }
 
 .calendarTable {
-    float:left;
-    width:142px !important;
-    white-space:nowrap;
-    table-layout:fixed !important;
+    float: left;
+    width: 142px !important;
+    white-space: nowrap;
+    table-layout: fixed !important;
 }
 
 .calendarShow {
-    padding:0 !important;
+    padding: 0 !important;
 }
 
 .calendarShow .poster {
-    padding-bottom:2px;
+    padding-bottom: 2px;
 }
 
 .calendarShow .poster img {
-    width:142px;
-    height:auto;
+    width: 142px;
+    height: auto;
 }
 
 .calendarShow .text {
-    padding:0 5px 10px 5px;
+    padding: 0 5px 10px;
 }
 
 .calendarShow .text .airtime,
 .calendarShow .text .episode-title {
-    overflow:hidden;
-    text-overflow:ellipsis;
-    display:block;
-    font-size:11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    font-size: 11px;
 }
 
 .calendarShow .show-status {
-    padding:5px 10px 10px;
-    text-align:center;
+    padding: 5px 10px 10px;
+    text-align: center;
 }
 
 /* =======================================================================
@@ -1635,12 +1651,12 @@ config*.mako
     min-height: 200px;
 }
 
-.component-group-desc{
+.component-group-desc {
     float: left;
     width: 250px;
 }
 
-.component-group-desc h3{
+.component-group-desc h3 {
     margin-top: 5px;
 }
 
@@ -1663,7 +1679,9 @@ config*.mako
     float: left;
 }
 
-#config .nocheck, #config div #customQuality, .metadataDiv {
+#config .nocheck,
+#config div #customQuality,
+.metadataDiv {
     padding-left: 20px;
 }
 
@@ -1678,13 +1696,13 @@ config*.mako
 #config span.component-desc {
     font-size: 12px;
     font-weight: normal;
-    display:block;
-    width:475px;
-    margin-left:182px;
+    display: block;
+    width: 475px;
+    margin-left: 182px;
 }
 
 #config label.space-right {
-    margin-right:10px;
+    margin-right: 10px;
 }
 
 #config .metadataDiv {
@@ -1769,7 +1787,8 @@ select .selected {
     vertical-align: top;
 }
 
-[class^="icon16-config-"], [class*=" icon16-config-"] {
+[class^="icon16-config-"],
+[class*=" icon16-config-"] {
     background-image: url("../images/16x_sprite_colored_help-info.png");
     background-position: -40px 0;
     background-repeat: no-repeat;
@@ -1783,56 +1802,73 @@ select .selected {
 .icon16-config-sickrage {
     background-position: 0 0;
 }
+
 .icon16-config-version {
     background-position: -17px 0;
 }
+
 .icon16-config-python {
     background-position: -37px 0;
 }
+
 .icon16-config-ssl {
     background-position: -56px 0;
 }
+
 .icon16-config-locale {
     background-position: -73px 0;
 }
+
 .icon16-config-user {
     background-position: -91px 0;
 }
+
 .icon16-config-dir {
     background-position: -111px 0;
 }
+
 .icon16-config-config {
     background-position: -129px 0;
 }
+
 .icon16-config-db {
     background-position: -147px 0;
 }
+
 .icon16-config-cache {
     background-position: -166px 0;
 }
+
 .icon16-config-log {
     background-position: -182px 0;
 }
+
 .icon16-config-arguments {
     background-position: -204px 0;
 }
+
 .icon16-config-github {
     background-position: -224px 0;
 }
+
 .icon16-config-mirc {
     background-position: -243px 0;
 }
+
 .icon16-config-web {
     background-position: -262px 0;
 }
+
 .icon16-config-os {
     background-position: -280px 0;
 }
+
 .icon16-config-wiki {
     background-position: -299px 0;
 }
 
-[class^="add-client-icon-"], [class*=" add-client-icon-"] {
+[class^="add-client-icon-"],
+[class*=" add-client-icon-"] {
     background: url("../images/32x_sprite_colored_clients.png");
     height: 32px;
     width: 32px;
@@ -1911,7 +1947,8 @@ config_postProcessing.mako
 ========================================================================== */
 
 #config div.example {
-    padding: 10px; background-color: rgb(239, 239, 239);
+    padding: 10px;
+    background-color: rgb(239, 239, 239);
 }
 
 .Key {
@@ -1924,7 +1961,8 @@ config_postProcessing.mako
     border-spacing: 0;
 }
 
-.Key th, .tableHeader {
+.Key th,
+.tableHeader {
     padding: 3px 9px;
     margin: 0;
     color: rgb(255, 255, 255);
@@ -2008,7 +2046,8 @@ div.metadataDiv .disabled {
     background: url("../images/warning16.png") no-repeat right 5px center rgb(255, 255, 255);
 }
 
-[class^="icon-notifiers-"], [class*=" icon-notifiers-"] {
+[class^="icon-notifiers-"],
+[class*=" icon-notifiers-"] {
     background: url("../images/32x_sprite_colored_notifiers.png");
     height: 32px;
     width: 32px;
@@ -2277,28 +2316,32 @@ span.Proper {
     background-color: rgb(63, 127, 0);
 }
 
+/* red */
 span.false {
     color: rgb(153, 51, 51);
-    /* red */
 }
 
+/* green */
 span.true {
     color: rgb(102, 153, 102);
-    /* green */
 }
 
 span.break-word {
     word-break: break-all;
 }
+
 span.required {
     color: green;
 }
+
 span.preferred {
     color: blue;
 }
+
 span.undesired {
     color: orange;
 }
+
 span.ignored {
     color: red;
 }
@@ -2306,7 +2349,8 @@ span.ignored {
 a.wiki {
     color: red;
 }
-a.wiki strong{
+
+a.wiki strong {
     color: red;
 }
 
@@ -2318,7 +2362,7 @@ option.flag {
 
 /* Anime section for editShow */
 .bwlWrapper {
-    height:auto;
+    height: auto;
     margin: 0 auto;
 }
 
@@ -2342,8 +2386,8 @@ option.flag {
     width: 95%;
 }
 
-div.blackwhitelist{
-    float:left;
+div.blackwhitelist {
+    float: left;
     text-align: center;
 }
 
@@ -2351,11 +2395,12 @@ div.blackwhitelist input {
     margin: 5px 0;
 }
 
-div.blackwhitelist.pool select{
+div.blackwhitelist.pool select {
     width: 230px;
 }
 
-div.blackwhitelist.white select, div.blackwhitelist.black select {
+div.blackwhitelist.white select,
+div.blackwhitelist.black select {
     width: 150px;
 }
 
@@ -2364,7 +2409,8 @@ div.blackwhitelist span {
     text-align: center;
 }
 
-div.blackwhitelist.anidb, div.blackwhitelist.manual {
+div.blackwhitelist.anidb,
+div.blackwhitelist.manual {
     margin: 7px 0;
 }
 
@@ -2393,7 +2439,10 @@ input[type="radio"] {
     line-height: normal;
 }
 
-input, textarea, select, .uneditable-input {
+input,
+textarea,
+select,
+.uneditable-input {
     width: auto;
     color: rgb(0, 0, 0);
 }
@@ -2482,17 +2531,20 @@ input, textarea, select, .uneditable-input {
     .navbar-default .navbar-nav .open .dropdown-menu > li > a {
         color: rgb(221, 221, 221);
     }
+
     .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
     .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
         color: rgb(255, 255, 255);
         background-color: transparent;
     }
+
     .navbar-default .navbar-nav .open .dropdown-menu > .active > a,
     .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
     .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
         color: rgb(255, 255, 255);
         background-color: rgb(51, 51, 51);
     }
+
     .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a,
     .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a:hover,
     .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a:focus {
@@ -2525,7 +2577,8 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     color: rgb(204, 204, 204);
 }
 
-.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
     color: rgb(38, 38, 38);
     text-decoration: none;
     background-color: rgb(245, 245, 245);
@@ -2891,8 +2944,8 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     border-radius: 3px;
 }
 
-@media(min-width:768px){
-    .navbar .nav > li > .dropdown-menu:after {
+@media (min-width: 768px) {
+    .navbar .nav > li > .dropdown-menu::after {
         position: absolute;
         top: -6px;
         right: 12px;
@@ -3022,7 +3075,8 @@ div.formpaginate {
     text-align: center;
 }
 
-div.formpaginate .prev, div.formpaginate .next {
+div.formpaginate .prev,
+div.formpaginate .next {
     padding: 3px 6px;
     color: rgb(255, 255, 255);
     cursor: hand;
@@ -3083,7 +3137,7 @@ div.field-pair input {
 
 #customQualityWrapper div.component-group-desc p {
     width: 85%;
-    margin: .8em 0;
+    margin: 0.8em 0;
     font-size: 1.13em;
     color: rgb(102, 102, 102);
 }
@@ -3119,14 +3173,14 @@ tablesorter.css
 .tablesorter th {
     color: rgb(255, 255, 255);
     text-align: center;
-    text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
     background-color: rgb(51, 51, 51);
     border-collapse: collapse;
     font-weight: normal;
 }
 
 .tablesorter .tablesorter-header {
-    padding: 4px 18px 4px 18px;
+    padding: 4px 18px;
     cursor: pointer;
     background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAAP///////yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
     background-position: center right;
@@ -3158,11 +3212,13 @@ thead.tablesorter-stickyHeader {
 }
 
 /* Zebra Widget - row alternating colors */
-.tablesorter tr.odd, .sickbeardTable tr.odd {
+.tablesorter tr.odd,
+.sickbeardTable tr.odd {
     background-color: rgb(245, 241, 228);
 }
 
-.tablesorter tr.even, .sickbeardTable tr.even {
+.tablesorter tr.even,
+.sickbeardTable tr.even {
     background-color: rgb(223, 218, 207);
 }
 
@@ -3199,7 +3255,7 @@ thead.tablesorter-stickyHeader {
 .tablesorter tfoot tr {
     color: rgb(255, 255, 255);
     text-align: center;
-    text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
     background-color: rgb(51, 51, 51);
     border-collapse: collapse;
 }
@@ -3273,7 +3329,7 @@ li.token-input-token p {
     float: left;
     padding: 0;
     margin: 0;
-    line-height: 2.0 !important;
+    line-height: 2 !important;
 }
 
 li.token-input-token span {
@@ -3292,7 +3348,7 @@ li.token-input-selected-token span {
 }
 
 li.token-input-input-token input {
-    margin: 3px 3px 3px 3px !important;
+    margin: 3px !important;
 }
 
 div.token-input-dropdown {
@@ -3347,11 +3403,16 @@ span.token-input-delete-token {
     margin: 0 1px;
 }
 
-.red-text {color: rgb(221, 51, 51);
+.red-text {
+    color: rgb(221, 51, 51);
 }
-.clear-left {clear:left;
+
+.clear-left {
+    clear: left;
 }
-.nextline-block {display:block;
+
+.nextline-block {
+    display: block;
 }
 
 /* =======================================================================
@@ -3412,7 +3473,7 @@ jquery.confirm.css
     text-decoration: none;
     display: inline-block;
     color: rgb(255, 255, 255);
-    text-align:center;
+    text-align: center;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
     background-clip: padding-box;
     border: 1px solid rgb(17, 17, 17);
@@ -3430,7 +3491,7 @@ jquery.confirm.css
 }
 
 #confirmBox .button:last-child {
-    margin-right:0;
+    margin-right: 0;
 }
 
 #confirmBox .green {
@@ -3536,46 +3597,46 @@ login.css
 IMDB Popular
 ========================================================================== */
 
-.popularShow{
-    margin-bottom:30px;
+.popularShow {
+    margin-bottom: 30px;
 }
 
-.popularShow h3{
-    padding:0;
-    margin:0;
-    display:inline-block;
-    margin-right:30px;
+.popularShow h3 {
+    padding: 0;
+    margin: 0;
+    display: inline-block;
+    margin-right: 30px;
 }
 
-.popularShow .left{
-    float:left;
-    width:100px;
+.popularShow .left {
+    float: left;
+    width: 100px;
 }
 
-.popularShow .right{
-    float:left;
-    width:600px;
+.popularShow .right {
+    float: left;
+    width: 600px;
 }
 
-.popularShow .year{
-    font-style:italic;
-    opacity:0.7;
+.popularShow .year {
+    font-style: italic;
+    opacity: 0.7;
 }
 
-.popularShow .coverImage{
-    width:80%;
-    padding-left:20px;
-    margin-top:4px;
+.popularShow .coverImage {
+    width: 80%;
+    padding-left: 20px;
+    margin-top: 4px;
 }
 
-.popularShow .rating{
-    font-size:90%;
-    display:inline-block;
-    margin-left:0;
+.popularShow .rating {
+    font-size: 90%;
+    display: inline-block;
+    margin-left: 0;
 }
 
-.popularShow p{
-    margin-bottom:0;
+.popularShow p {
+    margin-bottom: 0;
 }
 
 table.home-header {
@@ -3587,9 +3648,11 @@ input.tablesorter-filter.disabled {
     display: none;
 }
 
-/* This fixes bold fon be used */
+/* This fixes bold font be used */
 /* @TODO replace this with proper CSS overrides */
-.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header {
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header {
     font-weight: normal !important;
 }
 
@@ -3605,7 +3668,6 @@ div#searchNotification {
     word-break: break-all;
 }
 
-
 /* =======================================================================
 viewLog.mako
 ========================================================================== */
@@ -3615,21 +3677,21 @@ viewLog.mako
     .pull-xs-right {
         float: right !important;
     }
+
     .pull-xs-left {
         float: left !important;
     }
 
-    .radio-inline.pull-xs-left  + .radio-inline.pull-xs-left ,
-    .checkbox-inline.pull-xs-left  + .checkbox-inline.pull-xs-left  {
+    .radio-inline.pull-xs-left + .radio-inline.pull-xs-left,
+    .checkbox-inline.pull-xs-left + .checkbox-inline.pull-xs-left {
         margin-left: 0;
     }
-    .radio-inline.pull-xs-left, .checkbox-inline.pull-xs-left{
+    .radio-inline.pull-xs-left, .checkbox-inline.pull-xs-left {
         margin-right: 10px;
     }
 }
 
-/* Because the H1 has a margin of 20px withing the column col-sm-2 of 20px we need
-to configure the same for the columns which are used for the filter inputs.*/
+/* Because the H1 has a margin of 20px withing the column col-sm-2 of 20px we need to configure the same for the columns which are used for the filter inputs. */
 .log-filter {
     margin-top: 20px;
 }

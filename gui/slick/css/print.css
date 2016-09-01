@@ -5,7 +5,7 @@
     }
 
     /* Hide URLs */
-    a[href]:after {
+    a[href]::after {
         content: none !important;
     }
 
