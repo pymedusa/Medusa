@@ -165,7 +165,7 @@ def get_scene_exception_by_name_multiple(show_name):
         if show_name.lower() in (cur_exception_name.lower(),
                                  helpers.sanitizeSceneName(cur_exception_name).lower().replace('.', ' ')):
 
-            logger.log('Scene exception lookup got indexer id {0}, using that'.format
+            logger.log('Scene exception lookup got indexer ID {0}, using that'.format
                        (cur_indexer_id), logger.DEBUG)
 
             out.append((cur_indexer_id, int(cur_exception[b'season'])))
@@ -214,17 +214,16 @@ def retrieve_exceptions():
 
     queries = []
     cache_db_con = db.DBConnection('cache.db')
-    for cur_indexer_id in combined_exceptions:
-        sql_ex = cache_db_con.select(b'SELECT show_name FROM scene_exceptions WHERE indexer_id = ?', [cur_indexer_id])
+    for indexer_id in combined_exceptions:
+        sql_ex = cache_db_con.select(b'SELECT show_name FROM scene_exceptions WHERE indexer_id = ?', [indexer_id])
         existing_exceptions = [x[b'show_name'] for x in sql_ex]
 
-        for cur_exception_dict in combined_exceptions[cur_indexer_id]:
-            for ex in iteritems(cur_exception_dict):
-                cur_exception, curSeason = ex
-                if cur_exception not in existing_exceptions:
+        for exception_dict in combined_exceptions[indexer_id]:
+            for scene_exception, season in iteritems(exception_dict):
+                if scene_exception not in existing_exceptions:
                     queries.append(
                         [b'INSERT OR IGNORE INTO scene_exceptions (indexer_id, show_name, season) VALUES (?,?,?)',
-                         [cur_indexer_id, cur_exception, curSeason]])
+                         [indexer_id, scene_exception, season]])
     if queries:
         cache_db_con.mass_action(queries)
         logger.log('Updated scene exceptions.', logger.INFO)
