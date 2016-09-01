@@ -30,7 +30,8 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """Zooqle Torrent provider"""
+    """Zooqle Torrent provider."""
+
     def __init__(self):
 
         # Provider Init
@@ -132,8 +133,8 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
 
                     seeders = 1
                     leechers = 0
-                    if len(cells) > 6:
-                        peers = cells[6].find('div')
+                    if len(cells) > 5:
+                        peers = cells[5].find('div')
                         if peers and peers.get('title'):
                             peers = peers['title'].replace(',', '').split(' | ', 1)
                             seeders = try_int(peers[0].strip('Seeders: '))
@@ -147,7 +148,7 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[4].get_text(strip=True)
+                    torrent_size = cells[3].get_text(strip=True)
                     size = convert_size(torrent_size, units=units) or -1
 
                     item = {
