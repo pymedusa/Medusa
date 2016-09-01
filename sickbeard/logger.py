@@ -104,7 +104,7 @@ def get_loggers(package):
     :return:
     :rtype: list of logging.Logger
     """
-    return [logging.getLogger(modname) for modname in list_modules(package)]
+    return [standard_logger(modname) for modname in list_modules(package)]
 
 
 def read_loglines(log_file=None, modification_time=None, max_lines=None, max_traceback_depth=100,
@@ -529,7 +529,7 @@ class Logger(object):
 
     def __init__(self):
         """Default Constructor."""
-        self.logger = logging.getLogger('sickrage')
+        self.logger = standard_logger('sickrage')
         self.loggers = [self.logger]
         self.log_level = None
         self.log_file = None
@@ -554,12 +554,12 @@ class Logger(object):
 
         # set custom root logger
         for logger in self.loggers:
+            logger.propagate = False
             logger.addFilter(log_filter)
 
             if logger is not self.logger:
                 logger.root = self.logger
                 logger.parent = self.logger
-                logger.propagate = False
 
         # console log handler
         if console_logging:
@@ -700,6 +700,15 @@ class StyleAdapter(logging.LoggerAdapter):
             return getattr(self.logger, name)
 
         return getattr(self, self.adapter_members[name])
+
+    def __setattr__(self, key, value):
+        """Wrapper that delegates to the actual logger.
+
+        :param key:
+        :type key: str
+        :param value:
+        """
+        self.__dict__[key] = value
 
     def process(self, msg, kwargs):
         """Enhance default process to use BraceMessage and remove unsupported keyword args for the actual logger method.
