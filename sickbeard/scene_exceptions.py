@@ -230,20 +230,23 @@ def retrieve_exceptions():
         logger.log('Updated scene exceptions.', logger.INFO)
 
 
-def combine_exceptions(custom_exceptions, *external_exceptions):
+def combine_exceptions(*scene_exceptions):
     """Combine the exceptions from all sources."""
-    other_exceptions = {}
-    for exceptions in external_exceptions:
-        other_exceptions.update(exceptions)
+    ex_dicts = iter(scene_exceptions)
+    combined_ex = {}
 
-    for ex_id in other_exceptions:
-        if ex_id in custom_exceptions:
-            unique_exceptions = [x for x in other_exceptions[ex_id] if x not in custom_exceptions[ex_id]]
-            custom_exceptions[ex_id].extend(unique_exceptions)
-        else:
-            custom_exceptions[ex_id] = other_exceptions[ex_id]
+    for _ in scene_exceptions:
+        current_ex = next(ex_dicts, {})
+        for ex_id in current_ex:
+            if not combined_ex:
+                combined_ex = next(ex_dicts, {})
+            if ex_id in combined_ex:
+                new_ex = [x for x in current_ex[ex_id] if x not in combined_ex[ex_id]]
+                combined_ex[ex_id].extend(new_ex)
+            else:
+                combined_ex[ex_id] = current_ex[ex_id]
 
-    return custom_exceptions
+    return combined_ex
 
 
 def _get_custom_exceptions():
