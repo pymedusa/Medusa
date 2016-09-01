@@ -1,5 +1,5 @@
 {
-  "name": "sickrage",
+  "name": "medusa",
   "version": "4.0.72",
   "private": true,
   "repository": {
@@ -32,6 +32,7 @@
     "load-grunt-tasks": "^3.3.0",
     "mocha": "^2.4.5",
     "snyk": "^1.9.1",
+    "stylelint": "^7.2.0",
     "xo": "^0.16.0"
   },
   "xo": {
@@ -47,5 +48,15 @@
       "SICKRAGE",
       "PNotify"
     ]
+  },
+  "stylelint": {
+    "extends": "./.build/node_modules/stylelint-config-standard",
+    "rules": {
+      "indentation": [ 4, {
+        "ignore": ["block"],
+        "message": "Please use 4 spaces for indentation. Tabs make OmgImAlexis sad.",
+        "severity": "error"
+      } ]
+    }
   }
 }

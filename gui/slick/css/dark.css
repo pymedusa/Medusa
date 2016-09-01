@@ -62,7 +62,9 @@ inc_top.mako
     background: rgb(0, 0, 0) url("../css/lib/images/ui-bg_flat_0_000000_40x100.png") 50% 50% repeat-x;
 }
 
-.ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited {
+.ui-state-default a,
+.ui-state-default a:link,
+.ui-state-default a:visited {
     color: rgb(255, 255, 255);
     text-decoration: none;
 }
@@ -82,7 +84,7 @@ inc_top.mako
     border: 1px solid rgb(17, 17, 17) !important;
 }
 
-.ui-tabs-nav > :not(.ui-tabs-active){
+.ui-tabs-nav > :not(.ui-tabs-active) {
     background: rgb(51, 51, 51);
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
@@ -153,7 +155,7 @@ home.mako
     border-color: rgb(51, 51, 51);
 }
 
-.show-title:after {
+.show-title::after {
     content: "";
     pointer-events: none;
     position: absolute;
@@ -168,7 +170,7 @@ home.mako
     background-image: linear-gradient(to left, rgba(51, 51, 51, 1), rgba(51, 51, 51, 0));
 }
 
-.show-date:after {
+.show-date::after {
     content: "";
     pointer-events: none;
     position: absolute;
@@ -202,14 +204,13 @@ td.tvShow a:hover {
     background-color: rgb(51, 51, 51);
 }
 
-.popover.bottom .arrow:after {
+.popover.bottom .arrow::after {
     border-bottom-color: rgb(51, 51, 51);
 }
 
 /* =======================================================================
 home_addShows.mako
 ========================================================================== */
-
 
 /* =======================================================================
 home_newShow.mako
@@ -228,7 +229,7 @@ home_addExistingShow.mako
 ========================================================================== */
 
 ul#rootDirStaticList li {
-    padding: 4px 5px 4px 5px;
+    padding: 4px 5px;
     margin: 2px;
     list-style: none outside none;
     cursor: pointer;
@@ -309,7 +310,7 @@ ul.tags li {
     color: rgb(0, 0, 0);
 }
 
-.sickbeardTable th{
+.sickbeardTable th {
     color: rgb(255, 255, 255);
     text-align: center;
     background-color: rgb(21, 82, 143);
@@ -349,7 +350,8 @@ td.col-checkbox {
 schedule.mako
 ========================================================================== */
 
-h2.day, h2.network {
+h2.day,
+h2.network {
     margin: 10px 0;
     font-size: 24px;
     line-height: 36px;
@@ -458,7 +460,8 @@ config_postProcessing.mako
     border-spacing: 0;
 }
 
-.Key th, .tableHeader {
+.Key th,
+.tableHeader {
     padding: 3px 9px;
     margin: 0;
     color: rgb(255, 255, 255);
@@ -513,9 +516,6 @@ manage*.mako
 .separator {
     font-size: 90%;
     color: rgb(255, 255, 255);
-}
-
-a.whitelink {
 }
 
 /* =======================================================================
@@ -586,7 +586,8 @@ body {
     }
 }
 
-.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
     color: rgb(255, 255, 255);
     text-decoration: none;
     background-color: rgb(21, 82, 143);
@@ -702,8 +703,8 @@ body {
     box-shadow: none;
 }
 
-@media(min-width:768px){
-    .navbar .nav > li > .dropdown-menu:after {
+@media (min-width:768px) {
+    .navbar .nav > li > .dropdown-menu::after {
         position: absolute;
         top: -6px;
         right: 12px;
@@ -755,7 +756,8 @@ div.stepsguide .disabledstep p {
     border-bottom: 4px solid rgb(17, 120, 179);
 }
 
-div.formpaginate .prev, div.formpaginate .next {
+div.formpaginate .prev,
+div.formpaginate .next {
     padding: 3px 6px;
     color: rgb(255, 255, 255);
     cursor: hand;
@@ -841,11 +843,13 @@ thead.tablesorter-stickyHeader {
 }
 
 /* Zebra Widget - row alternating colors */
-.tablesorter tr.odd, .sickbeardTable tr.odd {
+.tablesorter tr.odd,
+.sickbeardTable tr.odd {
     background-color: rgb(51, 51, 51);
 }
 
-.tablesorter tr.even, .sickbeardTable tr.even {
+.tablesorter tr.even,
+.sickbeardTable tr.even {
     background-color: rgb(46, 46, 46);
 }
 
@@ -879,7 +883,7 @@ thead.tablesorter-stickyHeader {
     filter: alpha(opacity=0);
 }
 
-#showListTable  tbody {
+#showListTable tbody {
     color: rgb(0, 0, 0);
 }
 
@@ -899,7 +903,7 @@ div.token-input-dropdown {
 jquery.confirm.css
 ========================================================================== */
 
-#confirmBox{
+#confirmBox {
     background: rgb(34, 34, 34);
     width: 460px;
     position: fixed;
@@ -938,8 +942,8 @@ bootstrap modal
 }
 
 .modal-header {
-    padding:9px 15px;
-    border-bottom:1px solid rgb(238, 238, 238);
+    padding: 9px 15px;
+    border-bottom: 1px solid rgb(238, 238, 238);
     background-color: rgb(21, 82, 143);
     -webkit-border-top-left-radius: 5px;
     -webkit-border-top-right-radius: 5px;
@@ -962,7 +966,6 @@ bootstrap panel
     background-color: rgb(61, 61, 61) !important;
     color: rgb(255, 255, 255) !important;
 }
-
 
 /* =======================================================================
 new #confirmBox
@@ -988,7 +991,8 @@ new #confirmBox
     border-radius: 0;
 }
 
-.modal-body, .modal-content{
+.modal-body,
+.modal-content{
     background: rgb(34, 34, 34);
 }
 
@@ -1033,7 +1037,7 @@ new #confirmBox
 }
 
 .modal-footer button:last-child {
-    margin-right:0;
+    margin-right: 0;
 }
 
 .modal-footer button.confirm {
