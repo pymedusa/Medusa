@@ -1,7 +1,7 @@
-SICKRAGE.home.displayShow = function() { // eslint-disable-line max-lines
-    if (SICKRAGE.info.fanartBackground) {
+MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
+    if (MEDUSA.info.fanartBackground) {
         $.backstretch('showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
-        $('.backstretch').css('opacity', SICKRAGE.info.fanartBackgroundOpacity).fadeIn(500);
+        $('.backstretch').css('opacity', MEDUSA.info.fanartBackgroundOpacity).fadeIn(500);
     }
 
     $.ajaxEpSearch({

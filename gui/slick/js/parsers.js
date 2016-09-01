@@ -7,7 +7,7 @@ $.tablesorter.addParser({
         if (s.indexOf('Loading...') === 0) {
             return s.replace('Loading...', '000');
         }
-        return (SICKRAGE.info.sortArticle ? (s || '') : (s || '').replace(/^(The|A|An)\s/i, ''));
+        return (MEDUSA.info.sortArticle ? (s || '') : (s || '').replace(/^(The|A|An)\s/i, ''));
     },
     type: 'text'
 });

@@ -1,4 +1,4 @@
-SICKRAGE.addShows.recommendedShows = function() {
+MEDUSA.addShows.recommendedShows = function() {
     // Cleanest way of not showing the black/whitelist, when there isn't a show to show it for
     $.updateBlackWhiteList(undefined);
     $('#recommendedShows').loadRemoteShows(

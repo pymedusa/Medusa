@@ -1,4 +1,4 @@
-SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
+MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
     $('#testGrowl').on('click', function () {
         var growl = {};
         growl.host = $.trim($('#growl_host').val());
@@ -10,7 +10,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#growl_host').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testGrowl-result').html(SICKRAGE.info.loading);
+        $('#testGrowl-result').html(MEDUSA.info.loading);
         $.get('home/testGrowl', {
             host: growl.host,
             password: growl.password
@@ -31,7 +31,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#prowl_api').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testProwl-result').html(SICKRAGE.info.loading);
+        $('#testProwl-result').html(MEDUSA.info.loading);
         $.get('home/testProwl', {
             prowl_api: prowl.api, // eslint-disable-line camelcase
             prowl_priority: prowl.priority // eslint-disable-line camelcase
@@ -53,7 +53,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#kodi_host').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testKODI-result').html(SICKRAGE.info.loading);
+        $('#testKODI-result').html(MEDUSA.info.loading);
         $.get('home/testKODI', {
             host: kodi.host,
             username: kodi.username,
@@ -77,7 +77,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#plex_client_host').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testPHT-result').html(SICKRAGE.info.loading);
+        $('#testPHT-result').html(MEDUSA.info.loading);
         $.get('home/testPHT', {
             host: plex.client.host,
             username: plex.client.username,
@@ -102,7 +102,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#plex_server_host').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testPMS-result').html(SICKRAGE.info.loading);
+        $('#testPMS-result').html(MEDUSA.info.loading);
         $.get('home/testPMS', {
             host: plex.server.host,
             username: plex.server.username,
@@ -126,7 +126,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#emby_host,#emby_apikey').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testEMBY-result').html(SICKRAGE.info.loading);
+        $('#testEMBY-result').html(MEDUSA.info.loading);
         $.get('home/testEMBY', {
             host: emby.host,
             emby_apikey: emby.apikey // eslint-disable-line camelcase
@@ -146,7 +146,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#boxcar2_accesstoken').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testBoxcar2-result').html(SICKRAGE.info.loading);
+        $('#testBoxcar2-result').html(MEDUSA.info.loading);
         $.get('home/testBoxcar2', {
             accesstoken: boxcar2.accesstoken
         }).done(function (data) {
@@ -167,7 +167,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#pushover_userkey,#pushover_apikey').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testPushover-result').html(SICKRAGE.info.loading);
+        $('#testPushover-result').html(MEDUSA.info.loading);
         $.get('home/testPushover', {
             userKey: pushover.userkey,
             apiKey: pushover.apikey
@@ -178,14 +178,14 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
     });
 
     $('#testLibnotify').on('click', function() {
-        $('#testLibnotify-result').html(SICKRAGE.info.loading);
+        $('#testLibnotify-result').html(MEDUSA.info.loading);
         $.get('home/testLibnotify', function (data) {
             $('#testLibnotify-result').html(data);
         });
     });
 
     $('#twitterStep1').on('click', function() {
-        $('#testTwitter-result').html(SICKRAGE.info.loading);
+        $('#testTwitter-result').html(MEDUSA.info.loading);
         $.get('home/twitterStep1', function (data) {
             window.open(data);
         }).done(function() {
@@ -198,7 +198,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         twitter.key = $.trim($('#twitter_key').val());
         $('#twitter_key').addRemoveWarningClass(twitter.key);
         if (twitter.key) {
-            $('#testTwitter-result').html(SICKRAGE.info.loading);
+            $('#testTwitter-result').html(MEDUSA.info.loading);
             $.get('home/twitterStep2', {
                 key: twitter.key
             }, function(data) {
@@ -217,7 +217,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
     $('#settingsNMJ').on('click', function() {
         var nmj = {};
         if ($('#nmj_host').val()) {
-            $('#testNMJ-result').html(SICKRAGE.info.loading);
+            $('#testNMJ-result').html(MEDUSA.info.loading);
             nmj.host = $('#nmj_host').val();
 
             $.get('home/settingsNMJ', {
@@ -256,7 +256,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         if (nmj.host) {
             $('#nmj_host').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testNMJ-result').html(SICKRAGE.info.loading);
+            $('#testNMJ-result').html(MEDUSA.info.loading);
             $.get('home/testNMJ', {
                 host: nmj.host,
                 database: nmj.database,
@@ -273,7 +273,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
     $('#settingsNMJv2').on('click', function() {
         var nmjv2 = {};
         if ($('#nmjv2_host').val()) {
-            $('#testNMJv2-result').html(SICKRAGE.info.loading);
+            $('#testNMJv2-result').html(MEDUSA.info.loading);
             nmjv2.host = $('#nmjv2_host').val();
             nmjv2.dbloc = '';
             var radios = document.getElementsByName('nmjv2_dbloc');
@@ -314,7 +314,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         if (nmjv2.host) {
             $('#nmjv2_host').removeClass('warning');
             $(this).prop('disabled', true);
-            $('#testNMJv2-result').html(SICKRAGE.info.loading);
+            $('#testNMJv2-result').html(MEDUSA.info.loading);
             $.get('home/testNMJv2', {
                 host: nmjv2.host
             }).done(function (data) {
@@ -346,7 +346,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#freemobile_id,#freemobile_apikey').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testFreeMobile-result').html(SICKRAGE.info.loading);
+        $('#testFreeMobile-result').html(MEDUSA.info.loading);
         $.get('home/testFreeMobile', {
             freemobile_id: freemobile.id, // eslint-disable-line camelcase
             freemobile_apikey: freemobile.apikey // eslint-disable-line camelcase
@@ -368,7 +368,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#telegram_id,#telegram_apikey').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testTelegram-result').html(SICKRAGE.info.loading);
+        $('#testTelegram-result').html(MEDUSA.info.loading);
         $.get('home/testTelegram', {
             telegram_id: telegram.id, // eslint-disable-line camelcase
             telegram_apikey: telegram.apikey // eslint-disable-line camelcase
@@ -426,7 +426,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         $('#trakt_username').removeClass('warning');
         $('#trakt_blacklist_name').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testTrakt-result').html(SICKRAGE.info.loading);
+        $('#testTrakt-result').html(MEDUSA.info.loading);
         $.get('home/testTrakt', {
             username: trakt.username,
             blacklist_name: trakt.trendingBlacklist // eslint-disable-line camelcase
@@ -437,7 +437,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
     });
 
     $('#forceSync').on('click', function () {
-        $('#testTrakt-result').html(SICKRAGE.info.loading);
+        $('#testTrakt-result').html(MEDUSA.info.loading);
         $.getJSON('home/forceTraktSync', function(data) {
             $('#testTrakt-result').html(data.result);
         });
@@ -454,7 +454,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         var err;
         var to;
         status = $('#testEmail-result');
-        status.html(SICKRAGE.info.loading);
+        status.html(MEDUSA.info.loading);
         host = $('#email_host').val();
         host = host.length > 0 ? host : null;
         port = $('#email_port').val();
@@ -507,7 +507,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#nma_api').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testNMA-result').html(SICKRAGE.info.loading);
+        $('#testNMA-result').html(MEDUSA.info.loading);
         $.get('home/testNMA', {
             nma_api: nma.api, // eslint-disable-line camelcase
             nma_priority: nma.priority // eslint-disable-line camelcase
@@ -527,7 +527,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#pushalot_authorizationtoken').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testPushalot-result').html(SICKRAGE.info.loading);
+        $('#testPushalot-result').html(MEDUSA.info.loading);
         $.get('home/testPushalot', {
             authorizationToken: pushalot.authToken
         }).done(function (data) {
@@ -546,7 +546,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         }
         $('#pushbullet_api').removeClass('warning');
         $(this).prop('disabled', true);
-        $('#testPushbullet-result').html(SICKRAGE.info.loading);
+        $('#testPushbullet-result').html(MEDUSA.info.loading);
         $.get('home/testPushbullet', {
             api: pushbullet.api
         }).done(function (data) {
@@ -560,7 +560,7 @@ SICKRAGE.config.notifications = function() { // eslint-disable-line max-lines
         pushbullet.api = $('#pushbullet_api').val();
 
         if (msg) {
-            $('#testPushbullet-result').html(SICKRAGE.info.loading);
+            $('#testPushbullet-result').html(MEDUSA.info.loading);
         }
 
         if (!pushbullet.api) {

@@ -1,11 +1,11 @@
-SICKRAGE.schedule.index = function() {
+MEDUSA.schedule.index = function() {
     if ($.isMeta('comingEpsLayout', ['list'])) {
         var sortCodes = {
             date: 0,
             show: 2,
             network: 5
         };
-        var sort = SICKRAGE.info.comingEpsSort;
+        var sort = MEDUSA.info.comingEpsSort;
         var sortList = (sort in sortCodes) ? [[sortCodes[sort], 0]] : [[0, 0]];
 
         $('#showListTable:has(tbody tr)').tablesorter({
@@ -39,7 +39,7 @@ SICKRAGE.schedule.index = function() {
     if ($.isMeta('comingEpsLayout', ['banner', 'poster'])) {
         $.ajaxEpSearch({
             size: 16,
-            loadingImage: 'loading16' + SICKRAGE.info.themeSpinner + '.gif'
+            loadingImage: 'loading16' + MEDUSA.info.themeSpinner + '.gif'
         });
         $('.ep_summary').hide();
         $('.ep_summaryTrigger').on('click', function() {

@@ -1,4 +1,4 @@
-SICKRAGE.manage.subtitleMissed = function() {
+MEDUSA.manage.subtitleMissed = function() {
     $('.allCheck').on('click', function() {
         var indexerId = $(this).attr('id').split('-')[1];
         $('.' + indexerId + '-epcheck').prop('checked', $(this).prop('checked'));

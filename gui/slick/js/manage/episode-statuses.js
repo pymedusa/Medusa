@@ -1,4 +1,4 @@
-SICKRAGE.manage.episodeStatuses = function() {
+MEDUSA.manage.episodeStatuses = function() {
     $('.allCheck').on('click', function() {
         var indexerId = $(this).attr('id').split('-')[1];
         $('.' + indexerId + '-epcheck').prop('checked', $(this).prop('checked'));

@@ -1,4 +1,4 @@
-SICKRAGE.home.index = function() {
+MEDUSA.home.index = function() {
     // Resets the tables sorting, needed as we only use a single call for both tables in tablesorter
     $('.resetsorting').on('click', function() {
         $('table').trigger('filterReset');
@@ -182,8 +182,8 @@ SICKRAGE.home.index = function() {
         $('.loading-spinner').hide();
         $('.show-grid').show().isotope({
             itemSelector: '.show-container',
-            sortBy: SICKRAGE.info.posterSortby,
-            sortAscending: SICKRAGE.info.posterSortdir,
+            sortBy: MEDUSA.info.posterSortby,
+            sortAscending: MEDUSA.info.posterSortdir,
             layoutMode: 'masonry',
             masonry: {
                 isFitWidth: true
@@ -191,7 +191,7 @@ SICKRAGE.home.index = function() {
             getSortData: {
                 name: function (itemElem) {
                     var name = $(itemElem).attr('data-name') || '';
-                    return (SICKRAGE.info.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
+                    return (MEDUSA.info.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
                 },
                 network: '[data-network]',
                 date: function (itemElem) {
@@ -289,7 +289,7 @@ SICKRAGE.home.index = function() {
     }).on('shown.bs.popover', function () { // bootstrap popover event triggered when the popover opens
         // call this function to copy the column selection code into the popover
         $.tablesorter.columnSelector.attachTo($('#showListTableShows'), '#popover-target');
-        if (SICKRAGE.info.animeSplitHome) {
+        if (MEDUSA.info.animeSplitHome) {
             $.tablesorter.columnSelector.attachTo($('#showListTableAnime'), '#popover-target');
         }
     });

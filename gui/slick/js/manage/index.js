@@ -1,4 +1,4 @@
-SICKRAGE.manage.index = function() {
+MEDUSA.manage.index = function() {
     $('.resetsorting').on('click', function() {
         $('table').trigger('filterReset');
     });

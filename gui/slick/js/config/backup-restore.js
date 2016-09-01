@@ -1,7 +1,7 @@
-SICKRAGE.config.backupRestore = function() {
+MEDUSA.config.backupRestore = function() {
     $('#Backup').on('click', function() {
         $('#Backup').prop('disabled', true);
-        $('#Backup-result').html(SICKRAGE.info.loading);
+        $('#Backup-result').html(MEDUSA.info.loading);
         var backupDir = $('#backupDir').val();
         $.get('config/backuprestore/backup', {
             backupDir: backupDir
@@ -12,7 +12,7 @@ SICKRAGE.config.backupRestore = function() {
     });
     $('#Restore').on('click', function() {
         $('#Restore').prop('disabled', true);
-        $('#Restore-result').html(SICKRAGE.info.loading);
+        $('#Restore-result').html(MEDUSA.info.loading);
         var backupFile = $('#backupFile').val();
         $.get('config/backuprestore/restore', {
             backupFile: backupFile

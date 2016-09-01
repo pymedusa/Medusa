@@ -1,4 +1,4 @@
-SICKRAGE.addShows.trendingShows = function() {
+MEDUSA.addShows.trendingShows = function() {
     // Cleanest way of not showing the black/whitelist, when there isn't a show to show it for
     $.updateBlackWhiteList(undefined);
     $('#trendingShows').loadRemoteShows(

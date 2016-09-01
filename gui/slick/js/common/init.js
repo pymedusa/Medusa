@@ -1,4 +1,4 @@
-SICKRAGE.common.init = function() {
+MEDUSA.common.init = function() {
     $.confirm.options = {
         confirmButton: 'Yes',
         cancelButton: 'Cancel',
@@ -88,7 +88,7 @@ SICKRAGE.common.init = function() {
         });
     }
 
-    if (SICKRAGE.info.fuzzyDating) {
+    if (MEDUSA.info.fuzzyDating) {
         $.timeago.settings.allowFuture = true;
         $.timeago.settings.strings = {
             prefixAgo: null,

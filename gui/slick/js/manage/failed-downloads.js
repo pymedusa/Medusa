@@ -1,4 +1,4 @@
-SICKRAGE.manage.failedDownloads = function() {
+MEDUSA.manage.failedDownloads = function() {
     $('#failedTable:has(tbody tr)').tablesorter({
         widgets: ['zebra'],
         sortList: [[0, 0]],
