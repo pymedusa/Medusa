@@ -254,6 +254,7 @@ TORRENT_METHOD = None
 TORRENT_DIR = None
 DOWNLOAD_PROPERS = False
 CHECK_PROPERS_INTERVAL = None
+DELETE_NON_PROPERS = False
 ALLOW_HIGH_PRIORITY = False
 SAB_FORCED = False
 RANDOMIZE_PROVIDERS = False
@@ -623,7 +624,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
     with INIT_LOCK:
         # pylint: disable=global-statement
         global BRANCH, GIT_RESET, GIT_RESET_BRANCHES, GIT_REMOTE, GIT_REMOTE_URL, CUR_COMMIT_HASH, CUR_COMMIT_BRANCH, ACTUAL_LOG_DIR, LOG_DIR, LOG_NR, LOG_SIZE, WEB_PORT, WEB_LOG, ENCRYPTION_VERSION, ENCRYPTION_SECRET, WEB_ROOT, WEB_USERNAME, WEB_PASSWORD, WEB_HOST, WEB_IPV6, WEB_COOKIE_SECRET, WEB_USE_GZIP, API_KEY, ENABLE_HTTPS, HTTPS_CERT, HTTPS_KEY, \
-            HANDLE_REVERSE_PROXY, USE_NZBS, USE_TORRENTS, NZB_METHOD, NZB_DIR, DOWNLOAD_PROPERS, RANDOMIZE_PROVIDERS, CHECK_PROPERS_INTERVAL, ALLOW_HIGH_PRIORITY, SAB_FORCED, TORRENT_METHOD, NOTIFY_ON_LOGIN, SUBLIMINAL_LOG, PRIVACY_LEVEL, \
+            HANDLE_REVERSE_PROXY, USE_NZBS, USE_TORRENTS, NZB_METHOD, NZB_DIR, DOWNLOAD_PROPERS, DELETE_NON_PROPERS, RANDOMIZE_PROVIDERS, CHECK_PROPERS_INTERVAL, ALLOW_HIGH_PRIORITY, SAB_FORCED, TORRENT_METHOD, NOTIFY_ON_LOGIN, SUBLIMINAL_LOG, PRIVACY_LEVEL, \
             SAB_USERNAME, SAB_PASSWORD, SAB_APIKEY, SAB_CATEGORY, SAB_CATEGORY_BACKLOG, SAB_CATEGORY_ANIME, SAB_CATEGORY_ANIME_BACKLOG, SAB_HOST, \
             NZBGET_USERNAME, NZBGET_PASSWORD, NZBGET_CATEGORY, NZBGET_CATEGORY_BACKLOG, NZBGET_CATEGORY_ANIME, NZBGET_CATEGORY_ANIME_BACKLOG, NZBGET_PRIORITY, NZBGET_HOST, NZBGET_USE_HTTPS, backlogSearchScheduler, \
             TORRENT_USERNAME, TORRENT_PASSWORD, TORRENT_HOST, TORRENT_PATH, TORRENT_SEED_TIME, TORRENT_PAUSED, TORRENT_HIGH_BANDWIDTH, TORRENT_LABEL, TORRENT_LABEL_ANIME, TORRENT_VERIFY_CERT, TORRENT_RPCURL, TORRENT_AUTH_TYPE, \
@@ -916,6 +917,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             TORRENT_METHOD = 'blackhole'
 
         DOWNLOAD_PROPERS = bool(check_setting_int(CFG, 'General', 'download_propers', 1))
+        DELETE_NON_PROPERS = bool(check_setting_int(CFG, 'General', 'delete_non_propers', 0))
         CHECK_PROPERS_INTERVAL = check_setting_str(CFG, 'General', 'check_propers_interval', '')
         if CHECK_PROPERS_INTERVAL not in ('15m', '45m', '90m', '4h', 'daily'):
             CHECK_PROPERS_INTERVAL = 'daily'
@@ -1673,6 +1675,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['update_frequency'] = int(UPDATE_FREQUENCY)
     new_config['General']['showupdate_hour'] = int(SHOWUPDATE_HOUR)
     new_config['General']['download_propers'] = int(DOWNLOAD_PROPERS)
+    new_config['General']['delete_non_propers'] = int(DELETE_NON_PROPERS)
     new_config['General']['randomize_providers'] = int(RANDOMIZE_PROVIDERS)
     new_config['General']['check_propers_interval'] = CHECK_PROPERS_INTERVAL
     new_config['General']['allow_high_priority'] = int(ALLOW_HIGH_PRIORITY)
