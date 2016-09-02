@@ -678,7 +678,7 @@ class QueueItemUpdate(ShowQueueItem):
 
         # have to save show before reading episodes from db
         try:
-            logger.log(u'{id}: Saving new IMDb show info to database'.format(id=self.show.indexerid))
+            logger.log(u'{id}: Saving new IMDb show info to database'.format(id=self.show.indexerid), logger.DEBUG)
             self.show.save_to_db()
         except Exception as e:
             logger.log(u"{id}: Error saving new IMDb show info to database: {error_msg}".format
@@ -706,27 +706,28 @@ class QueueItemUpdate(ShowQueueItem):
             # for each ep we found on the Indexer delete it from the DB list
             for cur_season in IndexerEpList:
                 for cur_episode in IndexerEpList[cur_season]:
-                    curEp = self.show.get_episode(cur_season, cur_episode)
-                    curEp.save_to_db()
-
                     if cur_season in DBEpList and cur_episode in DBEpList[cur_season]:
                         del DBEpList[cur_season][cur_episode]
+                    else:
+                        # Create the episode objectes for episodes that are not going to be deleted
+                        curEp = self.show.get_episode(cur_season, cur_episode)
 
             # remaining episodes in the DB list are not on the indexer, just delete them from the DB
             for cur_season in DBEpList:
                 for cur_episode in DBEpList[cur_season]:
                     logger.log(u'{id}: Permanently deleting episode {show} {ep} from the database'.format
                                (id=self.show.indexerid, show=self.show.name, ep=episode_num(cur_season, cur_episode)),
-                               logger.INFO)
+                               logger.DEBUG)
+                    # Create the ep object only because Im going to delete it
                     curEp = self.show.get_episode(cur_season, cur_episode)
                     try:
                         curEp.delete_episode()
                     except EpisodeDeletedException:
                         pass
 
-        # save show again, in case episodes have changed
+        # Save only after all changes were applied
         try:
-            logger.log(u'{id}: Saving all updated show info to database'.format(id=self.show.indexerid))
+            logger.log(u'{id}: Saving all updated show info to database'.format(id=self.show.indexerid), logger.DEBUG)
             self.show.save_to_db()
         except Exception as e:
             logger.log(u'{id}: Error saving all updated show info to database: {error_msg}'.format
