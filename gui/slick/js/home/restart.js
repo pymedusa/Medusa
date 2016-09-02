@@ -1,4 +1,4 @@
-SICKRAGE.home.restart = function() {
+MEDUSA.home.restart = function() {
     var currentPid = $('.messages').attr('current-pid');
     var defaultPage = $('.messages').attr('default-page');
     var checkIsAlive = setInterval(function() {

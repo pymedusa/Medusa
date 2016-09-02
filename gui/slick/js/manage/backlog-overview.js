@@ -1,4 +1,4 @@
-SICKRAGE.manage.backlogOverview = function() {
+MEDUSA.manage.backlogOverview = function() {
     $('#pickShow').on('change', function() {
         var id = $(this).val();
         if (id) {

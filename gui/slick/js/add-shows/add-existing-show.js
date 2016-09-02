@@ -1,4 +1,4 @@
-SICKRAGE.addShows.addExistingShow = function() {
+MEDUSA.addShows.addExistingShow = function() {
     $('#tableDiv').on('click', '#checkAll', function() {
         var seasCheck = this;
         $('.dirCheck').each(function() {

@@ -1,4 +1,4 @@
-SICKRAGE.history.index = function() {
+MEDUSA.history.index = function() {
     $('#historyTable:has(tbody tr)').tablesorter({
         widgets: ['zebra', 'filter'],
         sortList: [[0, 1]],

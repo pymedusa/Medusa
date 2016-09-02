@@ -1,3 +1,3 @@
-SICKRAGE.addShows.popularShows = function() {
+MEDUSA.addShows.popularShows = function() {
     $.initRemoteShowGrid();
 };

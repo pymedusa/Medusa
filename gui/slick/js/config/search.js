@@ -1,4 +1,4 @@
-SICKRAGE.config.search = function() {
+MEDUSA.config.search = function() {
     $('#config-components').tabs();
     $('#nzb_dir').fileBrowser({title: 'Select .nzb black hole/watch location'});
     $('#torrent_dir').fileBrowser({title: 'Select .torrent black hole/watch location'});
@@ -172,7 +172,7 @@ SICKRAGE.config.search = function() {
 
     $('#testSABnzbd').on('click', function() {
         var sab = {};
-        $('#testSABnzbd_result').html(SICKRAGE.info.loading);
+        $('#testSABnzbd_result').html(MEDUSA.info.loading);
         sab.host = $('#sab_host').val();
         sab.username = $('#sab_username').val();
         sab.password = $('#sab_password').val();
@@ -194,7 +194,7 @@ SICKRAGE.config.search = function() {
 
     $('#test_torrent').on('click', function() {
         var torrent = {};
-        $('#test_torrent_result').html(SICKRAGE.info.loading);
+        $('#test_torrent_result').html(MEDUSA.info.loading);
         torrent.method = $('#torrent_method :selected').val();
         torrent.host = $('#torrent_host').val();
         torrent.username = $('#torrent_username').val();

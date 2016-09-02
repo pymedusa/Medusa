@@ -1,4 +1,4 @@
-SICKRAGE.home.status = function() {
+MEDUSA.home.status = function() {
     $('#schedulerStatusTable').tablesorter({
         widgets: ['saveSort', 'zebra'],
         textExtraction: {

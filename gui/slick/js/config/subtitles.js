@@ -1,4 +1,4 @@
-SICKRAGE.config.subtitles = function() {
+MEDUSA.config.subtitles = function() {
     $.fn.showHideServices = function() {
         $('.serviceDiv').each(function() {
             var serviceName = $(this).attr('id');
@@ -18,7 +18,7 @@ SICKRAGE.config.subtitles = function() {
         }
 
         if ($('#service_order_list > #' + id).length === 0 && showService !== false) {
-            var toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="service_enabler" CHECKED> <a href="' + SICKRAGE.info.anonRedirect + url + '" class="imgLink" target="_new"><img src="images/services/newznab.gif" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>';
+            var toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="service_enabler" CHECKED> <a href="' + MEDUSA.info.anonRedirect + url + '" class="imgLink" target="_new"><img src="images/services/newznab.gif" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>';
 
             $('#service_order_list').append(toAdd);
             $('#service_order_list').sortable('refresh');

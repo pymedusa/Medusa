@@ -1,4 +1,4 @@
-SICKRAGE.manage.init = function() {
+MEDUSA.manage.init = function() {
     $.makeEpisodeRow = function(indexerId, season, episode, name, checked) { // eslint-disable-line max-params
         var row = '';
         row += ' <tr class="' + $('#row_class').val() + ' show-' + indexerId + '">';

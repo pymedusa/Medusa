@@ -6,7 +6,7 @@ var webRoot = $('base').attr('href');
 var apiRoot = $('body').attr('api-root');
 var apiKey = $('body').attr('api-key');
 
-var SICKRAGE = {
+var MEDUSA = {
     common: {},
     config: {},
     home: {},
@@ -19,7 +19,7 @@ var SICKRAGE = {
 
 var UTIL = {
     exec: function(controller, action) {
-        var ns = SICKRAGE;
+        var ns = MEDUSA;
         action = (action === undefined) ? 'init' : action;
 
         if (controller !== '' && ns[controller] && typeof ns[controller][action] === 'function') {
@@ -45,7 +45,7 @@ $.extend({
                 return m[1].toUpperCase();
             });
         }
-        return (reg).test(SICKRAGE.info[pyVar]);
+        return (reg).test(MEDUSA.info[pyVar]);
     }
 });
 
@@ -72,9 +72,9 @@ $.ajax({
     dataType: 'json'
 }).done(function(data) {
     if (data.status === 200) {
-        SICKRAGE.info = data.data;
-        SICKRAGE.info.themeSpinner = SICKRAGE.info.themeName === 'dark' ? '-dark' : '';
-        SICKRAGE.info.loading = '<img src="images/loading16' + SICKRAGE.info.themeSpinner + '.gif" height="16" width="16" />';
+        MEDUSA.info = data.data;
+        MEDUSA.info.themeSpinner = MEDUSA.info.themeName === 'dark' ? '-dark' : '';
+        MEDUSA.info.loading = '<img src="images/loading16' + MEDUSA.info.themeSpinner + '.gif" height="16" width="16" />';
 
         if (navigator.userAgent.indexOf('PhantomJS') === -1) {
             $(document).ready(UTIL.init);

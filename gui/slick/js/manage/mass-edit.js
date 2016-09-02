@@ -1,3 +1,3 @@
-SICKRAGE.manage.massEdit = function() {
+MEDUSA.manage.massEdit = function() {
     $('#location').fileBrowser({title: 'Select Show Location'});
 };

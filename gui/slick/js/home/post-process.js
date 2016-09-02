@@ -1,4 +1,4 @@
-SICKRAGE.home.postProcess = function() {
+MEDUSA.home.postProcess = function() {
     $('#episodeDir').fileBrowser({
         title: 'Select Unprocessed Episode Folder',
         key: 'postprocessPath'

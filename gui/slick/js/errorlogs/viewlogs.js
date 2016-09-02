@@ -1,4 +1,4 @@
-SICKRAGE.errorlogs.viewlogs = function() {
+MEDUSA.errorlogs.viewlogs = function() {
     $('#min_level,#log_filter,#log_search,#log_period').on('keyup change', _.debounce(function() { // eslint-disable-line no-undef
         $('#min_level').prop('disabled', true);
         $('#log_filter').prop('disabled', true);
