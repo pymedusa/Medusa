@@ -206,7 +206,7 @@ $(document).ready(function () {
             return false;
         }
 
-        $('.epSearch').click(function(event) {
+        $('.epSearch').on('click', function(event) {
             event.preventDefault();
 
             // Check if we have disabled the click
@@ -244,12 +244,12 @@ $(document).ready(function () {
             }
         });
 
-        $('#forcedSearchModalFailed .btn').click(function() {
+        $('#forcedSearchModalFailed .btn').on('click', function() {
             failedDownload = ($(this).text().toLowerCase() === 'yes');
             $('#forcedSearchModalQuality').modal('show');
         });
 
-        $('#forcedSearchModalQuality .btn').click(function() {
+        $('#forcedSearchModalQuality .btn').on('click', function() {
             qualityDownload = ($(this).text().toLowerCase() === 'yes');
             forcedSearch();
         });

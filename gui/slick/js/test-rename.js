@@ -11,7 +11,7 @@ $(document).ready(function() {
         });
     });
 
-    $('.seasonCheck').click(function() {
+    $('.seasonCheck').on('click', function() {
         var seasCheck = this;
         var seasNo = $(seasCheck).attr('id');
 
@@ -24,7 +24,7 @@ $(document).ready(function() {
         });
     });
 
-    $('input[type=submit]').click(function() {
+    $('input[type=submit]').on('click', function() {
         var epArr = [];
 
         $('.epCheck').each(function() {
