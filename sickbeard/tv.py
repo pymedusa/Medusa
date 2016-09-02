@@ -2237,7 +2237,7 @@ class TVEpisode(TVObject):
         self.__create_thumbnail()
 
         if self.check_for_meta_files():
-            logger.log(u'{id}: Metadata changes to database'.format(id=self.show.indexerid))
+            logger.log(u'{id}: Saving metadata changes to database'.format(id=self.show.indexerid))
             self.save_to_db()
 
     def __create_nfo(self):
