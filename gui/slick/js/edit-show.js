@@ -14,7 +14,7 @@ $('#location').fileBrowser({
     title: 'Select Show Location'
 });
 
-$('#submit').click(function() {
+$('#submit').on('click', function() {
     var allExceptions = [];
 
     $('#exceptions_list option').each(function() {
@@ -27,7 +27,7 @@ $('#submit').click(function() {
         generateBlackWhiteList(); // eslint-disable-line no-undef
     }
 });
-$('#addSceneName').click(function() {
+$('#addSceneName').on('click', function() {
     var sceneEx = $('#SceneName').val();
     var option = $('<option>');
     allExceptions = [];
@@ -49,7 +49,7 @@ $('#addSceneName').click(function() {
     return option.appendTo('#exceptions_list');
 });
 
-$('#removeSceneName').click(function() {
+$('#removeSceneName').on('click', function() {
     $('#exceptions_list option:selected').remove();
 
     $(this).toggleSceneException();
