@@ -1180,20 +1180,20 @@ def request_defaults(kwargs):
     return hooks, cookies, verify, proxies
 
 
-def prepare_cf_req(url, prepared_request):
+def prepare_cf_req(session, request):
     logger.debug(u'CloudFlare protection detected, trying to bypass it')
 
     try:
-        tokens, user_agent = cfscrape.get_tokens(url)
-        if hasattr(prepared_request, 'cookies'):
-            prepared_request.cookies.update(tokens)
+        tokens, user_agent = cfscrape.get_tokens(request.url)
+        if request.cookies:
+            request.cookies.update(tokens)
         else:
-            prepared_request.cookies = tokens
-        if hasattr(prepared_request, 'headers'):
-            prepared_request.headers.update({u'User-Agent': user_agent})
+            request.cookies = tokens
+        if request.headers:
+            request.headers.update({u'User-Agent': user_agent})
         else:
-            prepared_request.headers = {u'User-Agent': user_agent}
-        return prepared_request
+            request.headers = {u'User-Agent': user_agent}
+        return session.prepare_request(request)
     except (ValueError, AttributeError) as error:
         logger.warning(u"Couldn't bypass CloudFlare's anti-bot protection. Error: {err_msg}", err_msg=error)
 
@@ -1215,7 +1215,7 @@ def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=N
         if not resp.ok:
             # Try to bypass CloudFlare's anti-bot protection
             if resp.status_code == 503 and resp.headers.get('server') == u'cloudflare-nginx':
-                cf_prepped = prepare_cf_req(url, prepped)
+                cf_prepped = prepare_cf_req(session, req)
                 if cf_prepped:
                     cf_resp = session.send(cf_prepped, stream=stream, verify=verify, proxies=proxies,
                                            timeout=timeout, allow_redirects=True)
