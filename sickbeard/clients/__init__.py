@@ -16,42 +16,34 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+"""Clients module."""
 
 from __future__ import unicode_literals
 
+
 _clients = [
-    'utorrent',
-    'transmission',
     'deluge',
     'deluged',
     'download_station',
-    'rtorrent',
+    'mlnet',
     'qbittorrent',
-    'mlnet'
+    'rtorrent',
+    'transmission',
+    'utorrent',
 ]
-
-default_host = {
-    'utorrent': 'http://localhost:8000',
-    'transmission': 'http://localhost:9091',
-    'deluge': 'http://localhost:8112',
-    'deluged': 'scgi://localhost:58846',
-    'download_station': 'http://localhost:5000',
-    'rtorrent': 'scgi://localhost:5000',
-    'qbittorrent': 'http://localhost:8080',
-    'mlnet': 'http://localhost:4080'
-}
 
 
 def get_client_module(name):
-    name = name.lower()
-    prefix = 'sickbeard.clients.'
-
-    return __import__('{prefix}{name}_client'.format
-                      (prefix=prefix, name=name), fromlist=_clients)
+    """Import the client module for the given name."""
+    return __import__('{prefix}.{name}_client'.format(prefix=__name__, name=name.lower()), fromlist=_clients)
 
 
-def get_client_instance(name):
-    module = get_client_module(name)
-    class_name = module.api.__class__.__name__
+def get_client_class(name):
+    """Return the client API class for the given name.
 
-    return getattr(module, class_name)
+    :param name:
+    :type name: string
+    :return:
+    :rtype: class
+    """
+    return get_client_module(name).api

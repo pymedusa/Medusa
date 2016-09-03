@@ -1,32 +1,44 @@
 # coding=utf-8
+"""Base module for all torrent clients."""
 
 from __future__ import unicode_literals
 
 import re
 import time
-from hashlib import sha1
-from base64 import b16encode, b32decode
 import traceback
 
-from six.moves.http_cookiejar import CookieJar
-import requests
-from bencode import bencode, bdecode
+from base64 import b16encode, b32decode
+from hashlib import sha1
+from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
-
+import requests
 import sickbeard
-from sickbeard import logger, helpers, db
 from sickrage.helper.common import http_code_description
+from six.moves.http_cookiejar import CookieJar
+
+from .. import db, helpers, logger
 
 
 class GenericClient(object):
-    def __init__(self, name, host=None, username=None, password=None):
+    """Base class for all torrent clients."""
 
+    def __init__(self, name, host=None, username=None, password=None):
+        """Constructor.
+
+        :param name:
+        :type name: string
+        :param host:
+        :type host: string
+        :param username:
+        :type username: string
+        :param password:
+        :type password: string
+        """
         self.name = name
         self.username = sickbeard.TORRENT_USERNAME if username is None else username
         self.password = sickbeard.TORRENT_PASSWORD if password is None else password
         self.host = sickbeard.TORRENT_HOST if host is None else host
         self.rpcurl = sickbeard.TORRENT_RPCURL
-
         self.url = None
         self.response = None
         self.auth = None
@@ -88,65 +100,83 @@ class GenericClient(object):
 
         return True
 
-    def _get_auth(self):  # pylint:disable=no-self-use
-        """
-        This should be overridden and should return the auth_id needed for the client
-        """
-        return None
+    def _get_auth(self):
+        """Return the auth_id needed for the client."""
+        raise NotImplementedError
 
-    def _add_torrent_uri(self, result):  # pylint:disable=unused-argument, no-self-use
-        """
-        This should be overridden should return the True/False from the client
-        when a torrent is added via url (magnet or .torrent link)
-        """
-        return False
+    def _add_torrent_uri(self, result):
+        """Return the True/False from the client when a torrent is added via url (magnet or .torrent link).
 
-    def _add_torrent_file(self, result):  # pylint:disable=unused-argument, no-self-use
+        :param result:
+        :type result: sickbeard.classes.SearchResult
         """
-        This should be overridden should return the True/False from the client
-        when a torrent is added via result.content (only .torrent file)
-        """
-        return False
+        raise NotImplementedError
 
-    def _set_torrent_label(self, result):  # pylint:disable=unused-argument, no-self-use
+    def _add_torrent_file(self, result):
+        """Return the True/False from the client when a torrent is added via result.content (only .torrent file).
+
+        :param result:
+        :type result: sickbeard.classes.SearchResult
         """
-        This should be overridden should return the True/False from the client
-        when a torrent is set with label
+        raise NotImplementedError
+
+    def _set_torrent_label(self, result):
+        """Return the True/False from the client when a torrent is set with label.
+
+        :param result:
+        :type result: sickbeard.classes.SearchResult
+        :return:
+        :rtype: bool
         """
         return True
 
-    def _set_torrent_ratio(self, result):  # pylint:disable=unused-argument, no-self-use
-        """
-        This should be overridden should return the True/False from the client
-        when a torrent is set with ratio
+    def _set_torrent_ratio(self, result):
+        """Return the True/False from the client when a torrent is set with ratio.
+
+        :param result:
+        :type result: sickbeard.classes.SearchResult
+        :return:
+        :rtype: bool
         """
         return True
 
-    def _set_torrent_seed_time(self, result):  # pylint:disable=unused-argument, no-self-use
-        """
-        This should be overridden should return the True/False from the client
-        when a torrent is set with a seed time
+    def _set_torrent_seed_time(self, result):
+        """Return the True/False from the client when a torrent is set with a seed time.
+
+        :param result:
+        :type result: sickbeard.classes.SearchResult
+        :return:
+        :rtype: bool
         """
         return True
 
-    def _set_torrent_priority(self, result):  # pylint:disable=unused-argument, no-self-use
-        """
-        This should be overridden should return the True/False from the client
-        when a torrent is set with result.priority (-1 = low, 0 = normal, 1 = high)
+    def _set_torrent_priority(self, result):
+        """Return the True/False from the client when a torrent is set with result.priority (-1 = low, 0 = normal, 1 = high).
+
+        :param result:
+        :type result: sickbeard.classes.SearchResult
+        :return:
+        :rtype: bool
         """
         return True
 
-    def _set_torrent_path(self, torrent_path):  # pylint:disable=unused-argument, no-self-use
-        """
-        This should be overridden should return the True/False from the client
-        when a torrent is set with path
+    def _set_torrent_path(self, torrent_path):
+        """Return the True/False from the client when a torrent is set with path.
+
+        :param torrent_path:
+        :type torrent_path: string
+        :return:
+        :rtype: bool
         """
         return True
 
-    def _set_torrent_pause(self, result):  # pylint:disable=unused-argument, no-self-use
-        """
-        This should be overridden should return the True/False from the client
-        when a torrent is set with pause
+    def _set_torrent_pause(self, result):
+        """Return the True/False from the client when a torrent is set with pause.
+
+        :param result:
+        :type result: sickbeard.classes.SearchResult
+        :return:
+        :rtype: bool
         """
         return True
 
@@ -178,7 +208,13 @@ class GenericClient(object):
         return result
 
     def send_torrent(self, result):
+        """Add torrent to the client.
 
+        :param result:
+        :type result: sickbeard.classes.SearchResult
+        :return:
+        :rtype: str or bool
+        """
         r_code = False
 
         logger.log('Calling {name} Client'.format(name=self.name), logger.DEBUG)
@@ -234,7 +270,11 @@ class GenericClient(object):
         return r_code
 
     def test_authentication(self):
+        """Test authentication.
 
+        :return:
+        :rtype: tuple(bool, str)
+        """
         try:
             self.response = self.session.get(self.url, timeout=120, verify=False)
         except requests.exceptions.ConnectionError:

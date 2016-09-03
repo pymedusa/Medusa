@@ -22,9 +22,11 @@
 
 # Uses the Synology Download Station API:
 # http://download.synology.com/download/Document/DeveloperGuide/Synology_Download_Station_Web_API.pdf
+"""Synology Download Station Client."""
 
 from __future__ import unicode_literals
 
+import logging
 import os
 import re
 
@@ -32,15 +34,26 @@ from requests.compat import urljoin
 from requests.exceptions import RequestException
 
 import sickbeard
-from sickbeard import logger
-from sickbeard.helpers import handle_requests_exception
-from sickbeard.clients.generic import GenericClient
+from .generic import GenericClient
+from ..helpers import handle_requests_exception
+
+
+logger = logging.getLogger(__name__)
 
 
 class DownloadStationAPI(GenericClient):
+    """Synology Download Station API class."""
 
     def __init__(self, host=None, username=None, password=None):
+        """Constructor.
 
+        :param host:
+        :type host: string
+        :param username:
+        :type username: string
+        :param password:
+        :type password: string
+        """
         super(DownloadStationAPI, self).__init__('DownloadStation', host, username, password)
 
         self.urls = {
@@ -66,10 +79,7 @@ class DownloadStationAPI(GenericClient):
         self.destination = sickbeard.TORRENT_PATH
 
     def _check_response(self):
-        """
-        Check if session is still valid
-        """
-
+        """Check if session is still valid."""
         try:
             jdata = self.response.json()
         except ValueError:
@@ -80,7 +90,7 @@ class DownloadStationAPI(GenericClient):
             self.auth = jdata.get('success')
             if not self.auth:
                 error_code = jdata.get('error', {}).get('code')
-                logger.log('{error}'.format(error=self.error_map.get(error_code, jdata)))
+                logger.info(self.error_map.get(error_code, jdata))
                 self.session.cookies.clear()
 
             return self.auth
@@ -152,11 +162,8 @@ class DownloadStationAPI(GenericClient):
         self._request(method='post', data=data, files=files)
         return self._check_response()
 
-    def _check_destination(self):  # pylint: disable=too-many-return-statements, too-many-branches
-        """
-        Validate and set torrent destination
-        """
-
+    def _check_destination(self):
+        """Validate and set torrent destination."""
         torrent_path = sickbeard.TORRENT_PATH
 
         if not (self.auth or self._get_auth()):
@@ -218,16 +225,14 @@ class DownloadStationAPI(GenericClient):
                         if destination and os.path.isabs(destination):
                             torrent_path = re.sub(r'^/volume\d/', '', destination).lstrip('/')
                         else:
-                            logger.log('Default destination could not be determined '
-                                       'for DSM6: {response}'.format(response=jdata))
+                            logger.info('Default destination could not be determined for DSM6: {response}', response=jdata)
                             return False
 
         if destination or torrent_path:
-            logger.log('Destination is now {path}'.format
-                       (path=torrent_path or destination))
+            logger.info('Destination is now {path}', path=torrent_path or destination)
 
         self.checked_destination = True
         self.destination = torrent_path
         return True
 
-api = DownloadStationAPI()
+api = DownloadStationAPI

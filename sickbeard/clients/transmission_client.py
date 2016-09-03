@@ -17,23 +17,34 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+"""Transmission Client."""
 
 from __future__ import unicode_literals
 
+import json
 import os
 import re
-import json
+
 from base64 import b64encode
-
 from requests.compat import urljoin
-
 import sickbeard
-from sickbeard.clients.generic import GenericClient
+
+from .generic import GenericClient
 
 
 class TransmissionAPI(GenericClient):
-    def __init__(self, host=None, username=None, password=None):
+    """Transmission API class."""
 
+    def __init__(self, host=None, username=None, password=None):
+        """Constructor.
+
+        :param host:
+        :type host: string
+        :param username:
+        :type username: string
+        :param password:
+        :type password: string
+        """
         super(TransmissionAPI, self).__init__('Transmission', host, username, password)
 
         self.rpcurl = self.rpcurl.strip('/')
@@ -178,4 +189,4 @@ class TransmissionAPI(GenericClient):
         return self.response.json()['result'] == 'success'
 
 
-api = TransmissionAPI()
+api = TransmissionAPI
