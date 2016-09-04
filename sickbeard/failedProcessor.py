@@ -60,9 +60,15 @@ class FailedProcessor(object):
 
         self._log(u"name_parser info: {result}".format(result=parsed), logger.DEBUG)
 
-        for episode in parsed.episode_numbers:
-            segment = parsed.show.get_episode(parsed.season_number, episode)
+        segment = []
+        if not parsed.episode_numbers:
+            # Get all episode objects from that season
+            segment.extend(parsed.show.get_all_episodes(parsed.season_number))
+        else:
+            for episode in parsed.episode_numbers:
+                segment.append(parsed.show.get_episode(parsed.season_number, episode))
 
+        if segment:
             cur_failed_queue_item = search_queue.FailedQueueItem(parsed.show, [segment])
             sickbeard.forcedSearchQueueScheduler.action.add_item(cur_failed_queue_item)
 
