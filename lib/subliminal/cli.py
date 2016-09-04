@@ -216,7 +216,6 @@ config_file = 'config.ini'
 @click.group(context_settings={'max_content_width': 100}, epilog='Suggestions and bug reports are greatly appreciated: '
              'https://github.com/Diaoul/subliminal/')
 @click.option('--addic7ed', type=click.STRING, nargs=2, metavar='USERNAME PASSWORD', help='Addic7ed configuration.')
-@click.option('--itasa', type=click.STRING, nargs=2, metavar='USERNAME PASSWORD', help='ItaSA configuration.')
 @click.option('--legendastv', type=click.STRING, nargs=2, metavar='USERNAME PASSWORD', help='LegendasTV configuration.')
 @click.option('--opensubtitles', type=click.STRING, nargs=2, metavar='USERNAME PASSWORD',
               help='OpenSubtitles configuration.')
@@ -226,7 +225,7 @@ config_file = 'config.ini'
 @click.option('--debug', is_flag=True, help='Print useful information for debugging subliminal and for reporting bugs.')
 @click.version_option(__version__)
 @click.pass_context
-def subliminal(ctx, addic7ed, itasa, legendastv, opensubtitles, subscenter, cache_dir, debug):
+def subliminal(ctx, addic7ed, legendastv, opensubtitles, subscenter, cache_dir, debug):
     """Subtitles, faster than your thoughts."""
     # create cache directory
     try:
@@ -250,8 +249,6 @@ def subliminal(ctx, addic7ed, itasa, legendastv, opensubtitles, subscenter, cach
     ctx.obj = {'provider_configs': {}}
     if addic7ed:
         ctx.obj['provider_configs']['addic7ed'] = {'username': addic7ed[0], 'password': addic7ed[1]}
-    if itasa:
-        ctx.obj['provider_configs']['itasa'] = {'username': itasa[0], 'password': itasa[1]}
     if legendastv:
         ctx.obj['provider_configs']['legendastv'] = {'username': legendastv[0], 'password': legendastv[1]}
     if opensubtitles:
@@ -340,10 +337,10 @@ def download(obj, provider, refiner, language, age, directory, encoding, single,
                     errored_paths.append(p)
                     continue
                 for video in scanned_videos:
+                    if not force:
+                        video.subtitle_languages |= set(search_external_subtitles(video.name,
+                                                                                  directory=directory).values())
                     if check_video(video, languages=language, age=age, undefined=single):
-                        if not force:
-                            video.subtitle_languages |= set(search_external_subtitles(video.name,
-                                                                                      directory=directory).values())
                         refine(video, episode_refiners=refiner, movie_refiners=refiner, embedded_subtitles=not force)
                         videos.append(video)
                     else:
@@ -357,9 +354,9 @@ def download(obj, provider, refiner, language, age, directory, encoding, single,
                 logger.exception('Unexpected error while collecting path %s', p)
                 errored_paths.append(p)
                 continue
+            if not force:
+                video.subtitle_languages |= set(search_external_subtitles(video.name, directory=directory).values())
             if check_video(video, languages=language, age=age, undefined=single):
-                if not force:
-                    video.subtitle_languages |= set(search_external_subtitles(video.name, directory=directory).values())
                 refine(video, episode_refiners=refiner, movie_refiners=refiner, embedded_subtitles=not force)
                 videos.append(video)
             else:

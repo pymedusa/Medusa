@@ -43,6 +43,24 @@ episode_scores = {'hash': 359, 'series': 180, 'year': 90, 'season': 30, 'episode
 movie_scores = {'hash': 119, 'title': 60, 'year': 30, 'release_group': 15,
                 'format': 7, 'audio_codec': 3, 'resolution': 2, 'video_codec': 2, 'hearing_impaired': 1}
 
+#: Equivalent release groups
+equivalent_release_groups = ({'LOL', 'DIMENSION'}, {'ASAP', 'IMMERSE', 'FLEET'})
+
+
+def get_equivalent_release_groups(release_group):
+    """Get all the equivalents of the given release group.
+
+    :param str release_group: the release group to get the equivalents of.
+    :return: the equivalent release groups.
+    :rtype: set
+
+    """
+    for equivalent_release_group in equivalent_release_groups:
+        if release_group in equivalent_release_group:
+            return equivalent_release_group
+
+    return {release_group}
+
 
 def get_scores(video):
     """Get the scores dict for the given `video`.
@@ -106,6 +124,9 @@ def compute_score(subtitle, video, hearing_impaired=None):
             matches |= {'series', 'year', 'season', 'episode'}
         if 'tvdb_id' in matches:
             logger.debug('Adding tvdb_id match equivalents')
+            matches |= {'series', 'year', 'season', 'episode'}
+        if 'series_tvdb_id' in matches:
+            logger.debug('Adding series_tvdb_id match equivalents')
             matches |= {'series', 'year'}
     elif isinstance(video, Movie):
         if 'imdb_id' in matches:
