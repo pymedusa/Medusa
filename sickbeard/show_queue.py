@@ -580,7 +580,7 @@ class QueueItemRefresh(ShowQueueItem):
             if self.force:
                 self.show.update_metadata()
             self.show.populate_cache()
-    
+
             # Load XEM data to DB for show
             sickbeard.scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
         except Exception as e:
