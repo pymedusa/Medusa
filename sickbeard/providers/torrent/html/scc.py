@@ -22,21 +22,21 @@ from __future__ import unicode_literals
 import re
 import traceback
 
-from requests.compat import urljoin, quote
+from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 
-from sickrage.helper.common import convert_size
+from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
-class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class SCCProvider(TorrentProvider):
+    """SceneAccess Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
+        """Provider Init."""
         TorrentProvider.__init__(self, 'SceneAccess')
 
         # Credentials
@@ -46,20 +46,22 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
         # URLs
         self.url = 'https://sceneaccess.eu'
         self.urls = {
-            'base_url': self.url,
             'login': urljoin(self.url, 'login'),
-            'detail': urljoin(self.url, 'details?id=%s'),
-            'search': urljoin(self.url, 'all?search=%s&method=1&%s'),
-            'download': urljoin(self.url, '%s')
+            'search': urljoin(self.url, 'all?search={string}&method=1&{cats}'),
         }
 
         # Proper Strings
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
         # Miscellaneous Options
         self.categories = {
-            'Season': 'c26=26&c44=44&c45=45',  # Archive, non-scene HD, non-scene SD; need to include non-scene because WEB-DL packs get added to those categories
-            'Episode': 'c17=17&c27=27&c33=33&c34=34&c44=44&c45=45',  # TV HD, TV SD, non-scene HD, non-scene SD, foreign XviD, foreign x264
-            'RSS': 'c17=17&c26=26&c27=27&c33=33&c34=34&c44=44&c45=45'  # Season + Episode
+            # Archive, non-scene HD, non-scene SD;
+            # need to include non-scene because WEB-DL packs get added to those categories
+            'Season': 'c26=26&c44=44&c45=45',
+            # TV HD, TV SD, non-scene HD, non-scene SD, foreign XviD, foreign x264
+            'Episode': 'c17=17&c27=27&c33=33&c34=34&c44=44&c45=45',
+            # Season + Episode
+            'RSS': 'c17=17&c26=26&c27=27&c33=33&c34=34&c44=44&c45=45',
         }
 
         # Torrent Stats
@@ -67,11 +69,11 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self)  # only poll SCC every 20 minutes max
+        self.cache = tvcache.TVCache(self, min_time=20)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -91,7 +93,8 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
 
-                search_url = self.urls['search'] % (quote(search_string), self.categories[mode])
+                search_url = self.urls['search'].format(string=self._strip_year(search_string),
+                                                        cats=self.categories[mode])
                 response = self.get_url(search_url, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
@@ -110,7 +113,6 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -124,21 +126,13 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
 
             for row in torrent_rows[1:]:
                 try:
-                    link = row.find('td', attrs={'class': 'ttr_name'}).find('a')
-                    url = row.find('td', attrs={'class': 'td_dl'}).find('a')
-
-                    title = link.string
-                    if re.search(r'\.\.\.', title):
-                        response = self.get_url(urljoin(self.url, link['href']), returns='response')
-                        if response.text:
-                            with BS4Parser(response.text) as details_html:
-                                title = re.search("(?<=').+(?<!')", details_html.title.string).group(0)
-                    download_url = self.urls['download'] % url['href']
+                    title = row.find('td', class_='ttr_name').find('a').get('title')
+                    download_url = urljoin(self.url, row.find('td', class_='td_dl').find('a').get('href'))
                     if not all([title, download_url]):
                         continue
 
-                    seeders = int(row.find('td', attrs={'class': 'ttr_seeders'}).string)
-                    leechers = int(row.find('td', attrs={'class': 'ttr_leechers'}).string)
+                    seeders = try_int(row.find('td', class_='ttr_seeders').get_text(), 1)
+                    leechers = try_int(row.find('td', class_='ttr_leechers').get_text(), 0)
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -148,7 +142,7 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = row.find('td', attrs={'class': 'ttr_size'}).contents[0]
+                    torrent_size = row.find('td', class_='ttr_size').contents[0]
                     size = convert_size(torrent_size) or -1
 
                     item = {
@@ -195,9 +189,11 @@ class SCCProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
         return True
 
     @staticmethod
-    def _is_section(section, text):
-        title = r'<title>.+? \| %s</title>' % section
-        return re.search(title, text, re.IGNORECASE)
+    def _strip_year(search_string):
+        """Remove brackets from search string year."""
+        if not search_string:
+            return search_string
+        return re.sub(r'\((?P<year>\d{4})\)', '\g<year>', search_string)
 
 
 provider = SCCProvider()
