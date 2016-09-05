@@ -1282,7 +1282,7 @@ class TVShow(TVObject):
             except EpisodeDeletedException:
                 logger.log(u'{id:} Episode {show} {ep} was deleted while we were refreshing it, '
                            u'moving on to the next one'.format
-                           (id=self.indexerid, show=self.show.name, ep=episode_num(season, episode)), logger.DEBUG)
+                           (id=self.indexerid, show=self.name, ep=episode_num(season, episode)), logger.DEBUG)
                 continue
 
             # if the path doesn't exist or if it's not in our show dir
@@ -1304,7 +1304,7 @@ class TVShow(TVObject):
 
                             logger.log(u"{id}: Location for {show} {ep} doesn't exist, "
                                        u"removing it and changing our status to '{status}'".format
-                                       (id=self.indexerid, show=self.show.name, ep=episode_num(season, episode),
+                                       (id=self.indexerid, show=self.name, ep=episode_num(season, episode),
                                         status=statusStrings[new_status]), logger.DEBUG)
                             cur_ep.status = new_status
                             cur_ep.subtitles = ''
@@ -1318,13 +1318,13 @@ class TVShow(TVObject):
                         sql_l.append(cur_ep.get_sql())
 
                     logger.log('{id}: Looking for hanging associated files for: {show} {ep} in: {location}'.format
-                               (id=self.indexerid, show=self.show.name, ep=episode_num(season, episode), location=cur_loc))
+                               (id=self.indexerid, show=self.name, ep=episode_num(season, episode), location=cur_loc))
                     related_files = postProcessor.PostProcessor(cur_loc).list_associated_files(
                         cur_loc, base_name_only=False, subfolders=True)
 
                     if related_files:
                         logger.log(u'{id}: Found hanging associated files for {show} {ep}, deleting: {files}'.format
-                                   (id=self.indexerid, show=self.show.name, ep=episode_num(season, episode), files=related_files),
+                                   (id=self.indexerid, show=self.name, ep=episode_num(season, episode), files=related_files),
                                    logger.WARNING)
                         for related_file in related_files:
                             try:

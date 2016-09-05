@@ -574,14 +574,18 @@ class QueueItemRefresh(ShowQueueItem):
 
         logger.log(u"{id}: Performing refresh on {show}".format(id=self.show.indexerid, show=self.show.name))
 
-        self.show.refresh_dir()
-        self.show.write_metadata()
-        if self.force:
-            self.show.update_metadata()
-        self.show.populate_cache()
+        try:
+            self.show.refresh_dir()
+            self.show.write_metadata()
+            if self.force:
+                self.show.update_metadata()
+            self.show.populate_cache()
 
-        # Load XEM data to DB for show
-        sickbeard.scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
+            # Load XEM data to DB for show
+            sickbeard.scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
+        except Exception as e:
+            logger.log(u"{id}: Error while refreshing show {show}. Error: {error_msg}".format
+                       (id=self.show.indexerid, show=self.show.name, error_msg=e), logger.ERROR)
 
         self.finish()
 
