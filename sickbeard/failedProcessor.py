@@ -63,7 +63,7 @@ class FailedProcessor(object):
         segment = []
         if not parsed.episode_numbers:
             # Get all episode objects from that season
-            self._log(u"Detected as a season pack: {0}".format(releaseName), logger.DEBUG)
+            self._log(u"Detected as season pack: {0}".format(releaseName), logger.DEBUG)
             segment.extend(parsed.show.get_all_episodes(parsed.season_number))
         else:
             self._log(u"Detected as single/multi episode: {0}".format(releaseName), logger.DEBUG)
