@@ -219,7 +219,7 @@ class Home(WebRoot):
 
         host = config.clean_url(host)
 
-        client = clients.get_client_instance(torrent_method)
+        client = clients.get_client_class(torrent_method)
 
         _, acces_msg = client(host, username, password).test_authentication()
 
