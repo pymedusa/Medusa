@@ -60,10 +60,19 @@ class FailedProcessor(object):
 
         self._log(u"name_parser info: {result}".format(result=parsed), logger.DEBUG)
 
-        for episode in parsed.episode_numbers:
-            segment = parsed.show.get_episode(parsed.season_number, episode)
+        segment = []
+        if not parsed.episode_numbers:
+            # Get all episode objects from that season
+            self._log(u"Detected as season pack: {0}".format(releaseName), logger.DEBUG)
+            segment.extend(parsed.show.get_all_episodes(parsed.season_number))
+        else:
+            self._log(u"Detected as single/multi episode: {0}".format(releaseName), logger.DEBUG)
+            for episode in parsed.episode_numbers:
+                segment.append(parsed.show.get_episode(parsed.season_number, episode))
 
-            cur_failed_queue_item = search_queue.FailedQueueItem(parsed.show, [segment])
+        if segment:
+            self._log(u"Adding this release to failed queue: {0}".format(releaseName), logger.DEBUG)
+            cur_failed_queue_item = search_queue.FailedQueueItem(parsed.show, segment)
             sickbeard.forcedSearchQueueScheduler.action.add_item(cur_failed_queue_item)
 
         return True
