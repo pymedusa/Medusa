@@ -59,7 +59,7 @@ def refine(video, tv_episode=None, **kwargs):
     enrich(EPISODE_MAPPING, video, tv_episode)
     enrich({'release_group': tv_episode.release_group}, video, overwrite=False)
     guess = Quality.to_guessit(tv_episode.status)
-    enrich({'resolution': guess['screen_size'], 'format': guess['format']}, video, overwrite=False)
+    enrich({'resolution': guess.get('screen_size'), 'format': guess.get('format')}, video, overwrite=False)
 
 
 def enrich(attributes, target, source=None, overwrite=True):
