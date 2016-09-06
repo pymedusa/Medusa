@@ -515,6 +515,28 @@ class Quality(object):
             else:
                 rip_type = ""
 
+        # If HDTV or SDTV
+        if (quality == 1 or quality == 4):
+            if re.search(r"ahdtv"), name.lower()):
+                rip_type = " AHDTV"
+            elif re.search(r"pdtv"), name.lower()):
+                rip_type = " PDTV"
+            elif re.search(r"hr\.pdtv"), name.lower()):
+                rip_type = " HR.PDTV"
+            elif re.search(r"satrip"), name.lower()):
+                rip_type = " SATRip"
+            else:
+                rip_type = ""
+
+        # If any web type
+        if (quality == 32 or quality == 64 or quality == 1024 or quality == 8192):
+            if re.search(r"web"), name.lower()):
+                rip_type = " WEB"
+            elif re.search(r"webrip"), name.lower()):
+                rip_type = " WEBRip"
+            else:
+                rip_type = ""
+
         if found_codec:
             if codec_list[0] in found_codec:
                 found_codec = 'XviD'
