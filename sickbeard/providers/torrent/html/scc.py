@@ -127,12 +127,13 @@ class SCCProvider(TorrentProvider):
             for row in torrent_rows[1:]:
                 try:
                     title = row.find('td', class_='ttr_name').find('a').get('title')
-                    download_url = urljoin(self.url, row.find('td', class_='td_dl').find('a').get('href'))
-                    if not all([title, download_url]):
+                    torrent_url = row.find('td', class_='td_dl').find('a').get('href')
+                    download_url = urljoin(self.url, torrent_url)
+                    if not all([title, torrent_url]):
                         continue
 
                     seeders = try_int(row.find('td', class_='ttr_seeders').get_text(), 1)
-                    leechers = try_int(row.find('td', class_='ttr_leechers').get_text(), 0)
+                    leechers = try_int(row.find('td', class_='ttr_leechers').get_text())
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
