@@ -170,6 +170,18 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
                 curEpObj.status = Quality.compositeStatus(SNATCHED_BEST, result.quality)
             else:
                 curEpObj.status = Quality.compositeStatus(endStatus, result.quality)
+            # Reset all others fields to a "snatch" status
+            curEpObj.hasnfo = 0
+            curEpObj.hastbn = 0
+            curEpObj.location = ''
+            curEpObj.file_size = 0
+            curEpObj.release_name = ''
+            curEpObj.subtitles = ''
+            curEpObj.subtitles_searchcount = 0
+            curEpObj.subtitles_lastsearch = '0001-01-01 00:00:00'
+            curEpObj.is_proper = 1 if result.proper_tags else 0
+            curEpObj.version = 0
+            curEpObj.release_group = ''
 
             sql_l.append(curEpObj.get_sql())
 
