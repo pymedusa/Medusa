@@ -558,7 +558,7 @@ class Quality(object):
                 return rip_type + " " + found_codec
             else:
                 return " " + found_codec
-        elif do_i_replace:
+        elif (quality == 1 or quality == 2 or quality == 32 or quality == 64 or quality == 1024 or quality == 8192):
             return rip_type
         else:
             return ""
