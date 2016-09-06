@@ -59,9 +59,9 @@ class SCCProvider(TorrentProvider):
             # need to include non-scene because WEB-DL packs get added to those categories
             'Season': 'c26=26&c44=44&c45=45',
             # TV HD, TV SD, non-scene HD, non-scene SD, foreign XviD, foreign x264
-            'Episode': 'c17=17&c27=27&c33=33&c34=34&c44=44&c45=45',
+            'Episode': 'c11=11&c17=17&c27=27&c33=33&c34=34&c44=44&c45=45',
             # Season + Episode
-            'RSS': 'c17=17&c26=26&c27=27&c33=33&c34=34&c44=44&c45=45',
+            'RSS': 'c11=11&c17=17&c26=26&c27=27&c33=33&c34=34&c44=44&c45=45',
         }
 
         # Torrent Stats
