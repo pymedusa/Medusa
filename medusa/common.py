@@ -497,6 +497,7 @@ class Quality(object):
 
         found_codecs = {}
         found_codec = None
+        should_replace = None
 
         for codec in codec_list:
             if codec in name.lower():
@@ -506,39 +507,42 @@ class Quality(object):
             sorted_codecs = sorted(found_codecs, reverse=True)
             found_codec = found_codecs[list(sorted_codecs)[0]]
 
-        # 2 corresponds to SDDVD quality
-        if quality == 2:
-            do_i_replace = True
-            if re.search(r"b(r|d|rd)?(-| |\.)?(rip|mux)", name.lower()):
-                rip_type = " BDRip"
-            elif re.search(r"(dvd)(-| |\.)?(rip|mux)?", name.lower()):
-                rip_type = " DVDRip"
-            else:
-                rip_type = ""
-
         # If HDTV or SDTV
-        if (quality == 1 or quality == 4):
-            do_i_replace = True
-            if re.search(r"ahdtv", name.lower()):
-                rip_type = " AHDTV"
-            elif re.search(r"pdtv", name.lower()):
-                rip_type = " PDTV"
-            elif re.search(r"hr\.pdtv", name.lower()):
-                rip_type = " HR.PDTV"
-            elif re.search(r"satrip", name.lower()):
-                rip_type = " SATRip"
+        if quality in (1, 4):
+            should_replace = True
+            name = name.lower()
+            if re.search(r'ahdtv', name):
+                rip_type = ' AHDTV'
+            elif re.search(r'pdtv', name):
+                rip_type = ' PDTV'
+            elif re.search(r'hr\.pdtv', name):
+                rip_type = ' HR.PDTV'
+            elif re.search(r'satrip', name):
+                rip_type = ' SATRip'
             else:
-                rip_type = ""
+                rip_type = ''
+
+        # If SDDVD
+        if not should_replace and quality == 2:
+            should_replace = True
+            name = name.lower()
+            if re.search(r'b(r|d|rd)?(-| |\.)?(rip|mux)', name):
+                rip_type = ' BDRip'
+            elif re.search(r'(dvd)(-| |\.)?(rip|mux)?', name):
+                rip_type = ' DVDRip'
+            else:
+                rip_type = ''
 
         # If any web type
-        if (quality == 32 or quality == 64 or quality == 1024 or quality == 8192):
-            do_i_replace = True
-            if re.search(r"web", name.lower()):
-                rip_type = " WEB"
-            elif re.search(r"webrip", name.lower()):
-                rip_type = " WEBRip"
+        if not should_replace and quality in (32, 64, 1024, 8192):
+            should_replace = True
+            name = name.lower()
+            if re.search(r'web', name):
+                rip_type = ' WEB'
+            elif re.search(r'webrip', name):
+                rip_type = ' WEBRip'
             else:
-                rip_type = ""
+                rip_type = ''
 
         if found_codec:
             if codec_list[0] in found_codec:
@@ -554,14 +558,14 @@ class Quality(object):
             elif found_codec in h265_list:
                 found_codec = h265_list[0]
 
-            if do_i_replace:
-                return rip_type + " " + found_codec
+            if should_replace:
+                return rip_type + ' ' + found_codec
             else:
-                return " " + found_codec
-        elif (quality == 1 or quality == 2 or quality == 32 or quality == 64 or quality == 1024 or quality == 8192):
+                return ' ' + found_codec
+        elif should_replace:
             return rip_type
         else:
-            return ""
+            return ''
 
     @staticmethod
     def statusFromName(name, anime=False):
