@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 import re
 import traceback
-import validators
 
 from requests.compat import urljoin
 
@@ -30,12 +29,14 @@ from sickbeard.bs4_parser import BS4Parser
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
+import validators
+
 
 class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """ThePirateBay Torrent provider"""
-    def __init__(self):
+    """ThePirateBay Torrent provider."""
 
-        # Provider Init
+    def __init__(self):
+        """Provider Init."""
         TorrentProvider.__init__(self, 'ThePirateBay')
 
         # Credentials
@@ -45,7 +46,7 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.url = 'https://thepiratebay.org'
         self.urls = {
             'rss': urljoin(self.url, 'tv/latest'),
-            'search': urljoin(self.url, 's/'),  # Needs trailing /
+            'search': urljoin(self.url, 'search/{string}/0/3/200'),
         }
         self.custom_url = None
 
@@ -59,11 +60,11 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=20)  # only poll ThePirateBay every 20 minutes max
+        self.cache = tvcache.TVCache(self, min_time=20)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -71,17 +72,6 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         :returns: A list of search results (structure)
         """
         results = []
-
-        # 205 = SD, 208 = HD, 200 = All Videos
-        # https://pirateproxy.pl/s/?q=Game of Thrones&type=search&orderby=7&page=0&category=200
-
-        search_params = {
-            'q': '',
-            'type': 'search',
-            'orderby': 7,
-            'page': 0,
-            'category': 200
-        }
 
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
@@ -96,13 +86,10 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     search_url = urljoin(self.custom_url, search_url.split(self.url)[1])
 
                 if mode != 'RSS':
-                    search_params['q'] = search_string
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
-                else:
-                    search_params = {}
+                    search_url = search_url.format(string=search_string)
+                    logger.log('Search string: {search}'.format(search=search_string), logger.DEBUG)
 
-                response = self.get_url(search_url, params=search_params, returns='response')
+                response = self.get_url(search_url, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -161,7 +148,7 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[labels.index('SE')].get_text(strip=True))
+                    seeders = try_int(cells[labels.index('SE')].get_text(strip=True), 1)
                     leechers = try_int(cells[labels.index('LE')].get_text(strip=True))
 
                     # Filter unseeded torrent
@@ -175,12 +162,13 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     # Accept Torrent only from Good People for every Episode Search
                     if self.confirmed and not row.find(alt=re.compile(r'VIP|Trusted')):
                         if mode != 'RSS':
-                            logger.log("Found result {0} but that doesn't seem like a trusted"
-                                       " result so I'm ignoring it".format(title), logger.DEBUG)
+                            logger.log("Found result {0} but that doesn't seem like a trusted "
+                                       "result so I'm ignoring it".format(title), logger.DEBUG)
                         continue
 
                     # Convert size after all possible skip scenarios
-                    torrent_size = cells[labels.index('Name')].find(class_='detDesc').get_text(strip=True).split(', ')[1]
+                    torrent_size = cells[labels.index('Name')].find(class_='detDesc')
+                    torrent_size = torrent_size.get_text(strip=True).split(', ')[1]
                     torrent_size = re.sub(r'Size ([\d.]+).+([KMGT]iB)', r'\1 \2', torrent_size)
                     size = convert_size(torrent_size, units=units) or -1
 
