@@ -16,24 +16,37 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+"""Deluge Web Client."""
 
 from __future__ import unicode_literals
 
 import json
+import logging
+
 from base64 import b64encode
-
 from requests.exceptions import RequestException
-
 import sickbeard
-from sickbeard import logger
-from sickbeard.clients.generic import GenericClient
+
+from .generic import GenericClient
+
+
+logger = logging.getLogger(__name__)
 
 
 class DelugeAPI(GenericClient):
+    """Deluge API class."""
+
     def __init__(self, host=None, username=None, password=None):
+        """Constructor.
 
+        :param host:
+        :type host: string
+        :param username:
+        :type username: string
+        :param password:
+        :type password: string
+        """
         super(DelugeAPI, self).__init__('Deluge', host, username, password)
-
         self.url = '{host}json'.format(host=self.host)
 
     def _get_auth(self):
@@ -82,7 +95,7 @@ class DelugeAPI(GenericClient):
 
             hosts = self.response.json()['result']
             if not hosts:
-                logger.log('{name}: WebUI does not contain daemons'.format(name=self.name), logger.ERROR)
+                logger.error('{name}: WebUI does not contain daemons', name=self.name)
                 return None
 
             post_data = json.dumps({
@@ -113,7 +126,7 @@ class DelugeAPI(GenericClient):
 
             connected = self.response.json()['result']
             if not connected:
-                logger.log('{name}: WebUI could not connect to daemon'.format(name=self.name), logger.ERROR)
+                logger.error('{name}: WebUI could not connect to daemon', name=self.name)
                 return None
 
         return self.auth
@@ -159,8 +172,7 @@ class DelugeAPI(GenericClient):
         if result.show.is_anime:
             label = sickbeard.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
-            logger.log('{name}: Invalid label. Label must not contain a space'.format
-                       (name=self.name), logger.ERROR)
+            logger.error('{name}: Invalid label. Label must not contain a space', name=self.name)
             return False
 
         if label:
@@ -176,8 +188,7 @@ class DelugeAPI(GenericClient):
 
             if labels is not None:
                 if label not in labels:
-                    logger.log('{name}: {label} label does not exist in Deluge we must add it'.format
-                               (name=self.name, label=label), logger.DEBUG)
+                    logger.debug('{name}: {label} label does not exist in Deluge we must add it', name=self.name, label=label)
                     post_data = json.dumps({
                         'method': 'label.add',
                         'params': [
@@ -187,8 +198,7 @@ class DelugeAPI(GenericClient):
                     })
 
                     self._request(method='post', data=post_data)
-                    logger.log('{name}: {label} label added to Deluge'.format
-                               (name=self.name, label=label), logger.DEBUG)
+                    logger.debug('{name}: {label} label added to Deluge', name=self.name, label=label)
 
                 # add label to torrent
                 post_data = json.dumps({
@@ -201,11 +211,9 @@ class DelugeAPI(GenericClient):
                 })
 
                 self._request(method='post', data=post_data)
-                logger.log('{name}: {label} label added to torrent'.format
-                           (name=self.name, label=label), logger.DEBUG)
+                logger.debug('{name}: {label} label added to torrent', name=self.name, label=label)
             else:
-                logger.log('{name}: label plugin not detected'.format
-                           (name=self.name), logger.DEBUG)
+                logger.debug('{name}: label plugin not detected', name=self.name)
                 return False
 
         return not self.response.json()['error']
@@ -228,7 +236,7 @@ class DelugeAPI(GenericClient):
             })
 
             self._request(method='post', data=post_data)
-            
+
             # Return false if we couldn't enable setting set_torrent_stop_at_ratio. No reason to set ratio.
             if self.response.json()['error']:
                 return False
@@ -253,9 +261,8 @@ class DelugeAPI(GenericClient):
                                     "id": 5})
 
             self._request(method='post', data=post_data)
-            
+
             return not self.response.json()['error']
-            
 
         return True
 
@@ -306,4 +313,4 @@ class DelugeAPI(GenericClient):
         return True
 
 
-api = DelugeAPI()
+api = DelugeAPI

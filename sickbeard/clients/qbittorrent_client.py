@@ -17,26 +17,36 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+"""qBittorrent Client."""
 
 from __future__ import unicode_literals
 
 from requests.auth import HTTPDigestAuth
-
 import sickbeard
-from sickbeard.clients.generic import GenericClient
+
+from .generic import GenericClient
 
 
-class qbittorrentAPI(GenericClient):
+class QBittorrentAPI(GenericClient):
+    """qBittorrent API class."""
 
     def __init__(self, host=None, username=None, password=None):
+        """Constructor.
 
-        super(qbittorrentAPI, self).__init__('qbittorrent', host, username, password)
-
+        :param host:
+        :type host: string
+        :param username:
+        :type username: string
+        :param password:
+        :type password: string
+        """
+        super(QBittorrentAPI, self).__init__('qbittorrent', host, username, password)
         self.url = self.host
         self.session.auth = HTTPDigestAuth(self.username, self.password)
 
     @property
     def api(self):
+        """API property."""
         try:
             self.url = '{host}version/api'.format(host=self.host)
             version = int(self.session.get(self.url, verify=sickbeard.TORRENT_VERIFY_CERT).content)
@@ -122,4 +132,4 @@ class qbittorrentAPI(GenericClient):
         }
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
-api = qbittorrentAPI()
+api = QBittorrentAPI

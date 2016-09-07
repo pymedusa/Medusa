@@ -103,32 +103,21 @@ def change_HTTPS_KEY(https_key):
     return True
 
 
-def change_LOG_DIR(log_dir, web_log):
+def change_LOG_DIR(log_dir):
     """
     Change logging directory for application and webserver
 
     :param log_dir: Path to new logging directory
-    :param web_log: Enable/disable web logging
     :return: True on success, False on failure
     """
-    log_dir_changed = False
     abs_log_dir = ek(os.path.normpath, ek(os.path.join, sickbeard.DATA_DIR, log_dir))
-    web_log_value = checkbox_to_value(web_log)
 
     if ek(os.path.normpath, sickbeard.LOG_DIR) != abs_log_dir:
-        if helpers.makeDir(abs_log_dir):
-            sickbeard.ACTUAL_LOG_DIR = ek(os.path.normpath, log_dir)
-            sickbeard.LOG_DIR = abs_log_dir
-
-            logger.init_logging()
-            logger.log(u"Initialized new log file in " + sickbeard.LOG_DIR)
-            log_dir_changed = True
-
-        else:
+        if not helpers.makeDir(abs_log_dir):
             return False
 
-    if sickbeard.WEB_LOG != web_log_value or log_dir_changed is True:
-        sickbeard.WEB_LOG = web_log_value
+        sickbeard.ACTUAL_LOG_DIR = ek(os.path.normpath, log_dir)
+        sickbeard.LOG_DIR = abs_log_dir
 
     return True
 
@@ -610,6 +599,7 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
     if privacy_level >= censor_level or (cfg_name, item_name) in iteritems(logger.censored_items):
         if not item_name.endswith('custom_url'):
             logger.censored_items[cfg_name, item_name] = my_val
+            logger.rebuild_censored_list()
 
     if not silent:
         logger.log(item_name + " -> " + my_val, logger.DEBUG)

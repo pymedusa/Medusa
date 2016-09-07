@@ -17,33 +17,42 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+"""uTorrent Client."""
 
 from __future__ import unicode_literals
 
 import logging
 import re
 
-from six import iteritems
 from requests.compat import urljoin
-
 import sickbeard
-from sickbeard.clients.generic import GenericClient
+from six import iteritems
 
-log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler())
+from .generic import GenericClient
+
+logger = logging.getLogger(__name__)
 
 
 class UTorrentAPI(GenericClient):
-    def __init__(self, host=None, username=None, password=None):
+    """uTorrent API class."""
 
+    def __init__(self, host=None, username=None, password=None):
+        """Constructor.
+
+        :param host:
+        :type host: string
+        :param username:
+        :type username: string
+        :param password:
+        :type password: string
+        """
         super(UTorrentAPI, self).__init__('uTorrent', host, username, password)
         self.url = urljoin(self.host, 'gui/')
 
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
 
         if cookies:
-            log.debug('{name}: Received unused argument {arg}: {value}'.format
-                      (name=self.name, arg='cookies', value=cookies))
+            logger.debug('{name}: Received unused argument {arg}: {value}', name=self.name, arg='cookies', value=cookies)
 
         # Workaround for uTorrent 2.2.1
         # Need an OrderedDict but only supported in 2.7+
@@ -158,4 +167,4 @@ class UTorrentAPI(GenericClient):
         })
 
 
-api = UTorrentAPI()
+api = UTorrentAPI

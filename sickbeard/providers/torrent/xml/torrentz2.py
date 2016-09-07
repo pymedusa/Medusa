@@ -1,5 +1,5 @@
 # coding=utf-8
-# Author: Dustyn Gibson <miigotu@gmail.com>
+# Authorship: The Medusa Team
 #
 # This file is part of Medusa.
 #
@@ -25,24 +25,23 @@ from requests.compat import urljoin
 
 from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
-from sickbeard.common import USER_AGENT
 
 from sickrage.helper.common import convert_size
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 
-class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """Torrentz Torrent provider"""
+class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+    """Torrentz2 Torrent provider"""
     def __init__(self):
 
         # Provider Init
-        TorrentProvider.__init__(self, "Torrentz")
+        TorrentProvider.__init__(self, 'Torrentz2')
 
         # Credentials
         self.public = True
 
         # URLs
-        self.url = 'https://torrentz.eu/'
+        self.url = 'https://torrentz2.eu/'
         self.urls = {
             'base': self.url,
             'verified': urljoin(self.url, 'feed_verified'),
@@ -52,8 +51,7 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         # Proper Strings
 
         # Miscellaneous Options
-        self.confirmed = True
-        self.headers.update({'User-Agent': USER_AGENT})
+        # self.confirmed = True
 
         # Torrent Stats
         self.minseed = None
@@ -73,6 +71,11 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         """
         results = []
 
+        # Search Params
+        search_params = {
+            'f': 'tv added:2d',
+        }
+
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
@@ -80,13 +83,15 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
+                    search_params['f'] = search_string
 
-                search_url = self.urls['verified'] if self.confirmed else self.urls['feed']
-                response = self.get_url(search_url, params={'q': search_string}, returns='response')
+                # search_url = self.urls['verified'] if self.confirmed else self.urls['feed']
+                search_url = self.urls['feed']
+                response = self.get_url(search_url, params=search_params, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
-                elif not response or not response.text.startswith('<?xml'):
+                elif not response.text.startswith('<?xml'):
                     logger.log('Expected xml but got something else, is your mirror failing?', logger.INFO)
                     continue
 
@@ -111,7 +116,7 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
             for row in torrent_rows:
                 try:
-                    if row.category and 'tv' not in row.category.get_text(strip=True):
+                    if row.category and 'tv' not in row.category.get_text(strip=True).lower():
                         continue
 
                     title_raw = row.title.text
@@ -159,4 +164,4 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         return int(match[0]) * 1024 ** 2, int(match[1]), int(match[2])
 
 
-provider = TorrentzProvider()
+provider = Torrentz2Provider()

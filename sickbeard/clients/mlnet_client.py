@@ -17,17 +17,27 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+"""MLDonkey Client."""
 
 from __future__ import unicode_literals
 
-from sickbeard.clients.generic import GenericClient
+from .generic import GenericClient
 
 
 class MLNetAPI(GenericClient):
+    """MLDonkey API class."""
+
     def __init__(self, host=None, username=None, password=None):
+        """Constructor.
 
+        :param host:
+        :type host: string
+        :param username:
+        :type username: string
+        :param password:
+        :type password: string
+        """
         super(MLNetAPI, self).__init__('mlnet', host, username, password)
-
         self.url = self.host
         # self.session.auth = HTTPDigestAuth(self.username, self.password);
 
@@ -57,4 +67,4 @@ class MLNetAPI(GenericClient):
         }
         return self._request(method='get', params=params)
 
-api = MLNetAPI()
+api = MLNetAPI

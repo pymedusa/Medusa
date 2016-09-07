@@ -23,19 +23,35 @@
 
 # based on fuzemans work
 # https://github.com/RuudBurger/CouchPotatoServer/blob/develop/couchpotato/core/downloaders/rtorrent/main.py
+"""rTorrent Client."""
 
 from __future__ import unicode_literals
 
-from rtorrent import RTorrent  # pylint: disable=import-error
+import logging
 
+from rtorrent import RTorrent
 import sickbeard
 
-from sickbeard import logger, ex
-from sickbeard.clients.generic import GenericClient
+from .generic import GenericClient
+from .. import ex
 
 
-class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
+logger = logging.getLogger(__name__)
+
+
+class RTorrentAPI(GenericClient):
+    """rTorrent API class."""
+
     def __init__(self, host=None, username=None, password=None):
+        """Constructor.
+
+        :param host:
+        :type host: string
+        :param username:
+        :type username: string
+        :param password:
+        :type password: string
+        """
         super(RTorrentAPI, self).__init__('rTorrent', host, username, password)
 
     def _get_auth(self):
@@ -83,9 +99,8 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
 
             # Start torrent
             torrent.start()
-        except Exception as error:  # pylint: disable=broad-except
-            logger.log('Error while sending torrent: {error}'.format  # pylint: disable=no-member
-                       (error=ex(error)), logger.WARNING)
+        except Exception as error:
+            logger.warning('Error while sending torrent: {error}', error=ex(error))
             return False
         else:
             return True
@@ -115,19 +130,18 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
 
             # Start torrent
             torrent.start()
-        except Exception as msg:  # pylint: disable=broad-except
-            logger.log('Error while sending torrent: {error}'.format  # pylint: disable=no-member
-                       (error=ex(msg)), logger.WARNING)
+        except Exception as msg:
+            logger.warning('Error while sending torrent: {error}', error=ex(msg))
             return False
         else:
             return True
 
-    def _set_torrent_ratio(self, name):
-        _ = name
-
-        return True
-
     def test_authentication(self):
+        """Test connection using authentication.
+
+        :return:
+        :rtype: tuple(bool, str)
+        """
         try:
             self.auth = None
             self._get_auth()
@@ -139,4 +153,4 @@ class RTorrentAPI(GenericClient):  # pylint: disable=invalid-name
             else:
                 return True, 'Success: Connected and Authenticated'
 
-api = RTorrentAPI()  # pylint: disable=invalid-name
+api = RTorrentAPI

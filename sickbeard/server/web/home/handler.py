@@ -219,7 +219,7 @@ class Home(WebRoot):
 
         host = config.clean_url(host)
 
-        client = clients.get_client_instance(torrent_method)
+        client = clients.get_client_class(torrent_method)
 
         _, acces_msg = client(host, username, password).test_authentication()
 
@@ -696,7 +696,7 @@ class Home(WebRoot):
                 'message': 'downgrade',
             })
         else:
-            logger.log(u'Checkout branch couldn\'t compare DB version.', logger.ERROR)
+            logger.log(u'Checkout branch couldn\'t compare DB version.', logger.WARNING)
             return json.dumps({
                 'status': 'error',
                 'message': 'General exception',
@@ -944,24 +944,6 @@ class Home(WebRoot):
                                          provider]):
             return self._genericMessage('Error', "Cached result doesn't have all needed info to snatch episode")
 
-        if manual_search_type == 'season':
-            try:
-                main_db_con = db.DBConnection()
-                season_pack_episodes_result = main_db_con.action(
-                    b'SELECT episode '
-                    b'FROM tv_episodes '
-                    b'WHERE showid = ? AND season = ?',
-                    [cached_result[b'indexerid'], cached_result[b'season']]
-                )
-            except Exception as msg:
-                error_message = "Couldn't read episodes for season pack result. Error: {error}".format(error=msg)
-                logger.log(error_message)
-                return self._genericMessage('Error', error_message)
-
-            season_pack_episodes = []
-            for item in season_pack_episodes_result:
-                season_pack_episodes.append(int(item[b'episode']))
-
         try:
             show = int(cached_result[b'indexerid'])  # fails if show id ends in a period SickRage/sickrage-issues#65
             show_obj = Show.find(sickbeard.showList, show)
@@ -972,14 +954,15 @@ class Home(WebRoot):
             return self._genericMessage('Error', 'Could not find a show with id {0} in the list of shows, did you remove the show?'.format(show))
 
         # Create a list of episode object(s)
-        # if multi-episode: |1|2|
-        # if single-episode: |1|
-        # TODO:  Handle Season Packs: || (no episode)
-        episodes = season_pack_episodes if manual_search_type == 'season' else cached_result[b'episodes'].strip('|').split('|')
+        # Multi-episode: |1|2|
+        # Single-episode: |1|
+        # Season pack: || so we need to get all episodes from season and create all ep objects
         ep_objs = []
-        for episode in episodes:
-            if episode:
+        if manual_search_type == 'episode':
+            for episode in cached_result[b'episodes'].strip('|').split('|'):
                 ep_objs.append(show_obj.get_episode(int(cached_result[b'season']), int(episode)))
+        elif manual_search_type == 'season':
+            ep_objs.extend(show_obj.get_all_episodes(int(cached_result[b'season'])))
 
         # Create the queue item
         snatch_queue_item = search_queue.ManualSnatchQueueItem(show_obj, ep_objs, provider, cached_result)

@@ -59,7 +59,7 @@ from sickrage.helper.common import episode_num, http_code_description, media_ext
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
-from six import string_types, text_type
+from six import PY2, PY3, binary_type, string_types, text_type
 from six.moves import http_client
 
 
@@ -1511,11 +1511,18 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
 
 
 def is_ip_private(ip):
+    """Return whether the ip is a private ip address.
+
+    :param ip:
+    :type ip: str
+    :return:
+    :rtype: bool
+    """
     priv_lo = re.compile(r"^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
     priv_24 = re.compile(r"^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
     priv_20 = re.compile(r"^192\.168\.\d{1,3}.\d{1,3}$")
     priv_16 = re.compile(r"^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$")
-    return priv_lo.match(ip) or priv_24.match(ip) or priv_20.match(ip) or priv_16.match(ip)
+    return bool(priv_lo.match(ip) or priv_24.match(ip) or priv_20.match(ip) or priv_16.match(ip))
 
 
 def unicodify(value):
@@ -1532,7 +1539,24 @@ def unicodify(value):
     return value
 
 
-def single_or_list(value, allow_multi):
+def normalize(strings):
+    """Normalize string as expected by guessit.
+
+    Remove when https://github.com/guessit-io/guessit/issues/326 is fixed.
+    :param strings:
+    :rtype: list of str
+    """
+    result = []
+    for string in strings:
+        if PY2 and isinstance(string, text_type):
+            string = string.encode('utf-8')
+        elif PY3 and isinstance(string, binary_type):
+            string = string.decode('ascii')
+        result.append(string)
+    return result
+
+
+def single_or_list(value, allow_multi=False):
     """Return a single value or a list.
 
     If value is a list with more than one element and allow_multi is False then it returns None.
@@ -1544,6 +1568,9 @@ def single_or_list(value, allow_multi):
     """
     if not isinstance(value, list):
         return value
+
+    if len(value) == 1:
+        return value[0]
 
     if allow_multi:
         return sorted(value)

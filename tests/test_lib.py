@@ -135,7 +135,7 @@ sickbeard.CACHE_DIR = os.path.join(TEST_DIR, 'cache')
 create_test_cache_folder()
 
 # pylint: disable=no-member
-sickbeard.logger.init_logging(False, True)
+sickbeard.logger.init_logging(False)
 
 
 # =================

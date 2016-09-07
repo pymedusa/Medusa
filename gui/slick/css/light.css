@@ -3,53 +3,53 @@ home.mako
 ========================================================================== */
 
 .progress-100 {
-	background-image: -moz-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
-	background-image: linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
-	background-image: -webkit-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
-	background-image: -o-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
+    background-image: -moz-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
+    background-image: linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
+    background-image: -webkit-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
+    background-image: -o-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
 }
 
 .progress-80 {
-	background-image: -moz-linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
-	background-image: linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
-	background-image: -webkit-linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
-	background-image: -o-linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
+    background-image: -moz-linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
+    background-image: linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
+    background-image: -webkit-linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
+    background-image: -o-linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
 }
 
 .progress-60 {
-	background-image: -moz-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
-	background-image: linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
-	background-image: -webkit-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
-	background-image: -o-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
+    background-image: -moz-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
+    background-image: linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
+    background-image: -webkit-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
+    background-image: -o-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
 }
 
 .progress-40 {
-	background-image: -moz-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
-	background-image: linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
-	background-image: -webkit-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
-	background-image: -o-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
+    background-image: -moz-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
+    background-image: linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
+    background-image: -webkit-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
+    background-image: -o-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
 }
 
 .progress-20 {
-	background-image: -moz-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
-	background-image: linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
-	background-image: -webkit-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
-	background-image: -o-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
+    background-image: -moz-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
+    background-image: linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
+    background-image: -webkit-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
+    background-image: -o-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
 }
 
 /* =======================================================================
@@ -57,19 +57,19 @@ displayShow.mako
 ========================================================================== */
 
 .displayShowTable th.row-seasonheader {
-	border: none !important;
-	background-color: rgb(255, 255, 255) !important;
-	color: rgb(0, 0, 0) !important;
-	padding-top: 15px !important;
-	text-align: left !important;
+    border: none !important;
+    background-color: rgb(255, 255, 255) !important;
+    color: rgb(0, 0, 0) !important;
+    padding-top: 15px !important;
+    text-align: left !important;
 }
 
 .displayShowTableFanArt th.row-seasonheader {
-	border: none !important;
-	background-color: transparent !important;
-	color: rgb(0, 0, 0) !important;
-	padding-top: 15px !important;
-	text-align: left !important;
+    border: none !important;
+    background-color: transparent !important;
+    color: rgb(0, 0, 0) !important;
+    padding-top: 15px !important;
+    text-align: left !important;
 }
 
 .snatchTitle {
@@ -81,7 +81,7 @@ testRename.mako
 ========================================================================== */
 
 tr.seasonheader {
-	color: rgb(0, 0, 0) !important;
+    color: rgb(0, 0, 0) !important;
 }
 
 /* =======================================================================
@@ -127,7 +127,8 @@ bootstrap Overrides
     background-color: rgb(51, 51, 51);
 }
 
-.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
     color: rgb(255, 255, 255);
     text-decoration: none;
     background-color: rgb(51, 51, 51);
@@ -189,12 +190,12 @@ div.token-input-dropdown {
 }
 
 /* =======================================================================
-bootstarp modal
+bootstrap modal
 ========================================================================== */
 
 .modal-header {
-    padding:9px 15px;
-    border-bottom:1px solid rgb(238, 238, 238);
+    padding: 9px 15px;
+    border-bottom: 1px solid rgb(238, 238, 238);
     background-color: rgb(245, 241, 228);
     -webkit-border-top-left-radius: 5px;
     -webkit-border-top-right-radius: 5px;

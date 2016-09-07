@@ -25,8 +25,8 @@ pre {
 <div class="align-left">
 <pre>
 % if errors:
-% for curError in sorted(errors, key=lambda error: error.time, reverse=True)[:500]:
-${curError.time} ${curError.message}
+% for logline in errors[:500]:
+${logline}
 % endfor
 % else:
 There are no events to display.

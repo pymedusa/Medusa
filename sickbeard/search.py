@@ -142,7 +142,7 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
                     result.content = result.provider.get_url(result.url, returns='content')
 
             if result.content or result.url.startswith('magnet'):
-                client = clients.get_client_instance(sickbeard.TORRENT_METHOD)()
+                client = clients.get_client_class(sickbeard.TORRENT_METHOD)()
                 dlResult = client.send_torrent(result)
             else:
                 logger.log(u"Torrent file content is empty", logger.WARNING)
