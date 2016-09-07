@@ -191,7 +191,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             # get a list of all the files in the folder
             checklist = glob.glob(ek(os.path.join, ek(os.path.dirname, globbable_file_path), '*'))
 
-            # supported subtitle languages
+            # supported subtitle languages codes
             language_extensions = tuple('.' + c for c in language_converters['opensubtitles'].codes)
 
             # loop through all the files in the folder, and check if they are the same name
