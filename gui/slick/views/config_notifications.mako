@@ -1832,9 +1832,9 @@
                         </fieldset><!-- .component-group-list //-->
                     </div><!-- email .component-group //-->
                 </div><!-- #social //-->
+                <br><input type="submit" class="config_submitter btn" value="Save Changes" /><br>
             </div><!-- #config-components //-->
         </form><!-- #configForm //-->
-        <br><input type="submit" class="config_submitter btn" value="Save Changes" /><br>
     </div><!-- #config-content //-->
 </div><!-- #config //-->
 <div class="clearfix"></div>
