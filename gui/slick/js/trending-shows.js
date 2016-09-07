@@ -12,7 +12,7 @@ $(document).ready(function() {
             getSortData: {
                 name: function(itemElem) {
                     var name = $(itemElem).attr('data-name') || '';
-                    return (SICKRAGE.info.sortArticle ? name : name.replace(/^(The|A|An)\s/i, '')).toLowerCase();
+                    return (MEDUSA.info.sortArticle ? name : name.replace(/^(The|A|An)\s/i, '')).toLowerCase();
                 },
                 rating: '[data-rating] parseInt',
                 votes: '[data-votes] parseInt'

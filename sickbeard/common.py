@@ -603,7 +603,7 @@ class Quality(object):
             'WEBRip': FULLHDWEBDL,
             'BluRay': FULLHDBLURAY
         },
-        '4k': {
+        '4K': {
             'HDTV': UHD_4K_TV,
             'WEB-DL': UHD_4K_WEBDL,
             'WEBRip': UHD_4K_WEBDL,
@@ -612,7 +612,7 @@ class Quality(object):
     }
 
     to_guessit_format_list = [
-        ANYHDTV, ANYWEBDL, ANYBLURAY
+        ANYHDTV, ANYWEBDL, ANYBLURAY, ANYHDTV | UHD_4K_TV, ANYWEBDL | UHD_4K_WEBDL, ANYBLURAY | UHD_4K_BLURAY
     ]
 
     to_guessit_screen_size_map = {
@@ -634,7 +634,7 @@ class Quality(object):
         screen_size = guess.get('screen_size')
         fmt = guess.get('format')
 
-        if not screen_size:
+        if not screen_size or isinstance(screen_size, list):
             return Quality.UNKNOWN
 
         format_map = Quality.guessit_map.get(screen_size)
@@ -644,7 +644,7 @@ class Quality(object):
         if isinstance(format_map, int):
             return format_map
 
-        if not fmt:
+        if not fmt or isinstance(fmt, list):
             return Quality.UNKNOWN
 
         quality = format_map.get(fmt)
@@ -660,10 +660,14 @@ class Quality(object):
         :rtype: dict (str, str)
         """
         _, quality = Quality.splitCompositeStatus(status)
-        result = {
-            'screen_size': Quality.to_guessit_screen_size(quality),
-            'format': Quality.to_guessit_format(quality)
-        }
+        screen_size = Quality.to_guessit_screen_size(quality)
+        fmt = Quality.to_guessit_format(quality)
+        result = dict()
+        if screen_size:
+            result['screen_size'] = screen_size
+        if fmt:
+            result['format'] = fmt
+
         return result
 
     @staticmethod
@@ -677,7 +681,8 @@ class Quality(object):
         """
         for q in Quality.to_guessit_format_list:
             if quality & q:
-                return Quality.combinedQualityStrings.get(q)
+                key = q & (512 - 1)  # 4k formats are bigger than 384 and are not part of ANY* bit set
+                return Quality.combinedQualityStrings.get(key)
 
     @staticmethod
     def to_guessit_screen_size(quality):

@@ -13,7 +13,7 @@ before_install:
   install $TRAVIS_NODE_VERSION
 - npm install -g grunt-cli
 - npm install -g bower
-- cd .build && npm install --quiet && bower install && cd ..
+- cd .build && cp ../package.json . && npm install --quiet && bower install && cd ..
 install:
 - pip install --upgrade pip
 - pip install --upgrade tox

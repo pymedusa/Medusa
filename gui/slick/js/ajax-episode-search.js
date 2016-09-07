@@ -57,7 +57,7 @@ function updateImages(data) {
 
                 // Update Status and Quality
                 rSearchTerm = /(\w+)\s\((.+?)\)/;
-                htmlContent = ep.status.replace(rSearchTerm, "$1" + ' <span class="quality ' + ep.quality + '">' + "$2" + '</span>');
+                htmlContent = ep.status.replace(rSearchTerm, "$1" + ' <span class="quality ' + ep.quality + '">' + "$2" + '</span>'); // eslint-disable-line quotes, no-useless-concat
                 parent.closest('tr').prop('class', ep.overview + ' season-' + ep.season + ' seasonstyle');
             }
             // update the status column if it exists
@@ -206,7 +206,7 @@ $(document).ready(function () {
             return false;
         }
 
-        $('.epSearch').click(function(event) {
+        $('.epSearch').on('click', function(event) {
             event.preventDefault();
 
             // Check if we have disabled the click
@@ -244,12 +244,12 @@ $(document).ready(function () {
             }
         });
 
-        $('#forcedSearchModalFailed .btn').click(function() {
+        $('#forcedSearchModalFailed .btn').on('click', function() {
             failedDownload = ($(this).text().toLowerCase() === 'yes');
             $('#forcedSearchModalQuality').modal('show');
         });
 
-        $('#forcedSearchModalQuality .btn').click(function() {
+        $('#forcedSearchModalQuality .btn').on('click', function() {
             qualityDownload = ($(this).text().toLowerCase() === 'yes');
             forcedSearch();
         });

@@ -1,5 +1,5 @@
 // Avoid `console` errors in browsers that lack a console.
-(function() {
+(function() { // eslint-disable-line wrap-iife
     var method;
     var noop = function noop() {};
     var methods = [

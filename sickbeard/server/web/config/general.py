@@ -104,7 +104,7 @@ class ConfigGeneral(Config):
         sickbeard.CALENDAR_UNPROTECTED = config.checkbox_to_value(calendar_unprotected)
         sickbeard.CALENDAR_ICONS = config.checkbox_to_value(calendar_icons)
         sickbeard.NO_RESTART = config.checkbox_to_value(no_restart)
-        sickbeard.DEBUG = config.checkbox_to_value(debug)
+
         sickbeard.SSL_VERIFY = config.checkbox_to_value(ssl_verify)
         # sickbeard.LOG_DIR is set in config.change_LOG_DIR()
         sickbeard.COMING_EPS_MISSED_RANGE = try_int(coming_eps_missed_range, 7)
@@ -112,7 +112,6 @@ class ConfigGeneral(Config):
         sickbeard.NOTIFY_ON_LOGIN = config.checkbox_to_value(notify_on_login)
         sickbeard.WEB_PORT = try_int(web_port)
         sickbeard.WEB_IPV6 = config.checkbox_to_value(web_ipv6)
-        # sickbeard.WEB_LOG is set in config.change_LOG_DIR()
         if config.checkbox_to_value(encryption_version) == 1:
             sickbeard.ENCRYPTION_VERSION = 2
         else:
@@ -120,10 +119,16 @@ class ConfigGeneral(Config):
         sickbeard.WEB_USERNAME = web_username
         sickbeard.WEB_PASSWORD = web_password
 
-        # Reconfigure the logger only if subliminal setting changed
-        if sickbeard.SUBLIMINAL_LOG != config.checkbox_to_value(subliminal_log):
-            logger.reconfigure_levels()
+        sickbeard.DEBUG = config.checkbox_to_value(debug)
+        sickbeard.WEB_LOG = config.checkbox_to_value(web_log)
         sickbeard.SUBLIMINAL_LOG = config.checkbox_to_value(subliminal_log)
+
+        if not config.change_LOG_DIR(log_dir):
+            results += ['Unable to create directory {dir}, '
+                        'log directory not changed.'.format(dir=ek(os.path.normpath, log_dir))]
+
+        # Reconfigure the logger
+        logger.reconfigure()
 
         sickbeard.PRIVACY_LEVEL = privacy_level.lower()
 
@@ -144,10 +149,6 @@ class ConfigGeneral(Config):
             sickbeard.TIME_PRESET = sickbeard.TIME_PRESET_W_SECONDS.replace(u':%S', u'')
 
         sickbeard.TIMEZONE_DISPLAY = timezone_display
-
-        if not config.change_LOG_DIR(log_dir, web_log):
-            results += ['Unable to create directory {dir}, '
-                        'log directory not changed.'.format(dir=ek(os.path.normpath, log_dir))]
 
         sickbeard.API_KEY = api_key
 
