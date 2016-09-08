@@ -75,7 +75,7 @@ class SearchResult(object):
         self.hash = None
 
         # proper_tags
-        self.proper_tags = None
+        self.proper_tags = u''
 
         # content
         self.content = None
