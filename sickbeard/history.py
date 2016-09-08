@@ -61,7 +61,7 @@ def logSnatch(searchResult):
         episode = int(curEpObj.episode)
         quality = searchResult.quality
         version = searchResult.version
-        proper_tags = ','.join(searchResult.proper_tags) if searchResult.proper_tags else None
+        proper_tags = searchResult.proper_tags if searchResult.proper_tags else None
 
         providerClass = searchResult.provider
         if providerClass is not None:
