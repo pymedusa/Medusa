@@ -51,6 +51,24 @@ class MainSanityCheck(db.DBSanityCheck):
         self.convert_tvrage_to_tvdb()
         self.convert_archived_to_compound()
         self.fix_subtitle_reference()
+        self.update_old_propers()
+
+    def update_old_propers(self):
+        logger.log(u'Checking for old propers without proper tags', logger.DEBUG)
+        query= "SELECT resource FROM history WHERE (proper_tags is null or proper_tags is '') " + \
+               "AND (action LIKE '%2' OR action LIKE '%9') AND " + \
+               "(resource LIKE '%REPACK%' or resource LIKE '%PROPER%' or resource LIKE '%REAL%')"
+        sql_results = self.connection.select(query)
+        if sql_results:
+            for sql_result in sql_results:
+                proper_release = sql_result['resource']
+                logger.log(u"Found old propers without proper tags: {0}".format(proper_release), logger.DEBUG)
+                parse_result = NameParser()._parse_string(proper_release)
+                if parse_result.proper_tags:
+                    proper_tags = '|'.join(parse_result.proper_tags)
+                    logger.log(u"Add proper tags '{0}' to '{1}'".format(proper_tags, proper_release), logger.DEBUG)
+                    self.connection.action("UPDATE history SET proper_tags = ? WHERE resource = ?", 
+                                           [proper_tags, proper_release])
 
     def fix_subtitle_reference(self):
         logger.log(u'Checking for delete episodes with subtitle reference', logger.DEBUG)
