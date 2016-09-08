@@ -347,7 +347,8 @@ class CheckVersion(object):
                 return self.updater.update()
 
     def list_remote_branches(self):
-        sickbeard.GIT_REMOTE_BRANCHES = self.updater.list_remote_branches()
+        if self.updater:
+            sickbeard.GIT_REMOTE_BRANCHES = self.updater.list_remote_branches()
         return sickbeard.GIT_REMOTE_BRANCHES
 
     def get_branch(self):
