@@ -144,7 +144,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                         torrent_hash = self._get_hash(item)
 
                         # This will be retrived from parser
-                        proper_tags = None
+                        proper_tags = ''
 
                         results.append(Proper(title, url, datetime.today(), show_obj, seeders, leechers, size, pubdate, torrent_hash, proper_tags))
 

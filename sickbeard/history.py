@@ -26,7 +26,7 @@ from sickrage.helper.encoding import ss
 from sickrage.show.History import History
 
 
-def _logHistoryItem(action, showid, season, episode, quality, resource, provider, version=-1, proper_tags=None):
+def _logHistoryItem(action, showid, season, episode, quality, resource, provider, version=-1, proper_tags=''):
     """
     Insert a history item in DB
 
@@ -61,7 +61,7 @@ def logSnatch(searchResult):
         episode = int(curEpObj.episode)
         quality = searchResult.quality
         version = searchResult.version
-        proper_tags = ','.join(searchResult.proper_tags) if searchResult.proper_tags else None
+        proper_tags = '|'.join(searchResult.proper_tags)
 
         providerClass = searchResult.provider
         if providerClass is not None:
