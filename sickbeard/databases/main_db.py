@@ -1224,5 +1224,5 @@ class AddProperTags(TestIncreaseMajorVersion):
         logger.log(u'Adding column proper_tags in history')
         if not self.hasColumn('history', 'proper_tags'):
             self.addColumn('history', 'proper_tags', 'TEXT', u'')
-        MainSanityCheck.update_old_propers()
+        MainSanityCheck().update_old_propers()
         self.inc_minor_version()
