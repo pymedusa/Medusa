@@ -1206,5 +1206,5 @@ class AddProperTags(TestIncreaseMajorVersion):
 
         logger.log(u'Adding column proper_tags in history')
         if not self.hasColumn('history', 'proper_tags'):
-            self.addColumn('history', 'proper_tags', 'TEXT', '')
+            self.addColumn('history', 'proper_tags', 'TEXT', u'')
         self.inc_minor_version()
