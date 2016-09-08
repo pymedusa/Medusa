@@ -51,11 +51,10 @@ class MainSanityCheck(db.DBSanityCheck):
         self.convert_tvrage_to_tvdb()
         self.convert_archived_to_compound()
         self.fix_subtitle_reference()
-        self.update_old_propers()
 
     def update_old_propers(self):
         logger.log(u'Checking for old propers without proper tags', logger.DEBUG)
-        query= "SELECT resource FROM history WHERE (proper_tags is null or proper_tags is '') " + \
+        query = "SELECT resource FROM history WHERE (proper_tags is null or proper_tags is '') " + \
                "AND (action LIKE '%2' OR action LIKE '%9') AND " + \
                "(resource LIKE '%REPACK%' or resource LIKE '%PROPER%' or resource LIKE '%REAL%')"
         sql_results = self.connection.select(query)
@@ -67,7 +66,7 @@ class MainSanityCheck(db.DBSanityCheck):
                 if parse_result.proper_tags:
                     proper_tags = '|'.join(parse_result.proper_tags)
                     logger.log(u"Add proper tags '{0}' to '{1}'".format(proper_tags, proper_release), logger.DEBUG)
-                    self.connection.action("UPDATE history SET proper_tags = ? WHERE resource = ?", 
+                    self.connection.action("UPDATE history SET proper_tags = ? WHERE resource = ?",
                                            [proper_tags, proper_release])
 
     def fix_subtitle_reference(self):
@@ -1225,4 +1224,5 @@ class AddProperTags(TestIncreaseMajorVersion):
         logger.log(u'Adding column proper_tags in history')
         if not self.hasColumn('history', 'proper_tags'):
             self.addColumn('history', 'proper_tags', 'TEXT', u'')
+        self.update_old_propers()            
         self.inc_minor_version()
