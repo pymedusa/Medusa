@@ -1204,7 +1204,7 @@ class AddProperTags(TestIncreaseMajorVersion):
     def execute(self):
         backupDatabase(self.checkDBVersion())
 
-        logger.log(u"Adding column proper_tags in history")
+        logger.log(u'Adding column proper_tags in history')
         if not self.hasColumn('history', 'proper_tags'):
             self.addColumn('history', 'proper_tags', 'TEXT', '')
         self.inc_minor_version()
