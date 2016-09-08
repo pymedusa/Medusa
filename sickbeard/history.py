@@ -42,8 +42,6 @@ def _logHistoryItem(action, showid, season, episode, quality, resource, provider
     logDate = datetime.datetime.today().strftime(History.date_format)
     resource = ss(resource)
 
-    proper_tags = ','.join(proper_tags) if proper_tags else None
-
     main_db_con = db.DBConnection()
     main_db_con.action(
         "INSERT INTO history (action, date, showid, season, episode, quality, resource, provider, version, proper_tags) VALUES (?,?,?,?,?,?,?,?,?,?)",
@@ -63,7 +61,7 @@ def logSnatch(searchResult):
         episode = int(curEpObj.episode)
         quality = searchResult.quality
         version = searchResult.version
-        proper_tags = searchResult.proper_tags if searchResult.proper_tags else None
+        proper_tags = ','.join(searchResult.proper_tags) if searchResult.proper_tags else None
 
         providerClass = searchResult.provider
         if providerClass is not None:

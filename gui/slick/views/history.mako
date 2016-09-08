@@ -65,7 +65,7 @@
                     <% isoDate = datetime.strptime(str(hItem.date), History.date_format).isoformat('T') %>
                     <time datetime="${isoDate}" class="date">${airDate}</time>
                 </td>
-                <% proper_tags = [action.proper_tags for action in sorted(hItem.actions) if action.proper_tags]%>
+                <% proper_tags = [action.proper_tags for action in sorted(hItem.actions) if action.proper_tags] %>
                 <td class="tvShow"><a href="home/displayShow?show=${hItem.show_id}#S${hItem.season}E${hItem.episode}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${'<span class="quality Proper">Proper</span>' if proper_tags else ''}</a></td>
                 <td align="center" ${'class="subtitles_column"' if composite.status == SUBTITLED else ''}>
                 % if composite.status == SUBTITLED:
@@ -129,7 +129,7 @@
                     <time datetime="${isoDate}" class="date">${airDate}</time>
                 </td>
                 <td class="tvShow">
-                    <% proper_tags = [action.proper_tags for action in sorted(hItem.actions) if action.proper_tags]%>
+                    <% proper_tags = [action.proper_tags for action in sorted(hItem.actions) if action.proper_tags] %>
                     <span><a href="home/displayShow?show=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${'<span class="quality Proper">Proper</span>' if proper_tags else ''}</a></span>
                 </td>
                 <td align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
