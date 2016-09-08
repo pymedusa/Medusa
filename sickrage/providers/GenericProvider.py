@@ -465,7 +465,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             'Season': []
         }
 
-        for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
+        for show_name in allPossibleShowNames(episode.show, season=episode.season):
             episode_string = show_name + ' '
 
             if episode.show.air_by_date or episode.show.sports:
@@ -473,7 +473,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             elif episode.show.anime:
                 episode_string += '%d' % int(episode.scene_absolute_number)
             else:
-                episode_string += 'S%02d' % int(episode.scene_season)
+                episode_string += 'S%02d' % int(episode.season)
 
             search_string['Season'].append(episode_string.strip())
 
