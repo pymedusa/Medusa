@@ -26,7 +26,7 @@ from sickrage.helper.encoding import ss
 from sickrage.show.History import History
 
 
-def _logHistoryItem(action, showid, season, episode, quality, resource, provider, version=-1, proper_tags=None):
+def _logHistoryItem(action, showid, season, episode, quality, resource, provider, version=-1, proper_tags=''):
     """
     Insert a history item in DB
 
