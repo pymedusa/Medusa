@@ -55,8 +55,8 @@ class MainSanityCheck(db.DBSanityCheck):
     def update_old_propers(self):
         logger.log(u'Checking for old propers without proper tags', logger.DEBUG)
         query = "SELECT resource FROM history WHERE (proper_tags is null or proper_tags is '') " + \
-               "AND (action LIKE '%2' OR action LIKE '%9') AND " + \
-               "(resource LIKE '%REPACK%' or resource LIKE '%PROPER%' or resource LIKE '%REAL%')"
+                "AND (action LIKE '%2' OR action LIKE '%9') AND " + \
+                "(resource LIKE '%REPACK%' or resource LIKE '%PROPER%' or resource LIKE '%REAL%')"
         sql_results = self.connection.select(query)
         if sql_results:
             for sql_result in sql_results:
@@ -1224,5 +1224,5 @@ class AddProperTags(TestIncreaseMajorVersion):
         logger.log(u'Adding column proper_tags in history')
         if not self.hasColumn('history', 'proper_tags'):
             self.addColumn('history', 'proper_tags', 'TEXT', u'')
-        self.update_old_propers()            
+        self.update_old_propers()
         self.inc_minor_version()
