@@ -26,7 +26,7 @@ from sickrage.helper.encoding import ss
 from sickrage.show.History import History
 
 
-def _logHistoryItem(action, showid, season, episode, quality, resource, provider, version=-1):
+def _logHistoryItem(action, showid, season, episode, quality, resource, provider, version=-1, proper_tags=None):
     """
     Insert a history item in DB
 
@@ -44,8 +44,8 @@ def _logHistoryItem(action, showid, season, episode, quality, resource, provider
 
     main_db_con = db.DBConnection()
     main_db_con.action(
-        "INSERT INTO history (action, date, showid, season, episode, quality, resource, provider, version) VALUES (?,?,?,?,?,?,?,?,?)",
-        [action, logDate, showid, season, episode, quality, resource, provider, version])
+        "INSERT INTO history (action, date, showid, season, episode, quality, resource, provider, version, proper_tags) VALUES (?,?,?,?,?,?,?,?,?,?)",
+        [action, logDate, showid, season, episode, quality, resource, provider, version, proper_tags])
 
 
 def logSnatch(searchResult):
@@ -61,6 +61,7 @@ def logSnatch(searchResult):
         episode = int(curEpObj.episode)
         quality = searchResult.quality
         version = searchResult.version
+        proper_tags = ','.join(searchResult.proper_tags) if searchResult.proper_tags else None
 
         providerClass = searchResult.provider
         if providerClass is not None:
@@ -72,7 +73,7 @@ def logSnatch(searchResult):
 
         resource = searchResult.name
 
-        _logHistoryItem(action, showid, season, episode, quality, resource, provider, version)
+        _logHistoryItem(action, showid, season, episode, quality, resource, provider, version, proper_tags)
 
 
 def logDownload(episode, filename, new_ep_quality, release_group=None, version=-1):

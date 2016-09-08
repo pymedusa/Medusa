@@ -1190,3 +1190,21 @@ class TestIncreaseMajorVersion(AddMinorVersion):
         self.inc_minor_version()
 
         logger.log(u'Updated to: %d.%d' % self.connection.version)
+
+
+class AddProperTags(TestIncreaseMajorVersion):
+    """Adds column proper_tags to history table."""
+
+    def test(self):
+        """
+        Test if the version is at least 43.2
+        """
+        return self.connection.version >= (43, 2)
+
+    def execute(self):
+        backupDatabase(self.checkDBVersion())
+
+        logger.log(u"Adding column proper_tags in history")
+        if not self.hasColumn("history", "proper_tags"):
+            self.addColumn("history", "proper_tags", 'TEXT', None)
+        self.inc_minor_version()
