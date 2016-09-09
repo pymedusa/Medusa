@@ -22,15 +22,16 @@
         if not mem_usage:
             import resource # resource module is unix only
             mem_usage = 'resource'
-
-    stats = Show.overall_stats()
-    ep_downloaded = stats['episodes']['downloaded']
-    ep_snatched = stats['episodes']['snatched']
-    ep_total = stats['episodes']['total']
-    ep_percentage = '' if ep_total == 0 else '(<span class="footerhighlight">%s%%</span>)' % re.sub(r'(\d+)(\.\d)\d+', r'\1\2', str((float(ep_downloaded)/float(ep_total))*100))
 %>
 <!-- BEGIN FOOTER -->
 % if loggedIn:
+    <%
+        stats = Show.overall_stats()
+        ep_downloaded = stats['episodes']['downloaded']
+        ep_snatched = stats['episodes']['snatched']
+        ep_total = stats['episodes']['total']
+        ep_percentage = '' if ep_total == 0 else '(<span class="footerhighlight">%s%%</span>)' % re.sub(r'(\d+)(\.\d)\d+', r'\1\2', str((float(ep_downloaded)/float(ep_total))*100))
+    %>
     <footer>
         <div class="footer clearfix">
             <span class="footerhighlight">${stats['shows']['total']}</span> Shows (<span class="footerhighlight">${stats['shows']['active']}</span> Active)
