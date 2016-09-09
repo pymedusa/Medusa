@@ -30,6 +30,7 @@ class IssueSubmitter(object):
     EXISTING_ISSUE_LOCKED = 'Issue #{number} is locked, check GitHub to find info about the error.'
     COMMENTED_EXISTING_ISSUE = 'Commented on existing issue #{number} successfully!'
     ISSUE_CREATED = 'Your issue ticket #{number} was submitted successfully!'
+    CHECK_VERSION_DISABLED = "Please enable in Medusa 'Check software updates' to submit issues"
 
     TITLE_PREFIX = '[APP SUBMITTED]: '
 
@@ -140,6 +141,10 @@ class IssueSubmitter(object):
         :return: user message and issue number
         :rtype: list of tuple(str, str)
         """
+        if not version_checker:
+            logger.warning(IssueSubmitter.CHECK_VERSION_DISABLED)
+            return [(IssueSubmitter.CHECK_VERSION_DISABLED, None)]
+
         if not sickbeard.DEBUG or not sickbeard.GIT_USERNAME or not sickbeard.GIT_PASSWORD:
             logger.warning(IssueSubmitter.INVALID_CONFIG)
             return [(IssueSubmitter.INVALID_CONFIG, None)]
