@@ -1510,6 +1510,21 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
     return None
 
 
+def remove_folder(folder_path, level=logging.WARNING):
+    """Recursively delete a directory tree.
+
+    :param folder_path:
+    :type folder_path: string
+    :param level:
+    :type level: int
+    """
+    if ek(os.path.exists, folder_path):
+        try:
+            shutil.rmtree(folder_path)
+        except OSError as e:
+            logger.log(level, u'Unable to remove directory {folder}: {cause!r}', folder=folder_path, cause=e)
+
+
 def is_ip_private(ip):
     """Return whether the ip is a private ip address.
 
