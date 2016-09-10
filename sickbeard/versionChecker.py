@@ -660,7 +660,7 @@ class GitUpdateManager(UpdateManager):
 
         # remove untracked files and performs a hard reset on git branch to avoid update issues
         if self._is_hard_reset_allowed():
-            # self.clean() # This is removing user data and backups
+            self.clean()
             self.reset()
 
         if self.branch == self._find_installed_branch():
@@ -692,13 +692,20 @@ class GitUpdateManager(UpdateManager):
                                         sickbeard.BRANCH in sickbeard.GIT_RESET_BRANCHES)
 
     def clean(self):
+        """Call git clean to remove all untracked files.
+
+        It only affects source folders (sickbeard, sickrage) and the lib folder,
+        to prevent deleting untracked user data not known by .gitignore
+
+        :return:
+        :rtype: bool
         """
-        Calls git clean to remove all untracked files. Returns a bool depending
-        on the call's success.
-        """
-        _, _, exit_status = self._run_git(self._git_path, 'clean -df ""')  # @UnusedVariable
-        if exit_status == 0:
-            return True
+        for folder in ('lib', 'sickbeard', 'sickrage'):
+            _, _, exit_status = self._run_git(self._git_path, 'clean -d -f {0}'.format(folder))
+            if exit_status != 0:
+                return False
+
+        return True
 
     def reset(self):
         """
