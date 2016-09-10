@@ -31,7 +31,7 @@ import sickbeard
 from six import iteritems, text_type
 
 from . import db, helpers, logger
-from . indexers.indexer_config import INDEXER_TVDB
+from .indexers.indexer_config import INDEXER_TVDB
 
 exceptionsCache = {}
 exceptionsSeasonCache = {}
