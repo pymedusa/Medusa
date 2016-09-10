@@ -294,7 +294,6 @@ class GenericMetadata(object):
                 logger.log(
                     u"Unable to write file to " + nfo_file_path + " - are you sure the folder is writable? " + ex(e),
                     logger.ERROR)
-            
 
     def create_fanart(self, show_obj):
         if self.fanart and show_obj and not self._has_fanart(show_obj):
