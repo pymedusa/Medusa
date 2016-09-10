@@ -269,7 +269,7 @@ class GenericMetadata(object):
             assert isinstance(nfo_file_path, text_type)
 
             try:
-                with io.open(nfo_file_path, 'rb', encoding='utf8') as xmlFileObj:
+                with io.open(nfo_file_path, 'rb') as xmlFileObj:
                     showXML = etree.ElementTree(file=xmlFileObj)
 
                 indexerid = showXML.find('id')
@@ -413,7 +413,7 @@ class GenericMetadata(object):
 
             logger.log(u"Writing show nfo file to " + nfo_file_path, logger.DEBUG)
 
-            nfo_file = io.open(nfo_file_path, 'wb', encoding='utf8')
+            nfo_file = io.open(nfo_file_path, 'wb')
             data.write(nfo_file, encoding='UTF-8')
             nfo_file.close()
             helpers.chmodAsParent(nfo_file_path)
@@ -457,7 +457,7 @@ class GenericMetadata(object):
                 helpers.chmodAsParent(nfo_file_dir)
 
             logger.log(u"Writing episode nfo file to " + nfo_file_path, logger.DEBUG)
-            nfo_file = io.open(nfo_file_path, 'wb', encoding='utf8')
+            nfo_file = io.open(nfo_file_path, 'wb')
             data.write(nfo_file, encoding='UTF-8')
             nfo_file.close()
             helpers.chmodAsParent(nfo_file_path)
@@ -705,7 +705,7 @@ class GenericMetadata(object):
                 ek(os.makedirs, image_dir)
                 helpers.chmodAsParent(image_dir)
 
-            outFile = io.open(image_path, 'wb', encoding='utf8')
+            outFile = io.open(image_path, 'wb')
             outFile.write(image_data)
             outFile.close()
             helpers.chmodAsParent(image_path)
@@ -911,7 +911,7 @@ class GenericMetadata(object):
         logger.log(u"Loading show info from metadata file in " + folder, logger.DEBUG)
 
         try:
-            with io.open(metadata_path, 'rb', encoding='utf8') as xmlFileObj:
+            with io.open(metadata_path, 'rb') as xmlFileObj:
                 showXML = etree.ElementTree(file=xmlFileObj)
 
             if showXML.findtext('title') is None or (showXML.findtext('tvdbid') is None and showXML.findtext('id') is None):
