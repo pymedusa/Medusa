@@ -746,40 +746,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             CACHE_DIR = None
 
         # Check if we need to perform a restore of the cache folder
-        try:
-            restoreDir = ek(os.path.join, DATA_DIR, 'restore')
-            if ek(os.path.exists, restoreDir) and ek(os.path.exists, ek(os.path.join, restoreDir, 'cache')):
-                def restoreCache(srcDir, dstDir):
-                    def path_leaf(path):
-                        head, tail = ek(os.path.split, path)
-                        return tail or ek(os.path.basename, head)
-
-                    try:
-                        if ek(os.path.isdir, dstDir):
-                            bak_filename = '{0}-{1}'.format(path_leaf(dstDir), datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d_%H%M%S'))
-                            shutil.move(dstDir, ek(os.path.join, ek(os.path.dirname, dstDir), bak_filename))
-
-                        shutil.move(srcDir, dstDir)
-                        logger.log(u"Restore: restoring cache successful", logger.INFO)
-                    except Exception as e:
-                        logger.log(u"Restore: restoring cache failed: {0}".format(str(e)), logger.ERROR)
-
-                restoreCache(ek(os.path.join, restoreDir, 'cache'), CACHE_DIR)
-        except Exception as e:
-            logger.log(u"Restore: restoring cache failed: {0}".format(ex(e)), logger.ERROR)
-        finally:
-            if ek(os.path.exists, ek(os.path.join, DATA_DIR, 'restore')):
-                try:
-                    shutil.rmtree(ek(os.path.join, DATA_DIR, 'restore'))
-                except Exception as e:
-                    logger.log(u"Restore: Unable to remove the restore directory: {0}".format(ex(e)), logger.ERROR)
-
-                for cleanupDir in ['mako', 'sessions', 'indexers', 'rss']:
-                    try:
-                        shutil.rmtree(ek(os.path.join, CACHE_DIR, cleanupDir))
-                    except Exception as e:
-                        if cleanupDir not in ['rss', 'sessions', 'indexers']:
-                            logger.log(u"Restore: Unable to remove the cache/{0} directory: {1}".format(cleanupDir, ex(e)), logger.WARNING)
+        restore_cache_folder(CACHE_DIR)
 
         FANART_BACKGROUND = bool(check_setting_int(CFG, 'GUI', 'fanart_background', 1))
         FANART_BACKGROUND_OPACITY = check_setting_float(CFG, 'GUI', 'fanart_background_opacity', 0.4)
@@ -1442,6 +1409,40 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         __INITIALIZED__ = True
         return True
+
+
+def restore_cache_folder(cache_folder):
+    """Restore cache folder.
+
+    :param cache_folder:
+    :type cache_folder: string
+    """
+    restore_folder = ek(os.path.join, DATA_DIR, 'restore')
+    if not ek(os.path.exists, restore_folder) or not ek(os.path.exists, ek(os.path.join, restore_folder, 'cache')):
+        return
+
+    try:
+        def restore_cache(src_folder, dest_folder):
+            def path_leaf(path):
+                head, tail = ek(os.path.split, path)
+                return tail or ek(os.path.basename, head)
+
+            try:
+                if ek(os.path.isdir, dest_folder):
+                    bak_filename = '{0}-{1}'.format(path_leaf(dest_folder), datetime.datetime.now().strftime('%Y%m%d_%H%M%S'))
+                    shutil.move(dest_folder, ek(os.path.join, ek(os.path.dirname, dest_folder), bak_filename))
+
+                shutil.move(src_folder, dest_folder)
+                logger.log(u"Restore: restoring cache successful", logger.INFO)
+            except OSError as e:
+                logger.log(u"Restore: restoring cache failed: {0!r}".format(e), logger.ERROR)
+
+        restore_cache(ek(os.path.join, restore_folder, 'cache'), cache_folder)
+    finally:
+        helpers.remove_folder(restore_folder)
+        for name in ('mako', 'sessions', 'indexers', 'rss'):
+            folder_path = ek(os.path.join, cache_folder, name)
+            helpers.remove_folder(folder_path)
 
 
 def start():
