@@ -17,28 +17,26 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import os
 import platform
-import subprocess
 import re
-
-import tarfile
-import stat
-import traceback
-import time
-import datetime
 import shutil
+import stat
+import subprocess
+import tarfile
+import time
+import traceback
+
 import shutil_custom
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
 import sickbeard
-from sickbeard import db
-from sickbeard import ui
-from sickbeard import notifiers
-from sickbeard import logger, helpers
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
+
+from . import db, helpers, logger, notifiers, ui
 
 
 class CheckVersion(object):
@@ -50,12 +48,11 @@ class CheckVersion(object):
         self.updater = None
         self.install_type = None
         self.amActive = False
-        if sickbeard.gh:
-            self.install_type = self.find_install_type()
-            if self.install_type == 'git':
-                self.updater = GitUpdateManager()
-            elif self.install_type == 'source':
-                self.updater = SourceUpdateManager()
+        self.install_type = self.find_install_type()
+        if self.install_type == 'git':
+            self.updater = GitUpdateManager()
+        elif self.install_type == 'source':
+            self.updater = SourceUpdateManager()
 
         self.session = helpers.make_session()
 
@@ -335,7 +332,8 @@ class CheckVersion(object):
         return news
 
     def need_update(self):
-        return self.updater.need_update()
+        if self.updater:
+            return self.updater.need_update()
 
     def update(self):
         if self.updater:

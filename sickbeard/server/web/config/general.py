@@ -3,18 +3,16 @@
 from __future__ import unicode_literals
 
 import os
-from tornado.routes import route
+
 import sickbeard
-from sickbeard import (
-    config, helpers, logger, ui,
-)
-from sickbeard.common import (
-    Quality, WANTED,
-)
 from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
-from sickbeard.server.web.core import PageTemplate
-from sickbeard.server.web.config.handler import Config
+from tornado.routes import route
+
+from .handler import Config
+from ..core import PageTemplate
+from .... import config, github_client, helpers, logger, ui
+from ....common import Quality, WANTED
 
 
 @route('/config/general(/?.*)')
@@ -129,6 +127,9 @@ class ConfigGeneral(Config):
 
         # Reconfigure the logger
         logger.reconfigure()
+
+        # Validate github credentials
+        github_client.authenticate(sickbeard.GIT_USERNAME, sickbeard.GIT_PASSWORD)
 
         sickbeard.PRIVACY_LEVEL = privacy_level.lower()
 

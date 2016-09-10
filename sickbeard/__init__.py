@@ -19,47 +19,40 @@
 # pylint: disable=too-many-lines
 
 import datetime
-import socket
 import os
-import re
 import os.path
-import shutil
-import shutil_custom
 import random
-
-from threading import Lock
+import re
+import shutil
+import socket
 import sys
+from threading import Lock
 
-from github import Github
-
-from sickbeard import metadata
-from sickbeard import providers
-from sickbeard.config import (
-    CheckSection, ConfigMigrator,
-    check_provider_setting, check_setting_int, check_setting_bool, check_setting_str, check_setting_float,
-    load_provider_setting, save_provider_setting
-)
-from sickbeard import (
-    searchBacklog, showUpdater, versionChecker, properFinder, auto_postprocessor, subtitles, traktChecker,
-)
-from sickbeard import db, helpers, scheduler, search_queue, show_queue, logger, naming, dailysearcher
-from sickbeard.indexers import indexer_api
-from sickbeard.indexers.indexer_exceptions import (
-    indexer_shownotfound, indexer_showincomplete, indexer_exception, indexer_error, indexer_episodenotfound,
-    indexer_attributenotfound, indexer_seasonnotfound, indexer_userabort,
-)
-from sickbeard.common import SD, SKIPPED, WANTED
-from sickbeard.providers import NewznabProvider, TorrentRssProvider
-from sickbeard.databases import main_db, cache_db, failed_db
-
+from configobj import ConfigObj
+import requests
+import shutil_custom
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.providers.GenericProvider import GenericProvider
 from sickrage.system.Shutdown import Shutdown
 
-from configobj import ConfigObj
-
-import requests
+from . import (
+    auto_postprocessor, dailysearcher, db, helpers, logger, metadata, naming, properFinder, providers,
+    scheduler, searchBacklog, search_queue, showUpdater, show_queue, subtitles, traktChecker, versionChecker
+)
+from .common import SD, SKIPPED, WANTED
+from .config import (
+    CheckSection, ConfigMigrator, check_provider_setting, check_setting_bool, check_setting_float,
+    check_setting_int, check_setting_str, load_provider_setting, save_provider_setting
+)
+from .databases import cache_db, failed_db, main_db
+from .github_client import authenticate
+from .indexers import indexer_api
+from .indexers.indexer_exceptions import (
+    indexer_attributenotfound, indexer_episodenotfound, indexer_error, indexer_exception,
+    indexer_seasonnotfound, indexer_showincomplete, indexer_shownotfound, indexer_userabort
+)
+from .providers import NewznabProvider, TorrentRssProvider
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -94,10 +87,7 @@ NO_RESIZE = False
 # system events
 events = None
 
-# github
-gh = None
-
-# schedualers
+# schedulers
 dailySearchScheduler = None
 backlogSearchScheduler = None
 showUpdateScheduler = None
@@ -715,19 +705,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         # init logging
         logger.init_logging(console_logging=consoleLogging)
 
-        try:
-            if GIT_USERNAME and GIT_PASSWORD:
-                gh = Github(login_or_token=GIT_USERNAME, password=GIT_PASSWORD, user_agent="Medusa").get_organization(GIT_ORG).get_repo(GIT_REPO)
-        except Exception as error:
-            logger.log(u'Unable to setup GitHub properly with your github login. Please check your credentials. Error: {}'.format(error), logger.WARNING)
-            gh = None
-
-        if not gh:
-            try:
-                gh = Github(user_agent="Medusa").get_organization(GIT_ORG).get_repo(GIT_REPO)
-            except Exception as error:
-                logger.log(u'Unable to setup GitHub properly. GitHub will not be available. Error: {}'.format(error), logger.WARNING)
-                gh = None
+        authenticate(GIT_USERNAME, GIT_PASSWORD)
 
         # git reset on update
         GIT_RESET = bool(check_setting_int(CFG, 'General', 'git_reset', 1))
