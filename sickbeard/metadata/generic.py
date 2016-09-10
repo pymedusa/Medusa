@@ -287,10 +287,14 @@ class GenericMetadata(object):
                 helpers.chmodAsParent(nfo_file_path)
 
                 return True
+            except etree.ParseError as error:
+                logger.log('Received an invalid XML for {show}, try again later. Error: {error_msg}'.format
+                           (show=show_obj.name, error_msg=error), logger.WARNING)
             except IOError as e:
                 logger.log(
                     u"Unable to write file to " + nfo_file_path + " - are you sure the folder is writable? " + ex(e),
                     logger.ERROR)
+            
 
     def create_fanart(self, show_obj):
         if self.fanart and show_obj and not self._has_fanart(show_obj):
