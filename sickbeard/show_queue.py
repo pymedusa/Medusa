@@ -20,26 +20,18 @@
 import os
 import traceback
 
-import sickbeard
-
 from imdb import _exceptions as imdb_exceptions
-from sickbeard.common import WANTED
-from sickbeard.tv import TVShow
-from sickbeard import logger
-from sickbeard import notifiers
-from sickbeard import ui
-from sickbeard import generic_queue
-from sickbeard import name_cache
-from sickbeard.blackandwhitelist import BlackAndWhiteList
-from sickrage.helper.exceptions import CantRefreshShowException, CantRemoveShowException, CantUpdateShowException
-from sickrage.helper.exceptions import EpisodeDeletedException, ex, MultipleShowObjectsException
-from sickrage.helper.exceptions import ShowDirectoryNotFoundException
-from sickbeard.helpers import get_showname_from_indexer
-from traktor import TraktApi
-from traktor import TraktException
-from sickrage.helper.encoding import ek
-from sickbeard.helpers import makeDir, chmodAsParent
+import sickbeard
 from sickrage.helper.common import episode_num, sanitize_filename
+from sickrage.helper.encoding import ek
+from sickrage.helper.exceptions import CantRefreshShowException, CantRemoveShowException, CantUpdateShowException, EpisodeDeletedException, \
+    MultipleShowObjectsException, ShowDirectoryNotFoundException, ex
+from traktor import TraktApi, TraktException
+from . import generic_queue, logger, name_cache, notifiers, ui
+from .blackandwhitelist import BlackAndWhiteList
+from .common import WANTED
+from .helpers import chmodAsParent, get_showname_from_indexer, makeDir
+from .tv import TVShow
 
 
 class ShowQueue(generic_queue.GenericQueue):

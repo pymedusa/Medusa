@@ -26,7 +26,6 @@ import time
 from collections import OrderedDict
 
 import guessit
-
 import sickbeard
 from .. import common, db, helpers, scene_exceptions, scene_numbering
 

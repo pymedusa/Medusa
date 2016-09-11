@@ -19,14 +19,13 @@
 
 from __future__ import unicode_literals
 
-import re
-from fnmatch import fnmatch
 import logging
+import re
 import traceback
-
-from six import text_type, PY3
+from fnmatch import fnmatch
 
 import sickbeard
+from six import PY3, text_type
 
 logger = logging.getLogger(__name__)
 

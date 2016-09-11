@@ -19,15 +19,14 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import sickbeard
 
 from requests.compat import urlencode
-from six.moves.urllib.request import Request, urlopen
-from six.moves.urllib.error import HTTPError
-
-from sickbeard import logger
+import sickbeard
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
+from six.moves.urllib.error import HTTPError
+from six.moves.urllib.request import Request, urlopen
+from .. import logger
 
 
 class Notifier(object):

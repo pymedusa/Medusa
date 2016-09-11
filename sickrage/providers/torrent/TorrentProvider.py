@@ -19,13 +19,12 @@
 
 from feedparser.util import FeedParserDict
 from hachoir_parser import createParser
-
 import sickbeard
 from sickbeard import logger
 from sickbeard.classes import TorrentSearchResult
-from sickrage.helper.common import try_int
-from sickrage.helper.exceptions import ex
-from sickrage.providers.GenericProvider import GenericProvider
+from ..GenericProvider import GenericProvider
+from ...helper.common import try_int
+from ...helper.exceptions import ex
 
 
 class TorrentProvider(GenericProvider):

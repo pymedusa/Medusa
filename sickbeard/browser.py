@@ -17,20 +17,19 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
-
+"""Browser module."""
 from __future__ import unicode_literals
 
 import os
 import string
 
-from sickbeard import logger
-
 from sickrage.helper.encoding import ek
+from . import logger
 
 
 # adapted from http://stackoverflow.com/questions/827371/is-there-a-way-to-list-all-the-available-drive-letters-in-python/827490
-def getWinDrives():
-    """ Return list of detected drives """
+def get_win_drives():
+    """Return list of detected drives."""
     assert os.name == 'nt'
     from ctypes import windll
 
@@ -44,7 +43,8 @@ def getWinDrives():
     return drives
 
 
-def getFileList(path, includeFiles):
+def get_file_list(path, include_files):
+    """Return file list for the given path."""
     # prune out directories to protect the user from doing stupid things (already lower case the dir to reduce calls)
     hide_list = ['boot', 'bootmgr', 'cache', 'config.msi', 'msocache', 'recovery', '$recycle.bin',
                  'recycler', 'system volume information', 'temporary internet files']  # windows specific
@@ -59,7 +59,7 @@ def getFileList(path, includeFiles):
         full_filename = ek(os.path.join, path, filename)
         is_dir = ek(os.path.isdir, full_filename)
 
-        if not includeFiles and not is_dir:
+        if not include_files and not is_dir:
             continue
 
         entry = {
@@ -73,19 +73,17 @@ def getFileList(path, includeFiles):
     return file_list
 
 
-def foldersAtPath(path, includeParent=False, includeFiles=False):
-    """
-    Returns a list of dictionaries with the folders contained at the given path.
+def list_folders(path, include_parent=False, include_files=False):
+    """Return a list of dictionaries with the folders contained at the given path.
 
     Give the empty string as the path to list the contents of the root path
     (under Unix this means "/", on Windows this will be a list of drive letters)
 
     :param path: to list contents
-    :param includeParent: boolean, include parent dir in list as well
-    :param includeFiles: boolean, include files or only directories
+    :param include_parent: boolean, include parent dir in list as well
+    :param include_files: boolean, include files or only directories
     :return: list of folders/files
     """
-
     # walk up the tree until we find a valid path
     while path and not ek(os.path.isdir, path):
         if path == ek(os.path.dirname, path):
@@ -97,7 +95,7 @@ def foldersAtPath(path, includeParent=False, includeFiles=False):
     if path == '':
         if os.name == 'nt':
             entries = [{'currentPath': 'Root'}]
-            for letter in getWinDrives():
+            for letter in get_win_drives():
                 letter_path = letter + ':\\'
                 entries.append({'name': letter_path, 'path': letter_path})
             return entries
@@ -113,16 +111,16 @@ def foldersAtPath(path, includeParent=False, includeFiles=False):
         parent_path = ''
 
     try:
-        file_list = getFileList(path, includeFiles)
+        file_list = get_file_list(path, include_files)
     except OSError as e:
         logger.log('Unable to open %s: %s / %s' % (path, repr(e), str(e)), logger.WARNING)
-        file_list = getFileList(parent_path, includeFiles)
+        file_list = get_file_list(parent_path, include_files)
 
     file_list = sorted(file_list,
                        lambda x, y: cmp(ek(os.path.basename, x['name']).lower(), ek(os.path.basename, y['path']).lower()))
 
     entries = [{'currentPath': path}]
-    if includeParent and parent_path != path:
+    if include_parent and parent_path != path:
         entries.append({'name': '..', 'path': parent_path})
     entries.extend(file_list)
 

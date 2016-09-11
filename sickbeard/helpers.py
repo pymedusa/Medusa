@@ -40,7 +40,6 @@ import uuid
 import warnings
 import xml.etree.ElementTree as ET
 import zipfile
-
 from itertools import cycle, izip
 
 import adba
@@ -52,8 +51,6 @@ import requests
 from requests.compat import urlparse
 import shutil_custom
 import sickbeard
-from sickbeard import classes, db
-from sickbeard.common import USER_AGENT
 from sickrage.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, \
     subtitle_extensions
 from sickrage.helper.encoding import ek
@@ -61,7 +58,8 @@ from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
 from six import PY2, PY3, binary_type, string_types, text_type
 from six.moves import http_client
-
+from . import classes, db
+from .common import USER_AGENT
 
 logger = logging.getLogger(__name__)
 

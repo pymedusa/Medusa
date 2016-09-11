@@ -18,8 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-from sickbeard import helpers
-from sickbeard import logger
+from .. import helpers, logger
 
 meta_session = helpers.make_session()
 

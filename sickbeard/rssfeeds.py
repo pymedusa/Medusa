@@ -1,9 +1,7 @@
 # coding=utf-8
 from feedparser.api import parse
-
-from sickbeard import logger
-
 from sickrage.helper.exceptions import ex
+from . import logger
 
 
 def getFeed(url, params=None, request_hook=None):

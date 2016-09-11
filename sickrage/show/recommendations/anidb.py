@@ -19,10 +19,11 @@
 from __future__ import unicode_literals
 
 import traceback
-from simpleanidb import (Anidb, REQUEST_HOT)
-from simpleanidb.exceptions import GeneralError
+
 import sickbeard
 from sickbeard import helpers, logger
+from simpleanidb import (Anidb, REQUEST_HOT)
+from simpleanidb.exceptions import GeneralError
 from .recommended import RecommendedShow
 
 

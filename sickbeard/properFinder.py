@@ -31,13 +31,13 @@ from socket import timeout as SocketTimeout
 
 from requests import exceptions as requests_exceptions
 import sickbeard
-from sickbeard import db, helpers, logger
-from sickbeard.common import DOWNLOADED, Quality, SNATCHED, cpu_presets
-from sickbeard.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from sickbeard.search import pickBestResult, snatchEpisode
 from sickrage.helper.common import enabled_providers
 from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.History import History
+from . import db, helpers, logger
+from .common import DOWNLOADED, Quality, SNATCHED, cpu_presets
+from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from .search import pickBestResult, snatchEpisode
 
 
 class ProperFinder(object):  # pylint: disable=too-few-public-methods

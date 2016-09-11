@@ -19,12 +19,10 @@
 from collections import namedtuple
 from datetime import datetime, timedelta
 
-from six import text_type
-
 from sickbeard.common import Quality
 from sickbeard.db import DBConnection
-
-from sickrage.helper.common import try_int
+from six import text_type
+from ..helper.common import try_int
 
 
 class History(object):

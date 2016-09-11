@@ -31,11 +31,10 @@ from threading import Lock
 from configobj import ConfigObj
 import requests
 import shutil_custom
+import sickrage.helper.exceptions
 from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex
 from sickrage.providers.GenericProvider import GenericProvider
 from sickrage.system.Shutdown import Shutdown
-
 from . import (
     auto_postprocessor, dailysearcher, db, helpers, logger, metadata, naming, properFinder, providers,
     scheduler, searchBacklog, search_queue, showUpdater, show_queue, subtitles, traktChecker, versionChecker
@@ -59,6 +58,8 @@ shutil.copyfile = shutil_custom.copyfile_custom
 requests.packages.urllib3.disable_warnings()
 
 indexerApi = indexer_api.indexerApi
+
+ex = sickrage.helper.exceptions.ex
 
 PID = None
 

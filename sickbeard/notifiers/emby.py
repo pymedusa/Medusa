@@ -21,13 +21,11 @@
 import json
 
 from requests.compat import urlencode
-from six.moves.urllib.request import urlopen, Request
-from six.moves.urllib.error import URLError
-
 import sickbeard
-
-from sickbeard import logger
 from sickrage.helper.exceptions import ex
+from six.moves.urllib.error import URLError
+from six.moves.urllib.request import Request, urlopen
+from .. import logger
 
 
 class Notifier(object):

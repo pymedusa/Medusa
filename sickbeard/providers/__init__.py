@@ -20,18 +20,17 @@ from os import sys
 from random import shuffle
 
 import sickbeard
-from sickbeard.providers.nzb import (
+from .nzb import (
     anizb, binsearch, omgwtfnzbs, womble,
 )
-from sickbeard.providers.torrent import (
+from .nzb.newznab import NewznabProvider
+from .torrent import (
     abnormal, alpharatio, animebytes, bitcannon, bithdtv, bitsnoop, bluetigers, btdigg, btn, cpasbien, danishbits,
     elitetorrent, extratorrent, freshontv, gftracker, hd4free, hdbits, hdspace, hdtorrents, hounddawgs, ilovetorrents,
     iptorrents, kat, limetorrents, morethantv, newpct, norbits, nyaatorrents, pretome, rarbg, scc, scenetime, shazbat,
     speedcd, t411, thepiratebay, tntvillage, tokyotoshokan, torrentbytes, torrentday, torrentleech, torrentproject,
     torrentshack, torrentz2, transmitthenet, tvchaosuk, xthor, zooqle
 )
-
-from .nzb.newznab import NewznabProvider
 from .torrent.rss.rsstorrent import TorrentRssProvider
 
 __all__ = [

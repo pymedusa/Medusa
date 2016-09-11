@@ -21,12 +21,11 @@ from __future__ import unicode_literals
 import requests
 import sickbeard
 from sickbeard import logger
-from sickrage.helper.common import try_int
-from sickrage.helper.exceptions import ex
-from sickrage.helper.exceptions import MultipleShowObjectsException
 from simpleanidb import Anidb
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 from .recommended import RecommendedShow
+from ...helper.common import try_int
+from ...helper.exceptions import MultipleShowObjectsException, ex
 
 
 class TraktPopular(object):

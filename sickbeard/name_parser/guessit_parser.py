@@ -7,11 +7,10 @@ import re
 from datetime import timedelta
 
 from dogpile.cache.region import make_region
-
 from guessit.rules.common.date import valid_year
 import sickbeard
-from sickbeard.helpers import normalize
 from .rules import default_api
+from ..helpers import normalize
 
 
 region = make_region()

@@ -19,29 +19,27 @@
 from __future__ import unicode_literals
 
 import re
-import sickbeard
-
-from collections import defaultdict
 from base64 import b16encode, b32decode
+from collections import defaultdict
 from datetime import datetime
 from itertools import chain
 from os.path import join
 from random import shuffle
 
+from requests.utils import add_dict_to_cookiejar
+import sickbeard
 from sickbeard import logger, ui
 from sickbeard.classes import Proper, SearchResult
 from sickbeard.common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
 from sickbeard.db import DBConnection
-from sickbeard.helpers import download_file, getURL, remove_file_failed, make_session
+from sickbeard.helpers import download_file, getURL, make_session, remove_file_failed
 from sickbeard.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from sickbeard.show_name_helpers import allPossibleShowNames
 from sickbeard.tvcache import TVCache
-from sickrage.helper.common import replace_extension, sanitize_filename
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex
-from sickrage.show.Show import Show
-
-from requests.utils import add_dict_to_cookiejar
+from ..helper.common import replace_extension, sanitize_filename
+from ..helper.encoding import ek
+from ..helper.exceptions import ex
+from ..show.Show import Show
 
 # Keep a list of per provider of recent provider search results
 recent_results = {}

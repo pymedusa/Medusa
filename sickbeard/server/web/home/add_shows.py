@@ -8,31 +8,26 @@ import os
 import re
 
 from requests.compat import unquote_plus
-from six import iteritems
-from tornado.routes import route
-
 import sickbeard
-from sickbeard import (
-    classes, config, db, helpers, logger, ui,
-)
-from sickbeard.blackandwhitelist import short_group_names
-from sickbeard.common import Quality
-from sickbeard.helpers import get_showname_from_indexer
-
-from sickrage.show.recommendations.trakt import TraktPopular
-from traktor import TraktApi
-from simpleanidb import REQUEST_HOT
+from sickrage.helper.common import sanitize_filename, try_int
+from sickrage.helper.encoding import ek
+from sickrage.show.Show import Show
 from sickrage.show.recommendations.anidb import AnidbPopular
 from sickrage.show.recommendations.imdb import ImdbPopular
-from sickrage.helper.common import sanitize_filename, try_int
-
-from sickbeard.indexers.indexer_exceptions import indexer_exception
-from sickbeard.server.web.core import PageTemplate
-from sickbeard.server.web.home.handler import Home
-
-from sickrage.helper.encoding import ek
-
-from sickrage.show.Show import Show
+from sickrage.show.recommendations.trakt import TraktPopular
+from simpleanidb import REQUEST_HOT
+from six import iteritems
+from tornado.routes import route
+from traktor import TraktApi
+from .handler import Home
+from ..core import PageTemplate
+from .... import (
+    classes, config, db, helpers, logger, ui,
+)
+from ....blackandwhitelist import short_group_names
+from ....common import Quality
+from ....helpers import get_showname_from_indexer
+from ....indexers.indexer_exceptions import indexer_exception
 
 
 @route('/addShows(/?.*)')

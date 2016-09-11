@@ -2,15 +2,12 @@
 import os
 import posixpath
 import re
-
 from datetime import date
 
 from bs4 import BeautifulSoup
-
 import sickbeard
-from sickbeard import helpers
-
 from sickrage.helper.encoding import ek
+from . import helpers
 
 
 class ImdbPopular(object):

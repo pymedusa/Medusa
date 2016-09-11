@@ -19,16 +19,16 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 
+import datetime
 import io
 import os
-import datetime
 
 import sickbeard
-from sickbeard import logger, helpers
-from sickbeard.metadata import generic
 from sickrage.helper.common import episode_num
 from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex, ShowNotFoundException
+from sickrage.helper.exceptions import ShowNotFoundException, ex
+from .. import helpers, logger
+from ..metadata import generic
 
 
 class TIVOMetadata(generic.GenericMetadata):

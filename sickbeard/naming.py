@@ -22,13 +22,10 @@ import datetime
 import os
 
 import sickbeard
-from sickbeard import tv
-from sickbeard import common
-from sickbeard import logger
-from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
-from sickbeard.common import Quality, DOWNLOADED
-
 from sickrage.helper.encoding import ek
+from . import common, logger, tv
+from .common import DOWNLOADED, Quality
+from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 
 name_presets = (
     '%SN - %Sx%0E - %EN',

@@ -23,16 +23,15 @@
 # @copyright: Dermot Buckley
 #
 
-import time
 import datetime
+import time
 import traceback
 
 import sickbeard
-from sickbeard import logger
-from sickbeard import db
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
-from sickbeard.scene_exceptions import xem_session
+from . import db, logger
+from .scene_exceptions import xem_session
 
 
 def get_scene_numbering(indexer_id, indexer, season, episode, fallback_to_xem=True):

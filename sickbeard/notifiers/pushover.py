@@ -22,13 +22,13 @@
 import time
 
 from requests.compat import urlencode
-from six.moves.urllib.error import HTTPError
-from six.moves.http_client import HTTPSConnection
-
 import sickbeard
-from sickbeard import logger
-from sickbeard.common import notifyStrings, NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER, NOTIFY_DOWNLOAD, NOTIFY_SUBTITLE_DOWNLOAD, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN_TEXT, NOTIFY_LOGIN
 from sickrage.helper.exceptions import ex
+from six.moves.http_client import HTTPSConnection
+from six.moves.urllib.error import HTTPError
+from .. import logger
+from ..common import NOTIFY_DOWNLOAD, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN, NOTIFY_LOGIN_TEXT, NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER, \
+    NOTIFY_SUBTITLE_DOWNLOAD, notifyStrings
 
 API_URL = "https://api.pushover.net/1/messages.json"
 

@@ -21,11 +21,11 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from requests.compat import quote
-from six.moves.urllib.request import Request, urlopen
-
 import sickbeard
-from sickbeard import logger
-from sickbeard.common import notifyStrings, NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER, NOTIFY_DOWNLOAD, NOTIFY_SUBTITLE_DOWNLOAD, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN, NOTIFY_LOGIN_TEXT
+from six.moves.urllib.request import Request, urlopen
+from .. import logger
+from ..common import NOTIFY_DOWNLOAD, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN, NOTIFY_LOGIN_TEXT, NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER, \
+    NOTIFY_SUBTITLE_DOWNLOAD, notifyStrings
 
 
 class Notifier(object):

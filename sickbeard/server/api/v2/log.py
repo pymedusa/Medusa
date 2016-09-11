@@ -1,8 +1,8 @@
 # coding=utf-8
 """Request handler for logs."""
 
-from sickbeard import logger
 from .base import BaseRequestHandler
+from .... import logger
 
 
 class LogHandler(BaseRequestHandler):

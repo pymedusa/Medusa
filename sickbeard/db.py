@@ -18,20 +18,19 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import warnings
 import os.path
 import re
 import sqlite3
-import time
 import threading
+import time
+import warnings
 
-from six import text_type
-
+from sqlite3 import OperationalError
 import sickbeard
-from sickbeard import logger
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
-from sqlite3 import OperationalError
+from six import text_type
+from . import logger
 
 db_cons = {}
 db_locks = {}

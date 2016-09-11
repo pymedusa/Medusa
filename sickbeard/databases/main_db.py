@@ -19,18 +19,15 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-
-import warnings
 import os.path
-
-from six import iteritems
+import warnings
 
 import sickbeard
-from sickbeard import db, common, helpers, logger, subtitles
-from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
-
 from sickrage.helper.common import dateTimeFormat, episode_num
 from sickrage.helper.encoding import ek
+from six import iteritems
+from .. import common, db, helpers, logger, subtitles
+from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 
 MIN_DB_VERSION = 9  # oldest db version we support migrating from
 MAX_DB_VERSION = 43
@@ -110,8 +107,8 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def convert_tvrage_to_tvdb(self):
         logger.log(u"Checking for shows with tvrage id's, since tvrage is gone", logger.DEBUG)
-        from sickbeard.indexers.indexer_config import INDEXER_TVRAGE
-        from sickbeard.indexers.indexer_config import INDEXER_TVDB
+        from ..indexers.indexer_config import INDEXER_TVRAGE
+        from ..indexers.indexer_config import INDEXER_TVDB
 
         sql_results = self.connection.select("SELECT indexer_id, show_name, location FROM tv_shows WHERE indexer = %i" % INDEXER_TVRAGE)
 

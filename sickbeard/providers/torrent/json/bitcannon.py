@@ -18,15 +18,13 @@
 
 from __future__ import unicode_literals
 
-import validators
 import traceback
 
 from requests.compat import urljoin
-
-from sickbeard import logger, tvcache
-
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+import validators
+from .... import logger, tvcache
 
 
 class BitCannonProvider(TorrentProvider):
