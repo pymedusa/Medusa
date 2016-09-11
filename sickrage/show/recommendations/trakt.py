@@ -91,7 +91,6 @@ class TraktPopular(object):
         """
         trending_shows = []
         removed_from_medusa = []
-        blacklist = ''
 
         # Create a trakt settings dict
         trakt_settings = {'trakt_api_secret': sickbeard.TRAKT_API_SECRET, 'trakt_api_key': sickbeard.TRAKT_API_KEY,
@@ -142,4 +141,4 @@ class TraktPopular(object):
             logger.log('Could not connect to Trakt service: %s' % ex(e), logger.WARNING)
             raise
 
-        return (blacklist, trending_shows, removed_from_medusa)
+        return blacklist, trending_shows, removed_from_medusa

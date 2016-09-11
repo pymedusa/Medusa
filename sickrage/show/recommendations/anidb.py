@@ -80,7 +80,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
 
         try:
             shows = self.anidb.get_list(list_type)
-        except GeneralError, e:
+        except GeneralError as e:
             logger.log('Could not connect to Anidb service: {0!r}'.format(e), logger.WARNING)
 
         for show in shows:
@@ -88,7 +88,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
                 recommended_show = self._create_recommended_show(show)
                 if recommended_show:
                     result.append(recommended_show)
-            except Exception as e:
+            except Exception:
                 logger.log('Could not parse Anidb show, with exception: {0!r}'.format(traceback.format_exc()), logger.WARNING)
 
         return result

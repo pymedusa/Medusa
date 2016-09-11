@@ -156,7 +156,6 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         results = {}
         items_list = []
-        searched_scene_season = None
 
         for episode in episodes:
             if not manual_search:
@@ -171,8 +170,6 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                     continue
 
             search_strings = []
-            searched_scene_season = episode.scene_season
-
             if (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly':
                 search_strings = self._get_season_search_strings(episode)
             elif search_mode == 'eponly':
@@ -318,7 +315,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                         break
 
                 if not episode_wanted:
-                    logger.log('Ignoring result %s.' % (title), logger.DEBUG)
+                    logger.log('Ignoring result %s.' % title, logger.DEBUG)
                     continue
 
             logger.log('Found result %s at %s' % (title, url), logger.DEBUG)

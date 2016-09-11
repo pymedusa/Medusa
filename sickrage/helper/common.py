@@ -337,9 +337,9 @@ def enabled_providers(search_type):
     Return providers based on search type: daily, backlog and manualsearch
     """
     return [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
-        if x.is_active() and x.get_id() not in sickbeard.BROKEN_PROVIDERS and
-        hasattr(x, 'enable_{}'.format(search_type)) and
-        getattr(x, 'enable_{}'.format(search_type))]
+            if x.is_active() and x.get_id() not in sickbeard.BROKEN_PROVIDERS and
+            hasattr(x, 'enable_{}'.format(search_type)) and
+            getattr(x, 'enable_{}'.format(search_type))]
 
 
 def remove_strings(old_string, unwanted_strings):
