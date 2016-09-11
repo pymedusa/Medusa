@@ -31,7 +31,7 @@ from ....scene_numbering import (
     get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
     get_scene_numbering, get_scene_numbering_for_show,
     get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
-    set_scene_numbering,
+    set_scene_numbering, xem_refresh
 )
 from ....versionChecker import CheckVersion
 
@@ -1409,7 +1409,7 @@ class Home(WebRoot):
 
         if do_update_scene_numbering:
             try:
-                sickbeard.scene_numbering.xem_refresh(show_obj.indexerid, show_obj.indexer)
+                xem_refresh(show_obj.indexerid, show_obj.indexer)
                 time.sleep(cpu_presets[sickbeard.CPU_PRESET])
             except CantUpdateShowException:
                 errors.append('Unable to force an update on scene numbering of the show.')

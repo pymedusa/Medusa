@@ -20,6 +20,5 @@ class LogHandler(BaseRequestHandler):
         """Delete logs.
 
         :param log_level:
-        :type query: int
         """
         self.api_finish()

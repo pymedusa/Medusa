@@ -101,7 +101,7 @@ class CacheDBConnection(db.DBConnection):
                 self.action(b'CREATE TABLE lastUpdate (provider TEXT, time NUMERIC)')
         except Exception as e:
             logger.log('Error while searching {provider_id}, skipping: {e!r}'.
-                       format(provider_id=self.provider.name, e=e), logger.DEBUG)
+                       format(provider_id=provider_id, e=e), logger.DEBUG)
             logger.log(traceback.format_exc(), logger.DEBUG)
             if str(e) != 'table lastUpdate already exists':
                 raise

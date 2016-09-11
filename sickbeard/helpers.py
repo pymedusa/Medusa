@@ -169,7 +169,8 @@ def makeDir(path):
         try:
             ek(os.makedirs, path)
             # do the library update for synoindex
-            sickbeard.notifiers.synoindex_notifier.addFolder(path)
+            from . import notifiers
+            notifiers.synoindex_notifier.addFolder(path)
         except OSError:
             return False
     return True
@@ -417,7 +418,8 @@ def make_dirs(path):
                     # use normpath to remove end separator, otherwise checks permissions against itself
                     chmodAsParent(ek(os.path.normpath, sofar))
                     # do the library update for synoindex
-                    sickbeard.notifiers.synoindex_notifier.addFolder(sofar)
+                    from . import notifiers
+                    notifiers.synoindex_notifier.addFolder(sofar)
                 except (OSError, IOError) as e:
                     logger.error(u'Failed creating {path} : {error!r}', path=sofar, error=e)
                     return False
@@ -497,7 +499,8 @@ def delete_empty_folders(check_empty_dir, keep_dir=None):
                 # need shutil.rmtree when ignore_items is really implemented
                 ek(os.rmdir, check_empty_dir)
                 # do the library update for synoindex
-                sickbeard.notifiers.synoindex_notifier.deleteFolder(check_empty_dir)
+                from . import notifiers
+                notifiers.synoindex_notifier.deleteFolder(check_empty_dir)
             except OSError as e:
                 logger.warning(u'Unable to delete {folder}. Error: {error!r}', folder=check_empty_dir, error=e)
                 break
@@ -905,6 +908,7 @@ def full_sanitizeSceneName(name):
 
 
 def get_show(name, tryIndexers=False):
+    from . import name_cache, scene_exceptions
     if not sickbeard.showList:
         return
 
@@ -916,7 +920,7 @@ def get_show(name, tryIndexers=False):
 
     try:
         # check cache for show
-        cache = sickbeard.name_cache.retrieveNameFromCache(name)
+        cache = name_cache.retrieveNameFromCache(name)
         if cache:
             from_cache = True
             show = Show.find(sickbeard.showList, int(cache))
@@ -928,13 +932,13 @@ def get_show(name, tryIndexers=False):
 
         # try scene exceptions
         if not show:
-            show_id = sickbeard.scene_exceptions.get_scene_exception_by_name(name)[0]
+            show_id = scene_exceptions.get_scene_exception_by_name(name)[0]
             if show_id:
                 show = Show.find(sickbeard.showList, int(show_id))
 
         # add show to cache
         if show and not from_cache:
-            sickbeard.name_cache.addNameToCache(name, show.indexerid)
+            name_cache.addNameToCache(name, show.indexerid)
     except Exception as e:
         logger.debug(u"Error when attempting to find show: %s in SickRage. Error: %r " % (name, repr(e)))
 

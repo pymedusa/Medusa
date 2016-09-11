@@ -27,7 +27,7 @@ from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import CantRefreshShowException, CantRemoveShowException, CantUpdateShowException, EpisodeDeletedException, \
     MultipleShowObjectsException, ShowDirectoryNotFoundException, ex
 from traktor import TraktApi, TraktException
-from . import generic_queue, logger, name_cache, notifiers, ui
+from . import generic_queue, logger, name_cache, notifiers, scene_numbering, ui
 from .blackandwhitelist import BlackAndWhiteList
 from .common import WANTED
 from .helpers import chmodAsParent, get_showname_from_indexer, makeDir
@@ -532,11 +532,11 @@ class QueueItemAdd(ShowQueueItem):
                 notifiers.trakt_notifier.update_watchlist(show_obj=self.show)
 
         # Load XEM data to DB for show
-        sickbeard.scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer, force=True)
+        scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer, force=True)
 
         # check if show has XEM mapping so we can determin if searches should go by scene numbering or indexer numbering.
-        if not self.scene and sickbeard.scene_numbering.get_xem_numbering_for_show(self.show.indexerid,
-                                                                                   self.show.indexer):
+        if not self.scene and scene_numbering.get_xem_numbering_for_show(self.show.indexerid,
+                                                                         self.show.indexer):
             self.show.scene = 1
 
         # After initial add, set to default_status_after.
@@ -574,7 +574,7 @@ class QueueItemRefresh(ShowQueueItem):
             self.show.populate_cache()
 
             # Load XEM data to DB for show
-            sickbeard.scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
+            scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
         except Exception as e:
             logger.log(u"{id}: Error while refreshing show {show}. Error: {error_msg}".format
                        (id=self.show.indexerid, show=self.show.name, error_msg=e), logger.ERROR)

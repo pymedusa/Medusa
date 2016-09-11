@@ -226,7 +226,7 @@ class TIVOMetadata(generic.GenericMetadata):
             # This seems to disappear once the video is transferred to TiVo.
 
             # NOTE: May not be correct format, missing season, but based on description from wiki leaving as is.
-            data += ('episodeNumber : {ep_num}\n'.format(ep_to_write.episode))
+            data += ('episodeNumber : {ep_num}\n'.format(ep_num=ep_to_write.episode))
 
             # Must be entered as true or false. If true, the year from originalAirDate will be shown in parentheses
             # after the episode's title and before the description on the Program screen.
