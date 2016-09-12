@@ -71,8 +71,8 @@
                     <img width="16" height="11" style="vertical-align:middle;" src="images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                 % endif
                     <span style="cursor: help; vertical-align:middle;" title="${ek(os.path.basename, hItem.resource)}">${statusStrings[composite.status]}</span>
-		    		% if hItem.proper_tags:
-                    <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem.proper_tags.replace('|', ', ')}"/>
+                    % if hItem.proper_tags:
+                        <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem.proper_tags.replace('|', ', ')}"/>
                     % endif
                 </td>
                 <td align="center">
@@ -142,7 +142,7 @@
                             % if provider is not None:
                                 <img src="images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" alt="${provider.name}" style="cursor: help;" title="${provider.name}: ${ek(os.path.basename, cur_action.resource)}"/>
                                 % if cur_action.proper_tags:
-                                    <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${cur_action.proper_tags.replace('|', ', ')}"/> 
+                                    <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${cur_action.proper_tags.replace('|', ', ')}"/>
                                 % endif
                             % else:
                                 <img src="images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="missing provider"/>
