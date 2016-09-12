@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 import datetime
 import errno
 import operator
+import os
 import re
 import threading
 import time
@@ -35,7 +36,7 @@ from sickrage.helper.common import enabled_providers
 from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.History import History
 from . import db, helpers, logger
-from .common import DOWNLOADED, Quality, SNATCHED, cpu_presets
+from .common import DOWNLOADED, Quality, cpu_presets
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .search import pickBestResult, snatchEpisode
 
@@ -95,7 +96,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         # Get the recently aired (last 2 days) shows from db
         search_date = datetime.datetime.today() - datetime.timedelta(days=2)
         main_db_con = db.DBConnection()
-        search_qualities = list(set(Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST))
+        search_qualities = list(set(Quality.DOWNLOADED))
         search_q_params = ','.join('?' for _ in search_qualities)
         recently_aired = main_db_con.select(
             b'SELECT s.show_name, e.showid, e.season, e.episode, e.status, e.airdate'
@@ -239,21 +240,30 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # check if we actually want this proper (if it's the right quality)
             main_db_con = db.DBConnection()
-            sql_results = main_db_con.select(b'SELECT status FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?',
+            sql_results = main_db_con.select(b'SELECT status, release_name FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?',
                                              [best_result.indexerid, best_result.season, best_result.episode])
             if not sql_results:
-                logger.log('Ignoring proper with incorrect quality: {name}'.format
+                logger.log('Ignoring proper because we dont have this show and/or episode in library: {name}'.format
                            (name=best_result.name))
-                self.processed_propers.append(cur_proper.name)
                 continue
 
             # only keep the proper if we have already retrieved the same quality ep (don't get better/worse ones)
             old_status, old_quality = Quality.splitCompositeStatus(int(sql_results[0][b'status']))
-            if old_status not in (DOWNLOADED, SNATCHED) or old_quality != best_result.quality:
+            if old_status != DOWNLOADED or old_quality != best_result.quality:
                 logger.log('Ignoring proper because quality is different or episode is already archived: {name}'.format
                            (name=best_result.name))
                 self.processed_propers.append(cur_proper.name)
                 continue
+
+            # only keep the proper if we have already downloaded an episode with the same codec
+            release_name = sql_results[0][b'release_name']
+            if release_name:
+                current_codec = NameParser()._parse_string(release_name).video_codec
+                # Ignore proper if codec differs from downloaded release codec
+                if current_codec and parse_result.video_codec and parse_result.video_codec != current_codec:
+                    logger.log('Ignoring proper because codec is different: {name}'.format(name=best_result.name))
+                    self.processed_propers.append(cur_proper.name)
+                    continue
 
             # check if we actually want this proper (if it's the right release group and a higher version)
             if best_result.show.is_anime:
@@ -310,7 +320,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 b'AND episode = ? '
                 b'AND quality = ? '
                 b'AND date >= ? '
-                b"AND (action LIKE '%2' OR action LIKE '%4')",
+                b"AND action LIKE '%04'",
                 [cur_proper.indexerid, cur_proper.season, cur_proper.episode, cur_proper.quality,
                  history_limit.strftime(History.date_format)])
 
