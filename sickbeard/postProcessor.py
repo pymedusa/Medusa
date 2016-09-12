@@ -190,7 +190,12 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
             # get a list of all the files in the folder
             checklist = glob.glob(ek(os.path.join, ek(os.path.dirname, globbable_file_path), '*'))
-            # loop through all the files in the folder, and check if they are the same name even when the cases don't match
+
+            # supported subtitle languages codes
+            language_extensions = tuple('.' + c for c in language_converters['opensubtitles'].codes)
+
+            # loop through all the files in the folder, and check if they are the same name
+            # even when the cases don't match
             for filefound in checklist:
 
                 file_name = filefound.rpartition('.')[0]
@@ -208,10 +213,10 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                     sub_file_name = file_name.rpartition('.')[0]
 
                 if is_subtitle and sub_file_name.lower() == base_name.lower().replace('[[]', '[').replace('[]]', ']'):
-                    language_extensions = tuple('.' + c for c in language_converters['opensubtitles'].codes)
-                    if file_name.lower().endswith(language_extensions) and (len(filefound.rsplit('.', 2)[1]) in [2, 3]):
+                    extension_len = len(filefound.rsplit('.', 2)[1])
+                    if file_name.lower().endswith(language_extensions) and (extension_len in [2, 3]):
                         filelist.append(filefound)
-                    elif file_name.lower().endswith('pt-br') and len(filefound.rsplit('.', 2)[1]) == 5:
+                    elif file_name.lower().endswith('pt-br') and extension_len == 5:
                         filelist.append(filefound)
                 # if there's no difference in the filename add it to the filelist
                 elif new_file_name.lower() == base_name.lower().replace('[[]', '[').replace('[]]', ']'):
@@ -302,12 +307,12 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 # do the library update for synoindex
                 notifiers.synoindex_notifier.deleteFile(cur_file)
 
-    def _combined_file_operation(self, file_path, new_path,  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches
-                                 new_base_name, associated_files=False,
+    def _combined_file_operation(self, file_path, new_path, new_base_name, associated_files=False,
                                  action=None, subtitles=False):
         """
-        Performs a generic operation (move or copy) on a file. Can rename the file as well as change its location,
-        and optionally move associated files too.
+        Perform a generic operation (move or copy) on a file.
+
+        Can rename the file as well as change its location, and optionally move associated files too.
 
         :param file_path: The full path of the media file to act on
         :param new_path: Destination path where we want to move/copy the file to
@@ -316,7 +321,6 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         :param action: function that takes an old path and new path and does an operation with them (move/copy)
         :param subtitles: Boolean, whether we should process subtitles too
         """
-
         if not action:
             self._log(u'Must provide an action for the combined file operation', logger.ERROR)
             return
@@ -332,40 +336,42 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                       (file_path), logger.DEBUG)
             return
 
-        # create base name with file_path (media_file without .extension)
+        # base name with file path (without extension and ending dot)
         old_base_name = file_path.rpartition('.')[0]
         old_base_name_length = len(old_base_name)
 
-        # deal with all files
         for cur_file_path in file_list:
+            # remember if the extension changed
+            changed_extension = None
 
-            cur_file_name = ek(os.path.basename, cur_file_path)
-
-            # get the extension without .
+            # file extension without leading dot (for example: de.srt)
             cur_extension = cur_file_path[old_base_name_length + 1:]
 
-            # check if file have subtitles language
-            if ek(os.path.splitext, cur_extension)[1][1:] in subtitle_extensions:
-                cur_lang = ek(os.path.splitext, cur_extension)[0]
+            split_extension = ek(os.path.splitext, cur_extension)
+            # check if file has a subtitle language
+            if split_extension[1][1:] in subtitle_extensions:
+                cur_lang = split_extension[0]
                 if cur_lang:
                     cur_lang = cur_lang.lower()
                     if cur_lang == 'pt-br':
                         cur_lang = 'pt-BR'
-                    if new_base_name:
-                        cur_extension = cur_lang + ek(os.path.splitext, cur_extension)[1]
-                    else:
-                        cur_extension = cur_extension.rpartition('.')[2]
+                    cur_extension = cur_lang + split_extension[1]
+                    changed_extension = True
 
             # replace .nfo with .nfo-orig to avoid conflicts
-            if cur_extension == 'nfo' and sickbeard.NFO_RENAME is True:
+            if cur_extension == 'nfo' and sickbeard.NFO_RENAME:
                 cur_extension = 'nfo-orig'
+                changed_extension = True
 
-            # If new base name then convert name
+            # rename file with new new base name
             if new_base_name:
                 new_file_name = new_base_name + '.' + cur_extension
-            # if we're not renaming we still want to change extensions sometimes
             else:
-                new_file_name = replace_extension(cur_file_name, cur_extension)
+                # current file name including extension
+                new_file_name = ek(os.path.basename, cur_file_path)
+                # if we're not renaming we still need to change the extension sometimes
+                if changed_extension:
+                    new_file_name = replace_extension(new_file_name, cur_extension)
 
             if sickbeard.SUBTITLES_DIR and cur_extension[-3:] in subtitle_extensions:
                 subs_new_path = ek(os.path.join, new_path, sickbeard.SUBTITLES_DIR)
