@@ -122,7 +122,7 @@ class DBConnection(object):
             else:
                 logger.log(u'DB error: {0!r}'.format(e), logger.ERROR)
                 raise
-        except Exception:
+        except Exception as e:
             logger.log(u'DB error: {0!r}'.format(e), logger.ERROR)
             raise
 
