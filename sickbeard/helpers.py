@@ -2,20 +2,20 @@
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # Git: https://github.com/PyMedusa/SickRage.git
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty    of
+# Medusa is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 # pylint:disable=too-many-lines
 """Various helper methods."""
 
@@ -45,6 +45,7 @@ from itertools import cycle, izip
 import adba
 from cachecontrol import CacheControl
 import certifi
+import cfscrape
 from contextlib2 import closing, suppress
 import guessit
 import requests
@@ -802,7 +803,8 @@ def restoreVersionedFile(backup_file, version):
 
         shutil.move(new_file, new_file + '.' + 'r' + str(version))
     except Exception as e:
-        logger.warning(u"Error while trying to backup DB file %s before proceeding with restore: %r" % (restore_file, ex(e)))
+        logger.warning(u"Error while trying to backup DB file %s before proceeding with restore: %r" %
+                       (restore_file, ex(e)))
         return False
 
     while not ek(os.path.isfile, new_file):
@@ -972,7 +974,10 @@ def is_hidden_folder(folder):
 
 
 def real_path(path):
-    """Return the canonicalized absolute pathname. The resulting path will have no symbolic link, '/./' or '/../' components."""
+    """Return the canonicalized absolute pathname.
+
+    The resulting path will have no symbolic link, '/./' or '/../' components.
+    """
     return ek(os.path.normpath, ek(os.path.normcase, ek(os.path.realpath, path)))
 
 
@@ -1175,6 +1180,24 @@ def request_defaults(kwargs):
     return hooks, cookies, verify, proxies
 
 
+def prepare_cf_req(session, request):
+    logger.debug(u'CloudFlare protection detected, trying to bypass it')
+
+    try:
+        tokens, user_agent = cfscrape.get_tokens(request.url)
+        if request.cookies:
+            request.cookies.update(tokens)
+        else:
+            request.cookies = tokens
+        if request.headers:
+            request.headers.update({u'User-Agent': user_agent})
+        else:
+            request.headers = {u'User-Agent': user_agent}
+        return session.prepare_request(request)
+    except (ValueError, AttributeError) as error:
+        logger.warning(u"Couldn't bypass CloudFlare's anti-bot protection. Error: {err_msg}", err_msg=error)
+
+
 def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
     """Return data retrieved from the url provider."""
     response_type = kwargs.pop(u'returns', u'response')
@@ -1183,9 +1206,25 @@ def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=N
     method = u'POST' if post_data else u'GET'
 
     try:
-        resp = session.request(method, url, data=post_data, params=params, timeout=timeout, allow_redirects=True,
-                               hooks=hooks, stream=stream, headers=headers, cookies=cookies, proxies=proxies,
-                               verify=verify)
+        req = requests.Request(method, url, data=post_data, params=params, hooks=hooks,
+                               headers=headers, cookies=cookies)
+        prepped = session.prepare_request(req)
+        resp = session.send(prepped, stream=stream, verify=verify, proxies=proxies, timeout=timeout,
+                            allow_redirects=True)
+
+        if not resp.ok:
+            # Try to bypass CloudFlare's anti-bot protection
+            if resp.status_code == 503 and resp.headers.get('server') == u'cloudflare-nginx':
+                cf_prepped = prepare_cf_req(session, req)
+                if cf_prepped:
+                    cf_resp = session.send(cf_prepped, stream=stream, verify=verify, proxies=proxies,
+                                           timeout=timeout, allow_redirects=True)
+                    if cf_resp.ok:
+                        return cf_resp
+
+            logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
+                         (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
+            return None
 
     except requests.exceptions.RequestException as e:
         logger.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
@@ -1196,11 +1235,6 @@ def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=N
         else:
             logger.info(u'Unknown exception in url {url}. Error: {err_msg}', url=url, err_msg=e)
             logger.debug(traceback.format_exc())
-        return None
-
-    if not resp.ok:
-        logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
-                     (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
         return None
 
     if not response_type or response_type == u'response':
