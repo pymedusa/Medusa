@@ -4,11 +4,11 @@ from __future__ import unicode_literals
 
 import markdown2
 from tornado.routes import route
-from sickbeard import (
+from .handler import Home
+from ..core import PageTemplate
+from .... import (
     helpers, logger,
 )
-from sickbeard.server.web.core import PageTemplate
-from sickbeard.server.web.home.handler import Home
 
 
 @route('/changes(/?.*)')

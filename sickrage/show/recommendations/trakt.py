@@ -21,12 +21,11 @@ from __future__ import unicode_literals
 import requests
 import sickbeard
 from sickbeard import logger
-from sickrage.helper.common import try_int
-from sickrage.helper.exceptions import ex
-from sickrage.helper.exceptions import MultipleShowObjectsException
 from simpleanidb import Anidb
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 from .recommended import RecommendedShow
+from ...helper.common import try_int
+from ...helper.exceptions import MultipleShowObjectsException, ex
 
 
 class TraktPopular(object):
@@ -92,7 +91,6 @@ class TraktPopular(object):
         """
         trending_shows = []
         removed_from_medusa = []
-        blacklist = ''
 
         # Create a trakt settings dict
         trakt_settings = {'trakt_api_secret': sickbeard.TRAKT_API_SECRET, 'trakt_api_key': sickbeard.TRAKT_API_KEY,
@@ -143,4 +141,4 @@ class TraktPopular(object):
             logger.log('Could not connect to Trakt service: %s' % ex(e), logger.WARNING)
             raise
 
-        return (blacklist, trending_shows, removed_from_medusa)
+        return blacklist, trending_shows, removed_from_medusa

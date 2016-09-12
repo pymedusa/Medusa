@@ -18,14 +18,13 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import re
 import datetime
+import re
 
 from dateutil import tz
-from six import iteritems
-
-from sickbeard import db, helpers, logger
 from sickrage.helper.common import try_int
+from six import iteritems
+from . import db, helpers, logger
 
 try:
     sb_timezone = tz.tzwinlocal() if tz.tzwinlocal else tz.tzlocal()

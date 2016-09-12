@@ -19,21 +19,16 @@
 
 from __future__ import unicode_literals
 
-import traceback
 import datetime
-from traktor import TraktException
-from traktor import TraktApi
+import traceback
 
 import sickbeard
-from sickbeard import logger
-from sickbeard import search_queue
-from sickbeard import db
-from sickbeard import ui
-from sickbeard.common import SKIPPED, UNKNOWN, WANTED, Quality
-
 from sickrage.helper.common import episode_num
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
+from traktor import TraktApi, TraktException
+from . import db, logger, search_queue, ui
+from .common import Quality, SKIPPED, UNKNOWN, WANTED
 
 
 def setEpisodeToWanted(show, s, e):

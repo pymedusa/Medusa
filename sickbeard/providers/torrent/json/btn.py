@@ -18,20 +18,18 @@
 
 from __future__ import unicode_literals
 
-import jsonrpclib
 import socket
 import time
+
+import jsonrpclib
 import sickbeard
-
-from six import itervalues
-
-from sickbeard import logger, scene_exceptions, tvcache
-from sickbeard.common import cpu_presets
-from sickbeard.helpers import sanitizeSceneName
-
 from sickrage.helper.common import episode_num
 from sickrage.helper.exceptions import ex
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from six import itervalues
+from .... import logger, scene_exceptions, tvcache
+from ....common import cpu_presets
+from ....helpers import sanitizeSceneName
 
 
 class BTNProvider(TorrentProvider):

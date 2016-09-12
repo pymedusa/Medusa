@@ -22,14 +22,12 @@
 from __future__ import unicode_literals
 
 from requests.compat import urlencode
-from six.moves.urllib.request import Request, urlopen
-
 import sickbeard
-from sickbeard import logger
-from sickbeard.common import notifyStrings, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN, NOTIFY_LOGIN_TEXT, \
-    NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER, NOTIFY_DOWNLOAD, NOTIFY_SUBTITLE_DOWNLOAD
-
 from sickrage.helper.common import http_status_code
+from six.moves.urllib.request import Request, urlopen
+from .. import logger
+from ..common import NOTIFY_DOWNLOAD, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN, NOTIFY_LOGIN_TEXT, NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER, \
+    NOTIFY_SUBTITLE_DOWNLOAD, notifyStrings
 
 
 class Notifier(object):

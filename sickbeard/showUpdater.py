@@ -17,22 +17,16 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import xml.etree.ElementTree as ET
-import requests
-import time
 import datetime
-import threading
-import sickbeard
 import logging
+import threading
+import time
+import xml.etree.ElementTree as ET
 
-from sickbeard import ui
-from sickbeard import db
-from sickbeard import network_timezones
-from sickbeard import failed_history
-from sickbeard import helpers
-from sickrage.helper.exceptions import CantRefreshShowException, CantUpdateShowException, ex
-from sickbeard.indexers.indexer_config import INDEXER_TVRAGE
-from sickbeard.indexers.indexer_config import INDEXER_TVDB
+import sickbeard
+from sickrage.helper.exceptions import CantRefreshShowException, CantUpdateShowException
+from . import db, failed_history, helpers, network_timezones, ui
+from .indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
 
 logger = logging.getLogger(__name__)
 

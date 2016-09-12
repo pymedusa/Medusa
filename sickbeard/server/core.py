@@ -5,20 +5,19 @@ from __future__ import unicode_literals
 import os
 import threading
 
+import sickbeard
+from sickrage.helper.encoding import ek
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.routes import route
-from tornado.web import Application, StaticFileHandler, RedirectHandler
-
-import sickbeard
-from sickbeard import logger
-from sickbeard.helpers import create_https_certificates, generateApiKey
-from sickbeard.server.api.v1.core import ApiHandler
-from sickbeard.server.api.v2.show import ShowHandler
-from sickbeard.server.api.v2.info import InfoHandler
-from sickbeard.server.api.v2.log import LogHandler
-from sickbeard.server.web import LoginHandler, LogoutHandler, KeyHandler, CalendarHandler
-from sickrage.helper.encoding import ek
+from tornado.web import Application, RedirectHandler, StaticFileHandler
+from .api.v1.core import ApiHandler
+from .api.v2.info import InfoHandler
+from .api.v2.log import LogHandler
+from .api.v2.show import ShowHandler
+from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
+from .. import logger
+from ..helpers import create_https_certificates, generateApiKey
 
 
 class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attributes

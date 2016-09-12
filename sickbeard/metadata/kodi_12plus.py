@@ -17,18 +17,16 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import re
 import datetime
+import re
+
 from babelfish import Country
-
-from six import string_types
-
 import sickbeard
-from sickbeard import logger, helpers
-from sickbeard.metadata import generic
-
 from sickrage.helper.common import dateFormat, episode_num
 from sickrage.helper.exceptions import ShowNotFoundException
+from six import string_types
+from . import generic
+from .. import helpers, logger
 
 try:
     import xml.etree.cElementTree as etree

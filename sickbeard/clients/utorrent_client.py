@@ -27,7 +27,6 @@ import re
 from requests.compat import urljoin
 import sickbeard
 from six import iteritems
-
 from .generic import GenericClient
 
 logger = logging.getLogger(__name__)

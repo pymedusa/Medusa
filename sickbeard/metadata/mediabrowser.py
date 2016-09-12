@@ -21,15 +21,13 @@ import datetime
 import os
 import re
 
-from six import iteritems, string_types
-
 import sickbeard
-from sickbeard import logger, helpers
-from sickbeard.metadata import generic
-
-from sickrage.helper.common import dateFormat, replace_extension, episode_num
+from sickrage.helper.common import dateFormat, episode_num, replace_extension
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ShowNotFoundException
+from six import iteritems, string_types
+from .. import helpers, logger
+from ..metadata import generic
 
 try:
     import xml.etree.cElementTree as etree

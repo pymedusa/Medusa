@@ -1761,7 +1761,7 @@ class TVEpisode(TVObject):
         if not self.is_location_valid():
             logger.log(u"{id}: {show} {ep} file doesn't exist, can't download subtitles".format
                        (id=self.show.indexerid, show=self.show.name,
-                        ep=(episode_num(self.season, self.episode) or episode_num(self.season, self.episode_, numbering='absolute'))),
+                        ep=(episode_num(self.season, self.episode) or episode_num(self.season, self.episode, numbering='absolute'))),
                        logger.DEBUG)
             return
 

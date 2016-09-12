@@ -20,10 +20,9 @@
 
 import os
 
-from sickbeard.metadata import generic
-from sickbeard.metadata import kodi_12plus
 from sickrage.helper.common import replace_extension
 from sickrage.helper.encoding import ek
+from ..metadata import generic, kodi_12plus
 
 
 class KODIMetadata(kodi_12plus.KODI_12PlusMetadata):

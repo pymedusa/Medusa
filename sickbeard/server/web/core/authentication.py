@@ -8,12 +8,13 @@ Login, Logout and API key
 from __future__ import unicode_literals
 
 import traceback
-from tornado.web import RequestHandler
+
 import sickbeard
-from sickbeard import (
+from tornado.web import RequestHandler
+from .base import BaseHandler, PageTemplate
+from .... import (
     helpers, logger, notifiers,
 )
-from sickbeard.server.web.core.base import BaseHandler, PageTemplate
 
 
 class KeyHandler(RequestHandler):

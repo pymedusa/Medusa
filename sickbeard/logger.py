@@ -28,14 +28,12 @@ import os
 import pkgutil
 import re
 import sys
-
 from inspect import getargspec
 from logging import NullHandler
 from logging.handlers import RotatingFileHandler
 
 from requests.compat import quote
 import sickbeard
-from sickbeard import classes
 import sickrage
 from sickrage.helper.common import dateTimeFormat
 from sickrage.helper.encoding import ek
@@ -43,6 +41,7 @@ from six import itervalues, text_type
 import subliminal
 from tornado.log import access_log, app_log, gen_log
 import traktor
+from . import classes
 
 
 # log levels

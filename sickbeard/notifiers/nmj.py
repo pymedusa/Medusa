@@ -18,15 +18,14 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import sickbeard
-import telnetlib
 import re
+import telnetlib
 
 from requests.compat import urlencode
-from six.moves.urllib.request import Request, urlopen
-
-from sickbeard import logger
+import sickbeard
 from sickrage.helper.exceptions import ex
+from six.moves.urllib.request import Request, urlopen
+from .. import logger
 
 try:
     import xml.etree.cElementTree as etree

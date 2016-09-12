@@ -22,15 +22,15 @@
 
 import re
 
+from sickrage.helper.encoding import ek, ss
+from sickrage.helper.exceptions import ex
+from . import classes, helpers, logger
+from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+
 try:
     import xml.etree.cElementTree as ETree
 except ImportError:
     import xml.etree.ElementTree as ETree
-
-from sickbeard import logger, classes, helpers
-from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
-from sickrage.helper.encoding import ek, ss
-from sickrage.helper.exceptions import ex
 
 
 def get_season_nzbs(name, url_data, season):

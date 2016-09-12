@@ -20,13 +20,11 @@
 
 import re
 
-from six import iteritems
-
 import sickbeard
-from sickbeard import logger, common
-from sickbeard.helpers import getURL, make_session
-
 from sickrage.helper.exceptions import ex
+from six import iteritems
+from .. import common, logger
+from ..helpers import getURL, make_session
 
 try:
     import xml.etree.cElementTree as etree

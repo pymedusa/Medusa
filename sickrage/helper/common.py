@@ -19,14 +19,13 @@
 
 from __future__ import unicode_literals
 
-import re
-from fnmatch import fnmatch
 import logging
+import re
 import traceback
-
-from six import text_type, PY3
+from fnmatch import fnmatch
 
 import sickbeard
+from six import PY3, text_type
 
 logger = logging.getLogger(__name__)
 
@@ -338,9 +337,9 @@ def enabled_providers(search_type):
     Return providers based on search type: daily, backlog and manualsearch
     """
     return [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
-        if x.is_active() and x.get_id() not in sickbeard.BROKEN_PROVIDERS and
-        hasattr(x, 'enable_{}'.format(search_type)) and
-        getattr(x, 'enable_{}'.format(search_type))]
+            if x.is_active() and x.get_id() not in sickbeard.BROKEN_PROVIDERS and
+            hasattr(x, 'enable_{}'.format(search_type)) and
+            getattr(x, 'enable_{}'.format(search_type))]
 
 
 def remove_strings(old_string, unwanted_strings):

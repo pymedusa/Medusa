@@ -21,12 +21,9 @@
 import datetime
 import threading
 
-from six import iteritems
-
 import sickbeard
-from sickbeard import (
-    db, scheduler, search_queue, logger, ui, common,
-)
+from six import iteritems
+from . import common, db, logger, scheduler, search_queue, ui
 
 
 class BacklogSearchScheduler(scheduler.Scheduler):

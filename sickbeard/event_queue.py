@@ -1,9 +1,10 @@
 # coding=utf-8
 import threading
 import traceback
-from six.moves.queue import Queue, Empty
-from sickbeard import logger
+
 from sickrage.helper.exceptions import ex
+from six.moves.queue import Empty, Queue
+from . import logger
 
 
 class Event(object):

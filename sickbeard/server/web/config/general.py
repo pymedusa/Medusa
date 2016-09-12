@@ -8,7 +8,6 @@ import sickbeard
 from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
 from tornado.routes import route
-
 from .handler import Config
 from ..core import PageTemplate
 from .... import config, github_client, helpers, logger, ui

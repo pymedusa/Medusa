@@ -2,6 +2,7 @@
 """Github client module."""
 
 import logging
+
 import github
 
 logger = logging.getLogger(__name__)

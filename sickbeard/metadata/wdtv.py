@@ -22,13 +22,11 @@ import os
 import re
 
 import sickbeard
-
-from sickbeard.metadata import generic
-
-from sickbeard import logger, helpers
-from sickrage.helper.common import dateFormat, replace_extension, episode_num
+from sickrage.helper.common import dateFormat, episode_num as ep_num, replace_extension
 from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex, ShowNotFoundException
+from sickrage.helper.exceptions import ShowNotFoundException
+from .. import helpers, logger
+from ..metadata import generic
 
 try:
     import xml.etree.cElementTree as etree
@@ -217,7 +215,7 @@ class WDTVMetadata(generic.GenericMetadata):
             except (sickbeard.indexer_episodenotfound, sickbeard.indexer_seasonnotfound):
                 logger.log(u'Unable to find episode {ep_num} on {indexer}... '
                            u'has it been removed? Should I delete from db?'.format
-                           (ep_num=episode_num(ep_to_write.season, ep_to_write.episode),
+                           (ep_num=ep_num(ep_to_write.season, ep_to_write.episode),
                             indexer=sickbeard.indexerApi(ep_obj.show.indexer).name))
                 return None
 

@@ -22,11 +22,9 @@
 from __future__ import unicode_literals
 
 import sickbeard
-from sickbeard import logger
 from sickrage.helper.exceptions import ex
-
-from traktor import TraktApi
-from traktor import (TraktException, ServerBusy, AuthException)
+from traktor import AuthException, ServerBusy, TraktApi, TraktException
+from .. import logger
 
 
 class Notifier(object):

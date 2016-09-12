@@ -21,7 +21,7 @@
 import datetime
 import threading
 
-from sickbeard import logger
+from . import logger
 
 
 class QueuePriorities(object):

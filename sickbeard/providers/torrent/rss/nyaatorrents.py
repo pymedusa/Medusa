@@ -21,10 +21,9 @@ from __future__ import unicode_literals
 import re
 import traceback
 
-from sickbeard import logger, tvcache
-
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from .... import logger, tvcache
 
 
 class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
