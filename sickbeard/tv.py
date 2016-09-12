@@ -697,7 +697,6 @@ class TVShow(TVObject):
                     cur_ep.delete_episode()
 
                 cur_ep.load_from_db(cur_season, cur_episode)
-                cur_ep.load_from_indexer(tvapi=t, cached_season=cached_seasons[cur_season])
                 scanned_eps[cur_season][cur_episode] = True
             except EpisodeDeletedException:
                 logger.log(u'{id}: Tried loading {show} {ep} from the DB that should have been deleted, '
@@ -710,18 +709,15 @@ class TVShow(TVObject):
 
         return scanned_eps
 
-    def load_episodes_from_indexer(self, cache=True):
+    def load_episodes_from_indexer(self):
         """Load episodes from indexer.
 
-        :param cache:
-        :type cache: bool
         :return:
         :rtype: dict(int -> dict(int -> bool))
         """
         indexer_api_params = sickbeard.indexerApi(self.indexer).api_params.copy()
 
-        if not cache:
-            indexer_api_params['cache'] = False
+        indexer_api_params['cache'] = False
 
         if self.lang:
             indexer_api_params['language'] = self.lang
@@ -767,7 +763,6 @@ class TVShow(TVObject):
                         continue
 
                 with ep.lock:
-                    ep.load_from_indexer(season, episode, tvapi=t)
                     sql_l.append(ep.get_sql())
 
                 scanned_eps[season][episode] = True
@@ -1019,11 +1014,9 @@ class TVShow(TVObject):
         self.reset_dirty()
         return True
 
-    def load_from_indexer(self, cache=True, tvapi=None):
+    def load_from_indexer(self, tvapi=None):
         """Load show from indexer.
 
-        :param cache:
-        :type cache: bool
         :param tvapi:
         """
         if self.indexer == INDEXER_TVRAGE:
@@ -1039,8 +1032,7 @@ class TVShow(TVObject):
         else:
             indexer_api_params = sickbeard.indexerApi(self.indexer).api_params.copy()
 
-            if not cache:
-                indexer_api_params['cache'] = False
+            indexer_api_params['cache'] = False
 
             if self.lang:
                 indexer_api_params['language'] = self.lang
@@ -1674,6 +1666,7 @@ class TVEpisode(TVObject):
         self.scene_absolute_number = 0
         self.related_episodes = []
         self.wanted_quality = []
+        self.loaded = False
         if show:
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
@@ -1860,6 +1853,8 @@ class TVEpisode(TVObject):
         :return:
         :rtype: bool
         """
+        if self.loaded:
+            return True
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             b'SELECT '
@@ -1939,17 +1934,16 @@ class TVEpisode(TVObject):
                 self.release_group = sql_results[0][b'release_group']
 
             self.reset_dirty()
+            self.loaded = True
             return True
 
-    def load_from_indexer(self, season=None, episode=None, cache=True, tvapi=None, cached_season=None):
+    def load_from_indexer(self, season=None, episode=None, tvapi=None, cached_season=None):
         """Load episode information from indexer.
 
         :param season:
         :type season: int
         :param episode:
         :type episode: int
-        :param cache:
-        :type cache: bool
         :param tvapi:
         :param cached_season:
         :return:
@@ -1971,8 +1965,7 @@ class TVEpisode(TVObject):
                 else:
                     indexer_api_params = sickbeard.indexerApi(self.indexer).api_params.copy()
 
-                    if not cache:
-                        indexer_api_params['cache'] = False
+                    indexer_api_params['cache'] = False
 
                     if indexer_lang:
                         indexer_api_params['language'] = indexer_lang
@@ -2446,6 +2439,7 @@ class TVEpisode(TVObject):
         # use a custom update/insert method to get the data into the DB
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_episodes', new_value_dict, control_value_dict)
+        self.loaded = False
 
     def full_path(self):
         """Return episode full path.
