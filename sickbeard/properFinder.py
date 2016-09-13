@@ -245,7 +245,6 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             if not sql_results:
                 logger.log('Ignoring proper because we dont have this show and/or episode in library: {name}'.format
                            (name=best_result.name))
-                self.processed_propers.append(cur_proper.name)
                 continue
 
             # only keep the proper if we have already downloaded an episode with the same quality
