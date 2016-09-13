@@ -21,7 +21,7 @@ from six import iteritems
 from tornado.routes import route
 from traktor import MissingTokenException, TokenExpiredException, TraktApi, TraktException
 from ..core import PageTemplate, WebRoot
-from .... import clients, config, db, helpers, logger, notifiers, sab, search_queue, show_name_helpers, subtitles, ui
+from .... import clients, config, db, helpers, logger, notifiers, nzbget, sab, search_queue, show_name_helpers, subtitles, ui
 from ....blackandwhitelist import BlackAndWhiteList, short_group_names
 from ....common import FAILED, IGNORED, Overview, Quality, SKIPPED, UNAIRED, WANTED, cpu_presets, statusStrings
 from ....manual_search import SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING, collectEpisodesFromSearchThread, getEpisode, \
@@ -187,6 +187,16 @@ class Home(WebRoot):
             else:
                 return 'Authentication failed. SABnzbd expects {access!r} as authentication method, {auth!r}'.format(
                     access=acces_msg, auth=auth_msg)
+        else:
+            return 'Unable to connect to host'
+
+    @staticmethod
+    def testNZBget(host=None, username=None, password=None, use_https=False):
+        # self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
+
+        connected_status = nzbget.testNZB(host, username, password, use_https)
+        if connected_status:
+            return 'Success. Connected and authenticated'
         else:
             return 'Unable to connect to host'
 

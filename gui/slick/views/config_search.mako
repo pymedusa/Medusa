@@ -358,13 +358,16 @@
                                 </label>
                             </div>
                             % endif
+                        <div class="testNotification" id="testSABnzbd_result">Click below to test</div>
+                            <input class="btn" type="button" value="Test SABnzbd" id="testSABnzbd" class="btn test-button"/>
+                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                         </div>
                         <div id="nzbget_settings">
                             <div class="field-pair">
                                 <label for="nzbget_use_https">
                                     <span class="component-title">Connect using HTTPS</span>
                                     <span class="component-desc">
-                                        <input id="nzbget_use_https" type="checkbox" class="enabler" name="nzbget_use_https" ${'checked="checked"' if sickbeard.NZBGET_USE_HTTPS else ''}/>
+                                        <input id="nzbget_use_https" type="checkbox" class="enabler" id="nzbget_use_https" name="nzbget_use_https" ${'checked="checked"' if sickbeard.NZBGET_USE_HTTPS else ''}/>
                                         <p><b>note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
                                     </span>
                                 </label>
@@ -383,7 +386,7 @@
                                 <label>
                                     <span class="component-title">NZBget username</span>
                                     <span class="component-desc">
-                                        <input type="text" name="nzbget_username" value="${sickbeard.NZBGET_USERNAME}" class="form-control input-sm input200"
+                                        <input type="text" name="nzbget_username" id="nzbget_username" value="${sickbeard.NZBGET_USERNAME}" class="form-control input-sm input200"
                                                autocomplete="no" />
                                         <p>locate in nzbget.conf (default:nzbget)</p>
                                     </span>
@@ -450,10 +453,10 @@
                                     </span>
                                 </label>
                             </div>
+                            <div class="testNotification" id="testNZBget_result">Click below to test</div>
+                                <input class="btn" type="button" value="Test NZBget" id="testNZBget" class="btn test-button"/>
+                                <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                         </div>
-                        <div class="testNotification" id="testSABnzbd_result">Click below to test</div>
-                            <input class="btn" type="button" value="Test SABnzbd" id="testSABnzbd" class="btn test-button"/>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                         </div><!-- /content_use_nzbs //-->
                     </fieldset>
                 </div><!-- /component-group2 //-->
