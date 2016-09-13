@@ -95,15 +95,14 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         # Get the recently aired (last 2 days) shows from db
         search_date = datetime.datetime.today() - datetime.timedelta(days=2)
         main_db_con = db.DBConnection()
-        search_qualities = list(set(Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST))
-        search_q_params = ','.join('?' for _ in search_qualities)
+        search_q_params = ','.join('?' for _ in Quality.DOWNLOADED)
         recently_aired = main_db_con.select(
             b'SELECT s.show_name, e.showid, e.season, e.episode, e.status, e.airdate'
             b' FROM tv_episodes AS e'
             b' INNER JOIN tv_shows AS s ON (e.showid = s.indexer_id)'
             b' WHERE e.airdate >= ?'
             b' AND e.status IN ({0})'.format(search_q_params),
-            [search_date.toordinal()] + search_qualities
+            [search_date.toordinal()] + Quality.DOWNLOADED
         )
 
         if not recently_aired:
@@ -319,7 +318,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 b'AND episode = ? '
                 b'AND quality = ? '
                 b'AND date >= ? '
-                b"AND (action LIKE '%2' OR action LIKE '%4')",
+                b"AND action LIKE '%04'",
                 [cur_proper.indexerid, cur_proper.season, cur_proper.episode, cur_proper.quality,
                  history_limit.strftime(History.date_format)])
 
