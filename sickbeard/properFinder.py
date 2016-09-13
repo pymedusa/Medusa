@@ -240,7 +240,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # check if we have the episode as DOWNLOADED
             main_db_con = db.DBConnection()
             sql_results = main_db_con.select(b"SELECT status, release_name FROM tv_episodes WHERE "
-                                             b"status LIKE '%04' AND showid = ? AND season = ? AND episode = ?",
+                                             b"showid = ? AND season = ? AND episode = ? AND status LIKE '%04'",
                                              [best_result.indexerid, best_result.season, best_result.episode])
             if not sql_results:
                 logger.log('Ignoring proper because we dont have this show and/or episode in library: {name}'.format
