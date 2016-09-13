@@ -97,11 +97,10 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         main_db_con = db.DBConnection()
         search_q_params = ','.join('?' for _ in Quality.DOWNLOADED)
         recently_aired = main_db_con.select(
-            b'SELECT s.show_name, e.showid, e.season, e.episode, e.status, e.airdate'
-            b' FROM tv_episodes AS e'
-            b' INNER JOIN tv_shows AS s ON (e.showid = s.indexer_id)'
-            b' WHERE e.airdate >= ?'
-            b' AND e.status IN ({0})'.format(search_q_params),
+            b'SELECT showid, season, episode, status, airdate'
+            b' FROM tv_episodes'
+            b' WHERE airdate >= ?'
+            b' AND status IN ({0})'.format(search_q_params),
             [search_date.toordinal()] + Quality.DOWNLOADED
         )
 
@@ -264,8 +263,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     continue
             else:
                 # We shouldn't get here unless some DB error
-                logger.log("Something is wrong! Status is 'Downloaded' and we don't have a release name. " 
-                           "Could't compare codec", logger.ERROR)
+                logger.log("Something is wrong! Status is 'Downloaded' and we don't have a release name. "
+                           "Couldn't compare codec", logger.ERROR)
 
             # check if we actually want this proper (if it's the right release group and a higher version)
             if best_result.show.is_anime:
