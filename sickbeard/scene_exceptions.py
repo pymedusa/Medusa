@@ -331,7 +331,7 @@ def _get_anidb_exceptions():
         logger.log('Checking for scene exceptions updates from AniDB')
 
         for show in sickbeard.showList:
-            if show.is_anime and show.indexer == 1:
+            if all([show.name, show.is_anime, show.indexer == 1]):
                 try:
                     anime = adba.Anime(None, name=show.name, tvdbid=show.indexerid, autoCorrectName=True)
                 except Exception as error:
