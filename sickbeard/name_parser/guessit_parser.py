@@ -130,7 +130,7 @@ def get_expected_titles(show_list):
                 expected_titles.append(series)
 
             # (?<![^/\\]) means -> it matches nothing but path separators and dot (negative lookbehind)
-            fmt = r're:\b{name}\b' if show.is_anime else r're:(?<![^/\\\.]){name}\b'
+            fmt = r're:(?<=[\W_]){name}(?=[\W_]|$)' if show.is_anime else r're:(?<![^/\\\.]){name}(?=[\W_]|$)'
             expected_titles.append(fmt.format(name=prepare(series)))
 
     return normalize(expected_titles)

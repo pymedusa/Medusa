@@ -1001,6 +1001,9 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
         for filepart in marker_sorted(fileparts, matches):
             season = matches.range(filepart.start, filepart.end, index=0,
                                    predicate=lambda match: match.name == 'season' and match.raw.isdigit())
+            if not season:
+                continue
+
             episode = matches.next(season, index=0,
                                    predicate=lambda match: (match.name == 'episode' and
                                                             match.end <= filepart.end and
