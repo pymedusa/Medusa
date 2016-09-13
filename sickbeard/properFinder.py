@@ -35,7 +35,7 @@ from sickrage.helper.common import enabled_providers
 from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.History import History
 from . import db, helpers, logger
-from .common import DOWNLOADED, Quality, SNATCHED, cpu_presets
+from .common import Quality, cpu_presets
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .search import pickBestResult, snatchEpisode
 
@@ -237,23 +237,33 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     self.processed_propers.append(cur_proper.name)
                     continue
 
-            # check if we actually want this proper (if it's the right quality)
+            # check if we have the episode as DOWNLOADED
             main_db_con = db.DBConnection()
-            sql_results = main_db_con.select(b'SELECT status FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?',
+            sql_results = main_db_con.select(b"SELECT status, release_name FROM tv_episodes WHERE "
+                                             b"status LIKE '%04' AND showid = ? AND season = ? AND episode = ?",
                                              [best_result.indexerid, best_result.season, best_result.episode])
             if not sql_results:
-                logger.log('Ignoring proper with incorrect quality: {name}'.format
+                logger.log('Ignoring proper because we dont have this show and/or episode in library: {name}'.format
                            (name=best_result.name))
                 self.processed_propers.append(cur_proper.name)
                 continue
 
-            # only keep the proper if we have already retrieved the same quality ep (don't get better/worse ones)
-            old_status, old_quality = Quality.splitCompositeStatus(int(sql_results[0][b'status']))
-            if old_status not in (DOWNLOADED, SNATCHED) or old_quality != best_result.quality:
-                logger.log('Ignoring proper because quality is different or episode is already archived: {name}'.format
-                           (name=best_result.name))
+            # only keep the proper if we have already downloaded an epsiode with the same quality
+            _, old_quality = Quality.splitCompositeStatus(int(sql_results[0][b'status']))
+            if old_quality != best_result.quality:
+                logger.log('Ignoring proper because quality is different: {name}'.format(name=best_result.name))
                 self.processed_propers.append(cur_proper.name)
                 continue
+
+            # only keep the proper if we have already downloaded an epsiode with the same codec
+            release_name = sql_results[0][b'release_name']
+            if release_name:
+                current_codec = NameParser()._parse_string(release_name).video_codec
+                # Ignore new proper when different codec from current proper
+                if all(current_codec, parse_result.video_codec, parse_result.video_codec != current_codec):
+                    logger.log('Ignoring proper because codec is different: {name}'.format(name=best_result.name))
+                    self.processed_propers.append(cur_proper.name)
+                    continue
 
             # check if we actually want this proper (if it's the right release group and a higher version)
             if best_result.show.is_anime:
