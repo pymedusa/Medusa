@@ -259,7 +259,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             if release_name:
                 current_codec = NameParser()._parse_string(release_name).video_codec
                 # Ignore proper if codec differs from downloaded release codec
-                if all(current_codec, parse_result.video_codec, parse_result.video_codec != current_codec):
+                if all([current_codec, parse_result.video_codec, parse_result.video_codec != current_codec]):
                     logger.log('Ignoring proper because codec is different: {name}'.format(name=best_result.name))
                     self.processed_propers.append(cur_proper.name)
                     continue
