@@ -62,7 +62,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             return
 
         self.amActive = True
-        
+
         # If force we should disconsider existing processed propers
         if force:
             current_processed_propers = self.processed_propers
