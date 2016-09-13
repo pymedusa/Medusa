@@ -317,7 +317,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 b'AND episode = ? '
                 b'AND quality = ? '
                 b'AND date >= ? '
-                b"AND (action LIKE '%02' OR action LIKE '%04')",
+                b"AND (action LIKE '%02' OR action LIKE '%04' OR action LIKE '%09' OR action LIKE '%12')",
                 [cur_proper.indexerid, cur_proper.season, cur_proper.episode, cur_proper.quality,
                  history_limit.strftime(History.date_format)])
 
