@@ -248,18 +248,18 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 self.processed_propers.append(cur_proper.name)
                 continue
 
-            # only keep the proper if we have already downloaded an epsiode with the same quality
+            # only keep the proper if we have already downloaded an episode with the same quality
             _, old_quality = Quality.splitCompositeStatus(int(sql_results[0][b'status']))
             if old_quality != best_result.quality:
                 logger.log('Ignoring proper because quality is different: {name}'.format(name=best_result.name))
                 self.processed_propers.append(cur_proper.name)
                 continue
 
-            # only keep the proper if we have already downloaded an epsiode with the same codec
+            # only keep the proper if we have already downloaded an episode with the same codec
             release_name = sql_results[0][b'release_name']
             if release_name:
                 current_codec = NameParser()._parse_string(release_name).video_codec
-                # Ignore new proper when different codec from current proper
+                # Ignore proper if codec differs from downloaded release codec
                 if all(current_codec, parse_result.video_codec, parse_result.video_codec != current_codec):
                     logger.log('Ignoring proper because codec is different: {name}'.format(name=best_result.name))
                     self.processed_propers.append(cur_proper.name)
