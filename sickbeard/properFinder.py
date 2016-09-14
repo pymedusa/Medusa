@@ -270,9 +270,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     self.processed_propers.append(cur_proper.name)
                     continue
             else:
-                # We shouldn't get here unless some DB error
-                logger.log("Something is wrong! Status is 'Downloaded' and we don't have a release name. "
-                           "Couldn't compare codec", logger.ERROR)
+                logger.log("Coudn't find a release name in database. Skipping codec comparisson to: {name}".format
+                          (name=cur_proper.name), logger.DEBUG)
 
             # check if we actually want this proper (if it's the right release group and a higher version)
             if best_result.show.is_anime:
