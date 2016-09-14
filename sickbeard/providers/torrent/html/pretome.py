@@ -128,8 +128,8 @@ class PretomeProvider(TorrentProvider):
                     if not all([title, torrent_url]):
                         continue
 
-                    seeders = try_int(cells[8].get_text(), 1)
-                    leechers = try_int(cells[9].get_text())
+                    seeders = try_int(cells[9].get_text(), 1)
+                    leechers = try_int(cells[10].get_text())
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
