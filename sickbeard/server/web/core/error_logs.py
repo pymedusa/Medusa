@@ -33,7 +33,6 @@ log_name_filters = {
     'SEARCHQUEUE-RSS': 'Search Queue (RSS)',
     'SHOWQUEUE-FORCE-UPDATE': 'Show Queue (Forced Update)',
     'SHOWQUEUE-UPDATE': 'Show Queue (Update)',
-    'SHOWQUEUE-REFRESH': 'Show Queue (Refresh)',
     'SHOWQUEUE-FORCE-REFRESH': 'Show Queue (Forced Refresh)',
     'FINDPROPERS': 'Find Propers',
     'POSTPROCESSOR': 'PostProcessor',
