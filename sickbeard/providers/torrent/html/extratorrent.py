@@ -1,6 +1,4 @@
 # coding=utf-8
-# Author: Gonçalo M. (aka duramato/supergonkas) <supergonkas@gmail.com>
-# Author: Dustyn Gibson <miigotu@gmail.com>
 #
 # This file is part of Medusa.
 #
@@ -140,8 +138,8 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[4 - decrease].get_text(), 1)
-                    leechers = try_int(cells[5 - decrease].get_text())
+                    seeders = try_int(cells[5 - decrease].get_text(), 1)
+                    leechers = try_int(cells[6 - decrease].get_text())
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -151,7 +149,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[3 - decrease].get_text().replace('\xa0', ' ')
+                    torrent_size = cells[4 - decrease].get_text().replace('\xa0', ' ')
                     size = convert_size(torrent_size) or -1
 
                     item = {
