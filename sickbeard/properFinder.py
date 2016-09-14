@@ -92,10 +92,10 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         original_thread_name = threading.currentThread().name
         providers = enabled_providers('backlog')
 
+        search_date = datetime.datetime.today() - datetime.timedelta(days=2)
+        main_db_con = db.DBConnection()
         if not sickbeard.POSTPONE_IF_NO_SUBS:
             # Get the recently aired (last 2 days) shows from DB
-            search_date = datetime.datetime.today() - datetime.timedelta(days=2)
-            main_db_con = db.DBConnection()
             search_q_params = ','.join('?' for _ in Quality.DOWNLOADED)
             recently_aired = main_db_con.select(
                 b'SELECT showid, season, episode, status, airdate'
@@ -107,8 +107,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         else:
             # Get recently subtitled episodes (last 2 days) from DB
             # Episode status becomes downloaded only after found subtitles
-            last_subtitled = (datetime.datetime.today() - datetime.timedelta(days=2)).strftime(History.date_format)
-            main_db_con = db.DBConnection()
+            last_subtitled = search_date.strftime(History.date_format)
             recently_aired = main_db_con.select(b'SELECT showid, season, episode FROM history '
                                                 b"WHERE date >= ? AND action LIKE '%10'", [last_subtitled])
 
