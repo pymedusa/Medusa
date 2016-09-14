@@ -248,7 +248,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                                              b"showid = ? AND season = ? AND episode = ? AND status LIKE '%04'",
                                              [best_result.indexerid, best_result.season, best_result.episode])
             if not sql_results:
-                logger.log('Ignoring proper because we dont have this show and/or episode in library: {name}'.format
+                logger.log("Ignoring proper because this episode doesn't have 'DOWNLOADED' status: {name}".format
                            (name=best_result.name))
                 continue
 
