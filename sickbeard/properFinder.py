@@ -88,12 +88,12 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         """
         propers = {}
 
-        # for each provider get a list of the
+        # For each provider get the list of propers
         original_thread_name = threading.currentThread().name
         providers = enabled_providers('backlog')
 
         if not sickbeard.POSTPONE_IF_NO_SUBS:
-            # Get the recently aired (last 2 days) shows from db
+            # Get the recently aired (last 2 days) shows from DB
             search_date = datetime.datetime.today() - datetime.timedelta(days=2)
             main_db_con = db.DBConnection()
             search_q_params = ','.join('?' for _ in Quality.DOWNLOADED)
@@ -106,11 +106,11 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             )
         else:
             # Get recently subtitled episodes (last 2 days) from DB
-            # Episode status become downloaded only after find subtitles
+            # Episode status becomes downloaded only after found subtitles
             last_subtitled = (datetime.datetime.today() - datetime.timedelta(days=2)).strftime(History.date_format)
             main_db_con = db.DBConnection()
             recently_aired = main_db_con.select(b'SELECT showid, season, episode FROM history '
-                                                b"WHERE action LIKE '%10' AND date>=?", [last_subtitled])
+                                                b"WHERE date >= ? AND action LIKE '%10'", [last_subtitled])
 
         if not recently_aired:
             logger.log('No recently aired new episodes, nothing to search for')
@@ -270,8 +270,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     self.processed_propers.append(cur_proper.name)
                     continue
             else:
-                logger.log("Coudn't find a release name in database. Skipping codec comparisson to: {name}".format
-                          (name=cur_proper.name), logger.DEBUG)
+                logger.log("Coudn't find a release name in database. Skipping codec comparison for: {name}".format
+                           (name=cur_proper.name), logger.DEBUG)
 
             # check if we actually want this proper (if it's the right release group and a higher version)
             if best_result.show.is_anime:
