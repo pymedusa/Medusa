@@ -85,7 +85,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         # Restore processed propers and add new ones to the end
         if force:
-            self.processed_propers = current_processed_propers + self.processed_propers
+            self.processed_propers = list(set(current_processed_propers + self.processed_propers))
 
         logger.log('Completed the search for new propers{0}'.format(run_at))
 
