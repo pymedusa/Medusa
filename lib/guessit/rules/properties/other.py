@@ -12,6 +12,7 @@ from ..common import dash
 from ..common import seps
 from ..common.validators import seps_surround
 from ...rules.common.formatters import raw_cleanup
+from ...reutils import build_or_pattern
 
 
 def other():
@@ -34,7 +35,10 @@ def other():
     rebulk.string('Fansub', value='Fansub', tags='has-neighbor')
     rebulk.string('Fastsub', value='Fastsub', tags='has-neighbor')
 
-    rebulk.regex('(?:Seasons?-)?Complete', value='Complete', tags=['release-group-prefix'],
+    complete_words = build_or_pattern(["seasons?", "series?"])
+
+    rebulk.regex('(?:' + complete_words + '-)?Complete' + '(?:-' + complete_words + ')?',
+                 value='Complete', tags=['release-group-prefix'],
                  validator=lambda match: seps_surround(match) and match.raw.lower().strip(seps) != "complete")
     rebulk.string('R5', 'RC', value='R5')
     rebulk.regex('Pre-?Air', value='Preair')

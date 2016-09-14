@@ -916,16 +916,14 @@
 # https://github.com/guessit-io/guessit/issues/316
 ? Show.Name.x264-CDD
 : title: Show Name
-#  video_codec: h264
-  cd_count: 264 # TODO fix when guessit bug is fixed
+  video_codec: h264
   release_group: CDD
   type: episode
 
 # https://github.com/guessit-io/guessit/issues/316
 ? Show.Name.x264-CDP
 : title: Show Name
-#  video_codec: h264
-  cd_count: 264 # TODO fix when guessit bug is fixed
+  video_codec: h264
   release_group: CDP
   type: episode
 
@@ -2460,7 +2458,6 @@
   screen_size: 720p
   format: BluRay
   video_codec: h264
-  part: 1000 # not a big issue
   release_group: PtM
   type: episode
 

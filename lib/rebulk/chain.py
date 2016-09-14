@@ -4,6 +4,8 @@
 Chain patterns and handle repetiting capture group
 """
 # pylint: disable=super-init-not-called
+import itertools
+
 from .loose import call, set_defaults
 from .match import Match
 from .pattern import Pattern, filter_match_kwargs
@@ -190,6 +192,39 @@ class Chain(Pattern):
 
         return chain_matches
 
+    def _match_parent(self, match, yield_parent):
+        """
+        Handle a parent match
+        :param match:
+        :type match:
+        :param yield_parent:
+        :type yield_parent:
+        :return:
+        :rtype:
+        """
+        ret = super(Chain, self)._match_parent(match, yield_parent)
+        original_children = list(match.children)
+        original_end = match.end
+        while not ret and match.children:
+            last_pattern = match.children[-1].pattern
+            last_pattern_children = [child for child in match.children if child.pattern == last_pattern]
+            last_pattern_groups_iter = itertools.groupby(last_pattern_children, lambda child: child.match_index)
+            last_pattern_groups = {}
+            for index, matches in last_pattern_groups_iter:
+                last_pattern_groups[index] = list(matches)
+
+            for index in reversed(list(last_pattern_groups)):
+                last_matches = list(last_pattern_groups[index])
+                for last_match in last_matches:
+                    match.children.remove(last_match)
+                match.end = match.children[-1].end if match.children else match.start
+                ret = super(Chain, self)._match_parent(match, yield_parent)
+                if ret:
+                    return True
+        match.children = original_children
+        match.end = original_end
+        return ret
+
     def _build_chain_match(self, current_chain_matches, input_string):
         start = None
         end = None
@@ -245,12 +280,15 @@ class Chain(Pattern):
             j += 1
         truncated = chain_part_matches[:j]
         if chain_part.repeater_end is not None:
-            return truncated[:chain_part.repeater_end]
+            truncated = [m for m in truncated if m.match_index < chain_part.repeater_end]
         return truncated
 
     @staticmethod
     def _validate_chain_part_matches(chain_part_matches, chain_part):
-        if len(chain_part_matches) < chain_part.repeater_start:
+        max_match_index = -1
+        if chain_part_matches:
+            max_match_index = max([m.match_index for m in chain_part_matches])
+        if max_match_index + 1 < chain_part.repeater_start:
             raise _InvalidChainException
 
     @property

@@ -38,9 +38,9 @@ def audio_codec():
     rebulk.string("HQ", value="HQ", tags="AC3")
 
     rebulk.defaults(name="audio_channels")
-    rebulk.regex(r'(7[\W_]1)(?:[^\d]|$)', value='7.1', children=True)
-    rebulk.regex(r'(5[\W_]1)(?:[^\d]|$)', value='5.1', children=True)
-    rebulk.regex(r'(2[\W_]0)(?:[^\d]|$)', value='2.0', children=True)
+    rebulk.regex(r'(7[\W_][01](?:ch)?)(?:[^\d]|$)', value='7.1', children=True)
+    rebulk.regex(r'(5[\W_][01](?:ch)?)(?:[^\d]|$)', value='5.1', children=True)
+    rebulk.regex(r'(2[\W_]0(?:ch)?)(?:[^\d]|$)', value='2.0', children=True)
     rebulk.string('7ch', '8ch', value='7.1')
     rebulk.string('5ch', '6ch', value='5.1')
     rebulk.string('2ch', 'stereo', value='2.0')

@@ -1503,7 +1503,9 @@
 ? '[Kaerizaki-Fansub] One Piece 603 VOSTFR PS VITA (960x544) V2.mp4'
 : options: -E
   episode: 603
-  release_group: Kaerizaki-Fansub
+  release_group:
+    - Kaerizaki-Fansub
+    - PS VITA
   screen_size: 960x544
   title: One Piece
   subtitle_language: fr
@@ -1855,3 +1857,151 @@
   title: Game of Thrones
   type: episode
   video_codec: h265
+
+? Fargo.-.Season.1.-.720p.BluRay.-.x264.-.ShAaNiG
+: format: BluRay
+  release_group: ShAaNiG
+  screen_size: 720p
+  season: 1
+  title: Fargo
+  type: episode
+  video_codec: h264
+
+? Show.Name.S02E02.Episode.Title.1080p.WEB-DL.x264.5.1Ch.-.Group
+: audio_channels: '5.1'
+  episode: 2
+  episode_title: Episode Title
+  format: WEB-DL
+  release_group: Group
+  screen_size: 1080p
+  season: 2
+  title: Show Name
+  type: episode
+  video_codec: h264
+
+? Breaking.Bad.S01E01.2008.BluRay.VC1.1080P.5.1.WMV-NOVO
+: audio_channels: '5.1'
+  container: WMV
+  episode: 1
+  format: BluRay
+  release_group: NOVO
+  screen_size: 1080p
+  season: 1
+  title: Breaking Bad
+  type: episode
+  year: 2008
+
+? Cosmos.A.Space.Time.Odyssey.S01E02.HDTV.x264.PROPER-LOL
+: episode: 2
+  format: HDTV
+  other: Proper
+  proper_count: 1
+  release_group: LOL
+  season: 1
+  title: Cosmos A Space Time Odyssey
+  type: episode
+  video_codec: h264
+
+? Elementary.S01E01.Pilot.DVDSCR.x264.PREAiR-NoGRP
+: episode: 1
+  episode_details: Pilot
+  episode_title: Pilot
+  format: DVD
+  other:
+  - Screener
+  - Preair
+  release_group: NoGRP
+  season: 1
+  title: Elementary
+  type: episode
+  video_codec: h264
+
+? Fear.The.Walking.Dead.S02E01.HDTV.x264.AAC.MP4-k3n.mp4
+: audio_codec: AAC
+  container:
+  - MP4
+  - mp4
+  episode: 1
+  format: HDTV
+  mimetype: video/mp4
+  release_group: k3n
+  season: 2
+  title: Fear The Walking Dead
+  type: episode
+  video_codec: h264
+
+? Game.of.Thrones.S03.1080p.BluRay.DTS-HD.MA.5.1.AVC.REMUX-FraMeSToR
+: audio_channels: '5.1'
+  audio_codec: DTS
+  audio_profile: HDMA
+  format: BluRay
+  other: Remux
+  release_group: FraMeSToR
+  screen_size: 1080p
+  season: 3
+  title: Game of Thrones
+  type: episode
+
+? Show.Name.S01E02.HDTV.x264.NL-subs-ABC
+: episode: 2
+  format: HDTV
+  release_group: ABC
+  season: 1
+  subtitle_language: nl
+  title: Show Name
+  type: episode
+  video_codec: h264
+
+? Friends.S01-S10.COMPLETE.720p.BluRay.x264-PtM
+: format: BluRay
+  other: Complete
+  release_group: PtM
+  screen_size: 720p
+  season: # Should it be [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] ?
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  title: Friends
+  type: episode
+  video_codec: h264
+
+? Duck.Dynasty.S02E07.Streik.German.DOKU.DL.WS.DVDRiP.x264-CDP
+: episode: 7
+  episode_title: Streik German DOKU
+  format: DVD
+  language: mul
+  other: WideScreen
+  release_group: CDP
+  season: 2
+  title: Duck Dynasty
+  type: episode
+  video_codec: h264
+
+? Family.Guy.S13E14.JOLO.German.AC3D.DL.720p.WebHD.x264-CDD
+: audio_codec: AC3
+  episode: 14
+  episode_title: JOLO German
+  format: WEB-DL
+  language: mul
+  release_group: CDD
+  screen_size: 720p
+  season: 13
+  title: Family Guy
+  type: episode
+  video_codec: h264
+
+? How.I.Met.Your.Mother.COMPLETE.SERIES.DVDRip.XviD-AR
+: options: -L en -C us
+  format: DVD
+  other: Complete
+  release_group: AR
+  title: How I Met Your Mother
+  type: movie
+  video_codec: XviD

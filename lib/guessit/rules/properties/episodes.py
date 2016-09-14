@@ -7,7 +7,10 @@ import copy
 from collections import defaultdict
 
 from rebulk import Rebulk, RemoveMatch, Rule, AppendMatch, RenameMatch
+from rebulk.match import Matches
 from rebulk.remodule import re
+from rebulk.utils import is_iterable
+
 from .title import TitleFromPosition
 from ..common import dash, alt_dash, seps
 from ..common.numeral import numeral, parse_numeral
@@ -40,6 +43,10 @@ def episodes():
             return match
         elif match.name in ['season', 'episode'] and other.name in ['season', 'episode'] \
                 and match.initiator != other.initiator:
+            if 'weak-episode' in match.tags:
+                return match
+            if 'weak-episode' in other.tags:
+                return other
             if 'x' in match.initiator.raw.lower():
                 return match
             if 'x' in other.initiator.raw.lower():
@@ -67,8 +74,8 @@ def episodes():
                  private_parent=True,
                  conflict_solver=season_episode_conflict_solver) \
         .defaults(validator=season_episode_validator) \
-        .regex(r'S(?P<season>\d+)@?(?:xE|Ex|E|x)@?(?P<episode>\d+)') \
-        .regex(r'(?:(?P<episodeSeparator>xE|Ex|E|x|-|\+|&)(?P<episode>\d+))').repeater('*') \
+        .regex(r'S(?P<season>\d+)@?(?:xE|Ex|EP|E|x)@?(?P<episode>\d+)') \
+        .regex(r'(?:(?P<episodeSeparator>xE|Ex|EP|E|x|-|\+|&)(?P<episode>\d+))').repeater('*') \
         .chain() \
         .regex(r'(?P<season>\d+)@?x@?(?P<episode>\d+)') \
         .regex(r'(?:(?P<episodeSeparator>x|-|\+|&)(?P<episode>\d+))').repeater('*') \
@@ -88,14 +95,28 @@ def episodes():
     episode_words = ['episode', 'episodes', 'ep']
     of_words = ['of', 'sur']
     all_words = ['All']
+    range_separators = ['-', '~', 'to', 'a']
+    discrete_separators = [r'\+', '&', '@', 'and', 'et']
 
-    rebulk.chain(abbreviations=[alt_dash], formatter={'season': parse_numeral, 'count': parse_numeral}) \
+    def seasons_ordering_validator(match):
+        """
+        Validator for season list. They should be in natural order to be validated.
+        """
+        if not seps_surround(match):
+            return False
+        values = Matches(match.children).to_dict(implicit=True)
+        if 'season' in values and is_iterable(values['season']):
+            # Season numbers must be in natural order to be validated.
+            return list(sorted(values['season'])) == values['season']
+        return True
+
+    rebulk.chain(abbreviations=[alt_dash], formatter={'season': parse_numeral, 'count': parse_numeral},
+                 validator={'__parent__': seasons_ordering_validator}) \
         .defaults(validator=None) \
         .regex(build_or_pattern(season_words) + '@?(?P<season>' + numeral + ')') \
         .regex(r'' + build_or_pattern(of_words) + '@?(?P<count>' + numeral + ')').repeater('?') \
-        .regex(r'@?(?P<seasonSeparator>-)@?(?P<season>\d+)').repeater('*') \
-        .regex(r'@?(?P<seasonSeparator>\+|&)@?(?P<season>\d+)').repeater('*')
-
+        .regex(r'@?(?P<seasonSeparator>' + build_or_pattern(range_separators + discrete_separators) +
+               r')@?(?P<season>\d+)').repeater('*')
 
     rebulk.regex(build_or_pattern(episode_words) + r'-?(?P<episode>\d+)' +
                  r'(?:v(?P<version>\d+))?' +
@@ -119,21 +140,21 @@ def episodes():
                     validator={'__parent__': seps_surround}, children=True, private_parent=True)
 
     # 12, 13
-    rebulk.chain(tags=['bonus-conflict', 'weak-movie'], formatter={'episode': int, 'version': int}) \
+    rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int}) \
         .defaults(validator=None) \
         .regex(r'(?P<episode>\d{2})') \
         .regex(r'v(?P<version>\d+)').repeater('?') \
         .regex(r'(?P<episodeSeparator>[x-])(?P<episode>\d{2})').repeater('*')
 
     # 012, 013
-    rebulk.chain(tags=['bonus-conflict', 'weak-movie'], formatter={'episode': int, 'version': int}) \
+    rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int}) \
         .defaults(validator=None) \
         .regex(r'0(?P<episode>\d{1,2})') \
         .regex(r'v(?P<version>\d+)').repeater('?') \
         .regex(r'(?P<episodeSeparator>[x-])0(?P<episode>\d{1,2})').repeater('*')
 
     # 112, 113
-    rebulk.chain(tags=['bonus-conflict', 'weak-movie'], formatter={'episode': int, 'version': int},
+    rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int},
                  disabled=lambda context: not context.get('episode_prefer_number', False)) \
         .defaults(validator=None) \
         .regex(r'(?P<episode>\d{3,4})') \
@@ -141,7 +162,7 @@ def episodes():
         .regex(r'(?P<episodeSeparator>[x-])(?P<episode>\d{3,4})').repeater('*')
 
     # 1, 2, 3
-    rebulk.chain(tags=['bonus-conflict', 'weak-movie'], formatter={'episode': int, 'version': int},
+    rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int},
                  disabled=lambda context: context.get('type') != 'episode') \
         .defaults(validator=None) \
         .regex(r'(?P<episode>\d)') \
@@ -164,7 +185,7 @@ def episodes():
         .regex(r'(?P<episodeSeparator>ep|e|x|-)(?P<episode>\d{1,4})').repeater('*')
 
     # 102, 0102
-    rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-duplicate'],
+    rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode', 'weak-duplicate'],
                  formatter={'season': int, 'episode': int, 'version': int},
                  conflict_solver=lambda match, other: match if other.name == 'year' else '__default__',
                  disabled=lambda context: context.get('episode_prefer_number', False)) \
@@ -190,7 +211,8 @@ def episodes():
                  abbreviations=[dash], name="hardcoded-movies", marker=True,
                  conflict_solver=lambda match, other: None)
 
-    rebulk.rules(EpisodeNumberSeparatorRange, SeasonSeparatorRange, RemoveWeakIfMovie, RemoveWeakIfSxxExx,
+    rebulk.rules(EpisodeNumberSeparatorRange(range_separators),
+                 SeasonSeparatorRange(range_separators), RemoveWeakIfMovie, RemoveWeakIfSxxExx,
                  RemoveWeakDuplicate, EpisodeDetailValidator, RemoveDetachedEpisodeNumber, VersionValidator,
                  CountValidator, EpisodeSingleDigitValidator)
 
@@ -223,54 +245,70 @@ class CountValidator(Rule):
         return to_remove, episode_count, season_count
 
 
-class EpisodeNumberSeparatorRange(Rule):
-    """
-    Remove separator matches and create matches for episoderNumber range.
-    """
-    priority = 128
-    consequence = [RemoveMatch, AppendMatch]
-
-    def when(self, matches, context):
-        to_remove = []
-        to_append = []
-        for separator in matches.named('episodeSeparator'):
-            previous_match = matches.previous(separator, lambda match: match.name == 'episode', 0)
-            next_match = matches.next(separator, lambda match: match.name == 'episode', 0)
-
-            if previous_match and next_match and separator.value == '-':
-                for episode_number in range(previous_match.value + 1, next_match.value):
-                    match = copy.copy(separator)
-                    match.private = False
-                    match.name = 'episode'
-                    match.value = episode_number
-                    to_append.append(match)
-            to_remove.append(separator)
-        return to_remove, to_append
-
-
-class SeasonSeparatorRange(Rule):
+class AbstractSeparatorRange(Rule):
     """
     Remove separator matches and create matches for season range.
     """
     priority = 128
     consequence = [RemoveMatch, AppendMatch]
 
+    def __init__(self, range_separators, property_name):
+        super(AbstractSeparatorRange, self).__init__()
+        self.range_separators = range_separators
+        self.property_name = property_name
+
     def when(self, matches, context):
         to_remove = []
         to_append = []
-        for separator in matches.named('seasonSeparator'):
-            previous_match = matches.previous(separator, lambda match: match.name == 'season', 0)
-            next_match = matches.next(separator, lambda match: match.name == 'season', 0)
 
-            if previous_match and next_match and separator.value == '-':
+        for separator in matches.named(self.property_name + 'Separator'):
+            previous_match = matches.previous(separator, lambda match: match.name == self.property_name, 0)
+            next_match = matches.next(separator, lambda match: match.name == self.property_name, 0)
+
+            if previous_match and next_match and separator.value in self.range_separators:
                 for episode_number in range(previous_match.value + 1, next_match.value):
-                    match = copy.copy(separator)
-                    match.private = False
-                    match.name = 'season'
+                    match = copy.copy(next_match)
                     match.value = episode_number
                     to_append.append(match)
             to_remove.append(separator)
+
+        previous_match = None
+        for next_match in matches.named(self.property_name):
+            if previous_match:
+                separator = matches.input_string[previous_match.initiator.end:next_match.initiator.start]
+                if separator in self.range_separators:
+                    for episode_number in range(previous_match.value + 1, next_match.value):
+                        match = copy.copy(next_match)
+                        match.value = episode_number
+                        to_append.append(match)
+                to_remove.append(next_match) # Remove and append match to support proper ordering
+                to_append.append(next_match)
+
+            previous_match = next_match
+
         return to_remove, to_append
+
+
+class EpisodeNumberSeparatorRange(AbstractSeparatorRange):
+    """
+    Remove separator matches and create matches for episoderNumber range.
+    """
+    priority = 128
+    consequence = [RemoveMatch, AppendMatch]
+
+    def __init__(self, range_separators):
+        super(EpisodeNumberSeparatorRange, self).__init__(range_separators, "episode")
+
+
+class SeasonSeparatorRange(AbstractSeparatorRange):
+    """
+    Remove separator matches and create matches for season range.
+    """
+    priority = 128
+    consequence = [RemoveMatch, AppendMatch]
+
+    def __init__(self, range_separators):
+        super(SeasonSeparatorRange, self).__init__(range_separators, "season")
 
 
 class RemoveWeakIfMovie(Rule):

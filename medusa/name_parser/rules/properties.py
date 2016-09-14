@@ -11,22 +11,6 @@ from rebulk.rebulk import Rebulk
 from rebulk.rules import RemoveMatch, Rule
 
 
-def episode():
-    """Episode property.
-
-    :return:
-    :rtype: Rebulk
-    """
-    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE)
-    rebulk.defaults(name='episode', formatter={'season': int, 'episode': int},
-                    tags=['SxxExx'], abbreviations=[alt_dash], children=True, private_parent=True)
-
-    # S00EP00 pattern
-    rebulk.regex(r'S(?P<season>\d+)@?(?:EP)@?(?P<episode>\d+)')
-
-    return rebulk
-
-
 def blacklist():
     """Blacklisted patterns.
 
@@ -139,6 +123,7 @@ def language():
     rebulk.defaults(name='language', validator=seps_surround)
     rebulk.regex('SPANISH-?AUDIO', r'(?:Espa[.]ol-)?castellano', value=babelfish.Language('spa'))
     rebulk.regex('german-dubbed', 'dubbed-german', value=babelfish.Language('deu'))
+    rebulk.regex('english-dubbed', value=babelfish.Language('eng'))
     rebulk.regex('dublado', value='und', formatter=babelfish.Language)
 
     return rebulk
@@ -164,23 +149,6 @@ def subtitle_language():
                  value='und', formatter=babelfish.Language, tags='subtitle.undefined')
 
     rebulk.rules(RemoveSubtitleUndefined)
-
-    return rebulk
-
-
-def audio_channels():
-    """Audio channels property.
-
-    :return:
-    :rtype: Rebulk
-    """
-    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash]).string_defaults(ignore_case=True)
-    rebulk.defaults(name='audio_channels')
-
-    # https://github.com/guessit-io/guessit/issues/328
-    rebulk.string('7.1ch', value='7.1')
-    rebulk.string('5.1ch', value='5.1')
-    rebulk.string('2.0ch', value='2.0')
 
     return rebulk
 

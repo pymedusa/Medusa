@@ -10,7 +10,6 @@ from dogpile.cache.region import make_region
 from guessit.rules.common.date import valid_year
 import medusa as app
 from .rules import default_api
-from ..helpers import normalize
 
 
 region = make_region()
@@ -25,7 +24,7 @@ fixed_expected_titles = {
 }
 
 # release group exception list
-expected_groups = normalize({
+expected_groups = {
     # https://github.com/guessit-io/guessit/issues/297
     # guessit blacklists parts of the name for the following groups
     r're:\bbyEMP\b',
@@ -36,23 +35,19 @@ expected_groups = normalize({
     r're:\bRipPourBox\b',
     r're:\bRiPRG\b',
 
-    # https://github.com/guessit-io/guessit/issues/316
-    r're:\bCDP\b',
-    r're:\bCDD\b',
-
     # https://github.com/guessit-io/guessit/issues/317
     r're:\bHDD\b',
 
     # release groups with numbers
-    r're:\b4EVERHD\b',  # remove after guessit #313 is fixed
+    # https://github.com/guessit-io/guessit/issues/294
+    r're:\b4EVERHD\b',
     r're:\bF4ST3R\b',
     r're:\bF4ST\b',
-    r're:\bPtM\b',
     r're:\bTGNF4ST\b',
     r're:\bTV2LAX9\b',
-})
+}
 
-allowed_languages = normalize({
+allowed_languages = {
     'de',
     'en',
     'es',
@@ -68,12 +63,12 @@ allowed_languages = normalize({
     'ru',
     'sv',
     'uk',
-})
+}
 
-allowed_countries = normalize({
+allowed_countries = {
     'us',
     'gb',
-})
+}
 
 series_re = re.compile(r'^(?P<series>.*?)(?: \(?(?:(?P<year>\d{4})|(?P<country>[A-Z]{2}))\)?)?$')
 
@@ -133,7 +128,7 @@ def get_expected_titles(show_list):
             fmt = r're:(?<=[\W_]){name}(?=[\W_]|$)' if show.is_anime else r're:(?<![^/\\\.]){name}(?=[\W_]|$)'
             expected_titles.append(fmt.format(name=prepare(series)))
 
-    return normalize(expected_titles)
+    return expected_titles
 
 
 def prepare(string):

@@ -28,10 +28,8 @@ have a fixed execution order, that's why the rules() method should add the rules
 import copy
 import re
 
-from guessit.rules.common import seps
 from guessit.rules.common.comparators import marker_sorted
 from guessit.rules.common.formatters import cleanup
-from guessit.rules.common.validators import int_coercable
 from guessit.rules.properties.release_group import clean_groupname
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
@@ -41,6 +39,25 @@ simple_separator = ('.', 'and', ',.', '.,', '.,.', ',')
 range_separator = ('-', '~', '_-_', 'to', '.to.')
 season_range_separator = range_separator + ('_-_s', '-s', '.to.s', '_to_s')
 episode_range_separator = range_separator + ('_-_e', '-e', '.to.e', '_to_e')
+
+
+class BlacklistedReleaseGroup(Rule):
+    """Blacklist some release groups."""
+
+    priority = POST_PROCESS
+    consequence = RemoveMatch
+    blacklist = ('private', 'req', 'no.rar')
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        return matches.named('release_group', predicate=lambda match: match.value.lower() in self.blacklist)
 
 
 class FixAnimeReleaseGroup(Rule):
@@ -77,9 +94,7 @@ class FixAnimeReleaseGroup(Rule):
     """
 
     priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch]
-    release_group_re = re.compile(r'^\[(?P<release_group>\w+(\-\w+)?)\]$', flags=re.IGNORECASE)
-    blacklist = ('private', 'req')
+    consequence = RemoveMatch
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -90,32 +105,27 @@ class FixAnimeReleaseGroup(Rule):
         :type context: dict
         :return:
         """
-        if context.get('show_type') == 'normal':
-            return
-
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
-            # get the group (e.g.: [abc]) at the beginning of this filepart
-            group = matches.markers.at_index(filepart.start, index=0, predicate=lambda marker: marker.name == 'group')
-
-            # if there's no group or there's already a match at this position, skip it...
-            if not group or matches.at_match(group):
+            groups = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'release_group')
+            if len(groups) < 2:
                 continue
 
-            m = self.release_group_re.match(group.raw)
-            # if the group matches the anime's release group pattern and it's not blacklisted
-            if m and m.group('release_group').lower() not in self.blacklist:
-                new_release_group = copy.copy(group)
-                new_release_group.marker = None
-                new_release_group.name = 'release_group'
-                new_release_group.value = m.group('release_group')
-                new_release_group.tags = ['anime']
+            to_remove = []
+            if matches.tagged('anime'):
+                # get the group (e.g.: [abc]) at the beginning of this filepart
+                group = matches.markers.at_index(filepart.start, index=0, predicate=lambda marker: marker.name == 'group')
+                if group and [rg for rg in groups if group and rg.span == group.span and rg.value.lower()]:
+                    to_remove.extend([rg for rg in groups if rg.span != group.span])
+                else:
+                    # anime should pick the first in the list and discard the rest
+                    to_remove.append(groups[1:])
+            else:
+                # non anime should pick the last in the list and discard the rest
+                to_remove.append(groups[:-1])
 
-                to_append = new_release_group
-                to_remove = matches.named('release_group')
-
-                # remove the old release_group, append the new one
-                return to_remove, to_append
+            if to_remove:
+                return to_remove
 
 
 class SpanishNewpctReleaseName(Rule):
@@ -992,9 +1002,13 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
         :type context: dict
         :return:
         """
+        weak_duplicate = matches.tagged('weak-duplicate', index=0)
         # only for shows that seems to be animes
-        if context.get('show_type') == 'normal' or not matches.tagged('anime') or \
-                not matches.tagged('weak-duplicate') or matches.tagged('newpct'):
+        if context.get('show_type') == 'normal' or not weak_duplicate or matches.tagged('newpct'):
+            return
+
+        # if it's not detected as anime and season (weak_duplicate) is not 0, then skip.
+        if not matches.tagged('anime') and weak_duplicate.value > 0:
             return
 
         fileparts = matches.markers.named('path')
@@ -1161,187 +1175,6 @@ class PartsAsEpisodeNumbers(Rule):
                 to_rename.extend(parts)
 
         return to_rename
-
-
-class FixSeasonNotDetected(Rule):
-    """Fix when season is not detected.
-
-    Work-around for https://github.com/guessit-io/guessit/issues/306
-    TODO: Remove file_title when this bug is fixed
-
-    e.g.: Show.Name.-.Season.3.-.720p.BluRay.-.x264.-.Group
-
-    guessit -t episode "Show.Name.-.Season.3.-.720p.BluRay.-.x264.-.Group"
-
-    without this fix:
-        For: Show.Name.-.Season.3.-.720p.BluRay.-.x264.-.Group
-        GuessIt found: {
-            "title": "Show Name",
-            "alternative_title": "Season",
-            "episode": 3,
-            "screen_size": "720p",
-            "format": "BluRay",
-            "video_codec": "h264",
-            "release_group": "Group",
-            "type": "episode"
-        }
-
-    with this fix:
-        For: Show.Name.-.Season.3.-.720p.BluRay.-.x264.-.Group
-        GuessIt found: {
-            "title": "Show Name",
-            "season": 3,
-            "screen_size": "720p",
-            "format": "BluRay",
-            "video_codec": "h264",
-            "release_group": "Group",
-            "type": "episode"
-        }
-    """
-
-    priority = POST_PROCESS
-    season_re = re.compile(r'\b(season|series)\W*$', flags=re.IGNORECASE)
-    consequence = [RemoveMatch, AppendMatch, RenameMatch('season')]
-
-    def when(self, matches, context):
-        """Evaluate the rule.
-
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        fileparts = matches.markers.named('path')
-        for filepart in marker_sorted(fileparts, matches):
-            episodes = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'episode')
-            for episode in episodes:
-                previous = matches.previous(episode, index=0)
-                m = self.season_re.search(previous.raw) if previous else None
-                if not m or matches.holes(previous.end, episode.start, index=0):
-                    continue
-
-                to_remove = []
-                to_append = []
-                to_rename = []
-
-                new_value = cleanup(previous.raw[:m.start()])
-                # if there's a new value (e.g.: 'Show Name Season' became 'Show Name'), keep it
-                if new_value:
-                    new_match = copy.copy(previous)
-                    new_match.value = new_value
-                    new_match.end = m.start()
-                    to_append.append(new_match)
-
-                matches.next(episode, index=0, predicate=lambda match: match.name == 'episode')
-
-                to_remove.append(previous)
-                to_rename.append(episode)
-
-                return to_remove, to_append, to_rename
-
-
-class FixWrongSeasonRangeDetectionDueToEpisode(Rule):
-    """Fix season range detection.
-
-    e.g.: Show.Name.-.Season.1.to.3.-.Mp4.1080p
-          Show.Name.-.Season.1-3.-.Mp4.1080p
-
-    guessit -t episode "Show.Name.-.Season.1.to.3.-.Mp4.1080p"
-
-    without this fix:
-        For: Show.Name.-.Season.1.to.3.-.Mp4.1080p
-        GuessIt found: {
-            "title": "Show Name",
-            "season": 1,
-            "episode_title": "to",
-            "episode": 3,
-            "container": "MP4",
-            "screen_size": "1080p",
-            "type": "episode"
-        }
-
-
-    with this fix:
-        For: Show.Name.-.Season.1.to.3.-.Mp4.1080p
-        GuessIt found: {
-            "title": "Show Name",
-            "season": [1, 2, 3],
-            "container": "MP4",
-            "screen_size": "1080p",
-            "type": "episode"
-        }
-    """
-
-    priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch, RenameMatch('season')]
-
-    def when(self, matches, context):
-        """Evaluate the rule.
-
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        to_remove = []
-        to_append = []
-        to_rename = []
-
-        fileparts = matches.markers.named('path')
-        for filepart in marker_sorted(fileparts, matches):
-            seasons = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'season')
-            if len(seasons) != 1:
-                continue
-
-            # and no season or episodes on any next fileparts
-            if matches.range(filepart.end, predicate=lambda match: match.name in ('season', 'episode')):
-                continue
-
-            current_season = seasons[0]
-            while current_season:
-                next_match = matches.next(current_season, index=0, predicate=lambda match:
-                                          (match.end <= filepart.end and match.name in ('episode', 'episode_title')))
-
-                if not next_match:
-                    break
-
-                if next_match.name == 'episode_title':
-                    separator = next_match
-                    next_season = matches.next(next_match, index=0, predicate=lambda match:
-                                               (match.end <= filepart.end and match.name == 'episode'))
-                elif next_match.name == 'episode':
-                    separator = matches.holes(current_season.end, next_match.start, index=0)
-                    next_season = next_match
-
-                if not next_season or not separator:
-                    break
-
-                if separator.value in simple_separator:
-                    to_rename.append(next_season)
-                    if separator.name == 'episode_title':
-                        to_remove.append(next_match)
-
-                    current_season = next_season
-                elif separator.value in season_range_separator and 0 < current_season.value < next_season.value < 100:
-                    to_rename.append(next_season)
-                    if separator.name == 'episode_title':
-                        to_remove.append(next_match)
-
-                    # then create the season range
-                    for i in range(current_season.value + 1, next_season.value):
-                        new_season = copy.copy(current_season)
-                        new_season.value = i
-                        new_season.start = separator.start
-                        new_season.end = separator.end
-                        to_append.append(new_season)
-
-                    current_season = next_season
-                else:
-                    break
-
-        return to_remove, to_append, to_rename
 
 
 class FixSeasonRangeDetection(Rule):
@@ -1533,96 +1366,6 @@ class FixEpisodeRangeDetection(Rule):
                         to_append.append(end_episode)
 
         return to_remove, to_append, to_rename
-
-
-class FixEpisodeRangeWithSeasonDetection(Rule):
-    """Fix episode range detection when together with season.
-
-    Work-around for https://github.com/guessit-io/guessit/issues/287
-    TODO: Remove when this if this scenario is fixed upstream
-
-    e.g.: Show.Name.S01E01-S01E21
-
-    guessit -t episode "Show.Name.S01E01-S01E21"
-
-    without this fix:
-        For: Show.Name.S01E01-S01E04
-        GuessIt found: {
-            "title": "Show Name",
-            "season": 1,
-            "episode": [
-                1,
-                4
-            ],
-            "type": "episode"
-        }
-
-
-    with this fix:
-        For: Show.Name.S01E01-S01E04
-        GuessIt found: {
-            "title": "Show Name",
-            "season": 1,
-            "episode": [
-                1,
-                2,
-                3,
-                4
-            ],
-            "type": "episode"
-        }
-    """
-
-    priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch]
-
-    def when(self, matches, context):
-        """Evaluate the rule.
-
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        to_remove = []
-        to_append = []
-
-        fileparts = matches.markers.named('path')
-        for filepart in marker_sorted(fileparts, matches):
-            seasons = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'season')
-            # only when there are 2 seasons
-            start_season = seasons[0] if len(seasons) == 2 else None
-            end_season = seasons[-1] if len(seasons) == 2 else None
-
-            # and no episodes on any next fileparts
-            if matches.range(filepart.end, predicate=lambda match: match.name == 'episode'):
-                continue
-
-            # and first season is lesser than the second and both are between 1 and 99
-            if start_season and end_season and start_season.value == end_season.value:
-                first_episode = matches.next(start_season, index=0)
-                end_episode = matches.next(end_season, index=0)
-
-                if first_episode and end_episode and first_episode.name == end_episode.name == 'episode' \
-                        and 0 < first_episode.value < end_episode.value < 100:
-                    season_separator = matches.input_string[first_episode.end:end_season.start]
-                    # and they are separated by a 'season range separator'
-                    if season_separator.lower() in season_range_separator:
-                        episode_title = matches.next(start_season, index=0)
-                        if episode_title and episode_title.name == 'episode_title' \
-                                and episode_title.value.lower() == 'to':
-                            to_remove.append(episode_title)
-
-                        # then create the missing numbers
-                        for i in range(first_episode.value + 1, end_episode.value):
-                            new_episode = copy.copy(first_episode)
-                            new_episode.value = i
-                            new_episode.start = first_episode.end
-                            new_episode.end = end_episode.start
-                            to_append.append(new_episode)
-
-        return to_remove, to_append
 
 
 class ExpectedTitlePostProcessor(Rule):
@@ -1881,88 +1624,6 @@ class CreateProperTags(Rule):
         return to_append
 
 
-class EnhanceReleaseGroupDetection(Rule):
-    """Enhance release group detection.
-
-    Some release groups are not detected when there's when they appear after subtitle_language or size.
-    Bug: https://github.com/guessit-io/guessit/issues/313
-
-    e.g.: Show.Name.S01E01.2008.BluRay.VC1.1080P.5.1.WMV-NOVO
-          Show.Name.S01E02.HDTV.x264.PROPER-LOL
-
-    without this fix:
-        For: Show.Name.S01E02.HDTV.x264.PROPER-LOL
-        GuessIt found: {
-            "title": "Cosmos A Space Time Odyssey",
-            "season": 1,
-            "episode": 2,
-            "format": "HDTV",
-            "video_codec": "h264",
-            "other": "Proper",
-            "proper_count": 1,
-            "type": "episode"
-        }
-
-    with this fix:
-        For: Show.Name.S01E02.HDTV.x264.PROPER-LOL
-        GuessIt found: {
-            "title": "Cosmos A Space Time Odyssey",
-            "season": 1,
-            "episode": 2,
-            "format": "HDTV",
-            "video_codec": "h264",
-            "other": "Proper",
-            "proper_count": 1,
-            "release_group": "LOL",
-            "type": "episode"
-        }
-    """
-
-    priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch]
-    scene_previous_names = ['subtitle_language', 'size']
-
-    def when(self, matches, context):
-        """Evaluate the rule.
-
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        if matches.tagged('newpct') or matches.tagged('tvchaosuk'):
-            return
-
-        to_append = []
-        to_remove = []
-
-        for filepart in marker_sorted(matches.markers.named('path'), matches):
-            start, end = filepart.span
-
-            release_group = matches.range(start, end, predicate=lambda match: match.name == 'release_group', index=0)
-            if release_group and ('anime', 'scene') not in release_group.tags:
-                continue
-
-            last_hole = matches.holes(start, end + 1, predicate=lambda hole: cleanup(hole.value), index=-1)
-            if not last_hole:
-                continue
-
-            previous_match = matches.previous(last_hole, lambda match: not match.private, index=0)
-            if previous_match and previous_match.name in self.scene_previous_names and \
-                    not matches.input_string[previous_match.end:last_hole.start].strip(seps) and \
-                    not int_coercable(last_hole.value.strip(seps)):
-
-                if release_group and release_group.start <= previous_match.start:
-                    continue
-
-                last_hole.name = 'release_group'
-                to_append.append(last_hole)
-                to_remove.extend(matches.named('release_group'))
-
-        return to_remove, to_append
-
-
 class ReleaseGroupPostProcessor(Rule):
     """Post process release group.
 
@@ -2090,17 +1751,15 @@ def rules():
     :rtype: Rebulk
     """
     return Rebulk().rules(
+        BlacklistedReleaseGroup,
         FixTvChaosUkWorkaround,
         FixAnimeReleaseGroup,
         SpanishNewpctReleaseName,
         FixInvalidTitleOrAlternativeTitle,
         FixSeasonAndEpisodeConflicts,
         FixWrongTitleDueToFilmTitle,
-        FixSeasonNotDetected,
-        FixWrongSeasonRangeDetectionDueToEpisode,
         FixSeasonRangeDetection,
         FixEpisodeRangeDetection,
-        FixEpisodeRangeWithSeasonDetection,
         FixWrongTitlesWithCompleteKeyword,
         AnimeWithSeasonAbsoluteEpisodeNumbers,
         AnimeAbsoluteEpisodeNumbers,
@@ -2109,7 +1768,6 @@ def rules():
         ExpectedTitlePostProcessor,
         CreateAliasWithAlternativeTitles,
         CreateAliasWithCountryOrYear,
-        EnhanceReleaseGroupDetection,
         ReleaseGroupPostProcessor,
         FixMultipleTitles,
         FixMultipleFormats,

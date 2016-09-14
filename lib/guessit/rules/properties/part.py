@@ -22,7 +22,8 @@ def part():
 
     prefixes = ['pt', 'part']
 
-    rebulk.regex(build_or_pattern(prefixes) + r'-?(' + numeral + r')', prefixes=prefixes,
-                 name='part', validate_all=True, private_parent=True, children=True, formatter=parse_numeral)
+    rebulk.regex(build_or_pattern(prefixes) + r'-?(?P<part>' + numeral + r')',
+                 prefixes=prefixes, validate_all=True, private_parent=True, children=True, formatter=parse_numeral,
+                 validator={'part': lambda m: 0 < m.value < 100})
 
     return rebulk

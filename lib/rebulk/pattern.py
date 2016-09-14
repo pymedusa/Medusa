@@ -170,7 +170,9 @@ class Pattern(object):
         ret = []
         for pattern in self.patterns:
             yield_parent = self._yield_parent()
+            match_index = -1
             for match in self._match(pattern, input_string, context):
+                match_index += 1
                 yield_children = self._yield_children(match)
                 if not self._match_parent(match, yield_parent):
                     continue
@@ -186,9 +188,11 @@ class Pattern(object):
                         for child in match.children:
                             child.private = True
                     if yield_parent or self.private_parent:
+                        match.match_index = match_index
                         ret.append(match)
                     if yield_children or self.private_children:
                         for child in match.children:
+                            child.match_index = match_index
                             ret.append(child)
         self._matches_privatize(ret)
         return ret
