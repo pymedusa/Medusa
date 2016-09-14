@@ -101,7 +101,8 @@ class ShowUpdater(object):  # pylint: disable=too-few-public-methods
                     if cur_show.indexerid in updated_shows:
                         # If the cur_show is not 'paused' then add to the showQueueSchedular
                         if not cur_show.paused:
-                            pi_list.append(sickbeard.showQueueScheduler.action.updateShow(cur_show, force))
+                            # Update show needs to be forced since current execution locks the queue
+                            pi_list.append(sickbeard.showQueueScheduler.action.updateShow(cur_show, True))
                         else:
                             logger.info(u'Show update skipped, show: {show} is paused.', show=cur_show.name)
                 else:
@@ -109,7 +110,8 @@ class ShowUpdater(object):  # pylint: disable=too-few-public-methods
 
                     if cur_show.should_update(update_date=update_date):
                         try:
-                            pi_list.append(sickbeard.showQueueScheduler.action.updateShow(cur_show, force))
+                            # Update show needs to be forced since current execution locks the queue
+                            pi_list.append(sickbeard.showQueueScheduler.action.updateShow(cur_show, True))
                         except CantUpdateShowException as e:
                             logger.debug(u'Unable to update show: {error}', error=e)
                     else:
