@@ -736,7 +736,8 @@ class QueueItemUpdate(ShowQueueItem):
 
         logger.log(u'{id}: Finished update of {show}'.format
                    (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
-        sickbeard.showQueueScheduler.action.refreshShow(self.show, self.force)
+        # Refresh show needs to be forced since current execution locks the queue
+        sickbeard.showQueueScheduler.action.refreshShow(self.show, True)
         self.finish()
 
 
