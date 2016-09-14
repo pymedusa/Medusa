@@ -83,9 +83,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             run_at = ', next check in approx. {0}'.format(
                 '{0}h, {1}m'.format(hours, minutes) if 0 < hours else '{0}m, {1}s'.format(minutes, seconds))
 
-        # Restore processed propers
+        # Restore processed propers and add new ones to the end
         if force:
-            self.processed_propers = current_processed_propers
+            self.processed_propers = current_processed_propers + self.processed_propers
 
         logger.log('Completed the search for new propers{0}'.format(run_at))
 
