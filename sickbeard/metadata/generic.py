@@ -410,7 +410,7 @@ class GenericMetadata(object):
 
             logger.log(u"Writing show nfo file to " + nfo_file_path, logger.DEBUG)
 
-            nfo_file = io.open(nfo_file_path, 'wb')
+            nfo_file = ek(io.open, nfo_file_path, 'wb')
             data.write(nfo_file, encoding='UTF-8')
             nfo_file.close()
             helpers.chmodAsParent(nfo_file_path)
@@ -454,7 +454,7 @@ class GenericMetadata(object):
                 helpers.chmodAsParent(nfo_file_dir)
 
             logger.log(u"Writing episode nfo file to " + nfo_file_path, logger.DEBUG)
-            nfo_file = io.open(nfo_file_path, 'wb')
+            nfo_file = ek(io.open, nfo_file_path, 'wb')
             data.write(nfo_file, encoding='UTF-8')
             nfo_file.close()
             helpers.chmodAsParent(nfo_file_path)
@@ -702,7 +702,7 @@ class GenericMetadata(object):
                 ek(os.makedirs, image_dir)
                 helpers.chmodAsParent(image_dir)
 
-            outFile = io.open(image_path, 'wb')
+            outFile = ek(io.open, image_path, 'wb')
             outFile.write(image_data)
             outFile.close()
             helpers.chmodAsParent(image_path)
