@@ -46,9 +46,12 @@ def get_github_repo(organization, repo, gh=None):
     :return:
     :rtype github.Repository.Repository
     """
-    gh = gh or github.MainClass.Github(user_agent='Medusa')
-
-    return gh.get_organization(organization).get_repo(repo)
+    try:
+        gh = gh or github.MainClass.Github(user_agent='Medusa')
+        return gh.get_organization(organization).get_repo(repo)
+    except socket.error as e:
+        logger.debug('Unable to contact Github: {ex!r}', ex=e)
+        raise GithubClientException
 
 
 class GithubClientException(Exception):
