@@ -27,7 +27,7 @@ class IssueSubmitter(object):
     ALREADY_RUNNING = 'An issue is already being submitted, please wait for it to complete.'
     BAD_CREDENTIALS = 'Please check your Github credentials in Medusa settings. Bad Credentials error'
     RATE_LIMIT = 'Please wait before submit new issues. Github Rate Limit Exceeded error'
-    SOCKET_ERROR = 'Unable to contact Github. Please try again'
+    UNABLE_CONTACT_GITHUB = 'Unable to contact Github. Please try again'
     EXISTING_ISSUE_LOCKED = 'Issue #{number} is locked, check GitHub to find info about the error.'
     COMMENTED_EXISTING_ISSUE = 'Commented on existing issue #{number} successfully!'
     ISSUE_CREATED = 'Your issue ticket #{number} was submitted successfully!'
@@ -172,7 +172,7 @@ class IssueSubmitter(object):
             logger.warning(IssueSubmitter.RATE_LIMIT)
             return [(IssueSubmitter.RATE_LIMIT, None)]
         except GithubClientException:
-            return [(IssueSubmitter.SOCKET_ERROR, None)]
+            return [(IssueSubmitter.UNABLE_CONTACT_GITHUB, None)]
         finally:
             self.running = False
 
