@@ -128,7 +128,10 @@ class ConfigGeneral(Config):
         logger.reconfigure()
 
         # Validate github credentials
-        github_client.authenticate(sickbeard.GIT_USERNAME, sickbeard.GIT_PASSWORD)
+        try:
+            github_client.authenticate(sickbeard.GIT_USERNAME, sickbeard.GIT_PASSWORD)
+        except github_client.GithubClientException:
+            logger.log('Unable to contact GitHub while validating your credentials.', logger.WARNING)
 
         sickbeard.PRIVACY_LEVEL = privacy_level.lower()
 

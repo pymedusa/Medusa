@@ -706,8 +706,6 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         # init logging
         logger.init_logging(console_logging=consoleLogging)
 
-        authenticate(GIT_USERNAME, GIT_PASSWORD)
-
         # git reset on update
         GIT_RESET = bool(check_setting_int(CFG, 'General', 'git_reset', 1))
         GIT_RESET_BRANCHES = check_setting_str(CFG, 'General', 'git_reset_branches', GIT_RESET_BRANCHES).split(',')

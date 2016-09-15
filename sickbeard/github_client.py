@@ -2,21 +2,20 @@
 """Github client module."""
 
 import logging
+import socket
 
 import github
 
 logger = logging.getLogger(__name__)
 
 
-def authenticate(username, password, quiet=False):
+def authenticate(username, password):
     """Github authentication.
 
     :param username:
     :type username: string
     :param password:
     :type password: string
-    :param quiet:
-    :type quiet: bool
     :return:
     :rtype: Github or None
     """
@@ -29,8 +28,10 @@ def authenticate(username, password, quiet=False):
 
             return gh
     except github.BadCredentialsException:
-        if not quiet:
-            logger.warning('Invalid Github credentials. Please check your Github credentials in Medusa settings.')
+        logger.warning('Invalid Github credentials. Please check your Github credentials in Medusa settings.')
+    except socket.error as e:
+        logger.debug('Unable to contact Github: {ex!r}', ex=e)
+        raise GithubClientException
 
 
 def get_github_repo(organization, repo, gh=None):
@@ -48,3 +49,9 @@ def get_github_repo(organization, repo, gh=None):
     gh = gh or github.MainClass.Github(user_agent='Medusa')
 
     return gh.get_organization(organization).get_repo(repo)
+
+
+class GithubClientException(Exception):
+    """Exception raised when unable to contact GitHub."""
+
+    pass
