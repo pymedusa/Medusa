@@ -23,7 +23,7 @@ log_name_filters = {
     'BACKLOG': 'Backlog',
     'SHOWUPDATER': 'Show Updater',
     'CHECKVERSION': 'Check Version',
-    'SHOWQUEUE': 'Show Queue',
+    'SHOWQUEUE': 'Show Queue (All)',
     'SEARCHQUEUE': 'Search Queue (All)',
     'SEARCHQUEUE-DAILY-SEARCH': 'Search Queue (Daily Searcher)',
     'SEARCHQUEUE-BACKLOG': 'Search Queue (Backlog)',
