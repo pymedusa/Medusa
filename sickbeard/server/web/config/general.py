@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import os
 
+from github import GithubException
 import sickbeard
 from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
@@ -128,7 +129,10 @@ class ConfigGeneral(Config):
         logger.reconfigure()
 
         # Validate github credentials
-        github_client.authenticate(sickbeard.GIT_USERNAME, sickbeard.GIT_PASSWORD)
+        try:
+            github_client.authenticate(sickbeard.GIT_USERNAME, sickbeard.GIT_PASSWORD)
+        except (GithubException, IOError):
+            logger.log('Error while validating your Github credentials.', logger.WARNING)
 
         sickbeard.PRIVACY_LEVEL = privacy_level.lower()
 
