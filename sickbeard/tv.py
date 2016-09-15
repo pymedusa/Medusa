@@ -1076,21 +1076,21 @@ class TVShow(TVObject):
         try:
             if not self.imdbid:
                 self.imdbid = imdb_api.title2imdbID(self.name, kind='tv series')
-    
+
             if not self.imdbid:
                 logger.log(u'{0}: Not loading show info from IMDb, '
                            u"because we don't know its ID".format(self.indexerid))
                 return
-    
+
             # Make sure we only use one ID
             imdb_id = self.imdbid.split(',')[0]
-    
+
             logger.log(u'{0}: Loading show info from IMDb with ID: {1}'.format(
                        self.indexerid, imdb_id), logger.DEBUG)
-    
+
             # Remove first two chars from ID
             imdb_obj = imdb_api.get_movie(imdb_id[2:])
-    
+
             self.imdb_info = {
                 'imdb_id': imdb_id,
                 'title': imdb_obj.get('title', ''),
@@ -1103,10 +1103,10 @@ class TVShow(TVObject):
                 'votes': imdb_obj.get('votes', ''),
                 'last_update': datetime.date.today().toordinal()
             }
-    
+
             if imdb_obj.get('runtimes'):
                 self.imdb_info['runtimes'] = re.search(r'\d+', imdb_obj['runtimes'][0]).group(0)
-    
+
             # Get only the production country certificate if any
             if imdb_obj.get('certificates') and imdb_obj.get('countries'):
                 for certificate in imdb_obj['certificates']:
