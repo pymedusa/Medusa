@@ -1372,9 +1372,9 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         update_interval = datetime.timedelta(minutes=BACKLOG_FREQUENCY)
         backlogSearchScheduler = BacklogSearchScheduler(BacklogSearcher(),
-                                                                cycleTime=update_interval,
-                                                                threadName="BACKLOG",
-                                                                run_delay=update_interval)
+                                                        cycleTime=update_interval,
+                                                        threadName="BACKLOG",
+                                                        run_delay=update_interval)
 
         search_intervals = {'15m': 15, '45m': 45, '90m': 90, '4h': 4 * 60, 'daily': 24 * 60}
         if CHECK_PROPERS_INTERVAL in search_intervals:

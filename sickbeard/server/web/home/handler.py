@@ -31,12 +31,12 @@ from ....scene_numbering import (
     get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
     set_scene_numbering, xem_refresh
 )
-from ....search.queue import (
-    FailedQueueItem, ForcedSearchQueueItem, BacklogQueueItem, ManualSnatchQueueItem
-)
 from ....search.manual import (
-    collectEpisodesFromSearchThread, get_provider_cache_results, getEpisode, update_finished_search_queue_item,
-    SEARCH_STATUS_FINISHED, SEARCH_STATUS_SEARCHING, SEARCH_STATUS_QUEUED,
+    SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING, collectEpisodesFromSearchThread,
+    getEpisode, get_provider_cache_results, update_finished_search_queue_item
+)
+from ....search.queue import (
+    BacklogQueueItem, FailedQueueItem, ForcedSearchQueueItem, ManualSnatchQueueItem
 )
 from ....versionChecker import CheckVersion
 

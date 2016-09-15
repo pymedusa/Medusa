@@ -26,8 +26,8 @@ import sickbeard
 from .. import common, failed_history, generic_queue, history, logger, providers, ui
 from ..search.core import (
     searchForNeededEpisodes,
-    snatchEpisode,
     searchProviders,
+    snatchEpisode,
 )
 
 search_queue_lock = threading.Lock()
@@ -314,7 +314,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                               ('', 'season pack ')[bool(self.manual_search_type == 'season')], self.segment[0].pretty_name()))
 
             search_result = searchProviders(self.show, self.segment, True, self.downCurQuality,
-                                                 self.manual_search, self.manual_search_type)
+                                            self.manual_search, self.manual_search_type)
 
             if not self.manual_search and search_result:
                 # just use the first result for now
