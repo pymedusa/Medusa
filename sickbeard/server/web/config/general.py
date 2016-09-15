@@ -131,7 +131,7 @@ class ConfigGeneral(Config):
         # Validate github credentials
         try:
             github_client.authenticate(sickbeard.GIT_USERNAME, sickbeard.GIT_PASSWORD)
-        except GithubException:
+        except (GithubException, IOError):
             logger.log('Error while validating your Github credentials.', logger.WARNING)
 
         sickbeard.PRIVACY_LEVEL = privacy_level.lower()

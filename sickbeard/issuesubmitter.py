@@ -171,7 +171,7 @@ class IssueSubmitter(object):
         except RateLimitExceededException:
             logger.warning(IssueSubmitter.RATE_LIMIT)
             return [(IssueSubmitter.RATE_LIMIT, None)]
-        except GithubException:
+        except (GithubException, IOError):
             logger.warning(IssueSubmitter.GITHUB_EXCEPTION)
             return [(IssueSubmitter.GITHUB_EXCEPTION, None)]
         finally:
