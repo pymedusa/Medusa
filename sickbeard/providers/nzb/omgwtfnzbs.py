@@ -22,10 +22,9 @@ import re
 import traceback
 
 import sickbeard
-from sickbeard import logger, tvcache
-
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.nzb.NZBProvider import NZBProvider
+from ... import logger, tvcache
 
 
 class OmgwtfnzbsProvider(NZBProvider):

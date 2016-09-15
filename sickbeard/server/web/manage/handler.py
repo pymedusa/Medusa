@@ -2,30 +2,30 @@
 
 from __future__ import unicode_literals
 
-import os
 import json
+import os
 import re
-from tornado.routes import route
+
 import sickbeard
-from sickbeard import (
-    db, helpers, logger,
-    subtitles, ui,
-)
-from sickbeard.common import (
-    Overview, Quality, SNATCHED,
-)
 from sickrage.helper.common import (
     episode_num, try_int,
 )
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import (
-    ex,
     CantRefreshShowException,
     CantUpdateShowException,
 )
 from sickrage.show.Show import Show
-from sickbeard.server.web.home import Home
-from sickbeard.server.web.core import WebRoot, PageTemplate
+from tornado.routes import route
+from ..core import PageTemplate, WebRoot
+from ..home import Home
+from .... import (
+    db, helpers, logger,
+    subtitles, ui,
+)
+from ....common import (
+    Overview, Quality, SNATCHED,
+)
 
 
 @route('/manage(/?.*)')

@@ -7,10 +7,11 @@ Base handler for Config pages
 from __future__ import unicode_literals
 
 import os
-from tornado.routes import route
+
 import sickbeard
-from sickbeard.versionChecker import CheckVersion
-from sickbeard.server.web.core import WebRoot, PageTemplate
+from tornado.routes import route
+from ..core import PageTemplate, WebRoot
+from ....versionChecker import CheckVersion
 
 
 @route('/config(/?.*)')

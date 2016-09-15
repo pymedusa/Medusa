@@ -2,20 +2,20 @@
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # Git: https://github.com/PyMedusa/SickRage.git
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty    of
+# Medusa is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 # pylint:disable=too-many-lines
 """Various helper methods."""
 
@@ -40,20 +40,18 @@ import uuid
 import warnings
 import xml.etree.ElementTree as ET
 import zipfile
-
 from itertools import cycle, izip
 
 import adba
 from cachecontrol import CacheControl
 import certifi
+import cfscrape
 from contextlib2 import closing, suppress
 import guessit
 import requests
 from requests.compat import urlparse
 import shutil_custom
 import sickbeard
-from sickbeard import classes, db
-from sickbeard.common import USER_AGENT
 from sickrage.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, \
     subtitle_extensions
 from sickrage.helper.encoding import ek
@@ -61,7 +59,8 @@ from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
 from six import PY2, PY3, binary_type, string_types, text_type
 from six.moves import http_client
-
+from . import classes, db
+from .common import USER_AGENT
 
 logger = logging.getLogger(__name__)
 
@@ -171,7 +170,8 @@ def makeDir(path):
         try:
             ek(os.makedirs, path)
             # do the library update for synoindex
-            sickbeard.notifiers.synoindex_notifier.addFolder(path)
+            from . import notifiers
+            notifiers.synoindex_notifier.addFolder(path)
         except OSError:
             return False
     return True
@@ -419,7 +419,8 @@ def make_dirs(path):
                     # use normpath to remove end separator, otherwise checks permissions against itself
                     chmodAsParent(ek(os.path.normpath, sofar))
                     # do the library update for synoindex
-                    sickbeard.notifiers.synoindex_notifier.addFolder(sofar)
+                    from . import notifiers
+                    notifiers.synoindex_notifier.addFolder(sofar)
                 except (OSError, IOError) as e:
                     logger.error(u'Failed creating {path} : {error!r}', path=sofar, error=e)
                     return False
@@ -499,7 +500,8 @@ def delete_empty_folders(check_empty_dir, keep_dir=None):
                 # need shutil.rmtree when ignore_items is really implemented
                 ek(os.rmdir, check_empty_dir)
                 # do the library update for synoindex
-                sickbeard.notifiers.synoindex_notifier.deleteFolder(check_empty_dir)
+                from . import notifiers
+                notifiers.synoindex_notifier.deleteFolder(check_empty_dir)
             except OSError as e:
                 logger.warning(u'Unable to delete {folder}. Error: {error!r}', folder=check_empty_dir, error=e)
                 break
@@ -801,7 +803,8 @@ def restoreVersionedFile(backup_file, version):
 
         shutil.move(new_file, new_file + '.' + 'r' + str(version))
     except Exception as e:
-        logger.warning(u"Error while trying to backup DB file %s before proceeding with restore: %r" % (restore_file, ex(e)))
+        logger.warning(u"Error while trying to backup DB file %s before proceeding with restore: %r" %
+                       (restore_file, ex(e)))
         return False
 
     while not ek(os.path.isfile, new_file):
@@ -907,6 +910,7 @@ def full_sanitizeSceneName(name):
 
 
 def get_show(name, tryIndexers=False):
+    from . import name_cache, scene_exceptions
     if not sickbeard.showList:
         return
 
@@ -918,7 +922,7 @@ def get_show(name, tryIndexers=False):
 
     try:
         # check cache for show
-        cache = sickbeard.name_cache.retrieveNameFromCache(name)
+        cache = name_cache.retrieveNameFromCache(name)
         if cache:
             from_cache = True
             show = Show.find(sickbeard.showList, int(cache))
@@ -930,13 +934,13 @@ def get_show(name, tryIndexers=False):
 
         # try scene exceptions
         if not show:
-            show_id = sickbeard.scene_exceptions.get_scene_exception_by_name(name)[0]
+            show_id = scene_exceptions.get_scene_exception_by_name(name)[0]
             if show_id:
                 show = Show.find(sickbeard.showList, int(show_id))
 
         # add show to cache
         if show and not from_cache:
-            sickbeard.name_cache.addNameToCache(name, show.indexerid)
+            name_cache.addNameToCache(name, show.indexerid)
     except Exception as e:
         logger.debug(u"Error when attempting to find show: %s in SickRage. Error: %r " % (name, repr(e)))
 
@@ -970,7 +974,10 @@ def is_hidden_folder(folder):
 
 
 def real_path(path):
-    """Return the canonicalized absolute pathname. The resulting path will have no symbolic link, '/./' or '/../' components."""
+    """Return the canonicalized absolute pathname.
+
+    The resulting path will have no symbolic link, '/./' or '/../' components.
+    """
     return ek(os.path.normpath, ek(os.path.normcase, ek(os.path.realpath, path)))
 
 
@@ -1173,6 +1180,24 @@ def request_defaults(kwargs):
     return hooks, cookies, verify, proxies
 
 
+def prepare_cf_req(session, request):
+    logger.debug(u'CloudFlare protection detected, trying to bypass it')
+
+    try:
+        tokens, user_agent = cfscrape.get_tokens(request.url)
+        if request.cookies:
+            request.cookies.update(tokens)
+        else:
+            request.cookies = tokens
+        if request.headers:
+            request.headers.update({u'User-Agent': user_agent})
+        else:
+            request.headers = {u'User-Agent': user_agent}
+        return session.prepare_request(request)
+    except (ValueError, AttributeError) as error:
+        logger.warning(u"Couldn't bypass CloudFlare's anti-bot protection. Error: {err_msg}", err_msg=error)
+
+
 def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
     """Return data retrieved from the url provider."""
     response_type = kwargs.pop(u'returns', u'response')
@@ -1181,9 +1206,25 @@ def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=N
     method = u'POST' if post_data else u'GET'
 
     try:
-        resp = session.request(method, url, data=post_data, params=params, timeout=timeout, allow_redirects=True,
-                               hooks=hooks, stream=stream, headers=headers, cookies=cookies, proxies=proxies,
-                               verify=verify)
+        req = requests.Request(method, url, data=post_data, params=params, hooks=hooks,
+                               headers=headers, cookies=cookies)
+        prepped = session.prepare_request(req)
+        resp = session.send(prepped, stream=stream, verify=verify, proxies=proxies, timeout=timeout,
+                            allow_redirects=True)
+
+        if not resp.ok:
+            # Try to bypass CloudFlare's anti-bot protection
+            if resp.status_code == 503 and resp.headers.get('server') == u'cloudflare-nginx':
+                cf_prepped = prepare_cf_req(session, req)
+                if cf_prepped:
+                    cf_resp = session.send(cf_prepped, stream=stream, verify=verify, proxies=proxies,
+                                           timeout=timeout, allow_redirects=True)
+                    if cf_resp.ok:
+                        return cf_resp
+
+            logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
+                         (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
+            return None
 
     except requests.exceptions.RequestException as e:
         logger.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
@@ -1194,11 +1235,6 @@ def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=N
         else:
             logger.info(u'Unknown exception in url {url}. Error: {err_msg}', url=url, err_msg=e)
             logger.debug(traceback.format_exc())
-        return None
-
-    if not resp.ok:
-        logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
-                     (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
         return None
 
     if not response_type or response_type == u'response':

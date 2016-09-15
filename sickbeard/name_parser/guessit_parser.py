@@ -7,11 +7,10 @@ import re
 from datetime import timedelta
 
 from dogpile.cache.region import make_region
-
 from guessit.rules.common.date import valid_year
 import sickbeard
-from sickbeard.helpers import normalize
 from .rules import default_api
+from ..helpers import normalize
 
 
 region = make_region()
@@ -131,7 +130,7 @@ def get_expected_titles(show_list):
                 expected_titles.append(series)
 
             # (?<![^/\\]) means -> it matches nothing but path separators and dot (negative lookbehind)
-            fmt = r're:\b{name}\b' if show.is_anime else r're:(?<![^/\\\.]){name}\b'
+            fmt = r're:(?<=[\W_]){name}(?=[\W_]|$)' if show.is_anime else r're:(?<![^/\\\.]){name}(?=[\W_]|$)'
             expected_titles.append(fmt.format(name=prepare(series)))
 
     return normalize(expected_titles)

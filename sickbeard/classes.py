@@ -20,9 +20,9 @@
 
 from dateutil import parser
 import sickbeard
-from sickbeard.common import Quality, USER_AGENT
 from sickrage.helper.common import dateTimeFormat
 from six.moves.urllib.request import FancyURLopener
+from .common import Quality, USER_AGENT
 
 
 class SickBeardURLopener(FancyURLopener, object):

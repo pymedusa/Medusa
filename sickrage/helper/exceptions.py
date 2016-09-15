@@ -19,7 +19,7 @@
 
 from six import text_type
 
-from sickrage.helper.encoding import ss
+from .encoding import ss
 
 
 def ex(e):

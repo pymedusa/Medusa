@@ -23,13 +23,12 @@ from __future__ import unicode_literals
 import datetime
 from base64 import standard_b64encode
 
-from six.moves.http_client import socket
-from six.moves.xmlrpc_client import ServerProxy, ProtocolError
-
 import sickbeard
-from sickbeard import logger
-from sickbeard.common import Quality
 from sickrage.helper.common import try_int
+from six.moves.http_client import socket
+from six.moves.xmlrpc_client import ProtocolError, ServerProxy
+from . import logger
+from .common import Quality
 
 
 def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-return-statements

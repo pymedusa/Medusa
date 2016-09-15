@@ -17,17 +17,14 @@
 
 from __future__ import unicode_literals
 
+import json
 import traceback
-import sickbeard.providers.torrent.json
 
-from requests.compat import urljoin
-from requests.compat import urlencode
-
-from sickbeard import logger, tvcache
-
-from sickrage.helper.exceptions import AuthException
+from requests.compat import urlencode, urljoin
 from sickrage.helper.common import convert_size, try_int
+from sickrage.helper.exceptions import AuthException
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from .... import logger, tvcache
 
 
 class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
@@ -88,7 +85,7 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     'search': search_string,
                 }
 
-                response = self.get_url(self.urls['search'], post_data=sickbeard.providers.torrent.json.dumps(post_data),
+                response = self.get_url(self.urls['search'], post_data=json.dumps(post_data),
                                         returns='response')
                 if not response or not response.content:
                     logger.log('No data returned from provider', logger.DEBUG)

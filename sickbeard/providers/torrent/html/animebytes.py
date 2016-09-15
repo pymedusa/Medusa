@@ -21,17 +21,14 @@ from __future__ import unicode_literals
 import re
 import traceback
 
-from six.moves.urllib_parse import parse_qs
-
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-
-from sickbeard import logger, tvcache
-from sickbeard.bs4_parser import BS4Parser
-
 from sickrage.helper.common import convert_size
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
-from sickbeard.show_name_helpers import allPossibleShowNames
+from six.moves.urllib_parse import parse_qs
+from .... import logger, tvcache
+from ....bs4_parser import BS4Parser
+from ....show_name_helpers import allPossibleShowNames
 
 
 SEASON_PACK = 1

@@ -37,7 +37,6 @@ from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule
 
-
 simple_separator = ('.', 'and', ',.', '.,', '.,.', ',')
 range_separator = ('-', '~', '_-_', 'to', '.to.')
 season_range_separator = range_separator + ('_-_s', '-s', '.to.s', '_to_s')
@@ -1002,6 +1001,9 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
         for filepart in marker_sorted(fileparts, matches):
             season = matches.range(filepart.start, filepart.end, index=0,
                                    predicate=lambda match: match.name == 'season' and match.raw.isdigit())
+            if not season:
+                continue
+
             episode = matches.next(season, index=0,
                                    predicate=lambda match: (match.name == 'episode' and
                                                             match.end <= filepart.end and

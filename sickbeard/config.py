@@ -18,22 +18,17 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import os.path
 import datetime
+import os.path
 import re
 
 from requests.compat import urlsplit
-from six import iteritems
-from six.moves.urllib.parse import uses_netloc, urlunsplit
-
 import sickbeard
-from sickbeard import helpers
-from sickbeard import logger
-from sickbeard import naming
-from sickbeard import db
-
 from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
+from six import iteritems
+from six.moves.urllib.parse import urlunsplit, uses_netloc
+from . import db, helpers, logger, naming
 
 # Address poor support for scgi over unix domain sockets
 # this is not nicely handled by python currently

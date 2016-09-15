@@ -18,20 +18,19 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import warnings
 import os.path
 import re
 import sqlite3
-import time
 import threading
+import time
+import warnings
 
-from six import text_type
-
+from sqlite3 import OperationalError
 import sickbeard
-from sickbeard import logger
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
-from sqlite3 import OperationalError
+from six import text_type
+from . import logger
 
 db_cons = {}
 db_locks = {}
@@ -114,7 +113,17 @@ class DBConnection(object):
                 return sql_results.fetchone()
             else:
                 return sql_results
-        except Exception:
+        except sqlite3.OperationalError as e:
+            # This errors user should be able to fix it.
+            if 'unable to open database file' in e.args[0] or \
+               'database is locked' in e.args[0] or \
+               'database or disk is full' in e.args[0]:
+                logger.log(u'DB error: {0!r}'.format(e), logger.WARNING)
+            else:
+                logger.log(u'DB error: {0!r}'.format(e), logger.ERROR)
+                raise
+        except Exception as e:
+            logger.log(u'DB error: {0!r}'.format(e), logger.ERROR)
             raise
 
     def checkDBVersion(self):

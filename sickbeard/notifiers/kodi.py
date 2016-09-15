@@ -18,21 +18,20 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import socket
 import base64
 import json
+import socket
 import time
 
-from requests.compat import urlencode, unquote, unquote_plus, quote
-from six import text_type
-from six.moves.urllib.request import Request, urlopen
-from six.moves.urllib.error import URLError
-from six.moves.http_client import BadStatusLine
-
+from requests.compat import quote, unquote, unquote_plus, urlencode
 import sickbeard
-from sickbeard import logger, common
-from sickrage.helper.exceptions import ex
 from sickrage.helper.encoding import ss
+from sickrage.helper.exceptions import ex
+from six import text_type
+from six.moves.http_client import BadStatusLine
+from six.moves.urllib.error import URLError
+from six.moves.urllib.request import Request, urlopen
+from .. import common, logger
 
 try:
     import xml.etree.cElementTree as etree

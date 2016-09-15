@@ -18,16 +18,12 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 
+import threading
 import time
 import traceback
-import threading
+
 import sickbeard
-from sickbeard import common
-from sickbeard import logger
-from sickbeard import generic_queue
-from sickbeard import search, failed_history, history
-from sickbeard import ui
-from sickbeard import providers
+from . import common, failed_history, generic_queue, history, logger, providers, search, ui
 
 search_queue_lock = threading.Lock()
 

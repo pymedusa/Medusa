@@ -31,7 +31,6 @@ import logging
 
 from rtorrent import RTorrent
 import sickbeard
-
 from .generic import GenericClient
 from .. import ex
 

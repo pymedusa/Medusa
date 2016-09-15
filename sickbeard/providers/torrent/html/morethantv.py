@@ -23,13 +23,11 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-
-from sickbeard import logger, tvcache
-from sickbeard.bs4_parser import BS4Parser
-
-from sickrage.helper.exceptions import AuthException
 from sickrage.helper.common import convert_size, try_int
+from sickrage.helper.exceptions import AuthException
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from .... import logger, tvcache
+from ....bs4_parser import BS4Parser
 
 
 class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes

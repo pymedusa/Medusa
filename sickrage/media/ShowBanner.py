@@ -18,7 +18,7 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 from sickbeard.image_cache import ImageCache
-from sickrage.media.GenericMedia import GenericMedia
+from .GenericMedia import GenericMedia
 
 
 class ShowBanner(GenericMedia):

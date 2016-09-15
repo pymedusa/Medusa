@@ -7,18 +7,18 @@ Configure Post Processing
 from __future__ import unicode_literals
 
 import os
-from tornado.routes import route
-from unrar2 import RarFile
 
 import sickbeard
-from sickbeard import (
+from sickrage.helper.encoding import ek
+from sickrage.helper.exceptions import ex
+from tornado.routes import route
+from unrar2 import RarFile
+from .handler import Config
+from ..core import PageTemplate
+from .... import (
     config, logger,
     naming, ui,
 )
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex
-from sickbeard.server.web.core import PageTemplate
-from sickbeard.server.web.config.handler import Config
 
 
 @route('/config/postProcessing(/?.*)')

@@ -22,10 +22,10 @@ from __future__ import print_function
 
 import socket
 
-import sickbeard
-from sickbeard import logger, common
-from sickrage.helper.exceptions import ex
 from libgrowl import gntp
+import sickbeard
+from sickrage.helper.exceptions import ex
+from .. import common, logger
 
 
 class Notifier(object):

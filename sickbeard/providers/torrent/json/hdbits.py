@@ -18,14 +18,12 @@
 from __future__ import unicode_literals
 
 import datetime
-import sickbeard.providers.torrent.json
+import json
 
 from requests.compat import urlencode, urljoin
-
-from sickbeard import classes, logger, tvcache
-
 from sickrage.helper.exceptions import AuthException
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from .... import classes, logger, tvcache
 
 
 class HDBitsProvider(TorrentProvider):
@@ -213,7 +211,7 @@ class HDBitsProvider(TorrentProvider):
         if search_term:
             post_data['search'] = search_term
 
-        return sickbeard.providers.torrent.json.dumps(post_data)
+        return json.dumps(post_data)
 
 
 class HDBitsCache(tvcache.TVCache):

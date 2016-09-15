@@ -17,15 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import sickbeard
-
 from datetime import date, timedelta
-from sickbeard.common import IGNORED, Quality, WANTED, UNAIRED
+
+import sickbeard
+from sickbeard.common import IGNORED, Quality, UNAIRED, WANTED
 from sickbeard.db import DBConnection
 from sickbeard.network_timezones import parse_date_time
 from sickbeard.sbdatetime import sbdatetime
-from sickrage.helper.common import dateFormat, timeFormat
-from sickrage.helper.quality import get_quality_string
+from ..helper.common import dateFormat, timeFormat
+from ..helper.quality import get_quality_string
 
 
 class ComingEpisodes(object):

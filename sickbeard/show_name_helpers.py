@@ -22,14 +22,12 @@ import os
 import re
 from collections import namedtuple
 
-from six import string_types
-
 import sickbeard
-from sickbeard import common
-from sickbeard.scene_exceptions import get_scene_exceptions
-from sickbeard import logger
 from sickrage.helper.encoding import ek
-from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
+from six import string_types
+from . import common, logger
+from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from .scene_exceptions import get_scene_exceptions
 
 resultFilters = [
     "(dir|sub|nfo)fix",

@@ -18,22 +18,19 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import io
+import os
 import re
 
+import sickbeard
+from sickrage.helper.common import replace_extension
+from sickrage.helper.encoding import ek
+from sickrage.helper.exceptions import ex
 from six import iterkeys, text_type
 from tmdb_api.tmdb_api import TMDB
-
-import sickbeard
-from sickbeard import helpers
-from sickbeard import logger
-from sickbeard.metadata import helpers as metadata_helpers
-from sickbeard.show_name_helpers import allPossibleShowNames
-
-from sickrage.helper.common import replace_extension
-from sickrage.helper.exceptions import ex
-from sickrage.helper.encoding import ek
+from .. import helpers, logger
+from ..metadata import helpers as metadata_helpers
+from ..show_name_helpers import allPossibleShowNames
 
 try:
     import xml.etree.cElementTree as etree

@@ -22,11 +22,10 @@ import datetime
 import time
 import traceback
 
-from sickbeard import logger, tvcache
-from sickbeard.indexers.indexer_config import INDEXER_TVDB
-
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from .... import logger, tvcache
+from ....indexers.indexer_config import INDEXER_TVDB
 
 
 class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes

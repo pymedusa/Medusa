@@ -11,9 +11,7 @@ from datetime import datetime, timedelta
 
 from github import InputFileContent
 from github.GithubException import RateLimitExceededException
-
 import sickbeard
-
 from .classes import ErrorViewer
 from .github_client import authenticate, get_github_repo
 

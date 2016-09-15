@@ -20,26 +20,18 @@
 import os
 import traceback
 
-import sickbeard
-
 from imdb import _exceptions as imdb_exceptions
-from sickbeard.common import WANTED
-from sickbeard.tv import TVShow
-from sickbeard import logger
-from sickbeard import notifiers
-from sickbeard import ui
-from sickbeard import generic_queue
-from sickbeard import name_cache
-from sickbeard.blackandwhitelist import BlackAndWhiteList
-from sickrage.helper.exceptions import CantRefreshShowException, CantRemoveShowException, CantUpdateShowException
-from sickrage.helper.exceptions import EpisodeDeletedException, ex, MultipleShowObjectsException
-from sickrage.helper.exceptions import ShowDirectoryNotFoundException
-from sickbeard.helpers import get_showname_from_indexer
-from traktor import TraktApi
-from traktor import TraktException
-from sickrage.helper.encoding import ek
-from sickbeard.helpers import makeDir, chmodAsParent
+import sickbeard
 from sickrage.helper.common import episode_num, sanitize_filename
+from sickrage.helper.encoding import ek
+from sickrage.helper.exceptions import CantRefreshShowException, CantRemoveShowException, CantUpdateShowException, EpisodeDeletedException, \
+    MultipleShowObjectsException, ShowDirectoryNotFoundException, ex
+from traktor import TraktApi, TraktException
+from . import generic_queue, logger, name_cache, notifiers, scene_numbering, ui
+from .blackandwhitelist import BlackAndWhiteList
+from .common import WANTED
+from .helpers import chmodAsParent, get_showname_from_indexer, makeDir
+from .tv import TVShow
 
 
 class ShowQueue(generic_queue.GenericQueue):
@@ -540,11 +532,11 @@ class QueueItemAdd(ShowQueueItem):
                 notifiers.trakt_notifier.update_watchlist(show_obj=self.show)
 
         # Load XEM data to DB for show
-        sickbeard.scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer, force=True)
+        scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer, force=True)
 
         # check if show has XEM mapping so we can determin if searches should go by scene numbering or indexer numbering.
-        if not self.scene and sickbeard.scene_numbering.get_xem_numbering_for_show(self.show.indexerid,
-                                                                                   self.show.indexer):
+        if not self.scene and scene_numbering.get_xem_numbering_for_show(self.show.indexerid,
+                                                                         self.show.indexer):
             self.show.scene = 1
 
         # After initial add, set to default_status_after.
@@ -582,7 +574,7 @@ class QueueItemRefresh(ShowQueueItem):
             self.show.populate_cache()
 
             # Load XEM data to DB for show
-            sickbeard.scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
+            scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
         except Exception as e:
             logger.log(u"{id}: Error while refreshing show {show}. Error: {error_msg}".format
                        (id=self.show.indexerid, show=self.show.name, error_msg=e), logger.ERROR)
@@ -662,7 +654,7 @@ class QueueItemUpdate(ShowQueueItem):
                    (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.show.indexer).name),
                    logger.DEBUG)
         try:
-            self.show.load_from_indexer(cache=not self.force)
+            self.show.load_from_indexer()
         except sickbeard.indexer_error as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
                        (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.show.indexer).name,
@@ -686,7 +678,7 @@ class QueueItemUpdate(ShowQueueItem):
 
         # have to save show before reading episodes from db
         try:
-            logger.log(u'{id}: Saving new IMDb show info to database'.format(id=self.show.indexerid))
+            logger.log(u'{id}: Saving new IMDb show info to database'.format(id=self.show.indexerid), logger.DEBUG)
             self.show.save_to_db()
         except Exception as e:
             logger.log(u"{id}: Error saving new IMDb show info to database: {error_msg}".format
@@ -698,7 +690,7 @@ class QueueItemUpdate(ShowQueueItem):
 
         # get episode list from TVDB
         try:
-            IndexerEpList = self.show.load_episodes_from_indexer(cache=not self.force)
+            IndexerEpList = self.show.load_episodes_from_indexer()
         except sickbeard.indexer_exception as e:
             logger.log(u'{id}: Unable to get info from {indexer}. The show info will not be refreshed. '
                        u'Error: {error_msg}'.format
@@ -714,27 +706,28 @@ class QueueItemUpdate(ShowQueueItem):
             # for each ep we found on the Indexer delete it from the DB list
             for cur_season in IndexerEpList:
                 for cur_episode in IndexerEpList[cur_season]:
-                    curEp = self.show.get_episode(cur_season, cur_episode)
-                    curEp.save_to_db()
-
                     if cur_season in DBEpList and cur_episode in DBEpList[cur_season]:
                         del DBEpList[cur_season][cur_episode]
+                    else:
+                        # Create the episode objectes for episodes that are not going to be deleted
+                        curEp = self.show.get_episode(cur_season, cur_episode)
 
             # remaining episodes in the DB list are not on the indexer, just delete them from the DB
             for cur_season in DBEpList:
                 for cur_episode in DBEpList[cur_season]:
                     logger.log(u'{id}: Permanently deleting episode {show} {ep} from the database'.format
                                (id=self.show.indexerid, show=self.show.name, ep=episode_num(cur_season, cur_episode)),
-                               logger.INFO)
+                               logger.DEBUG)
+                    # Create the ep object only because Im going to delete it
                     curEp = self.show.get_episode(cur_season, cur_episode)
                     try:
                         curEp.delete_episode()
                     except EpisodeDeletedException:
                         pass
 
-        # save show again, in case episodes have changed
+        # Save only after all changes were applied
         try:
-            logger.log(u'{id}: Saving all updated show info to database'.format(id=self.show.indexerid))
+            logger.log(u'{id}: Saving all updated show info to database'.format(id=self.show.indexerid), logger.DEBUG)
             self.show.save_to_db()
         except Exception as e:
             logger.log(u'{id}: Error saving all updated show info to database: {error_msg}'.format

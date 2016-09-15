@@ -19,16 +19,14 @@
 from __future__ import unicode_literals
 
 import traceback
-import validators
 
 from requests.compat import urljoin
-from sickbeard.bs4_parser import BS4Parser
-
 import sickbeard
-from sickbeard import logger, tvcache
-
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+import validators
+from .... import logger, tvcache
+from ....bs4_parser import BS4Parser
 
 
 class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes

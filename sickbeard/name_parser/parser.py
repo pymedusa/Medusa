@@ -26,7 +26,6 @@ import time
 from collections import OrderedDict
 
 import guessit
-
 import sickbeard
 from .. import common, db, helpers, scene_exceptions, scene_numbering
 
@@ -341,7 +340,8 @@ class ParseResult(object):
             self.quality == other.quality,
             self.version == other.version,
             self.proper_tags == other.proper_tags,
-            self.is_episode_special == other.is_episode_special
+            self.is_episode_special == other.is_episode_special,
+            self.video_codec == other.video_codec
         ])
 
     def __str__(self):
@@ -382,6 +382,15 @@ class ParseResult(object):
         :rtype: bool
         """
         return self.guess.get('episode_details') == 'Special'
+
+    @property
+    def video_codec(self):
+        """Return video codec.
+
+        :return:
+        :rtype: str
+        """
+        return self.guess.get('video_codec')
 
 
 class NameParserCache(object):

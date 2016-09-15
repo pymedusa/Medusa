@@ -43,14 +43,14 @@ Options:
                          is installed
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import print_function, unicode_literals
 
 import codecs
 import datetime
 import getopt
 import io
 import locale
+import mimetypes
 import os
 import shutil
 import signal
@@ -72,11 +72,9 @@ if sys.version_info >= (2, 7, 9):
     import ssl
     ssl._create_default_https_context = ssl._create_unverified_context  # pylint: disable=protected-access
 
-import shutil_custom  # pylint: disable=import-error
-shutil.copyfile = shutil_custom.copyfile_custom
+from configobj import ConfigObj
 
 # Fix mimetypes on misconfigured systems
-import mimetypes
 mimetypes.add_type("text/css", ".css")
 mimetypes.add_type("application/sfont", ".otf")
 mimetypes.add_type("application/sfont", ".ttf")
@@ -85,6 +83,9 @@ mimetypes.add_type("application/font-woff", ".woff")
 # Not sure about this one, but we also have halflings in .woff so I think it wont matter
 # mimetypes.add_type("application/font-woff2", ".woff2")
 
+import shutil_custom  # pylint: disable=import-error
+shutil.copyfile = shutil_custom.copyfile_custom
+
 # Do this before importing sickbeard, to prevent locked files and incorrect import
 OLD_TORNADO = os.path.abspath(os.path.join(os.path.dirname(__file__), 'tornado'))
 if os.path.isdir(OLD_TORNADO):
@@ -92,12 +93,10 @@ if os.path.isdir(OLD_TORNADO):
     shutil.rmtree(OLD_TORNADO + '_kill')
 
 import sickbeard
-from sickbeard import db, logger, network_timezones, failed_history, name_cache
-from sickbeard.tv import TVShow
-from sickbeard.server.core import SRWebServer
+from sickbeard import db, failed_history, logger, name_cache, network_timezones
 from sickbeard.event_queue import Events
-from configobj import ConfigObj  # pylint: disable=import-error
-
+from sickbeard.server.core import SRWebServer
+from sickbeard.tv import TVShow
 from sickrage.helper.encoding import ek
 
 # http://bugs.python.org/issue7980#msg221094

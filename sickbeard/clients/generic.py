@@ -6,16 +6,15 @@ from __future__ import unicode_literals
 import re
 import time
 import traceback
-
 from base64 import b16encode, b32decode
 from hashlib import sha1
+
 from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
 import requests
 import sickbeard
 from sickrage.helper.common import http_code_description
 from six.moves.http_cookiejar import CookieJar
-
 from .. import db, helpers, logger
 
 
