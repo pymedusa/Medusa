@@ -28,6 +28,7 @@ import threading
 import traceback
 
 from imdb import imdb
+from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 import shutil_custom
 import sickbeard
 from sickrage.helper.common import (
@@ -1071,22 +1072,34 @@ class TVShow(TVObject):
     def load_imdb_info(self):
         """Load all required show information from IMDb with IMDbPY."""
         imdb_api = imdb.IMDb()
-        if not self.imdbid:
-            self.imdbid = imdb_api.title2imdbID(self.name, kind='tv series')
 
-        if not self.imdbid:
-            logger.log(u'{0}: Not loading show info from IMDb, '
-                       u"because we don't know its ID".format(self.indexerid))
+        try:
+            if not self.imdbid:
+                self.imdbid = imdb_api.title2imdbID(self.name, kind='tv series')
+
+            if not self.imdbid:
+                logger.log(u'{0}: Not loading show info from IMDb, '
+                           u"because we don't know its ID".format(self.indexerid))
+                return
+
+            # Make sure we only use one ID
+            imdb_id = self.imdbid.split(',')[0]
+
+            logger.log(u'{0}: Loading show info from IMDb with ID: {1}'.format(
+                       self.indexerid, imdb_id), logger.DEBUG)
+
+            # Remove first two chars from ID
+            imdb_obj = imdb_api.get_movie(imdb_id[2:])
+
+        except IMDbDataAccessError:
+            logger.log(u'{0}: Failed to obtain info from IMDb for: {1}'.format(
+                       self.indexerid, self.name), logger.DEBUG)
             return
 
-        # Make sure we only use one ID
-        imdb_id = self.imdbid.split(',')[0]
-
-        logger.log(u'{0}: Loading show info from IMDb with ID: {1}'.format(
-                   self.indexerid, imdb_id), logger.DEBUG)
-
-        # Remove first two chars from ID
-        imdb_obj = imdb_api.get_movie(imdb_id[2:])
+        except IMDbParserError:
+            logger.log(u'{0}: Failed to parse info from IMDb for: {1}'.format(
+                       self.indexerid, self.name), logger.ERROR)
+            return
 
         self.imdb_info = {
             'imdb_id': imdb_id,
