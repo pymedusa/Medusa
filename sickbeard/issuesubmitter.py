@@ -10,10 +10,10 @@ import sys
 from datetime import datetime, timedelta
 
 from github import InputFileContent
-from github.GithubException import RateLimitExceededException
+from github.GithubException import GithubException, RateLimitExceededException
 import sickbeard
 from .classes import ErrorViewer
-from .github_client import GithubClientException, authenticate, get_github_repo
+from .github_client import authenticate, get_github_repo
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class IssueSubmitter(object):
     ALREADY_RUNNING = 'An issue is already being submitted, please wait for it to complete.'
     BAD_CREDENTIALS = 'Please check your Github credentials in Medusa settings. Bad Credentials error'
     RATE_LIMIT = 'Please wait before submit new issues. Github Rate Limit Exceeded error'
-    UNABLE_CONTACT_GITHUB = 'Unable to contact Github. Please try again'
+    GITHUB_EXCEPTION = 'Error trying to contact Github. Please try again'
     EXISTING_ISSUE_LOCKED = 'Issue #{number} is locked, check GitHub to find info about the error.'
     COMMENTED_EXISTING_ISSUE = 'Commented on existing issue #{number} successfully!'
     ISSUE_CREATED = 'Your issue ticket #{number} was submitted successfully!'
@@ -171,9 +171,9 @@ class IssueSubmitter(object):
         except RateLimitExceededException:
             logger.warning(IssueSubmitter.RATE_LIMIT)
             return [(IssueSubmitter.RATE_LIMIT, None)]
-        except GithubClientException:
-            logger.warning(IssueSubmitter.UNABLE_CONTACT_GITHUB)
-            return [(IssueSubmitter.UNABLE_CONTACT_GITHUB, None)]
+        except GithubException:
+            logger.warning(IssueSubmitter.GITHUB_EXCEPTION)
+            return [(IssueSubmitter.GITHUB_EXCEPTION, None)]
         finally:
             self.running = False
 
