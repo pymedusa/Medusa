@@ -172,6 +172,7 @@ class IssueSubmitter(object):
             logger.warning(IssueSubmitter.RATE_LIMIT)
             return [(IssueSubmitter.RATE_LIMIT, None)]
         except GithubClientException:
+            logger.warning(IssueSubmitter.UNABLE_CONTACT_GITHUB)
             return [(IssueSubmitter.UNABLE_CONTACT_GITHUB, None)]
         finally:
             self.running = False
