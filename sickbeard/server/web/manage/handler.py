@@ -600,7 +600,7 @@ class Manage(Home, WebRoot):
 
             if cur_show_id in to_update:
                 try:
-                    sickbeard.showQueueScheduler.action.updateShow(show_obj, True)
+                    sickbeard.showQueueScheduler.action.updateShow(show_obj)
                     updates.append(show_obj.name)
                 except CantUpdateShowException as msg:
                     errors.append('Unable to update show: {error}'.format(error=msg))

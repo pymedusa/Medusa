@@ -1408,6 +1408,8 @@ class TVShow(TVObject):
             main_db_con = db.DBConnection()
             main_db_con.upsert('imdb_info', new_value_dict, control_value_dict)
 
+        self.reset_dirty()
+
     def __str__(self):
         """String representation.
 

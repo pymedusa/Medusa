@@ -778,7 +778,7 @@ class Home(WebRoot):
                 })
                 submenu.append({
                     'title': 'Force Full Update',
-                    'path': 'home/updateShow?show={show}&amp;force=1'.format(show=show_obj.indexerid),
+                    'path': 'home/updateShow?show={show}'.format(show=show_obj.indexerid),
                     'icon': 'ui-icon ui-icon-transfer-e-w',
                 })
                 submenu.append({
@@ -1084,7 +1084,7 @@ class Home(WebRoot):
                 })
                 submenu.append({
                     'title': 'Force Full Update',
-                    'path': 'home/updateShow?show={show}&amp;force=1'.format(show=show_obj.indexerid),
+                    'path': 'home/updateShow?show={show}'.format(show=show_obj.indexerid),
                     'icon': 'ui-icon ui-icon-transfer-e-w',
                 })
                 submenu.append({
@@ -1395,7 +1395,7 @@ class Home(WebRoot):
         # force the update
         if do_update:
             try:
-                sickbeard.showQueueScheduler.action.updateShow(show_obj, True)
+                sickbeard.showQueueScheduler.action.updateShow(show_obj)
                 time.sleep(cpu_presets[sickbeard.CPU_PRESET])
             except CantUpdateShowException as msg:
                 errors.append('Unable to update show: {0}'.format(str(msg)))
@@ -1503,7 +1503,7 @@ class Home(WebRoot):
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
-    def updateShow(self, show=None, force=0):
+    def updateShow(self, show=None):
 
         if show is None:
             return self._genericMessage('Error', 'Invalid show ID')
@@ -1515,7 +1515,7 @@ class Home(WebRoot):
 
         # force the update
         try:
-            sickbeard.showQueueScheduler.action.updateShow(show_obj, bool(force))
+            sickbeard.showQueueScheduler.action.updateShow(show_obj)
         except CantUpdateShowException as e:
             ui.notifications.error('Unable to update this show.', ex(e))
 
@@ -1524,7 +1524,7 @@ class Home(WebRoot):
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
-    def subtitleShow(self, show=None, force=0):
+    def subtitleShow(self, show=None):
 
         if show is None:
             return self._genericMessage('Error', 'Invalid show ID')
@@ -1535,7 +1535,7 @@ class Home(WebRoot):
             return self._genericMessage('Error', 'Unable to find the specified show')
 
         # search and download subtitles
-        sickbeard.showQueueScheduler.action.download_subtitles(show_obj, bool(force))
+        sickbeard.showQueueScheduler.action.download_subtitles(show_obj)
 
         time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 

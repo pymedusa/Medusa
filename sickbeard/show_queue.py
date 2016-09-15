@@ -49,7 +49,7 @@ class ShowQueue(generic_queue.GenericQueue):
         return self.currentItem is not None and show == self.currentItem.show and self.currentItem.action_id in actions
 
     def isInUpdateQueue(self, show):
-        return self._isInQueue(show, (ShowQueueActions.UPDATE, ShowQueueActions.FORCEUPDATE))
+        return self._isInQueue(show, (ShowQueueActions.UPDATE,))
 
     def isInRefreshQueue(self, show):
         return self._isInQueue(show, (ShowQueueActions.REFRESH,))
@@ -67,7 +67,7 @@ class ShowQueue(generic_queue.GenericQueue):
         return self._isBeingSomethinged(show, (ShowQueueActions.ADD,))
 
     def isBeingUpdated(self, show):
-        return self._isBeingSomethinged(show, (ShowQueueActions.UPDATE, ShowQueueActions.FORCEUPDATE))
+        return self._isBeingSomethinged(show, (ShowQueueActions.UPDATE,))
 
     def isBeingRefreshed(self, show):
         return self._isBeingSomethinged(show, (ShowQueueActions.REFRESH,))
@@ -112,7 +112,7 @@ class ShowQueue(generic_queue.GenericQueue):
 
     loadingShowList = property(_getLoadingShowList)
 
-    def updateShow(self, show, force=False):
+    def updateShow(self, show):
 
         if self.isBeingAdded(show):
             raise CantUpdateShowException(
@@ -126,10 +126,7 @@ class ShowQueue(generic_queue.GenericQueue):
             raise CantUpdateShowException(
                 str(show.name) + u" is in process of being updated by Post-processor or manually started, can't update again until it's done.")
 
-        if not force:
-            queueItemObj = QueueItemUpdate(show)
-        else:
-            queueItemObj = QueueItemForceUpdate(show)
+        queueItemObj = QueueItemUpdate(show)
 
         self.add_item(queueItemObj)
 
@@ -155,7 +152,7 @@ class ShowQueue(generic_queue.GenericQueue):
 
         return queueItemObj
 
-    def renameShowEpisodes(self, show, force=False):
+    def renameShowEpisodes(self, show):
 
         queueItemObj = QueueItemRename(show)
 
@@ -163,7 +160,7 @@ class ShowQueue(generic_queue.GenericQueue):
 
         return queueItemObj
 
-    def download_subtitles(self, show, force=False):
+    def download_subtitles(self, show):
 
         queueItemObj = QueueItemSubtitle(show)
 
@@ -220,7 +217,6 @@ class ShowQueueActions(object):
     REFRESH = 1
     ADD = 2
     UPDATE = 3
-    FORCEUPDATE = 4
     RENAME = 5
     SUBTITLE = 6
     REMOVE = 7
@@ -229,7 +225,6 @@ class ShowQueueActions(object):
         REFRESH: 'Refresh',
         ADD: 'Add',
         UPDATE: 'Update',
-        FORCEUPDATE: 'Force Update',
         RENAME: 'Rename',
         SUBTITLE: 'Subtitle',
         REMOVE: 'Remove Show'
@@ -640,7 +635,6 @@ class QueueItemSubtitle(ShowQueueItem):
 class QueueItemUpdate(ShowQueueItem):
     def __init__(self, show=None):
         ShowQueueItem.__init__(self, ShowQueueActions.UPDATE, show)
-        self.force = False
         self.priority = generic_queue.QueuePriorities.HIGH
 
     def run(self):
@@ -739,13 +733,6 @@ class QueueItemUpdate(ShowQueueItem):
         # Refresh show needs to be forced since current execution locks the queue
         sickbeard.showQueueScheduler.action.refreshShow(self.show, True)
         self.finish()
-
-
-class QueueItemForceUpdate(QueueItemUpdate):
-    def __init__(self, show=None):
-        ShowQueueItem.__init__(self, ShowQueueActions.FORCEUPDATE, show)
-        self.force = True
-        self.priority = generic_queue.QueuePriorities.HIGH
 
 
 class QueueItemRemove(ShowQueueItem):
