@@ -1408,6 +1408,8 @@ class TVShow(TVObject):
             main_db_con = db.DBConnection()
             main_db_con.upsert('imdb_info', new_value_dict, control_value_dict)
 
+        self.reset_dirty()
+
     def __str__(self):
         """String representation.
 
@@ -1933,8 +1935,8 @@ class TVEpisode(TVObject):
             if sql_results[0][b'release_group'] is not None:
                 self.release_group = sql_results[0][b'release_group']
 
-            self.reset_dirty()
             self.loaded = True
+            self.reset_dirty()
             return True
 
     def load_from_indexer(self, season=None, episode=None, tvapi=None, cached_season=None):
@@ -2440,6 +2442,7 @@ class TVEpisode(TVObject):
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_episodes', new_value_dict, control_value_dict)
         self.loaded = False
+        self.reset_dirty()
 
     def full_path(self):
         """Return episode full path.
