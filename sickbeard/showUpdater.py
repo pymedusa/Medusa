@@ -116,7 +116,9 @@ class ShowUpdater(object):
                         logger.debug(
                             u'Not updating episodes for show {show} because the last or next episode is not within the grace period.', show = cur_show.name)
             except (CantUpdateShowException, CantRefreshShowException) as e:
-                logger.error(u'Automatic update failed: {0}', error=e)
+                logger.warning(u'Automatic update failed. Error: {0}', error=e)
+            except Exception as e:
+                logger.error(u'Automatic update failed: Error: {0}', error=e)
 
         ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator("Daily Update", pi_list))
 
