@@ -563,7 +563,7 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
             # This feature prevents PP for files that do not have subtitle associated with the video file
             if sickbeard.POSTPONE_IF_NO_SUBS:
                 if not ignore_subs:
-                    if subtitles_enabled(cur_video_file, nzbName):
+                    if subtitles_enabled(cur_video_file_path, nzbName):
                         # If user don't want to ignore embedded subtitles and video has at least one, don't post pone PP
                         if has_matching_unknown_subtitles(cur_video_file_path):
                             result.output += logHelper(u"Found embedded unknown subtitles and we don't want to ignore them. "
