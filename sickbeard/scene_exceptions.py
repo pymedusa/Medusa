@@ -334,6 +334,10 @@ def _get_anidb_exceptions():
             if all([show.name, show.is_anime, show.indexer == 1]):
                 try:
                     anime = adba.Anime(None, name=show.name, tvdbid=show.indexerid, autoCorrectName=True)
+                except ValueError as error:
+                    logger.log("Couldn't update scene exceptions for {0}, AniDB doesn't have this show.".format
+                               (show.name), logger.DEBUG)
+                    continue
                 except Exception as error:
                     logger.log('Checking AniDB scene exceptions update failed for {0}. Error: {1}'.format
                                (show.name, error), logger.ERROR)
