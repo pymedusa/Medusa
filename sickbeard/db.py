@@ -25,7 +25,6 @@ import threading
 import time
 import warnings
 
-from sqlite3 import OperationalError
 import sickbeard
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
@@ -76,7 +75,7 @@ class DBConnection(object):
             with db_locks[self.filename]:
                 self._set_row_factory()
 
-        except OperationalError:
+        except sqlite3.OperationalError:
             logger.log(u'Please check your database owner/permissions: {}'.format(dbFilename(self.filename, self.suffix)), logger.WARNING)
         except Exception as e:
             logger.log(u"DB error: " + ex(e), logger.ERROR)
