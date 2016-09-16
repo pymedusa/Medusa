@@ -20,8 +20,10 @@ from __future__ import unicode_literals
 import traceback
 
 from requests.compat import urljoin
+
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+
 from .... import logger, tvcache
 from ....bs4_parser import BS4Parser
 
@@ -30,8 +32,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
     """ExtraTorrent Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
+        """Provider Init."""
         TorrentProvider.__init__(self, 'ExtraTorrent')
 
         # Credentials
@@ -120,23 +121,28 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
-            if len(torrent_rows) < 3 or (len(torrent_rows) == 3 and
-                                         torrent_rows[2].get_text() == 'No torrents'):
+            if torrent_rows < 3 or (torrent_rows == 3 and torrent_rows[2].get_text() == 'No torrents'):
+                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                return items
+
+            # Avoid parsing of 'related torrents'
+            h2s = html.find_all('h2')
+            if h2s > 2 and h2s[1].get_text() == 'Related torrents':
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
 
             # Skip column headers
             for result in torrent_rows[2:]:
-
                 try:
                     cells = result('td')
 
                     torrent_info = cells[0].find('a')
+                    if not torrent_info:
+                        continue
+
                     title = torrent_info.get('title').strip('Download torrent')
                     download_url = urljoin(self.url, torrent_info.get('href').replace
                                            ('torrent_download', 'download'))
-                    if not all([title, download_url]):
-                        continue
 
                     seeders = try_int(cells[5 - decrease].get_text(), 1)
                     leechers = try_int(cells[6 - decrease].get_text())
