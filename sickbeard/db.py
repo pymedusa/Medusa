@@ -147,7 +147,7 @@ class DBConnection(object):
         try:
             if self.hasTable('db_version'):
                 result = self.select("SELECT db_version FROM db_version")
-        except:
+        except sqlite3.OperationalError:
             return 0
 
         if result:
