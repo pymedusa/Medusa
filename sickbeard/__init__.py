@@ -1256,8 +1256,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             # since the attr name does not match the default provider option style of '{provider}_{attribute}'
             provider.enabled = check_setting_bool(CFG, provider.get_id().upper(), provider.get_id(), 0)
 
-            load_provider_setting(CFG, provider, 'string', 'username', '', censor_log='normal'),
-            load_provider_setting(CFG, provider, 'string', 'api_key', '', censor_log='low'),
+            load_provider_setting(CFG, provider, 'string', 'username', '', censor_log='normal')
+            load_provider_setting(CFG, provider, 'string', 'api_key', '', censor_log='low')
             load_provider_setting(CFG, provider, 'string', 'search_mode', 'eponly')
             load_provider_setting(CFG, provider, 'bool', 'search_fallback', 0)
             load_provider_setting(CFG, provider, 'bool', 'enable_daily', 1)
@@ -1265,26 +1265,26 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             load_provider_setting(CFG, provider, 'bool', 'enable_manualsearch', 1)
 
             if provider.provider_type == GenericProvider.TORRENT:
-                load_provider_setting(CFG, provider, 'string', 'custom_url', '', censor_log='low'),
-                load_provider_setting(CFG, provider, 'string', 'hash', '', censor_log='low'),
-                load_provider_setting(CFG, provider, 'string', 'digest', '', censor_log='low'),
-                load_provider_setting(CFG, provider, 'string', 'password', '', censor_log='low'),
-                load_provider_setting(CFG, provider, 'string', 'passkey', '', censor_log='low'),
-                load_provider_setting(CFG, provider, 'string', 'pin', '', censor_log='low'),
-                load_provider_setting(CFG, provider, 'string', 'sorting', 'seeders'),
-                load_provider_setting(CFG, provider, 'string', 'options', ''),
-                load_provider_setting(CFG, provider, 'string', 'ratio', ''),
-                load_provider_setting(CFG, provider, 'bool', 'confirmed', 1),
-                load_provider_setting(CFG, provider, 'bool', 'ranked', 1),
-                load_provider_setting(CFG, provider, 'bool', 'engrelease', 0),
-                load_provider_setting(CFG, provider, 'bool', 'onlyspasearch', 0),
-                load_provider_setting(CFG, provider, 'int', 'minseed', 1),
-                load_provider_setting(CFG, provider, 'int', 'minleech', 0),
-                load_provider_setting(CFG, provider, 'bool', 'freeleech', 0),
-                load_provider_setting(CFG, provider, 'int', 'cat', 0),
-                load_provider_setting(CFG, provider, 'bool', 'subtitle', 0),
+                load_provider_setting(CFG, provider, 'string', 'custom_url', '', censor_log='low')
+                load_provider_setting(CFG, provider, 'string', 'hash', '', censor_log='low')
+                load_provider_setting(CFG, provider, 'string', 'digest', '', censor_log='low')
+                load_provider_setting(CFG, provider, 'string', 'password', '', censor_log='low')
+                load_provider_setting(CFG, provider, 'string', 'passkey', '', censor_log='low')
+                load_provider_setting(CFG, provider, 'string', 'pin', '', censor_log='low')
+                load_provider_setting(CFG, provider, 'string', 'sorting', 'seeders')
+                load_provider_setting(CFG, provider, 'string', 'options', '')
+                load_provider_setting(CFG, provider, 'string', 'ratio', '')
+                load_provider_setting(CFG, provider, 'bool', 'confirmed', 1)
+                load_provider_setting(CFG, provider, 'bool', 'ranked', 1)
+                load_provider_setting(CFG, provider, 'bool', 'engrelease', 0)
+                load_provider_setting(CFG, provider, 'bool', 'onlyspasearch', 0)
+                load_provider_setting(CFG, provider, 'int', 'minseed', 1)
+                load_provider_setting(CFG, provider, 'int', 'minleech', 0)
+                load_provider_setting(CFG, provider, 'bool', 'freeleech', 0)
+                load_provider_setting(CFG, provider, 'int', 'cat', 0)
+                load_provider_setting(CFG, provider, 'bool', 'subtitle', 0)
                 if provider.enable_cookies:
-                    load_provider_setting(CFG, provider, 'string', 'cookies', '', censor_log='low'),
+                    load_provider_setting(CFG, provider, 'string', 'cookies', '', censor_log='low')
 
         if not ek(os.path.isfile, CONFIG_FILE):
             logger.log(u"Unable to find '" + CONFIG_FILE + "', all settings will be default!", logger.DEBUG)
