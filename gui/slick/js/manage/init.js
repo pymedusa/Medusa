@@ -24,6 +24,8 @@ MEDUSA.manage.init = function() {
                 }
             }
             row += '</td>';
+        } else {
+            row += '<td style="width: 8%;">None</td>';
         }
         row += '<td>' + name + '</td>';
         row += '</tr>';
