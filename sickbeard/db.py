@@ -181,7 +181,7 @@ class DBConnection(object):
         """
         return self.check_db_major_version(), self.check_db_minor_version()
 
-    def mass_action(self, querylist=[], logTransaction=False, fetchall=False):
+    def mass_action(self, querylist=None, logTransaction=False, fetchall=False):
         """
         Execute multiple queries
 
@@ -190,6 +190,8 @@ class DBConnection(object):
         :param fetchall: Boolean, when using a select query force returning all results
         :return: list of results
         """
+        If querylist is None:
+            querylist = []
         # remove None types
         querylist = [i for i in querylist if i is not None and len(i)]
 
