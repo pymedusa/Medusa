@@ -89,7 +89,7 @@ class Notifier(object):
             message = 'Error while sending Telegram message: %s ' % e
         finally:
             logger.log(message, logger.INFO)
-            return success, message
+        return success, message
 
     def notify_snatch(self, ep_name, is_proper):
         """
