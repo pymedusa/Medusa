@@ -85,7 +85,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return title, url
 
     def config_string(self):  # pylint: disable=too-many-arguments
-        return '{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(
+        return '{}|{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(
             self.name or '',
             self.url or '',
             self.cookies or '',
