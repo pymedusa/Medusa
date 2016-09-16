@@ -403,7 +403,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
                 $('#testTrakt-result').html(data);
                 $('#authTrakt').addClass('hide');
                 $('#trakt_pin').prop('disabled', true);
-                $('#trakt_pin').prop('value','');
+                $('#trakt_pin').val('');
                 $('#TraktGetPin').removeClass('hide');
             });
         }
