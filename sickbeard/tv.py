@@ -1091,6 +1091,10 @@ class TVShow(TVObject):
             # Remove first two chars from ID
             imdb_obj = imdb_api.get_movie(imdb_id[2:])
 
+            # IMDb returned something we don't want
+            if not imdb_obj.get('year'):
+                return
+
         except IMDbDataAccessError:
             logger.log(u'{0}: Failed to obtain info from IMDb for: {1}'.format(
                        self.indexerid, self.name), logger.DEBUG)
