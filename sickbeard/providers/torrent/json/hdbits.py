@@ -17,13 +17,12 @@
 
 from __future__ import unicode_literals
 
-import datetime
 import json
 
 from requests.compat import urlencode, urljoin
 from sickrage.helper.exceptions import AuthException
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
-from .... import classes, logger, tvcache
+from .... import logger, tvcache
 
 
 class HDBitsProvider(TorrentProvider):
@@ -131,26 +130,6 @@ class HDBitsProvider(TorrentProvider):
 
         return title, url
 
-    def find_propers(self, search_date=None):
-        results = []
-
-        search_terms = [' proper ', ' repack ']
-
-        for term in search_terms:
-            for item in self.search(self._make_post_data_json(search_term=term)):
-                if item['utadded']:
-                    try:
-                        result_date = datetime.datetime.fromtimestamp(int(item['utadded']))
-                    except Exception:
-                        result_date = None
-
-                    if result_date:
-                        if not search_date or result_date > search_date:
-                            title, url = self._get_title_and_url(item)
-                            results.append(classes.Proper(title, url, result_date, self.show))
-
-        return results
-
     def _get_season_search_strings(self, ep_obj):
         season_search_string = [self._make_post_data_json(show=ep_obj.show, season=ep_obj)]
         return season_search_string
@@ -160,7 +139,6 @@ class HDBitsProvider(TorrentProvider):
         return episode_search_string
 
     def _make_post_data_json(self, show=None, episode=None, season=None, search_term=None):
-
         post_data = {
             'username': self.username,
             'passkey': self.passkey,
