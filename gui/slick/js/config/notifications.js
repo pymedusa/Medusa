@@ -380,7 +380,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
 
     $('#TraktGetPin').on('click', function () {
         window.open($('#trakt_pin_url').val(), 'popUp', 'toolbar=no, scrollbars=no, resizable=no, top=200, left=200, width=650, height=550');
-        $('#trakt_pin').removeClass('hide');
+        $('#trakt_pin').prop('disabled', false);
     });
 
     $('#trakt_pin').on('keyup change', function() {
@@ -402,8 +402,9 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
             }).done(function (data) {
                 $('#testTrakt-result').html(data);
                 $('#authTrakt').addClass('hide');
-                $('#trakt_pin').addClass('hide');
-                $('#TraktGetPin').addClass('hide');
+                $('#trakt_pin').prop('disabled', true);
+                $('#trakt_pin').val('');
+                $('#TraktGetPin').removeClass('hide');
             });
         }
     });

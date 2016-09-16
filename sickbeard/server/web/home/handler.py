@@ -423,12 +423,18 @@ class Home(WebRoot):
         trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
         try:
             (access_token, refresh_token) = trakt_api.get_token(sickbeard.TRAKT_REFRESH_TOKEN, trakt_pin=trakt_pin)
-        except (MissingTokenException, TokenExpiredException):
-            ui.notifications.error('Wrong PIN. Reload the page to get new token!')
-            return 'Wrong PIN. Reload the page to get new token!'
+        except MissingTokenException:
+            ui.notifications.error('You need to get a PIN and authorize Medusa app')
+            return 'You need to get a PIN and authorize Medusa app'
+        except TokenExpiredException:
+            # Clear existing tokens
+            sickbeard.TRAKT_ACCESS_TOKEN = ''
+            sickbeard.TRAKT_REFRESH_TOKEN = ''
+            ui.notifications.error('TOKEN expired. Reload page, get a new PIN and authorize Medusa app')
+            return 'TOKEN expired. Reload page, get a new PIN and authorize Medusa app'
         except TraktException:
-            ui.notifications.error('Connection error. Reload the page to get new token!')
-            return 'Error while connection to Trakt. Reload the page to get new token!'
+            ui.notifications.error("Connection error. Click 'Authorize Medusa' button again")
+            return "Connection error. Click 'Authorize Medusa' button again"
         if access_token:
             sickbeard.TRAKT_ACCESS_TOKEN = access_token
             sickbeard.TRAKT_REFRESH_TOKEN = refresh_token

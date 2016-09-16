@@ -1536,17 +1536,17 @@
                                     </p>
                                 </div>
                                 <input type="hidden" id="trakt_pin_url" value="${sickbeard.TRAKT_PIN_URL}">
-                                <input type="button" class="btn ${'hide' if sickbeard.TRAKT_ACCESS_TOKEN else ''}" value="Get Trakt PIN" id="TraktGetPin" />
                                 <div class="field-pair">
                                     <label for="trakt_pin">
                                         <span class="component-title">Trakt PIN</span>
-                                        <input type="text" name="trakt_pin" id="trakt_pin" value="" class="form-control input-sm input250"/>
+                                        <input type="text" name="trakt_pin" id="trakt_pin" value="" class="form-control input-sm input250" ${'disabled' if sickbeard.TRAKT_ACCESS_TOKEN else ''} />
+                                        <input type="button" class="btn" value="Get ${'New' if sickbeard.TRAKT_ACCESS_TOKEN else ''} Trakt PIN" id="TraktGetPin" />
+                                        <input type="button" class="btn hide" value="Authorize Medusa" id="authTrakt" />
                                     </label>
                                     <p>
                                         <span class="component-desc">PIN code to authorize Medusa to access Trakt on your behalf.</span>
                                     </p>
                                 </div>
-                                <input type="button" class="btn hide" value="Authorize Medusa" id="authTrakt" />
                                 <div class="field-pair">
                                     <label for="trakt_timeout">
                                         <span class="component-title">API Timeout</span>
