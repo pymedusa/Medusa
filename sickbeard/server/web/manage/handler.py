@@ -461,10 +461,8 @@ class Manage(Home, WebRoot):
                        anime=None, sports=None, scene=None, flatten_folders=None, quality_preset=None,
                        subtitles=None, air_by_date=None, anyQualities=None, bestQualities=None, toEdit=None, *args,
                        **kwargs):
-        if anyQualities is None:
-            anyQualities = []
-        if bestQualities is None:
-            bestQualities = []
+        anyQualities = anyQualities or []
+        bestQualities = bestQualities or []
         allowed_qualities = anyQualities
         preferred_qualities = bestQualities
 
