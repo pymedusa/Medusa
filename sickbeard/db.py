@@ -190,8 +190,7 @@ class DBConnection(object):
         :param fetchall: Boolean, when using a select query force returning all results
         :return: list of results
         """
-        If querylist is None:
-            querylist = []
+        querylist = querylist or []
         # remove None types
         querylist = [i for i in querylist if i is not None and len(i)]
 
