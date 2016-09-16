@@ -3043,3 +3043,18 @@
   container: MKV
   release_group: GROUP
   type: episode
+
+# Regression test for #1088
+# episode title has s1 that might lead to season detection issues
+? Show.Name.S02E06.eps2.4.m4ster-s1ave.aes.1080p.AMZN.WEBRip.DD5.1.x264-GROUP
+: title: Show Name
+  season: 2
+  episode: 6
+  episode_title: eps2 4 m4ster-s1ave aes
+  screen_size: 1080p
+  format: WEBRip
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: GROUP
+  type: episode
