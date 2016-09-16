@@ -459,8 +459,12 @@ class Manage(Home, WebRoot):
 
     def massEditSubmit(self, paused=None, default_ep_status=None,
                        anime=None, sports=None, scene=None, flatten_folders=None, quality_preset=None,
-                       subtitles=None, air_by_date=None, anyQualities=[], bestQualities=[], toEdit=None, *args,
+                       subtitles=None, air_by_date=None, anyQualities=None, bestQualities=None, toEdit=None, *args,
                        **kwargs):
+        if anyQualities is None:
+            anyQualities = []
+        if bestQualities is None:
+            bestQualities = []
         allowed_qualities = anyQualities
         preferred_qualities = bestQualities
 
