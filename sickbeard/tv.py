@@ -1093,6 +1093,8 @@ class TVShow(TVObject):
 
             # IMDb returned something we don't want
             if not imdb_obj.get('year'):
+                logger.log(u'{0}: IMDb returned invalid info for {1}, skipping update.'.format(
+                           self.indexerid, imdb_id), logger.DEBUG)
                 return
 
         except IMDbDataAccessError:
