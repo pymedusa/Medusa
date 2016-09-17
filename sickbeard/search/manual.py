@@ -26,7 +26,6 @@ import time
 import sickbeard
 from sickrage.helper.common import enabled_providers
 from sickrage.show.Show import Show
-from . import queue
 from .queue import ForcedSearchQueueItem
 from .. import db, logger
 from ..common import Overview, Quality, cpu_presets, statusStrings
