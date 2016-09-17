@@ -213,3 +213,31 @@
   subtitle_language: sv
   title: My Name Is Earl
   type: episode
+
+? Show.Name.Season.4.Episodes.1-12
+: episode:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  season: 4
+  title: Show Name
+  type: episode
+
+? show name s01.to.s04
+: episode_title: to
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  title: show name
+  type: episode

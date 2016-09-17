@@ -1473,6 +1473,7 @@
 ? show name s01.to.s04
 : title: show name
   season: [1, 2, 3, 4]
+  episode_title: to # not a big issue for us
   type: episode
 
 # https://github.com/guessit-io/guessit/issues/287 (negative scenario - not a season range)

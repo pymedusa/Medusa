@@ -1177,91 +1177,11 @@ class PartsAsEpisodeNumbers(Rule):
         return to_rename
 
 
-class FixSeasonRangeDetection(Rule):
-    """Fix season range detection.
-
-    Work-around for https://github.com/guessit-io/guessit/issues/287
-    TODO: Remove when this bug is fixed
-
-    e.g.: show name s01-s04
-
-    guessit -t episode "show name s01-s04"
-
-    without this fix:
-        For: show name s01-s04
-        GuessIt found: {
-            "title": "show name",
-            "season": [
-                1,
-                4
-            ],
-            "type": "episode"
-        }
-
-    with this fix:
-        For: show name s01-s04
-        GuessIt found: {
-            "title": "show name",
-            "season": [
-                1,
-                2,
-                3,
-                4
-            ],
-            "type": "episode"
-        }
-    """
-
-    priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch]
-
-    def when(self, matches, context):
-        """Evaluate the rule.
-
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        to_remove = []
-        to_append = []
-
-        fileparts = matches.markers.named('path')
-        for filepart in marker_sorted(fileparts, matches):
-            seasons = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'season')
-            # only when there are 2 seasons
-            start_season = seasons[0] if len(seasons) == 2 else None
-            end_season = seasons[-1] if len(seasons) == 2 else None
-
-            # and no season or episodes on any next fileparts
-            if matches.range(filepart.end, predicate=lambda match: match.name in ('season', 'episode')):
-                continue
-
-            # and first season is lesser than the second and both are between 1 and 99
-            if start_season and end_season and 0 < start_season.value < end_season.value < 100:
-                season_separator = matches.input_string[start_season.end:end_season.start]
-                # and they are separated by a 'season range separator'
-                if season_separator.lower() in season_range_separator:
-                    episode_title = matches.next(start_season, index=0)
-                    if episode_title and episode_title.name == 'episode_title' and episode_title.value.lower() == 'to':
-                        to_remove.append(episode_title)
-
-                    # then create the missing numbers
-                    for i in range(start_season.value + 1, end_season.value):
-                        new_season = copy.copy(start_season)
-                        new_season.value = i
-                        new_season.start = start_season.end
-                        new_season.end = end_season.start
-                        to_append.append(new_season)
-
-        return to_remove, to_append
-
-
 class FixEpisodeRangeDetection(Rule):
     """Fix episode range detection.
 
     Work-around for https://github.com/guessit-io/guessit/issues/287
+    Still one scenario to be fixed: https://github.com/guessit-io/guessit/issues/311
     TODO: Remove when this bug is fixed
 
     e.g.: show name s02e01-e04
@@ -1758,7 +1678,6 @@ def rules():
         FixInvalidTitleOrAlternativeTitle,
         FixSeasonAndEpisodeConflicts,
         FixWrongTitleDueToFilmTitle,
-        FixSeasonRangeDetection,
         FixEpisodeRangeDetection,
         FixWrongTitlesWithCompleteKeyword,
         AnimeWithSeasonAbsoluteEpisodeNumbers,
