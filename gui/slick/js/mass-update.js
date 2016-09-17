@@ -14,8 +14,8 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            type: "POST",
-            url: srRoot + '/massEdit',
+            type: 'POST',
+            url: 'massEdit',
             data: JSON.stringify(data),
           }).done(function(response) {
               $('#container').html(response);
