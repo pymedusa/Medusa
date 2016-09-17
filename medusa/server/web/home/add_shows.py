@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import ast
 import datetime
 import json
 import os
@@ -638,7 +639,6 @@ class HomeAddShows(Home):
         Receives a dir list and add them. Adds the ones with given TVDB IDs first, then forwards
         along to the newShow page.
         """
-
         # We need to do this, because somewhere Tornado wraps the json in another json object.
         json_param = json.loads(data.iteritems().next()[0])
 
@@ -658,16 +658,19 @@ class HomeAddShows(Home):
         dirs_only = []
         # separate all the ones with Indexer IDs
         for cur_dir in shows_to_add:
-            selected_indexer = cur_dir.get('selectedIndexer')
+            # TODO: work in progress #434
+            # selected_indexer = cur_dir.get('selectedIndexer')
             existing_indexer = cur_dir.get('existingIndexer')
             existing_indexer_id = cur_dir.get('existingIndexerId')
-            show_name = cur_dir.get('showName')
-            show_dir = cur_dir.get('showDir')
+            # show_name = cur_dir.get('showName')
+            # show_dir = cur_dir.get('showDir')
 
             if existing_indexer_id and existing_indexer:
-                indexer = existing_indexer
+                # indexer = existing_indexer
+                pass
             elif app.INDEXER_DEFAULT > 0:
-                indexer = app.INDEXER_DEFAULT
+                # indexer = app.INDEXER_DEFAULT
+                pass
 
             if not existing_indexer:
                 dirs_only.append(cur_dir)
@@ -713,6 +716,6 @@ class HomeAddShows(Home):
         # Keep track of the dirs, for shows that we want to add
         self.shows_to_add = dirs_only
         # for the remaining shows we need to prompt for each one, so forward this on to the newShow page
-        ## We're going to return a json with info, that will be used to redirect
+        # We're going to return a json with info, that will be used to redirect
         # return self.newShow(dirs_only[0], dirs_only[1:])
         return json.dumps(dirs_only)
