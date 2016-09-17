@@ -1586,7 +1586,7 @@ def remove_folder(folder_path, level=logging.WARNING):
 
 
 def get_mapped_indexer_id(indexer_id, indexer=None, mapped_indexer=None):
-    """ Get indexer_id of the indexer which the indexer is mapped to through the xem_mapped_to indexer config
+    """Get indexer_id of the indexer which the indexer is mapped to through the xem_mapped_to indexer config.
 
     @param indexer_id: The showid that's used to get the show object from the db.
     @param indexer: Optionally provide the indexer, to only return the showobject for that indexer. Can be
@@ -1594,12 +1594,11 @@ def get_mapped_indexer_id(indexer_id, indexer=None, mapped_indexer=None):
     @param mapped_indexer: If provided this indexer is used to try to map to, instead of the xem_mapped_to confg option.
     @return: Returns the mapped indexer_id if found as integer.
     """
-
-    show = Show.find(sickbeard.showList, int(indexer_id), indexer)
+    show = Show.find(app.showList, int(indexer_id), indexer)
     if not show:
         return None
 
-    indexer_mapped_to = mapped_indexer or sickbeard.indexerApi(show.indexer).config.get('xem_mapped_to')
+    indexer_mapped_to = mapped_indexer or app.indexerApi(show.indexer).config.get('xem_mapped_to')
     if not indexer_mapped_to:
         return None
 

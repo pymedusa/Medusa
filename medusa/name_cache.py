@@ -92,7 +92,7 @@ def buildNameCache(show=None):
     else:
         # logger.log(u"Building internal name cache for " + show.name, logger.DEBUG)
         clearCache(show.indexerid)
-        for curSeason in [-1] + sickbeard.scene_exceptions.get_scene_seasons(show.indexerid):
+        for curSeason in [-1] + app.scene_exceptions.get_scene_seasons(show.indexerid):
             for name in set(get_scene_exceptions(show.indexerid, indexer=show.indexer, season=curSeason) + [show.name]):
                 name = full_sanitizeSceneName(name)
                 if name in nameCache:

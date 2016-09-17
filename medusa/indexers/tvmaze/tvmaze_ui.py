@@ -16,11 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-"""Contains included user interface for TVmaze show selection"""
+"""Contains included user interface for TVmaze show selection."""
 
 import logging
 import warnings
-from tvmaze_exceptions import tvmaze_userabort
+from .tvmaze_exceptions import tvmaze_userabort
 
 __author__ = "p0psicles"
 __version__ = "1.0"
@@ -30,8 +30,8 @@ def log():
     return logging.getLogger(__name__)
 
 class BaseUI:
-    """Default non-interactive UI, which auto-selects first results
-    """
+    """Default non-interactive UI, which auto-selects first results."""
+
     def __init__(self, config, log = None):
         self.config = config
         if log is not None:
@@ -45,12 +45,10 @@ class BaseUI:
 
 
 class ConsoleUI(BaseUI):
-    """Interactively allows the user to select a show from a console based UI
-    """
+    """Interactively allows the user to select a show from a console based UI."""
 
     def _displaySeries(self, allSeries, limit = 6):
-        """Helper function, lists series with corresponding ID
-        """
+        """Helper function, lists series with corresponding ID."""
         if limit is not None:
             toshow = allSeries[:limit]
         else:
@@ -126,4 +124,3 @@ class ConsoleUI(BaseUI):
                     log().debug('Invalid show number entered!')
                     print "Invalid number (%s) selected!"
                     self._displaySeries(allSeries)
-

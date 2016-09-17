@@ -135,5 +135,6 @@ class AddIndexerColumnToSceneExceptions(ConvertSceneNamesToIndexerScheme):
         self.connection.action("CREATE TABLE scene_exceptions (exception_id INTEGER PRIMARY KEY, \
                                 indexer_id INTEGER, indexer INTEGER DEFAULT 1, show_name TEXT, season NUMERIC DEFAULT -1, \
                                 custom NUMERIC DEFAULT 0);")
-        self.connection.action("INSERT INTO scene_exceptions SELECT * FROM tmp_scene_exceptions;")
+        self.connection.action("INSERT INTO scene_exceptions (exception_id, indexer_id, indexer, show_name, season, custom) "
+                               "SELECT exception_id, indexer_id, 0, show_name, season, custom FROM tmp_scene_exceptions;")
         self.connection.action("DROP TABLE tmp_scene_exceptions;")

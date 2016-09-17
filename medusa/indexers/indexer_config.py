@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from tvdb_api.tvdb_api import Tvdb
-from tvmaze.tvmaze_api import TVmaze
+from .tvmaze.tvmaze_api import TVmaze
 from .. import helpers
 
 initConfig = {

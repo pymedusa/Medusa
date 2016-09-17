@@ -31,7 +31,7 @@ from .helper.exceptions import (
     CantRefreshShowException, CantRemoveShowException, CantUpdateShowException,
     EpisodeDeletedException, MultipleShowObjectsException, ShowDirectoryNotFoundException, ex
 )
-from .helpers import chmodAsParent, get_mapped_indexer_id, get_showname_from_indexer, makeDir, mapIndexersToShow=======
+from .helpers import chmodAsParent, get_mapped_indexer_id, get_showname_from_indexer, makeDir, mapIndexersToShow
 from .tv import TVShow
 
 
@@ -355,9 +355,8 @@ class QueueItemAdd(ShowQueueItem):
                 logger.log(u"Show in {} has no name on {}, probably searched with the wrong language.".format
                            (self.showDir, app.indexerApi(self.indexer).name), logger.ERROR)
 
-                ui.notifications.error("Unable to add show",
-                                       "Show in " + self.showDir + " has no name on " + str(app.indexerApi(
-                                        self.indexer).name) + ", probably the wrong language. Delete .nfo and add manually in the correct language.")
+                ui.notifications.error("Unable to add show", "Show in " + self.showDir + " has no name on " + str(
+                    app.indexerApi(self.indexer).name) + ", probably the wrong language. Delete .nfo and add manually in the correct language.")
                 self._finishEarly()
                 return
             # if the show has no episodes/seasons
