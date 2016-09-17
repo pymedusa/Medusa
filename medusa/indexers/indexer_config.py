@@ -1,8 +1,8 @@
 # coding=utf-8
 
 from tvdb_api.tvdb_api import Tvdb
-from .. import helpers
 from .tvdbv2.tvdbv2_api import TVDBv2
+from .. import helpers
 
 initConfig = {
     'valid_languages': [
@@ -19,7 +19,7 @@ initConfig = {
 
 INDEXER_TVDB = 1
 INDEXER_TVRAGE = 2  # Must keep
-#INDEXER_TVMAZE = 3
+# INDEXER_TVMAZE = 3
 INDEXER_TVDBV2 = 4
 
 indexerConfig = {

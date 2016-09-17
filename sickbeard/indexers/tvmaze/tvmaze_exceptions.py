@@ -16,8 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-"""Custom exceptions used or raised by tvmaze_api
-"""
+"""Custom exceptions used or raised by tvmaze_api."""
 
 __author__ = "p0psicles"
 __version__ = "1.0"

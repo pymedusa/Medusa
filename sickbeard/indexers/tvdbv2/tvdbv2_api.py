@@ -18,22 +18,24 @@
 
 from __future__ import unicode_literals
 
-import os
+import cgi
 import getpass
+import logging
+import os
+import re
 import tempfile
 import time
-import logging
 import warnings
+from collections import OrderedDict
+
 import requests
 from requests.compat import urljoin
-import re
-import cgi
-
-from collections import OrderedDict
-from tvdbv2_exceptions import (tvdbv2_error, tvdbv2_shownotfound, tvdbv2_showincomplete,
-                               tvdbv2_seasonnotfound, tvdbv2_episodenotfound, tvdbv2_attributenotfound)
-from tvdbv2_ui import BaseUI, ConsoleUI
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi)
+from .tvdbv2_exceptions import (
+    tvdbv2_attributenotfound, tvdbv2_episodenotfound, tvdbv2_error,
+    tvdbv2_seasonnotfound, tvdbv2_showincomplete, tvdbv2_shownotfound
+)
+from .tvdbv2_ui import BaseUI, ConsoleUI
 
 
 def log():

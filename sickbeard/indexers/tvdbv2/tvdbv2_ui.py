@@ -20,7 +20,7 @@
 
 import logging
 import warnings
-from tvdbv2_exceptions import tvdbv2_userabort
+from .tvdbv2_exceptions import tvdbv2_userabort
 
 __author__ = "p0psicles"
 __version__ = "1.0"
@@ -126,4 +126,3 @@ class ConsoleUI(BaseUI):
                     log().debug('Invalid show number entered!')
                     print "Invalid number (%s) selected!"
                     self._displaySeries(allSeries)
-

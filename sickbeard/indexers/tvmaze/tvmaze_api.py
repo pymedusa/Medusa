@@ -17,23 +17,23 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 
-import traceback
-from functools import wraps
-import os
+import cgi
 import getpass
+import logging
+import os
+import re
 import tempfile
 import time
-import logging
 import warnings
-import requests
-import re
-import cgi
-
 from collections import OrderedDict
-from tvmaze_exceptions import (tvmaze_error, tvmaze_shownotfound, tvmaze_showincomplete,
-                               tvmaze_seasonnotfound, tvmaze_episodenotfound, tvmaze_attributenotfound)
-from tvmaze_ui import BaseUI, ConsoleUI
+
 from pytvmaze import API
+import requests
+from .tvmaze_exceptions import (
+    tvmaze_attributenotfound, tvmaze_episodenotfound, tvmaze_error,
+    tvmaze_seasonnotfound, tvmaze_showincomplete, tvmaze_shownotfound
+)
+from .tvmaze_ui import BaseUI, ConsoleUI
 
 
 def log():

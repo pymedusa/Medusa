@@ -16,11 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-"""Contains included user interface for TVmaze show selection"""
+"""Contains included user interface for TVmaze show selection."""
 
 import logging
 import warnings
-from tvmaze_exceptions import tvmaze_userabort
+from .tvmaze_exceptions import tvmaze_userabort
 
 __author__ = "p0psicles"
 __version__ = "1.0"
@@ -126,4 +126,3 @@ class ConsoleUI(BaseUI):
                     log().debug('Invalid show number entered!')
                     print "Invalid number (%s) selected!"
                     self._displaySeries(allSeries)
-

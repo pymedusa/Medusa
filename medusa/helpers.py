@@ -42,7 +42,8 @@ import zipfile
 from itertools import cycle, izip
 
 import adba
-from cachecontrol import CacheControl
+from cachecontrol import CacheControlAdapter
+from cachecontrol.cache import DictCache
 import certifi
 import cfscrape
 from contextlib2 import closing, suppress
@@ -59,11 +60,9 @@ from .helper.common import episode_num, http_code_description, media_extensions,
 from .helper.exceptions import ex
 from .show.Show import Show
 
+
 logger = logging.getLogger(__name__)
 
-
-from cachecontrol import CacheControlAdapter
-from cachecontrol.cache import DictCache
 
 try:
     import urllib
