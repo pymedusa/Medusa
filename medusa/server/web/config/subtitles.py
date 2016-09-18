@@ -9,13 +9,13 @@ from __future__ import unicode_literals
 import os
 
 import medusa as sickbeard
-from sickrage.helper.encoding import ek
 from tornado.routes import route
 from .handler import Config
 from ..core import PageTemplate
 from .... import (
     config, logger, subtitles, ui,
 )
+from ....helper.encoding import ek
 
 
 @route('/config/subtitles(/?.*)')

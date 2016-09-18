@@ -3,7 +3,7 @@
     import calendar
     from medusa import sbdatetime
     from medusa import network_timezones
-    from sickrage.helper.common import pretty_file_size
+    from medusa.helper.common import pretty_file_size
     import re
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>

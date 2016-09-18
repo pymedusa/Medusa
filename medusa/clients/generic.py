@@ -11,11 +11,11 @@ from hashlib import sha1
 
 from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
-import requests
 import medusa as sickbeard
-from sickrage.helper.common import http_code_description
+import requests
 from six.moves.http_cookiejar import CookieJar
 from .. import db, helpers, logger
+from ..helper.common import http_code_description
 
 
 class GenericClient(object):

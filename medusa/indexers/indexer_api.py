@@ -20,10 +20,10 @@
 
 import os
 
-from indexer_config import indexerConfig, initConfig
 import medusa as sickbeard
-from sickrage.helper.common import try_int
-from sickrage.helper.encoding import ek
+from .indexer_config import indexerConfig, initConfig
+from ..helper.common import try_int
+from ..helper.encoding import ek
 
 
 class indexerApi(object):

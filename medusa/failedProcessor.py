@@ -19,9 +19,9 @@
 
 
 import medusa as sickbeard
-from sickrage.helper.exceptions import FailedPostProcessingFailedException
 
 from . import logger, show_name_helpers
+from .helper.exceptions import FailedPostProcessingFailedException
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .search.queue import FailedQueueItem
 

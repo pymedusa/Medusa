@@ -6,7 +6,6 @@ import os
 import threading
 
 import medusa as sickbeard
-from sickrage.helper.encoding import ek
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.routes import route
@@ -17,6 +16,7 @@ from .api.v2.log import LogHandler
 from .api.v2.show import ShowHandler
 from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
 from .. import logger
+from ..helper.encoding import ek
 from ..helpers import create_https_certificates, generateApiKey
 
 

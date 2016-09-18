@@ -7,15 +7,6 @@ import os
 import re
 
 import medusa as sickbeard
-from sickrage.helper.common import (
-    episode_num, try_int,
-)
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import (
-    CantRefreshShowException,
-    CantUpdateShowException,
-)
-from sickrage.show.Show import Show
 from tornado.routes import route
 from ..core import PageTemplate, WebRoot
 from ..home import Home
@@ -26,6 +17,15 @@ from .... import (
 from ....common import (
     Overview, Quality, SNATCHED,
 )
+from ....helper.common import (
+    episode_num, try_int,
+)
+from ....helper.encoding import ek
+from ....helper.exceptions import (
+    CantRefreshShowException,
+    CantUpdateShowException,
+)
+from ....show.Show import Show
 
 
 @route('/manage(/?.*)')

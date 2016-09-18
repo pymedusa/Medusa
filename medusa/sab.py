@@ -22,8 +22,8 @@ from __future__ import unicode_literals
 
 import datetime
 
-from requests.compat import urljoin
 import medusa as sickbeard
+from requests.compat import urljoin
 from . import helpers, logger
 
 session = helpers.make_session()

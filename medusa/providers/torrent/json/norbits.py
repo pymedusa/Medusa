@@ -21,10 +21,10 @@ import json
 import traceback
 
 from requests.compat import urlencode, urljoin
-from sickrage.helper.common import convert_size, try_int
-from sickrage.helper.exceptions import AuthException
-from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
+from ....helper.common import convert_size, try_int
+from ....helper.exceptions import AuthException
 
 
 class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes

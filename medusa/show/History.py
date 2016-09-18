@@ -19,9 +19,9 @@
 from collections import namedtuple
 from datetime import datetime, timedelta
 
-from medusa.common import Quality
-from medusa.db import DBConnection
 from six import text_type
+from ..common import Quality
+from ..db import DBConnection
 from ..helper.common import try_int
 
 

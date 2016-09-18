@@ -29,15 +29,15 @@ import time
 import traceback
 from socket import timeout as SocketTimeout
 
-from requests import exceptions as requests_exceptions
 import medusa as sickbeard
-from sickrage.helper.common import enabled_providers
-from sickrage.helper.exceptions import AuthException, ex
-from sickrage.show.History import History
+from requests import exceptions as requests_exceptions
 from .. import db, helpers, logger
 from ..common import Quality, cpu_presets
+from ..helper.common import enabled_providers
+from ..helper.exceptions import AuthException, ex
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from ..search.core import pickBestResult, snatchEpisode
+from ..show.History import History
 
 
 class ProperFinder(object):  # pylint: disable=too-few-public-methods

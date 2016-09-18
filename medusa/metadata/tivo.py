@@ -24,10 +24,10 @@ import io
 import os
 
 import medusa as sickbeard
-from sickrage.helper.common import episode_num
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ShowNotFoundException, ex
 from .. import helpers, logger
+from ..helper.common import episode_num
+from ..helper.encoding import ek
+from ..helper.exceptions import ShowNotFoundException, ex
 from ..metadata import generic
 
 

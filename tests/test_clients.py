@@ -1,11 +1,12 @@
 # coding=utf-8
 """Tests for sickbeard.clients module."""
 
-import pytest
-
 import medusa.clients as sut
-from medusa.clients import deluge_client, deluged_client, download_station_client, mlnet_client, qbittorrent_client, rtorrent_client, transmission_client, \
-    utorrent_client
+from medusa.clients import (
+    deluge_client, deluged_client, download_station_client, mlnet_client,
+    qbittorrent_client, rtorrent_client, transmission_client, utorrent_client
+)
+import pytest
 
 
 @pytest.mark.parametrize('p', [

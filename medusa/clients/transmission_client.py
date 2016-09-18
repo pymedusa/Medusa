@@ -26,8 +26,8 @@ import os
 import re
 from base64 import b64encode
 
-from requests.compat import urljoin
 import medusa as sickbeard
+from requests.compat import urljoin
 from .generic import GenericClient
 
 

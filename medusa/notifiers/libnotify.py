@@ -22,8 +22,8 @@ import cgi
 import os
 
 import medusa as sickbeard
-from sickrage.helper.encoding import ek
 from .. import common, logger
+from ..helper.encoding import ek
 
 
 def diagnose():

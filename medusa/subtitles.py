@@ -32,9 +32,6 @@ import traceback
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
 import medusa as sickbeard
-from sickrage.helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
-from sickrage.helper.exceptions import ex
-from sickrage.show.Show import Show
 from six import iteritems, string_types, text_type
 from subliminal import (ProviderPool, compute_score, provider_manager, refine, refiner_manager, region, save_subtitles,
                         scan_video)
@@ -43,7 +40,11 @@ from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
 from . import db, history, processTV
 from .common import cpu_presets
+from .helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
+from .helper.exceptions import ex
 from .helpers import isMediaFile, isRarFile
+from .show.Show import Show
+
 
 logger = logging.getLogger(__name__)
 

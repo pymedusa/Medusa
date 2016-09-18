@@ -23,15 +23,15 @@ import json
 import socket
 import time
 
-from requests.compat import quote, unquote, unquote_plus, urlencode
 import medusa as sickbeard
-from sickrage.helper.encoding import ss
-from sickrage.helper.exceptions import ex
+from requests.compat import quote, unquote, unquote_plus, urlencode
 from six import text_type
 from six.moves.http_client import BadStatusLine
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import Request, urlopen
 from .. import common, logger
+from ..helper.encoding import ss
+from ..helper.exceptions import ex
 
 try:
     import xml.etree.cElementTree as etree

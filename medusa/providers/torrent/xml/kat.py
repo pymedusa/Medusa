@@ -20,13 +20,13 @@ from __future__ import unicode_literals
 
 import traceback
 
-from requests.compat import urljoin
 import medusa as sickbeard
-from sickrage.helper.common import convert_size, try_int
-from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from requests.compat import urljoin
 import validators
+from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
 from ....bs4_parser import BS4Parser
+from ....helper.common import convert_size, try_int
 
 
 class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes

@@ -21,14 +21,14 @@
 
 import time
 
-from requests.compat import urlencode
 import medusa as sickbeard
-from sickrage.helper.exceptions import ex
+from requests.compat import urlencode
 from six.moves.http_client import HTTPSConnection
 from six.moves.urllib.error import HTTPError
 from .. import logger
 from ..common import NOTIFY_DOWNLOAD, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN, NOTIFY_LOGIN_TEXT, NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER, \
     NOTIFY_SUBTITLE_DOWNLOAD, notifyStrings
+from ..helper.exceptions import ex
 
 API_URL = "https://api.pushover.net/1/messages.json"
 

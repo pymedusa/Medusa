@@ -23,13 +23,13 @@ import datetime
 import traceback
 
 import medusa as sickbeard
-from sickrage.helper.common import episode_num
-from sickrage.helper.exceptions import ex
-from sickrage.show.Show import Show
 from traktor import TraktApi, TraktException
 from . import db, logger, ui
 from .common import Quality, SKIPPED, UNKNOWN, WANTED
+from .helper.common import episode_num
+from .helper.exceptions import ex
 from .search.queue import BacklogQueueItem
+from .show.Show import Show
 
 
 def setEpisodeToWanted(show, s, e):

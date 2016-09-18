@@ -17,8 +17,8 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import medusa as sickbeard
-from medusa.classes import NZBSearchResult
 from ..GenericProvider import GenericProvider
+from ...classes import NZBSearchResult
 from ...helper.common import try_int
 
 

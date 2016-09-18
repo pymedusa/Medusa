@@ -29,14 +29,14 @@ import subprocess
 import adba
 from babelfish import language_converters
 import medusa as sickbeard
-from sickrage.helper.common import remove_extension, replace_extension, subtitle_extensions
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import EpisodeNotFoundException, EpisodePostProcessingFailedException, ShowDirectoryNotFoundException
-from sickrage.show.Show import Show
 from six import text_type
 from . import common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
+from .helper.common import remove_extension, replace_extension, subtitle_extensions
+from .helper.encoding import ek
+from .helper.exceptions import EpisodeNotFoundException, EpisodePostProcessingFailedException, ShowDirectoryNotFoundException
 from .helpers import verify_freespace
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from .show.Show import Show
 
 
 class PostProcessor(object):  # pylint: disable=too-many-instance-attributes

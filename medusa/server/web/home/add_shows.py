@@ -7,14 +7,8 @@ import json
 import os
 import re
 
-from requests.compat import unquote_plus
 import medusa as sickbeard
-from sickrage.helper.common import sanitize_filename, try_int
-from sickrage.helper.encoding import ek
-from sickrage.show.Show import Show
-from sickrage.show.recommendations.anidb import AnidbPopular
-from sickrage.show.recommendations.imdb import ImdbPopular
-from sickrage.show.recommendations.trakt import TraktPopular
+from requests.compat import unquote_plus
 from simpleanidb import REQUEST_HOT
 from six import iteritems
 from tornado.routes import route
@@ -26,8 +20,14 @@ from .... import (
 )
 from ....blackandwhitelist import short_group_names
 from ....common import Quality
+from ....helper.common import sanitize_filename, try_int
+from ....helper.encoding import ek
 from ....helpers import get_showname_from_indexer
 from ....indexers.indexer_exceptions import indexer_exception
+from ....show.Show import Show
+from ....show.recommendations.anidb import AnidbPopular
+from ....show.recommendations.imdb import ImdbPopular
+from ....show.recommendations.trakt import TraktPopular
 
 
 @route('/addShows(/?.*)')

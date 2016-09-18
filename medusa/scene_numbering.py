@@ -28,10 +28,10 @@ import time
 import traceback
 
 import medusa as sickbeard
-from sickrage.helper.exceptions import ex
-from sickrage.show.Show import Show
 from . import db, logger
+from .helper.exceptions import ex
 from .scene_exceptions import xem_session
+from .show.Show import Show
 
 
 def get_scene_numbering(indexer_id, indexer, season, episode, fallback_to_xem=True):

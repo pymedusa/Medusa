@@ -83,9 +83,6 @@ mimetypes.add_type("application/font-woff", ".woff")
 # Not sure about this one, but we also have halflings in .woff so I think it wont matter
 # mimetypes.add_type("application/font-woff2", ".woff2")
 
-import shutil_custom  # pylint: disable=import-error
-shutil.copyfile = shutil_custom.copyfile_custom
-
 # Do this before importing sickbeard, to prevent locked files and incorrect import
 OLD_TORNADO = os.path.abspath(os.path.join(os.path.dirname(__file__), 'tornado'))
 if os.path.isdir(OLD_TORNADO):
@@ -95,9 +92,12 @@ if os.path.isdir(OLD_TORNADO):
 import medusa as sickbeard
 from medusa import db, failed_history, logger, name_cache, network_timezones
 from medusa.event_queue import Events
+from medusa.helper.encoding import ek
 from medusa.server.core import SRWebServer
 from medusa.tv import TVShow
-from sickrage.helper.encoding import ek
+
+import shutil_custom  # pylint: disable=import-error
+shutil.copyfile = shutil_custom.copyfile_custom
 
 # http://bugs.python.org/issue7980#msg221094
 THROWAWAY = datetime.datetime.strptime('20110101', '%Y%m%d')

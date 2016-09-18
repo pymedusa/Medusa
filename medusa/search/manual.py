@@ -24,11 +24,11 @@ import threading
 import time
 
 import medusa as sickbeard
-from sickrage.helper.common import enabled_providers
-from sickrage.show.Show import Show
 from .queue import ForcedSearchQueueItem
 from .. import db, logger
 from ..common import Overview, Quality, cpu_presets, statusStrings
+from ..helper.common import enabled_providers
+from ..show.Show import Show
 
 SEARCH_STATUS_FINISHED = "finished"
 SEARCH_STATUS_QUEUED = "queued"

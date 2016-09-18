@@ -4,7 +4,7 @@
     from medusa import common
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, qualityPresetStrings, statusStrings
-    from sickrage.helper import exceptions
+    from medusa.helper import exceptions
 %>
 <%block name="scripts">
 <%

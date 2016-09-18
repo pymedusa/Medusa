@@ -12,13 +12,13 @@
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helpers import anon_url
     from medusa.show_name_helpers import containsAtLeastOneWord, filterBadReleases
-    from sickrage.helper.common import pretty_file_size, episode_num
+    from medusa.helper.common import pretty_file_size, episode_num
     from medusa.sbdatetime import sbdatetime
-    from sickrage.show.History import History
+    from medusa.show.History import History
     from medusa.failed_history import prepareFailedName
-    from sickrage.providers.GenericProvider import GenericProvider
+    from medusa.providers.GenericProvider import GenericProvider
     from medusa import providers
-    from sickrage.helper.encoding import ek
+    from medusa.helper.encoding import ek
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>

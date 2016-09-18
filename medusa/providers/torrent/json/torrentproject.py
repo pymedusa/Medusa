@@ -19,12 +19,12 @@
 from __future__ import unicode_literals
 
 import traceback
-
-from sickrage.helper.common import convert_size, try_int
-from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 import validators
+
+from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
 from ....common import USER_AGENT
+from ....helper.common import convert_size, try_int
 
 
 class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes

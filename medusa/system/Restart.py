@@ -19,7 +19,7 @@
 
 import medusa as sickbeard
 
-from medusa.event_queue import Events
+from ..event_queue import Events
 
 
 class Restart(object):

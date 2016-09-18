@@ -21,9 +21,9 @@ import os
 import subprocess
 
 import medusa as sickbeard
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex
 from .. import common, logger
+from ..helper.encoding import ek
+from ..helper.exceptions import ex
 
 
 class Notifier(object):

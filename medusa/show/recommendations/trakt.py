@@ -18,12 +18,12 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
-import requests
 import medusa as sickbeard
-from medusa import logger
+import requests
 from simpleanidb import Anidb
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 from .recommended import RecommendedShow
+from ... import logger
 from ...helper.common import try_int
 from ...helper.exceptions import MultipleShowObjectsException, ex
 

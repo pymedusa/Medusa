@@ -23,9 +23,9 @@ import re
 from collections import namedtuple
 
 import medusa as sickbeard
-from sickrage.helper.encoding import ek
 from six import string_types
 from . import common, logger
+from .helper.encoding import ek
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .scene_exceptions import get_scene_exceptions
 

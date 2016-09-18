@@ -25,14 +25,14 @@ import threading
 import traceback
 from socket import timeout as SocketTimeout
 
-import requests
 import medusa as sickbeard
-from sickrage.helper.common import enabled_providers, episode_num
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import AuthException, ex
-from sickrage.providers.GenericProvider import GenericProvider
+import requests
 from .. import clients, common, db, failed_history, helpers, history, logger, notifiers, nzbSplitter, nzbget, sab, show_name_helpers, ui
 from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
+from ..helper.common import enabled_providers, episode_num
+from ..helper.encoding import ek
+from ..helper.exceptions import AuthException, ex
+from ..providers.GenericProvider import GenericProvider
 
 
 def _downloadResult(result):

@@ -24,11 +24,12 @@ import time
 import xml.etree.ElementTree as ET
 
 import medusa as sickbeard
-from sickrage.helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from . import db, failed_history, helpers, network_timezones, ui
+from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from .indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
 
 logger = logging.getLogger(__name__)
+
 
 class ShowUpdater(object):
     def __init__(self):

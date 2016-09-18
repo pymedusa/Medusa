@@ -5,10 +5,10 @@ from __future__ import unicode_literals
 import json
 import os
 
-from sickrage.helper.encoding import ek
 from tornado.routes import route
 from .base import WebRoot
 from ....browser import list_folders
+from ....helper.encoding import ek
 
 
 @route('/browser(/?.*)')

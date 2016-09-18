@@ -23,12 +23,12 @@ import time
 
 import jsonrpclib
 import medusa as sickbeard
-from sickrage.helper.common import episode_num
-from sickrage.helper.exceptions import ex
-from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 from six import itervalues
+from ..TorrentProvider import TorrentProvider
 from .... import logger, scene_exceptions, tvcache
 from ....common import cpu_presets
+from ....helper.common import episode_num
+from ....helper.exceptions import ex
 from ....helpers import sanitizeSceneName
 
 

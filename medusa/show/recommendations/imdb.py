@@ -9,9 +9,9 @@ from datetime import date
 
 from bs4 import BeautifulSoup
 import medusa as sickbeard
-from medusa import (helpers, logger)
 from simpleanidb import Anidb
 from .recommended import RecommendedShow
+from ... import helpers, logger
 
 
 class ImdbPopular(object):

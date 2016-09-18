@@ -32,16 +32,15 @@ from inspect import getargspec
 from logging import NullHandler
 from logging.handlers import RotatingFileHandler
 
-from requests.compat import quote
 import medusa as sickbeard
-import sickrage
-from sickrage.helper.common import dateTimeFormat
-from sickrage.helper.encoding import ek
+from requests.compat import quote
 from six import itervalues, text_type
 import subliminal
 from tornado.log import access_log, app_log, gen_log
 import traktor
 from . import classes
+from .helper.common import dateTimeFormat
+from .helper.encoding import ek
 
 
 # log levels
@@ -531,7 +530,7 @@ class Logger(object):
 
     def __init__(self):
         """Default Constructor."""
-        self.logger = standard_logger('sickrage')
+        self.logger = standard_logger('medusa')
         self.loggers = [self.logger]
         self.log_level = None
         self.log_file = None
@@ -544,7 +543,6 @@ class Logger(object):
         :param console_logging: True if logging to console
         :type console_logging: bool
         """
-        self.loggers.extend(get_loggers(sickrage))
         self.loggers.extend(get_loggers(sickbeard))
         self.loggers.extend(get_loggers(subliminal))
         self.loggers.extend([access_log, app_log, gen_log])

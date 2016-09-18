@@ -25,12 +25,12 @@ import time
 import traceback
 
 import medusa as sickbeard
-from sickrage.helper.exceptions import AuthException
-from sickrage.show.Show import Show
 from six import text_type
 from . import db, logger, show_name_helpers
+from .helper.exceptions import AuthException
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .rssfeeds import getFeed
+from .show.Show import Show
 
 
 class CacheDBConnection(db.DBConnection):

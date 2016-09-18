@@ -23,7 +23,7 @@ import os
 import posixpath
 
 import medusa as sickbeard
-from medusa import helpers
+from ... import helpers
 
 
 class RecommendedShow(object):

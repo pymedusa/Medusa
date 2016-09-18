@@ -23,8 +23,8 @@ from __future__ import unicode_literals
 import os
 import string
 
-from sickrage.helper.encoding import ek
 from . import logger
+from .helper.encoding import ek
 
 
 # adapted from http://stackoverflow.com/questions/827371/is-there-a-way-to-list-all-the-available-drive-letters-in-python/827490

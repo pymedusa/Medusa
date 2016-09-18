@@ -19,7 +19,7 @@
 from __future__ import unicode_literals
 
 from requests.compat import urljoin
-from sickrage.providers.nzb.NZBProvider import NZBProvider
+from .NZBProvider import NZBProvider
 from ... import logger, tvcache
 
 

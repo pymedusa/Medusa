@@ -6,13 +6,13 @@ import os
 
 from github import GithubException
 import medusa as sickbeard
-from sickrage.helper.common import try_int
-from sickrage.helper.encoding import ek
 from tornado.routes import route
 from .handler import Config
 from ..core import PageTemplate
 from .... import config, github_client, helpers, logger, ui
 from ....common import Quality, WANTED
+from ....helper.common import try_int
+from ....helper.encoding import ek
 
 
 @route('/config/general(/?.*)')

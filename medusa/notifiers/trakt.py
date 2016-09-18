@@ -22,9 +22,9 @@
 from __future__ import unicode_literals
 
 import medusa as sickbeard
-from sickrage.helper.exceptions import ex
 from traktor import AuthException, ServerBusy, TraktApi, TraktException
 from .. import logger
+from ..helper.exceptions import ex
 
 
 class Notifier(object):

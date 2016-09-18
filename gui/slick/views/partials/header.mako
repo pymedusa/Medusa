@@ -2,8 +2,8 @@
     import datetime
     import re
     import medusa as sickbeard
-    from sickrage.helper.common import pretty_file_size
-    from sickrage.show.Show import Show
+    from medusa.helper.common import pretty_file_size
+    from medusa.show.Show import Show
     from time import time
 %>
 <!-- BEGIN HEADER -->

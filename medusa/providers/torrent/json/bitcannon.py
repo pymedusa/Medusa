@@ -21,10 +21,10 @@ from __future__ import unicode_literals
 import traceback
 
 from requests.compat import urljoin
-from sickrage.helper.common import convert_size, try_int
-from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 import validators
+from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
+from ....helper.common import convert_size, try_int
 
 
 class BitCannonProvider(TorrentProvider):

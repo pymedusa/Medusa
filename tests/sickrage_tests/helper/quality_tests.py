@@ -32,7 +32,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 
 from six import iteritems
 from medusa.common import ANY, HD, HD1080p, HD720p, Quality, SD
-from sickrage.helper.quality import get_quality_string
+from medusa.helper.quality import get_quality_string
 
 
 class QualityTests(unittest.TestCase):

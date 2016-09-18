@@ -8,9 +8,9 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../l
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from guessit import __version__ as guessit_version
-from rebulk.__version__ import __version__ as rebulk_version
 import medusa as sickbeard
 from medusa.name_parser.guessit_parser import guessit
+from rebulk.__version__ import __version__ as rebulk_version
 
 
 class MockTvShow(object):

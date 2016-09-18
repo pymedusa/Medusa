@@ -24,11 +24,11 @@ import datetime
 from base64 import standard_b64encode
 
 import medusa as sickbeard
-from sickrage.helper.common import try_int
 from six.moves.http_client import socket
 from six.moves.xmlrpc_client import ProtocolError, ServerProxy
 from . import logger
 from .common import Quality
+from .helper.common import try_int
 
 
 def NZBConnection(url):

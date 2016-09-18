@@ -2,9 +2,9 @@
 import threading
 import traceback
 
-from sickrage.helper.exceptions import ex
 from six.moves.queue import Empty, Queue
 from . import logger
+from .helper.exceptions import ex
 
 
 class Event(object):

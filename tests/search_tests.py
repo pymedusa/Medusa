@@ -36,7 +36,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from medusa.tv import TVEpisode, TVShow
 import medusa as sickbeard
 import medusa.common as common
-from sickrage.providers.GenericProvider import GenericProvider
+from medusa.providers.GenericProvider import GenericProvider
 import tests.test_lib as test
 
 TESTS = {

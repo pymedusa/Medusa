@@ -1,7 +1,7 @@
 # coding=utf-8
 from feedparser.api import parse
-from sickrage.helper.exceptions import ex
 from . import logger
+from .helper.exceptions import ex
 
 
 def getFeed(url, params=None, request_hook=None):

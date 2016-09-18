@@ -26,20 +26,20 @@ from itertools import chain
 from os.path import join
 from random import shuffle
 
-from requests.utils import add_dict_to_cookiejar
 import medusa as sickbeard
-from medusa import logger, ui
-from medusa.classes import Proper, SearchResult
-from medusa.common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
-from medusa.db import DBConnection
-from medusa.helpers import download_file, getURL, make_session, remove_file_failed
-from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from medusa.show_name_helpers import allPossibleShowNames
-from medusa.tvcache import TVCache
+from requests.utils import add_dict_to_cookiejar
+from .. import logger, ui
+from ..classes import Proper, SearchResult
+from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
+from ..db import DBConnection
 from ..helper.common import replace_extension, sanitize_filename
 from ..helper.encoding import ek
 from ..helper.exceptions import ex
+from ..helpers import download_file, getURL, make_session, remove_file_failed
+from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from ..show.Show import Show
+from ..show_name_helpers import allPossibleShowNames
+from ..tvcache import TVCache
 
 # Keep a list of per provider of recent provider search results
 recent_results = {}

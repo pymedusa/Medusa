@@ -21,9 +21,9 @@ from __future__ import unicode_literals
 
 import traceback
 
-from sickrage.helper.common import convert_size
-from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
+from ....helper.common import convert_size
 
 
 class BTDiggProvider(TorrentProvider):

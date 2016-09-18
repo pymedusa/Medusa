@@ -23,12 +23,12 @@ import os
 import re
 
 import medusa as sickbeard
-from sickrage.helper.common import replace_extension
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex
 from six import iterkeys, text_type
 from tmdb_api.tmdb_api import TMDB
 from .. import helpers, logger
+from ..helper.common import replace_extension
+from ..helper.encoding import ek
+from ..helper.exceptions import ex
 from ..metadata import helpers as metadata_helpers
 from ..show_name_helpers import allPossibleShowNames
 

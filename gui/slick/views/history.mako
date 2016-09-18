@@ -9,9 +9,9 @@
     from medusa.sbdatetime import sbdatetime
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED, DOWNLOADED, SUBTITLED
     from medusa.common import Quality, statusStrings, Overview
-    from sickrage.show.History import History
-    from sickrage.helper.encoding import ek
-    from sickrage.providers.GenericProvider import GenericProvider
+    from medusa.show.History import History
+    from medusa.helper.encoding import ek
+    from medusa.providers.GenericProvider import GenericProvider
 %>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>

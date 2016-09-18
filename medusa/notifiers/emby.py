@@ -20,12 +20,12 @@
 
 import json
 
-from requests.compat import urlencode
 import medusa as sickbeard
-from sickrage.helper.exceptions import ex
+from requests.compat import urlencode
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import Request, urlopen
 from .. import logger
+from ..helper.exceptions import ex
 
 
 class Notifier(object):

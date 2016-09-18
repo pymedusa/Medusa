@@ -24,11 +24,11 @@ import ast
 import socket
 import time
 
-from requests.compat import urlencode
 import medusa as sickbeard
-from sickrage.helper.encoding import ss
+from requests.compat import urlencode
 from six.moves.http_client import HTTPException, HTTPSConnection
 from .. import common, db, logger
+from ..helper.encoding import ss
 
 try:
     # this only exists in 2.6

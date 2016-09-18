@@ -34,8 +34,8 @@ from six import iteritems
 import medusa as sickbeard
 
 from generic_provider_tests import GenericProviderTests
-from sickrage.providers.GenericProvider import GenericProvider
-from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from medusa.providers.GenericProvider import GenericProvider
+from medusa.providers.torrent.TorrentProvider import TorrentProvider
 
 
 class TorrentProviderTests(GenericProviderTests):

@@ -36,8 +36,8 @@ from six import iteritems
 import medusa as sickbeard
 from medusa.common import Quality
 from medusa.tv import TVShow
-from sickrage.helper.exceptions import MultipleShowObjectsException
-from sickrage.show.Show import Show
+from medusa.helper.exceptions import MultipleShowObjectsException
+from medusa.show.Show import Show
 
 
 class ShowTests(unittest.TestCase):

@@ -24,10 +24,10 @@ import re
 
 from bencode import bdecode
 import medusa as sickbeard
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex
-from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from ..TorrentProvider import TorrentProvider
 from .... import helpers, logger, tvcache
+from ....helper.encoding import ek
+from ....helper.exceptions import ex
 
 
 class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes

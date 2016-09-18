@@ -22,9 +22,9 @@
 
 import re
 
-from sickrage.helper.encoding import ek, ss
-from sickrage.helper.exceptions import ex
 from . import classes, helpers, logger
+from .helper.encoding import ek, ss
+from .helper.exceptions import ex
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 
 try:

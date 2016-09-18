@@ -20,8 +20,8 @@
 from datetime import date
 
 import medusa as sickbeard
-from medusa.common import Quality, SKIPPED, WANTED
-from medusa.db import DBConnection
+from ..common import Quality, SKIPPED, WANTED
+from ..db import DBConnection
 from ..helper.exceptions import CantRefreshShowException, CantRemoveShowException, MultipleShowObjectsException, ex
 
 

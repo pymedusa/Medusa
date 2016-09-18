@@ -19,7 +19,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from six import text_type
 import medusa as sickbeard
 from medusa import ek, ex
-from sickrage.helper.common import sanitize_filename
+from medusa.helper.common import sanitize_filename
 
 
 class EncodingTests(unittest.TestCase):

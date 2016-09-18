@@ -29,8 +29,8 @@ from __future__ import unicode_literals
 
 import logging
 
-from rtorrent import RTorrent
 import medusa as sickbeard
+from rtorrent import RTorrent
 from .generic import GenericClient
 from .. import ex
 

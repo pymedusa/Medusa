@@ -22,9 +22,9 @@ import datetime
 import re
 
 from dateutil import tz
-from sickrage.helper.common import try_int
 from six import iteritems
 from . import db, helpers, logger
+from .helper.common import try_int
 
 try:
     sb_timezone = tz.tzwinlocal() if tz.tzwinlocal else tz.tzlocal()

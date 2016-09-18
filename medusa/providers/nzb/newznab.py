@@ -24,15 +24,15 @@ import re
 import time
 import traceback
 
-from requests.compat import urljoin
 import medusa as sickbeard
-from sickrage.helper.common import convert_size, try_int
-from sickrage.helper.encoding import ek, ss
-from sickrage.providers.nzb.NZBProvider import NZBProvider
+from requests.compat import urljoin
 import validators
+from .NZBProvider import NZBProvider
 from ... import logger, tvcache
 from ...bs4_parser import BS4Parser
 from ...common import cpu_presets
+from ...helper.common import convert_size, try_int
+from ...helper.encoding import ek, ss
 
 
 class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attributes, too-many-arguments

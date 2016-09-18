@@ -14,14 +14,8 @@ from mako.exceptions import RichTraceback
 from mako.lookup import TemplateLookup
 from mako.runtime import UNDEFINED
 from mako.template import Template as MakoTemplate
-from requests.compat import urljoin
 import medusa as sickbeard
-from sickrage.helper.encoding import ek
-from sickrage.media.ShowBanner import ShowBanner
-from sickrage.media.ShowFanArt import ShowFanArt
-from sickrage.media.ShowNetworkLogo import ShowNetworkLogo
-from sickrage.media.ShowPoster import ShowPoster
-from sickrage.show.ComingEpisodes import ComingEpisodes
+from requests.compat import urljoin
 from six import iteritems
 from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
@@ -34,6 +28,13 @@ from ...api.v1.core import function_mapper
 from .... import (
     classes, db, helpers, logger, network_timezones, ui
 )
+from ....helper.encoding import ek
+from ....media.ShowBanner import ShowBanner
+from ....media.ShowFanArt import ShowFanArt
+from ....media.ShowNetworkLogo import ShowNetworkLogo
+from ....media.ShowPoster import ShowPoster
+from ....show.ComingEpisodes import ComingEpisodes
+
 
 mako_lookup = None
 mako_cache = None

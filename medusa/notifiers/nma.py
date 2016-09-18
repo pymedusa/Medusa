@@ -1,7 +1,7 @@
 # coding=utf-8
 
-from pynma import pynma
 import medusa as sickbeard
+from pynma import pynma
 from .. import common, logger
 
 

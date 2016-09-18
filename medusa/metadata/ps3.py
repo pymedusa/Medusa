@@ -20,7 +20,7 @@
 
 import os
 
-from sickrage.helper.encoding import ek
+from ..helper.encoding import ek
 from ..metadata import generic
 
 

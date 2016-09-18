@@ -3,11 +3,11 @@
 from __future__ import unicode_literals
 
 import medusa as sickbeard
-from sickrage.helper.common import try_int
-from sickrage.show.History import History as HistoryTool
 from tornado.routes import route
 from .base import PageTemplate, WebRoot
 from .... import ui
+from ....helper.common import try_int
+from ....show.History import History as HistoryTool
 
 
 @route('/history(/?.*)')

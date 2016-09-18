@@ -48,19 +48,18 @@ import certifi
 import cfscrape
 from contextlib2 import closing, suppress
 import guessit
+import medusa as sickbeard
 import requests
 from requests.compat import urlparse
 import shutil_custom
-import medusa as sickbeard
-from sickrage.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, \
-    subtitle_extensions
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex
-from sickrage.show.Show import Show
 from six import PY2, PY3, binary_type, string_types, text_type
 from six.moves import http_client
 from . import classes, db
 from .common import USER_AGENT
+from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
+from .helper.encoding import ek
+from .helper.exceptions import ex
+from .show.Show import Show
 
 logger = logging.getLogger(__name__)
 

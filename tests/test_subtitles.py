@@ -4,9 +4,9 @@ import os
 import sys
 
 from babelfish.language import Language
+import medusa.subtitles as sut
 from mock.mock import Mock
 import pytest
-import medusa.subtitles as sut
 from subliminal.subtitle import Subtitle
 
 

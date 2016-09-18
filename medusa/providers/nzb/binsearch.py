@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import re
 
 from requests.compat import urljoin
-from sickrage.providers.nzb.NZBProvider import NZBProvider
+from .NZBProvider import NZBProvider
 from ... import logger, tvcache
 
 

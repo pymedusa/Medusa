@@ -20,9 +20,9 @@
 
 from dateutil import parser
 import medusa as sickbeard
-from sickrage.helper.common import dateTimeFormat
 from six.moves.urllib.request import FancyURLopener
 from .common import Quality, USER_AGENT
+from .helper.common import dateTimeFormat
 
 
 class SickBeardURLopener(FancyURLopener, object):

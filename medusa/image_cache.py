@@ -24,9 +24,9 @@ from hachoir_core.log import log
 from hachoir_metadata import extractMetadata
 from hachoir_parser import createParser
 import medusa as sickbeard
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ShowDirectoryNotFoundException
 from . import helpers, logger
+from .helper.encoding import ek
+from .helper.exceptions import ShowDirectoryNotFoundException
 from .metadata.generic import GenericMetadata
 
 log.use_print = False

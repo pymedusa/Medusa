@@ -9,15 +9,15 @@ from github.Issue import Issue
 from github.MainClass import Github
 from github.Organization import Organization
 from github.Repository import Repository
-from mock.mock import Mock
-import pytest
 from medusa.common import DOWNLOADED, Quality
+from medusa.helper.common import dateTimeFormat
 from medusa.indexers.indexer_config import INDEXER_TVDB
 from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance
 from medusa.logger import read_loglines as logger_read_loglines
 from medusa.tv import TVEpisode, TVShow
 from medusa.versionChecker import CheckVersion
-from sickrage.helper.common import dateTimeFormat
+from mock.mock import Mock
+import pytest
 from subliminal.subtitle import Subtitle
 from subliminal.video import Video
 import yaml

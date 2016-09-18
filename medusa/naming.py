@@ -22,9 +22,9 @@ import datetime
 import os
 
 import medusa as sickbeard
-from sickrage.helper.encoding import ek
 from . import common, logger, tv
 from .common import DOWNLOADED, Quality
+from .helper.encoding import ek
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 
 name_presets = (

@@ -2,10 +2,9 @@
 """Tests for sickbeard.logger.py."""
 from datetime import datetime
 
-import pytest
-
 import medusa.logger as sut
 from medusa.logger import DEBUG, INFO, LogLine, WARNING
+import pytest
 
 
 class TestStandardLoggingApi(object):

@@ -22,11 +22,11 @@ import datetime
 import re
 
 from requests.compat import unquote
-from sickrage.helper.encoding import ss
-from sickrage.helper.exceptions import EpisodeNotFoundException, ex
-from sickrage.show.History import History
 from . import db, logger
 from .common import FAILED, Quality, WANTED
+from .helper.encoding import ss
+from .helper.exceptions import EpisodeNotFoundException, ex
+from .show.History import History
 
 
 def prepareFailedName(release):

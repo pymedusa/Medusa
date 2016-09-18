@@ -33,7 +33,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 import medusa as sickbeard
 
 from six import iteritems
-from sickrage.media.GenericMedia import GenericMedia
+from medusa.media.GenericMedia import GenericMedia
 
 
 class GenericMediaTests(unittest.TestCase):

@@ -88,7 +88,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../l
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from medusa import helpers
-from sickrage.helper.common import media_extensions, subtitle_extensions
+from medusa.helper.common import media_extensions, subtitle_extensions
 
 TEST_RESULT = 'Show.Name.S01E01.HDTV.x264-RLSGROUP'
 TEST_CASES = {

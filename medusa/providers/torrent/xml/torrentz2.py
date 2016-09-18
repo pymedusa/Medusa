@@ -22,10 +22,10 @@ import re
 import traceback
 
 from requests.compat import urljoin
-from sickrage.helper.common import convert_size
-from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
 from ....bs4_parser import BS4Parser
+from ....helper.common import convert_size
 
 
 class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-attributes

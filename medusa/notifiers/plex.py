@@ -21,9 +21,9 @@
 import re
 
 import medusa as sickbeard
-from sickrage.helper.exceptions import ex
 from six import iteritems
 from .. import common, logger
+from ..helper.exceptions import ex
 from ..helpers import getURL, make_session
 
 try:

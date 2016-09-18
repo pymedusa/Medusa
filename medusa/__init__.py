@@ -31,10 +31,6 @@ from threading import Lock
 from configobj import ConfigObj
 import requests
 import shutil_custom
-import sickrage.helper.exceptions
-from sickrage.helper.encoding import ek
-from sickrage.providers.GenericProvider import GenericProvider
-from sickrage.system.Shutdown import Shutdown
 from . import (
     auto_postprocessor, db, helpers, logger, metadata, naming, providers,
     scheduler, showUpdater, show_queue, subtitles, traktChecker, versionChecker
@@ -46,24 +42,28 @@ from .config import (
 )
 from .databases import cache_db, failed_db, main_db
 from .github_client import authenticate
+from .helper import exceptions
+from .helper.encoding import ek
 from .indexers import indexer_api
 from .indexers.indexer_exceptions import (
     indexer_attributenotfound, indexer_episodenotfound, indexer_error, indexer_exception,
     indexer_seasonnotfound, indexer_showincomplete, indexer_shownotfound, indexer_userabort
 )
 from .providers import NewznabProvider, TorrentRssProvider
+from .providers.GenericProvider import GenericProvider
 from .search import backlog, daily, proper
 from .search.backlog import BacklogSearchScheduler, BacklogSearcher
 from .search.daily import DailySearcher
 from .search.proper import ProperFinder
 from .search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
+from .system.Shutdown import Shutdown
 
 shutil.copyfile = shutil_custom.copyfile_custom
 requests.packages.urllib3.disable_warnings()
 
 indexerApi = indexer_api.indexerApi
 
-ex = sickrage.helper.exceptions.ex
+ex = exceptions.ex
 
 PID = None
 CFG = None

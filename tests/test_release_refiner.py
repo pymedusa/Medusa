@@ -3,8 +3,8 @@
 
 import os
 
-import pytest
 from medusa.refiners import release as sut
+import pytest
 from subliminal.video import Video
 
 

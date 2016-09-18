@@ -2,12 +2,12 @@
 
 from __future__ import unicode_literals
 
-from sickrage.helper.encoding import ss
 from six import string_types
 from tornado.routes import route
 from .handler import Home
 from ..core import PageTemplate
 from .... import processTV
+from ....helper.encoding import ss
 
 
 @route('/home/postprocess(/?.*)')

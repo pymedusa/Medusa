@@ -21,9 +21,9 @@
 import datetime
 
 import db
-from sickrage.helper.encoding import ss
-from sickrage.show.History import History
 from .common import FAILED, Quality, SNATCHED, SUBTITLED
+from .helper.encoding import ss
+from .show.History import History
 
 
 def _logHistoryItem(action, showid, season, episode, quality, resource, provider, version=-1, proper_tags=''):

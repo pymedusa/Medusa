@@ -24,10 +24,10 @@ import traceback
 from contextlib2 import suppress
 import requests
 from requests.compat import urljoin
-from sickrage.helper.common import convert_size, try_int
-from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
 from ....bs4_parser import BS4Parser
+from ....helper.common import convert_size, try_int
 
 id_regex = re.compile(r'(?:torrent-([0-9]*).html)', re.I)
 hash_regex = re.compile(r'(.*)([0-9a-f]{40})(.*)', re.I)

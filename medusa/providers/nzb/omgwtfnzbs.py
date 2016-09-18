@@ -22,9 +22,9 @@ import re
 import traceback
 
 import medusa as sickbeard
-from sickrage.helper.common import convert_size, try_int
-from sickrage.providers.nzb.NZBProvider import NZBProvider
+from .NZBProvider import NZBProvider
 from ... import logger, tvcache
+from ...helper.common import convert_size, try_int
 
 
 class OmgwtfnzbsProvider(NZBProvider):

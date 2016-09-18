@@ -2,12 +2,13 @@
 """Tests for sickbeard.server.web.core.error_logs.py."""
 
 from github.GithubException import BadCredentialsException, RateLimitExceededException
-from mock.mock import Mock
-import pytest
 from medusa import classes
 from medusa.classes import ErrorViewer
 from medusa.issuesubmitter import IssueSubmitter
 from medusa.logger import LogLine
+from mock.mock import Mock
+import pytest
+
 
 sut = IssueSubmitter()
 

@@ -20,9 +20,9 @@ from __future__ import unicode_literals
 import json
 
 from requests.compat import urlencode, urljoin
-from sickrage.helper.exceptions import AuthException
-from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
+from ....helper.exceptions import AuthException
 
 
 class HDBitsProvider(TorrentProvider):

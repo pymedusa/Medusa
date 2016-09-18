@@ -23,10 +23,10 @@ import os.path
 import warnings
 
 import medusa as sickbeard
-from sickrage.helper.common import dateTimeFormat, episode_num
-from sickrage.helper.encoding import ek
 from six import iteritems
 from .. import common, db, helpers, logger, subtitles
+from ..helper.common import dateTimeFormat, episode_num
+from ..helper.encoding import ek
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 
 MIN_DB_VERSION = 9  # oldest db version we support migrating from

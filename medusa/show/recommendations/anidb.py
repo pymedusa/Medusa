@@ -21,10 +21,10 @@ from __future__ import unicode_literals
 import traceback
 
 import medusa as sickbeard
-from medusa import helpers, logger
 from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
 from .recommended import RecommendedShow
+from ... import helpers, logger
 
 
 class AnidbPopular(object):  # pylint: disable=too-few-public-methods

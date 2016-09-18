@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-from medusa.image_cache import ImageCache
 from .GenericMedia import GenericMedia
+from ..image_cache import ImageCache
 
 
 class ShowFanArt(GenericMedia):

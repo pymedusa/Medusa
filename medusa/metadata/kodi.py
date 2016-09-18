@@ -20,8 +20,8 @@
 
 import os
 
-from sickrage.helper.common import replace_extension
-from sickrage.helper.encoding import ek
+from ..helper.common import replace_extension
+from ..helper.encoding import ek
 from ..metadata import kodi_12plus
 
 

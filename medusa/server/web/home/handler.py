@@ -9,14 +9,8 @@ import time
 from datetime import date
 
 import adba
-from requests.compat import quote_plus, unquote_plus
 import medusa as sickbeard
-from sickrage.helper.common import enabled_providers, try_int
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
-from sickrage.show.Show import Show
-from sickrage.system.Restart import Restart
-from sickrage.system.Shutdown import Shutdown
+from requests.compat import quote_plus, unquote_plus
 from six import iteritems
 from tornado.routes import route
 from traktor import MissingTokenException, TokenExpiredException, TraktApi, TraktException
@@ -24,6 +18,9 @@ from ..core import PageTemplate, WebRoot
 from .... import clients, config, db, helpers, logger, notifiers, nzbget, sab, show_name_helpers, subtitles, ui
 from ....blackandwhitelist import BlackAndWhiteList, short_group_names
 from ....common import FAILED, IGNORED, Overview, Quality, SKIPPED, UNAIRED, WANTED, cpu_presets, statusStrings
+from ....helper.common import enabled_providers, try_int
+from ....helper.encoding import ek
+from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
 from ....scene_numbering import (
     get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
@@ -38,6 +35,9 @@ from ....search.manual import (
 from ....search.queue import (
     BacklogQueueItem, FailedQueueItem, ForcedSearchQueueItem, ManualSnatchQueueItem
 )
+from ....show.Show import Show
+from ....system.Restart import Restart
+from ....system.Shutdown import Shutdown
 from ....versionChecker import CheckVersion
 
 

@@ -24,8 +24,8 @@ import socket
 
 from libgrowl import gntp
 import medusa as sickbeard
-from sickrage.helper.exceptions import ex
 from .. import common, logger
+from ..helper.exceptions import ex
 
 
 class Notifier(object):

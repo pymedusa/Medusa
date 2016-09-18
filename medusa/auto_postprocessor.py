@@ -23,8 +23,8 @@ import logging
 import os.path
 
 import medusa as sickbeard
-from sickrage.helper.encoding import ek
 from . import processTV
+from .helper.encoding import ek
 
 
 logger = logging.getLogger(__name__)

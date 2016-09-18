@@ -30,9 +30,9 @@ import logging
 import os
 import re
 
+import medusa as sickbeard
 from requests.compat import urljoin
 from requests.exceptions import RequestException
-import medusa as sickbeard
 from .generic import GenericClient
 from ..helpers import handle_requests_exception
 

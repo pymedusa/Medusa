@@ -9,7 +9,7 @@
     from medusa import metadata
     from medusa.metadata.generic import GenericMetadata
     from medusa import naming
-    from sickrage.helper.encoding import ek
+    from medusa.helper.encoding import ek
 %>
 <%block name="content">
 <div id="content960">

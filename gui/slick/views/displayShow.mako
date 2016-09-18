@@ -9,7 +9,7 @@
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helpers import anon_url
-    from sickrage.helper.common import pretty_file_size
+    from medusa.helper.common import pretty_file_size
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>

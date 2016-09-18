@@ -10,16 +10,16 @@ import json
 import os
 
 import medusa as sickbeard
-from sickrage.helper.common import try_int
-from sickrage.helper.encoding import ek
-from sickrage.providers.GenericProvider import GenericProvider
 from tornado.routes import route
 from .handler import Config
 from ..core import PageTemplate
 from .... import (
     config, logger, ui,
 )
+from ....helper.common import try_int
+from ....helper.encoding import ek
 from ....providers import NewznabProvider, TorrentRssProvider
+from ....providers.GenericProvider import GenericProvider
 
 
 @route('/config/providers(/?.*)')

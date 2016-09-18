@@ -30,12 +30,13 @@ from fake_useragent import UserAgent, settings as UA_SETTINGS
 from hachoir_core.log import log as hachoir_log
 from hachoir_metadata import extractMetadata
 from hachoir_parser import createParser
-from sickrage.helper.encoding import ek
-from sickrage.recompiled import tags
-from sickrage.tagger.episode import EpisodeTags
 from six import PY3
 from six.moves import reduce
+from .helper.encoding import ek
 from .numdict import NumDict
+from .recompiled import tags
+from .tagger.episode import EpisodeTags
+
 
 if PY3:
     long = int

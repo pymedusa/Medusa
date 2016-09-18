@@ -28,16 +28,15 @@ import tarfile
 import time
 import traceback
 
+import medusa as sickbeard
 import shutil_custom
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
-import medusa as sickbeard
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex
-
 from . import db, helpers, logger, notifiers, ui
 from .github_client import get_github_repo
+from .helper.encoding import ek
+from .helper.exceptions import ex
 
 
 class CheckVersion(object):

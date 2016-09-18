@@ -1,9 +1,9 @@
 # coding=utf-8
 """Tests for sickbeard.refiners.tvepisode.py."""
 
-import pytest
 from medusa.common import DOWNLOADED, Quality
 from medusa.refiners import tvepisode as sut
+import pytest
 from subliminal.video import Video
 
 

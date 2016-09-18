@@ -24,8 +24,8 @@ from __future__ import unicode_literals
 import logging
 import re
 
-from requests.compat import urljoin
 import medusa as sickbeard
+from requests.compat import urljoin
 from six import iteritems
 from .generic import GenericClient
 

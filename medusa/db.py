@@ -26,10 +26,10 @@ import time
 import warnings
 
 import medusa as sickbeard
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex
 from six import text_type
 from . import logger
+from .helper.encoding import ek
+from .helper.exceptions import ex
 
 db_cons = {}
 db_locks = {}

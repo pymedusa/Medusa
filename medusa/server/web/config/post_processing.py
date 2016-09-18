@@ -9,8 +9,6 @@ from __future__ import unicode_literals
 import os
 
 import medusa as sickbeard
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex
 from tornado.routes import route
 from unrar2 import RarFile
 from .handler import Config
@@ -19,6 +17,8 @@ from .... import (
     config, logger,
     naming, ui,
 )
+from ....helper.encoding import ek
+from ....helper.exceptions import ex
 
 
 @route('/config/postProcessing(/?.*)')

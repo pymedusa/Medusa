@@ -21,8 +21,8 @@
 
 from __future__ import unicode_literals
 
-from requests.auth import HTTPDigestAuth
 import medusa as sickbeard
+from requests.auth import HTTPDigestAuth
 from .generic import GenericClient
 
 

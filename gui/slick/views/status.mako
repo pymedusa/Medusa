@@ -3,7 +3,7 @@
     import medusa as sickbeard
     from medusa import helpers
     from medusa.show_queue import ShowQueueActions
-    from sickrage.helper.common import dateTimeFormat
+    from medusa.helper.common import dateTimeFormat
 %>
 <%block name="content">
 % if not header is UNDEFINED:

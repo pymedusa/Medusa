@@ -23,7 +23,7 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
 from ....bs4_parser import BS4Parser
 

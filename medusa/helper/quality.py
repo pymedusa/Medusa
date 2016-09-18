@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-from medusa.common import Quality, qualityPresetStrings
+from ..common import Quality, qualityPresetStrings
 
 
 def get_quality_string(quality):
