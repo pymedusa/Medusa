@@ -1221,8 +1221,11 @@ class AddProperTags(TestIncreaseMajorVersion):
         """
         backupDatabase(self.connection.version)
 
-        logger.log(u'Adding column proper_tags to history')
         if not self.hasColumn('history', 'proper_tags'):
+            logger.log(u'Adding column proper_tags to history')
             self.addColumn('history', 'proper_tags', 'TEXT', u'')
+
         MainSanityCheck(self.connection).update_old_propers()
         self.inc_minor_version()
+
+        logger.log(u'Updated to: %d.%d' % self.connection.version)
