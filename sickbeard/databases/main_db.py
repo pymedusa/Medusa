@@ -1189,7 +1189,7 @@ class TestIncreaseMajorVersion(AddMinorVersion):
     """
     def test(self):
         """
-        Test if the version is at least 43.1
+        Test if the version is at least 44.1
         """
         return self.connection.version >= (44, 1)
 
