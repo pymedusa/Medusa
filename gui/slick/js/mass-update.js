@@ -89,7 +89,7 @@ $(document).ready(function() {
                         toMetadata: metadataArr.join('|')
                     });
 
-                    window.location.href = 'massUpdate?' + params;
+                    window.location.href = 'manage/massUpdate?' + params;
                 }
             });
         }
