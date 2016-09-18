@@ -31,8 +31,8 @@ from sickrage.helper.common import enabled_providers, episode_num
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import AuthException, ex
 from sickrage.providers.GenericProvider import GenericProvider
-from . import clients, common, db, failed_history, helpers, history, logger, notifiers, nzbSplitter, nzbget, sab, show_name_helpers, ui
-from .common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
+from .. import clients, common, db, failed_history, helpers, history, logger, notifiers, nzbSplitter, nzbget, sab, show_name_helpers, ui
+from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 
 
 def _downloadResult(result):

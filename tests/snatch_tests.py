@@ -24,6 +24,7 @@ Test snatching
 """
 
 from __future__ import print_function
+
 import os.path
 import sys
 import unittest
@@ -33,7 +34,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from sickbeard.tv import TVEpisode, TVShow
 import sickbeard
-import sickbeard.search as search
+from sickbeard.search.core import searchProviders
 import sickbeard.common as common
 import tests.test_lib as test
 
@@ -129,7 +130,7 @@ def generator(tvdb_id, show_name, cur_data, force_search):
             episode.status = common.WANTED
             episode.save_to_db()
 
-        best_result = search.searchProviders(show, episode.episode, force_search)
+        best_result = searchProviders(show, episode.episode, force_search)
         if not best_result:
             assert cur_data["b"] == best_result
         # pylint: disable=no-member

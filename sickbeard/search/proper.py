@@ -34,10 +34,10 @@ import sickbeard
 from sickrage.helper.common import enabled_providers
 from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.History import History
-from . import db, helpers, logger
-from .common import Quality, cpu_presets
-from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from .search import pickBestResult, snatchEpisode
+from .. import db, helpers, logger
+from ..common import Quality, cpu_presets
+from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from ..search.core import pickBestResult, snatchEpisode
 
 
 class ProperFinder(object):  # pylint: disable=too-few-public-methods
