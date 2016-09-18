@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 
 import os
 
-import medusa as sickbeard
+import medusa as app
 from tornado.routes import route
 from .handler import Config
 from ..core import PageTemplate
@@ -45,13 +45,13 @@ class ConfigAnime(Config):
 
         results = []
 
-        sickbeard.USE_ANIDB = config.checkbox_to_value(use_anidb)
-        sickbeard.ANIDB_USERNAME = anidb_username
-        sickbeard.ANIDB_PASSWORD = anidb_password
-        sickbeard.ANIDB_USE_MYLIST = config.checkbox_to_value(anidb_use_mylist)
-        sickbeard.ANIME_SPLIT_HOME = config.checkbox_to_value(split_home)
+        app.USE_ANIDB = config.checkbox_to_value(use_anidb)
+        app.ANIDB_USERNAME = anidb_username
+        app.ANIDB_PASSWORD = anidb_password
+        app.ANIDB_USE_MYLIST = config.checkbox_to_value(anidb_use_mylist)
+        app.ANIME_SPLIT_HOME = config.checkbox_to_value(split_home)
 
-        sickbeard.save_config()
+        app.save_config()
 
         if results:
             for x in results:
@@ -59,6 +59,6 @@ class ConfigAnime(Config):
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:
-            ui.notifications.message('Configuration Saved', ek(os.path.join, sickbeard.CONFIG_FILE))
+            ui.notifications.message('Configuration Saved', ek(os.path.join, app.CONFIG_FILE))
 
         return self.redirect('/config/anime/')

@@ -22,7 +22,7 @@ import shutil
 import stat
 
 from babelfish import Language
-import medusa as sickbeard
+import medusa as app
 import shutil_custom
 from subliminal import (refine, scan_video)
 from unrar2 import RarFile
@@ -58,8 +58,8 @@ def delete_folder(folder, check_empty=True):
         return False
 
     # check if it isn't TV_DOWNLOAD_DIR
-    if sickbeard.TV_DOWNLOAD_DIR:
-        if helpers.real_path(folder) == helpers.real_path(sickbeard.TV_DOWNLOAD_DIR):
+    if app.TV_DOWNLOAD_DIR:
+        if helpers.real_path(folder) == helpers.real_path(app.TV_DOWNLOAD_DIR):
             return False
 
     # check if it's empty folder when wanted checked
@@ -172,10 +172,10 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
         result.output += logHelper(u"Processing folder %s" % dirName, logger.DEBUG)
 
     # if the client and SickRage are not on the same machine translate the directory into a network directory
-    elif all([sickbeard.TV_DOWNLOAD_DIR,
-              ek(os.path.isdir, sickbeard.TV_DOWNLOAD_DIR),
-              ek(os.path.normpath, dirName) == ek(os.path.normpath, sickbeard.TV_DOWNLOAD_DIR)]):
-        dirName = ek(os.path.join, sickbeard.TV_DOWNLOAD_DIR, ek(os.path.abspath, dirName).split(os.path.sep)[-1])
+    elif all([app.TV_DOWNLOAD_DIR,
+              ek(os.path.isdir, app.TV_DOWNLOAD_DIR),
+              ek(os.path.normpath, dirName) == ek(os.path.normpath, app.TV_DOWNLOAD_DIR)]):
+        dirName = ek(os.path.join, app.TV_DOWNLOAD_DIR, ek(os.path.abspath, dirName).split(os.path.sep)[-1])
         result.output += logHelper(u"Trying to use folder: %s " % dirName, logger.DEBUG)
 
     # if we didn't find a real dir then quit
@@ -193,10 +193,10 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
     nzbNameOriginal = nzbName
 
     # Don't post process if files are still being synced and option is activated
-    postpone = SyncFiles and sickbeard.POSTPONE_IF_SYNC_FILES
+    postpone = SyncFiles and app.POSTPONE_IF_SYNC_FILES
 
     # Warn user if 'postpone if no subs' is enabled. Will debug possible user issues with PP
-    if sickbeard.POSTPONE_IF_NO_SUBS:
+    if app.POSTPONE_IF_NO_SUBS:
         result.output += logHelper(u"Feature 'postpone postprocessing if no subtitle available' is enabled", logger.INFO)
 
     if not postpone:
@@ -206,7 +206,7 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
         videoFiles = [x for x in files if helpers.isMediaFile(x)]
         rarFiles = [x for x in files if helpers.isRarFile(x)]
         rarContent = ""
-        if rarFiles and not (sickbeard.POSTPONE_IF_NO_SUBS and videoFiles):
+        if rarFiles and not (app.POSTPONE_IF_NO_SUBS and videoFiles):
             # Unpack only if video file was not already extracted by 'postpone if no subs' feature
             rarContent = unRAR(path, rarFiles, force, result)
             files += rarContent
@@ -221,7 +221,7 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
         # If nzbName is set and there's more than one videofile in the folder, files will be lost (overwritten).
         nzbName = None if len(videoFiles) >= 2 else nzbName
 
-        process_method = process_method if process_method else sickbeard.PROCESS_METHOD
+        process_method = process_method if process_method else app.PROCESS_METHOD
         result.result = True
 
         # Don't Link media when the media is extracted from a rar in the same path
@@ -230,7 +230,7 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
             delete_files(path, rarContent, result)
             for video in set(videoFiles) - set(videoInRar):
                 process_media(path, [video], nzbName, process_method, force, is_priority, ignore_subs, result)
-        elif sickbeard.DELRARCONTENTS and videoInRar:
+        elif app.DELRARCONTENTS and videoInRar:
             process_media(path, videoInRar, nzbName, process_method, force, is_priority, ignore_subs, result)
             delete_files(path, rarContent, result, True)
             for video in set(videoFiles) - set(videoInRar):
@@ -256,13 +256,13 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
             SyncFiles = [x for x in fileList if is_sync_file(x)]
 
             # Don't post process if files are still being synced and option is activated
-            postpone = SyncFiles and sickbeard.POSTPONE_IF_SYNC_FILES
+            postpone = SyncFiles and app.POSTPONE_IF_SYNC_FILES
 
             if not postpone:
                 videoFiles = [x for x in fileList if helpers.isMediaFile(x)]
                 rarFiles = [x for x in fileList if helpers.isRarFile(x)]
                 rarContent = ""
-                if rarFiles and not (sickbeard.POSTPONE_IF_NO_SUBS and videoFiles):
+                if rarFiles and not (app.POSTPONE_IF_NO_SUBS and videoFiles):
                     # Unpack only if video file was not already extracted by 'postpone if no subs' feature
                     rarContent = unRAR(processPath, rarFiles, force, result)
                     fileList = set(fileList + rarContent)
@@ -279,7 +279,7 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
                     process_media(processPath, set(videoFiles) - set(videoInRar), nzbName, process_method, force,
                                   is_priority, ignore_subs, result)
                     delete_files(processPath, rarContent, result)
-                elif sickbeard.DELRARCONTENTS and videoInRar:
+                elif app.DELRARCONTENTS and videoInRar:
                     process_media(processPath, videoInRar, nzbName, process_method, force, is_priority, ignore_subs, result)
                     process_media(processPath, set(videoFiles) - set(videoInRar), nzbName, process_method, force,
                                   is_priority, ignore_subs, result)
@@ -294,9 +294,9 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
                     delete_folder(ek(os.path.join, processPath, u'@eaDir'))
                     delete_files(processPath, notwantedFiles, result)
 
-                    if all([not sickbeard.NO_DELETE or proc_type == u"manual",
+                    if all([not app.NO_DELETE or proc_type == u"manual",
                             process_method == u"move",
-                            ek(os.path.normpath, processPath) != ek(os.path.normpath, sickbeard.TV_DOWNLOAD_DIR)]):
+                            ek(os.path.normpath, processPath) != ek(os.path.normpath, app.TV_DOWNLOAD_DIR)]):
 
                         if delete_folder(processPath, check_empty=True):
                             result.output += logHelper(u"Deleted folder: %s" % processPath, logger.DEBUG)
@@ -310,8 +310,8 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
         result.output += logHelper(u"Successfully processed")
 
         # Clean library from KODI after PP ended
-        if sickbeard.KODI_LIBRARY_CLEAN_PENDING and notifiers.kodi_notifier.clean_library():
-            sickbeard.KODI_LIBRARY_CLEAN_PENDING = False
+        if app.KODI_LIBRARY_CLEAN_PENDING and notifiers.kodi_notifier.clean_library():
+            app.KODI_LIBRARY_CLEAN_PENDING = False
 
         if result.missedfiles:
             result.output += logHelper(u"I did encounter some unprocessable items: ")
@@ -405,7 +405,7 @@ def validateDir(path, dirName, nzbNameOriginal, failed, result):  # pylint: disa
         except (InvalidNameException, InvalidShowException) as error:
             result.output += logHelper(u"{}".format(error), logger.DEBUG)
 
-    if sickbeard.UNPACK:
+    if app.UNPACK:
         # Search for packed release
         packedFiles = [x for x in allFiles if helpers.isRarFile(x)]
 
@@ -433,7 +433,7 @@ def unRAR(path, rarFiles, force, result):  # pylint: disable=too-many-branches,t
 
     unpacked_files = []
 
-    if sickbeard.UNPACK and rarFiles:
+    if app.UNPACK and rarFiles:
 
         result.output += logHelper(u"Packed Releases detected: %s" % rarFiles, logger.DEBUG)
 
@@ -561,7 +561,7 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
             processor = postProcessor.PostProcessor(cur_video_file_path, nzbName, process_method, is_priority)
 
             # This feature prevents PP for files that do not have subtitle associated with the video file
-            if sickbeard.POSTPONE_IF_NO_SUBS:
+            if app.POSTPONE_IF_NO_SUBS:
                 if not ignore_subs:
                     if subtitles_enabled(cur_video_file_path, nzbName):
                         # If user don't want to ignore embedded subtitles and video has at least one, don't post pone PP
@@ -614,7 +614,7 @@ def get_path_dir_files(dirName, nzbName, proc_type):
     dirs = []
     files = []
 
-    if dirName == sickbeard.TV_DOWNLOAD_DIR and not nzbName or proc_type == u"manual":  # Scheduled Post Processing Active
+    if dirName == app.TV_DOWNLOAD_DIR and not nzbName or proc_type == u"manual":  # Scheduled Post Processing Active
         # Get at first all the subdir in the dirName
         for path, dirs, files in ek(os.walk, dirName):
             break
@@ -633,7 +633,7 @@ def get_path_dir_files(dirName, nzbName, proc_type):
 def process_failed(dirName, nzbName, result):
     """Process a download that did not complete correctly"""
 
-    if sickbeard.USE_FAILED_DOWNLOADS:
+    if app.USE_FAILED_DOWNLOADS:
         processor = None
 
         try:
@@ -647,7 +647,7 @@ def process_failed(dirName, nzbName, result):
         if processor:
             result.output += processor.log
 
-        if sickbeard.DELETE_FAILED and result.result:
+        if app.DELETE_FAILED and result.result:
             if delete_folder(dirName, check_empty=False):
                 result.output += logHelper(u"Deleted folder: %s" % dirName, logger.DEBUG)
 
@@ -686,7 +686,7 @@ def has_matching_unknown_subtitles(video_path):
     :return:
     :rtype: bool
     """
-    return not sickbeard.EMBEDDED_SUBTITLES_ALL and sickbeard.EMBEDDED_SUBTITLES_UNKNOWN_LANG and \
+    return not app.EMBEDDED_SUBTITLES_ALL and app.EMBEDDED_SUBTITLES_UNKNOWN_LANG and \
            Language('und') in get_embedded_subtitles(video_path)
 
 

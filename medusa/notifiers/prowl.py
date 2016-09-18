@@ -24,7 +24,7 @@ import ast
 import socket
 import time
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urlencode
 from six.moves.http_client import HTTPException, HTTPSConnection
 from .. import common, db, logger
@@ -45,7 +45,7 @@ class Notifier(object):
 
     def notify_snatch(self, ep_name, is_proper):
         ep_name = ss(ep_name)
-        if sickbeard.PROWL_NOTIFY_ONSNATCH:
+        if app.PROWL_NOTIFY_ONSNATCH:
             show = self._parse_episode(ep_name)
             recipients = self._generate_recipients(show)
             if not recipients:
@@ -53,11 +53,11 @@ class Notifier(object):
             else:
                 for api in recipients:
                     self._send_prowl(prowl_api=api, prowl_priority=None, event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
-                                     message=ep_name + " :: " + time.strftime(sickbeard.DATE_PRESET + " " + sickbeard.TIME_PRESET))
+                                     message=ep_name + " :: " + time.strftime(app.DATE_PRESET + " " + app.TIME_PRESET))
 
     def notify_download(self, ep_name):
         ep_name = ss(ep_name)
-        if sickbeard.PROWL_NOTIFY_ONDOWNLOAD:
+        if app.PROWL_NOTIFY_ONDOWNLOAD:
             show = self._parse_episode(ep_name)
             recipients = self._generate_recipients(show)
             if not recipients:
@@ -65,11 +65,11 @@ class Notifier(object):
             else:
                 for api in recipients:
                     self._send_prowl(prowl_api=api, prowl_priority=None, event=common.notifyStrings[common.NOTIFY_DOWNLOAD],
-                                     message=ep_name + " :: " + time.strftime(sickbeard.DATE_PRESET + " " + sickbeard.TIME_PRESET))
+                                     message=ep_name + " :: " + time.strftime(app.DATE_PRESET + " " + app.TIME_PRESET))
 
     def notify_subtitle_download(self, ep_name, lang):
         ep_name = ss(ep_name)
-        if sickbeard.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD:
+        if app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD:
             show = self._parse_episode(ep_name)
             recipients = self._generate_recipients(show)
             if not recipients:
@@ -77,17 +77,17 @@ class Notifier(object):
             else:
                 for api in recipients:
                     self._send_prowl(prowl_api=api, prowl_priority=None, event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
-                                     message=ep_name + " [" + lang + "] :: " + time.strftime(sickbeard.DATE_PRESET + " " + sickbeard.TIME_PRESET))
+                                     message=ep_name + " [" + lang + "] :: " + time.strftime(app.DATE_PRESET + " " + app.TIME_PRESET))
 
     def notify_git_update(self, new_version="??"):
-        if sickbeard.USE_PROWL:
+        if app.USE_PROWL:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
             self._send_prowl(prowl_api=None, prowl_priority=None,
                              event=title, message=update_text + new_version)
 
     def notify_login(self, ipaddress=""):
-        if sickbeard.USE_PROWL:
+        if app.USE_PROWL:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
             self._send_prowl(prowl_api=None, prowl_priority=None,
@@ -99,8 +99,8 @@ class Notifier(object):
         mydb = db.DBConnection()
 
         # Grab the global recipient(s)
-        if sickbeard.PROWL_API:
-            for api in sickbeard.PROWL_API.split(','):
+        if app.PROWL_API:
+            for api in app.PROWL_API.split(','):
                 if api.strip():
                     apis.append(api)
 
@@ -121,18 +121,18 @@ class Notifier(object):
     @staticmethod
     def _send_prowl(prowl_api=None, prowl_priority=None, event=None, message=None, force=False):
 
-        if not sickbeard.USE_PROWL and not force:
+        if not app.USE_PROWL and not force:
             return False
 
         if prowl_api is None:
-            prowl_api = sickbeard.PROWL_API
+            prowl_api = app.PROWL_API
             if not prowl_api:
                 return False
 
         if prowl_priority is None:
-            prowl_priority = sickbeard.PROWL_PRIORITY
+            prowl_priority = app.PROWL_PRIORITY
 
-        title = sickbeard.PROWL_MESSAGE_TITLE
+        title = app.PROWL_MESSAGE_TITLE
 
         logger.log(u"PROWL: Sending notice with details: title=\"%s\" event=\"%s\", message=\"%s\", priority=%s, api=%s"
                    % (title, event, message, prowl_priority, prowl_api), logger.DEBUG)

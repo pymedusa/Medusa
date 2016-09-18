@@ -26,7 +26,7 @@ import os
 import re
 from base64 import b64encode
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urljoin
 from .generic import GenericClient
 
@@ -57,7 +57,7 @@ class TransmissionAPI(GenericClient):
 
         try:
             self.response = self.session.post(self.url, data=post_data.encode('utf-8'), timeout=120,
-                                              verify=sickbeard.TORRENT_VERIFY_CERT)
+                                              verify=app.TORRENT_VERIFY_CERT)
             self.auth = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text).group(1)
         except Exception:
             return None
@@ -78,10 +78,10 @@ class TransmissionAPI(GenericClient):
 
         arguments = {
             'filename': result.url,
-            'paused': 1 if sickbeard.TORRENT_PAUSED else 0
+            'paused': 1 if app.TORRENT_PAUSED else 0
         }
-        if os.path.isabs(sickbeard.TORRENT_PATH):
-            arguments['download-dir'] = sickbeard.TORRENT_PATH
+        if os.path.isabs(app.TORRENT_PATH):
+            arguments['download-dir'] = app.TORRENT_PATH
 
         post_data = json.dumps({
             'arguments': arguments,
@@ -96,11 +96,11 @@ class TransmissionAPI(GenericClient):
 
         arguments = {
             'metainfo': b64encode(result.content),
-            'paused': 1 if sickbeard.TORRENT_PAUSED else 0
+            'paused': 1 if app.TORRENT_PAUSED else 0
         }
 
-        if os.path.isabs(sickbeard.TORRENT_PATH):
-            arguments['download-dir'] = sickbeard.TORRENT_PATH
+        if os.path.isabs(app.TORRENT_PATH):
+            arguments['download-dir'] = app.TORRENT_PATH
 
         post_data = json.dumps({
             'arguments': arguments,
@@ -143,8 +143,8 @@ class TransmissionAPI(GenericClient):
 
     def _set_torrent_seed_time(self, result):
 
-        if sickbeard.TORRENT_SEED_TIME and sickbeard.TORRENT_SEED_TIME != -1:
-            time = int(60 * float(sickbeard.TORRENT_SEED_TIME))
+        if app.TORRENT_SEED_TIME and app.TORRENT_SEED_TIME != -1:
+            time = int(60 * float(app.TORRENT_SEED_TIME))
             arguments = {
                 'ids': [result.hash],
                 'seedIdleLimit': time,
@@ -173,7 +173,7 @@ class TransmissionAPI(GenericClient):
             arguments['priority-high'] = []
             # move torrent to the top if the queue
             arguments['queuePosition'] = 0
-            if sickbeard.TORRENT_HIGH_BANDWIDTH:
+            if app.TORRENT_HIGH_BANDWIDTH:
                 arguments['bandwidthPriority'] = 1
         else:
             arguments['priority-normal'] = []

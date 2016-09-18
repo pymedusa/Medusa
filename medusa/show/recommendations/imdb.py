@@ -8,7 +8,7 @@ import traceback
 from datetime import date
 
 from bs4 import BeautifulSoup
-import medusa as sickbeard
+import medusa as app
 from simpleanidb import Anidb
 from .recommended import RecommendedShow
 from ... import helpers, logger
@@ -23,7 +23,7 @@ class ImdbPopular(object):
         self.session = helpers.make_session()
         self.recommender = 'IMDB Popular'
         self.default_img_src = ''
-        self.anidb = Anidb(cache_dir=sickbeard.CACHE_DIR)
+        self.anidb = Anidb(cache_dir=app.CACHE_DIR)
 
         # Use akas.imdb.com, just like the imdb lib.
         self.url = 'http://akas.imdb.com/search/title'

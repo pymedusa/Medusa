@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import re
 import traceback
 
-import medusa as sickbeard
+import medusa as app
 from .NZBProvider import NZBProvider
 from ... import logger, tvcache
 from ...helper.common import convert_size, try_int
@@ -63,7 +63,7 @@ class OmgwtfnzbsProvider(NZBProvider):
             'api': self.api_key,
             'eng': 1,
             'catid': '19,20',  # SD,HD
-            'retention': sickbeard.USENET_RETENTION,
+            'retention': app.USENET_RETENTION,
         }
 
         for mode in search_strings:

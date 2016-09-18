@@ -14,7 +14,7 @@ from mako.exceptions import RichTraceback
 from mako.lookup import TemplateLookup
 from mako.runtime import UNDEFINED
 from mako.template import Template as MakoTemplate
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urljoin
 from six import iteritems
 from tornado.concurrent import run_on_executor
@@ -47,11 +47,11 @@ def get_lookup():
     global mako_path  # pylint: disable=global-statement
 
     if mako_path is None:
-        mako_path = ek(os.path.join, sickbeard.PROG_DIR, 'gui/{gui_name}/views/'.format(gui_name=sickbeard.GUI_NAME))
+        mako_path = ek(os.path.join, app.PROG_DIR, 'gui/{gui_name}/views/'.format(gui_name=app.GUI_NAME))
     if mako_cache is None:
-        mako_cache = ek(os.path.join, sickbeard.CACHE_DIR, 'mako')
+        mako_cache = ek(os.path.join, app.CACHE_DIR, 'mako')
     if mako_lookup is None:
-        use_strict = sickbeard.BRANCH and sickbeard.BRANCH != 'master'
+        use_strict = app.BRANCH and app.BRANCH != 'master'
         mako_lookup = TemplateLookup(directories=[mako_path],
                                      module_directory=mako_cache,
                                      #  format_exceptions=True,
@@ -69,17 +69,17 @@ class PageTemplate(MakoTemplate):
         self.template = lookup.get_template(filename)
 
         self.arguments = {
-            'sbHttpPort': sickbeard.WEB_PORT,
-            'sbHttpsPort': sickbeard.WEB_PORT,
-            'sbHttpsEnabled': sickbeard.ENABLE_HTTPS,
-            'sbHandleReverseProxy': sickbeard.HANDLE_REVERSE_PROXY,
-            'sbThemeName': sickbeard.THEME_NAME,
-            'sbDefaultPage': sickbeard.DEFAULT_PAGE,
+            'sbHttpPort': app.WEB_PORT,
+            'sbHttpsPort': app.WEB_PORT,
+            'sbHttpsEnabled': app.ENABLE_HTTPS,
+            'sbHandleReverseProxy': app.HANDLE_REVERSE_PROXY,
+            'sbThemeName': app.THEME_NAME,
+            'sbDefaultPage': app.DEFAULT_PAGE,
             'loggedIn': rh.get_current_user(),
             'sbStartTime': rh.startTime,
             'numErrors': len(classes.ErrorViewer.errors),
             'numWarnings': len(classes.WarningViewer.errors),
-            'sbPID': str(sickbeard.PID),
+            'sbPID': str(app.PID),
             'title': 'FixME',
             'header': 'FixME',
             'topmenu': 'FixME',
@@ -91,7 +91,7 @@ class PageTemplate(MakoTemplate):
             'toolsBadge': '',
             'toolsBadgeClass': '',
             'base_url': rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
-            rh.request.headers.get('X-Forwarded-Host', rh.request.host) + sickbeard.WEB_ROOT + '/',
+            rh.request.headers.get('X-Forwarded-Host', rh.request.host) + app.WEB_ROOT + '/',
             'realpage': '',
         }
 
@@ -109,10 +109,10 @@ class PageTemplate(MakoTemplate):
         error_count = len(classes.ErrorViewer.errors)
         warning_count = len(classes.WarningViewer.errors)
 
-        if sickbeard.NEWS_UNREAD:
-            self.arguments['newsBadge'] = ' <span class="badge">{news}</span>'.format(news=sickbeard.NEWS_UNREAD)
+        if app.NEWS_UNREAD:
+            self.arguments['newsBadge'] = ' <span class="badge">{news}</span>'.format(news=app.NEWS_UNREAD)
 
-        num_combined = error_count + warning_count + sickbeard.NEWS_UNREAD
+        num_combined = error_count + warning_count + app.NEWS_UNREAD
         if num_combined:
             if error_count:
                 self.arguments['toolsBadgeClass'] = ' btn-danger'
@@ -167,8 +167,8 @@ class BaseHandler(RequestHandler):
         # handle 404 http errors
         if status_code == 404:
             url = self.request.uri
-            if sickbeard.WEB_ROOT and self.request.uri.startswith(sickbeard.WEB_ROOT):
-                url = url[len(sickbeard.WEB_ROOT) + 1:]
+            if app.WEB_ROOT and self.request.uri.startswith(app.WEB_ROOT):
+                url = url[len(app.WEB_ROOT) + 1:]
 
             if url[:3] != 'api':
                 t = PageTemplate(rh=self, filename='404.mako')
@@ -198,7 +198,7 @@ class BaseHandler(RequestHandler):
                         <button onclick="window.location='{root}/errorlogs/';">View Log(Errors)</button>
                      </body>
                 </html>
-                """.format(title=error, error=error, trace=trace_info, request=request_info, root=sickbeard.WEB_ROOT)
+                """.format(title=error, error=error, trace=trace_info, request=request_info, root=app.WEB_ROOT)
             )
 
     def redirect(self, url, permanent=False, status=None):
@@ -212,8 +212,8 @@ class BaseHandler(RequestHandler):
         (temporary) is chosen based on the ``permanent`` argument.
         The default is 302 (temporary).
         """
-        if not url.startswith(sickbeard.WEB_ROOT):
-            url = sickbeard.WEB_ROOT + url
+        if not url.startswith(app.WEB_ROOT):
+            url = app.WEB_ROOT + url
 
         if self._headers_written:
             raise Exception('Cannot redirect after headers have been written')
@@ -227,7 +227,7 @@ class BaseHandler(RequestHandler):
                                             utf8(url)))
 
     def get_current_user(self):
-        if not isinstance(self, UI) and sickbeard.WEB_USERNAME and sickbeard.WEB_PASSWORD:
+        if not isinstance(self, UI) and app.WEB_USERNAME and app.WEB_PASSWORD:
             return self.get_secure_cookie('sickrage_user')
         else:
             return True
@@ -286,7 +286,7 @@ class WebRoot(WebHandler):
         super(WebRoot, self).__init__(*args, **kwargs)
 
     def index(self):
-        return self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
+        return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
     def robots_txt(self):
         """ Keep web crawlers out """
@@ -295,10 +295,10 @@ class WebRoot(WebHandler):
 
     def apibuilder(self):
         def titler(x):
-            return (helpers.remove_article(x), x)[not x or sickbeard.SORT_ARTICLE]
+            return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
 
         main_db_con = db.DBConnection(row_type='dict')
-        shows = sorted(sickbeard.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))
+        shows = sorted(app.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))
         episodes = {}
 
         results = main_db_con.select(
@@ -316,8 +316,8 @@ class WebRoot(WebHandler):
 
             episodes[result[b'showid']][result[b'season']].append(result[b'episode'])
 
-        if len(sickbeard.API_KEY) == 32:
-            apikey = sickbeard.API_KEY
+        if len(app.API_KEY) == 32:
+            apikey = app.API_KEY
         else:
             apikey = 'API Key not generated'
 
@@ -350,7 +350,7 @@ class WebRoot(WebHandler):
         if layout not in ('poster', 'small', 'banner', 'simple', 'coverflow'):
             layout = 'poster'
 
-        sickbeard.HOME_LAYOUT = layout
+        app.HOME_LAYOUT = layout
         # Don't redirect to default page so user can see new layout
         return self.redirect('/home/')
 
@@ -359,27 +359,27 @@ class WebRoot(WebHandler):
         if sort not in ('name', 'date', 'network', 'progress'):
             sort = 'name'
 
-        sickbeard.POSTER_SORTBY = sort
-        sickbeard.save_config()
+        app.POSTER_SORTBY = sort
+        app.save_config()
 
     @staticmethod
     def setPosterSortDir(direction):
 
-        sickbeard.POSTER_SORTDIR = int(direction)
-        sickbeard.save_config()
+        app.POSTER_SORTDIR = int(direction)
+        app.save_config()
 
     def setHistoryLayout(self, layout):
 
         if layout not in ('compact', 'detailed'):
             layout = 'detailed'
 
-        sickbeard.HISTORY_LAYOUT = layout
+        app.HISTORY_LAYOUT = layout
 
         return self.redirect('/history/')
 
     def toggleDisplayShowSpecials(self, show):
 
-        sickbeard.DISPLAY_SHOW_SPECIALS = not sickbeard.DISPLAY_SHOW_SPECIALS
+        app.DISPLAY_SHOW_SPECIALS = not app.DISPLAY_SHOW_SPECIALS
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
@@ -388,15 +388,15 @@ class WebRoot(WebHandler):
             layout = 'banner'
 
         if layout == 'calendar':
-            sickbeard.COMING_EPS_SORT = 'date'
+            app.COMING_EPS_SORT = 'date'
 
-        sickbeard.COMING_EPS_LAYOUT = layout
+        app.COMING_EPS_LAYOUT = layout
 
         return self.redirect('/schedule/')
 
     def toggleScheduleDisplayPaused(self):
 
-        sickbeard.COMING_EPS_DISPLAY_PAUSED = not sickbeard.COMING_EPS_DISPLAY_PAUSED
+        app.COMING_EPS_DISPLAY_PAUSED = not app.COMING_EPS_DISPLAY_PAUSED
 
         return self.redirect('/schedule/')
 
@@ -404,18 +404,18 @@ class WebRoot(WebHandler):
         if sort not in ('date', 'network', 'show'):
             sort = 'date'
 
-        if sickbeard.COMING_EPS_LAYOUT == 'calendar':
+        if app.COMING_EPS_LAYOUT == 'calendar':
             sort \
                 = 'date'
 
-        sickbeard.COMING_EPS_SORT = sort
+        app.COMING_EPS_SORT = sort
 
         return self.redirect('/schedule/')
 
     def schedule(self, layout=None):
         next_week = datetime.date.today() + datetime.timedelta(days=7)
         next_week1 = datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.sb_timezone))
-        results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, sickbeard.COMING_EPS_SORT, False)
+        results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, app.COMING_EPS_SORT, False)
         today = datetime.datetime.now().replace(tzinfo=network_timezones.sb_timezone)
 
         submenu = [
@@ -440,7 +440,7 @@ class WebRoot(WebHandler):
                 'title': 'View Paused:',
                 'path': {
                     'Hide': 'toggleScheduleDisplayPaused'
-                } if sickbeard.COMING_EPS_DISPLAY_PAUSED else {
+                } if app.COMING_EPS_DISPLAY_PAUSED else {
                     'Show': 'toggleScheduleDisplayPaused'
                 }
             },
@@ -450,7 +450,7 @@ class WebRoot(WebHandler):
         if layout and layout in ('poster', 'banner', 'list', 'calendar'):
             layout = layout
         else:
-            layout = sickbeard.COMING_EPS_LAYOUT
+            layout = app.COMING_EPS_LAYOUT
 
         t = PageTemplate(rh=self, filename='schedule.mako')
         return t.render(submenu=submenu, next_week=next_week1, today=today, results=results, layout=layout,

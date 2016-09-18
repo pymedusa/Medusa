@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import medusa as sickbeard
+import medusa as app
 import oauth2 as oauth
 import pythontwitter as twitter
 from six.moves.urllib.parse import parse_qsl
@@ -35,25 +35,25 @@ class Notifier(object):
     SIGNIN_URL = 'https://api.twitter.com/oauth/authenticate'
 
     def notify_snatch(self, ep_name, is_proper):
-        if sickbeard.TWITTER_NOTIFY_ONSNATCH:
+        if app.TWITTER_NOTIFY_ONSNATCH:
             self._notifyTwitter('{0}: {1}'.format(common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]], ep_name))
 
     def notify_download(self, ep_name):
-        if sickbeard.TWITTER_NOTIFY_ONDOWNLOAD:
+        if app.TWITTER_NOTIFY_ONDOWNLOAD:
             self._notifyTwitter('{0}: {1}'.format(common.notifyStrings[common.NOTIFY_DOWNLOAD], ep_name))
 
     def notify_subtitle_download(self, ep_name, lang):
-        if sickbeard.TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD:
+        if app.TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._notifyTwitter('{0} {1}: {2}'.format(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD], ep_name, lang))
 
     def notify_git_update(self, new_version="??"):
-        if sickbeard.USE_TWITTER:
+        if app.USE_TWITTER:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
             self._notifyTwitter('{0} - {1}{2}'.format(title, update_text, new_version))
 
     def notify_login(self, ipaddress=""):
-        if sickbeard.USE_TWITTER:
+        if app.USE_TWITTER:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
             self._notifyTwitter('{0} - {1}'.format(title, update_text.format(ipaddress)))
@@ -76,15 +76,15 @@ class Notifier(object):
         else:
             request_token = dict(parse_qsl(content))
 
-            sickbeard.TWITTER_USERNAME = request_token['oauth_token']
-            sickbeard.TWITTER_PASSWORD = request_token['oauth_token_secret']
+            app.TWITTER_USERNAME = request_token['oauth_token']
+            app.TWITTER_PASSWORD = request_token['oauth_token_secret']
 
             return self.AUTHORIZATION_URL + "?oauth_token=" + request_token['oauth_token']
 
     def _get_credentials(self, key):
         request_token = {
-            'oauth_token': sickbeard.TWITTER_USERNAME,
-            'oauth_token_secret': sickbeard.TWITTER_PASSWORD,
+            'oauth_token': app.TWITTER_USERNAME,
+            'oauth_token_secret': app.TWITTER_PASSWORD,
             'oauth_callback_confirmed': 'true'
         }
 
@@ -111,16 +111,16 @@ class Notifier(object):
         else:
             logger.log(u'Your Twitter Access Token key: {0}'.format(access_token['oauth_token']), logger.DEBUG)
             logger.log(u'Access Token secret: {0}'.format(access_token['oauth_token_secret']), logger.DEBUG)
-            sickbeard.TWITTER_USERNAME = access_token['oauth_token']
-            sickbeard.TWITTER_PASSWORD = access_token['oauth_token_secret']
+            app.TWITTER_USERNAME = access_token['oauth_token']
+            app.TWITTER_PASSWORD = access_token['oauth_token_secret']
             return True
 
     def _send_tweet(self, message=None):
 
         username = self.consumer_key
         password = self.consumer_secret
-        access_token_key = sickbeard.TWITTER_USERNAME
-        access_token_secret = sickbeard.TWITTER_PASSWORD
+        access_token_key = app.TWITTER_USERNAME
+        access_token_secret = app.TWITTER_PASSWORD
 
         logger.log(u'Sending tweet: {0}'.format(message), logger.DEBUG)
 
@@ -138,9 +138,9 @@ class Notifier(object):
 
         username = self.consumer_key
         password = self.consumer_secret
-        dmdest = sickbeard.TWITTER_DMTO
-        access_token_key = sickbeard.TWITTER_USERNAME
-        access_token_secret = sickbeard.TWITTER_PASSWORD
+        dmdest = app.TWITTER_DMTO
+        access_token_key = app.TWITTER_USERNAME
+        access_token_secret = app.TWITTER_PASSWORD
 
         logger.log(u'Sending DM: {0} {1}'.format(dmdest, message), logger.DEBUG)
 
@@ -155,12 +155,12 @@ class Notifier(object):
         return True
 
     def _notifyTwitter(self, message='', force=False):
-        prefix = sickbeard.TWITTER_PREFIX
+        prefix = app.TWITTER_PREFIX
 
-        if not sickbeard.USE_TWITTER and not force:
+        if not app.USE_TWITTER and not force:
             return False
 
-        if sickbeard.TWITTER_USEDM and sickbeard.TWITTER_DMTO:
+        if app.TWITTER_USEDM and app.TWITTER_DMTO:
             return self._send_dm(prefix + ": " + message)
         else:
             return self._send_tweet(prefix + ": " + message)

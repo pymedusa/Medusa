@@ -23,7 +23,7 @@ import threading
 import time
 import xml.etree.ElementTree as ET
 
-import medusa as sickbeard
+import medusa as app
 from . import db, failed_history, helpers, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from .indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
@@ -59,7 +59,7 @@ class ShowUpdater(object):
         network_timezones.update_network_dict()
 
         # sure, why not?
-        if sickbeard.USE_FAILED_DOWNLOADS:
+        if app.USE_FAILED_DOWNLOADS:
             failed_history.trimHistory()
 
         update_delta = update_timestamp - last_update
@@ -72,10 +72,10 @@ class ShowUpdater(object):
             update_file = 'updates_day.xml'
 
         # url = 'http://thetvdb.com/api/Updates.php?type=series&time=%s' % last_update
-        url = 'http://thetvdb.com/api/{0}/updates/{1}'.format(sickbeard.indexerApi(INDEXER_TVDB).api_params['apikey'], update_file)
+        url = 'http://thetvdb.com/api/{0}/updates/{1}'.format(app.indexerApi(INDEXER_TVDB).api_params['apikey'], update_file)
         data = helpers.getURL(url, session=self.session, returns='text')
         if not data:
-            logger.info(u'Could not get the recently updated show data from {indexer}. Retrying later. Url was: {logurl}', indexer=sickbeard.indexerApi(INDEXER_TVDB).name, logurl=url)
+            logger.info(u'Could not get the recently updated show data from {indexer}. Retrying later. Url was: {logurl}', indexer=app.indexerApi(INDEXER_TVDB).name, logurl=url)
             self.amActive = False
             return
 
@@ -90,19 +90,19 @@ class ShowUpdater(object):
         logger.info(u'Doing full update on all shows')
 
         pi_list = []
-        for cur_show in sickbeard.showList:
+        for cur_show in app.showList:
 
             if cur_show.indexer in bad_indexer:
                 logger.warning(u'Indexer is no longer available for show [ {show} ] ', show=cur_show.name)
             else:
-                indexer_name = sickbeard.indexerApi(cur_show.indexer).name
+                indexer_name = app.indexerApi(cur_show.indexer).name
 
             try:
                 if indexer_name == 'theTVDB':
                     if cur_show.indexerid in updated_shows:
                         # If the cur_show is not 'paused' then add to the showQueueSchedular
                         if not cur_show.paused:
-                            pi_list.append(sickbeard.showQueueScheduler.action.updateShow(cur_show))
+                            pi_list.append(app.showQueueScheduler.action.updateShow(cur_show))
                         else:
                             logger.info(u'Show update skipped, show: {show} is paused.', show=cur_show.name)
                 else:
@@ -110,7 +110,7 @@ class ShowUpdater(object):
 
                     if cur_show.should_update(update_date=update_date):
                         try:
-                            pi_list.append(sickbeard.showQueueScheduler.action.updateShow(cur_show))
+                            pi_list.append(app.showQueueScheduler.action.updateShow(cur_show))
                         except CantUpdateShowException as e:
                             logger.debug(u'Unable to update show: {error}', error=e)
                     else:

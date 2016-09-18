@@ -32,7 +32,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
 
-import medusa as sickbeard
+import medusa as app
 from .. import db, logger
 from ..helper.encoding import ss
 
@@ -43,8 +43,8 @@ class Notifier(object):
 
     def test_notify(self, host, port, smtp_from, use_tls, user, pwd, to):  # pylint: disable=too-many-arguments
         msg = MIMEText('This is a test message from Medusa. If you\'re reading this, the test succeeded.')
-        if sickbeard.EMAIL_SUBJECT:
-            msg[b'Subject'] = '[TEST] ' + sickbeard.EMAIL_SUBJECT
+        if app.EMAIL_SUBJECT:
+            msg[b'Subject'] = '[TEST] ' + app.EMAIL_SUBJECT
         else:
             msg[b'Subject'] = 'Medusa: Test Message'
         msg[b'From'] = smtp_from
@@ -61,7 +61,7 @@ class Notifier(object):
         """
         ep_name = ss(ep_name)
 
-        if sickbeard.USE_EMAIL and sickbeard.EMAIL_NOTIFY_ONSNATCH:
+        if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSNATCH:
             show = self._parseEp(ep_name)
             to = self._generate_recipients(show)
             if not to:
@@ -85,15 +85,15 @@ class Notifier(object):
                     except Exception:
                         msg = MIMEText('Episode Snatched')
 
-                if sickbeard.EMAIL_SUBJECT:
-                    msg[b'Subject'] = '[SN] ' + sickbeard.EMAIL_SUBJECT
+                if app.EMAIL_SUBJECT:
+                    msg[b'Subject'] = '[SN] ' + app.EMAIL_SUBJECT
                 else:
                     msg[b'Subject'] = 'Snatched: ' + ep_name
-                msg[b'From'] = sickbeard.EMAIL_FROM
+                msg[b'From'] = app.EMAIL_FROM
                 msg[b'To'] = ','.join(to)
                 msg[b'Date'] = formatdate(localtime=True)
-                if self._sendmail(sickbeard.EMAIL_HOST, sickbeard.EMAIL_PORT, sickbeard.EMAIL_FROM, sickbeard.EMAIL_TLS,
-                                  sickbeard.EMAIL_USER, sickbeard.EMAIL_PASSWORD, to, msg):
+                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
+                                  app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     logger.log('Snatch notification sent to [{}] for "{}"'.format(to, ep_name), logger.DEBUG)
                 else:
                     logger.log('Snatch notification error: {}'.format(self.last_err), logger.WARNING)
@@ -107,7 +107,7 @@ class Notifier(object):
         """
         ep_name = ss(ep_name)
 
-        if sickbeard.USE_EMAIL and sickbeard.EMAIL_NOTIFY_ONDOWNLOAD:
+        if app.USE_EMAIL and app.EMAIL_NOTIFY_ONDOWNLOAD:
             show = self._parseEp(ep_name)
             to = self._generate_recipients(show)
             if not to:
@@ -131,15 +131,15 @@ class Notifier(object):
                     except Exception:
                         msg = MIMEText('Episode Downloaded')
 
-                if sickbeard.EMAIL_SUBJECT:
-                    msg[b'Subject'] = '[DL] ' + sickbeard.EMAIL_SUBJECT
+                if app.EMAIL_SUBJECT:
+                    msg[b'Subject'] = '[DL] ' + app.EMAIL_SUBJECT
                 else:
                     msg[b'Subject'] = 'Downloaded: ' + ep_name
-                msg[b'From'] = sickbeard.EMAIL_FROM
+                msg[b'From'] = app.EMAIL_FROM
                 msg[b'To'] = ','.join(to)
                 msg[b'Date'] = formatdate(localtime=True)
-                if self._sendmail(sickbeard.EMAIL_HOST, sickbeard.EMAIL_PORT, sickbeard.EMAIL_FROM, sickbeard.EMAIL_TLS,
-                                  sickbeard.EMAIL_USER, sickbeard.EMAIL_PASSWORD, to, msg):
+                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
+                                  app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     logger.log('Download notification sent to [{}] for "{}"'.format(to, ep_name), logger.DEBUG)
                 else:
                     logger.log('Download notification error: {}'.format(self.last_err), logger.WARNING)
@@ -153,7 +153,7 @@ class Notifier(object):
         """
         ep_name = ss(ep_name)
 
-        if sickbeard.USE_EMAIL and sickbeard.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD:
+        if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD:
             show = self._parseEp(ep_name)
             to = self._generate_recipients(show)
             if not to:
@@ -177,14 +177,14 @@ class Notifier(object):
                     except Exception:
                         msg = MIMEText('Episode Subtitle Downloaded')
 
-                if sickbeard.EMAIL_SUBJECT:
-                    msg[b'Subject'] = '[ST] ' + sickbeard.EMAIL_SUBJECT
+                if app.EMAIL_SUBJECT:
+                    msg[b'Subject'] = '[ST] ' + app.EMAIL_SUBJECT
                 else:
                     msg[b'Subject'] = lang + ' Subtitle Downloaded: ' + ep_name
-                msg[b'From'] = sickbeard.EMAIL_FROM
+                msg[b'From'] = app.EMAIL_FROM
                 msg[b'To'] = ','.join(to)
-                if self._sendmail(sickbeard.EMAIL_HOST, sickbeard.EMAIL_PORT, sickbeard.EMAIL_FROM, sickbeard.EMAIL_TLS,
-                                  sickbeard.EMAIL_USER, sickbeard.EMAIL_PASSWORD, to, msg):
+                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
+                                  app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     logger.log('Download notification sent to [{}] for "{}"'.format(to, ep_name), logger.DEBUG)
                 else:
                     logger.log('Download notification error: {}'.format(self.last_err), logger.WARNING)
@@ -194,7 +194,7 @@ class Notifier(object):
         Send a notification that Medusa was updated
         new_version: The commit Medusa was updated to
         """
-        if sickbeard.USE_EMAIL:
+        if app.USE_EMAIL:
             to = self._generate_recipients(None)
             if not to:
                 logger.log('Skipping email notify because there are no configured recipients', logger.DEBUG)
@@ -217,11 +217,11 @@ class Notifier(object):
                         msg = MIMEText('Medusa updated')
 
                 msg[b'Subject'] = 'Updated: {}'.format(new_version)
-                msg[b'From'] = sickbeard.EMAIL_FROM
+                msg[b'From'] = app.EMAIL_FROM
                 msg[b'To'] = ','.join(to)
                 msg[b'Date'] = formatdate(localtime=True)
-                if self._sendmail(sickbeard.EMAIL_HOST, sickbeard.EMAIL_PORT, sickbeard.EMAIL_FROM, sickbeard.EMAIL_TLS,
-                                  sickbeard.EMAIL_USER, sickbeard.EMAIL_PASSWORD, to, msg):
+                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
+                                  app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     logger.log('Update notification sent to [{}]'.format(to), logger.DEBUG)
                 else:
                     logger.log('Update notification error: {}'.format(self.last_err), logger.WARNING)
@@ -231,7 +231,7 @@ class Notifier(object):
         Send a notification that Medusa was logged into remotely
         ipaddress: The ip Medusa was logged into from
         """
-        if sickbeard.USE_EMAIL:
+        if app.USE_EMAIL:
             to = self._generate_recipients(None)
             if not to:
                 logger.log('Skipping email notify because there are no configured recipients', logger.DEBUG)
@@ -254,11 +254,11 @@ class Notifier(object):
                         msg = MIMEText('Medusa Remote Login')
 
                 msg[b'Subject'] = 'New Login from IP: {}'.format(ipaddress)
-                msg[b'From'] = sickbeard.EMAIL_FROM
+                msg[b'From'] = app.EMAIL_FROM
                 msg[b'To'] = ','.join(to)
                 msg[b'Date'] = formatdate(localtime=True)
-                if self._sendmail(sickbeard.EMAIL_HOST, sickbeard.EMAIL_PORT, sickbeard.EMAIL_FROM, sickbeard.EMAIL_TLS,
-                                  sickbeard.EMAIL_USER, sickbeard.EMAIL_PASSWORD, to, msg):
+                if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
+                                  app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     logger.log('Login notification sent to [{}]'.format(to), logger.DEBUG)
                 else:
                     logger.log('Login notification error: {}'.format(self.last_err), logger.WARNING)
@@ -269,8 +269,8 @@ class Notifier(object):
         main_db_con = db.DBConnection()
 
         # Grab the global recipients
-        if sickbeard.EMAIL_LIST:
-            for addr in sickbeard.EMAIL_LIST.split(','):
+        if app.EMAIL_LIST:
+            for addr in app.EMAIL_LIST.split(','):
                 if addr.strip():
                     addrs.append(addr)
 

@@ -21,7 +21,7 @@
 from os import name
 
 from chardet import detect
-import medusa as sickbeard
+import medusa as app
 from six import text_type
 
 
@@ -60,13 +60,13 @@ def ss(var):
     var = _to_unicode(var)
 
     try:
-        var = var.encode(sickbeard.SYS_ENCODING)
+        var = var.encode(app.SYS_ENCODING)
     except Exception:
         try:
             var = var.encode('utf-8')
         except Exception:
             try:
-                var = var.encode(sickbeard.SYS_ENCODING, 'replace')
+                var = var.encode(app.SYS_ENCODING, 'replace')
             except Exception:
                 var = var.encode('utf-8', 'ignore')
 
@@ -106,12 +106,12 @@ def _to_unicode(var):
                     var = text_type(var, 'latin-1')
                 except Exception:
                     try:
-                        var = text_type(var, sickbeard.SYS_ENCODING)
+                        var = text_type(var, app.SYS_ENCODING)
                     except Exception:
                         try:
                             # Chardet can be wrong, so try it last
                             var = text_type(var, detect(var).get('encoding'))
                         except Exception:
-                            var = text_type(var, sickbeard.SYS_ENCODING, 'replace')
+                            var = text_type(var, app.SYS_ENCODING, 'replace')
 
     return var

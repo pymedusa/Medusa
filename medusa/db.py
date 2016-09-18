@@ -25,7 +25,7 @@ import threading
 import time
 import warnings
 
-import medusa as sickbeard
+import medusa as app
 from six import text_type
 from . import logger
 from .helper.encoding import ek
@@ -45,7 +45,7 @@ def dbFilename(filename="sickbeard.db", suffix=None):
     """
     if suffix:
         filename = "%s.%s" % (filename, suffix)
-    return ek(os.path.join, sickbeard.DATA_DIR, filename)
+    return ek(os.path.join, app.DATA_DIR, filename)
 
 
 class DBConnection(object):
@@ -363,7 +363,7 @@ class DBConnection(object):
             # Just revert to the old code for now, until we can fix unicode
             return text_type(x, 'utf-8')
         except:
-            return text_type(x, sickbeard.SYS_ENCODING, errors="ignore")
+            return text_type(x, app.SYS_ENCODING, errors="ignore")
 
     @staticmethod
     def _dict_factory(cursor, row):
@@ -444,7 +444,7 @@ def restoreDatabase(version):
     :return: True if restore succeeds, False if it fails
     """
     logger.log(u"Restoring database before trying upgrade again")
-    if not sickbeard.helpers.restoreVersionedFile(dbFilename(suffix='v' + str(version)), version):
+    if not app.helpers.restoreVersionedFile(dbFilename(suffix='v' + str(version)), version):
         logger.log_error_and_exit(u"Database restore failed, abort upgrading database")
         return False
     else:

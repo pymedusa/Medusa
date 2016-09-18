@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as sickbeard
+    import medusa as app
     from medusa import db
     from medusa.helpers import anon_url
     import sys
@@ -17,8 +17,8 @@
     % if sr_version:
     <tr><td class="infoTableHeader" style="vertical-align: top;"><i class="icon16-config-sickrage"></i> Medusa Info:</td>
         <td class="infoTableCell">
-        Branch: <a href="${anon_url('https://github.com/PyMedusa/SickRage/tree/%s' % sickbeard.BRANCH)}">${sickbeard.BRANCH}</a><br>
-        Commit: <a href="${anon_url('https://github.com/PyMedusa/SickRage/commit/%s' % sickbeard.CUR_COMMIT_HASH)}">${sickbeard.CUR_COMMIT_HASH}</a><br>
+        Branch: <a href="${anon_url('https://github.com/PyMedusa/SickRage/tree/%s' % app.BRANCH)}">${app.BRANCH}</a><br>
+        Commit: <a href="${anon_url('https://github.com/PyMedusa/SickRage/commit/%s' % app.CUR_COMMIT_HASH)}">${app.CUR_COMMIT_HASH}</a><br>
         Version: <a href="${anon_url('https://github.com/PyMedusa/SickRage/releases/tag/%s' % sr_version)}">${sr_version}</a>
         </td>
     </tr>
@@ -30,16 +30,16 @@
     <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
     <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
     <tr><td class="infoTableHeader"><i class="icon16-config-user"></i> User:</td><td class="infoTableCell">${sr_user}</td></tr>
-    <tr><td class="infoTableHeader"><i class="icon16-config-dir"></i> Program Folder:</td><td class="infoTableCell">${sickbeard.PROG_DIR}</td></tr>
-    <tr><td class="infoTableHeader"><i class="icon16-config-config"></i> Config File:</td><td class="infoTableCell">${sickbeard.CONFIG_FILE}</td></tr>
+    <tr><td class="infoTableHeader"><i class="icon16-config-dir"></i> Program Folder:</td><td class="infoTableCell">${app.PROG_DIR}</td></tr>
+    <tr><td class="infoTableHeader"><i class="icon16-config-config"></i> Config File:</td><td class="infoTableCell">${app.CONFIG_FILE}</td></tr>
     <tr><td class="infoTableHeader"><i class="icon16-config-db"></i> Database File:</td><td class="infoTableCell">${db.dbFilename()}</td></tr>
-    <tr><td class="infoTableHeader"><i class="icon16-config-cache"></i> Cache Folder:</td><td class="infoTableCell">${sickbeard.CACHE_DIR}</td></tr>
-    <tr><td class="infoTableHeader"><i class="icon16-config-log"></i> Log Folder:</td><td class="infoTableCell">${sickbeard.LOG_DIR}</td></tr>
-    % if sickbeard.MY_ARGS:
-    <tr><td class="infoTableHeader"><i class="icon16-config-arguments"></i> Arguments:</td><td class="infoTableCell">${sickbeard.MY_ARGS}</td></tr>
+    <tr><td class="infoTableHeader"><i class="icon16-config-cache"></i> Cache Folder:</td><td class="infoTableCell">${app.CACHE_DIR}</td></tr>
+    <tr><td class="infoTableHeader"><i class="icon16-config-log"></i> Log Folder:</td><td class="infoTableCell">${app.LOG_DIR}</td></tr>
+    % if app.MY_ARGS:
+    <tr><td class="infoTableHeader"><i class="icon16-config-arguments"></i> Arguments:</td><td class="infoTableCell">${app.MY_ARGS}</td></tr>
     % endif
-    % if sickbeard.WEB_ROOT:
-    <tr><td class="infoTableHeader"><i class="icon16-config-folder"></i> Web Root:</td><td class="infoTableCell">${sickbeard.WEB_ROOT}</td></tr>
+    % if app.WEB_ROOT:
+    <tr><td class="infoTableHeader"><i class="icon16-config-folder"></i> Web Root:</td><td class="infoTableCell">${app.WEB_ROOT}</td></tr>
     % endif
     <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
     <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>

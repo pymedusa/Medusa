@@ -31,7 +31,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from six import iteritems
-import medusa as sickbeard
+import medusa as app
 
 from generic_provider_tests import GenericProviderTests
 from medusa.providers.GenericProvider import GenericProvider
@@ -66,7 +66,7 @@ class TorrentProviderTests(GenericProviderTests):
         }
 
         for ((use_torrents, enabled), result) in iteritems(test_cases):
-            sickbeard.USE_TORRENTS = use_torrents
+            app.USE_TORRENTS = use_torrents
 
             provider = TorrentProvider('Test Provider')
             provider.enabled = enabled
@@ -133,7 +133,7 @@ class TorrentProviderTests(GenericProviderTests):
         ]
 
         for torrent_dir in test_cases:
-            sickbeard.TORRENT_DIR = torrent_dir
+            app.TORRENT_DIR = torrent_dir
 
             self.assertEqual(TorrentProvider('Test Provider')._get_storage_dir(), torrent_dir)
 

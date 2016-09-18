@@ -29,7 +29,7 @@ import time
 import traceback
 from socket import timeout as SocketTimeout
 
-import medusa as sickbeard
+import medusa as app
 from requests import exceptions as requests_exceptions
 from .. import db, helpers, logger
 from ..common import Quality, cpu_presets
@@ -57,7 +57,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             logger.log('Find propers is still running, not starting it again', logger.DEBUG)
             return
 
-        if sickbeard.forcedSearchQueueScheduler.action.is_forced_search_in_progress():
+        if app.forcedSearchQueueScheduler.action.is_forced_search_in_progress():
             logger.log("Manual search is running. Can't start Find propers", logger.WARNING)
             return
 
@@ -76,8 +76,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         self._set_lastProperSearch(datetime.datetime.today().toordinal())
 
         run_at = ''
-        if None is sickbeard.properFinderScheduler.start_time:
-            run_in = sickbeard.properFinderScheduler.lastRun + sickbeard.properFinderScheduler.cycleTime - datetime.datetime.now()
+        if None is app.properFinderScheduler.start_time:
+            run_in = app.properFinderScheduler.lastRun + app.properFinderScheduler.cycleTime - datetime.datetime.now()
             hours, remainder = divmod(run_in.seconds, 3600)
             minutes, seconds = divmod(remainder, 60)
             run_at = ', next check in approx. {0}'.format(
@@ -104,7 +104,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         search_date = datetime.datetime.today() - datetime.timedelta(days=2)
         main_db_con = db.DBConnection()
-        if not sickbeard.POSTPONE_IF_NO_SUBS:
+        if not app.POSTPONE_IF_NO_SUBS:
             # Get the recently aired (last 2 days) shows from DB
             search_q_params = ','.join('?' for _ in Quality.DOWNLOADED)
             recently_aired = main_db_con.select(
@@ -378,7 +378,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
                 # snatch it
                 snatchEpisode(result)
-                time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+                time.sleep(cpu_presets[app.CPU_PRESET])
 
     @staticmethod
     def _canonical_name(name, clear_extension=False):

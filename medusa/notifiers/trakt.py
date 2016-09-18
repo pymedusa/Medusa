@@ -21,7 +21,7 @@
 
 from __future__ import unicode_literals
 
-import medusa as sickbeard
+import medusa as app
 from traktor import AuthException, ServerBusy, TraktApi, TraktException
 from .. import logger
 from ..helper.exceptions import ex
@@ -55,15 +55,15 @@ class Notifier(object):
         ep_obj: The TVEpisode object to add to trakt
         """
 
-        trakt_id = sickbeard.indexerApi(ep_obj.show.indexer).config['trakt_id']
+        trakt_id = app.indexerApi(ep_obj.show.indexer).config['trakt_id']
         # Create a trakt settings dict
-        trakt_settings = {'trakt_api_secret': sickbeard.TRAKT_API_SECRET,
-                          'trakt_api_key': sickbeard.TRAKT_API_KEY,
-                          'trakt_access_token': sickbeard.TRAKT_ACCESS_TOKEN}
+        trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
+                          'trakt_api_key': app.TRAKT_API_KEY,
+                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN}
 
-        trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
+        trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
 
-        if sickbeard.USE_TRAKT:
+        if app.USE_TRAKT:
             try:
                 # URL parameters
                 data = {
@@ -81,8 +81,8 @@ class Notifier(object):
                 else:
                     data['shows'][0]['ids']['tvrage'] = ep_obj.show.indexerid
 
-                if sickbeard.TRAKT_SYNC_WATCHLIST:
-                    if sickbeard.TRAKT_REMOVE_SERIESLIST:
+                if app.TRAKT_SYNC_WATCHLIST:
+                    if app.TRAKT_REMOVE_SERIESLIST:
                         trakt_api.request('sync/watchlist/remove', data, method='POST')
 
                 # Add Season and Episode + Related Episodes
@@ -91,8 +91,8 @@ class Notifier(object):
                 for relEp_Obj in [ep_obj] + ep_obj.related_episodes:
                     data['shows'][0]['seasons'][0]['episodes'].append({'number': relEp_Obj.episode})
 
-                if sickbeard.TRAKT_SYNC_WATCHLIST:
-                    if sickbeard.TRAKT_REMOVE_WATCHLIST:
+                if app.TRAKT_SYNC_WATCHLIST:
+                    if app.TRAKT_REMOVE_WATCHLIST:
                         trakt_api.request('sync/watchlist/remove', data, method='POST')
 
                 # update library
@@ -115,19 +115,19 @@ class Notifier(object):
         update: type o action add or remove
         """
 
-        trakt_settings = {'trakt_api_secret': sickbeard.TRAKT_API_SECRET,
-                          'trakt_api_key': sickbeard.TRAKT_API_KEY,
-                          'trakt_access_token': sickbeard.TRAKT_ACCESS_TOKEN}
+        trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
+                          'trakt_api_key': app.TRAKT_API_KEY,
+                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN}
 
-        trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
+        trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
 
-        if sickbeard.USE_TRAKT:
+        if app.USE_TRAKT:
 
             data = {}
             try:
                 # URL parameters
                 if show_obj is not None:
-                    trakt_id = sickbeard.indexerApi(show_obj.indexer).config['trakt_id']
+                    trakt_id = app.indexerApi(show_obj.indexer).config['trakt_id']
                     data = {
                         'shows': [
                             {
@@ -194,7 +194,7 @@ class Notifier(object):
 
         showList = []
         for indexer, indexerid, title, year in data:
-            trakt_id = sickbeard.indexerApi(indexer).config['trakt_id']
+            trakt_id = app.indexerApi(indexer).config['trakt_id']
             show = {'title': title, 'year': year, 'ids': {}}
             if trakt_id == 'tvdb_id':
                 show['ids']['tvdb'] = indexerid
@@ -241,11 +241,11 @@ class Notifier(object):
         Returns: True if the request succeeded, False otherwise
         """
         try:
-            trakt_settings = {'trakt_api_secret': sickbeard.TRAKT_API_SECRET,
-                              'trakt_api_key': sickbeard.TRAKT_API_KEY,
-                              'trakt_access_token': sickbeard.TRAKT_ACCESS_TOKEN}
+            trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
+                              'trakt_api_key': app.TRAKT_API_KEY,
+                              'trakt_access_token': app.TRAKT_ACCESS_TOKEN}
 
-            trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
+            trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
             trakt_api.validate_account()
             if blacklist_name and blacklist_name is not None:
                 trakt_lists = trakt_api.request('users/' + username + '/lists')

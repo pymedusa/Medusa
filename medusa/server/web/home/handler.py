@@ -9,7 +9,7 @@ import time
 from datetime import date
 
 import adba
-import medusa as sickbeard
+import medusa as app
 from requests.compat import quote_plus, unquote_plus
 from six import iteritems
 from tornado.routes import route
@@ -52,17 +52,17 @@ class Home(WebRoot):
 
     def index(self):
         t = PageTemplate(rh=self, filename='home.mako')
-        if sickbeard.ANIME_SPLIT_HOME:
+        if app.ANIME_SPLIT_HOME:
             shows = []
             anime = []
-            for show in sickbeard.showList:
+            for show in app.showList:
                 if show.is_anime:
                     anime.append(show)
                 else:
                     shows.append(show)
             showlists = [['Shows', shows], ['Anime', anime]]
         else:
-            showlists = [['Shows', sickbeard.showList]]
+            showlists = [['Shows', app.showList]]
 
         stats = self.show_statistics()
         return t.render(title='Home', header='Show List', topmenu='home', showlists=showlists, show_stat=stats[0], max_download_count=stats[1], controller='home', action='index')
@@ -153,27 +153,27 @@ class Home(WebRoot):
             callback=callback,
             msg=json.dumps({
                 'msg': '{pid}'.format(
-                    pid=sickbeard.PID if sickbeard.started else 'nope')
+                    pid=app.PID if app.started else 'nope')
             })
         )
 
     @staticmethod
     def haveKODI():
-        return sickbeard.USE_KODI and sickbeard.KODI_UPDATE_LIBRARY
+        return app.USE_KODI and app.KODI_UPDATE_LIBRARY
 
     @staticmethod
     def havePLEX():
-        return sickbeard.USE_PLEX_SERVER and sickbeard.PLEX_UPDATE_LIBRARY
+        return app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY
 
     @staticmethod
     def haveEMBY():
-        return sickbeard.USE_EMBY
+        return app.USE_EMBY
 
     @staticmethod
     def haveTORRENT():
-        if sickbeard.USE_TORRENTS and sickbeard.TORRENT_METHOD != 'blackhole' and \
-                (sickbeard.ENABLE_HTTPS and sickbeard.TORRENT_HOST[:5] == 'https' or not
-                 sickbeard.ENABLE_HTTPS and sickbeard.TORRENT_HOST[:5] == 'http:'):
+        if app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and \
+                (app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'https' or not
+                 app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'http:'):
             return True
         else:
             return False
@@ -312,7 +312,7 @@ class Home(WebRoot):
         self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
 
         if None is not password and set('*') == set(password):
-            password = sickbeard.PLEX_CLIENT_PASSWORD
+            password = app.PLEX_CLIENT_PASSWORD
 
         final_result = ''
         for curHost in [x.strip() for x in host.split(',')]:
@@ -330,7 +330,7 @@ class Home(WebRoot):
         self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
 
         if password is not None and set('*') == set(password):
-            password = sickbeard.PLEX_SERVER_PASSWORD
+            password = app.PLEX_SERVER_PASSWORD
 
         final_result = ''
 
@@ -382,8 +382,8 @@ class Home(WebRoot):
         if result:
             return json.dumps({
                 'message': 'Got settings from {host}'.format(host=host),
-                'database': sickbeard.NMJ_DATABASE,
-                'mount': sickbeard.NMJ_MOUNT,
+                'database': app.NMJ_DATABASE,
+                'mount': app.NMJ_MOUNT,
             })
         else:
             return json.dumps({
@@ -411,7 +411,7 @@ class Home(WebRoot):
         if result:
             return json.dumps({
                 "message": "NMJ Database found at: {host}".format(host=host),
-                "database": sickbeard.NMJv2_DATABASE,
+                "database": app.NMJv2_DATABASE,
             })
         else:
             return json.dumps({
@@ -423,26 +423,26 @@ class Home(WebRoot):
     @staticmethod
     def getTraktToken(trakt_pin=None):
 
-        trakt_settings = {"trakt_api_key": sickbeard.TRAKT_API_KEY,
-                          "trakt_api_secret": sickbeard.TRAKT_API_SECRET}
-        trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
+        trakt_settings = {"trakt_api_key": app.TRAKT_API_KEY,
+                          "trakt_api_secret": app.TRAKT_API_SECRET}
+        trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
         try:
-            (access_token, refresh_token) = trakt_api.get_token(sickbeard.TRAKT_REFRESH_TOKEN, trakt_pin=trakt_pin)
+            (access_token, refresh_token) = trakt_api.get_token(app.TRAKT_REFRESH_TOKEN, trakt_pin=trakt_pin)
         except MissingTokenException:
             ui.notifications.error('You need to get a PIN and authorize Medusa app')
             return 'You need to get a PIN and authorize Medusa app'
         except TokenExpiredException:
             # Clear existing tokens
-            sickbeard.TRAKT_ACCESS_TOKEN = ''
-            sickbeard.TRAKT_REFRESH_TOKEN = ''
+            app.TRAKT_ACCESS_TOKEN = ''
+            app.TRAKT_REFRESH_TOKEN = ''
             ui.notifications.error('TOKEN expired. Reload page, get a new PIN and authorize Medusa app')
             return 'TOKEN expired. Reload page, get a new PIN and authorize Medusa app'
         except TraktException:
             ui.notifications.error("Connection error. Click 'Authorize Medusa' button again")
             return "Connection error. Click 'Authorize Medusa' button again"
         if access_token:
-            sickbeard.TRAKT_ACCESS_TOKEN = access_token
-            sickbeard.TRAKT_REFRESH_TOKEN = refresh_token
+            app.TRAKT_ACCESS_TOKEN = access_token
+            app.TRAKT_REFRESH_TOKEN = refresh_token
         response = trakt_api.validate_account()
         if response:
             ui.notifications.message('Trakt Authorized')
@@ -457,7 +457,7 @@ class Home(WebRoot):
     @staticmethod
     def forceTraktSync():
         """Force a trakt sync, depending on the notification settings, library is synced with watchlist and/or collection."""
-        return json.dumps({'result': ('Could not start sync', 'Sync Started')[sickbeard.traktCheckerScheduler.forceRun()]})
+        return json.dumps({'result': ('Could not start sync', 'Sync Started')[app.traktCheckerScheduler.forceRun()]})
 
     @staticmethod
     def loadShowNotifyLists():
@@ -583,10 +583,10 @@ class Home(WebRoot):
             return 'Error sending Pushbullet notification'
 
     def status(self):
-        tv_dir_free = helpers.getDiskSpaceUsage(sickbeard.TV_DOWNLOAD_DIR)
+        tv_dir_free = helpers.getDiskSpaceUsage(app.TV_DOWNLOAD_DIR)
         root_dir = {}
-        if sickbeard.ROOT_DIRS:
-            backend_pieces = sickbeard.ROOT_DIRS.split('|')
+        if app.ROOT_DIRS:
+            backend_pieces = app.ROOT_DIRS.split('|')
             backend_dirs = backend_pieces[1:]
         else:
             backend_dirs = []
@@ -602,7 +602,7 @@ class Home(WebRoot):
 
     def shutdown(self, pid=None):
         if not Shutdown.stop(pid):
-            return self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
+            return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
         title = 'Shutting down'
         message = 'Medusa is shutting down...'
@@ -611,7 +611,7 @@ class Home(WebRoot):
 
     def restart(self, pid=None):
         if not Restart.restart(pid):
-            return self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
+            return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
         t = PageTemplate(rh=self, filename='restart.mako')
 
@@ -619,17 +619,17 @@ class Home(WebRoot):
                         controller='home', action='restart')
 
     def updateCheck(self, pid=None):
-        if str(pid) != str(sickbeard.PID):
+        if str(pid) != str(app.PID):
             return self.redirect('/home/')
 
-        sickbeard.versionCheckScheduler.action.check_for_new_version(force=True)
-        sickbeard.versionCheckScheduler.action.check_for_new_news(force=True)
+        app.versionCheckScheduler.action.check_for_new_version(force=True)
+        app.versionCheckScheduler.action.check_for_new_news(force=True)
 
-        return self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
+        return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
     def update(self, pid=None, branch=None):
 
-        if str(pid) != str(sickbeard.PID):
+        if str(pid) != str(app.PID):
             return self.redirect('/home/')
 
         checkversion = CheckVersion()
@@ -641,7 +641,7 @@ class Home(WebRoot):
 
             if checkversion.updater.need_update() and checkversion.updater.update():
                 # do a hard restart
-                sickbeard.events.put(sickbeard.events.SystemEvent.RESTART)
+                app.events.put(app.events.SystemEvent.RESTART)
 
                 t = PageTemplate(rh=self, filename='restart.mako')
                 return t.render(title='Home', header='Restarting Medusa', topmenu='home',
@@ -650,22 +650,22 @@ class Home(WebRoot):
                 return self._genericMessage('Update Failed',
                                             'Update wasn\'t successful, not restarting. Check your log for more information.')
         else:
-            return self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
+            return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
     def branchCheckout(self, branch):
-        if sickbeard.BRANCH != branch:
-            sickbeard.BRANCH = branch
+        if app.BRANCH != branch:
+            app.BRANCH = branch
             ui.notifications.message('Checking out branch: ', branch)
-            return self.update(sickbeard.PID, branch)
+            return self.update(app.PID, branch)
         else:
             ui.notifications.message('Already on branch: ', branch)
-            return self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
+            return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
     def branchForceUpdate(self):
         return {
-            'currentBranch': sickbeard.BRANCH,
-            'resetBranches': sickbeard.GIT_RESET_BRANCHES,
-            'branches': [branch for branch in sickbeard.versionCheckScheduler.action.list_remote_branches() if branch not in sickbeard.GIT_RESET_BRANCHES]
+            'currentBranch': app.BRANCH,
+            'resetBranches': app.GIT_RESET_BRANCHES,
+            'branches': [branch for branch in app.versionCheckScheduler.action.list_remote_branches() if branch not in app.GIT_RESET_BRANCHES]
         }
 
     @staticmethod
@@ -717,7 +717,7 @@ class Home(WebRoot):
         # TODO: add more comprehensive show validation
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
-            show_obj = Show.find(sickbeard.showList, show)
+            show_obj = Show.find(app.showList, show)
         except (ValueError, TypeError):
             return self._genericMessage('Error', 'Invalid show ID: {show}'.format(show=show))
 
@@ -733,7 +733,7 @@ class Home(WebRoot):
             [show_obj.indexerid]
         )
 
-        min_season = 0 if sickbeard.DISPLAY_SHOW_SPECIALS else 1
+        min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
 
         sql_results = main_db_con.select(
             b'SELECT * '
@@ -757,29 +757,29 @@ class Home(WebRoot):
 
         show_message = ''
 
-        if sickbeard.showQueueScheduler.action.isBeingAdded(show_obj):
+        if app.showQueueScheduler.action.isBeingAdded(show_obj):
             show_message = 'This show is in the process of being downloaded - the info below is incomplete.'
 
-        elif sickbeard.showQueueScheduler.action.isBeingUpdated(show_obj):
+        elif app.showQueueScheduler.action.isBeingUpdated(show_obj):
             show_message = 'The information on this page is in the process of being updated.'
 
-        elif sickbeard.showQueueScheduler.action.isBeingRefreshed(show_obj):
+        elif app.showQueueScheduler.action.isBeingRefreshed(show_obj):
             show_message = 'The episodes below are currently being refreshed from disk'
 
-        elif sickbeard.showQueueScheduler.action.isBeingSubtitled(show_obj):
+        elif app.showQueueScheduler.action.isBeingSubtitled(show_obj):
             show_message = 'Currently downloading subtitles for this show'
 
-        elif sickbeard.showQueueScheduler.action.isInRefreshQueue(show_obj):
+        elif app.showQueueScheduler.action.isInRefreshQueue(show_obj):
             show_message = 'This show is queued to be refreshed.'
 
-        elif sickbeard.showQueueScheduler.action.isInUpdateQueue(show_obj):
+        elif app.showQueueScheduler.action.isInUpdateQueue(show_obj):
             show_message = 'This show is queued and awaiting an update.'
 
-        elif sickbeard.showQueueScheduler.action.isInSubtitleQueue(show_obj):
+        elif app.showQueueScheduler.action.isInSubtitleQueue(show_obj):
             show_message = 'This show is queued and awaiting subtitles download.'
 
-        if not sickbeard.showQueueScheduler.action.isBeingAdded(show_obj):
-            if not sickbeard.showQueueScheduler.action.isBeingUpdated(show_obj):
+        if not app.showQueueScheduler.action.isBeingAdded(show_obj):
+            if not app.showQueueScheduler.action.isBeingUpdated(show_obj):
                 submenu.append({
                     'title': 'Resume' if show_obj.paused else 'Pause',
                     'path': 'home/togglePause?show={show}'.format(show=show_obj.indexerid),
@@ -820,7 +820,7 @@ class Home(WebRoot):
                     'icon': 'ui-icon ui-icon-tag',
                 })
 
-                if sickbeard.USE_SUBTITLES and not sickbeard.showQueueScheduler.action.isBeingSubtitled(
+                if app.USE_SUBTITLES and not app.showQueueScheduler.action.isBeingSubtitled(
                         show_obj) and show_obj.subtitles:
                     submenu.append({
                         'title': 'Download Subtitles',
@@ -847,12 +847,12 @@ class Home(WebRoot):
                 ep_counts[cur_ep_cat] += 1
 
         def titler(x):
-            return (helpers.remove_article(x), x)[not x or sickbeard.SORT_ARTICLE]
+            return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
 
-        if sickbeard.ANIME_SPLIT_HOME:
+        if app.ANIME_SPLIT_HOME:
             shows = []
             anime = []
-            for show in sickbeard.showList:
+            for show in app.showList:
                 if show.is_anime:
                     anime.append(show)
                 else:
@@ -861,7 +861,7 @@ class Home(WebRoot):
                                ['Anime', sorted(anime, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
         else:
             sorted_show_lists = [
-                ['Shows', sorted(sickbeard.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+                ['Shows', sorted(app.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
 
         bwl = None
         if show_obj.is_anime:
@@ -873,15 +873,15 @@ class Home(WebRoot):
         indexer = int(show_obj.indexer)
 
         # Delete any previous occurrances
-        for index, recentShow in enumerate(sickbeard.SHOWS_RECENT):
+        for index, recentShow in enumerate(app.SHOWS_RECENT):
             if recentShow['indexerid'] == indexerid:
-                del sickbeard.SHOWS_RECENT[index]
+                del app.SHOWS_RECENT[index]
 
         # Only track 5 most recent shows
-        del sickbeard.SHOWS_RECENT[4:]
+        del app.SHOWS_RECENT[4:]
 
         # Insert most recent show
-        sickbeard.SHOWS_RECENT.insert(0, {
+        app.SHOWS_RECENT.insert(0, {
             'indexerid': indexerid,
             'name': show_obj.name,
         })
@@ -943,7 +943,7 @@ class Home(WebRoot):
 
         try:
             show = int(cached_result[b'indexerid'])  # fails if show id ends in a period SickRage/sickrage-issues#65
-            show_obj = Show.find(sickbeard.showList, show)
+            show_obj = Show.find(app.showList, show)
         except (ValueError, TypeError):
             return self._genericMessage('Error', 'Invalid show ID: {0}'.format(show))
 
@@ -965,7 +965,7 @@ class Home(WebRoot):
         snatch_queue_item = ManualSnatchQueueItem(show_obj, ep_objs, provider, cached_result)
 
         # Add the queue item to the queue
-        sickbeard.manualSnatchScheduler.action.add_item(snatch_queue_item)
+        app.manualSnatchScheduler.action.add_item(snatch_queue_item)
 
         while snatch_queue_item.success is not False:
             if snatch_queue_item.started and snatch_queue_item.success:
@@ -1057,7 +1057,7 @@ class Home(WebRoot):
         # TODO: add more comprehensive show validation
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
-            show_obj = Show.find(sickbeard.showList, show)
+            show_obj = Show.find(app.showList, show)
         except (ValueError, TypeError):
             return self._genericMessage('Error', 'Invalid show ID: {show}'.format(show=show))
 
@@ -1082,10 +1082,10 @@ class Home(WebRoot):
         except ShowDirectoryNotFoundException:
             show_loc = (show_obj._location, False)  # pylint: disable=protected-access
 
-        show_message = sickbeard.showQueueScheduler.action.getQueueActionMessage(show_obj)
+        show_message = app.showQueueScheduler.action.getQueueActionMessage(show_obj)
 
-        if not sickbeard.showQueueScheduler.action.isBeingAdded(show_obj):
-            if not sickbeard.showQueueScheduler.action.isBeingUpdated(show_obj):
+        if not app.showQueueScheduler.action.isBeingAdded(show_obj):
+            if not app.showQueueScheduler.action.isBeingUpdated(show_obj):
                 submenu.append({
                     'title': 'Resume' if show_obj.paused else 'Pause',
                     'path': 'home/togglePause?show={show}'.format(show=show_obj.indexerid),
@@ -1126,7 +1126,7 @@ class Home(WebRoot):
                     'icon': 'ui-icon ui-icon-tag',
                 })
 
-                if sickbeard.USE_SUBTITLES and not sickbeard.showQueueScheduler.action.isBeingSubtitled(
+                if app.USE_SUBTITLES and not app.showQueueScheduler.action.isBeingSubtitled(
                         show_obj) and show_obj.subtitles:
                     submenu.append({
                         'title': 'Download Subtitles',
@@ -1135,12 +1135,12 @@ class Home(WebRoot):
                     })
 
         def titler(x):
-            return (helpers.remove_article(x), x)[not x or sickbeard.SORT_ARTICLE]
+            return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
 
-        if sickbeard.ANIME_SPLIT_HOME:
+        if app.ANIME_SPLIT_HOME:
             shows = []
             anime = []
-            for show in sickbeard.showList:
+            for show in app.showList:
                 if show.is_anime:
                     anime.append(show)
                 else:
@@ -1150,7 +1150,7 @@ class Home(WebRoot):
                 ['Anime', sorted(anime, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
         else:
             sorted_show_lists = [
-                ['Shows', sorted(sickbeard.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+                ['Shows', sorted(app.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
 
         bwl = None
         if show_obj.is_anime:
@@ -1162,15 +1162,15 @@ class Home(WebRoot):
         indexer = int(show_obj.indexer)
 
         # Delete any previous occurrances
-        for index, recentShow in enumerate(sickbeard.SHOWS_RECENT):
+        for index, recentShow in enumerate(app.SHOWS_RECENT):
             if recentShow['indexerid'] == indexer_id:
-                del sickbeard.SHOWS_RECENT[index]
+                del app.SHOWS_RECENT[index]
 
         # Only track 5 most recent shows
-        del sickbeard.SHOWS_RECENT[4:]
+        del app.SHOWS_RECENT[4:]
 
         # Insert most recent show
-        sickbeard.SHOWS_RECENT.insert(0, {
+        app.SHOWS_RECENT.insert(0, {
             'indexerid': indexer_id,
             'name': show_obj.name,
         })
@@ -1257,7 +1257,7 @@ class Home(WebRoot):
             else:
                 return self._genericMessage('Error', error_string)
 
-        show_obj = Show.find(sickbeard.showList, int(show))
+        show_obj = Show.find(app.showList, int(show))
 
         if not show_obj:
             error_string = 'Unable to find the specified show: {show}'.format(show=show)
@@ -1281,7 +1281,7 @@ class Home(WebRoot):
                 groups = []
                 if helpers.set_up_anidb_connection() and not anidb_failed:
                     try:
-                        anime = adba.Anime(sickbeard.ADBA_CONNECTION, name=show_obj.name)
+                        anime = adba.Anime(app.ADBA_CONNECTION, name=show_obj.name)
                         groups = anime.get_groups()
                     except Exception as msg:
                         ui.notifications.error('Unable to retreive Fansub Groups from AniDB.')
@@ -1307,7 +1307,7 @@ class Home(WebRoot):
         anime = config.checkbox_to_value(anime)
         subtitles = config.checkbox_to_value(subtitles)
 
-        if indexerLang and indexerLang in sickbeard.indexerApi(show_obj.indexer).indexer().config['valid_languages']:
+        if indexerLang and indexerLang in app.indexerApi(show_obj.indexer).indexer().config['valid_languages']:
             indexer_lang = indexerLang
         else:
             indexer_lang = show_obj.lang
@@ -1367,7 +1367,7 @@ class Home(WebRoot):
             if bool(show_obj.flatten_folders) != bool(flatten_folders):
                 show_obj.flatten_folders = flatten_folders
                 try:
-                    sickbeard.showQueueScheduler.action.refreshShow(show_obj)
+                    app.showQueueScheduler.action.refreshShow(show_obj)
                 except CantRefreshShowException as msg:
                     errors.append('Unable to refresh this show: {error}'.format(error=msg))
 
@@ -1390,7 +1390,7 @@ class Home(WebRoot):
             new_location = ek(os.path.normpath, location)
             if old_location != new_location:
                 logger.log('{old} != {new}'.format(old=old_location, new=new_location), logger.DEBUG)  # pylint: disable=protected-access
-                if not ek(os.path.isdir, location) and not sickbeard.CREATE_MISSING_SHOW_DIRS:
+                if not ek(os.path.isdir, location) and not app.CREATE_MISSING_SHOW_DIRS:
                     errors.append('New location <tt>{location}</tt> does not exist'.format(location=location))
 
                 # don't bother if we're going to update anyway
@@ -1399,7 +1399,7 @@ class Home(WebRoot):
                     try:
                         show_obj.location = location
                         try:
-                            sickbeard.showQueueScheduler.action.refreshShow(show_obj)
+                            app.showQueueScheduler.action.refreshShow(show_obj)
                         except CantRefreshShowException as msg:
                             errors.append('Unable to refresh this show:{error}'.format(error=msg))
                             # grab updated info from TVDB
@@ -1416,22 +1416,22 @@ class Home(WebRoot):
         # force the update
         if do_update:
             try:
-                sickbeard.showQueueScheduler.action.updateShow(show_obj)
-                time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+                app.showQueueScheduler.action.updateShow(show_obj)
+                time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException as msg:
                 errors.append('Unable to update show: {0}'.format(str(msg)))
 
         if do_update_exceptions:
             try:
                 update_scene_exceptions(show_obj.indexerid, exceptions_list)  # @UndefinedVdexerid)
-                time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+                time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
                 errors.append('Unable to force an update on scene exceptions of the show.')
 
         if do_update_scene_numbering:
             try:
                 xem_refresh(show_obj.indexerid, show_obj.indexer)
-                time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+                time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
                 errors.append('Unable to force an update on scene numbering of the show.')
 
@@ -1453,7 +1453,7 @@ class Home(WebRoot):
 
         try:
             main_db_con = db.DBConnection('cache.db')
-            for cur_provider in sickbeard.providers.sortedProviderList():
+            for cur_provider in app.providers.sortedProviderList():
                 # Let's check if this provider table already exists
                 table_exists = main_db_con.select(
                     b'SELECT name '
@@ -1497,14 +1497,14 @@ class Home(WebRoot):
 
             ui.notifications.message('{show} has been {state} {details}'.format(
                 show=show_obj.name,
-                state='trashed' if sickbeard.TRASH_REMOVE_SHOW else 'deleted',
+                state='trashed' if app.TRASH_REMOVE_SHOW else 'deleted',
                 details='(with all related media)' if full else '(media untouched)',
             ))
 
-            time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+            time.sleep(cpu_presets[app.CPU_PRESET])
 
         # Remove show from 'RECENT SHOWS' in 'Shows' menu
-        sickbeard.SHOWS_RECENT = [x for x in sickbeard.SHOWS_RECENT if x['indexerid'] != show_obj.indexerid]
+        app.SHOWS_RECENT = [x for x in app.SHOWS_RECENT if x['indexerid'] != show_obj.indexerid]
 
         # Don't redirect to the default page, so the user can confirm that the show was deleted
         return self.redirect('/home/')
@@ -1520,7 +1520,7 @@ class Home(WebRoot):
         if error is not None:
             ui.notifications.error('Unable to refresh this show.', error)
 
-        time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+        time.sleep(cpu_presets[app.CPU_PRESET])
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
@@ -1529,19 +1529,19 @@ class Home(WebRoot):
         if show is None:
             return self._genericMessage('Error', 'Invalid show ID')
 
-        show_obj = Show.find(sickbeard.showList, int(show))
+        show_obj = Show.find(app.showList, int(show))
 
         if show_obj is None:
             return self._genericMessage('Error', 'Unable to find the specified show')
 
         # force the update
         try:
-            sickbeard.showQueueScheduler.action.updateShow(show_obj)
+            app.showQueueScheduler.action.updateShow(show_obj)
         except CantUpdateShowException as e:
             ui.notifications.error('Unable to update this show.', ex(e))
 
         # just give it some time
-        time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+        time.sleep(cpu_presets[app.CPU_PRESET])
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
@@ -1550,15 +1550,15 @@ class Home(WebRoot):
         if show is None:
             return self._genericMessage('Error', 'Invalid show ID')
 
-        show_obj = Show.find(sickbeard.showList, int(show))
+        show_obj = Show.find(app.showList, int(show))
 
         if show_obj is None:
             return self._genericMessage('Error', 'Unable to find the specified show')
 
         # search and download subtitles
-        sickbeard.showQueueScheduler.action.download_subtitles(show_obj)
+        app.showQueueScheduler.action.download_subtitles(show_obj)
 
-        time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+        time.sleep(cpu_presets[app.CPU_PRESET])
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
@@ -1567,14 +1567,14 @@ class Home(WebRoot):
         show_obj = None
 
         if show:
-            show_obj = Show.find(sickbeard.showList, int(show))
+            show_obj = Show.find(app.showList, int(show))
             if show_obj:
                 show_name = quote_plus(show_obj.name.encode('utf-8'))
 
-        if sickbeard.KODI_UPDATE_ONLYFIRST:
-            host = sickbeard.KODI_HOST.split(',')[0].strip()
+        if app.KODI_UPDATE_ONLYFIRST:
+            host = app.KODI_HOST.split(',')[0].strip()
         else:
-            host = sickbeard.KODI_HOST
+            host = app.KODI_HOST
 
         if notifiers.kodi_notifier.update_library(showName=show_name):
             ui.notifications.message('Library update command sent to KODI host(s): {host}'.format(host=host))
@@ -1589,22 +1589,22 @@ class Home(WebRoot):
     def updatePLEX(self):
         if None is notifiers.plex_notifier.update_library():
             ui.notifications.message(
-                'Library update command sent to Plex Media Server host: {host}'.format(host=sickbeard.PLEX_SERVER_HOST))
+                'Library update command sent to Plex Media Server host: {host}'.format(host=app.PLEX_SERVER_HOST))
         else:
-            ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=sickbeard.PLEX_SERVER_HOST))
+            ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=app.PLEX_SERVER_HOST))
         return self.redirect('/home/')
 
     def updateEMBY(self, show=None):
         show_obj = None
 
         if show:
-            show_obj = Show.find(sickbeard.showList, int(show))
+            show_obj = Show.find(app.showList, int(show))
 
         if notifiers.emby_notifier.update_library(show_obj):
             ui.notifications.message(
-                'Library update command sent to Emby host: {host}'.format(host=sickbeard.EMBY_HOST))
+                'Library update command sent to Emby host: {host}'.format(host=app.EMBY_HOST))
         else:
-            ui.notifications.error('Unable to contact Emby host: {host}'.format(host=sickbeard.EMBY_HOST))
+            ui.notifications.error('Unable to contact Emby host: {host}'.format(host=app.EMBY_HOST))
 
         if show_obj:
             return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
@@ -1634,7 +1634,7 @@ class Home(WebRoot):
             else:
                 return self._genericMessage('Error', error_message)
 
-        show_obj = Show.find(sickbeard.showList, int(show))
+        show_obj = Show.find(app.showList, int(show))
 
         if not show_obj:
             error_message = 'Error', 'Show not in show list'
@@ -1715,7 +1715,7 @@ class Home(WebRoot):
 
             data = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
 
-            if sickbeard.USE_TRAKT and sickbeard.TRAKT_SYNC_WATCHLIST:
+            if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
                 if int(status) in [WANTED, FAILED]:
                     upd = 'Add'
                 elif int(status) in [IGNORED, SKIPPED] + Quality.DOWNLOADED + Quality.ARCHIVED:
@@ -1737,7 +1737,7 @@ class Home(WebRoot):
 
             for season, segment in iteritems(segments):
                 cur_backlog_queue_item = BacklogQueueItem(show_obj, segment)
-                sickbeard.searchQueueScheduler.action.add_item(cur_backlog_queue_item)
+                app.searchQueueScheduler.action.add_item(cur_backlog_queue_item)
 
                 msg += '<li>Season {season}</li>'.format(season=season)
                 logger.log(u'Sending backlog for {show} season {season} '
@@ -1759,7 +1759,7 @@ class Home(WebRoot):
 
             for season, segment in iteritems(segments):
                 cur_failed_queue_item = FailedQueueItem(show_obj, segment)
-                sickbeard.searchQueueScheduler.action.add_item(cur_failed_queue_item)
+                app.searchQueueScheduler.action.add_item(cur_failed_queue_item)
 
                 msg += '<li>Season {season}</li>'.format(season=season)
                 logger.log(u'Retrying Search for {show} season {season} '
@@ -1783,7 +1783,7 @@ class Home(WebRoot):
         if show is None:
             return self._genericMessage('Error', 'You must specify a show')
 
-        show_obj = Show.find(sickbeard.showList, int(show))
+        show_obj = Show.find(app.showList, int(show))
 
         if show_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
@@ -1825,7 +1825,7 @@ class Home(WebRoot):
             error_message = 'You must specify a show and at least one episode'
             return self._genericMessage('Error', error_message)
 
-        show_obj = Show.find(sickbeard.showList, int(show))
+        show_obj = Show.find(app.showList, int(show))
 
         if show_obj is None:
             error_message = 'Error', 'Show not in show list'
@@ -1887,10 +1887,10 @@ class Home(WebRoot):
         # make a queue item for it and put it on the queue
         ep_queue_item = ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), bool(manual_search))
 
-        sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
+        app.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
 
         # give the CPU a break and some time to start the queue
-        time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+        time.sleep(cpu_presets[app.CPU_PRESET])
 
         if not ep_queue_item.started and ep_queue_item.success is None:
             return json.dumps({
@@ -1954,7 +1954,7 @@ class Home(WebRoot):
         sceneEpisode = None if sceneEpisode in ['null', ''] else sceneEpisode
         sceneAbsolute = None if sceneAbsolute in ['null', ''] else sceneAbsolute
 
-        show_obj = Show.find(sickbeard.showList, int(show))
+        show_obj = Show.find(app.showList, int(show))
 
         # Check if this is an anime, because we can't set the Scene numbering for anime shows
         if show_obj.is_anime and not forAbsolute:
@@ -2041,7 +2041,7 @@ class Home(WebRoot):
 
         # make a queue item for it and put it on the queue
         ep_queue_item = FailedQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)))  # pylint: disable=no-member
-        sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
+        app.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
 
         if not ep_queue_item.started and ep_queue_item.success is None:
             return json.dumps(
@@ -2061,7 +2061,7 @@ class Home(WebRoot):
         logger.log(u'ReleaseGroups: {show}'.format(show=show_name), logger.INFO)
         if helpers.set_up_anidb_connection():
             try:
-                anime = adba.Anime(sickbeard.ADBA_CONNECTION, name=show_name)
+                anime = adba.Anime(app.ADBA_CONNECTION, name=show_name)
                 groups = anime.get_groups()
                 logger.log(u'ReleaseGroups: {groups}'.format(groups=groups), logger.INFO)
                 return json.dumps({

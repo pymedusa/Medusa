@@ -1,5 +1,5 @@
 <%!
-    import medusa as sickbeard
+    import medusa as app
 %>
 <!DOCTYPE html>
 <html>
@@ -42,9 +42,9 @@
     <link rel="stylesheet" type="text/css" href="css/browser.css?${sbPID}" />
     <link rel="stylesheet" type="text/css" href="css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
     <link rel="stylesheet" type="text/css" href="css/style.css?${sbPID}"/>
-    <link rel="stylesheet" type="text/css" href="css/${sickbeard.THEME_NAME}.css?${sbPID}" />
+    <link rel="stylesheet" type="text/css" href="css/${app.THEME_NAME}.css?${sbPID}" />
 </head>
-<body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + sickbeard.API_KEY +'"  api-root="api/v2/"', '')[title == 'Login']}>
+<body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="api/v2/"', '')[title == 'Login']}>
 <nav class="navbar navbar-default navbar-fixed-top hidden-print" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header">

@@ -22,7 +22,7 @@ import datetime
 import os.path
 import warnings
 
-import medusa as sickbeard
+import medusa as app
 from six import iteritems
 from .. import common, db, helpers, logger, subtitles
 from ..helper.common import dateTimeFormat, episode_num
@@ -582,8 +582,8 @@ class Add1080pAndRawHDQualities(RenameSeasonFolders):
         backupDatabase(self.checkDBVersion())
 
         # update the default quality so we dont grab the wrong qualities after migration
-        sickbeard.QUALITY_DEFAULT = self._update_composite_qualities(sickbeard.QUALITY_DEFAULT)
-        sickbeard.save_config()
+        app.QUALITY_DEFAULT = self._update_composite_qualities(app.QUALITY_DEFAULT)
+        app.save_config()
 
         # upgrade previous HD to HD720p -- shift previous qualities to new placevalues
         old_hd = common.Quality.combineQualities(

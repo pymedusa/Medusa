@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 import logging
 import re
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urljoin
 from six import iteritems
 from .generic import GenericClient
@@ -99,10 +99,10 @@ class UTorrentAPI(GenericClient):
 
     def _set_torrent_label(self, result):
 
-        if result.show.is_anime and sickbeard.TORRENT_LABEL_ANIME:
-            label = sickbeard.TORRENT_LABEL_ANIME
+        if result.show.is_anime and app.TORRENT_LABEL_ANIME:
+            label = app.TORRENT_LABEL_ANIME
         else:
-            label = sickbeard.TORRENT_LABEL
+            label = app.TORRENT_LABEL
 
         return self._request(params={
             'action': 'setprops',
@@ -135,7 +135,7 @@ class UTorrentAPI(GenericClient):
 
     def _set_torrent_seed_time(self, result):
 
-        if sickbeard.TORRENT_SEED_TIME:
+        if app.TORRENT_SEED_TIME:
             if self._request(params={
                 'action': 'setprops',
                 'hash': result.hash,
@@ -146,7 +146,7 @@ class UTorrentAPI(GenericClient):
                     'action': 'setprops',
                     'hash': result.hash,
                     's': 'seed_time',
-                    'v': 3600 * float(sickbeard.TORRENT_SEED_TIME),
+                    'v': 3600 * float(app.TORRENT_SEED_TIME),
                 })
             else:
                 return False
@@ -161,7 +161,7 @@ class UTorrentAPI(GenericClient):
 
     def _set_torrent_pause(self, result):
         return self._request(params={
-            'action': 'pause' if sickbeard.TORRENT_PAUSED else 'start',
+            'action': 'pause' if app.TORRENT_PAUSED else 'start',
             'hash': result.hash,
         })
 

@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import medusa as sickbeard
+import medusa as app
 from ..GenericProvider import GenericProvider
 from ...classes import NZBSearchResult
 from ...helper.common import try_int
@@ -29,7 +29,7 @@ class NZBProvider(GenericProvider):
         self.provider_type = GenericProvider.NZB
 
     def is_active(self):
-        return bool(sickbeard.USE_NZBS) and self.is_enabled()
+        return bool(app.USE_NZBS) and self.is_enabled()
 
     def _get_result(self, episodes):
         return NZBSearchResult(episodes)
@@ -48,7 +48,7 @@ class NZBProvider(GenericProvider):
         return try_int(seeders, -1), try_int(leechers, -1)
 
     def _get_storage_dir(self):
-        return sickbeard.NZB_DIR
+        return app.NZB_DIR
 
     def _get_pubdate(self, item):
         """

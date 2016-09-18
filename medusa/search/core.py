@@ -25,7 +25,7 @@ import threading
 import traceback
 from socket import timeout as SocketTimeout
 
-import medusa as sickbeard
+import medusa as app
 import requests
 from .. import clients, common, db, failed_history, helpers, history, logger, notifiers, nzbSplitter, nzbget, sab, show_name_helpers, ui
 from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
@@ -54,7 +54,7 @@ def _downloadResult(result):
     elif result.resultType == "nzbdata":
 
         # get the final file path to the nzb
-        fileName = ek(os.path.join, sickbeard.NZB_DIR, result.name + ".nzb")
+        fileName = ek(os.path.join, app.NZB_DIR, result.name + ".nzb")
 
         logger.log(u"Saving NZB to " + fileName)
 
@@ -91,7 +91,7 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
 
     result.priority = 0  # -1 = low, 0 = normal, 1 = high
     is_proper = False
-    if sickbeard.ALLOW_HIGH_PRIORITY:
+    if app.ALLOW_HIGH_PRIORITY:
         # if it aired recently make it high priority
         for curEp in result.episodes:
             if datetime.date.today() - curEp.airdate <= datetime.timedelta(days=7):
@@ -108,20 +108,20 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
 
     # NZBs can be sent straight to SAB or saved to disk
     if result.resultType in ("nzb", "nzbdata"):
-        if sickbeard.NZB_METHOD == "blackhole":
+        if app.NZB_METHOD == "blackhole":
             dlResult = _downloadResult(result)
-        elif sickbeard.NZB_METHOD == "sabnzbd":
+        elif app.NZB_METHOD == "sabnzbd":
             dlResult = sab.sendNZB(result)
-        elif sickbeard.NZB_METHOD == "nzbget":
+        elif app.NZB_METHOD == "nzbget":
             dlResult = nzbget.sendNZB(result, is_proper)
         else:
-            logger.log(u"Unknown NZB action specified in config: " + sickbeard.NZB_METHOD, logger.ERROR)
+            logger.log(u"Unknown NZB action specified in config: " + app.NZB_METHOD, logger.ERROR)
             dlResult = False
 
     # Torrents can be sent to clients or saved to disk
     elif result.resultType == "torrent":
         # torrents are saved to disk when blackhole mode
-        if sickbeard.TORRENT_METHOD == "blackhole":
+        if app.TORRENT_METHOD == "blackhole":
             dlResult = _downloadResult(result)
         else:
             if not result.content and not result.url.startswith('magnet'):
@@ -129,7 +129,7 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
                     result.content = result.provider.get_url(result.url, returns='content')
 
             if result.content or result.url.startswith('magnet'):
-                client = clients.get_client_class(sickbeard.TORRENT_METHOD)()
+                client = clients.get_client_class(app.TORRENT_METHOD)()
                 dlResult = client.send_torrent(result)
             else:
                 logger.log(u"Torrent file content is empty", logger.WARNING)
@@ -141,7 +141,7 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
     if not dlResult:
         return False
 
-    if sickbeard.USE_FAILED_DOWNLOADS:
+    if app.USE_FAILED_DOWNLOADS:
         failed_history.logSnatch(result)
 
     ui.notifications.message('Episode snatched', result.name)
@@ -176,7 +176,7 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
             # TODO: Remove this broad catch when all notifiers handle exceptions
             try:
                 notify_message = curEpObj.formatted_filename('%SN - %Sx%0E - %EN - %QN')
-                if all([sickbeard.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
+                if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
                         result.leechers not in (-1, None)]):
                     notifiers.notify_snatch("{0} with {1} seeders and {2} leechers from {3}".format
                                             (notify_message, result.seeders, result.leechers, result.provider.name), is_proper)
@@ -187,7 +187,7 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
                 # keep snatching until notification is sent
                 logger.log(u"Failed to send snatch notification. Error: {0}".format(e), logger.DEBUG)
 
-            if sickbeard.USE_TRAKT and sickbeard.TRAKT_SYNC_WATCHLIST:
+            if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
                 trakt_data.append((curEpObj.season, curEpObj.episode))
                 logger.log(u'Adding {0} {1} to Trakt watchlist'.format
                            (result.show.name, episode_num(curEpObj.season, curEpObj.episode)), logger.INFO)
@@ -267,16 +267,16 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
             continue
 
         if hasattr(cur_result, 'size'):
-            if sickbeard.USE_FAILED_DOWNLOADS and failed_history.hasFailed(cur_result.name, cur_result.size,
-                                                                           cur_result.provider.name):
+            if app.USE_FAILED_DOWNLOADS and failed_history.hasFailed(cur_result.name, cur_result.size,
+                                                                     cur_result.provider.name):
                 logger.log(cur_result.name + u" has previously failed, rejecting it")
                 continue
         preferred_words = ''
-        if sickbeard.PREFERRED_WORDS:
-            preferred_words = sickbeard.PREFERRED_WORDS.lower().split(',')
+        if app.PREFERRED_WORDS:
+            preferred_words = app.PREFERRED_WORDS.lower().split(',')
         undesired_words = ''
-        if sickbeard.UNDESIRED_WORDS:
-            undesired_words = sickbeard.UNDESIRED_WORDS.lower().split(',')
+        if app.UNDESIRED_WORDS:
+            undesired_words = app.UNDESIRED_WORDS.lower().split(',')
 
         if not bestResult:
             bestResult = cur_result
@@ -416,7 +416,7 @@ def searchForNeededEpisodes():
 
     didSearch = False
 
-    show_list = sickbeard.showList
+    show_list = app.showList
     fromDate = datetime.date.fromordinal(1)
     episodes = []
 
@@ -502,16 +502,16 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
     didSearch = False
 
     # build name cache for show
-    sickbeard.name_cache.buildNameCache(show)
+    app.name_cache.buildNameCache(show)
 
     original_thread_name = threading.currentThread().name
 
     if manual_search:
         logger.log("Using manual search providers")
-        providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
+        providers = [x for x in app.providers.sortedProviderList(app.RANDOMIZE_PROVIDERS)
                      if x.is_active() and x.enable_manualsearch]
     else:
-        providers = [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
+        providers = [x for x in app.providers.sortedProviderList(app.RANDOMIZE_PROVIDERS)
                      if x.is_active() and x.enable_backlog]
 
     if not forced_search:

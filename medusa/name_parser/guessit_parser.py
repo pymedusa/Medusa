@@ -8,7 +8,7 @@ from datetime import timedelta
 
 from dogpile.cache.region import make_region
 from guessit.rules.common.date import valid_year
-import medusa as sickbeard
+import medusa as app
 from .rules import default_api
 from ..helpers import normalize
 
@@ -91,7 +91,7 @@ def guessit(name, options=None):
     final_options = dict(options) if options else dict()
     final_options.update(dict(type='episode', implicit=True,
                               episode_prefer_number=final_options.get('show_type') == 'anime',
-                              expected_title=get_expected_titles(sickbeard.showList),
+                              expected_title=get_expected_titles(app.showList),
                               expected_group=expected_groups,
                               allowed_languages=allowed_languages,
                               allowed_countries=allowed_countries))
@@ -106,7 +106,7 @@ def get_expected_titles(show_list):
     (since they can confuse guessit).
 
     :param show_list:
-    :type show_list: list of sickbeard.tv.TVShow
+    :type show_list: list of medusa.tv.TVShow
     :return:
     :rtype: list of str
     """

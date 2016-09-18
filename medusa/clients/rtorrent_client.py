@@ -29,7 +29,7 @@ from __future__ import unicode_literals
 
 import logging
 
-import medusa as sickbeard
+import medusa as app
 from rtorrent import RTorrent
 from .generic import GenericClient
 from .. import ex
@@ -61,10 +61,10 @@ class RTorrentAPI(GenericClient):
             return
 
         tp_kwargs = {}
-        if sickbeard.TORRENT_AUTH_TYPE != 'none':
-            tp_kwargs['authtype'] = sickbeard.TORRENT_AUTH_TYPE
+        if app.TORRENT_AUTH_TYPE != 'none':
+            tp_kwargs['authtype'] = app.TORRENT_AUTH_TYPE
 
-        if not sickbeard.TORRENT_VERIFY_CERT:
+        if not app.TORRENT_VERIFY_CERT:
             tp_kwargs['check_ssl_cert'] = False
 
         if self.username and self.password:
@@ -87,14 +87,14 @@ class RTorrentAPI(GenericClient):
                 return False
 
             # Set label
-            label = sickbeard.TORRENT_LABEL
+            label = app.TORRENT_LABEL
             if result.show.is_anime:
-                label = sickbeard.TORRENT_LABEL_ANIME
+                label = app.TORRENT_LABEL_ANIME
             if label:
                 torrent.set_custom(1, label)
 
-            if sickbeard.TORRENT_PATH:
-                torrent.set_directory(sickbeard.TORRENT_PATH)
+            if app.TORRENT_PATH:
+                torrent.set_directory(app.TORRENT_PATH)
 
             # Start torrent
             torrent.start()
@@ -118,14 +118,14 @@ class RTorrentAPI(GenericClient):
                 return False
 
             # Set label
-            label = sickbeard.TORRENT_LABEL
+            label = app.TORRENT_LABEL
             if result.show.is_anime:
-                label = sickbeard.TORRENT_LABEL_ANIME
+                label = app.TORRENT_LABEL_ANIME
             if label:
                 torrent.set_custom(1, label)
 
-            if sickbeard.TORRENT_PATH:
-                torrent.set_directory(sickbeard.TORRENT_PATH)
+            if app.TORRENT_PATH:
+                torrent.set_directory(app.TORRENT_PATH)
 
             # Start torrent
             torrent.start()

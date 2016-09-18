@@ -11,7 +11,7 @@ from __future__ import unicode_literals
 import logging
 from base64 import b64encode
 
-import medusa as sickbeard
+import medusa as app
 from synchronousdeluge import DelugeClient
 from .generic import GenericClient
 
@@ -56,7 +56,7 @@ class DelugeDAPI(GenericClient):
 
     def _add_torrent_uri(self, result):
         options = {
-            'add_paused': sickbeard.TORRENT_PAUSED
+            'add_paused': app.TORRENT_PAUSED
         }
 
         remote_torrent = self.drpc.add_torrent_magnet(result.url, options, result.hash)
@@ -72,7 +72,7 @@ class DelugeDAPI(GenericClient):
             return None
 
         options = {
-            'add_paused': sickbeard.TORRENT_PAUSED
+            'add_paused': app.TORRENT_PAUSED
         }
 
         remote_torrent = self.drpc.add_torrent_file('{name}.torrent'.format(name=result.name),
@@ -85,9 +85,9 @@ class DelugeDAPI(GenericClient):
 
     def _set_torrent_label(self, result):
 
-        label = sickbeard.TORRENT_LABEL.lower()
+        label = app.TORRENT_LABEL.lower()
         if result.show.is_anime:
-            label = sickbeard.TORRENT_LABEL_ANIME.lower()
+            label = app.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
             logger.error('{name}: Invalid label. Label must not contain a space', name=self.name)
             return False
@@ -101,11 +101,11 @@ class DelugeDAPI(GenericClient):
         return self.drpc.set_torrent_priority(result.hash, True) if result.priority == 1 else True
 
     def _set_torrent_path(self, result):
-        path = sickbeard.TORRENT_PATH
+        path = app.TORRENT_PATH
         return self.drpc.set_torrent_path(result.hash, path) if path else True
 
     def _set_torrent_pause(self, result):
-        return self.drpc.pause_torrent(result.hash) if sickbeard.TORRENT_PAUSED else True
+        return self.drpc.pause_torrent(result.hash) if app.TORRENT_PAUSED else True
 
     def test_authentication(self):
         """Test connection using authentication.

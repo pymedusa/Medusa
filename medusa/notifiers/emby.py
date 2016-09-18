@@ -20,7 +20,7 @@
 
 import json
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urlencode
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import Request, urlopen
@@ -40,12 +40,12 @@ class Notifier(object):
 
         # fill in omitted parameters
         if not host:
-            host = sickbeard.EMBY_HOST
+            host = app.EMBY_HOST
         if not emby_apikey:
-            emby_apikey = sickbeard.EMBY_APIKEY
+            emby_apikey = app.EMBY_APIKEY
 
         url = 'http://%s/emby/Notifications/Admin' % host
-        values = {'Name': 'Medusa', 'Description': message, 'ImageUrl': sickbeard.LOGO_URL}
+        values = {'Name': 'Medusa', 'Description': message, 'ImageUrl': app.LOGO_URL}
         data = json.dumps(values)
         try:
             req = Request(url, data)
@@ -79,9 +79,9 @@ class Notifier(object):
 
         """
 
-        if sickbeard.USE_EMBY:
+        if app.USE_EMBY:
 
-            if not sickbeard.EMBY_HOST:
+            if not app.EMBY_HOST:
                 logger.log(u'EMBY: No host specified, check your settings', logger.DEBUG)
                 return False
 
@@ -98,12 +98,12 @@ class Notifier(object):
             else:
                 query = ''
 
-            url = 'http://%s/emby/Library/Series/Updated%s' % (sickbeard.EMBY_HOST, query)
+            url = 'http://%s/emby/Library/Series/Updated%s' % (app.EMBY_HOST, query)
             values = {}
             data = urlencode(values)
             try:
                 req = Request(url, data)
-                req.add_header('X-MediaBrowser-Token', sickbeard.EMBY_APIKEY)
+                req.add_header('X-MediaBrowser-Token', app.EMBY_APIKEY)
 
                 response = urlopen(req)
                 result = response.read()

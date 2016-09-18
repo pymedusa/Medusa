@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as sickbeard
+    import medusa as app
     import os.path
     from datetime import datetime
     import re
@@ -34,13 +34,13 @@
     </select>
     <span> Layout:
         <select name="HistoryLayout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="setHistoryLayout/?layout=compact"  ${'selected="selected"' if sickbeard.HISTORY_LAYOUT == 'compact' else ''}>Compact</option>
-            <option value="setHistoryLayout/?layout=detailed" ${'selected="selected"' if sickbeard.HISTORY_LAYOUT == 'detailed' else ''}>Detailed</option>
+            <option value="setHistoryLayout/?layout=compact"  ${'selected="selected"' if app.HISTORY_LAYOUT == 'compact' else ''}>Compact</option>
+            <option value="setHistoryLayout/?layout=detailed" ${'selected="selected"' if app.HISTORY_LAYOUT == 'detailed' else ''}>Detailed</option>
         </select>
     </span>
 </div>
 <br>
-% if sickbeard.HISTORY_LAYOUT == "detailed":
+% if app.HISTORY_LAYOUT == "detailed":
     <table id="historyTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
         <thead>
             <tr>
@@ -111,7 +111,7 @@
                 <th width="25%">Episode</th>
                 <th>Snatched</th>
                 <th>Downloaded</th>
-                % if sickbeard.USE_SUBTITLES:
+                % if app.USE_SUBTITLES:
                 <th>Subtitled</th>
                 % endif
                 <th width="14%">Quality</th>
@@ -162,7 +162,7 @@
                         % endif
                     % endfor
                 </td>
-                % if sickbeard.USE_SUBTITLES:
+                % if app.USE_SUBTITLES:
                 <td align="center">
                     % for cur_action in sorted(hItem.actions):
                         <% composite = Quality.splitCompositeStatus(int(cur_action.action)) %>

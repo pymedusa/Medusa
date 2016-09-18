@@ -30,7 +30,7 @@ import logging
 import os
 import re
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 from .generic import GenericClient
@@ -75,7 +75,7 @@ class DownloadStationAPI(GenericClient):
             107: 'Session interrupted by duplicate login',
         }
         self.checked_destination = False
-        self.destination = sickbeard.TORRENT_PATH
+        self.destination = app.TORRENT_PATH
 
     def _check_response(self):
         """Check if session is still valid."""
@@ -121,7 +121,7 @@ class DownloadStationAPI(GenericClient):
 
     def _add_torrent_uri(self, result):
 
-        torrent_path = sickbeard.TORRENT_PATH
+        torrent_path = app.TORRENT_PATH
 
         data = {
             'api': 'SYNO.DownloadStation.Task',
@@ -141,7 +141,7 @@ class DownloadStationAPI(GenericClient):
 
     def _add_torrent_file(self, result):
 
-        torrent_path = sickbeard.TORRENT_PATH
+        torrent_path = app.TORRENT_PATH
 
         data = {
             'api': 'SYNO.DownloadStation.Task',
@@ -163,7 +163,7 @@ class DownloadStationAPI(GenericClient):
 
     def _check_destination(self):
         """Validate and set torrent destination."""
-        torrent_path = sickbeard.TORRENT_PATH
+        torrent_path = app.TORRENT_PATH
 
         if not (self.auth or self._get_auth()):
             return False

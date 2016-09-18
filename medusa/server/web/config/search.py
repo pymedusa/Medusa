@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 
 import os
 
-import medusa as sickbeard
+import medusa as app
 from tornado.routes import route
 from .handler import Config
 from ..core import PageTemplate
@@ -67,71 +67,71 @@ class ConfigSearch(Config):
         config.change_DAILYSEARCH_FREQUENCY(dailysearch_frequency)
 
         config.change_BACKLOG_FREQUENCY(backlog_frequency)
-        sickbeard.BACKLOG_DAYS = try_int(backlog_days, 7)
+        app.BACKLOG_DAYS = try_int(backlog_days, 7)
 
-        sickbeard.CACHE_TRIMMING = config.checkbox_to_value(cache_trimming)
-        sickbeard.MAX_CACHE_AGE = try_int(max_cache_age, 0)
+        app.CACHE_TRIMMING = config.checkbox_to_value(cache_trimming)
+        app.MAX_CACHE_AGE = try_int(max_cache_age, 0)
 
-        sickbeard.USE_NZBS = config.checkbox_to_value(use_nzbs)
-        sickbeard.USE_TORRENTS = config.checkbox_to_value(use_torrents)
+        app.USE_NZBS = config.checkbox_to_value(use_nzbs)
+        app.USE_TORRENTS = config.checkbox_to_value(use_torrents)
 
-        sickbeard.NZB_METHOD = nzb_method
-        sickbeard.TORRENT_METHOD = torrent_method
-        sickbeard.USENET_RETENTION = try_int(usenet_retention, 500)
+        app.NZB_METHOD = nzb_method
+        app.TORRENT_METHOD = torrent_method
+        app.USENET_RETENTION = try_int(usenet_retention, 500)
 
-        sickbeard.IGNORE_WORDS = ignore_words if ignore_words else ''
-        sickbeard.PREFERRED_WORDS = preferred_words if preferred_words else ''
-        sickbeard.UNDESIRED_WORDS = undesired_words if undesired_words else ''
-        sickbeard.TRACKERS_LIST = trackers_list if trackers_list else ''
-        sickbeard.REQUIRE_WORDS = require_words if require_words else ''
-        sickbeard.IGNORED_SUBS_LIST = ignored_subs_list if ignored_subs_list else ''
-        sickbeard.IGNORE_UND_SUBS = config.checkbox_to_value(ignore_und_subs)
+        app.IGNORE_WORDS = ignore_words if ignore_words else ''
+        app.PREFERRED_WORDS = preferred_words if preferred_words else ''
+        app.UNDESIRED_WORDS = undesired_words if undesired_words else ''
+        app.TRACKERS_LIST = trackers_list if trackers_list else ''
+        app.REQUIRE_WORDS = require_words if require_words else ''
+        app.IGNORED_SUBS_LIST = ignored_subs_list if ignored_subs_list else ''
+        app.IGNORE_UND_SUBS = config.checkbox_to_value(ignore_und_subs)
 
-        sickbeard.RANDOMIZE_PROVIDERS = config.checkbox_to_value(randomize_providers)
+        app.RANDOMIZE_PROVIDERS = config.checkbox_to_value(randomize_providers)
 
         config.change_DOWNLOAD_PROPERS(download_propers)
 
-        sickbeard.CHECK_PROPERS_INTERVAL = check_propers_interval
+        app.CHECK_PROPERS_INTERVAL = check_propers_interval
 
-        sickbeard.ALLOW_HIGH_PRIORITY = config.checkbox_to_value(allow_high_priority)
+        app.ALLOW_HIGH_PRIORITY = config.checkbox_to_value(allow_high_priority)
 
-        sickbeard.USE_FAILED_DOWNLOADS = config.checkbox_to_value(use_failed_downloads)
-        sickbeard.DELETE_FAILED = config.checkbox_to_value(delete_failed)
+        app.USE_FAILED_DOWNLOADS = config.checkbox_to_value(use_failed_downloads)
+        app.DELETE_FAILED = config.checkbox_to_value(delete_failed)
 
-        sickbeard.SAB_USERNAME = sab_username
-        sickbeard.SAB_PASSWORD = sab_password
-        sickbeard.SAB_APIKEY = sab_apikey.strip()
-        sickbeard.SAB_CATEGORY = sab_category
-        sickbeard.SAB_CATEGORY_BACKLOG = sab_category_backlog
-        sickbeard.SAB_CATEGORY_ANIME = sab_category_anime
-        sickbeard.SAB_CATEGORY_ANIME_BACKLOG = sab_category_anime_backlog
-        sickbeard.SAB_HOST = config.clean_url(sab_host)
-        sickbeard.SAB_FORCED = config.checkbox_to_value(sab_forced)
+        app.SAB_USERNAME = sab_username
+        app.SAB_PASSWORD = sab_password
+        app.SAB_APIKEY = sab_apikey.strip()
+        app.SAB_CATEGORY = sab_category
+        app.SAB_CATEGORY_BACKLOG = sab_category_backlog
+        app.SAB_CATEGORY_ANIME = sab_category_anime
+        app.SAB_CATEGORY_ANIME_BACKLOG = sab_category_anime_backlog
+        app.SAB_HOST = config.clean_url(sab_host)
+        app.SAB_FORCED = config.checkbox_to_value(sab_forced)
 
-        sickbeard.NZBGET_USERNAME = nzbget_username
-        sickbeard.NZBGET_PASSWORD = nzbget_password
-        sickbeard.NZBGET_CATEGORY = nzbget_category
-        sickbeard.NZBGET_CATEGORY_BACKLOG = nzbget_category_backlog
-        sickbeard.NZBGET_CATEGORY_ANIME = nzbget_category_anime
-        sickbeard.NZBGET_CATEGORY_ANIME_BACKLOG = nzbget_category_anime_backlog
-        sickbeard.NZBGET_HOST = config.clean_host(nzbget_host)
-        sickbeard.NZBGET_USE_HTTPS = config.checkbox_to_value(nzbget_use_https)
-        sickbeard.NZBGET_PRIORITY = try_int(nzbget_priority, 100)
+        app.NZBGET_USERNAME = nzbget_username
+        app.NZBGET_PASSWORD = nzbget_password
+        app.NZBGET_CATEGORY = nzbget_category
+        app.NZBGET_CATEGORY_BACKLOG = nzbget_category_backlog
+        app.NZBGET_CATEGORY_ANIME = nzbget_category_anime
+        app.NZBGET_CATEGORY_ANIME_BACKLOG = nzbget_category_anime_backlog
+        app.NZBGET_HOST = config.clean_host(nzbget_host)
+        app.NZBGET_USE_HTTPS = config.checkbox_to_value(nzbget_use_https)
+        app.NZBGET_PRIORITY = try_int(nzbget_priority, 100)
 
-        sickbeard.TORRENT_USERNAME = torrent_username
-        sickbeard.TORRENT_PASSWORD = torrent_password
-        sickbeard.TORRENT_LABEL = torrent_label
-        sickbeard.TORRENT_LABEL_ANIME = torrent_label_anime
-        sickbeard.TORRENT_VERIFY_CERT = config.checkbox_to_value(torrent_verify_cert)
-        sickbeard.TORRENT_PATH = torrent_path.rstrip('/\\')
-        sickbeard.TORRENT_SEED_TIME = torrent_seed_time
-        sickbeard.TORRENT_PAUSED = config.checkbox_to_value(torrent_paused)
-        sickbeard.TORRENT_HIGH_BANDWIDTH = config.checkbox_to_value(torrent_high_bandwidth)
-        sickbeard.TORRENT_HOST = config.clean_url(torrent_host)
-        sickbeard.TORRENT_RPCURL = torrent_rpcurl
-        sickbeard.TORRENT_AUTH_TYPE = torrent_auth_type
+        app.TORRENT_USERNAME = torrent_username
+        app.TORRENT_PASSWORD = torrent_password
+        app.TORRENT_LABEL = torrent_label
+        app.TORRENT_LABEL_ANIME = torrent_label_anime
+        app.TORRENT_VERIFY_CERT = config.checkbox_to_value(torrent_verify_cert)
+        app.TORRENT_PATH = torrent_path.rstrip('/\\')
+        app.TORRENT_SEED_TIME = torrent_seed_time
+        app.TORRENT_PAUSED = config.checkbox_to_value(torrent_paused)
+        app.TORRENT_HIGH_BANDWIDTH = config.checkbox_to_value(torrent_high_bandwidth)
+        app.TORRENT_HOST = config.clean_url(torrent_host)
+        app.TORRENT_RPCURL = torrent_rpcurl
+        app.TORRENT_AUTH_TYPE = torrent_auth_type
 
-        sickbeard.save_config()
+        app.save_config()
 
         if results:
             for x in results:
@@ -139,6 +139,6 @@ class ConfigSearch(Config):
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:
-            ui.notifications.message('Configuration Saved', ek(os.path.join, sickbeard.CONFIG_FILE))
+            ui.notifications.message('Configuration Saved', ek(os.path.join, app.CONFIG_FILE))
 
         return self.redirect('/config/search/')

@@ -2,7 +2,7 @@
 <%!
     from medusa import subtitles
     import datetime
-    import medusa as sickbeard
+    import medusa as app
     from medusa import common
 %>
 <%block name="content">
@@ -21,7 +21,7 @@
         <br>
         % endif
         <form action="manage/subtitleMissed" method="get">
-            % if sickbeard.SUBTITLES_MULTI:
+            % if app.SUBTITLES_MULTI:
                 Manage episodes without <select name="whichSubs" class="form-control form-control-inline input-sm">
                 <option value="all">All</option>
                 % for sub_code in subtitles.wanted_languages():
@@ -47,7 +47,7 @@
         ##Strange that this is used by js but is an input outside of any form?
         <input type="hidden" id="selectSubLang" name="selectSubLang" value="${whichSubs}" />
         <form action="manage/downloadSubtitleMissed" method="post">
-            % if sickbeard.SUBTITLES_MULTI:
+            % if app.SUBTITLES_MULTI:
                 <h2>Episodes without ${subsLanguage} subtitles.</h2>
             % else:
                 % for index, sub_code in enumerate(subtitles.wanted_languages()):

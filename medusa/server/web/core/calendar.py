@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 import datetime
 
 from dateutil import tz
-import medusa as sickbeard
+import medusa as app
 from tornado.web import authenticated
 from .base import BaseHandler
 from .... import (
@@ -27,7 +27,7 @@ class CalendarHandler(BaseHandler):
         """
         Render the iCalendar
         """
-        if sickbeard.CALENDAR_UNPROTECTED:
+        if app.CALENDAR_UNPROTECTED:
             self.write(self.calendar())
         else:
             self.calendar_auth()
@@ -90,7 +90,7 @@ class CalendarHandler(BaseHandler):
                 ical += 'BEGIN:VEVENT\r\n'
                 ical += 'DTSTART:{date}\r\n'.format(date=air_date_time.strftime('%Y%m%dT%H%M%SZ'))
                 ical += 'DTEND:{date}\r\n'.format(date=air_date_time_end.strftime('%Y%m%dT%H%M%SZ'))
-                if sickbeard.CALENDAR_ICONS:
+                if app.CALENDAR_ICONS:
                     icon_url = 'https://cdn.pymedusa.com/images/ico/favicon-16.png'
                     ical += 'X-GOOGLE-CALENDAR-CONTENT-ICON:{icon_url}\r\n'.format(icon_url=icon_url)
                     ical += 'X-GOOGLE-CALENDAR-CONTENT-DISPLAY:CHIP\r\n'

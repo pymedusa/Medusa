@@ -24,7 +24,7 @@ import re
 import traceback
 from fnmatch import fnmatch
 
-import medusa as sickbeard
+import medusa as app
 from six import PY3, text_type
 
 logger = logging.getLogger(__name__)
@@ -145,9 +145,9 @@ def is_sync_file(filename):
     if isinstance(filename, (str, text_type)):
         extension = filename.rpartition('.')[2].lower()
 
-        return extension in sickbeard.SYNC_FILES.split(',') or \
-            filename.startswith('.syncthing') or \
-            any(fnmatch(filename, match) for match in sickbeard.SYNC_FILES.split(','))
+        return (extension in app.SYNC_FILES.split(',') or
+                filename.startswith('.syncthing') or
+                any(fnmatch(filename, match) for match in app.SYNC_FILES.split(',')))
 
     return False
 
@@ -247,7 +247,7 @@ def convert_size(size, default=None, use_decimal=False, **kwargs):
 def remove_extension(filename):
     """
     Remove the extension of the provided ``filename``.
-    The extension is only removed if it is in `sickrage.helper.common.media_extensions` or ['nzb', 'torrent'].
+    The extension is only removed if it is in `medusa.helper.common.media_extensions` or ['nzb', 'torrent'].
     :param filename: The filename from which we want to remove the extension
     :return: The ``filename`` without its extension.
     """
@@ -336,8 +336,8 @@ def enabled_providers(search_type):
     """
     Return providers based on search type: daily, backlog and manualsearch
     """
-    return [x for x in sickbeard.providers.sortedProviderList(sickbeard.RANDOMIZE_PROVIDERS)
-            if x.is_active() and x.get_id() not in sickbeard.BROKEN_PROVIDERS and
+    return [x for x in app.providers.sortedProviderList(app.RANDOMIZE_PROVIDERS)
+            if x.is_active() and x.get_id() not in app.BROKEN_PROVIDERS and
             hasattr(x, 'enable_{}'.format(search_type)) and
             getattr(x, 'enable_{}'.format(search_type))]
 

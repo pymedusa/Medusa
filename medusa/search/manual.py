@@ -23,7 +23,7 @@ import json
 import threading
 import time
 
-import medusa as sickbeard
+import medusa as app
 from .queue import ForcedSearchQueueItem
 from .. import db, logger
 from ..common import Overview, Quality, cpu_presets, statusStrings
@@ -61,7 +61,7 @@ def getEpisode(show, season=None, episode=None, absolute=None):
     if show is None:
         return "Invalid show parameters"
 
-    show_obj = Show.find(sickbeard.showList, int(show))
+    show_obj = Show.find(app.showList, int(show))
 
     if show_obj is None:
         return "Invalid show paramaters"
@@ -84,7 +84,7 @@ def getEpisodes(search_thread, searchstatus):
 
     results = []
     # NOTE!: Show.find called with just indexerid!
-    show_obj = Show.find(sickbeard.showList, int(search_thread.show.indexerid))
+    show_obj = Show.find(app.showList, int(search_thread.show.indexerid))
 
     if not show_obj:
         if not search_thread.show.is_recently_deleted:
@@ -119,7 +119,7 @@ def update_finished_search_queue_item(snatch_queue_item):
     """
     # Finished Searches
 
-    for search_thread in sickbeard.search.queue.FORCED_SEARCH_HISTORY:
+    for search_thread in app.search.queue.FORCED_SEARCH_HISTORY:
         if snatch_queue_item.show and not search_thread.show.indexerid == snatch_queue_item.show.indexerid:
             continue
 
@@ -146,13 +146,13 @@ def collectEpisodesFromSearchThread(show):
 
     # Queued Searches
     searchstatus = SEARCH_STATUS_QUEUED
-    for search_thread in sickbeard.forcedSearchQueueScheduler.action.get_all_ep_from_queue(show):
+    for search_thread in app.forcedSearchQueueScheduler.action.get_all_ep_from_queue(show):
         episodes += getEpisodes(search_thread, searchstatus)
 
     # Running Searches
     searchstatus = SEARCH_STATUS_SEARCHING
-    if sickbeard.forcedSearchQueueScheduler.action.is_forced_search_in_progress():
-        search_thread = sickbeard.forcedSearchQueueScheduler.action.currentItem
+    if app.forcedSearchQueueScheduler.action.is_forced_search_in_progress():
+        search_thread = app.forcedSearchQueueScheduler.action.currentItem
 
         if search_thread.success:
             searchstatus = SEARCH_STATUS_FINISHED
@@ -161,7 +161,7 @@ def collectEpisodesFromSearchThread(show):
 
     # Finished Searches
     searchstatus = SEARCH_STATUS_FINISHED
-    for search_thread in sickbeard.search.queue.FORCED_SEARCH_HISTORY:
+    for search_thread in app.search.queue.FORCED_SEARCH_HISTORY:
         if show and not search_thread.show.indexerid == int(show):
             continue
 
@@ -188,7 +188,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     sql_episode = '' if manual_search_type == 'season' else episode
 
     down_cur_quality = 0
-    show_obj = Show.find(sickbeard.showList, int(show))
+    show_obj = Show.find(app.showList, int(show))
 
     main_db_con = db.DBConnection('cache.db')
 
@@ -261,10 +261,10 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # make a queue item for it and put it on the queue
         ep_queue_item = ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
 
-        sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
+        app.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
 
         # give the CPU a break and some time to start the queue
-        time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+        time.sleep(cpu_presets[app.CPU_PRESET])
     else:
         provider_results['found_items'] = sql_total
 

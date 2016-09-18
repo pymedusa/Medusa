@@ -19,7 +19,7 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 """
-Test sickbeard.helpers
+Test medusa.helpers
 
 Public Methods:
     fixGlob

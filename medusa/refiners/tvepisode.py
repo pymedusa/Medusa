@@ -33,7 +33,7 @@ def refine(video, tv_episode=None, **kwargs):
     :param video: the video to refine.
     :type video: Episode
     :param tv_episode: the TVEpisode to be used.
-    :type tv_episode: sickbeard.tv.TVEpisode
+    :type tv_episode: medusa.tv.TVEpisode
     :param kwargs:
     """
     if video.series_tvdb_id and video.tvdb_id:

@@ -19,7 +19,7 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 from dateutil import parser
-import medusa as sickbeard
+import medusa as app
 from six.moves.urllib.request import FancyURLopener
 from .common import Quality, USER_AGENT
 from .helper.common import dateTimeFormat
@@ -189,7 +189,7 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
     def selectSeries(allSeries):
         try:
             # try to pick a show that's in my show list
-            show_id_list = [int(x.indexerid) for x in sickbeard.showList]
+            show_id_list = [int(x.indexerid) for x in app.showList]
             for curShow in allSeries:
                 if int(curShow['id']) in show_id_list:
                     return curShow
@@ -226,7 +226,7 @@ class Proper(object):
     def __str__(self):
         return u'{date} {name} {season}x{episode} of {series_id} from {indexer}'.format(
             date=self.date, name=self.name, season=self.season, episode=self.episode,
-            series_id=self.indexerid, indexer=sickbeard.indexerApi(self.indexer).name)
+            series_id=self.indexerid, indexer=app.indexerApi(self.indexer).name)
 
 
 class Viewer(object):
@@ -240,7 +240,7 @@ class Viewer(object):
         """Add the logline to the collection.
 
         :param logline:
-        :type logline: sickbeard.logger.LogLine
+        :type logline: medusa.logger.LogLine
         """
         self._errors[logline.key] = logline
 
@@ -248,7 +248,7 @@ class Viewer(object):
         """Remove the logline from the collection.
 
         :param logline:
-        :type logline: sickbeard.logger.LogLine
+        :type logline: medusa.logger.LogLine
         """
         if logline.key in self._errors:
             del self._errors[logline.key]
@@ -262,7 +262,7 @@ class Viewer(object):
         """Return the logline values sorted in descending order.
 
         :return:
-        :rtype: list of sickbeard.logger.LogLine
+        :rtype: list of medusa.logger.LogLine
         """
         return sorted(self._errors.values(), key=lambda error: error.timestamp, reverse=True)
 

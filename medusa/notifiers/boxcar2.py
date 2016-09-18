@@ -22,13 +22,13 @@
 
 from __future__ import unicode_literals
 
-import medusa as sickbeard
+import medusa as app
 from .. import common, logger
 
 
 class Notifier(object):
     def __init__(self):
-        self.session = sickbeard.helpers.make_session()
+        self.session = app.helpers.make_session()
         self.url = 'https://new.boxcar.io/api/notifications'
 
     def test_notify(self, accesstoken, title='Medusa: Test'):
@@ -52,10 +52,10 @@ class Notifier(object):
             'notification[long_message]': msg,
             'notification[sound]': 'notifier-2',
             'notification[source_name]': 'Medusa',
-            'notification[icon_url]': sickbeard.LOGO_URL
+            'notification[icon_url]': app.LOGO_URL
         }
 
-        response = sickbeard.helpers.getURL(self.url, post_data=post_data, session=self.session, timeout=60, returns='json')
+        response = app.helpers.getURL(self.url, post_data=post_data, session=self.session, timeout=60, returns='json')
         if not response:
             logger.log('Boxcar2 notification failed.', logger.ERROR)
             return False
@@ -65,15 +65,15 @@ class Notifier(object):
 
     def notify_snatch(self, ep_name, is_proper):
         title=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]]
-        if sickbeard.BOXCAR2_NOTIFY_ONSNATCH:
+        if app.BOXCAR2_NOTIFY_ONSNATCH:
             self._notifyBoxcar2(title, ep_name)
 
     def notify_download(self, ep_name, title=common.notifyStrings[common.NOTIFY_DOWNLOAD]):
-        if sickbeard.BOXCAR2_NOTIFY_ONDOWNLOAD:
+        if app.BOXCAR2_NOTIFY_ONDOWNLOAD:
             self._notifyBoxcar2(title, ep_name)
 
     def notify_subtitle_download(self, ep_name, lang, title=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD]):
-        if sickbeard.BOXCAR2_NOTIFY_ONSUBTITLEDOWNLOAD:
+        if app.BOXCAR2_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._notifyBoxcar2(title, ep_name + ': ' + lang)
 
     def notify_git_update(self, new_version='??'):
@@ -95,11 +95,11 @@ class Notifier(object):
         accesstoken: to send to this device
         """
 
-        if not sickbeard.USE_BOXCAR2:
+        if not app.USE_BOXCAR2:
             logger.log('Notification for Boxcar2 not enabled, skipping this notification', logger.DEBUG)
             return False
 
-        accesstoken = accesstoken or sickbeard.BOXCAR2_ACCESSTOKEN
+        accesstoken = accesstoken or app.BOXCAR2_ACCESSTOKEN
 
         logger.log('Sending notification for {}'.format(message), logger.DEBUG)
 

@@ -21,7 +21,7 @@ import os
 import traceback
 
 from imdb import _exceptions as imdb_exceptions
-import medusa as sickbeard
+import medusa as app
 from traktor import TraktApi, TraktException
 from . import generic_queue, logger, name_cache, notifiers, scene_numbering, ui
 from .blackandwhitelist import BlackAndWhiteList
@@ -175,7 +175,7 @@ class ShowQueue(generic_queue.GenericQueue):
                 default_status_after=None, root_dir=None):
 
         if lang is None:
-            lang = sickbeard.INDEXER_DEFAULT_LANGUAGE
+            lang = app.INDEXER_DEFAULT_LANGUAGE
 
         queueItemObj = QueueItemAdd(indexer, indexer_id, showDir, default_status, quality, flatten_folders, lang,
                                     subtitles, anime, scene, paused, blacklist, whitelist, default_status_after, root_dir)
@@ -205,8 +205,8 @@ class ShowQueue(generic_queue.GenericQueue):
         queue_item_obj = QueueItemRemove(show=show, full=full)
         self.add_item(queue_item_obj)
 
-        # Show removal has been queued, let's updaste the sickbeard.RECENTLY_DELETED global, to keep track of it
-        sickbeard.RECENTLY_DELETED.update([show.indexerid])
+        # Show removal has been queued, let's updaste the app.RECENTLY_DELETED global, to keep track of it
+        app.RECENTLY_DELETED.update([show.indexerid])
 
         return queue_item_obj
 
@@ -250,8 +250,8 @@ class ShowQueueItem(generic_queue.QueueItem):
         self.show = show
 
     def isInQueue(self):
-        return self in sickbeard.showQueueScheduler.action.queue + [
-            sickbeard.showQueueScheduler.action.currentItem]  # @UndefinedVariable
+        return self in app.showQueueScheduler.action.queue + [
+            app.showQueueScheduler.action.currentItem]  # @UndefinedVariable
 
     def _getName(self):
         return str(self.show.indexerid)
@@ -326,13 +326,13 @@ class QueueItemAdd(ShowQueueItem):
         # make sure the Indexer IDs are valid
         try:
 
-            lINDEXER_API_PARMS = sickbeard.indexerApi(self.indexer).api_params.copy()
+            lINDEXER_API_PARMS = app.indexerApi(self.indexer).api_params.copy()
             if self.lang:
                 lINDEXER_API_PARMS['language'] = self.lang
 
-            logger.log(u"" + str(sickbeard.indexerApi(self.indexer).name) + ": " + repr(lINDEXER_API_PARMS))
+            logger.log(u"" + str(app.indexerApi(self.indexer).name) + ": " + repr(lINDEXER_API_PARMS))
 
-            t = sickbeard.indexerApi(self.indexer).indexer(**lINDEXER_API_PARMS)
+            t = app.indexerApi(self.indexer).indexer(**lINDEXER_API_PARMS)
             s = t[self.indexer_id]
 
             # Let's try to create the show Dir if it's not provided. This way we force the show dir to build build using the
@@ -354,37 +354,37 @@ class QueueItemAdd(ShowQueueItem):
             # this usually only happens if they have an NFO in their show dir which gave us a Indexer ID that has no proper english version of the show
             if getattr(s, 'seriesname', None) is None:
                 logger.log(u"Show in {} has no name on {}, probably searched with the wrong language.".format
-                           (self.showDir, sickbeard.indexerApi(self.indexer).name), logger.ERROR)
+                           (self.showDir, app.indexerApi(self.indexer).name), logger.ERROR)
 
                 ui.notifications.error("Unable to add show",
-                                       "Show in " + self.showDir + " has no name on " + str(sickbeard.indexerApi(
+                                       "Show in " + self.showDir + " has no name on " + str(app.indexerApi(
                                            self.indexer).name) + ", probably the wrong language. Delete .nfo and add manually in the correct language.")
                 self._finishEarly()
                 return
             # if the show has no episodes/seasons
             if not s:
                 logger.log(u"Show " + str(s['seriesname']) + " is on " + str(
-                    sickbeard.indexerApi(self.indexer).name) + " but contains no season/episode data.")
+                    app.indexerApi(self.indexer).name) + " but contains no season/episode data.")
                 ui.notifications.error("Unable to add show",
-                                       "Show " + str(s['seriesname']) + " is on " + str(sickbeard.indexerApi(
+                                       "Show " + str(s['seriesname']) + " is on " + str(app.indexerApi(
                                            self.indexer).name) + " but contains no season/episode data.")
                 self._finishEarly()
                 return
         except Exception as e:
-            logger.log(u"%s Error while loading information from indexer %s. Error: %r" % (self.indexer_id, sickbeard.indexerApi(self.indexer).name, ex(e)), logger.ERROR)
+            logger.log(u"%s Error while loading information from indexer %s. Error: %r" % (self.indexer_id, app.indexerApi(self.indexer).name, ex(e)), logger.ERROR)
             # logger.log(u"Show name with ID %s doesn't exist on %s anymore. If you are using trakt, it will be removed from your TRAKT watchlist. If you are adding manually, try removing the nfo and adding again" %
-            #            (self.indexer_id, sickbeard.indexerApi(self.indexer).name), logger.WARNING)
+            #            (self.indexer_id, api.indexerApi(self.indexer).name), logger.WARNING)
 
             ui.notifications.error(
                 "Unable to add show",
                 "Unable to look up the show in %s on %s using ID %s, not using the NFO. Delete .nfo and try adding manually again." %
-                (self.showDir, sickbeard.indexerApi(self.indexer).name, self.indexer_id)
+                (self.showDir, app.indexerApi(self.indexer).name, self.indexer_id)
             )
 
-            if sickbeard.USE_TRAKT:
+            if app.USE_TRAKT:
 
-                trakt_id = sickbeard.indexerApi(self.indexer).config['trakt_id']
-                trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT)
+                trakt_id = app.indexerApi(self.indexer).config['trakt_id']
+                trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT)
 
                 title = self.showDir.split("/")[-1]
                 data = {
@@ -416,11 +416,11 @@ class QueueItemAdd(ShowQueueItem):
 
             # set up initial values
             self.show.location = self.showDir
-            self.show.subtitles = self.subtitles if self.subtitles is not None else sickbeard.SUBTITLES_DEFAULT
-            self.show.quality = self.quality if self.quality else sickbeard.QUALITY_DEFAULT
-            self.show.flatten_folders = self.flatten_folders if self.flatten_folders is not None else sickbeard.FLATTEN_FOLDERS_DEFAULT
-            self.show.anime = self.anime if self.anime is not None else sickbeard.ANIME_DEFAULT
-            self.show.scene = self.scene if self.scene is not None else sickbeard.SCENE_DEFAULT
+            self.show.subtitles = self.subtitles if self.subtitles is not None else app.SUBTITLES_DEFAULT
+            self.show.quality = self.quality if self.quality else app.QUALITY_DEFAULT
+            self.show.flatten_folders = self.flatten_folders if self.flatten_folders is not None else app.FLATTEN_FOLDERS_DEFAULT
+            self.show.anime = self.anime if self.anime is not None else app.ANIME_DEFAULT
+            self.show.scene = self.scene if self.scene is not None else app.SCENE_DEFAULT
             self.show.paused = self.paused if self.paused is not None else False
 
             # set up default new/missing episode status
@@ -442,17 +442,17 @@ class QueueItemAdd(ShowQueueItem):
             # if self.show.classification and "sports" in self.show.classification.lower():
             #     self.show.sports = 1
 
-        except sickbeard.indexer_exception as e:
+        except app.indexer_exception as e:
             logger.log(
-                u"Unable to add show due to an error with " + sickbeard.indexerApi(self.indexer).name + ": " + ex(e),
+                u"Unable to add show due to an error with " + app.indexerApi(self.indexer).name + ": " + ex(e),
                 logger.ERROR)
             if self.show:
                 ui.notifications.error(
-                    "Unable to add " + str(self.show.name) + " due to an error with " + sickbeard.indexerApi(
+                    "Unable to add " + str(self.show.name) + " due to an error with " + app.indexerApi(
                         self.indexer).name + "")
             else:
                 ui.notifications.error(
-                    "Unable to add show due to an error with " + sickbeard.indexerApi(self.indexer).name + "")
+                    "Unable to add show due to an error with " + app.indexerApi(self.indexer).name + "")
             self._finishEarly()
             return
 
@@ -485,13 +485,13 @@ class QueueItemAdd(ShowQueueItem):
             raise
 
         # add it to the show list
-        sickbeard.showList.append(self.show)
+        app.showList.append(self.show)
 
         try:
             self.show.load_episodes_from_indexer()
         except Exception as e:
             logger.log(
-                u"Error with " + sickbeard.indexerApi(self.show.indexer).name + ", not creating episode list: " + ex(e),
+                u"Error with " + app.indexerApi(self.show.indexer).name + ", not creating episode list: " + ex(e),
                 logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
 
@@ -508,7 +508,7 @@ class QueueItemAdd(ShowQueueItem):
         # FIXME: This needs to be a backlog queue item!!!
         if self.show.default_ep_status == WANTED:
             logger.log(u"Launching backlog for this show since its episodes are WANTED")
-            sickbeard.backlogSearchScheduler.action.searchBacklog([self.show])
+            app.backlogSearchScheduler.action.searchBacklog([self.show])
 
         self.show.write_metadata()
         self.show.update_metadata()
@@ -516,15 +516,15 @@ class QueueItemAdd(ShowQueueItem):
 
         self.show.flush_episodes()
 
-        if sickbeard.USE_TRAKT:
+        if app.USE_TRAKT:
             # if there are specific episodes that need to be added by trakt
-            sickbeard.traktCheckerScheduler.action.manage_new_show(self.show)
+            app.traktCheckerScheduler.action.manage_new_show(self.show)
 
             # add show to trakt.tv library
-            if sickbeard.TRAKT_SYNC:
-                sickbeard.traktCheckerScheduler.action.add_show_trakt_library(self.show)
+            if app.TRAKT_SYNC:
+                app.traktCheckerScheduler.action.add_show_trakt_library(self.show)
 
-            if sickbeard.TRAKT_SYNC_WATCHLIST:
+            if app.TRAKT_SYNC_WATCHLIST:
                 logger.log(u"update watchlist")
                 notifiers.trakt_notifier.update_watchlist(show_obj=self.show)
 
@@ -543,7 +543,7 @@ class QueueItemAdd(ShowQueueItem):
 
     def _finishEarly(self):
         if self.show is not None:
-            sickbeard.showQueueScheduler.action.removeShow(self.show)
+            app.showQueueScheduler.action.removeShow(self.show)
 
         self.finish()
 
@@ -647,18 +647,18 @@ class QueueItemUpdate(ShowQueueItem):
                    (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
 
         logger.log(u'{id}: Retrieving show info from {indexer}'.format
-                   (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.show.indexer).name),
+                   (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name),
                    logger.DEBUG)
         try:
             self.show.load_from_indexer()
-        except sickbeard.indexer_error as e:
+        except app.indexer_error as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
-                       (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.show.indexer).name,
+                       (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name,
                         error_msg=ex(e)), logger.WARNING)
             return
-        except sickbeard.indexer_attributenotfound as e:
+        except app.indexer_attributenotfound as e:
             logger.log(u'{id}: Data retrieved from {indexer} was incomplete. Aborting: {error_msg}'.format
-                       (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.show.indexer).name,
+                       (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name,
                         error_msg=ex(e)), logger.WARNING)
             return
 
@@ -687,16 +687,16 @@ class QueueItemUpdate(ShowQueueItem):
         # get episode list from TVDB
         try:
             IndexerEpList = self.show.load_episodes_from_indexer()
-        except sickbeard.indexer_exception as e:
+        except app.indexer_exception as e:
             logger.log(u'{id}: Unable to get info from {indexer}. The show info will not be refreshed. '
                        u'Error: {error_msg}'.format
-                       (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.show.indexer).name, error_msg=ex(e)),
+                       (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name, error_msg=ex(e)),
                        logger.WARNING)
             IndexerEpList = None
 
         if IndexerEpList is None:
             logger.log(u'{id}: No data returned from {indexer}. Unable to update this show'.format
-                       (id=self.show.indexerid, indexer=sickbeard.indexerApi(self.show.indexer).name),
+                       (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name),
                        logger.WARNING)
         else:
             # for each ep we found on the Indexer delete it from the DB list
@@ -733,7 +733,7 @@ class QueueItemUpdate(ShowQueueItem):
         logger.log(u'{id}: Finished update of {show}'.format
                    (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
         # Refresh show needs to be forced since current execution locks the queue
-        sickbeard.showQueueScheduler.action.refreshShow(self.show, True)
+        app.showQueueScheduler.action.refreshShow(self.show, True)
         self.finish()
 
 
@@ -751,9 +751,9 @@ class QueueItemRemove(ShowQueueItem):
 
         # Need to first remove the episodes from the Trakt collection, because we need the list of
         # Episodes from the db to know which eps to remove.
-        if sickbeard.USE_TRAKT:
+        if app.USE_TRAKT:
             try:
-                sickbeard.traktCheckerScheduler.action.remove_show_trakt_library(self.show)
+                app.traktCheckerScheduler.action.remove_show_trakt_library(self.show)
             except TraktException as e:
                 logger.log(u'{id}: Unable to delete show {show} from Trakt. '
                            u'Please remove manually otherwise it will be added again. Error: {error_msg}'.format

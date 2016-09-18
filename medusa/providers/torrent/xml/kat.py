@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 import traceback
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urljoin
 import validators
 from ..TorrentProvider import TorrentProvider
@@ -133,7 +133,7 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                     # because we want to use magnets if connecting direct to client
                     # so that proxies work.
                     download_url = row.enclosure['url']
-                    if sickbeard.TORRENT_METHOD != 'blackhole' or 'torcache' not in download_url:
+                    if app.TORRENT_METHOD != 'blackhole' or 'torcache' not in download_url:
                         download_url = row.find('torrent:magneturi').next.replace('CDATA', '').strip('[!]') + self._custom_trackers
 
                     if not (title and download_url):

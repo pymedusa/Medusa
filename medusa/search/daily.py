@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 import threading
 from datetime import date, datetime, timedelta
 
-import medusa as sickbeard
+import medusa as app
 from .queue import DailySearchQueueItem
 from .. import common, logger
 from ..db import DBConnection
@@ -51,7 +51,7 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         if self.amActive:
             logger.log('Daily search is still running, not starting it again', logger.DEBUG)
             return
-        elif sickbeard.forcedSearchQueueScheduler.action.is_forced_search_in_progress() and not force:
+        elif app.forcedSearchQueueScheduler.action.is_forced_search_in_progress() and not force:
             logger.log('Manual search is running. Can\'t start Daily search', logger.WARNING)
             return
 
@@ -80,7 +80,7 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
             try:
                 show_id = int(db_episode[b'showid'])
                 if not show or show_id != show.indexerid:
-                    show = Show.find(sickbeard.showList, show_id)
+                    show = Show.find(app.showList, show_id)
 
                 # for when there is orphaned series in the database but not loaded into our show list
                 if not show or show.paused:
@@ -114,7 +114,7 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
             main_db_con.mass_action(new_releases)
 
         # queue episode for daily search
-        sickbeard.searchQueueScheduler.action.add_item(
+        app.searchQueueScheduler.action.add_item(
             DailySearchQueueItem()
         )
 

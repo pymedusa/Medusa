@@ -1,5 +1,5 @@
 <%!
-    import medusa as sickbeard
+    import medusa as app
     from medusa.helpers import anon_url
 %>
 <table id="addRootDirTable" class="sickbeardTable tablesorter">
@@ -23,20 +23,20 @@
         indexer = 0
         if curDir['existing_info'][0]:
             indexer = curDir['existing_info'][2]
-        elif sickbeard.INDEXER_DEFAULT > 0:
-            indexer = sickbeard.INDEXER_DEFAULT
+        elif app.INDEXER_DEFAULT > 0:
+            indexer = app.INDEXER_DEFAULT
     %>
     <tr>
         <td class="col-checkbox"><input type="checkbox" id="${show_id}" class="dirCheck" checked=checked></td>
         <td><label for="${show_id}">${curDir['display_dir']}</label></td>
         % if curDir['existing_info'][1] and indexer > 0:
-            <td><a href="${anon_url(sickbeard.indexerApi(indexer).config['show_url'], curDir['existing_info'][0])}">${curDir['existing_info'][1]}</a></td>
+            <td><a href="${anon_url(app.indexerApi(indexer).config['show_url'], curDir['existing_info'][0])}">${curDir['existing_info'][1]}</a></td>
         % else:
             <td>?</td>
         % endif
         <td align="center">
             <select name="indexer">
-                % for curIndexer in sickbeard.indexerApi().indexers.iteritems():
+                % for curIndexer in app.indexerApi().indexers.iteritems():
                     <option value="${curIndexer[0]}" ${('', 'selected="selected"')[curIndexer[0] == indexer]}>${curIndexer[1]}</option>
                 % endfor
             </select>

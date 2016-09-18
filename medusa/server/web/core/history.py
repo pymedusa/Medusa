@@ -2,7 +2,7 @@
 
 from __future__ import unicode_literals
 
-import medusa as sickbeard
+import medusa as app
 from tornado.routes import route
 from .base import PageTemplate, WebRoot
 from .... import ui
@@ -20,16 +20,16 @@ class History(WebRoot):
     def index(self, limit=None):
 
         if limit is None:
-            if sickbeard.HISTORY_LIMIT:
-                limit = int(sickbeard.HISTORY_LIMIT)
+            if app.HISTORY_LIMIT:
+                limit = int(app.HISTORY_LIMIT)
             else:
                 limit = 100
         else:
             limit = try_int(limit, 100)
 
-        sickbeard.HISTORY_LIMIT = limit
+        app.HISTORY_LIMIT = limit
 
-        sickbeard.save_config()
+        app.save_config()
 
         history = self.history.get(limit)
 

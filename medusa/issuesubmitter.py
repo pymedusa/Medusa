@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 from github import InputFileContent
 from github.GithubException import GithubException, RateLimitExceededException
-import medusa as sickbeard
+import medusa as app
 from .classes import ErrorViewer
 from .github_client import authenticate, get_github_repo
 
@@ -45,7 +45,7 @@ class IssueSubmitter(object):
         :param github:
         :type github: Github
         :param logline:
-        :type logline: sickbeard.logger.LogLine
+        :type logline: medusa.logger.LogLine
         :return:
         :rtype: github.Gist.Gist
         """
@@ -59,7 +59,7 @@ class IssueSubmitter(object):
         """Create the issue data expected by github api to be submitted.
 
         :param logline:
-        :type logline: sickbeard.logger.LogLine
+        :type logline: medusa.logger.LogLine
         :param log_url:
         :type log_url: str
         :return:
@@ -70,14 +70,14 @@ class IssueSubmitter(object):
         except ValueError:
             locale_name = 'unknown'
 
-        commit = sickbeard.CUR_COMMIT_HASH
+        commit = app.CUR_COMMIT_HASH
         base_url = '../blob/{commit}'.format(commit=commit) if commit else None
         return '\n'.join([
             '### INFO',
             '**Python Version**: `{python_version}`'.format(python_version=sys.version[:120].replace('\n', '')),
             '**Operating System**: `{os}`'.format(os=platform.platform()),
             '**Locale**: `{locale}`'.format(locale=locale_name),
-            '**Branch**: [{branch}](../tree/{branch})'.format(branch=sickbeard.BRANCH),
+            '**Branch**: [{branch}](../tree/{branch})'.format(branch=app.BRANCH),
             '**Commit**: PyMedusa/SickRage@{commit}'.format(commit=commit),
             '**Link to Log**: {log_url}'.format(log_url=log_url) if log_url else '**No Log available**',
             '### ERROR',
@@ -93,7 +93,7 @@ class IssueSubmitter(object):
         :param github_repo:
         :type github_repo: github.Repository.Repository
         :param loglines:
-        :type loglines: list of sickbeard.logger.LogLine
+        :type loglines: list of medusa.logger.LogLine
         :param max_age:
         :type max_age: timedelta
         :return:
@@ -141,7 +141,7 @@ class IssueSubmitter(object):
         :return: user message and issue number
         :rtype: list of tuple(str, str)
         """
-        if not sickbeard.DEBUG or not sickbeard.GIT_USERNAME or not sickbeard.GIT_PASSWORD:
+        if not app.DEBUG or not app.GIT_USERNAME or not app.GIT_PASSWORD:
             logger.warning(IssueSubmitter.INVALID_CONFIG)
             return [(IssueSubmitter.INVALID_CONFIG, None)]
 
@@ -149,7 +149,7 @@ class IssueSubmitter(object):
             logger.info(IssueSubmitter.NO_ISSUES)
             return [(IssueSubmitter.NO_ISSUES, None)]
 
-        if not sickbeard.DEVELOPER and version_checker.need_update():
+        if not app.DEVELOPER and version_checker.need_update():
             logger.warning(IssueSubmitter.UNSUPPORTED_VERSION)
             return [(IssueSubmitter.UNSUPPORTED_VERSION, None)]
 
@@ -159,11 +159,11 @@ class IssueSubmitter(object):
 
         self.running = True
         try:
-            github = authenticate(sickbeard.GIT_USERNAME, sickbeard.GIT_PASSWORD)
+            github = authenticate(app.GIT_USERNAME, app.GIT_PASSWORD)
             if not github:
                 return [(IssueSubmitter.BAD_CREDENTIALS, None)]
 
-            github_repo = get_github_repo(sickbeard.GIT_ORG, sickbeard.GIT_REPO, gh=github)
+            github_repo = get_github_repo(app.GIT_ORG, app.GIT_REPO, gh=github)
             loglines = ErrorViewer.errors[:max_issues]
             similar_issues = IssueSubmitter.find_similar_issues(github_repo, loglines)
 
@@ -186,7 +186,7 @@ class IssueSubmitter(object):
         :param github_repo:
         :type github_repo: github.Repository.Repository
         :param loglines:
-        :type loglines: list of sickbeard.logger.LogLine
+        :type loglines: list of medusa.logger.LogLine
         :param similar_issues:
         :type similar_issues: dict(str, github.Issue.Issue)
         :return:

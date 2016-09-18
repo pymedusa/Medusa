@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for sickbeard.server.web.core.error_logs.py."""
+"""Tests for medusa.server.web.core.error_logs.py."""
 
 from github.GithubException import BadCredentialsException, RateLimitExceededException
 from medusa import classes

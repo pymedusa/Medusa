@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as sickbeard
+    import medusa as app
     import os.path
     import datetime
     import re

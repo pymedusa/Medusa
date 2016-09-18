@@ -5,7 +5,7 @@ import re
 from datetime import date
 
 from bs4 import BeautifulSoup
-import medusa as sickbeard
+import medusa as app
 from . import helpers
 from .helper.encoding import ek
 
@@ -104,7 +104,7 @@ class ImdbPopular(object):
 
         :param image_url: Image source URL
         """
-        path = ek(os.path.abspath, ek(os.path.join, sickbeard.CACHE_DIR, 'images', 'imdb_popular'))
+        path = ek(os.path.abspath, ek(os.path.join, app.CACHE_DIR, 'images', 'imdb_popular'))
 
         if not ek(os.path.exists, path):
             ek(os.makedirs, path)

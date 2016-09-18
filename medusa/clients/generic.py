@@ -11,7 +11,7 @@ from hashlib import sha1
 
 from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
-import medusa as sickbeard
+import medusa as app
 import requests
 from six.moves.http_cookiejar import CookieJar
 from .. import db, helpers, logger
@@ -34,10 +34,10 @@ class GenericClient(object):
         :type password: string
         """
         self.name = name
-        self.username = sickbeard.TORRENT_USERNAME if username is None else username
-        self.password = sickbeard.TORRENT_PASSWORD if password is None else password
-        self.host = sickbeard.TORRENT_HOST if host is None else host
-        self.rpcurl = sickbeard.TORRENT_RPCURL
+        self.username = app.TORRENT_USERNAME if username is None else username
+        self.password = app.TORRENT_PASSWORD if password is None else password
+        self.host = app.TORRENT_HOST if host is None else host
+        self.rpcurl = app.TORRENT_RPCURL
         self.url = None
         self.response = None
         self.auth = None
@@ -107,7 +107,7 @@ class GenericClient(object):
         """Return the True/False from the client when a torrent is added via url (magnet or .torrent link).
 
         :param result:
-        :type result: sickbeard.classes.SearchResult
+        :type result: medusa.classes.SearchResult
         """
         raise NotImplementedError
 
@@ -115,7 +115,7 @@ class GenericClient(object):
         """Return the True/False from the client when a torrent is added via result.content (only .torrent file).
 
         :param result:
-        :type result: sickbeard.classes.SearchResult
+        :type result: medusa.classes.SearchResult
         """
         raise NotImplementedError
 
@@ -123,7 +123,7 @@ class GenericClient(object):
         """Return the True/False from the client when a torrent is set with label.
 
         :param result:
-        :type result: sickbeard.classes.SearchResult
+        :type result: medusa.classes.SearchResult
         :return:
         :rtype: bool
         """
@@ -133,7 +133,7 @@ class GenericClient(object):
         """Return the True/False from the client when a torrent is set with ratio.
 
         :param result:
-        :type result: sickbeard.classes.SearchResult
+        :type result: medusa.classes.SearchResult
         :return:
         :rtype: bool
         """
@@ -143,7 +143,7 @@ class GenericClient(object):
         """Return the True/False from the client when a torrent is set with a seed time.
 
         :param result:
-        :type result: sickbeard.classes.SearchResult
+        :type result: medusa.classes.SearchResult
         :return:
         :rtype: bool
         """
@@ -153,7 +153,7 @@ class GenericClient(object):
         """Return the True/False from the client when a torrent is set with result.priority (-1 = low, 0 = normal, 1 = high).
 
         :param result:
-        :type result: sickbeard.classes.SearchResult
+        :type result: medusa.classes.SearchResult
         :return:
         :rtype: bool
         """
@@ -173,7 +173,7 @@ class GenericClient(object):
         """Return the True/False from the client when a torrent is set with pause.
 
         :param result:
-        :type result: sickbeard.classes.SearchResult
+        :type result: medusa.classes.SearchResult
         :return:
         :rtype: bool
         """
@@ -210,7 +210,7 @@ class GenericClient(object):
         """Add torrent to the client.
 
         :param result:
-        :type result: sickbeard.classes.SearchResult
+        :type result: medusa.classes.SearchResult
         :return:
         :rtype: str or bool
         """

@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 import traceback
 
-import medusa as sickbeard
+import medusa as app
 from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
 from .recommended import RecommendedShow
@@ -37,7 +37,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         self.session = helpers.make_session()
         self.recommender = "Anidb Popular"
         self.base_url = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
-        self.anidb = Anidb(cache_dir=sickbeard.CACHE_DIR)
+        self.anidb = Anidb(cache_dir=app.CACHE_DIR)
 
     def _create_recommended_show(self, show_obj):
         """Create the RecommendedShow object from the returned showobj"""

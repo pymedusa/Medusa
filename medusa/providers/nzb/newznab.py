@@ -24,7 +24,7 @@ import re
 import time
 import traceback
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urljoin
 import validators
 from .NZBProvider import NZBProvider
@@ -97,7 +97,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 'limit': 100,
                 'offset': 0,
                 'cat': self.catIDs.strip(', ') or '5030,5040',
-                'maxage': sickbeard.USENET_RETENTION
+                'maxage': app.USENET_RETENTION
             }
 
             if self.needs_auth and self.key:
@@ -134,7 +134,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                     if search_params['t'] != 'tvsearch':
                         search_params['q'] = search_string
 
-                time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+                time.sleep(cpu_presets[app.CPU_PRESET])
 
                 response = self.get_url(urljoin(self.url, 'api'), params=search_params, returns='response')
                 if not response or not response.text:
@@ -318,7 +318,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         Returns found image or the default newznab image
         """
         if ek(os.path.isfile,
-              ek(os.path.join, sickbeard.PROG_DIR, 'gui', sickbeard.GUI_NAME, 'images', 'providers',
+              ek(os.path.join, app.PROG_DIR, 'gui', app.GUI_NAME, 'images', 'providers',
                  self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'newznab.png'

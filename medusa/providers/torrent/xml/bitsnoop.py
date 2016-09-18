@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 import traceback
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urljoin
 from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
@@ -116,7 +116,7 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                     # because we want to use magnets if connecting direct to client
                     # so that proxies work.
                     download_url = row.enclosure['url']
-                    if sickbeard.TORRENT_METHOD != 'blackhole' or 'torcache' not in download_url:
+                    if app.TORRENT_METHOD != 'blackhole' or 'torcache' not in download_url:
                         download_url = row.find('magneturi').next.replace('CDATA', '').strip('[]') + self._custom_trackers
 
                     if not all([title, download_url]):

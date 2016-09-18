@@ -22,7 +22,7 @@ import datetime
 import os.path
 import re
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urlsplit
 from six import iteritems
 from six.moves.urllib.parse import urlunsplit, uses_netloc
@@ -64,12 +64,12 @@ def change_HTTPS_CERT(https_cert):
     :return: True on success, False on failure
     """
     if https_cert == '':
-        sickbeard.HTTPS_CERT = ''
+        app.HTTPS_CERT = ''
         return True
 
-    if ek(os.path.normpath, sickbeard.HTTPS_CERT) != ek(os.path.normpath, https_cert):
+    if ek(os.path.normpath, app.HTTPS_CERT) != ek(os.path.normpath, https_cert):
         if helpers.makeDir(ek(os.path.dirname, ek(os.path.abspath, https_cert))):
-            sickbeard.HTTPS_CERT = ek(os.path.normpath, https_cert)
+            app.HTTPS_CERT = ek(os.path.normpath, https_cert)
             logger.log(u"Changed https cert path to " + https_cert)
         else:
             return False
@@ -85,12 +85,12 @@ def change_HTTPS_KEY(https_key):
     :return: True on success, False on failure
     """
     if https_key == '':
-        sickbeard.HTTPS_KEY = ''
+        app.HTTPS_KEY = ''
         return True
 
-    if ek(os.path.normpath, sickbeard.HTTPS_KEY) != ek(os.path.normpath, https_key):
+    if ek(os.path.normpath, app.HTTPS_KEY) != ek(os.path.normpath, https_key):
         if helpers.makeDir(ek(os.path.dirname, ek(os.path.abspath, https_key))):
-            sickbeard.HTTPS_KEY = ek(os.path.normpath, https_key)
+            app.HTTPS_KEY = ek(os.path.normpath, https_key)
             logger.log(u"Changed https key path to " + https_key)
         else:
             return False
@@ -105,14 +105,14 @@ def change_LOG_DIR(log_dir):
     :param log_dir: Path to new logging directory
     :return: True on success, False on failure
     """
-    abs_log_dir = ek(os.path.normpath, ek(os.path.join, sickbeard.DATA_DIR, log_dir))
+    abs_log_dir = ek(os.path.normpath, ek(os.path.join, app.DATA_DIR, log_dir))
 
-    if ek(os.path.normpath, sickbeard.LOG_DIR) != abs_log_dir:
+    if ek(os.path.normpath, app.LOG_DIR) != abs_log_dir:
         if not helpers.makeDir(abs_log_dir):
             return False
 
-        sickbeard.ACTUAL_LOG_DIR = ek(os.path.normpath, log_dir)
-        sickbeard.LOG_DIR = abs_log_dir
+        app.ACTUAL_LOG_DIR = ek(os.path.normpath, log_dir)
+        app.LOG_DIR = abs_log_dir
 
     return True
 
@@ -125,12 +125,12 @@ def change_NZB_DIR(nzb_dir):
     :return: True on success, False on failure
     """
     if nzb_dir == '':
-        sickbeard.NZB_DIR = ''
+        app.NZB_DIR = ''
         return True
 
-    if ek(os.path.normpath, sickbeard.NZB_DIR) != ek(os.path.normpath, nzb_dir):
+    if ek(os.path.normpath, app.NZB_DIR) != ek(os.path.normpath, nzb_dir):
         if helpers.makeDir(nzb_dir):
-            sickbeard.NZB_DIR = ek(os.path.normpath, nzb_dir)
+            app.NZB_DIR = ek(os.path.normpath, nzb_dir)
             logger.log(u"Changed NZB folder to " + nzb_dir)
         else:
             return False
@@ -146,12 +146,12 @@ def change_TORRENT_DIR(torrent_dir):
     :return: True on success, False on failure
     """
     if torrent_dir == '':
-        sickbeard.TORRENT_DIR = ''
+        app.TORRENT_DIR = ''
         return True
 
-    if ek(os.path.normpath, sickbeard.TORRENT_DIR) != ek(os.path.normpath, torrent_dir):
+    if ek(os.path.normpath, app.TORRENT_DIR) != ek(os.path.normpath, torrent_dir):
         if helpers.makeDir(torrent_dir):
-            sickbeard.TORRENT_DIR = ek(os.path.normpath, torrent_dir)
+            app.TORRENT_DIR = ek(os.path.normpath, torrent_dir)
             logger.log(u"Changed torrent folder to " + torrent_dir)
         else:
             return False
@@ -167,12 +167,12 @@ def change_TV_DOWNLOAD_DIR(tv_download_dir):
     :return: True on success, False on failure
     """
     if tv_download_dir == '':
-        sickbeard.TV_DOWNLOAD_DIR = ''
+        app.TV_DOWNLOAD_DIR = ''
         return True
 
-    if ek(os.path.normpath, sickbeard.TV_DOWNLOAD_DIR) != ek(os.path.normpath, tv_download_dir):
+    if ek(os.path.normpath, app.TV_DOWNLOAD_DIR) != ek(os.path.normpath, tv_download_dir):
         if helpers.makeDir(tv_download_dir):
-            sickbeard.TV_DOWNLOAD_DIR = ek(os.path.normpath, tv_download_dir)
+            app.TV_DOWNLOAD_DIR = ek(os.path.normpath, tv_download_dir)
             logger.log(u"Changed TV download folder to " + tv_download_dir)
         else:
             return False
@@ -187,12 +187,12 @@ def change_AUTOPOSTPROCESSOR_FREQUENCY(freq):
 
     :param freq: New frequency
     """
-    sickbeard.AUTOPOSTPROCESSOR_FREQUENCY = try_int(freq, sickbeard.DEFAULT_AUTOPOSTPROCESSOR_FREQUENCY)
+    app.AUTOPOSTPROCESSOR_FREQUENCY = try_int(freq, app.DEFAULT_AUTOPOSTPROCESSOR_FREQUENCY)
 
-    if sickbeard.AUTOPOSTPROCESSOR_FREQUENCY < sickbeard.MIN_AUTOPOSTPROCESSOR_FREQUENCY:
-        sickbeard.AUTOPOSTPROCESSOR_FREQUENCY = sickbeard.MIN_AUTOPOSTPROCESSOR_FREQUENCY
+    if app.AUTOPOSTPROCESSOR_FREQUENCY < app.MIN_AUTOPOSTPROCESSOR_FREQUENCY:
+        app.AUTOPOSTPROCESSOR_FREQUENCY = app.MIN_AUTOPOSTPROCESSOR_FREQUENCY
 
-    sickbeard.autoPostProcessorScheduler.cycleTime = datetime.timedelta(minutes=sickbeard.AUTOPOSTPROCESSOR_FREQUENCY)
+    app.autoPostProcessorScheduler.cycleTime = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
 
 
 def change_DAILYSEARCH_FREQUENCY(freq):
@@ -201,12 +201,12 @@ def change_DAILYSEARCH_FREQUENCY(freq):
 
     :param freq: New frequency
     """
-    sickbeard.DAILYSEARCH_FREQUENCY = try_int(freq, sickbeard.DEFAULT_DAILYSEARCH_FREQUENCY)
+    app.DAILYSEARCH_FREQUENCY = try_int(freq, app.DEFAULT_DAILYSEARCH_FREQUENCY)
 
-    if sickbeard.DAILYSEARCH_FREQUENCY < sickbeard.MIN_DAILYSEARCH_FREQUENCY:
-        sickbeard.DAILYSEARCH_FREQUENCY = sickbeard.MIN_DAILYSEARCH_FREQUENCY
+    if app.DAILYSEARCH_FREQUENCY < app.MIN_DAILYSEARCH_FREQUENCY:
+        app.DAILYSEARCH_FREQUENCY = app.MIN_DAILYSEARCH_FREQUENCY
 
-    sickbeard.dailySearchScheduler.cycleTime = datetime.timedelta(minutes=sickbeard.DAILYSEARCH_FREQUENCY)
+    app.dailySearchScheduler.cycleTime = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
 
 
 def change_BACKLOG_FREQUENCY(freq):
@@ -215,13 +215,13 @@ def change_BACKLOG_FREQUENCY(freq):
 
     :param freq: New frequency
     """
-    sickbeard.BACKLOG_FREQUENCY = try_int(freq, sickbeard.DEFAULT_BACKLOG_FREQUENCY)
+    app.BACKLOG_FREQUENCY = try_int(freq, app.DEFAULT_BACKLOG_FREQUENCY)
 
-    sickbeard.MIN_BACKLOG_FREQUENCY = sickbeard.get_backlog_cycle_time()
-    if sickbeard.BACKLOG_FREQUENCY < sickbeard.MIN_BACKLOG_FREQUENCY:
-        sickbeard.BACKLOG_FREQUENCY = sickbeard.MIN_BACKLOG_FREQUENCY
+    app.MIN_BACKLOG_FREQUENCY = app.get_backlog_cycle_time()
+    if app.BACKLOG_FREQUENCY < app.MIN_BACKLOG_FREQUENCY:
+        app.BACKLOG_FREQUENCY = app.MIN_BACKLOG_FREQUENCY
 
-    sickbeard.backlogSearchScheduler.cycleTime = datetime.timedelta(minutes=sickbeard.BACKLOG_FREQUENCY)
+    app.backlogSearchScheduler.cycleTime = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
 
 
 def change_UPDATE_FREQUENCY(freq):
@@ -230,12 +230,12 @@ def change_UPDATE_FREQUENCY(freq):
 
     :param freq: New frequency
     """
-    sickbeard.UPDATE_FREQUENCY = try_int(freq, sickbeard.DEFAULT_UPDATE_FREQUENCY)
+    app.UPDATE_FREQUENCY = try_int(freq, app.DEFAULT_UPDATE_FREQUENCY)
 
-    if sickbeard.UPDATE_FREQUENCY < sickbeard.MIN_UPDATE_FREQUENCY:
-        sickbeard.UPDATE_FREQUENCY = sickbeard.MIN_UPDATE_FREQUENCY
+    if app.UPDATE_FREQUENCY < app.MIN_UPDATE_FREQUENCY:
+        app.UPDATE_FREQUENCY = app.MIN_UPDATE_FREQUENCY
 
-    sickbeard.versionCheckScheduler.cycleTime = datetime.timedelta(hours=sickbeard.UPDATE_FREQUENCY)
+    app.versionCheckScheduler.cycleTime = datetime.timedelta(hours=app.UPDATE_FREQUENCY)
 
 
 def change_SHOWUPDATE_HOUR(freq):
@@ -244,14 +244,14 @@ def change_SHOWUPDATE_HOUR(freq):
 
     :param freq: New frequency
     """
-    sickbeard.SHOWUPDATE_HOUR = try_int(freq, sickbeard.DEFAULT_SHOWUPDATE_HOUR)
+    app.SHOWUPDATE_HOUR = try_int(freq, app.DEFAULT_SHOWUPDATE_HOUR)
 
-    if sickbeard.SHOWUPDATE_HOUR > 23:
-        sickbeard.SHOWUPDATE_HOUR = 0
-    elif sickbeard.SHOWUPDATE_HOUR < 0:
-        sickbeard.SHOWUPDATE_HOUR = 0
+    if app.SHOWUPDATE_HOUR > 23:
+        app.SHOWUPDATE_HOUR = 0
+    elif app.SHOWUPDATE_HOUR < 0:
+        app.SHOWUPDATE_HOUR = 0
 
-    sickbeard.showUpdateScheduler.start_time = datetime.time(hour=sickbeard.SHOWUPDATE_HOUR)
+    app.showUpdateScheduler.start_time = datetime.time(hour=app.SHOWUPDATE_HOUR)
 
 
 def change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency):
@@ -263,7 +263,7 @@ def change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency):
     if subtitles_finder_frequency == '' or subtitles_finder_frequency is None:
         subtitles_finder_frequency = 1
 
-    sickbeard.SUBTITLES_FINDER_FREQUENCY = try_int(subtitles_finder_frequency, 1)
+    app.SUBTITLES_FINDER_FREQUENCY = try_int(subtitles_finder_frequency, 1)
 
 
 def change_VERSION_NOTIFY(version_notify):
@@ -272,15 +272,15 @@ def change_VERSION_NOTIFY(version_notify):
 
     :param version_notify: New frequency
     """
-    oldSetting = sickbeard.VERSION_NOTIFY
+    oldSetting = app.VERSION_NOTIFY
 
-    sickbeard.VERSION_NOTIFY = version_notify
+    app.VERSION_NOTIFY = version_notify
 
     if not version_notify:
-        sickbeard.NEWEST_VERSION_STRING = None
+        app.NEWEST_VERSION_STRING = None
 
     if oldSetting is False and version_notify is True:
-        sickbeard.versionCheckScheduler.forceRun()
+        app.versionCheckScheduler.forceRun()
 
 
 def change_DOWNLOAD_PROPERS(download_propers):
@@ -292,20 +292,20 @@ def change_DOWNLOAD_PROPERS(download_propers):
     """
     download_propers = checkbox_to_value(download_propers)
 
-    if sickbeard.DOWNLOAD_PROPERS == download_propers:
+    if app.DOWNLOAD_PROPERS == download_propers:
         return
 
-    sickbeard.DOWNLOAD_PROPERS = download_propers
-    if sickbeard.DOWNLOAD_PROPERS:
-        if not sickbeard.properFinderScheduler.enable:
+    app.DOWNLOAD_PROPERS = download_propers
+    if app.DOWNLOAD_PROPERS:
+        if not app.properFinderScheduler.enable:
             logger.log(u"Starting PROPERFINDER thread", logger.INFO)
-            sickbeard.properFinderScheduler.silent = False
-            sickbeard.properFinderScheduler.enable = True
+            app.properFinderScheduler.silent = False
+            app.properFinderScheduler.enable = True
         else:
             logger.log(u"Unable to start PROPERFINDER thread. Already running", logger.INFO)
     else:
-        sickbeard.properFinderScheduler.enable = False
-        sickbeard.traktCheckerScheduler.silent = True
+        app.properFinderScheduler.enable = False
+        app.traktCheckerScheduler.silent = True
         logger.log(u"Stopping PROPERFINDER thread", logger.INFO)
 
 
@@ -318,20 +318,20 @@ def change_USE_TRAKT(use_trakt):
     """
     use_trakt = checkbox_to_value(use_trakt)
 
-    if sickbeard.USE_TRAKT == use_trakt:
+    if app.USE_TRAKT == use_trakt:
         return
 
-    sickbeard.USE_TRAKT = use_trakt
-    if sickbeard.USE_TRAKT:
-        if not sickbeard.traktCheckerScheduler.enable:
+    app.USE_TRAKT = use_trakt
+    if app.USE_TRAKT:
+        if not app.traktCheckerScheduler.enable:
             logger.log(u"Starting TRAKTCHECKER thread", logger.INFO)
-            sickbeard.traktCheckerScheduler.silent = False
-            sickbeard.traktCheckerScheduler.enable = True
+            app.traktCheckerScheduler.silent = False
+            app.traktCheckerScheduler.enable = True
         else:
             logger.log(u"Unable to start TRAKTCHECKER thread. Already running", logger.INFO)
     else:
-        sickbeard.traktCheckerScheduler.enable = False
-        sickbeard.traktCheckerScheduler.silent = True
+        app.traktCheckerScheduler.enable = False
+        app.traktCheckerScheduler.silent = True
         logger.log(u"Stopping TRAKTCHECKER thread", logger.INFO)
 
 
@@ -344,20 +344,20 @@ def change_USE_SUBTITLES(use_subtitles):
     """
     use_subtitles = checkbox_to_value(use_subtitles)
 
-    if sickbeard.USE_SUBTITLES == use_subtitles:
+    if app.USE_SUBTITLES == use_subtitles:
         return
 
-    sickbeard.USE_SUBTITLES = use_subtitles
-    if sickbeard.USE_SUBTITLES:
-        if not sickbeard.subtitlesFinderScheduler.enable:
+    app.USE_SUBTITLES = use_subtitles
+    if app.USE_SUBTITLES:
+        if not app.subtitlesFinderScheduler.enable:
             logger.log(u"Starting SUBTITLESFINDER thread", logger.INFO)
-            sickbeard.subtitlesFinderScheduler.silent = False
-            sickbeard.subtitlesFinderScheduler.enable = True
+            app.subtitlesFinderScheduler.silent = False
+            app.subtitlesFinderScheduler.enable = True
         else:
             logger.log(u"Unable to start SUBTITLESFINDER thread. Already running", logger.INFO)
     else:
-        sickbeard.subtitlesFinderScheduler.enable = False
-        sickbeard.subtitlesFinderScheduler.silent = True
+        app.subtitlesFinderScheduler.enable = False
+        app.subtitlesFinderScheduler.silent = True
         logger.log(u"Stopping SUBTITLESFINDER thread", logger.INFO)
 
 
@@ -370,21 +370,21 @@ def change_PROCESS_AUTOMATICALLY(process_automatically):
     """
     process_automatically = checkbox_to_value(process_automatically)
 
-    if sickbeard.PROCESS_AUTOMATICALLY == process_automatically:
+    if app.PROCESS_AUTOMATICALLY == process_automatically:
         return
 
-    sickbeard.PROCESS_AUTOMATICALLY = process_automatically
-    if sickbeard.PROCESS_AUTOMATICALLY:
-        if not sickbeard.autoPostProcessorScheduler.enable:
+    app.PROCESS_AUTOMATICALLY = process_automatically
+    if app.PROCESS_AUTOMATICALLY:
+        if not app.autoPostProcessorScheduler.enable:
             logger.log(u"Starting POSTPROCESSOR thread", logger.INFO)
-            sickbeard.autoPostProcessorScheduler.silent = False
-            sickbeard.autoPostProcessorScheduler.enable = True
+            app.autoPostProcessorScheduler.silent = False
+            app.autoPostProcessorScheduler.enable = True
         else:
             logger.log(u"Unable to start POSTPROCESSOR thread. Already running", logger.INFO)
     else:
         logger.log(u"Stopping POSTPROCESSOR thread", logger.INFO)
-        sickbeard.autoPostProcessorScheduler.enable = False
-        sickbeard.autoPostProcessorScheduler.silent = True
+        app.autoPostProcessorScheduler.enable = False
+        app.autoPostProcessorScheduler.silent = True
 
 
 def CheckSection(CFG, sec):
@@ -570,12 +570,12 @@ def check_setting_float(config, cfg_name, item_name, def_val, silent=True):
 def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_log=False):
     # For passwords you must include the word `password` in the item_name and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
     if not censor_log:
-        censor_level = sickbeard.common.privacy_levels['stupid']
+        censor_level = app.common.privacy_levels['stupid']
     else:
-        censor_level = sickbeard.common.privacy_levels[censor_log]
-    privacy_level = sickbeard.common.privacy_levels[sickbeard.PRIVACY_LEVEL]
+        censor_level = app.common.privacy_levels[censor_log]
+    privacy_level = app.common.privacy_levels[app.PRIVACY_LEVEL]
     if bool(item_name.find('password') + 1):
-        encryption_version = sickbeard.ENCRYPTION_VERSION
+        encryption_version = app.ENCRYPTION_VERSION
     else:
         encryption_version = 0
 
@@ -663,8 +663,8 @@ class ConfigMigrator(object):
         self.config_obj = config_obj
 
         # check the version of the config
-        self.config_version = check_setting_int(config_obj, 'General', 'config_version', sickbeard.CONFIG_VERSION)
-        self.expected_config_version = sickbeard.CONFIG_VERSION
+        self.config_version = check_setting_int(config_obj, 'General', 'config_version', app.CONFIG_VERSION)
+        self.expected_config_version = app.CONFIG_VERSION
         self.migration_names = {
             1: 'Custom naming',
             2: 'Sync backup number with version number',
@@ -688,7 +688,7 @@ class ConfigMigrator(object):
                 (self.config_version, self.expected_config_version)
             )
 
-        sickbeard.CONFIG_VERSION = self.config_version
+        app.CONFIG_VERSION = self.config_version
 
         while self.config_version < self.expected_config_version:
             next_version = self.config_version + 1
@@ -699,7 +699,7 @@ class ConfigMigrator(object):
                 migration_name = ''
 
             logger.log(u"Backing up config before upgrade")
-            if not helpers.backupVersionedFile(sickbeard.CONFIG_FILE, self.config_version):
+            if not helpers.backupVersionedFile(app.CONFIG_FILE, self.config_version):
                 logger.log_error_and_exit(u"Config backup failed, abort upgrading config")
             else:
                 logger.log(u"Proceeding with upgrade")
@@ -710,9 +710,9 @@ class ConfigMigrator(object):
             self.config_version = next_version
 
             # save new config after migration
-            sickbeard.CONFIG_VERSION = self.config_version
+            app.CONFIG_VERSION = self.config_version
             logger.log(u"Saving config file to disk")
-            sickbeard.save_config()
+            app.save_config()
 
     # Migration v1: Custom naming
     def _migrate_v1(self):
@@ -720,18 +720,18 @@ class ConfigMigrator(object):
         Reads in the old naming settings from your config and generates a new config template from them.
         """
 
-        sickbeard.NAMING_PATTERN = self._name_to_pattern()
-        logger.log(u"Based on your old settings I'm setting your new naming pattern to: " + sickbeard.NAMING_PATTERN)
+        app.NAMING_PATTERN = self._name_to_pattern()
+        logger.log(u"Based on your old settings I'm setting your new naming pattern to: " + app.NAMING_PATTERN)
 
-        sickbeard.NAMING_CUSTOM_ABD = bool(check_setting_int(self.config_obj, 'General', 'naming_dates', 0))
+        app.NAMING_CUSTOM_ABD = bool(check_setting_int(self.config_obj, 'General', 'naming_dates', 0))
 
-        if sickbeard.NAMING_CUSTOM_ABD:
-            sickbeard.NAMING_ABD_PATTERN = self._name_to_pattern(True)
-            logger.log(u"Adding a custom air-by-date naming pattern to your config: " + sickbeard.NAMING_ABD_PATTERN)
+        if app.NAMING_CUSTOM_ABD:
+            app.NAMING_ABD_PATTERN = self._name_to_pattern(True)
+            logger.log(u"Adding a custom air-by-date naming pattern to your config: " + app.NAMING_ABD_PATTERN)
         else:
-            sickbeard.NAMING_ABD_PATTERN = naming.name_abd_presets[0]
+            app.NAMING_ABD_PATTERN = naming.name_abd_presets[0]
 
-        sickbeard.NAMING_MULTI_EP = int(check_setting_int(self.config_obj, 'General', 'naming_multi_ep_type', 1))
+        app.NAMING_MULTI_EP = int(check_setting_int(self.config_obj, 'General', 'naming_multi_ep_type', 1))
 
         # see if any of their shows used season folders
         main_db_con = db.DBConnection()
@@ -750,7 +750,7 @@ class ConfigMigrator(object):
 
                     logger.log(
                         u"Changed season folder format from " + old_season_format + " to " + new_season_format + ", prepending it to your naming config")
-                    sickbeard.NAMING_PATTERN = new_season_format + os.sep + sickbeard.NAMING_PATTERN
+                    app.NAMING_PATTERN = new_season_format + os.sep + app.NAMING_PATTERN
 
                 except (TypeError, ValueError):
                     logger.log(u"Can't change " + old_season_format + " to new season format", logger.ERROR)
@@ -763,7 +763,7 @@ class ConfigMigrator(object):
             # don't flatten any shows at all
             main_db_con.action("UPDATE tv_shows SET flatten_folders = 0")
 
-        sickbeard.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()
+        app.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()
 
     def _name_to_pattern(self, abd=False):
 
@@ -831,8 +831,8 @@ class ConfigMigrator(object):
         Reads in the old naming settings from your config and generates a new config template from them.
         """
         # get the old settings from the file and store them in the new variable names
-        sickbeard.OMGWTFNZBS_USERNAME = check_setting_str(self.config_obj, 'omgwtfnzbs', 'omgwtfnzbs_uid', '')
-        sickbeard.OMGWTFNZBS_APIKEY = check_setting_str(self.config_obj, 'omgwtfnzbs', 'omgwtfnzbs_key', '')
+        app.OMGWTFNZBS_USERNAME = check_setting_str(self.config_obj, 'omgwtfnzbs', 'omgwtfnzbs_uid', '')
+        app.OMGWTFNZBS_APIKEY = check_setting_str(self.config_obj, 'omgwtfnzbs', 'omgwtfnzbs_key', '')
 
     # Migration v4: Add default newznab catIDs
     def _migrate_v4(self):
@@ -863,7 +863,7 @@ class ConfigMigrator(object):
                 cur_provider_data_list = [name, url, key, catIDs, enabled]
                 new_newznab_data.append("|".join(cur_provider_data_list))
 
-            sickbeard.NEWZNAB_DATA = "!!!".join(new_newznab_data)
+            app.NEWZNAB_DATA = "!!!".join(new_newznab_data)
 
     # Migration v5: Metadata upgrade
     def _migrate_v5(self):
@@ -933,39 +933,39 @@ class ConfigMigrator(object):
 
             return metadata
 
-        sickbeard.METADATA_XBMC = _migrate_metadata(metadata_xbmc, 'XBMC', use_banner)
-        sickbeard.METADATA_XBMC_12PLUS = _migrate_metadata(metadata_xbmc_12plus, 'XBMC 12+', use_banner)
-        sickbeard.METADATA_MEDIABROWSER = _migrate_metadata(metadata_mediabrowser, 'MediaBrowser', use_banner)
-        sickbeard.METADATA_PS3 = _migrate_metadata(metadata_ps3, 'PS3', use_banner)
-        sickbeard.METADATA_WDTV = _migrate_metadata(metadata_wdtv, 'WDTV', use_banner)
-        sickbeard.METADATA_TIVO = _migrate_metadata(metadata_tivo, 'TIVO', use_banner)
-        sickbeard.METADATA_MEDE8ER = _migrate_metadata(metadata_mede8er, 'Mede8er', use_banner)
+        app.METADATA_XBMC = _migrate_metadata(metadata_xbmc, 'XBMC', use_banner)
+        app.METADATA_XBMC_12PLUS = _migrate_metadata(metadata_xbmc_12plus, 'XBMC 12+', use_banner)
+        app.METADATA_MEDIABROWSER = _migrate_metadata(metadata_mediabrowser, 'MediaBrowser', use_banner)
+        app.METADATA_PS3 = _migrate_metadata(metadata_ps3, 'PS3', use_banner)
+        app.METADATA_WDTV = _migrate_metadata(metadata_wdtv, 'WDTV', use_banner)
+        app.METADATA_TIVO = _migrate_metadata(metadata_tivo, 'TIVO', use_banner)
+        app.METADATA_MEDE8ER = _migrate_metadata(metadata_mede8er, 'Mede8er', use_banner)
 
     # Migration v6: Convert from XBMC to KODI variables
     def _migrate_v6(self):
-        sickbeard.USE_KODI = bool(check_setting_int(self.config_obj, 'XBMC', 'use_xbmc', 0))
-        sickbeard.KODI_ALWAYS_ON = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_always_on', 1))
-        sickbeard.KODI_NOTIFY_ONSNATCH = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_notify_onsnatch', 0))
-        sickbeard.KODI_NOTIFY_ONDOWNLOAD = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_notify_ondownload', 0))
-        sickbeard.KODI_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_notify_onsubtitledownload', 0))
-        sickbeard.KODI_UPDATE_LIBRARY = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_update_library', 0))
-        sickbeard.KODI_UPDATE_FULL = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_update_full', 0))
-        sickbeard.KODI_UPDATE_ONLYFIRST = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_update_onlyfirst', 0))
-        sickbeard.KODI_HOST = check_setting_str(self.config_obj, 'XBMC', 'xbmc_host', '')
-        sickbeard.KODI_USERNAME = check_setting_str(self.config_obj, 'XBMC', 'xbmc_username', '', censor_log=True)
-        sickbeard.KODI_PASSWORD = check_setting_str(self.config_obj, 'XBMC', 'xbmc_password', '', censor_log=True)
-        sickbeard.METADATA_KODI = check_setting_str(self.config_obj, 'General', 'metadata_xbmc', '0|0|0|0|0|0|0|0|0|0')
-        sickbeard.METADATA_KODI_12PLUS = check_setting_str(self.config_obj, 'General', 'metadata_xbmc_12plus', '0|0|0|0|0|0|0|0|0|0')
+        app.USE_KODI = bool(check_setting_int(self.config_obj, 'XBMC', 'use_xbmc', 0))
+        app.KODI_ALWAYS_ON = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_always_on', 1))
+        app.KODI_NOTIFY_ONSNATCH = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_notify_onsnatch', 0))
+        app.KODI_NOTIFY_ONDOWNLOAD = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_notify_ondownload', 0))
+        app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_notify_onsubtitledownload', 0))
+        app.KODI_UPDATE_LIBRARY = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_update_library', 0))
+        app.KODI_UPDATE_FULL = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_update_full', 0))
+        app.KODI_UPDATE_ONLYFIRST = bool(check_setting_int(self.config_obj, 'XBMC', 'xbmc_update_onlyfirst', 0))
+        app.KODI_HOST = check_setting_str(self.config_obj, 'XBMC', 'xbmc_host', '')
+        app.KODI_USERNAME = check_setting_str(self.config_obj, 'XBMC', 'xbmc_username', '', censor_log=True)
+        app.KODI_PASSWORD = check_setting_str(self.config_obj, 'XBMC', 'xbmc_password', '', censor_log=True)
+        app.METADATA_KODI = check_setting_str(self.config_obj, 'General', 'metadata_xbmc', '0|0|0|0|0|0|0|0|0|0')
+        app.METADATA_KODI_12PLUS = check_setting_str(self.config_obj, 'General', 'metadata_xbmc_12plus', '0|0|0|0|0|0|0|0|0|0')
 
     # Migration v6: Use version 2 for password encryption
     def _migrate_v7(self):
-        sickbeard.ENCRYPTION_VERSION = 2
+        app.ENCRYPTION_VERSION = 2
 
     def _migrate_v8(self):
-        sickbeard.PLEX_CLIENT_HOST = check_setting_str(self.config_obj, 'Plex', 'plex_host', '')
-        sickbeard.PLEX_SERVER_USERNAME = check_setting_str(self.config_obj, 'Plex', 'plex_username', '', censor_log=True)
-        sickbeard.PLEX_SERVER_PASSWORD = check_setting_str(self.config_obj, 'Plex', 'plex_password', '', censor_log=True)
-        sickbeard.USE_PLEX_SERVER = bool(check_setting_int(self.config_obj, 'Plex', 'use_plex', 0))
+        app.PLEX_CLIENT_HOST = check_setting_str(self.config_obj, 'Plex', 'plex_host', '')
+        app.PLEX_SERVER_USERNAME = check_setting_str(self.config_obj, 'Plex', 'plex_username', '', censor_log=True)
+        app.PLEX_SERVER_PASSWORD = check_setting_str(self.config_obj, 'Plex', 'plex_password', '', censor_log=True)
+        app.USE_PLEX_SERVER = bool(check_setting_int(self.config_obj, 'Plex', 'use_plex', 0))
 
     def _migrate_v9(self):
         """

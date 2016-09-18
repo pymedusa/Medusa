@@ -33,7 +33,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from medusa.name_cache import addNameToCache
 from medusa.postProcessor import PostProcessor
 from medusa.tv import TVEpisode, TVShow
-import medusa as sickbeard
+import medusa as app
 import tests.test_lib as test
 
 
@@ -73,13 +73,13 @@ class PPBasicTests(test.SickbeardTestDBCase):
         show.location = test.SHOW_DIR
         show.save_to_db()
 
-        sickbeard.showList = [show]
+        app.showList = [show]
         episode = TVEpisode(show, test.SEASON, test.EPISODE)
         episode.name = "some episode name"
         episode.save_to_db()
 
         addNameToCache('show name', 3)
-        sickbeard.PROCESS_METHOD = 'move'
+        app.PROCESS_METHOD = 'move'
 
         post_processor = PostProcessor(test.FILE_PATH)
         self.assertTrue(post_processor.process())

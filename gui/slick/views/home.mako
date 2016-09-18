@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as sickbeard
+    import medusa as app
     import calendar
     from medusa import sbdatetime
     from medusa import network_timezones
@@ -22,7 +22,7 @@
             </td>
             <td align="right">
                 <div>
-                    % if sickbeard.HOME_LAYOUT != 'poster':
+                    % if app.HOME_LAYOUT != 'poster':
                         <span class="show-option">
                             <button id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
                         </span>
@@ -30,7 +30,7 @@
                             <button type="button" class="resetsorting btn btn-inline">Clear Filter(s)</button>
                         </span>
                     % endif
-                    % if sickbeard.HOME_LAYOUT == 'poster':
+                    % if app.HOME_LAYOUT == 'poster':
                         <span class="show-option"> Poster Size:
                             <div style="width: 100px; display: inline-block; margin-left: 7px;" id="posterSizeSlider"></div>
                         </span>
@@ -39,30 +39,30 @@
                         </span>
                         <span class="show-option"> Sort By:
                             <select id="postersort" class="form-control form-control-inline input-sm">
-                                <option value="name" data-sort="setPosterSortBy/?sort=name" ${'selected="selected"' if sickbeard.POSTER_SORTBY == 'name' else ''}>Name</option>
-                                <option value="date" data-sort="setPosterSortBy/?sort=date" ${'selected="selected"' if sickbeard.POSTER_SORTBY == 'date' else ''}>Next Episode</option>
-                                <option value="network" data-sort="setPosterSortBy/?sort=network" ${'selected="selected"' if sickbeard.POSTER_SORTBY == 'network' else ''}>Network</option>
-                                <option value="progress" data-sort="setPosterSortBy/?sort=progress" ${'selected="selected"' if sickbeard.POSTER_SORTBY == 'progress' else ''}>Progress</option>
+                                <option value="name" data-sort="setPosterSortBy/?sort=name" ${'selected="selected"' if app.POSTER_SORTBY == 'name' else ''}>Name</option>
+                                <option value="date" data-sort="setPosterSortBy/?sort=date" ${'selected="selected"' if app.POSTER_SORTBY == 'date' else ''}>Next Episode</option>
+                                <option value="network" data-sort="setPosterSortBy/?sort=network" ${'selected="selected"' if app.POSTER_SORTBY == 'network' else ''}>Network</option>
+                                <option value="progress" data-sort="setPosterSortBy/?sort=progress" ${'selected="selected"' if app.POSTER_SORTBY == 'progress' else ''}>Progress</option>
                             </select>
                         </span>
                         <span class="show-option"> Direction:
                             <select id="postersortdirection" class="form-control form-control-inline input-sm">
-                                <option value="true" data-sort="setPosterSortDir/?direction=1" ${'selected="selected"' if sickbeard.POSTER_SORTDIR == 1 else ''}>Ascending </option>
-                                <option value="false" data-sort="setPosterSortDir/?direction=0" ${'selected="selected"' if sickbeard.POSTER_SORTDIR == 0 else ''}>Descending</option>
+                                <option value="true" data-sort="setPosterSortDir/?direction=1" ${'selected="selected"' if app.POSTER_SORTDIR == 1 else ''}>Ascending </option>
+                                <option value="false" data-sort="setPosterSortDir/?direction=0" ${'selected="selected"' if app.POSTER_SORTDIR == 0 else ''}>Descending</option>
                             </select>
                         </span>
                     % endif
                     <span class="show-option"> Layout:
                         <select name="layout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-                            <option value="setHomeLayout/?layout=poster" ${'selected="selected"' if sickbeard.HOME_LAYOUT == 'poster' else ''}>Poster</option>
-                            <option value="setHomeLayout/?layout=small" ${'selected="selected"' if sickbeard.HOME_LAYOUT == 'small' else ''}>Small Poster</option>
-                            <option value="setHomeLayout/?layout=banner" ${'selected="selected"' if sickbeard.HOME_LAYOUT == 'banner' else ''}>Banner</option>
-                            <option value="setHomeLayout/?layout=simple" ${'selected="selected"' if sickbeard.HOME_LAYOUT == 'simple' else ''}>Simple</option>
+                            <option value="setHomeLayout/?layout=poster" ${'selected="selected"' if app.HOME_LAYOUT == 'poster' else ''}>Poster</option>
+                            <option value="setHomeLayout/?layout=small" ${'selected="selected"' if app.HOME_LAYOUT == 'small' else ''}>Small Poster</option>
+                            <option value="setHomeLayout/?layout=banner" ${'selected="selected"' if app.HOME_LAYOUT == 'banner' else ''}>Banner</option>
+                            <option value="setHomeLayout/?layout=simple" ${'selected="selected"' if app.HOME_LAYOUT == 'simple' else ''}>Simple</option>
                         </select>
                     </span>
                 </div>
             </td>
         </tr>
     </table>
-    <%include file="/partials/home/${sickbeard.HOME_LAYOUT}.mako"/>
+    <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
 </%block>

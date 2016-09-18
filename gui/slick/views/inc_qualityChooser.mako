@@ -1,12 +1,12 @@
 <%!
-    import medusa as sickbeard
+    import medusa as app
     from medusa.common import Quality, qualityPresets, qualityPresetStrings
 %>
 <%
 if not show is UNDEFINED:
     __quality = int(show.quality)
 else:
-    __quality = int(sickbeard.QUALITY_DEFAULT)
+    __quality = int(app.QUALITY_DEFAULT)
 anyQualities, bestQualities = Quality.splitQuality(__quality)
 overall_quality = Quality.combineQualities(anyQualities, bestQualities)
 selected = None

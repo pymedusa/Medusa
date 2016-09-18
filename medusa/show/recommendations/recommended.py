@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import os
 import posixpath
 
-import medusa as sickbeard
+import medusa as app
 from ... import helpers
 
 
@@ -65,7 +65,7 @@ class RecommendedShow(object):
         self.is_anime = False
 
         # Check if the show is currently already in the db
-        self.show_in_list = self.indexer_id in {show.indexerid for show in sickbeard.showList if show.indexerid}
+        self.show_in_list = self.indexer_id in {show.indexerid for show in app.showList if show.indexerid}
         self.session = helpers.make_session()
 
     def cache_image(self, image_url):
@@ -76,7 +76,7 @@ class RecommendedShow(object):
         if not self.cache_subfolder:
             return
 
-        path = os.path.abspath(os.path.join(sickbeard.CACHE_DIR, 'images', self.cache_subfolder))
+        path = os.path.abspath(os.path.join(app.CACHE_DIR, 'images', self.cache_subfolder))
 
         if not os.path.exists(path):
             os.makedirs(path)

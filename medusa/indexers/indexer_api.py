@@ -20,7 +20,7 @@
 
 import os
 
-import medusa as sickbeard
+import medusa as app
 from .indexer_config import indexerConfig, initConfig
 from ..helper.common import try_int
 from ..helper.encoding import ek
@@ -42,10 +42,10 @@ class indexerApi(object):
         if self.indexerID:
             return indexerConfig[self.indexerID]
         _ = initConfig
-        if sickbeard.INDEXER_DEFAULT_LANGUAGE in _:
-            del _[_['valid_languages'].index(sickbeard.INDEXER_DEFAULT_LANGUAGE)]
+        if app.INDEXER_DEFAULT_LANGUAGE in _:
+            del _[_['valid_languages'].index(app.INDEXER_DEFAULT_LANGUAGE)]
         _['valid_languages'].sort()
-        _['valid_languages'].insert(0, sickbeard.INDEXER_DEFAULT_LANGUAGE)
+        _['valid_languages'].insert(0, app.INDEXER_DEFAULT_LANGUAGE)
         return _
 
     @property
@@ -56,16 +56,16 @@ class indexerApi(object):
     @property
     def api_params(self):
         if self.indexerID:
-            if sickbeard.CACHE_DIR:
-                indexerConfig[self.indexerID]['api_params']['cache'] = ek(os.path.join, sickbeard.CACHE_DIR, 'indexers', self.name)
-            if sickbeard.PROXY_SETTING and sickbeard.PROXY_INDEXERS:
-                indexerConfig[self.indexerID]['api_params']['proxy'] = sickbeard.PROXY_SETTING
+            if app.CACHE_DIR:
+                indexerConfig[self.indexerID]['api_params']['cache'] = ek(os.path.join, app.CACHE_DIR, 'indexers', self.name)
+            if app.PROXY_SETTING and app.PROXY_INDEXERS:
+                indexerConfig[self.indexerID]['api_params']['proxy'] = app.PROXY_SETTING
 
             return indexerConfig[self.indexerID]['api_params']
 
     @property
     def cache(self):
-        if sickbeard.CACHE_DIR:
+        if app.CACHE_DIR:
             return self.api_params['cache']
 
     @property

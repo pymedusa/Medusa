@@ -31,7 +31,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from six import iteritems
-import medusa as sickbeard
+import medusa as app
 from generic_provider_tests import GenericProviderTests
 from medusa.providers.GenericProvider import GenericProvider
 from medusa.providers.nzb.NZBProvider import NZBProvider
@@ -65,7 +65,7 @@ class NZBProviderTests(GenericProviderTests):
         }
 
         for ((use_nzb, enabled), result) in iteritems(test_cases):
-            sickbeard.USE_NZBS = use_nzb
+            app.USE_NZBS = use_nzb
 
             provider = NZBProvider('Test Provider')
             provider.enabled = enabled
@@ -140,7 +140,7 @@ class NZBProviderTests(GenericProviderTests):
         ]
 
         for nzb_dir in test_cases:
-            sickbeard.NZB_DIR = nzb_dir
+            app.NZB_DIR = nzb_dir
 
             self.assertEqual(NZBProvider('Test Provider')._get_storage_dir(), nzb_dir)
 

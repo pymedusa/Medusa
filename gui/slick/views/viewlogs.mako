@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as sickbeard
+    import medusa as app
     from medusa import classes
     from medusa.logger import LOGGING_LEVELS
 %>
@@ -26,9 +26,9 @@ pre {
             <%
                 levels = LOGGING_LEVELS.keys()
                 levels.sort(lambda x, y: cmp(LOGGING_LEVELS[x], LOGGING_LEVELS[y]))
-                if not sickbeard.DEBUG:
+                if not app.DEBUG:
                     levels.remove('DEBUG')
-                if not sickbeard.DBDEBUG:
+                if not app.DBDEBUG:
                     levels.remove('DB')
             %>
         % for level in levels:

@@ -1,5 +1,5 @@
 <%!
-    import medusa as sickbeard
+    import medusa as app
     import calendar
     from medusa import sbdatetime
     from medusa import network_timezones
@@ -17,7 +17,7 @@
     % endif
 <div id="${('container', 'container-anime')[curListType == 'Anime']}" class="show-grid clearfix">
     <div class="posterview">
-    % for curLoadingShow in sickbeard.showQueueScheduler.action.loadingShowList:
+    % for curLoadingShow in app.showQueueScheduler.action.loadingShowList:
         % if curLoadingShow.show is None:
             <div class="show-container" data-name="0" data-date="010101" data-network="0" data-progress="101">
                 <img alt="" title="${curLoadingShow.show_name}" class="show-image" style="border-bottom: 1px solid rgb(17, 17, 17);" src="images/poster.png" />

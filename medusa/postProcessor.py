@@ -28,7 +28,7 @@ import subprocess
 
 import adba
 from babelfish import language_converters
-import medusa as sickbeard
+import medusa as app
 from six import text_type
 from . import common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
 from .helper.common import remove_extension, replace_extension, subtitle_extensions
@@ -73,7 +73,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         # name of the NZB that resulted in this folder
         self.nzb_name = nzb_name
 
-        self.process_method = process_method if process_method else sickbeard.PROCESS_METHOD
+        self.process_method = process_method if process_method else app.PROCESS_METHOD
 
         self.in_history = False
 
@@ -236,8 +236,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 continue
 
             # Add the extensions that the user doesn't allow to the 'extensions_to_delete' list
-            if sickbeard.MOVE_ASSOCIATED_FILES:
-                allowed_extensions = sickbeard.ALLOWED_EXTENSIONS.split(',')
+            if app.MOVE_ASSOCIATED_FILES:
+                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
                 found_extension = associated_file_path.rpartition('.')[2]
                 if found_extension and found_extension not in allowed_extensions:
                     self._log(u'Associated file extension not found in allowed extension: .{0}'.format
@@ -359,7 +359,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                     changed_extension = True
 
             # replace .nfo with .nfo-orig to avoid conflicts
-            if cur_extension == 'nfo' and sickbeard.NFO_RENAME:
+            if cur_extension == 'nfo' and app.NFO_RENAME:
                 cur_extension = 'nfo-orig'
                 changed_extension = True
 
@@ -373,8 +373,8 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 if changed_extension:
                     new_file_name = replace_extension(new_file_name, cur_extension)
 
-            if sickbeard.SUBTITLES_DIR and cur_extension[-3:] in subtitle_extensions:
-                subs_new_path = ek(os.path.join, new_path, sickbeard.SUBTITLES_DIR)
+            if app.SUBTITLES_DIR and cur_extension[-3:] in subtitle_extensions:
+                subs_new_path = ek(os.path.join, new_path, app.SUBTITLES_DIR)
                 dir_exists = helpers.makeDir(subs_new_path)
                 if not dir_exists:
                     logger.log(u'Unable to create subtitles folder {0}'.format(subs_new_path), logger.ERROR)
@@ -525,7 +525,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             if quality == common.Quality.UNKNOWN:
                 quality = None
 
-            show = Show.find(sickbeard.showList, indexer_id)
+            show = Show.find(app.showList, indexer_id)
 
             self.in_history = True
             self.version = version
@@ -630,7 +630,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         """
         if helpers.set_up_anidb_connection():
             if not self.anidbEpisode:  # seems like we could parse the name before, now lets build the anidb object
-                self.anidbEpisode = self._build_anidb_episode(sickbeard.ADBA_CONNECTION, filePath)
+                self.anidbEpisode = self._build_anidb_episode(app.ADBA_CONNECTION, filePath)
 
             self._log(u'Adding the file to the anidb mylist', logger.DEBUG)
             try:
@@ -845,13 +845,13 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         :param ep_obj: The object to use when calling the extra script
         """
 
-        if not sickbeard.EXTRA_SCRIPTS:
+        if not app.EXTRA_SCRIPTS:
             return
 
         file_path = self.file_path
         if isinstance(file_path, text_type):
             try:
-                file_path = file_path.encode(sickbeard.SYS_ENCODING)
+                file_path = file_path.encode(app.SYS_ENCODING)
             except UnicodeEncodeError:
                 # ignore it
                 pass
@@ -859,15 +859,15 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         ep_location = ep_obj.location
         if isinstance(ep_location, text_type):
             try:
-                ep_location = ep_location.encode(sickbeard.SYS_ENCODING)
+                ep_location = ep_location.encode(app.SYS_ENCODING)
             except UnicodeEncodeError:
                 # ignore it
                 pass
 
-        for curScriptName in sickbeard.EXTRA_SCRIPTS:
+        for curScriptName in app.EXTRA_SCRIPTS:
             if isinstance(curScriptName, text_type):
                 try:
-                    curScriptName = curScriptName.encode(sickbeard.SYS_ENCODING)
+                    curScriptName = curScriptName.encode(app.SYS_ENCODING)
                 except UnicodeEncodeError:
                     # ignore it
                     pass
@@ -887,7 +887,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             try:
                 p = subprocess.Popen(
                     script_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT, cwd=sickbeard.PROG_DIR
+                    stderr=subprocess.STDOUT, cwd=app.PROG_DIR
                 )
                 out, _ = p.communicate()
 
@@ -948,9 +948,9 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
     def flag_kodi_clean_library(self):
         """Set flag to Clean Kodi's library if Kodi is enabled."""
-        if sickbeard.USE_KODI:
+        if app.USE_KODI:
             self._log(u"Setting to clean Kodi library as we are going to replace file")
-            sickbeard.KODI_LIBRARY_CLEAN_PENDING = True
+            app.KODI_LIBRARY_CLEAN_PENDING = True
 
     def process(self):  # pylint: disable=too-many-return-statements, too-many-locals, too-many-branches, too-many-statements
         """
@@ -1087,7 +1087,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             #    curEp.status = common.Quality.compositeStatus(common.SNATCHED, new_ep_quality)
 
         # if the show directory doesn't exist then make it if allowed
-        if not ek(os.path.isdir, ep_obj.show._location) and sickbeard.CREATE_MISSING_SHOW_DIRS:  # pylint: disable=protected-access
+        if not ek(os.path.isdir, ep_obj.show._location) and app.CREATE_MISSING_SHOW_DIRS:  # pylint: disable=protected-access
             self._log(u"Show directory doesn't exist, creating it", logger.DEBUG)
             try:
                 ek(os.mkdir, ep_obj.show._location)  # pylint: disable=protected-access
@@ -1160,7 +1160,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         helpers.make_dirs(dest_path)
 
         # figure out the base name of the resulting episode file
-        if sickbeard.RENAME_EPISODES:
+        if app.RENAME_EPISODES:
             orig_extension = self.file_name.rpartition('.')[-1]
             new_base_name = ek(os.path.basename, proper_path)
             new_file_name = new_base_name + '.' + orig_extension
@@ -1171,7 +1171,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             new_file_name = self.file_name
 
         # add to anidb
-        if ep_obj.show.is_anime and sickbeard.ANIDB_USE_MYLIST:
+        if ep_obj.show.is_anime and app.ANIDB_USE_MYLIST:
             self._add_to_anidb_mylist(self.file_path)
 
         try:
@@ -1179,21 +1179,21 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             if self.process_method == 'copy':
                 if helpers.isFileLocked(self.file_path, False):
                     raise EpisodePostProcessingFailedException('File is locked for reading')
-                self._copy(self.file_path, dest_path, new_base_name, sickbeard.MOVE_ASSOCIATED_FILES,
-                           sickbeard.USE_SUBTITLES and ep_obj.show.subtitles)
+                self._copy(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
+                           app.USE_SUBTITLES and ep_obj.show.subtitles)
             elif self.process_method == 'move':
                 if helpers.isFileLocked(self.file_path, True):
                     raise EpisodePostProcessingFailedException('File is locked for reading/writing')
-                self._move(self.file_path, dest_path, new_base_name, sickbeard.MOVE_ASSOCIATED_FILES,
-                           sickbeard.USE_SUBTITLES and ep_obj.show.subtitles)
+                self._move(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
+                           app.USE_SUBTITLES and ep_obj.show.subtitles)
             elif self.process_method == "hardlink":
-                self._hardlink(self.file_path, dest_path, new_base_name, sickbeard.MOVE_ASSOCIATED_FILES,
-                               sickbeard.USE_SUBTITLES and ep_obj.show.subtitles)
+                self._hardlink(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
+                               app.USE_SUBTITLES and ep_obj.show.subtitles)
             elif self.process_method == "symlink":
                 if helpers.isFileLocked(self.file_path, True):
                     raise EpisodePostProcessingFailedException('File is locked for reading/writing')
-                self._moveAndSymlink(self.file_path, dest_path, new_base_name, sickbeard.MOVE_ASSOCIATED_FILES,
-                                     sickbeard.USE_SUBTITLES and ep_obj.show.subtitles)
+                self._moveAndSymlink(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
+                                     app.USE_SUBTITLES and ep_obj.show.subtitles)
             else:
                 logger.log(u'Unknown process method: {0}'.format(self.process_method), logger.ERROR)
                 raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
@@ -1201,7 +1201,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
 
         # download subtitles
-        if sickbeard.USE_SUBTITLES and ep_obj.show.subtitles:
+        if app.USE_SUBTITLES and ep_obj.show.subtitles:
             for cur_ep in [ep_obj] + ep_obj.related_episodes:
                 with cur_ep.lock:
                     cur_ep.location = ek(os.path.join, dest_path, new_file_name)

@@ -26,7 +26,7 @@ from itertools import chain
 from os.path import join
 from random import shuffle
 
-import medusa as sickbeard
+import medusa as app
 from requests.utils import add_dict_to_cookiejar
 from .. import logger, ui
 from ..classes import Proper, SearchResult
@@ -126,7 +126,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         results = []
 
         for proper_candidate in proper_candidates:
-            show_obj = Show.find(sickbeard.showList, int(proper_candidate[b'showid'])) if proper_candidate[b'showid'] else None
+            show_obj = Show.find(app.showList, int(proper_candidate[b'showid'])) if proper_candidate[b'showid'] else None
 
             if show_obj:
                 episode_obj = show_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
@@ -443,7 +443,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             elif episode.show.anime:
                 episode_string += '%02d' % int(episode.scene_absolute_number)
             else:
-                episode_string += sickbeard.config.naming_ep_type[2] % {
+                episode_string += app.config.naming_ep_type[2] % {
                     'seasonnumber': episode.scene_season,
                     'episodenumber': episode.scene_episode,
                 }

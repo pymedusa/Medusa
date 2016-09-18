@@ -20,7 +20,7 @@
 import os
 import subprocess
 
-import medusa as sickbeard
+import medusa as app
 from .. import common, logger
 from ..helper.encoding import ek
 from ..helper.exceptions import ex
@@ -28,25 +28,25 @@ from ..helper.exceptions import ex
 
 class Notifier(object):
     def notify_snatch(self, ep_name, is_proper):
-        if sickbeard.SYNOLOGYNOTIFIER_NOTIFY_ONSNATCH:
+        if app.SYNOLOGYNOTIFIER_NOTIFY_ONSNATCH:
             self._send_synologyNotifier(ep_name, common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]])
 
     def notify_download(self, ep_name):
-        if sickbeard.SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD:
+        if app.SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD:
             self._send_synologyNotifier(ep_name, common.notifyStrings[common.NOTIFY_DOWNLOAD])
 
     def notify_subtitle_download(self, ep_name, lang):
-        if sickbeard.SYNOLOGYNOTIFIER_NOTIFY_ONSUBTITLEDOWNLOAD:
+        if app.SYNOLOGYNOTIFIER_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._send_synologyNotifier(ep_name + ": " + lang, common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD])
 
     def notify_git_update(self, new_version="??"):
-        if sickbeard.USE_SYNOLOGYNOTIFIER:
+        if app.USE_SYNOLOGYNOTIFIER:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
             self._send_synologyNotifier(update_text + new_version, title)
 
     def notify_login(self, ipaddress=""):
-        if sickbeard.USE_SYNOLOGYNOTIFIER:
+        if app.USE_SYNOLOGYNOTIFIER:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
             self._send_synologyNotifier(update_text.format(ipaddress), title)
@@ -57,7 +57,7 @@ class Notifier(object):
         logger.log(u"Absolute path to command: " + ek(os.path.abspath, synodsmnotify_cmd[0]), logger.DEBUG)
         try:
             p = subprocess.Popen(synodsmnotify_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                 cwd=sickbeard.PROG_DIR)
+                                 cwd=app.PROG_DIR)
             out, err = p.communicate()  # @UnusedVariable
             logger.log(u"Script result: " + str(out), logger.DEBUG)
         except OSError as e:

@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 
 import datetime
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urljoin
 from . import helpers, logger
 
@@ -36,32 +36,32 @@ def sendNZB(nzb):  # pylint:disable=too-many-return-statements, too-many-branche
     :param nzb: The NZBSearchResult object to send to SAB
     """
 
-    category = sickbeard.SAB_CATEGORY
+    category = app.SAB_CATEGORY
     if nzb.show.is_anime:
-        category = sickbeard.SAB_CATEGORY_ANIME
+        category = app.SAB_CATEGORY_ANIME
 
     # if it aired more than 7 days ago, override with the backlog category IDs
     for curEp in nzb.episodes:
         if datetime.date.today() - curEp.airdate > datetime.timedelta(days=7):
-            category = sickbeard.SAB_CATEGORY_ANIME_BACKLOG if nzb.show.is_anime else sickbeard.SAB_CATEGORY_BACKLOG
+            category = app.SAB_CATEGORY_ANIME_BACKLOG if nzb.show.is_anime else app.SAB_CATEGORY_BACKLOG
 
     # set up a dict with the URL params in it
     params = {'output': 'json'}
-    if sickbeard.SAB_USERNAME:
-        params['ma_username'] = sickbeard.SAB_USERNAME
-    if sickbeard.SAB_PASSWORD:
-        params['ma_password'] = sickbeard.SAB_PASSWORD
-    if sickbeard.SAB_APIKEY:
-        params['apikey'] = sickbeard.SAB_APIKEY
+    if app.SAB_USERNAME:
+        params['ma_username'] = app.SAB_USERNAME
+    if app.SAB_PASSWORD:
+        params['ma_password'] = app.SAB_PASSWORD
+    if app.SAB_APIKEY:
+        params['apikey'] = app.SAB_APIKEY
 
     if category:
         params['cat'] = category
 
     if nzb.priority:
-        params['priority'] = 2 if sickbeard.SAB_FORCED else 1
+        params['priority'] = 2 if app.SAB_FORCED else 1
 
     logger.log('Sending NZB to SABnzbd')
-    url = urljoin(sickbeard.SAB_HOST, 'api')
+    url = urljoin(app.SAB_HOST, 'api')
 
     if nzb.resultType == 'nzb':
         params['mode'] = 'addurl'

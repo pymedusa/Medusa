@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 import json
 import os
 
-import medusa as sickbeard
+import medusa as app
 from tornado.routes import route
 from .handler import Config
 from ..core import PageTemplate
@@ -50,7 +50,7 @@ class ConfigProviders(Config):
         if not name:
             return json.dumps({'error': 'No Provider Name specified'})
 
-        provider_dict = dict(zip([x.get_id() for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
+        provider_dict = dict(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList))
 
         temp_provider = NewznabProvider(name, '')
 
@@ -68,7 +68,7 @@ class ConfigProviders(Config):
         if not name or not url:
             return '0'
 
-        provider_dict = dict(zip([x.name for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
+        provider_dict = dict(zip([x.name for x in app.newznabProviderList], app.newznabProviderList))
 
         if name in provider_dict:
             if not provider_dict[name].default:
@@ -86,7 +86,7 @@ class ConfigProviders(Config):
 
         else:
             new_provider = NewznabProvider(name, url, key=key)
-            sickbeard.newznabProviderList.append(new_provider)
+            app.newznabProviderList.append(new_provider)
             return '|'.join([new_provider.get_id(), new_provider.config_string()])
 
     @staticmethod
@@ -109,7 +109,7 @@ class ConfigProviders(Config):
             return json.dumps({'success': False, 'error': error})
 
         # Get list with Newznabproviders
-        # providerDict = dict(zip([x.get_id() for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
+        # providerDict = dict(zip([x.get_id() for x in api.newznabProviderList], api.newznabProviderList))
 
         # Get newznabprovider obj with provided name
         temp_provider = NewznabProvider(name, url, key)
@@ -124,16 +124,16 @@ class ConfigProviders(Config):
         Delete a Newznab Provider
         """
 
-        provider_dict = dict(zip([x.get_id() for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
+        provider_dict = dict(zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList))
 
         if nnid not in provider_dict or provider_dict[nnid].default:
             return '0'
 
         # delete it from the list
-        sickbeard.newznabProviderList.remove(provider_dict[nnid])
+        app.newznabProviderList.remove(provider_dict[nnid])
 
-        if nnid in sickbeard.PROVIDER_ORDER:
-            sickbeard.PROVIDER_ORDER.remove(nnid)
+        if nnid in app.PROVIDER_ORDER:
+            app.PROVIDER_ORDER.remove(nnid)
 
         return '1'
 
@@ -146,7 +146,7 @@ class ConfigProviders(Config):
             return json.dumps({'error': 'Invalid name specified'})
 
         provider_dict = dict(
-            zip([x.get_id() for x in sickbeard.torrentRssProviderList], sickbeard.torrentRssProviderList))
+            zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
 
         temp_provider = TorrentRssProvider(name, url, cookies, titleTAG)
 
@@ -168,7 +168,7 @@ class ConfigProviders(Config):
         if not name or not url:
             return '0'
 
-        provider_dict = dict(zip([x.name for x in sickbeard.torrentRssProviderList], sickbeard.torrentRssProviderList))
+        provider_dict = dict(zip([x.name for x in app.torrentRssProviderList], app.torrentRssProviderList))
 
         if name in provider_dict:
             provider_dict[name].name = name
@@ -180,7 +180,7 @@ class ConfigProviders(Config):
 
         else:
             new_provider = TorrentRssProvider(name, url, cookies, titleTAG)
-            sickbeard.torrentRssProviderList.append(new_provider)
+            app.torrentRssProviderList.append(new_provider)
             return '|'.join([new_provider.get_id(), new_provider.config_string()])
 
     @staticmethod
@@ -189,16 +189,16 @@ class ConfigProviders(Config):
         Delete a Torrent Provider
         """
         provider_dict = dict(
-            zip([x.get_id() for x in sickbeard.torrentRssProviderList], sickbeard.torrentRssProviderList))
+            zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
 
         if id not in provider_dict:
             return '0'
 
         # delete it from the list
-        sickbeard.torrentRssProviderList.remove(provider_dict[id])
+        app.torrentRssProviderList.remove(provider_dict[id])
 
-        if id in sickbeard.PROVIDER_ORDER:
-            sickbeard.PROVIDER_ORDER.remove(id)
+        if id in app.PROVIDER_ORDER:
+            app.PROVIDER_ORDER.remove(id)
 
         return '1'
 
@@ -212,7 +212,7 @@ class ConfigProviders(Config):
         provider_list = []
 
         newznab_provider_dict = dict(
-            zip([x.get_id() for x in sickbeard.newznabProviderList], sickbeard.newznabProviderList))
+            zip([x.get_id() for x in app.newznabProviderList], app.newznabProviderList))
 
         finished_names = []
 
@@ -271,17 +271,17 @@ class ConfigProviders(Config):
                     except (AttributeError, KeyError):
                         newznab_provider_dict[cur_id].enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
                 else:
-                    sickbeard.newznabProviderList.append(new_provider)
+                    app.newznabProviderList.append(new_provider)
 
                 finished_names.append(cur_id)
 
         # delete anything that is missing
-        for cur_provider in sickbeard.newznabProviderList:
+        for cur_provider in app.newznabProviderList:
             if cur_provider.get_id() not in finished_names:
-                sickbeard.newznabProviderList.remove(cur_provider)
+                app.newznabProviderList.remove(cur_provider)
 
         torrent_rss_provider_dict = dict(
-            zip([x.get_id() for x in sickbeard.torrentRssProviderList], sickbeard.torrentRssProviderList))
+            zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
         finished_names = []
 
         if torrentrss_string:
@@ -304,14 +304,14 @@ class ConfigProviders(Config):
                     torrent_rss_provider_dict[cur_id].cookies = cur_cookies
                     torrent_rss_provider_dict[cur_id].curTitleTAG = cur_title_tag
                 else:
-                    sickbeard.torrentRssProviderList.append(new_provider)
+                    app.torrentRssProviderList.append(new_provider)
 
                 finished_names.append(cur_id)
 
         # delete anything that is missing
-        for cur_provider in sickbeard.torrentRssProviderList:
+        for cur_provider in app.torrentRssProviderList:
             if cur_provider.get_id() not in finished_names:
-                sickbeard.torrentRssProviderList.remove(cur_provider)
+                app.torrentRssProviderList.remove(cur_provider)
 
         disabled_list = []
         # do the enable/disable
@@ -319,7 +319,7 @@ class ConfigProviders(Config):
             cur_provider, cur_enabled = cur_providerStr.split(':')
             cur_enabled = try_int(cur_enabled)
 
-            cur_prov_obj = [x for x in sickbeard.providers.sortedProviderList() if
+            cur_prov_obj = [x for x in app.providers.sortedProviderList() if
                             x.get_id() == cur_provider and hasattr(x, 'enabled')]
             if cur_prov_obj:
                 cur_prov_obj[0].enabled = bool(cur_enabled)
@@ -337,7 +337,7 @@ class ConfigProviders(Config):
         provider_list.extend(disabled_list)
 
         # dynamically load provider settings
-        for curTorrentProvider in [prov for prov in sickbeard.providers.sortedProviderList() if
+        for curTorrentProvider in [prov for prov in app.providers.sortedProviderList() if
                                    prov.provider_type == GenericProvider.TORRENT]:
 
             if hasattr(curTorrentProvider, 'custom_url'):
@@ -501,7 +501,7 @@ class ConfigProviders(Config):
                 except (AttributeError, KeyError):
                     pass  # I don't want to configure a default value here, as it can also be configured intially as a custom rss torrent provider
 
-        for curNzbProvider in [prov for prov in sickbeard.providers.sortedProviderList() if
+        for curNzbProvider in [prov for prov in app.providers.sortedProviderList() if
                                prov.provider_type == GenericProvider.NZB]:
 
             if hasattr(curNzbProvider, 'api_key'):
@@ -550,10 +550,10 @@ class ConfigProviders(Config):
                 except (AttributeError, KeyError):
                     curNzbProvider.enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
 
-        sickbeard.NEWZNAB_DATA = '!!!'.join([x.config_string() for x in sickbeard.newznabProviderList])
-        sickbeard.PROVIDER_ORDER = provider_list
+        app.NEWZNAB_DATA = '!!!'.join([x.config_string() for x in app.newznabProviderList])
+        app.PROVIDER_ORDER = provider_list
 
-        sickbeard.save_config()
+        app.save_config()
 
         if results:
             for x in results:
@@ -561,6 +561,6 @@ class ConfigProviders(Config):
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:
-            ui.notifications.message('Configuration Saved', ek(os.path.join, sickbeard.CONFIG_FILE))
+            ui.notifications.message('Configuration Saved', ek(os.path.join, app.CONFIG_FILE))
 
         return self.redirect('/config/providers/')

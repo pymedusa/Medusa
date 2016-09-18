@@ -21,7 +21,7 @@
 import cgi
 import os
 
-import medusa as sickbeard
+import medusa as app
 from .. import common, logger
 from ..helper.encoding import ek
 
@@ -86,25 +86,25 @@ class Notifier(object):
         return True
 
     def notify_snatch(self, ep_name, is_proper):
-        if sickbeard.LIBNOTIFY_NOTIFY_ONSNATCH:
+        if app.LIBNOTIFY_NOTIFY_ONSNATCH:
             self._notify(common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]], ep_name)
 
     def notify_download(self, ep_name):
-        if sickbeard.LIBNOTIFY_NOTIFY_ONDOWNLOAD:
+        if app.LIBNOTIFY_NOTIFY_ONDOWNLOAD:
             self._notify(common.notifyStrings[common.NOTIFY_DOWNLOAD], ep_name)
 
     def notify_subtitle_download(self, ep_name, lang):
-        if sickbeard.LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD:
+        if app.LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._notify(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD], ep_name + ": " + lang)
 
     def notify_git_update(self, new_version="??"):
-        if sickbeard.USE_LIBNOTIFY:
+        if app.USE_LIBNOTIFY:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
             self._notify(title, update_text + new_version)
 
     def notify_login(self, ipaddress=""):
-        if sickbeard.USE_LIBNOTIFY:
+        if app.USE_LIBNOTIFY:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
             self._notify(title, update_text.format(ipaddress))
@@ -113,14 +113,14 @@ class Notifier(object):
         return self._notify('Test notification', "This is a test notification from Medusa", force=True)
 
     def _notify(self, title, message, force=False):
-        if not sickbeard.USE_LIBNOTIFY and not force:
+        if not app.USE_LIBNOTIFY and not force:
             return False
         if not self.init_notify():
             return False
 
         # Can't make this a global constant because PROG_DIR isn't available
         # when the module is imported.
-        icon_path = ek(os.path.join, sickbeard.PROG_DIR, 'gui', 'slick', 'images', 'ico', 'favicon-120.png')
+        icon_path = ek(os.path.join, app.PROG_DIR, 'gui', 'slick', 'images', 'ico', 'favicon-120.png')
 
         # If the session bus can't be acquired here a bunch of warning messages
         # will be printed but the call to show() will still return True.

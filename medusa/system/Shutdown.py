@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import medusa as sickbeard
+import medusa as app
 
 from ..event_queue import Events
 
@@ -28,9 +28,9 @@ class Shutdown(object):
 
     @staticmethod
     def stop(pid):
-        if str(pid) != str(sickbeard.PID):
+        if str(pid) != str(app.PID):
             return False
 
-        sickbeard.events.put(Events.SystemEvent.SHUTDOWN)
+        app.events.put(Events.SystemEvent.SHUTDOWN)
 
         return True

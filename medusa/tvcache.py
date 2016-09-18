@@ -24,7 +24,7 @@ import itertools
 import time
 import traceback
 
-import medusa as sickbeard
+import medusa as app
 from six import text_type
 from . import db, logger, show_name_helpers
 from .helper.exceptions import AuthException
@@ -127,9 +127,9 @@ class TVCache(object):
         Performs requalar cache cleaning as required
         """
         # if cache trimming is enabled
-        if sickbeard.CACHE_TRIMMING:
+        if app.CACHE_TRIMMING:
             # trim items older than MAX_CACHE_AGE days
-            self.trim_cache(days=sickbeard.MAX_CACHE_AGE)
+            self.trim_cache(days=app.MAX_CACHE_AGE)
 
     def trim_cache(self, days=None):
         """
@@ -449,7 +449,7 @@ class TVCache(object):
                 continue
 
             # get the show object, or if it's not one of our shows then ignore it
-            show_obj = Show.find(sickbeard.showList, int(cur_result[b'indexerid']))
+            show_obj = Show.find(app.showList, int(cur_result[b'indexerid']))
             if not show_obj:
                 continue
 

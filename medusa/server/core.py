@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import os
 import threading
 
-import medusa as sickbeard
+import medusa as app
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.routes import route
@@ -41,21 +41,21 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         self.server = None
 
         # video root
-        if sickbeard.ROOT_DIRS:
-            root_dirs = sickbeard.ROOT_DIRS.split('|')
+        if app.ROOT_DIRS:
+            root_dirs = app.ROOT_DIRS.split('|')
             self.video_root = root_dirs[int(root_dirs[0]) + 1]
         else:
             self.video_root = None
 
         # web root
         if self.options['web_root']:
-            sickbeard.WEB_ROOT = self.options['web_root'] = ('/' + self.options['web_root'].lstrip('/').strip('/'))
+            app.WEB_ROOT = self.options['web_root'] = ('/' + self.options['web_root'].lstrip('/').strip('/'))
 
         # api root
-        if not sickbeard.API_KEY:
-            sickbeard.API_KEY = generateApiKey()
-        self.options['api_root'] = r'{root}/api/(?:v1/)?{key}'.format(root=sickbeard.WEB_ROOT, key=sickbeard.API_KEY)
-        self.options['api_v2_root'] = r'{root}/api/v2'.format(root=sickbeard.WEB_ROOT)
+        if not app.API_KEY:
+            app.API_KEY = generateApiKey()
+        self.options['api_root'] = r'{root}/api/(?:v1/)?{key}'.format(root=app.WEB_ROOT, key=app.API_KEY)
+        self.options['api_v2_root'] = r'{root}/api/v2'.format(root=app.WEB_ROOT)
 
         # tornado setup
         self.enable_https = self.options['enable_https']
@@ -68,12 +68,12 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
                     self.https_key and ek(os.path.exists, self.https_key)):
                 if not create_https_certificates(self.https_cert, self.https_key):
                     logger.log('Unable to create CERT/KEY files, disabling HTTPS')
-                    sickbeard.ENABLE_HTTPS = False
+                    app.ENABLE_HTTPS = False
                     self.enable_https = False
 
             if not (ek(os.path.exists, self.https_cert) and ek(os.path.exists, self.https_key)):
                 logger.log('Disabled HTTPS because of missing CERT and KEY files', logger.WARNING)
-                sickbeard.ENABLE_HTTPS = False
+                app.ENABLE_HTTPS = False
                 self.enable_https = False
 
         # Load the app
@@ -81,9 +81,9 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
             [],
             debug=True,
             autoreload=False,
-            gzip=sickbeard.WEB_USE_GZIP,
-            xheaders=sickbeard.HANDLE_REVERSE_PROXY,
-            cookie_secret=sickbeard.WEB_COOKIE_SECRET,
+            gzip=app.WEB_USE_GZIP,
+            xheaders=app.HANDLE_REVERSE_PROXY,
+            cookie_secret=app.WEB_COOKIE_SECRET,
             login_url=r'{root}/login/'.format(root=self.options['web_root']),
         )
 
@@ -129,7 +129,7 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
 
             # cached images
             (r'{base}/cache/images/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': ek(os.path.join, sickbeard.CACHE_DIR, 'images')}),
+             {'path': ek(os.path.join, app.CACHE_DIR, 'images')}),
 
             # css
             (r'{base}/css/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
@@ -162,8 +162,8 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         try:
             self.server.listen(self.options['port'], self.options['host'])
         except Exception:
-            if sickbeard.LAUNCH_BROWSER and not self.daemon:
-                sickbeard.launchBrowser('https' if sickbeard.ENABLE_HTTPS else 'http', self.options['port'], sickbeard.WEB_ROOT)
+            if app.LAUNCH_BROWSER and not self.daemon:
+                app.launchBrowser('https' if app.ENABLE_HTTPS else 'http', self.options['port'], app.WEB_ROOT)
                 logger.log('Launching browser and exiting')
             logger.log('Could not start the web server on port {port}, already in use!'.format(port=self.options['port']))
             os._exit(1)  # pylint: disable=protected-access

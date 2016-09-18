@@ -20,7 +20,7 @@
 
 import re
 
-import medusa as sickbeard
+import medusa as app
 from six import iteritems
 from .. import common, logger
 from ..helper.exceptions import ex
@@ -37,7 +37,7 @@ class Notifier(object):
         self.headers = {
             'X-Plex-Device-Name': 'Medusa',
             'X-Plex-Product': 'Medusa Notifier',
-            'X-Plex-Client-Identifier': sickbeard.common.USER_AGENT,
+            'X-Plex-Client-Identifier': app.common.USER_AGENT,
             'X-Plex-Version': '2016.02.10'
         }
         self.session = make_session()
@@ -61,40 +61,40 @@ class Notifier(object):
         """
 
         # suppress notifications if the notifier is disabled but the notify options are checked
-        if not sickbeard.USE_PLEX_CLIENT and not force:
+        if not app.USE_PLEX_CLIENT and not force:
             return False
 
-        host = host or sickbeard.PLEX_CLIENT_HOST
-        username = username or sickbeard.PLEX_CLIENT_USERNAME
-        password = password or sickbeard.PLEX_CLIENT_PASSWORD
+        host = host or app.PLEX_CLIENT_HOST
+        username = username or app.PLEX_CLIENT_USERNAME
+        password = password or app.PLEX_CLIENT_PASSWORD
 
-        return sickbeard.notifiers.kodi_notifier._notify_kodi(message, title=title, host=host, username=username, password=password, force=force, dest_app="PLEX")  # pylint: disable=protected-access
+        return app.notifiers.kodi_notifier._notify_kodi(message, title=title, host=host, username=username, password=password, force=force, dest_app="PLEX")  # pylint: disable=protected-access
 
 ##############################################################################
 # Public functions
 ##############################################################################
 
     def notify_snatch(self, ep_name, is_proper):
-        if sickbeard.PLEX_NOTIFY_ONSNATCH:
+        if app.PLEX_NOTIFY_ONSNATCH:
             self._notify_pht(ep_name, common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]])
 
     def notify_download(self, ep_name):
-        if sickbeard.PLEX_NOTIFY_ONDOWNLOAD:
+        if app.PLEX_NOTIFY_ONDOWNLOAD:
             self._notify_pht(ep_name, common.notifyStrings[common.NOTIFY_DOWNLOAD])
 
     def notify_subtitle_download(self, ep_name, lang):
-        if sickbeard.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD:
+        if app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._notify_pht(ep_name + ': ' + lang, common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD])
 
     def notify_git_update(self, new_version='??'):
-        if sickbeard.NOTIFY_ON_UPDATE:
+        if app.NOTIFY_ON_UPDATE:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
             if update_text and title and new_version:
                 self._notify_pht(update_text + new_version, title)
 
     def notify_login(self, ipaddress=""):
-        if sickbeard.NOTIFY_ON_LOGIN:
+        if app.NOTIFY_ON_LOGIN:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
             if update_text and title and ipaddress:
@@ -121,10 +121,10 @@ class Notifier(object):
 
         """
 
-        if not (sickbeard.USE_PLEX_SERVER and sickbeard.PLEX_UPDATE_LIBRARY) and not force:
+        if not (app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY) and not force:
             return None
 
-        host = host or sickbeard.PLEX_SERVER_HOST
+        host = host or app.PLEX_SERVER_HOST
         if not host:
             logger.log(u'PLEX: No Plex Media Server host specified, check your settings', logger.DEBUG)
             return False
@@ -140,7 +140,7 @@ class Notifier(object):
 
         for cur_host in host_list:
 
-            url = 'http{}://{}/library/sections'.format(('', 's')[sickbeard.PLEX_SERVER_HTTPS], cur_host)
+            url = 'http{}://{}/library/sections'.format(('', 's')[app.PLEX_SERVER_HTTPS], cur_host)
             try:
                 xml_response = getURL(url, headers=self.headers, session=self.session, returns='text')
                 if not xml_response:
@@ -199,7 +199,7 @@ class Notifier(object):
         hosts_try = (hosts_match.copy(), hosts_all.copy())[not len(hosts_match)]
         for section_key, cur_host in iteritems(hosts_try):
 
-            url = 'http{}://{}/library/sections/{}/refresh'.format(('', 's')[sickbeard.PLEX_SERVER_HTTPS], cur_host, section_key)
+            url = 'http{}://{}/library/sections/{}/refresh'.format(('', 's')[app.PLEX_SERVER_HTTPS], cur_host, section_key)
             try:
                 getURL(url, headers=self.headers, session=self.session, returns='text')
             except Exception as error:
@@ -210,9 +210,9 @@ class Notifier(object):
         return (', '.join(set(hosts_failed)), None)[not len(hosts_failed)]
 
     def get_token(self, username=None, password=None, plex_server_token=None):
-        username = username or sickbeard.PLEX_SERVER_USERNAME
-        password = password or sickbeard.PLEX_SERVER_PASSWORD
-        plex_server_token = plex_server_token or sickbeard.PLEX_SERVER_TOKEN
+        username = username or app.PLEX_SERVER_USERNAME
+        password = password or app.PLEX_SERVER_PASSWORD
+        plex_server_token = plex_server_token or app.PLEX_SERVER_TOKEN
 
         if plex_server_token:
             self.headers['X-Plex-Token'] = plex_server_token

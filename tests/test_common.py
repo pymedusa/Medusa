@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for sickbeard.common.py."""
+"""Tests for medusa.common.py."""
 
 from medusa.common import DOWNLOADED, Quality
 import pytest

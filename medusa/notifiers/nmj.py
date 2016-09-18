@@ -21,7 +21,7 @@
 import re
 import telnetlib
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urlencode
 from six.moves.urllib.request import Request, urlopen
 from .. import logger
@@ -65,7 +65,7 @@ class Notifier(object):
             database = match.group(1)
             device = match.group(2)
             logger.log(u"Found NMJ database %s on device %s" % (database, device), logger.DEBUG)
-            sickbeard.NMJ_DATABASE = database
+            app.NMJ_DATABASE = database
         else:
             logger.log(u"Could not get current NMJ database on %s, NMJ is probably not running!" % host, logger.WARNING)
             return False
@@ -77,7 +77,7 @@ class Notifier(object):
             if match:
                 mount = match.group().replace("127.0.0.1", host)
                 logger.log(u"Found mounting url on the Popcorn Hour in configuration: %s" % mount, logger.DEBUG)
-                sickbeard.NMJ_MOUNT = mount
+                app.NMJ_MOUNT = mount
             else:
                 logger.log(u"Detected a network share on the Popcorn Hour, but could not get the mounting url",
                            logger.WARNING)
@@ -90,11 +90,11 @@ class Notifier(object):
         # Not implemented: Start the scanner when snatched does not make any sense
 
     def notify_download(self, ep_name):
-        if sickbeard.USE_NMJ:
+        if app.USE_NMJ:
             self._notifyNMJ()
 
     def notify_subtitle_download(self, ep_name, lang):
-        if sickbeard.USE_NMJ:
+        if app.USE_NMJ:
             self._notifyNMJ()
 
     def notify_git_update(self, new_version):
@@ -186,17 +186,17 @@ class Notifier(object):
         mount: The mount URL (optional, defaults to the mount URL in the config)
         force: If True then the notification will be sent even if NMJ is disabled in the config
         """
-        if not sickbeard.USE_NMJ and not force:
+        if not app.USE_NMJ and not force:
             logger.log(u"Notification for NMJ scan update not enabled, skipping this notification", logger.DEBUG)
             return False
 
         # fill in omitted parameters
         if not host:
-            host = sickbeard.NMJ_HOST
+            host = app.NMJ_HOST
         if not database:
-            database = sickbeard.NMJ_DATABASE
+            database = app.NMJ_DATABASE
         if not mount:
-            mount = sickbeard.NMJ_MOUNT
+            mount = app.NMJ_MOUNT
 
         logger.log(u"Sending scan command for NMJ ", logger.DEBUG)
 

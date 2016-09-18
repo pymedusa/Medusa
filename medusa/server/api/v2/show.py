@@ -3,7 +3,7 @@
 
 import datetime
 
-import medusa as sickbeard
+import medusa as app
 from .base import BaseRequestHandler
 from .... import helpers, network_timezones, sbdatetime
 from ....helper.common import dateFormat, try_int
@@ -30,7 +30,7 @@ class ShowHandler(BaseRequestHandler):
         arg_sort = self.get_argument('sort', default='name')
 
         shows = {}
-        show_list = sickbeard.showList if not show_id else [Show.find(sickbeard.showList, int(indexerid))]
+        show_list = app.showList if not show_id else [Show.find(app.showList, int(indexerid))]
         for show in show_list:
             if show_id and show is None:
                 return self.api_finish(status=404, error='Show not found')

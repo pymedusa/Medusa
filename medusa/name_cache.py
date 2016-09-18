@@ -20,7 +20,7 @@
 
 import threading
 
-import medusa as sickbeard
+import medusa as app
 from six import iteritems
 from . import db, logger
 from .helpers import full_sanitizeSceneName
@@ -88,7 +88,7 @@ def buildNameCache(show=None):
 
     if not show:
         # logger.log(u"Building internal name cache for all shows", logger.INFO)
-        for show in sickbeard.showList:
+        for show in app.showList:
             buildNameCache(show)
     else:
         # logger.log(u"Building internal name cache for " + show.name, logger.DEBUG)

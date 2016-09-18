@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 
 import traceback
 
-import medusa as sickbeard
+import medusa as app
 from tornado.web import RequestHandler
 from .base import BaseHandler, PageTemplate
 from .... import (
@@ -31,12 +31,12 @@ class KeyHandler(RequestHandler):
         api_key = None
 
         try:
-            username = sickbeard.WEB_USERNAME
-            password = sickbeard.WEB_PASSWORD
+            username = app.WEB_USERNAME
+            password = app.WEB_PASSWORD
 
             if (self.get_argument('u', None) == username or not username) and \
                     (self.get_argument('p', None) == password or not password):
-                api_key = sickbeard.API_KEY
+                api_key = app.API_KEY
 
             self.finish({'success': api_key is not None, 'api_key': api_key})
         except Exception:
@@ -53,7 +53,7 @@ class LoginHandler(BaseHandler):
         Render the Login page
         """
         if self.get_current_user():
-            self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
+            self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
         else:
             t = PageTemplate(rh=self, filename='login.mako')
             self.finish(t.render(title='Login', header='Login', topmenu='login'))
@@ -65,14 +65,14 @@ class LoginHandler(BaseHandler):
 
         api_key = None
 
-        username = sickbeard.WEB_USERNAME
-        password = sickbeard.WEB_PASSWORD
+        username = app.WEB_USERNAME
+        password = app.WEB_PASSWORD
 
         if all([(self.get_argument('username') == username or not username),
                 (self.get_argument('password') == password or not password)]):
-            api_key = sickbeard.API_KEY
+            api_key = app.API_KEY
 
-        if sickbeard.NOTIFY_ON_LOGIN and not helpers.is_ip_private(self.request.remote_ip):
+        if app.NOTIFY_ON_LOGIN and not helpers.is_ip_private(self.request.remote_ip):
             notifiers.notify_login(self.request.remote_ip)
 
         if api_key:
@@ -87,7 +87,7 @@ class LoginHandler(BaseHandler):
         if redirect_page:
             self.redirect('{page}'.format(page=self.get_argument('next')))
         else:
-            self.redirect('/{page}/'.format(page=sickbeard.DEFAULT_PAGE))
+            self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
 
 class LogoutHandler(BaseHandler):

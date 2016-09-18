@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 
 
-import medusa as sickbeard
+import medusa as app
 
 from . import logger, show_name_helpers
 from .helper.exceptions import FailedPostProcessingFailedException
@@ -73,7 +73,7 @@ class FailedProcessor(object):
         if segment:
             self._log(u"Adding this release to failed queue: {0}".format(releaseName), logger.DEBUG)
             cur_failed_queue_item = FailedQueueItem(parsed.show, segment)
-            sickbeard.forcedSearchQueueScheduler.action.add_item(cur_failed_queue_item)
+            app.forcedSearchQueueScheduler.action.add_item(cur_failed_queue_item)
 
         return True
 

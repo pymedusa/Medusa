@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for sickbeard.helpers.py."""
+"""Tests for medusa.helpers.py."""
 
 import medusa.helpers as sut
 import pytest

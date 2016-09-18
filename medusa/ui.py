@@ -19,7 +19,7 @@
 
 import datetime
 
-import medusa as sickbeard
+import medusa as app
 
 MESSAGE = 'notice'
 ERROR = 'error'
@@ -161,7 +161,7 @@ class QueueProgressIndicator(object):
         return len([x for x in self.queueItemList if x.isInQueue()])
 
     def nextName(self):
-        for curItem in [sickbeard.showQueueScheduler.action.currentItem] + sickbeard.showQueueScheduler.action.queue:  # @UndefinedVariable
+        for curItem in [app.showQueueScheduler.action.currentItem] + app.showQueueScheduler.action.queue:  # @UndefinedVariable
             if curItem in self.queueItemList:
                 return curItem.name
 

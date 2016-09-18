@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import quote
 from six.moves.urllib.request import Request, urlopen
 from .. import logger
@@ -44,9 +44,9 @@ class Notifier(object):
         """
 
         if cust_id is None:
-            cust_id = sickbeard.FREEMOBILE_ID
+            cust_id = app.FREEMOBILE_ID
         if apiKey is None:
-            apiKey = sickbeard.FREEMOBILE_APIKEY
+            apiKey = app.FREEMOBILE_APIKEY
 
         logger.log(u"Free Mobile in use with API KEY: " + apiKey, logger.DEBUG)
 
@@ -88,25 +88,25 @@ class Notifier(object):
 
     def notify_snatch(self, ep_name, is_proper):
         title=notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
-        if sickbeard.FREEMOBILE_NOTIFY_ONSNATCH:
+        if app.FREEMOBILE_NOTIFY_ONSNATCH:
             self._notifyFreeMobile(title, ep_name)
 
     def notify_download(self, ep_name, title=notifyStrings[NOTIFY_DOWNLOAD]):
-        if sickbeard.FREEMOBILE_NOTIFY_ONDOWNLOAD:
+        if app.FREEMOBILE_NOTIFY_ONDOWNLOAD:
             self._notifyFreeMobile(title, ep_name)
 
     def notify_subtitle_download(self, ep_name, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
-        if sickbeard.FREEMOBILE_NOTIFY_ONSUBTITLEDOWNLOAD:
+        if app.FREEMOBILE_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._notifyFreeMobile(title, ep_name + ": " + lang)
 
     def notify_git_update(self, new_version="??"):
-        if sickbeard.USE_FREEMOBILE:
+        if app.USE_FREEMOBILE:
             update_text = notifyStrings[NOTIFY_GIT_UPDATE_TEXT]
             title = notifyStrings[NOTIFY_GIT_UPDATE]
             self._notifyFreeMobile(title, update_text + new_version)
 
     def notify_login(self, ipaddress=""):
-        if sickbeard.USE_FREEMOBILE:
+        if app.USE_FREEMOBILE:
             update_text = notifyStrings[NOTIFY_LOGIN_TEXT]
             title = notifyStrings[NOTIFY_LOGIN]
             self._notifyFreeMobile(title, update_text.format(ipaddress))
@@ -122,7 +122,7 @@ class Notifier(object):
         force: Enforce sending, for instance for testing
         """
 
-        if not sickbeard.USE_FREEMOBILE and not force:
+        if not app.USE_FREEMOBILE and not force:
             logger.log(u"Notification for Free Mobile not enabled, skipping this notification", logger.DEBUG)
             return False, "Disabled"
 

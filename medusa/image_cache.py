@@ -23,7 +23,7 @@ import os.path
 from hachoir_core.log import log
 from hachoir_metadata import extractMetadata
 from hachoir_parser import createParser
-import medusa as sickbeard
+import medusa as app
 from . import helpers, logger
 from .helper.encoding import ek
 from .helper.exceptions import ShowDirectoryNotFoundException
@@ -43,7 +43,7 @@ class ImageCache(object):
         """
         Builds up the full path to the image cache directory
         """
-        return ek(os.path.abspath, ek(os.path.join, sickbeard.CACHE_DIR, 'images'))
+        return ek(os.path.abspath, ek(os.path.join, app.CACHE_DIR, 'images'))
 
     def _thumbnails_dir(self):
         """
@@ -282,7 +282,7 @@ class ImageCache(object):
         # check the show dir for poster or banner images and use them
         if need_images[self.POSTER] or need_images[self.BANNER] or need_images[self.FANART]:
             try:
-                for cur_provider in sickbeard.metadata_provider_dict.values():
+                for cur_provider in app.metadata_provider_dict.values():
                     logger.log(u"Checking if we can use the show image from the " + cur_provider.name + " metadata",
                                logger.DEBUG)
                     if ek(os.path.isfile, cur_provider.get_poster_path(show_obj)):

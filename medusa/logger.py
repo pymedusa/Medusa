@@ -32,7 +32,7 @@ from inspect import getargspec
 from logging import NullHandler
 from logging.handlers import RotatingFileHandler
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import quote
 from six import itervalues, text_type
 import subliminal
@@ -125,7 +125,7 @@ def read_loglines(log_file=None, modification_time=None, max_lines=None, max_tra
     :rtype: collections.Iterable of LogLine
     """
     log_file = log_file or instance.log_file
-    log_files = [log_file] + ['{file}.{index}'.format(file=log_file, index=i) for i in range(1, int(sickbeard.LOG_NR))]
+    log_files = [log_file] + ['{file}.{index}'.format(file=log_file, index=i) for i in range(1, int(app.LOG_NR))]
     traceback_lines = []
     counter = 0
     for f in log_files:
@@ -220,7 +220,7 @@ def filter_logline(logline, min_level=None, thread_name=None, search_query=None)
     """Return if logline matches the defined filter.
 
     :param logline:
-    :type logline: sickbeard.logger.LogLine
+    :type logline: medusa.logger.LogLine
     :param min_level:
     :type min_level: int
     :param thread_name:
@@ -254,7 +254,7 @@ def get_default_level():
     :return: the default log level
     :rtype: int
     """
-    return DB if sickbeard.DBDEBUG else DEBUG if sickbeard.DEBUG else INFO
+    return DB if app.DBDEBUG else DEBUG if app.DEBUG else INFO
 
 
 class LogLine(object):
@@ -445,7 +445,7 @@ class ContextFilter(logging.Filter):
         :return:
         :rtype: bool
         """
-        cur_commit_hash = sickbeard.CUR_COMMIT_HASH
+        cur_commit_hash = app.CUR_COMMIT_HASH
         record.curhash = cur_commit_hash[:7] if cur_commit_hash and len(cur_commit_hash) > 6 else ''
 
         fullname = record.name
@@ -490,10 +490,10 @@ class CensoredFormatter(logging.Formatter, object):
         :return:
         :rtype: str
         """
-        privacy_level = sickbeard.common.privacy_levels[sickbeard.PRIVACY_LEVEL]
+        privacy_level = app.common.privacy_levels[app.PRIVACY_LEVEL]
         if not privacy_level:
             msg = super(CensoredFormatter, self).format(record)
-        elif privacy_level == sickbeard.common.privacy_levels['absurd']:
+        elif privacy_level == app.common.privacy_levels['absurd']:
             msg = self.absurd_re.sub('*', super(CensoredFormatter, self).format(record))
         else:
             msg = super(CensoredFormatter, self).format(record)
@@ -543,7 +543,7 @@ class Logger(object):
         :param console_logging: True if logging to console
         :type console_logging: bool
         """
-        self.loggers.extend(get_loggers(sickbeard))
+        self.loggers.extend(get_loggers(app))
         self.loggers.extend(get_loggers(subliminal))
         self.loggers.extend([access_log, app_log, gen_log])
         self.loggers.extend(get_loggers(traktor))
@@ -575,9 +575,9 @@ class Logger(object):
 
     def reconfigure_file_handler(self):
         """Reconfigure rotating file handler."""
-        target_file = ek(os.path.join, sickbeard.LOG_DIR, 'sickrage.log')
-        target_size = int(sickbeard.LOG_SIZE * 1024 * 1024)
-        target_number = int(sickbeard.LOG_NR)
+        target_file = ek(os.path.join, app.LOG_DIR, 'sickrage.log')
+        target_size = int(app.LOG_SIZE * 1024 * 1024)
+        target_number = int(app.LOG_NR)
         if not self.file_handler or self.log_file != target_file or self.file_handler.backupCount != target_number or self.file_handler.maxBytes != target_size:
             file_handler = RotatingFileHandler(target_file, maxBytes=target_size, backupCount=target_number, encoding=default_encoding)
             file_handler.setFormatter(CensoredFormatter(FORMATTER_PATTERN, dateTimeFormat))
@@ -598,8 +598,8 @@ class Logger(object):
         mapping = dict()
 
         modules_config = {
-            'subliminal': sickbeard.SUBLIMINAL_LOG,
-            'tornado': sickbeard.WEB_LOG
+            'subliminal': app.SUBLIMINAL_LOG,
+            'tornado': app.WEB_LOG
         }
 
         for modname, active in modules_config.items():
@@ -642,7 +642,7 @@ class Logger(object):
         self.log(error_msg, ERROR, *args, **kwargs)
 
         if not self.console_handler:
-            sys.exit(error_msg.encode(sickbeard.SYS_ENCODING, 'xmlcharrefreplace'))
+            sys.exit(error_msg.encode(app.SYS_ENCODING, 'xmlcharrefreplace'))
         else:
             sys.exit(1)
 

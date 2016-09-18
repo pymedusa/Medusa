@@ -23,7 +23,7 @@ import json
 import socket
 import time
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import quote, unquote, unquote_plus, urlencode
 from six import text_type
 from six.moves.http_client import BadStatusLine
@@ -74,7 +74,7 @@ class Notifier(object):
         result = self._send_to_kodi_json(checkCommand, host, username, password, dest_app)
 
         # revert back to default socket timeout
-        socket.setdefaulttimeout(sickbeard.SOCKET_TIMEOUT)
+        socket.setdefaulttimeout(app.SOCKET_TIMEOUT)
 
         if result:
             return result["result"]["version"]
@@ -109,14 +109,14 @@ class Notifier(object):
 
         # fill in omitted parameters
         if not host:
-            host = sickbeard.KODI_HOST
+            host = app.KODI_HOST
         if not username:
-            username = sickbeard.KODI_USERNAME
+            username = app.KODI_USERNAME
         if not password:
-            password = sickbeard.KODI_PASSWORD
+            password = app.KODI_PASSWORD
 
         # suppress notifications if the notifier is disabled but the notify options are checked
-        if not sickbeard.USE_KODI and not force:
+        if not app.USE_KODI and not force:
             logger.log(u"Notification for %s not enabled, skipping this notification" % dest_app, logger.DEBUG)
             return False
 
@@ -137,12 +137,12 @@ class Notifier(object):
                 else:
                     logger.log(u"Detected %s version >= 12, using %s JSON API" % (dest_app, dest_app), logger.DEBUG)
                     command = '{"jsonrpc":"2.0","method":"GUI.ShowNotification","params":{"title":"%s","message":"%s", "image": "%s"},"id":1}' % (
-                        title.encode("utf-8"), message.encode("utf-8"), sickbeard.LOGO_URL)
+                        title.encode("utf-8"), message.encode("utf-8"), app.LOGO_URL)
                     notifyResult = self._send_to_kodi_json(command, curHost, username, password, dest_app)
                     if notifyResult and notifyResult.get('result'):  # pylint: disable=no-member
-                        result += curHost + ':' + notifyResult["result"].decode(sickbeard.SYS_ENCODING)
+                        result += curHost + ':' + notifyResult["result"].decode(app.SYS_ENCODING)
             else:
-                if sickbeard.KODI_ALWAYS_ON or force:
+                if app.KODI_ALWAYS_ON or force:
                     logger.log(u"Failed to detect %s version for '%s', check configuration and try again." % (dest_app, curHost), logger.WARNING)
                 result += curHost + ':False'
 
@@ -164,23 +164,23 @@ class Notifier(object):
 
         logger.log(u"Sending request to update library for KODI host: '%s'" % host, logger.DEBUG)
 
-        kodiapi = self._get_kodi_version(host, sickbeard.KODI_USERNAME, sickbeard.KODI_PASSWORD)
+        kodiapi = self._get_kodi_version(host, app.KODI_USERNAME, app.KODI_PASSWORD)
         if kodiapi:
             if kodiapi <= 4:
                 # try to update for just the show, if it fails, do full update if enabled
-                if not self._update_library(host, showName) and sickbeard.KODI_UPDATE_FULL:
+                if not self._update_library(host, showName) and app.KODI_UPDATE_FULL:
                     logger.log(u"Single show update failed, falling back to full update", logger.DEBUG)
                     return self._update_library(host)
                 else:
                     return True
             else:
                 # try to update for just the show, if it fails, do full update if enabled
-                if not self._update_library_json(host, showName) and sickbeard.KODI_UPDATE_FULL:
+                if not self._update_library_json(host, showName) and app.KODI_UPDATE_FULL:
                     logger.log(u"Single show update failed, falling back to full update", logger.DEBUG)
                     return self._update_library_json(host)
                 else:
                     return True
-        elif sickbeard.KODI_ALWAYS_ON:
+        elif app.KODI_ALWAYS_ON:
             logger.log(u"Failed to detect KODI version for '" + host + "', check configuration and try again.", logger.WARNING)
 
         return False
@@ -206,9 +206,9 @@ class Notifier(object):
 
         # fill in omitted parameters
         if not username:
-            username = sickbeard.KODI_USERNAME
+            username = app.KODI_USERNAME
         if not password:
-            password = sickbeard.KODI_PASSWORD
+            password = app.KODI_PASSWORD
 
         if not host:
             logger.log(u'No %s host passed, aborting update' % dest_app, logger.WARNING)
@@ -240,7 +240,7 @@ class Notifier(object):
                 logger.log(u"Couldn't contact %s HTTP at %r : %r" % (dest_app, url, ex(e)), logger.DEBUG)
                 return False
 
-            result = response.read().decode(sickbeard.SYS_ENCODING)
+            result = response.read().decode(app.SYS_ENCODING)
             response.close()
 
             logger.log(u"%s HTTP response: %s" % (dest_app, result.replace('\n', '')), logger.DEBUG)
@@ -314,7 +314,7 @@ class Notifier(object):
 
             for path in paths:
                 # we do not need it double-encoded, gawd this is dumb
-                unEncPath = unquote(path.text).decode(sickbeard.SYS_ENCODING)
+                unEncPath = unquote(path.text).decode(app.SYS_ENCODING)
                 logger.log(u"KODI Updating " + showName + " on " + host + " at " + unEncPath, logger.DEBUG)
                 updateCommand = {'command': 'ExecBuiltIn', 'parameter': 'KODI.updatelibrary(video, %s)' % unEncPath}
                 request = self._send_to_kodi(updateCommand, host)
@@ -357,9 +357,9 @@ class Notifier(object):
 
         # fill in omitted parameters
         if not username:
-            username = sickbeard.KODI_USERNAME
+            username = app.KODI_USERNAME
         if not password:
-            password = sickbeard.KODI_PASSWORD
+            password = app.KODI_PASSWORD
 
         if not host:
             logger.log(u'No %s host passed, aborting update' % dest_app, logger.WARNING)
@@ -384,7 +384,7 @@ class Notifier(object):
             try:
                 response = urlopen(req)
             except (BadStatusLine, URLError) as e:
-                if sickbeard.KODI_ALWAYS_ON:
+                if app.KODI_ALWAYS_ON:
                     logger.log(u"Error while trying to retrieve %s API version for %s: %r" % (dest_app, host, ex(e)), logger.WARNING)
                 return False
 
@@ -399,24 +399,24 @@ class Notifier(object):
                 return False
 
         except IOError as e:
-            if sickbeard.KODI_ALWAYS_ON:
+            if app.KODI_ALWAYS_ON:
                 logger.log(u"Warning: Couldn't contact %s JSON API at %s: %r" % (dest_app, ss(url), ex(e)), logger.WARNING)
             return False
 
     def clean_library(self):
         """Handles clean library KODI host via HTTP JSON-RPC."""
-        if not sickbeard.USE_KODI:
+        if not app.USE_KODI:
             return True
         clean_library = True
-        for host in [x.strip() for x in sickbeard.KODI_HOST.split(',')]:
+        for host in [x.strip() for x in app.KODI_HOST.split(',')]:
             logger.log(u'Cleaning KODI library via JSON method for host: {0}'.format(host), logger.INFO)
             update_command = '{"jsonrpc":"2.0","method":"VideoLibrary.Clean","params": {"showdialogs": false},"id":1}'
             request = self._send_to_kodi_json(update_command, host)
             if not request:
-                if sickbeard.KODI_ALWAYS_ON:
+                if app.KODI_ALWAYS_ON:
                     logger.log(u'KODI library clean failed for host: {0}'.format(host), logger.WARNING)
                 clean_library = False
-                if sickbeard.KODI_UPDATE_ONLYFIRST:
+                if app.KODI_UPDATE_ONLYFIRST:
                     break
                 else:
                     continue
@@ -424,10 +424,10 @@ class Notifier(object):
             # catch if there was an error in the returned request
             for r in request:
                 if 'error' in r:
-                    if sickbeard.KODI_ALWAYS_ON:
+                    if app.KODI_ALWAYS_ON:
                         logger.log(u'Error while attempting to clean library for host: {0}'.format(host), logger.WARNING)
                     clean_library = False
-            if sickbeard.KODI_UPDATE_ONLYFIRST:
+            if app.KODI_UPDATE_ONLYFIRST:
                 break
 
         # If no errors, return True. Otherwise keep sending command until all hosts are cleaned
@@ -541,25 +541,25 @@ class Notifier(object):
     ##############################################################################
 
     def notify_snatch(self, ep_name, is_proper):
-        if sickbeard.KODI_NOTIFY_ONSNATCH:
+        if app.KODI_NOTIFY_ONSNATCH:
             self._notify_kodi(ep_name, common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]])
 
     def notify_download(self, ep_name):
-        if sickbeard.KODI_NOTIFY_ONDOWNLOAD:
+        if app.KODI_NOTIFY_ONDOWNLOAD:
             self._notify_kodi(ep_name, common.notifyStrings[common.NOTIFY_DOWNLOAD])
 
     def notify_subtitle_download(self, ep_name, lang):
-        if sickbeard.KODI_NOTIFY_ONSUBTITLEDOWNLOAD:
+        if app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._notify_kodi(ep_name + ": " + lang, common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD])
 
     def notify_git_update(self, new_version="??"):
-        if sickbeard.USE_KODI:
+        if app.USE_KODI:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
             self._notify_kodi(update_text + new_version, title)
 
     def notify_login(self, ipaddress=""):
-        if sickbeard.USE_KODI:
+        if app.USE_KODI:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
             self._notify_kodi(update_text.format(ipaddress), title)
@@ -583,20 +583,20 @@ class Notifier(object):
 
         """
 
-        if sickbeard.USE_KODI and sickbeard.KODI_UPDATE_LIBRARY:
-            if not sickbeard.KODI_HOST:
+        if app.USE_KODI and app.KODI_UPDATE_LIBRARY:
+            if not app.KODI_HOST:
                 logger.log(u"No KODI hosts specified, check your settings", logger.DEBUG)
                 return False
 
             # either update each host, or only attempt to update until one successful result
             result = 0
-            for host in [x.strip() for x in sickbeard.KODI_HOST.split(",")]:
+            for host in [x.strip() for x in app.KODI_HOST.split(",")]:
                 if self._send_update_library(host, showName):
-                    if sickbeard.KODI_UPDATE_ONLYFIRST:
+                    if app.KODI_UPDATE_ONLYFIRST:
                         logger.log(u"Successfully updated '" + host + "', stopped sending update library commands.", logger.DEBUG)
                         return True
                 else:
-                    if sickbeard.KODI_ALWAYS_ON:
+                    if app.KODI_ALWAYS_ON:
                         logger.log(u"Failed to detect KODI version for '" + host + "', check configuration and try again.", logger.WARNING)
                     result += 1
 

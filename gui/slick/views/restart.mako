@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-import medusa as sickbeard
+import medusa as app
 %>
 <%block name="css">
 <style>
@@ -14,7 +14,7 @@ import medusa as sickbeard
 try:
     themeSpinner = sbThemeName
 except NameError:
-    themeSpinner = sickbeard.THEME_NAME
+    themeSpinner = app.THEME_NAME
 %>
 <h2>Performing Restart</h2>
 <div default-page="${sbDefaultPage}" current-pid="${sbPID}" class="messages">

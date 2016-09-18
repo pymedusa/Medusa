@@ -22,7 +22,7 @@ import socket
 import time
 
 import jsonrpclib
-import medusa as sickbeard
+import medusa as app
 from six import itervalues
 from ..TorrentProvider import TorrentProvider
 from .... import logger, scene_exceptions, tvcache
@@ -275,7 +275,7 @@ class BTNProvider(TorrentProvider):
 
         try:
             parsed_json = server.getTorrents(apikey, params or {}, int(results_per_page), int(offset))
-            time.sleep(cpu_presets[sickbeard.CPU_PRESET])
+            time.sleep(cpu_presets[app.CPU_PRESET])
 
         except jsonrpclib.jsonrpc.ProtocolError as error:
             if error.message == 'Call Limit Exceeded':

@@ -27,7 +27,7 @@ import datetime
 import time
 import traceback
 
-import medusa as sickbeard
+import medusa as app
 from . import db, logger
 from .helper.exceptions import ex
 from .scene_exceptions import xem_session
@@ -50,7 +50,7 @@ def get_scene_numbering(indexer_id, indexer, season, episode, fallback_to_xem=Tr
     if indexer_id is None or season is None or episode is None:
         return season, episode
 
-    showObj = Show.find(sickbeard.showList, int(indexer_id))
+    showObj = Show.find(app.showList, int(indexer_id))
     if showObj and not showObj.is_scene:
         return season, episode
 
@@ -102,7 +102,7 @@ def get_scene_absolute_numbering(indexer_id, indexer, absolute_number, fallback_
     indexer_id = int(indexer_id)
     indexer = int(indexer)
 
-    showObj = Show.find(sickbeard.showList, indexer_id)
+    showObj = Show.find(app.showList, indexer_id)
     if showObj and not showObj.is_scene:
         return absolute_number
 
@@ -221,7 +221,7 @@ def set_scene_numbering(indexer_id, indexer, season=None, episode=None,  # pylin
             [sceneAbsolute, indexer, indexer_id, absolute_number])
 
     # Reload data from DB so that cache and db are in sync
-    show = Show.find(sickbeard.showList, indexer_id)
+    show = Show.find(app.showList, indexer_id)
     show.flush_episodes()
 
 
@@ -479,7 +479,7 @@ def xem_refresh(indexer_id, indexer, force=False):
 
     if refresh or force:
         logger.log(
-            u'Looking up XEM scene mapping for show %s on %s' % (indexer_id, sickbeard.indexerApi(indexer).name,),
+            u'Looking up XEM scene mapping for show %s on %s' % (indexer_id, app.indexerApi(indexer).name,),
             logger.DEBUG)
 
         # mark refreshed
@@ -492,17 +492,17 @@ def xem_refresh(indexer_id, indexer, force=False):
 
         try:
             # XEM MAP URL
-            url = "http://thexem.de/map/havemap?origin=%s" % sickbeard.indexerApi(indexer).config['xem_origin']
-            parsedJSON = sickbeard.helpers.getURL(url, session=xem_session, returns='json')
+            url = "http://thexem.de/map/havemap?origin=%s" % app.indexerApi(indexer).config['xem_origin']
+            parsedJSON = app.helpers.getURL(url, session=xem_session, returns='json')
             if not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result'] or 'data' not in parsedJSON or str(indexer_id) not in parsedJSON['data']:
                 return
 
             # XEM API URL
-            url = "http://thexem.de/map/all?id=%s&origin=%s&destination=scene" % (indexer_id, sickbeard.indexerApi(indexer).config['xem_origin'])
+            url = "http://thexem.de/map/all?id=%s&origin=%s&destination=scene" % (indexer_id, app.indexerApi(indexer).config['xem_origin'])
 
-            parsedJSON = sickbeard.helpers.getURL(url, session=xem_session, returns='json')
+            parsedJSON = app.helpers.getURL(url, session=xem_session, returns='json')
             if not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result']:
-                logger.log(u'No XEM data for show "%s on %s"' % (indexer_id, sickbeard.indexerApi(indexer).name,), logger.INFO)
+                logger.log(u'No XEM data for show "%s on %s"' % (indexer_id, app.indexerApi(indexer).name,), logger.INFO)
                 return
 
             cl = []
@@ -512,22 +512,22 @@ def xem_refresh(indexer_id, indexer, force=False):
                         "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE showid = ? AND season = ? AND episode = ?",
                         [entry['scene']['season'], entry['scene']['episode'],
                          entry['scene']['absolute'], indexer_id,
-                         entry[sickbeard.indexerApi(indexer).config['xem_origin']]['season'],
-                         entry[sickbeard.indexerApi(indexer).config['xem_origin']]['episode']]
+                         entry[app.indexerApi(indexer).config['xem_origin']]['season'],
+                         entry[app.indexerApi(indexer).config['xem_origin']]['episode']]
                     ])
                     cl.append([
                         "UPDATE tv_episodes SET absolute_number = ? WHERE showid = ? AND season = ? AND episode = ? AND absolute_number = 0",
-                        [entry[sickbeard.indexerApi(indexer).config['xem_origin']]['absolute'], indexer_id,
-                         entry[sickbeard.indexerApi(indexer).config['xem_origin']]['season'],
-                         entry[sickbeard.indexerApi(indexer).config['xem_origin']]['episode']]
+                        [entry[app.indexerApi(indexer).config['xem_origin']]['absolute'], indexer_id,
+                         entry[app.indexerApi(indexer).config['xem_origin']]['season'],
+                         entry[app.indexerApi(indexer).config['xem_origin']]['episode']]
                     ])
                 if 'scene_2' in entry:  # for doubles
                     cl.append([
                         "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE showid = ? AND season = ? AND episode = ?",
                         [entry['scene_2']['season'], entry['scene_2']['episode'],
                          entry['scene_2']['absolute'], indexer_id,
-                         entry[sickbeard.indexerApi(indexer).config['xem_origin']]['season'],
-                         entry[sickbeard.indexerApi(indexer).config['xem_origin']]['episode']]
+                         entry[app.indexerApi(indexer).config['xem_origin']]['season'],
+                         entry[app.indexerApi(indexer).config['xem_origin']]['episode']]
                     ])
 
             if cl:
@@ -536,7 +536,7 @@ def xem_refresh(indexer_id, indexer, force=False):
 
         except Exception as e:
             logger.log(
-                u"Exception while refreshing XEM data for show " + str(indexer_id) + " on " + sickbeard.indexerApi(
+                u"Exception while refreshing XEM data for show " + str(indexer_id) + " on " + app.indexerApi(
                     indexer).name + ": " + ex(e), logger.WARNING)
             logger.log(traceback.format_exc(), logger.DEBUG)
 
@@ -569,7 +569,7 @@ def fix_xem_numbering(indexer_id, indexer):  # pylint:disable=too-many-locals, t
     update_scene_absolute_number = False
 
     logger.log(
-        u'Fixing any XEM scene mapping issues for show %s on %s' % (indexer_id, sickbeard.indexerApi(indexer).name,),
+        u'Fixing any XEM scene mapping issues for show %s on %s' % (indexer_id, app.indexerApi(indexer).name,),
         logger.DEBUG)
 
     cl = []

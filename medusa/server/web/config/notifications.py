@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 
 import os
 
-import medusa as sickbeard
+import medusa as app
 from tornado.routes import route
 from .handler import Config
 from ..core import PageTemplate
@@ -92,173 +92,173 @@ class ConfigNotifications(Config):
 
         results = []
 
-        sickbeard.USE_KODI = config.checkbox_to_value(use_kodi)
-        sickbeard.KODI_ALWAYS_ON = config.checkbox_to_value(kodi_always_on)
-        sickbeard.KODI_NOTIFY_ONSNATCH = config.checkbox_to_value(kodi_notify_onsnatch)
-        sickbeard.KODI_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(kodi_notify_ondownload)
-        sickbeard.KODI_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(kodi_notify_onsubtitledownload)
-        sickbeard.KODI_UPDATE_LIBRARY = config.checkbox_to_value(kodi_update_library)
-        sickbeard.KODI_UPDATE_FULL = config.checkbox_to_value(kodi_update_full)
-        sickbeard.KODI_UPDATE_ONLYFIRST = config.checkbox_to_value(kodi_update_onlyfirst)
-        sickbeard.KODI_HOST = config.clean_hosts(kodi_host)
-        sickbeard.KODI_USERNAME = kodi_username
-        sickbeard.KODI_PASSWORD = kodi_password
-        sickbeard.KODI_CLEAN_LIBRARY = config.checkbox_to_value(kodi_clean_library)
+        app.USE_KODI = config.checkbox_to_value(use_kodi)
+        app.KODI_ALWAYS_ON = config.checkbox_to_value(kodi_always_on)
+        app.KODI_NOTIFY_ONSNATCH = config.checkbox_to_value(kodi_notify_onsnatch)
+        app.KODI_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(kodi_notify_ondownload)
+        app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(kodi_notify_onsubtitledownload)
+        app.KODI_UPDATE_LIBRARY = config.checkbox_to_value(kodi_update_library)
+        app.KODI_UPDATE_FULL = config.checkbox_to_value(kodi_update_full)
+        app.KODI_UPDATE_ONLYFIRST = config.checkbox_to_value(kodi_update_onlyfirst)
+        app.KODI_HOST = config.clean_hosts(kodi_host)
+        app.KODI_USERNAME = kodi_username
+        app.KODI_PASSWORD = kodi_password
+        app.KODI_CLEAN_LIBRARY = config.checkbox_to_value(kodi_clean_library)
 
-        sickbeard.USE_PLEX_SERVER = config.checkbox_to_value(use_plex_server)
-        sickbeard.PLEX_NOTIFY_ONSNATCH = config.checkbox_to_value(plex_notify_onsnatch)
-        sickbeard.PLEX_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(plex_notify_ondownload)
-        sickbeard.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(plex_notify_onsubtitledownload)
-        sickbeard.PLEX_UPDATE_LIBRARY = config.checkbox_to_value(plex_update_library)
-        sickbeard.PLEX_CLIENT_HOST = config.clean_hosts(plex_client_host)
-        sickbeard.PLEX_SERVER_HOST = config.clean_hosts(plex_server_host)
-        sickbeard.PLEX_SERVER_TOKEN = config.clean_host(plex_server_token)
-        sickbeard.PLEX_SERVER_USERNAME = plex_server_username
-        if plex_server_password != '*' * len(sickbeard.PLEX_SERVER_PASSWORD):
-            sickbeard.PLEX_SERVER_PASSWORD = plex_server_password
+        app.USE_PLEX_SERVER = config.checkbox_to_value(use_plex_server)
+        app.PLEX_NOTIFY_ONSNATCH = config.checkbox_to_value(plex_notify_onsnatch)
+        app.PLEX_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(plex_notify_ondownload)
+        app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(plex_notify_onsubtitledownload)
+        app.PLEX_UPDATE_LIBRARY = config.checkbox_to_value(plex_update_library)
+        app.PLEX_CLIENT_HOST = config.clean_hosts(plex_client_host)
+        app.PLEX_SERVER_HOST = config.clean_hosts(plex_server_host)
+        app.PLEX_SERVER_TOKEN = config.clean_host(plex_server_token)
+        app.PLEX_SERVER_USERNAME = plex_server_username
+        if plex_server_password != '*' * len(app.PLEX_SERVER_PASSWORD):
+            app.PLEX_SERVER_PASSWORD = plex_server_password
 
-        sickbeard.USE_PLEX_CLIENT = config.checkbox_to_value(use_plex_client)
-        sickbeard.PLEX_CLIENT_USERNAME = plex_client_username
-        if plex_client_password != '*' * len(sickbeard.PLEX_CLIENT_PASSWORD):
-            sickbeard.PLEX_CLIENT_PASSWORD = plex_client_password
-        sickbeard.PLEX_SERVER_HTTPS = config.checkbox_to_value(plex_server_https)
+        app.USE_PLEX_CLIENT = config.checkbox_to_value(use_plex_client)
+        app.PLEX_CLIENT_USERNAME = plex_client_username
+        if plex_client_password != '*' * len(app.PLEX_CLIENT_PASSWORD):
+            app.PLEX_CLIENT_PASSWORD = plex_client_password
+        app.PLEX_SERVER_HTTPS = config.checkbox_to_value(plex_server_https)
 
-        sickbeard.USE_EMBY = config.checkbox_to_value(use_emby)
-        sickbeard.EMBY_HOST = config.clean_host(emby_host)
-        sickbeard.EMBY_APIKEY = emby_apikey
+        app.USE_EMBY = config.checkbox_to_value(use_emby)
+        app.EMBY_HOST = config.clean_host(emby_host)
+        app.EMBY_APIKEY = emby_apikey
 
-        sickbeard.USE_GROWL = config.checkbox_to_value(use_growl)
-        sickbeard.GROWL_NOTIFY_ONSNATCH = config.checkbox_to_value(growl_notify_onsnatch)
-        sickbeard.GROWL_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(growl_notify_ondownload)
-        sickbeard.GROWL_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(growl_notify_onsubtitledownload)
-        sickbeard.GROWL_HOST = config.clean_host(growl_host, default_port=23053)
-        sickbeard.GROWL_PASSWORD = growl_password
+        app.USE_GROWL = config.checkbox_to_value(use_growl)
+        app.GROWL_NOTIFY_ONSNATCH = config.checkbox_to_value(growl_notify_onsnatch)
+        app.GROWL_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(growl_notify_ondownload)
+        app.GROWL_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(growl_notify_onsubtitledownload)
+        app.GROWL_HOST = config.clean_host(growl_host, default_port=23053)
+        app.GROWL_PASSWORD = growl_password
 
-        sickbeard.USE_FREEMOBILE = config.checkbox_to_value(use_freemobile)
-        sickbeard.FREEMOBILE_NOTIFY_ONSNATCH = config.checkbox_to_value(freemobile_notify_onsnatch)
-        sickbeard.FREEMOBILE_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(freemobile_notify_ondownload)
-        sickbeard.FREEMOBILE_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(freemobile_notify_onsubtitledownload)
-        sickbeard.FREEMOBILE_ID = freemobile_id
-        sickbeard.FREEMOBILE_APIKEY = freemobile_apikey
+        app.USE_FREEMOBILE = config.checkbox_to_value(use_freemobile)
+        app.FREEMOBILE_NOTIFY_ONSNATCH = config.checkbox_to_value(freemobile_notify_onsnatch)
+        app.FREEMOBILE_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(freemobile_notify_ondownload)
+        app.FREEMOBILE_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(freemobile_notify_onsubtitledownload)
+        app.FREEMOBILE_ID = freemobile_id
+        app.FREEMOBILE_APIKEY = freemobile_apikey
 
-        sickbeard.USE_TELEGRAM = config.checkbox_to_value(use_telegram)
-        sickbeard.TELEGRAM_NOTIFY_ONSNATCH = config.checkbox_to_value(telegram_notify_onsnatch)
-        sickbeard.TELEGRAM_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(telegram_notify_ondownload)
-        sickbeard.TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(telegram_notify_onsubtitledownload)
-        sickbeard.TELEGRAM_ID = telegram_id
-        sickbeard.TELEGRAM_APIKEY = telegram_apikey
+        app.USE_TELEGRAM = config.checkbox_to_value(use_telegram)
+        app.TELEGRAM_NOTIFY_ONSNATCH = config.checkbox_to_value(telegram_notify_onsnatch)
+        app.TELEGRAM_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(telegram_notify_ondownload)
+        app.TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(telegram_notify_onsubtitledownload)
+        app.TELEGRAM_ID = telegram_id
+        app.TELEGRAM_APIKEY = telegram_apikey
 
-        sickbeard.USE_PROWL = config.checkbox_to_value(use_prowl)
-        sickbeard.PROWL_NOTIFY_ONSNATCH = config.checkbox_to_value(prowl_notify_onsnatch)
-        sickbeard.PROWL_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(prowl_notify_ondownload)
-        sickbeard.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(prowl_notify_onsubtitledownload)
-        sickbeard.PROWL_API = prowl_api
-        sickbeard.PROWL_PRIORITY = prowl_priority
-        sickbeard.PROWL_MESSAGE_TITLE = prowl_message_title
+        app.USE_PROWL = config.checkbox_to_value(use_prowl)
+        app.PROWL_NOTIFY_ONSNATCH = config.checkbox_to_value(prowl_notify_onsnatch)
+        app.PROWL_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(prowl_notify_ondownload)
+        app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(prowl_notify_onsubtitledownload)
+        app.PROWL_API = prowl_api
+        app.PROWL_PRIORITY = prowl_priority
+        app.PROWL_MESSAGE_TITLE = prowl_message_title
 
-        sickbeard.USE_TWITTER = config.checkbox_to_value(use_twitter)
-        sickbeard.TWITTER_NOTIFY_ONSNATCH = config.checkbox_to_value(twitter_notify_onsnatch)
-        sickbeard.TWITTER_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(twitter_notify_ondownload)
-        sickbeard.TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(twitter_notify_onsubtitledownload)
-        sickbeard.TWITTER_USEDM = config.checkbox_to_value(twitter_usedm)
-        sickbeard.TWITTER_DMTO = twitter_dmto
+        app.USE_TWITTER = config.checkbox_to_value(use_twitter)
+        app.TWITTER_NOTIFY_ONSNATCH = config.checkbox_to_value(twitter_notify_onsnatch)
+        app.TWITTER_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(twitter_notify_ondownload)
+        app.TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(twitter_notify_onsubtitledownload)
+        app.TWITTER_USEDM = config.checkbox_to_value(twitter_usedm)
+        app.TWITTER_DMTO = twitter_dmto
 
-        sickbeard.USE_BOXCAR2 = config.checkbox_to_value(use_boxcar2)
-        sickbeard.BOXCAR2_NOTIFY_ONSNATCH = config.checkbox_to_value(boxcar2_notify_onsnatch)
-        sickbeard.BOXCAR2_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(boxcar2_notify_ondownload)
-        sickbeard.BOXCAR2_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(boxcar2_notify_onsubtitledownload)
-        sickbeard.BOXCAR2_ACCESSTOKEN = boxcar2_accesstoken
+        app.USE_BOXCAR2 = config.checkbox_to_value(use_boxcar2)
+        app.BOXCAR2_NOTIFY_ONSNATCH = config.checkbox_to_value(boxcar2_notify_onsnatch)
+        app.BOXCAR2_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(boxcar2_notify_ondownload)
+        app.BOXCAR2_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(boxcar2_notify_onsubtitledownload)
+        app.BOXCAR2_ACCESSTOKEN = boxcar2_accesstoken
 
-        sickbeard.USE_PUSHOVER = config.checkbox_to_value(use_pushover)
-        sickbeard.PUSHOVER_NOTIFY_ONSNATCH = config.checkbox_to_value(pushover_notify_onsnatch)
-        sickbeard.PUSHOVER_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(pushover_notify_ondownload)
-        sickbeard.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(pushover_notify_onsubtitledownload)
-        sickbeard.PUSHOVER_USERKEY = pushover_userkey
-        sickbeard.PUSHOVER_APIKEY = pushover_apikey
-        sickbeard.PUSHOVER_DEVICE = pushover_device
-        sickbeard.PUSHOVER_SOUND = pushover_sound
+        app.USE_PUSHOVER = config.checkbox_to_value(use_pushover)
+        app.PUSHOVER_NOTIFY_ONSNATCH = config.checkbox_to_value(pushover_notify_onsnatch)
+        app.PUSHOVER_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(pushover_notify_ondownload)
+        app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(pushover_notify_onsubtitledownload)
+        app.PUSHOVER_USERKEY = pushover_userkey
+        app.PUSHOVER_APIKEY = pushover_apikey
+        app.PUSHOVER_DEVICE = pushover_device
+        app.PUSHOVER_SOUND = pushover_sound
 
-        sickbeard.USE_LIBNOTIFY = config.checkbox_to_value(use_libnotify)
-        sickbeard.LIBNOTIFY_NOTIFY_ONSNATCH = config.checkbox_to_value(libnotify_notify_onsnatch)
-        sickbeard.LIBNOTIFY_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(libnotify_notify_ondownload)
-        sickbeard.LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(libnotify_notify_onsubtitledownload)
+        app.USE_LIBNOTIFY = config.checkbox_to_value(use_libnotify)
+        app.LIBNOTIFY_NOTIFY_ONSNATCH = config.checkbox_to_value(libnotify_notify_onsnatch)
+        app.LIBNOTIFY_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(libnotify_notify_ondownload)
+        app.LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(libnotify_notify_onsubtitledownload)
 
-        sickbeard.USE_NMJ = config.checkbox_to_value(use_nmj)
-        sickbeard.NMJ_HOST = config.clean_host(nmj_host)
-        sickbeard.NMJ_DATABASE = nmj_database
-        sickbeard.NMJ_MOUNT = nmj_mount
+        app.USE_NMJ = config.checkbox_to_value(use_nmj)
+        app.NMJ_HOST = config.clean_host(nmj_host)
+        app.NMJ_DATABASE = nmj_database
+        app.NMJ_MOUNT = nmj_mount
 
-        sickbeard.USE_NMJv2 = config.checkbox_to_value(use_nmjv2)
-        sickbeard.NMJv2_HOST = config.clean_host(nmjv2_host)
-        sickbeard.NMJv2_DATABASE = nmjv2_database
-        sickbeard.NMJv2_DBLOC = nmjv2_dbloc
+        app.USE_NMJv2 = config.checkbox_to_value(use_nmjv2)
+        app.NMJv2_HOST = config.clean_host(nmjv2_host)
+        app.NMJv2_DATABASE = nmjv2_database
+        app.NMJv2_DBLOC = nmjv2_dbloc
 
-        sickbeard.USE_SYNOINDEX = config.checkbox_to_value(use_synoindex)
+        app.USE_SYNOINDEX = config.checkbox_to_value(use_synoindex)
 
-        sickbeard.USE_SYNOLOGYNOTIFIER = config.checkbox_to_value(use_synologynotifier)
-        sickbeard.SYNOLOGYNOTIFIER_NOTIFY_ONSNATCH = config.checkbox_to_value(synologynotifier_notify_onsnatch)
-        sickbeard.SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(synologynotifier_notify_ondownload)
-        sickbeard.SYNOLOGYNOTIFIER_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(
+        app.USE_SYNOLOGYNOTIFIER = config.checkbox_to_value(use_synologynotifier)
+        app.SYNOLOGYNOTIFIER_NOTIFY_ONSNATCH = config.checkbox_to_value(synologynotifier_notify_onsnatch)
+        app.SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(synologynotifier_notify_ondownload)
+        app.SYNOLOGYNOTIFIER_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(
             synologynotifier_notify_onsubtitledownload)
 
         config.change_USE_TRAKT(use_trakt)
-        sickbeard.TRAKT_USERNAME = trakt_username
-        sickbeard.TRAKT_REMOVE_WATCHLIST = config.checkbox_to_value(trakt_remove_watchlist)
-        sickbeard.TRAKT_REMOVE_SERIESLIST = config.checkbox_to_value(trakt_remove_serieslist)
-        sickbeard.TRAKT_REMOVE_SHOW_FROM_SICKRAGE = config.checkbox_to_value(trakt_remove_show_from_sickrage)
-        sickbeard.TRAKT_SYNC_WATCHLIST = config.checkbox_to_value(trakt_sync_watchlist)
-        sickbeard.TRAKT_METHOD_ADD = int(trakt_method_add)
-        sickbeard.TRAKT_START_PAUSED = config.checkbox_to_value(trakt_start_paused)
-        sickbeard.TRAKT_USE_RECOMMENDED = config.checkbox_to_value(trakt_use_recommended)
-        sickbeard.TRAKT_SYNC = config.checkbox_to_value(trakt_sync)
-        sickbeard.TRAKT_SYNC_REMOVE = config.checkbox_to_value(trakt_sync_remove)
-        sickbeard.TRAKT_DEFAULT_INDEXER = int(trakt_default_indexer)
-        sickbeard.TRAKT_TIMEOUT = int(trakt_timeout)
-        sickbeard.TRAKT_BLACKLIST_NAME = trakt_blacklist_name
+        app.TRAKT_USERNAME = trakt_username
+        app.TRAKT_REMOVE_WATCHLIST = config.checkbox_to_value(trakt_remove_watchlist)
+        app.TRAKT_REMOVE_SERIESLIST = config.checkbox_to_value(trakt_remove_serieslist)
+        app.TRAKT_REMOVE_SHOW_FROM_SICKRAGE = config.checkbox_to_value(trakt_remove_show_from_sickrage)
+        app.TRAKT_SYNC_WATCHLIST = config.checkbox_to_value(trakt_sync_watchlist)
+        app.TRAKT_METHOD_ADD = int(trakt_method_add)
+        app.TRAKT_START_PAUSED = config.checkbox_to_value(trakt_start_paused)
+        app.TRAKT_USE_RECOMMENDED = config.checkbox_to_value(trakt_use_recommended)
+        app.TRAKT_SYNC = config.checkbox_to_value(trakt_sync)
+        app.TRAKT_SYNC_REMOVE = config.checkbox_to_value(trakt_sync_remove)
+        app.TRAKT_DEFAULT_INDEXER = int(trakt_default_indexer)
+        app.TRAKT_TIMEOUT = int(trakt_timeout)
+        app.TRAKT_BLACKLIST_NAME = trakt_blacklist_name
 
-        sickbeard.USE_EMAIL = config.checkbox_to_value(use_email)
-        sickbeard.EMAIL_NOTIFY_ONSNATCH = config.checkbox_to_value(email_notify_onsnatch)
-        sickbeard.EMAIL_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(email_notify_ondownload)
-        sickbeard.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(email_notify_onsubtitledownload)
-        sickbeard.EMAIL_HOST = config.clean_host(email_host)
-        sickbeard.EMAIL_PORT = try_int(email_port, 25)
-        sickbeard.EMAIL_FROM = email_from
-        sickbeard.EMAIL_TLS = config.checkbox_to_value(email_tls)
-        sickbeard.EMAIL_USER = email_user
-        sickbeard.EMAIL_PASSWORD = email_password
-        sickbeard.EMAIL_LIST = email_list
-        sickbeard.EMAIL_SUBJECT = email_subject
+        app.USE_EMAIL = config.checkbox_to_value(use_email)
+        app.EMAIL_NOTIFY_ONSNATCH = config.checkbox_to_value(email_notify_onsnatch)
+        app.EMAIL_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(email_notify_ondownload)
+        app.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(email_notify_onsubtitledownload)
+        app.EMAIL_HOST = config.clean_host(email_host)
+        app.EMAIL_PORT = try_int(email_port, 25)
+        app.EMAIL_FROM = email_from
+        app.EMAIL_TLS = config.checkbox_to_value(email_tls)
+        app.EMAIL_USER = email_user
+        app.EMAIL_PASSWORD = email_password
+        app.EMAIL_LIST = email_list
+        app.EMAIL_SUBJECT = email_subject
 
-        sickbeard.USE_PYTIVO = config.checkbox_to_value(use_pytivo)
-        sickbeard.PYTIVO_NOTIFY_ONSNATCH = config.checkbox_to_value(pytivo_notify_onsnatch)
-        sickbeard.PYTIVO_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(pytivo_notify_ondownload)
-        sickbeard.PYTIVO_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(pytivo_notify_onsubtitledownload)
-        sickbeard.PYTIVO_UPDATE_LIBRARY = config.checkbox_to_value(pytivo_update_library)
-        sickbeard.PYTIVO_HOST = config.clean_host(pytivo_host)
-        sickbeard.PYTIVO_SHARE_NAME = pytivo_share_name
-        sickbeard.PYTIVO_TIVO_NAME = pytivo_tivo_name
+        app.USE_PYTIVO = config.checkbox_to_value(use_pytivo)
+        app.PYTIVO_NOTIFY_ONSNATCH = config.checkbox_to_value(pytivo_notify_onsnatch)
+        app.PYTIVO_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(pytivo_notify_ondownload)
+        app.PYTIVO_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(pytivo_notify_onsubtitledownload)
+        app.PYTIVO_UPDATE_LIBRARY = config.checkbox_to_value(pytivo_update_library)
+        app.PYTIVO_HOST = config.clean_host(pytivo_host)
+        app.PYTIVO_SHARE_NAME = pytivo_share_name
+        app.PYTIVO_TIVO_NAME = pytivo_tivo_name
 
-        sickbeard.USE_NMA = config.checkbox_to_value(use_nma)
-        sickbeard.NMA_NOTIFY_ONSNATCH = config.checkbox_to_value(nma_notify_onsnatch)
-        sickbeard.NMA_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(nma_notify_ondownload)
-        sickbeard.NMA_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(nma_notify_onsubtitledownload)
-        sickbeard.NMA_API = nma_api
-        sickbeard.NMA_PRIORITY = nma_priority
+        app.USE_NMA = config.checkbox_to_value(use_nma)
+        app.NMA_NOTIFY_ONSNATCH = config.checkbox_to_value(nma_notify_onsnatch)
+        app.NMA_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(nma_notify_ondownload)
+        app.NMA_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(nma_notify_onsubtitledownload)
+        app.NMA_API = nma_api
+        app.NMA_PRIORITY = nma_priority
 
-        sickbeard.USE_PUSHALOT = config.checkbox_to_value(use_pushalot)
-        sickbeard.PUSHALOT_NOTIFY_ONSNATCH = config.checkbox_to_value(pushalot_notify_onsnatch)
-        sickbeard.PUSHALOT_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(pushalot_notify_ondownload)
-        sickbeard.PUSHALOT_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(pushalot_notify_onsubtitledownload)
-        sickbeard.PUSHALOT_AUTHORIZATIONTOKEN = pushalot_authorizationtoken
+        app.USE_PUSHALOT = config.checkbox_to_value(use_pushalot)
+        app.PUSHALOT_NOTIFY_ONSNATCH = config.checkbox_to_value(pushalot_notify_onsnatch)
+        app.PUSHALOT_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(pushalot_notify_ondownload)
+        app.PUSHALOT_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(pushalot_notify_onsubtitledownload)
+        app.PUSHALOT_AUTHORIZATIONTOKEN = pushalot_authorizationtoken
 
-        sickbeard.USE_PUSHBULLET = config.checkbox_to_value(use_pushbullet)
-        sickbeard.PUSHBULLET_NOTIFY_ONSNATCH = config.checkbox_to_value(pushbullet_notify_onsnatch)
-        sickbeard.PUSHBULLET_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(pushbullet_notify_ondownload)
-        sickbeard.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(pushbullet_notify_onsubtitledownload)
-        sickbeard.PUSHBULLET_API = pushbullet_api
-        sickbeard.PUSHBULLET_DEVICE = pushbullet_device_list
+        app.USE_PUSHBULLET = config.checkbox_to_value(use_pushbullet)
+        app.PUSHBULLET_NOTIFY_ONSNATCH = config.checkbox_to_value(pushbullet_notify_onsnatch)
+        app.PUSHBULLET_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(pushbullet_notify_ondownload)
+        app.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(pushbullet_notify_onsubtitledownload)
+        app.PUSHBULLET_API = pushbullet_api
+        app.PUSHBULLET_DEVICE = pushbullet_device_list
 
-        sickbeard.save_config()
+        app.save_config()
 
         if results:
             for x in results:
@@ -266,6 +266,6 @@ class ConfigNotifications(Config):
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:
-            ui.notifications.message('Configuration Saved', ek(os.path.join, sickbeard.CONFIG_FILE))
+            ui.notifications.message('Configuration Saved', ek(os.path.join, app.CONFIG_FILE))
 
         return self.redirect('/config/notifications/')

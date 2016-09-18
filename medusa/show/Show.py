@@ -19,7 +19,7 @@
 
 from datetime import date
 
-import medusa as sickbeard
+import medusa as app
 from ..common import Quality, SKIPPED, WANTED
 from ..db import DBConnection
 from ..helper.exceptions import CantRefreshShowException, CantRemoveShowException, MultipleShowObjectsException, ex
@@ -47,7 +47,7 @@ class Show(object):
 
         if show:
             try:
-                sickbeard.showQueueScheduler.action.removeShow(show, bool(remove_files))
+                app.showQueueScheduler.action.removeShow(show, bool(remove_files))
             except CantRemoveShowException as exception:
                 return ex(exception), show
 
@@ -80,7 +80,7 @@ class Show(object):
     @staticmethod
     def overall_stats():
         db = DBConnection()
-        shows = sickbeard.showList
+        shows = app.showList
         today = str(date.today().toordinal())
 
         downloaded_status = Quality.DOWNLOADED + Quality.ARCHIVED
@@ -160,7 +160,7 @@ class Show(object):
             return error, show
 
         try:
-            sickbeard.showQueueScheduler.action.refreshShow(show)
+            app.showQueueScheduler.action.refreshShow(show)
         except CantRefreshShowException as exception:
             return ex(exception), show
 
@@ -182,7 +182,7 @@ class Show(object):
             return 'Invalid show ID', None
 
         try:
-            show = Show.find(sickbeard.showList, indexer_id)
+            show = Show.find(app.showList, indexer_id)
         except MultipleShowObjectsException:
             return 'Unable to find the specified show', None
 

@@ -21,7 +21,7 @@
 import datetime
 import os
 
-import medusa as sickbeard
+import medusa as app
 from . import common, logger, tv
 from .common import DOWNLOADED, Quality
 from .helper.encoding import ek
@@ -121,10 +121,10 @@ def check_force_season_folders(pattern=None, multi=None, anime_type=None):
     :return: true if season folders need to be forced on or false otherwise.
     """
     if pattern is None:
-        pattern = sickbeard.NAMING_PATTERN
+        pattern = app.NAMING_PATTERN
 
     if anime_type is None:
-        anime_type = sickbeard.NAMING_ANIME
+        anime_type = app.NAMING_ANIME
 
     valid = not validate_name(pattern, None, anime_type, file_only=True)
 
@@ -141,10 +141,10 @@ def check_valid_naming(pattern=None, multi=None, anime_type=None):
     :return: true if the naming is valid, false if not.
     """
     if pattern is None:
-        pattern = sickbeard.NAMING_PATTERN
+        pattern = app.NAMING_PATTERN
 
     if anime_type is None:
-        anime_type = sickbeard.NAMING_ANIME
+        anime_type = app.NAMING_ANIME
 
     logger.log(u"Checking whether the pattern " + pattern + " is valid for a single episode", logger.DEBUG)
     valid = validate_name(pattern, None, anime_type)
@@ -163,7 +163,7 @@ def check_valid_abd_naming(pattern=None):
     :return: true if the naming is valid, false if not.
     """
     if pattern is None:
-        pattern = sickbeard.NAMING_PATTERN
+        pattern = app.NAMING_PATTERN
 
     logger.log(u"Checking whether the pattern " + pattern + " is valid for an air-by-date episode", logger.DEBUG)
     valid = validate_name(pattern, abd=True)
@@ -178,7 +178,7 @@ def check_valid_sports_naming(pattern=None):
     :return: true if the naming is valid, false if not.
     """
     if pattern is None:
-        pattern = sickbeard.NAMING_PATTERN
+        pattern = app.NAMING_PATTERN
 
     logger.log(u"Checking whether the pattern " + pattern + " is valid for an sports episode", logger.DEBUG)
     valid = validate_name(pattern, sports=True)

@@ -21,7 +21,7 @@
 
 import time
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urlencode
 from six.moves.http_client import HTTPSConnection
 from six.moves.urllib.error import HTTPError
@@ -53,13 +53,13 @@ class Notifier(object):
         """
 
         if userKey is None:
-            userKey = sickbeard.PUSHOVER_USERKEY
+            userKey = app.PUSHOVER_USERKEY
 
         if apiKey is None:
-            apiKey = sickbeard.PUSHOVER_APIKEY
+            apiKey = app.PUSHOVER_APIKEY
 
         if sound is None:
-            sound = sickbeard.PUSHOVER_SOUND
+            sound = app.PUSHOVER_SOUND
 
         logger.log(u"Pushover API KEY in use: " + apiKey, logger.DEBUG)
 
@@ -68,7 +68,7 @@ class Notifier(object):
 
         # send the request to pushover
         try:
-            if sickbeard.PUSHOVER_SOUND != "default":
+            if app.PUSHOVER_SOUND != "default":
                 args = {
                     "token": apiKey,
                     "user": userKey,
@@ -91,8 +91,8 @@ class Notifier(object):
                     "expire": 3600,
                 }
 
-            if sickbeard.PUSHOVER_DEVICE:
-                args["device"] = sickbeard.PUSHOVER_DEVICE
+            if app.PUSHOVER_DEVICE:
+                args["device"] = app.PUSHOVER_DEVICE
 
             conn = HTTPSConnection("api.pushover.net:443")
             conn.request("POST", "/1/messages.json",
@@ -138,25 +138,25 @@ class Notifier(object):
 
     def notify_snatch(self, ep_name, is_proper):
         title=notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
-        if sickbeard.PUSHOVER_NOTIFY_ONSNATCH:
+        if app.PUSHOVER_NOTIFY_ONSNATCH:
             self._notifyPushover(title, ep_name)
 
     def notify_download(self, ep_name, title=notifyStrings[NOTIFY_DOWNLOAD]):
-        if sickbeard.PUSHOVER_NOTIFY_ONDOWNLOAD:
+        if app.PUSHOVER_NOTIFY_ONDOWNLOAD:
             self._notifyPushover(title, ep_name)
 
     def notify_subtitle_download(self, ep_name, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
-        if sickbeard.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD:
+        if app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._notifyPushover(title, ep_name + ": " + lang)
 
     def notify_git_update(self, new_version="??"):
-        if sickbeard.USE_PUSHOVER:
+        if app.USE_PUSHOVER:
             update_text = notifyStrings[NOTIFY_GIT_UPDATE_TEXT]
             title = notifyStrings[NOTIFY_GIT_UPDATE]
             self._notifyPushover(title, update_text + new_version)
 
     def notify_login(self, ipaddress=""):
-        if sickbeard.USE_PUSHOVER:
+        if app.USE_PUSHOVER:
             update_text = notifyStrings[NOTIFY_LOGIN_TEXT]
             title = notifyStrings[NOTIFY_LOGIN]
             self._notifyPushover(title, update_text.format(ipaddress))
@@ -173,7 +173,7 @@ class Notifier(object):
         force: Enforce sending, for instance for testing
         """
 
-        if not sickbeard.USE_PUSHOVER and not force:
+        if not app.USE_PUSHOVER and not force:
             logger.log(u"Notification for Pushover not enabled, skipping this notification", logger.DEBUG)
             return False
 

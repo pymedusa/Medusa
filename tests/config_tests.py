@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-Test sickbeard.config's classes and methods
+Test medusa.config's classes and methods
 
 Classes:
     ConfigMigrator
@@ -59,7 +59,7 @@ from medusa import config
 
 class ConfigTestBasic(unittest.TestCase):
     """
-    Test basic methods in sickbeard.config
+    Test basic methods in medusa.config
     """
     @unittest.skip('Test not implemented')
     def test_check_section(self):
@@ -154,7 +154,7 @@ class ConfigTestBasic(unittest.TestCase):
 
 class ConfigTestChanges(unittest.TestCase):
     """
-    Test change methods in sickbeard.config
+    Test change methods in medusa.config
     """
     @unittest.skip('Test not implemented')
     def test_change_https_cert(self):
@@ -278,7 +278,7 @@ class ConfigTestChanges(unittest.TestCase):
 
 class ConfigTestMigrator(unittest.TestCase):
     """
-    Test the sickbeard.config.ConfigMigrator class
+    Test the medusa.config.ConfigMigrator class
     """
     @unittest.skip('Not yet implemented')
     def test_config_migrator(self):

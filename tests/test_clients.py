@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for sickbeard.clients module."""
+"""Tests for medusa.clients module."""
 
 import medusa.clients as sut
 from medusa.clients import (

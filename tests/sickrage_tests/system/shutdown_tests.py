@@ -31,7 +31,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from six import iteritems
-import medusa as sickbeard
+import medusa as app
 from medusa.event_queue import Events
 from medusa.system.Shutdown import Shutdown
 
@@ -44,8 +44,8 @@ class ShutdownTests(unittest.TestCase):
         """
         Test shutdown
         """
-        sickbeard.PID = 123456
-        sickbeard.events = Events(None)
+        app.PID = 123456
+        app.events = Events(None)
 
         test_cases = {
             0: False,

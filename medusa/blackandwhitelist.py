@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 import logging
 
 from adba.aniDBerrors import AniDBCommandTimeoutError
-import medusa as sickbeard
+import medusa as app
 from . import db, helpers
 
 
@@ -166,7 +166,7 @@ def short_group_names(groups):
     if helpers.set_up_anidb_connection():
         for group_name in groups:
             try:
-                group = sickbeard.ADBA_CONNECTION.group(gname=group_name)
+                group = app.ADBA_CONNECTION.group(gname=group_name)
             except AniDBCommandTimeoutError:
                 logger.debug('Timeout while loading group from AniDB. Trying next group')
             except Exception:

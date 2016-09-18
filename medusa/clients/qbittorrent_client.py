@@ -21,7 +21,7 @@
 
 from __future__ import unicode_literals
 
-import medusa as sickbeard
+import medusa as app
 from requests.auth import HTTPDigestAuth
 from .generic import GenericClient
 
@@ -48,7 +48,7 @@ class QBittorrentAPI(GenericClient):
         """API property."""
         try:
             self.url = '{host}version/api'.format(host=self.host)
-            version = int(self.session.get(self.url, verify=sickbeard.TORRENT_VERIFY_CERT).content)
+            version = int(self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT).content)
         except Exception:
             version = 1
         return version
@@ -68,7 +68,7 @@ class QBittorrentAPI(GenericClient):
 
         else:
             try:
-                self.response = self.session.get(self.host, verify=sickbeard.TORRENT_VERIFY_CERT)
+                self.response = self.session.get(self.host, verify=app.TORRENT_VERIFY_CERT)
                 self.auth = self.response.content
             except Exception:
                 return None
@@ -99,7 +99,7 @@ class QBittorrentAPI(GenericClient):
 
     def _set_torrent_label(self, result):
 
-        label = sickbeard.TORRENT_LABEL_ANIME if result.show.is_anime else sickbeard.TORRENT_LABEL
+        label = app.TORRENT_LABEL_ANIME if result.show.is_anime else app.TORRENT_LABEL
 
         if self.api > 6 and label:
             label_key = 'Category' if self.api >= 10 else 'Label'
@@ -125,7 +125,7 @@ class QBittorrentAPI(GenericClient):
 
     def _set_torrent_pause(self, result):
         self.url = '{host}command/{state}'.format(host=self.host,
-                                                  state='pause' if sickbeard.TORRENT_PAUSED else 'resume')
+                                                  state='pause' if app.TORRENT_PAUSED else 'resume')
         data = {
             'hash': result.hash,
         }

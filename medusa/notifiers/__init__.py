@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import medusa as sickbeard
+import medusa as app
 from ..notifiers import boxcar2, emailnotify, emby, freemobile, growl, kodi, libnotify, nma, nmj, nmjv2, plex, prowl, pushalot, pushbullet, pushover, \
     pytivo, synoindex, synologynotifier, telegram, trakt, tweet
 
@@ -89,11 +89,11 @@ def notify_snatch(ep_name, is_proper):
 
 def notify_git_update(new_version=""):
     for n in notifiers:
-        if sickbeard.NOTIFY_ON_UPDATE:
+        if app.NOTIFY_ON_UPDATE:
             n.notify_git_update(new_version)
 
 
 def notify_login(ipaddress):
     for n in notifiers:
-        if sickbeard.NOTIFY_ON_LOGIN:
+        if app.NOTIFY_ON_LOGIN:
             n.notify_login(ipaddress)

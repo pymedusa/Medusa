@@ -22,7 +22,7 @@ import threading
 import time
 import traceback
 
-import medusa as sickbeard
+import medusa as app
 from .. import common, failed_history, generic_queue, history, logger, providers, ui
 from ..search.core import (
     searchForNeededEpisodes,
@@ -261,7 +261,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
                     self.success = snatchEpisode(result)
 
                     # give the CPU a break
-                    time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
+                    time.sleep(common.cpu_presets[app.CPU_PRESET])
 
         except Exception:
             self.success = False
@@ -327,7 +327,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                 self.success = snatchEpisode(search_result[0])
 
                 # give the CPU a break
-                time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
+                time.sleep(common.cpu_presets[app.CPU_PRESET])
             elif self.manual_search and search_result:
                 self.results = search_result
                 self.success = True
@@ -415,7 +415,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
                 logger.log(u"Unable to snatch release: {0}".format(search_result.name))
 
             # give the CPU a break
-            time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
+            time.sleep(common.cpu_presets[app.CPU_PRESET])
 
         except Exception:
             self.success = False
@@ -465,7 +465,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
                         self.success = snatchEpisode(result)
 
                         # give the CPU a break
-                        time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
+                        time.sleep(common.cpu_presets[app.CPU_PRESET])
                 else:
                     logger.log(u"No needed episodes found during backlog search for: [" + self.show.name + "]")
 
@@ -529,7 +529,7 @@ class FailedQueueItem(generic_queue.QueueItem):
                     self.success = snatchEpisode(result)
 
                     # give the CPU a break
-                    time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
+                    time.sleep(common.cpu_presets[app.CPU_PRESET])
             else:
                 logger.log(u"No needed episodes found during failed search for: [" + self.show.name + "]")
 

@@ -26,7 +26,7 @@ import time
 from collections import OrderedDict
 
 import guessit
-import medusa as sickbeard
+import medusa as app
 from .. import common, db, helpers, scene_exceptions, scene_numbering
 
 
@@ -41,7 +41,7 @@ class NameParser(object):
         """The NameParser constructor.
 
         :param show:
-        :type show: sickbeard.tv.TVShow
+        :type show: medusa.tv.TVShow
         :param try_indexers:
         :type try_indexers: bool
         :param naming_pattern:
@@ -101,25 +101,25 @@ class NameParser(object):
 
             if season_number is None or not episode_numbers:
                 logger.debug('Show {name} has no season or episodes, using indexer...', name=result.show.name)
-                indexer_api = sickbeard.indexerApi(result.show.indexer)
+                indexer_api = app.indexerApi(result.show.indexer)
                 try:
                     indexer_api_params = indexer_api.api_params.copy()
 
                     if result.show.lang:
                         indexer_api_params['language'] = result.show.lang
 
-                    t = sickbeard.indexerApi(result.show.indexer).indexer(**indexer_api_params)
+                    t = app.indexerApi(result.show.indexer).indexer(**indexer_api_params)
                     tv_episode = t[result.show.indexerid].airedOn(result.air_date)[0]
 
                     season_number = int(tv_episode['seasonnumber'])
                     episode_numbers = [int(tv_episode['episodenumber'])]
                     logger.debug('Indexer info for show {name}: S{season}E{episodes}',
                                  name=result.show.name, season=season_number, episodes=episode_numbers)
-                except sickbeard.indexer_episodenotfound:
+                except app.indexer_episodenotfound:
                     logger.warn('Unable to find episode with date {date} for show {name} skipping',
                                 date=result.air_date, name=result.show.name)
                     episode_numbers = []
-                except sickbeard.indexer_error as e:
+                except app.indexer_error as e:
                     logger.warn('Unable to contact {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
                     episode_numbers = []
 

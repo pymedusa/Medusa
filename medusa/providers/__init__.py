@@ -19,7 +19,7 @@ import pkgutil
 from os import sys
 from random import shuffle
 
-import medusa as sickbeard
+import medusa as app
 from .nzb import (
     anizb, binsearch, omgwtfnzbs, womble,
 )
@@ -47,13 +47,13 @@ __all__ = [
 
 
 def sortedProviderList(randomize=False):
-    initial_list = sickbeard.providerList + sickbeard.newznabProviderList + sickbeard.torrentRssProviderList
+    initial_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList
     provider_dict = dict(zip([x.get_id() for x in initial_list], initial_list))
 
     new_list = []
 
     # add all modules in the priority list, in order
-    for cur_module in sickbeard.PROVIDER_ORDER:
+    for cur_module in app.PROVIDER_ORDER:
         if cur_module in provider_dict:
             new_list.append(provider_dict[cur_module])
 
@@ -90,5 +90,5 @@ def getProviderModule(name):
 
 
 def getProviderClass(provider_id):
-    provider_list = sickbeard.providerList + sickbeard.newznabProviderList + sickbeard.torrentRssProviderList
+    provider_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList
     return next((provider for provider in provider_list if provider.get_id() == provider_id), None)

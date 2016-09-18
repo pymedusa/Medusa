@@ -30,7 +30,7 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
-import medusa as sickbeard
+import medusa as app
 
 from six import iteritems
 from medusa.media.GenericMedia import GenericMedia
@@ -134,7 +134,7 @@ class GenericMediaTests(unittest.TestCase):
         Test get_media_root
         """
 
-        sickbeard.PROG_DIR = os.path.join('some', 'path', 'to', 'SickRage')
+        app.PROG_DIR = os.path.join('some', 'path', 'to', 'SickRage')
 
         self.assertEqual(GenericMedia.get_media_root(), os.path.join('some', 'path', 'to', 'SickRage', 'gui', 'slick'))
 

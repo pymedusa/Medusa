@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for sickbeard.refiners.tvepisode.py."""
+"""Tests for medusa.refiners.tvepisode.py."""
 
 from medusa.common import DOWNLOADED, Quality
 from medusa.refiners import tvepisode as sut

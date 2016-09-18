@@ -25,7 +25,7 @@ import threading
 import time
 
 import adba
-import medusa as sickbeard
+import medusa as app
 from six import iteritems, text_type
 from . import db, helpers, logger
 from .indexers.indexer_config import INDEXER_TVDB
@@ -249,16 +249,16 @@ def _get_custom_exceptions():
     custom_exceptions = {}
 
     do_refresh = False
-    for indexer in sickbeard.indexerApi().indexers:
-        if should_refresh(sickbeard.indexerApi(indexer).name):
+    for indexer in app.indexerApi().indexers:
+        if should_refresh(app.indexerApi(indexer).name):
             do_refresh = True
             break
 
     if do_refresh:
-        location = sickbeard.indexerApi(INDEXER_TVDB).config['scene_loc']
+        location = app.indexerApi(INDEXER_TVDB).config['scene_loc']
         logger.log('Checking for scene exception updates from {0}'.format(location))
 
-        response = helpers.getURL(location, session=sickbeard.indexerApi(INDEXER_TVDB).session,
+        response = helpers.getURL(location, session=app.indexerApi(INDEXER_TVDB).session,
                                   timeout=60, returns='response')
         try:
             jdata = response.json()
@@ -267,13 +267,13 @@ def _get_custom_exceptions():
                        (location, error), logger.DEBUG)
             return custom_exceptions
 
-        for indexer in sickbeard.indexerApi().indexers:
+        for indexer in app.indexerApi().indexers:
             try:
-                for indexer_id in jdata[sickbeard.indexerApi(indexer).config['xem_origin']]:
+                for indexer_id in jdata[app.indexerApi(indexer).config['xem_origin']]:
                     alias_list = [
                         {scene_exception: int(scene_season)}
-                        for scene_season in jdata[sickbeard.indexerApi(indexer).config['xem_origin']][indexer_id]
-                        for scene_exception in jdata[sickbeard.indexerApi(indexer).config
+                        for scene_season in jdata[app.indexerApi(indexer).config['xem_origin']][indexer_id]
+                        for scene_exception in jdata[app.indexerApi(indexer).config
                                                      ['xem_origin']][indexer_id][scene_season]
                     ]
                     custom_exceptions[indexer_id] = alias_list
@@ -282,7 +282,7 @@ def _get_custom_exceptions():
                            (indexer, error), logger.ERROR)
                 continue
 
-            set_last_refresh(sickbeard.indexerApi(indexer).name)
+            set_last_refresh(app.indexerApi(indexer).name)
 
     return custom_exceptions
 
@@ -291,24 +291,24 @@ def _get_xem_exceptions():
     xem_exceptions = {}
 
     if should_refresh('xem'):
-        for indexer in sickbeard.indexerApi().indexers:
+        for indexer in app.indexerApi().indexers:
             logger.log('Checking for XEM scene exceptions updates for {0}'.format
-                       (sickbeard.indexerApi(indexer).name))
+                       (app.indexerApi(indexer).name))
 
             xem_url = 'http://thexem.de/map/allNames?origin={0}&seasonNumbers=1'.format(
-                      sickbeard.indexerApi(indexer).config['xem_origin'])
+                      app.indexerApi(indexer).config['xem_origin'])
 
             response = helpers.getURL(xem_url, session=xem_session, timeout=60, returns='response')
             try:
                 jdata = response.json()
             except (ValueError, AttributeError) as error:
                 logger.log('Check scene exceptions update failed for {0}. Unable to get URL: {1}'.format
-                           (sickbeard.indexerApi(indexer).name, xem_url), logger.DEBUG)
+                           (app.indexerApi(indexer).name, xem_url), logger.DEBUG)
                 continue
 
             if not jdata['data'] or jdata['result'] == 'failure':
                 logger.log('No data returned from XEM while checking for scene exceptions. '
-                           'Update failed for {0}'.format(sickbeard.indexerApi(indexer).name), logger.DEBUG)
+                           'Update failed for {0}'.format(app.indexerApi(indexer).name), logger.DEBUG)
                 continue
 
             for indexer_id, exceptions in iteritems(jdata['data']):
@@ -330,7 +330,7 @@ def _get_anidb_exceptions():
     if should_refresh('anidb'):
         logger.log('Checking for scene exceptions updates from AniDB')
 
-        for show in sickbeard.showList:
+        for show in app.showList:
             if all([show.name, show.is_anime, show.indexer == 1]):
                 try:
                     anime = adba.Anime(None, name=show.name, tvdbid=show.indexerid, autoCorrectName=True)

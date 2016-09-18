@@ -21,7 +21,7 @@ from abc import abstractmethod
 from mimetypes import guess_type
 from os.path import isfile, join, normpath
 
-import medusa as sickbeard
+import medusa as app
 from ..helper.common import try_int
 from ..helper.encoding import ek
 from ..helper.exceptions import MultipleShowObjectsException
@@ -77,7 +77,7 @@ class GenericMedia(object):
         :return: The root folder containing the media
         """
 
-        return ek(join, sickbeard.PROG_DIR, 'gui', 'slick')
+        return ek(join, app.PROG_DIR, 'gui', 'slick')
 
     def get_media_type(self):
         """
@@ -97,7 +97,7 @@ class GenericMedia(object):
         """
 
         try:
-            return Show.find(sickbeard.showList, self.indexer_id)
+            return Show.find(app.showList, self.indexer_id)
         except MultipleShowObjectsException:
             return None
 

@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as sickbeard
+    import medusa as app
 %>
 <%block name="content">
 <div id="content800">
@@ -29,7 +29,7 @@
                 <select name="process_method" id="process_method" class="form-control form-control-inline input-sm" >
                 <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link"} %>
                 % for curAction in ('copy', 'move', 'hardlink', 'symlink'):
-                    <option value="${curAction}" ${'selected="selected"' if sickbeard.PROCESS_METHOD == curAction else ''}>${process_method_text[curAction]}</option>
+                    <option value="${curAction}" ${'selected="selected"' if app.PROCESS_METHOD == curAction else ''}>${process_method_text[curAction]}</option>
                 % endfor
                 </select>
             </td>
@@ -57,11 +57,11 @@
                 <b>Delete files and folders:</b>
             </td>
             <td>
-                <input id="delete_on" name="delete_on" type="checkbox" ${'' if sickbeard.NO_DELETE else 'checked="checked"'}>
+                <input id="delete_on" name="delete_on" type="checkbox" ${'' if app.NO_DELETE else 'checked="checked"'}>
                 <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to delete files and folders like auto processing)</i></span>
             </td>
         </tr>
-        % if sickbeard.USE_FAILED_DOWNLOADS:
+        % if app.USE_FAILED_DOWNLOADS:
         <tr>
             <td>
                 <b>Mark download as failed:</b>
@@ -72,7 +72,7 @@
             </td>
         </tr>
         % endif
-        % if sickbeard.POSTPONE_IF_NO_SUBS:
+        % if app.POSTPONE_IF_NO_SUBS:
         <tr>
             <td>
                 <b>Skip associated subtitles check*:</b>

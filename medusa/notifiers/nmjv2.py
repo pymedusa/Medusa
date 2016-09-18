@@ -23,7 +23,7 @@
 import time
 from xml.dom.minidom import parseString
 
-import medusa as sickbeard
+import medusa as app
 from six.moves.urllib.request import Request, urlopen
 from .. import logger
 
@@ -85,12 +85,12 @@ class Notifier(object):
                     DB_path = xmldb.getElementsByTagName('database_path')[0].toxml().replace(
                         '<database_path>', '').replace('</database_path>', '').replace('[=]', '')
                     if dbloc == "local" and DB_path.find("localhost") > -1:
-                        sickbeard.NMJv2_HOST = host
-                        sickbeard.NMJv2_DATABASE = DB_path
+                        app.NMJv2_HOST = host
+                        app.NMJv2_DATABASE = DB_path
                         return True
                     if dbloc == "network" and DB_path.find("://") > -1:
-                        sickbeard.NMJv2_HOST = host
-                        sickbeard.NMJv2_DATABASE = DB_path
+                        app.NMJv2_HOST = host
+                        app.NMJv2_DATABASE = DB_path
                         return True
 
         except IOError as e:
@@ -111,9 +111,9 @@ class Notifier(object):
 
         # if a host is provided then attempt to open a handle to that URL
         try:
-            url_scandir = "http://" + host + ":8008/metadata_database?arg0=update_scandir&arg1=" + sickbeard.NMJv2_DATABASE + "&arg2=&arg3=update_all"
+            url_scandir = "http://" + host + ":8008/metadata_database?arg0=update_scandir&arg1=" + app.NMJv2_DATABASE + "&arg2=&arg3=update_all"
             logger.log(u"NMJ scan update command sent to host: %s" % host, logger.DEBUG)
-            url_updatedb = "http://" + host + ":8008/metadata_database?arg0=scanner_start&arg1=" + sickbeard.NMJv2_DATABASE + "&arg2=background&arg3="
+            url_updatedb = "http://" + host + ":8008/metadata_database?arg0=scanner_start&arg1=" + app.NMJv2_DATABASE + "&arg2=background&arg3="
             logger.log(u"Try to mount network drive via url: %s" % host, logger.DEBUG)
             prereq = Request(url_scandir)
             req = Request(url_updatedb)
@@ -169,13 +169,13 @@ class Notifier(object):
         mount: The mount URL (optional, defaults to the mount URL in the config)
         force: If True then the notification will be sent even if NMJ is disabled in the config
         """
-        if not sickbeard.USE_NMJv2 and not force:
+        if not app.USE_NMJv2 and not force:
             logger.log(u"Notification for NMJ scan update not enabled, skipping this notification", logger.DEBUG)
             return False
 
         # fill in omitted parameters
         if not host:
-            host = sickbeard.NMJv2_HOST
+            host = app.NMJv2_HOST
 
         logger.log(u"Sending scan command for NMJ ", logger.DEBUG)
 

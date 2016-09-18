@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for sickbeard.subtitles.py."""
+"""Tests for medusa.subtitles.py."""
 import os
 import sys
 

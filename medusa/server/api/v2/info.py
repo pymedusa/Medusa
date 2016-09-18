@@ -1,7 +1,7 @@
 # coding=utf-8
 """Request handler for general information."""
 
-import medusa as sickbeard
+import medusa as app
 from .base import BaseRequestHandler
 
 
@@ -16,23 +16,23 @@ class InfoHandler(BaseRequestHandler):
         """
         info_query = query.split('/')[0]
         info_data = {
-            'anonRedirect': sickbeard.ANON_REDIRECT,
-            'anonSplitHome': sickbeard.ANIME_SPLIT_HOME,
-            'comingEpsLayout': sickbeard.COMING_EPS_LAYOUT,
-            'comingEpsSort': sickbeard.COMING_EPS_SORT,
-            'datePreset': sickbeard.DATE_PRESET,
-            'fuzzyDating': sickbeard.FUZZY_DATING,
-            'historyLayout': sickbeard.HISTORY_LAYOUT,
-            'homeLayout': sickbeard.HOME_LAYOUT,
-            'themeName': sickbeard.THEME_NAME,
-            'posterSortby': sickbeard.POSTER_SORTBY,
-            'posterSortdir': sickbeard.POSTER_SORTDIR,
-            'rootDirs': sickbeard.ROOT_DIRS,
-            'sortArticle': sickbeard.SORT_ARTICLE,
-            'timePreset': sickbeard.TIME_PRESET,
-            'trimZero': sickbeard.TRIM_ZERO,
-            'fanartBackground': sickbeard.FANART_BACKGROUND,
-            'fanartBackgroundOpacity': sickbeard.FANART_BACKGROUND_OPACITY
+            'anonRedirect': app.ANON_REDIRECT,
+            'anonSplitHome': app.ANIME_SPLIT_HOME,
+            'comingEpsLayout': app.COMING_EPS_LAYOUT,
+            'comingEpsSort': app.COMING_EPS_SORT,
+            'datePreset': app.DATE_PRESET,
+            'fuzzyDating': app.FUZZY_DATING,
+            'historyLayout': app.HISTORY_LAYOUT,
+            'homeLayout': app.HOME_LAYOUT,
+            'themeName': app.THEME_NAME,
+            'posterSortby': app.POSTER_SORTBY,
+            'posterSortdir': app.POSTER_SORTDIR,
+            'rootDirs': app.ROOT_DIRS,
+            'sortArticle': app.SORT_ARTICLE,
+            'timePreset': app.TIME_PRESET,
+            'trimZero': app.TRIM_ZERO,
+            'fanartBackground': app.FANART_BACKGROUND,
+            'fanartBackgroundOpacity': app.FANART_BACKGROUND_OPACITY
         }
 
         if info_query:

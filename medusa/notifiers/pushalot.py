@@ -21,13 +21,13 @@
 
 from __future__ import unicode_literals
 
-import medusa as sickbeard
+import medusa as app
 from .. import common, logger
 
 
 class Notifier(object):
     def __init__(self):
-        self.session = sickbeard.helpers.make_session()
+        self.session = app.helpers.make_session()
 
     def test_notify(self, pushalot_authorizationtoken):
         return self._sendPushalot(
@@ -38,7 +38,7 @@ class Notifier(object):
         )
 
     def notify_snatch(self, ep_name, is_proper):
-        if sickbeard.PUSHALOT_NOTIFY_ONSNATCH:
+        if app.PUSHALOT_NOTIFY_ONSNATCH:
             self._sendPushalot(
                 pushalot_authorizationtoken=None,
                 event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
@@ -46,7 +46,7 @@ class Notifier(object):
             )
 
     def notify_download(self, ep_name):
-        if sickbeard.PUSHALOT_NOTIFY_ONDOWNLOAD:
+        if app.PUSHALOT_NOTIFY_ONDOWNLOAD:
             self._sendPushalot(
                 pushalot_authorizationtoken=None,
                 event=common.notifyStrings[common.NOTIFY_DOWNLOAD],
@@ -54,7 +54,7 @@ class Notifier(object):
             )
 
     def notify_subtitle_download(self, ep_name, lang):
-        if sickbeard.PUSHALOT_NOTIFY_ONSUBTITLEDOWNLOAD:
+        if app.PUSHALOT_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._sendPushalot(
                 pushalot_authorizationtoken=None,
                 event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
@@ -81,10 +81,10 @@ class Notifier(object):
 
     def _sendPushalot(self, pushalot_authorizationtoken=None, event=None, message=None, force=False):
 
-        if not (sickbeard.USE_PUSHALOT or force):
+        if not (app.USE_PUSHALOT or force):
             return False
 
-        pushalot_authorizationtoken = pushalot_authorizationtoken or sickbeard.PUSHALOT_AUTHORIZATIONTOKEN
+        pushalot_authorizationtoken = pushalot_authorizationtoken or app.PUSHALOT_AUTHORIZATIONTOKEN
 
         logger.log('Pushalot event: {}'.format(event), logger.DEBUG)
         logger.log('Pushalot message: {}'.format(message), logger.DEBUG)
@@ -96,7 +96,7 @@ class Notifier(object):
             'Body': message or ''
         }
 
-        jdata = sickbeard.helpers.getURL(
+        jdata = app.helpers.getURL(
             'https://pushalot.com/api/sendmessage',
             post_data=post_data, session=self.session,
             returns='json'

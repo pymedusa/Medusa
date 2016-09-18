@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 
 import re
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urljoin
 from .. import common, helpers, logger
 
@@ -48,7 +48,7 @@ class Notifier(object):
         return helpers.getURL(urljoin(self.url, 'devices'), session=self.session, headers=headers, returns='text') or {}
 
     def notify_snatch(self, ep_name, is_proper):
-        if sickbeard.PUSHBULLET_NOTIFY_ONSNATCH:
+        if app.PUSHBULLET_NOTIFY_ONSNATCH:
             self._sendPushbullet(
                 pushbullet_api=None,
                 event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]] + ' : ' + ep_name,
@@ -56,7 +56,7 @@ class Notifier(object):
             )
 
     def notify_download(self, ep_name):
-        if sickbeard.PUSHBULLET_NOTIFY_ONDOWNLOAD:
+        if app.PUSHBULLET_NOTIFY_ONDOWNLOAD:
             self._sendPushbullet(
                 pushbullet_api=None,
                 event=common.notifyStrings[common.NOTIFY_DOWNLOAD] + ' : ' + ep_name,
@@ -64,7 +64,7 @@ class Notifier(object):
             )
 
     def notify_subtitle_download(self, ep_name, lang):
-        if sickbeard.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD:
+        if app.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._sendPushbullet(
                 pushbullet_api=None,
                 event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD] + ' : ' + ep_name + ' : ' + lang,
@@ -72,7 +72,7 @@ class Notifier(object):
             )
 
     def notify_git_update(self, new_version='??'):
-        link = re.match(r'.*href="(.*?)" .*', sickbeard.NEWEST_VERSION_STRING)
+        link = re.match(r'.*href="(.*?)" .*', app.NEWEST_VERSION_STRING)
         if link:
             link = link.group(1)
 
@@ -93,11 +93,11 @@ class Notifier(object):
     def _sendPushbullet(  # pylint: disable=too-many-arguments
             self, pushbullet_api=None, pushbullet_device=None, event=None, message=None, link=None, force=False):
 
-        if not (sickbeard.USE_PUSHBULLET or force):
+        if not (app.USE_PUSHBULLET or force):
             return False
 
-        pushbullet_api = pushbullet_api or sickbeard.PUSHBULLET_API
-        pushbullet_device = pushbullet_device or sickbeard.PUSHBULLET_DEVICE
+        pushbullet_api = pushbullet_api or app.PUSHBULLET_API
+        pushbullet_device = pushbullet_device or app.PUSHBULLET_DEVICE
 
         logger.log('Pushbullet event: %r' % event, logger.DEBUG)
         logger.log('Pushbullet message: %r' % message, logger.DEBUG)

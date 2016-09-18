@@ -34,7 +34,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../l
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from medusa.tv import TVEpisode, TVShow
-import medusa as sickbeard
+import medusa as app
 import medusa.common as common
 from medusa.providers.GenericProvider import GenericProvider
 import tests.test_lib as test
@@ -74,7 +74,7 @@ def generator(cur_data, cur_name, cur_provider):
         show.name = cur_name
         show.quality = common.ANY | common.Quality.UNKNOWN | common.Quality.RAWHDTV
         show.save_to_db()
-        sickbeard.showList.append(show)
+        app.showList.append(show)
 
         for ep_number in cur_data["e"]:
             episode = TVEpisode(show, cur_data["s"], ep_number)
@@ -155,7 +155,7 @@ if __name__ == '__main__':
         for name, data in TESTS.items():
             filename = name.replace(' ', '_')
 
-            for provider in sickbeard.providers.sortedProviderList():
+            for provider in app.providers.sortedProviderList():
                 if provider.provider_type == GenericProvider.TORRENT:
                     if forceSearch:
                         test_name = 'test_manual_%s_%s_%s' % (filename, data["tvdbid"], provider.name)

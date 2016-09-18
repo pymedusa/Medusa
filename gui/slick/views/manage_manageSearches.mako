@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as sickbeard
+    import medusa as app
     import datetime
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets
@@ -31,8 +31,8 @@
 ${('Not in progress', 'In Progress')[dailySearchStatus]}<br>
 <br>
 <h3>Find Propers Search:</h3>
-<a class="btn ${('disabled', '')[bool(sickbeard.DOWNLOAD_PROPERS)]}" href="manage/manageSearches/forceFindPropers"><i class="icon-exclamation-sign"></i> Force</a>
-% if not sickbeard.DOWNLOAD_PROPERS:
+<a class="btn ${('disabled', '')[bool(app.DOWNLOAD_PROPERS)]}" href="manage/manageSearches/forceFindPropers"><i class="icon-exclamation-sign"></i> Force</a>
+% if not app.DOWNLOAD_PROPERS:
     Propers search disabled <br>
 % elif not findPropersStatus:
     Not in progress<br>
@@ -41,8 +41,8 @@ ${('Not in progress', 'In Progress')[dailySearchStatus]}<br>
 % endif
 <br>
 <h3>Subtitle Search:</h3>
-<a class="btn ${('disabled', '')[bool(sickbeard.USE_SUBTITLES)]}" href="manage/manageSearches/forceSubtitlesFinder"><i class="icon-exclamation-sign"></i> Force</a>
-% if not sickbeard.USE_SUBTITLES:
+<a class="btn ${('disabled', '')[bool(app.USE_SUBTITLES)]}" href="manage/manageSearches/forceSubtitlesFinder"><i class="icon-exclamation-sign"></i> Force</a>
+% if not app.USE_SUBTITLES:
     Subtitle search disabled <br>
 % elif not subtitlesFinderStatus:
     Not in progress<br>

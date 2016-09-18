@@ -22,7 +22,7 @@ import os
 import re
 from collections import namedtuple
 
-import medusa as sickbeard
+import medusa as app
 from six import string_types
 from . import common, logger
 from .helper.encoding import ek
@@ -35,11 +35,11 @@ resultFilters = [
     "(dvd)?extras",
 ]
 
-if hasattr('General', 'ignore_und_subs') and sickbeard.IGNORE_UND_SUBS:
+if hasattr('General', 'ignore_und_subs') and app.IGNORE_UND_SUBS:
     resultFilters.append("sub(bed|ed|pack|s)")
 
-if hasattr('General', 'ignored_subs_list') and sickbeard.IGNORED_SUBS_LIST:
-    resultFilters.append("(" + sickbeard.IGNORED_SUBS_LIST.replace(",", "|") + ")sub(bed|ed|s)?")
+if hasattr('General', 'ignored_subs_list') and app.IGNORED_SUBS_LIST:
+    resultFilters.append("(" + app.IGNORED_SUBS_LIST.replace(",", "|") + ")sub(bed|ed|s)?")
 
 
 def containsAtLeastOneWord(name, words):
@@ -187,11 +187,11 @@ def show_words(showObj):
 
     ShowWords = namedtuple('show_words', ['preferred_words', 'undesired_words', 'ignore_words', 'require_words'])
 
-    preferred_words = ",".join(sickbeard.PREFERRED_WORDS.split(',')) if sickbeard.PREFERRED_WORDS.split(',') else ''
-    undesired_words = ",".join(sickbeard.UNDESIRED_WORDS.split(',')) if sickbeard.UNDESIRED_WORDS.split(',') else ''
+    preferred_words = ",".join(app.PREFERRED_WORDS.split(',')) if app.PREFERRED_WORDS.split(',') else ''
+    undesired_words = ",".join(app.UNDESIRED_WORDS.split(',')) if app.UNDESIRED_WORDS.split(',') else ''
 
-    global_ignore = sickbeard.IGNORE_WORDS.split(',') if sickbeard.IGNORE_WORDS else []
-    global_require = sickbeard.REQUIRE_WORDS.split(',') if sickbeard.REQUIRE_WORDS else []
+    global_ignore = app.IGNORE_WORDS.split(',') if app.IGNORE_WORDS else []
+    global_require = app.REQUIRE_WORDS.split(',') if app.REQUIRE_WORDS else []
     show_ignore = showObj.rls_ignore_words.split(',') if showObj.rls_ignore_words else []
     show_require = showObj.rls_require_words.split(',') if showObj.rls_require_words else []
 

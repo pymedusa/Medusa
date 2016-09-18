@@ -8,7 +8,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../l
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from guessit import __version__ as guessit_version
-import medusa as sickbeard
+import medusa as app
 from medusa.name_parser.guessit_parser import guessit
 from rebulk.__version__ import __version__ as rebulk_version
 
@@ -27,7 +27,7 @@ def main(argv):
 
     show_list = argv[2:]
     for arg in show_list:
-        sickbeard.showList.append(MockTvShow(arg))
+        app.showList.append(MockTvShow(arg))
 
     actual = guessit(argv[1])
     results = ['# guessit: {}  rebulk: {}'.format(guessit_version, rebulk_version)]

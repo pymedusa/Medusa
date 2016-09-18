@@ -31,7 +31,7 @@ def available_generators():
 
 def _getMetadataModule(name):
     name = name.lower()
-    prefix = "sickbeard.metadata."
+    prefix = __name__ + '.'
     if name in available_generators() and prefix + name in sys.modules:
         return sys.modules[prefix + name]
     else:

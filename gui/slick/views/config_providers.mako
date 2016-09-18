@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as sickbeard
+    import medusa as app
     from medusa.helpers import anon_url
     from medusa.providers.GenericProvider import GenericProvider
 %>
@@ -9,14 +9,14 @@
 <script type="text/javascript">
 $(document).ready(function(){
     // @TODO: This needs to be moved to an API function
-    % if sickbeard.USE_NZBS:
-        var show_nzb_providers = ${("false", "true")[bool(sickbeard.USE_NZBS)]};
-        % for curNewznabProvider in sickbeard.newznabProviderList:
+    % if app.USE_NZBS:
+        var show_nzb_providers = ${("false", "true")[bool(app.USE_NZBS)]};
+        % for curNewznabProvider in app.newznabProviderList:
         $(this).addProvider('${curNewznabProvider.get_id()}', '${curNewznabProvider.name}', '${curNewznabProvider.url}', '${curNewznabProvider.key}', '${curNewznabProvider.catIDs}', ${int(curNewznabProvider.default)}, show_nzb_providers);
         % endfor
     % endif
-    % if sickbeard.USE_TORRENTS:
-        % for curTorrentRssProvider in sickbeard.torrentRssProviderList:
+    % if app.USE_TORRENTS:
+        % for curTorrentRssProvider in app.torrentRssProviderList:
         $(this).addTorrentRssProvider('${curTorrentRssProvider.get_id()}', '${curTorrentRssProvider.name}', '${curTorrentRssProvider.url}', '${curTorrentRssProvider.cookies}', '${curTorrentRssProvider.titleTAG}');
         % endfor
     % endif
@@ -38,10 +38,10 @@ $('#config-components').tabs();
                     ## @TODO: Fix this stupid hack
                     <script>document.write('<li><a href="' + document.location.href + '#provider-priorities">Provider Priorities</a></li>');</script>
                     <script>document.write('<li><a href="' + document.location.href + '#provider-options">Provider Options</a></li>');</script>
-                  % if sickbeard.USE_NZBS:
+                  % if app.USE_NZBS:
                     <script>document.write('<li><a href="' + document.location.href + '#custom-newznab">Configure Custom Newznab Providers</a></li>');</script>
                   % endif
-                  % if sickbeard.USE_TORRENTS:
+                  % if app.USE_TORRENTS:
                     <li><a href="${base_url}config/providers/#custom-torrent">Configure Custom Torrent Providers</a></li>
                   % endif
                 </ul>
@@ -50,7 +50,7 @@ $('#config-components').tabs();
                         <h3>Provider Priorities</h3>
                         <p>Check off and drag the providers into the order you want them to be used.</p>
                         <p>At least one provider is required but two are recommended.</p>
-                        % if not sickbeard.USE_NZBS or not sickbeard.USE_TORRENTS:
+                        % if not app.USE_NZBS or not app.USE_TORRENTS:
                         <blockquote style="margin: 20px 0;">NZB/Torrent providers can be toggled in <b><a href="config/search">Search Settings</a></b></blockquote>
                         % else:
                         <br>
@@ -62,12 +62,12 @@ $('#config-components').tabs();
                     </div>
                     <fieldset class="component-group-list">
                         <ul id="provider_order_list">
-                        % for curProvider in sickbeard.providers.sortedProviderList():
+                        % for curProvider in app.providers.sortedProviderList():
                             <%
                                 ## These will show the '!' not saying they are broken
-                                if curProvider.provider_type == GenericProvider.NZB and not sickbeard.USE_NZBS:
+                                if curProvider.provider_type == GenericProvider.NZB and not app.USE_NZBS:
                                     continue
-                                elif curProvider.provider_type == GenericProvider.TORRENT and not sickbeard.USE_TORRENTS:
+                                elif curProvider.provider_type == GenericProvider.TORRENT and not app.USE_TORRENTS:
                                     continue
                                 curName = curProvider.get_id()
                                 if hasattr(curProvider, 'custom_url'):
@@ -76,11 +76,11 @@ $('#config-components').tabs();
                                     curURL = curProvider.url
                             %>
                             <li class="ui-state-default ${('nzb-provider', 'torrent-provider')[bool(curProvider.provider_type == GenericProvider.TORRENT)]}" id="${curName}">
-                                <input type="checkbox" id="enable_${curName}" class="provider_enabler" ${'checked="checked"' if curProvider.is_enabled() is True and curProvider.get_id() not in sickbeard.BROKEN_PROVIDERS.split(',') else ''}/>
+                                <input type="checkbox" id="enable_${curName}" class="provider_enabler" ${'checked="checked"' if curProvider.is_enabled() is True and curProvider.get_id() not in app.BROKEN_PROVIDERS.split(',') else ''}/>
                                 <a href="${anon_url(curURL)}" class="imgLink" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><img src="images/providers/${curProvider.image_name()}" alt="${curProvider.name}" title="${curProvider.name}" width="16" height="16" style="vertical-align:middle;"/></a>
                                 <span style="vertical-align:middle;">${curProvider.name}</span>
                                 ${('<span class="red-text">*</span>', '')[bool(curProvider.supports_backlog)]}
-                                ${('<span class="red-text">!</span>', '')[bool(curProvider.get_id() not in sickbeard.BROKEN_PROVIDERS.split(','))]}
+                                ${('<span class="red-text">!</span>', '')[bool(curProvider.get_id() not in app.BROKEN_PROVIDERS.split(','))]}
                                 <span class="ui-icon ui-icon-arrowthick-2-n-s pull-right" style="vertical-align:middle;" title="Re-order provider"></span>
                                 <span class="ui-icon ${('ui-icon-locked','ui-icon-unlocked')[bool(curProvider.public)]} pull-right" style="vertical-align:middle;" title="Public or Private"></span>
                                 <span class="${('','ui-icon enable-manual-search-icon pull-right')[bool(curProvider.enable_manualsearch)]}" style="vertical-align:middle;" title="Enabled for Manual Searches"></span>
@@ -89,7 +89,7 @@ $('#config-components').tabs();
                             </li>
                         % endfor
                         </ul>
-                        <input type="hidden" name="provider_order" id="provider_order" value="${" ".join([x.get_id()+':'+str(int(x.is_enabled())) for x in sickbeard.providers.sortedProviderList()])}"/>
+                        <input type="hidden" name="provider_order" id="provider_order" value="${" ".join([x.get_id()+':'+str(int(x.is_enabled())) for x in app.providers.sortedProviderList()])}"/>
                         <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group1 //-->
@@ -106,10 +106,10 @@ $('#config-components').tabs();
                                 <span class="component-desc">
                                     <%
                                         provider_config_list = []
-                                        for curProvider in sickbeard.providers.sortedProviderList():
-                                            if curProvider.provider_type == GenericProvider.NZB and (not sickbeard.USE_NZBS or not curProvider.is_enabled()):
+                                        for curProvider in app.providers.sortedProviderList():
+                                            if curProvider.provider_type == GenericProvider.NZB and (not app.USE_NZBS or not curProvider.is_enabled()):
                                                 continue
-                                            elif curProvider.provider_type == GenericProvider.TORRENT and ( not sickbeard.USE_TORRENTS or not curProvider.is_enabled()):
+                                            elif curProvider.provider_type == GenericProvider.TORRENT and ( not app.USE_TORRENTS or not curProvider.is_enabled()):
                                                 continue
                                             provider_config_list.append(curProvider)
                                     %>
@@ -126,7 +126,7 @@ $('#config-components').tabs();
                             </label>
                         </div>
                     <!-- start div for editing providers //-->
-                    % for curNewznabProvider in [curProvider for curProvider in sickbeard.newznabProviderList]:
+                    % for curNewznabProvider in [curProvider for curProvider in app.newznabProviderList]:
                     <div class="providerDiv" id="${curNewznabProvider.get_id()}Div">
                         % if curNewznabProvider.default and curNewznabProvider.needs_auth:
                         <div class="field-pair">
@@ -214,7 +214,7 @@ $('#config-components').tabs();
                         % endif
                     </div>
                     % endfor
-                    % for curNzbProvider in [curProvider for curProvider in sickbeard.providers.sortedProviderList() if curProvider.provider_type == GenericProvider.NZB and curProvider not in sickbeard.newznabProviderList]:
+                    % for curNzbProvider in [curProvider for curProvider in app.providers.sortedProviderList() if curProvider.provider_type == GenericProvider.NZB and curProvider not in app.newznabProviderList]:
                     <div class="providerDiv" id="${curNzbProvider.get_id()}Div">
                         % if hasattr(curNzbProvider, 'username'):
                         <div class="field-pair">
@@ -305,7 +305,7 @@ $('#config-components').tabs();
                         % endif
                     </div>
                     % endfor
-                    % for curTorrentProvider in [curProvider for curProvider in sickbeard.providers.sortedProviderList() if curProvider.provider_type == GenericProvider.TORRENT]:
+                    % for curTorrentProvider in [curProvider for curProvider in app.providers.sortedProviderList() if curProvider.provider_type == GenericProvider.TORRENT]:
                     <div class="providerDiv" id="${curTorrentProvider.get_id()}Div">
                         % if hasattr(curTorrentProvider, 'custom_url'):
                         <div class="field-pair">
@@ -613,7 +613,7 @@ $('#config-components').tabs();
                     <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group2 //-->
-                % if sickbeard.USE_NZBS:
+                % if app.USE_NZBS:
                 <div id="custom-newznab" class="component-group">
                     <div class="component-group-desc">
                         <h3>Configure Custom<br>Newznab Providers</h3>
@@ -681,7 +681,7 @@ $('#config-components').tabs();
                     </fieldset>
                 </div><!-- /component-group3 //-->
                 % endif
-                % if sickbeard.USE_TORRENTS:
+                % if app.USE_TORRENTS:
                 <div id="custom-torrent" class="component-group">
                 <div class="component-group-desc">
                     <h3>Configure Custom Torrent Providers</h3>

@@ -1,5 +1,5 @@
 <%!
-    import medusa as sickbeard
+    import medusa as app
     import calendar
     from medusa import sbdatetime
     from medusa import network_timezones
@@ -40,10 +40,10 @@
             <th>&nbsp;</th>
         </tr>
     </tfoot>
-    % if sickbeard.showQueueScheduler.action.loadingShowList:
+    % if app.showQueueScheduler.action.loadingShowList:
         <tbody class="tablesorter-infoOnly">
-        % for curLoadingShow in sickbeard.showQueueScheduler.action.loadingShowList:
-            <% if curLoadingShow.show is not None and curLoadingShow.show in sickbeard.showList:
+        % for curLoadingShow in app.showQueueScheduler.action.loadingShowList:
+            <% if curLoadingShow.show is not None and curLoadingShow.show in app.showList:
                 continue
             %>
             <tr>

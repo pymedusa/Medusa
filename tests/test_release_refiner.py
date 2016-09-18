@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for sickbeard.refiners.release.py."""
+"""Tests for medusa.refiners.release.py."""
 
 import os
 

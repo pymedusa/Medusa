@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 
 import os
 
-import medusa as sickbeard
+import medusa as app
 from tornado.routes import route
 from ..core import PageTemplate, WebRoot
 from ....versionChecker import CheckVersion
@@ -69,7 +69,7 @@ class Config(WebRoot):
             ssl_version = 'Unknown'
 
         sr_version = ''
-        if sickbeard.VERSION_NOTIFY:
+        if app.VERSION_NOTIFY:
             updater = CheckVersion().updater
             if updater:
                 sr_version = updater.get_cur_version()

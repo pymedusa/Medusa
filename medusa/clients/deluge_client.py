@@ -24,7 +24,7 @@ import json
 import logging
 from base64 import b64encode
 
-import medusa as sickbeard
+import medusa as app
 from requests.exceptions import RequestException
 from .generic import GenericClient
 
@@ -60,7 +60,7 @@ class DelugeAPI(GenericClient):
 
         try:
             self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
-                                              verify=sickbeard.TORRENT_VERIFY_CERT)
+                                              verify=app.TORRENT_VERIFY_CERT)
         except RequestException:
             return None
 
@@ -74,7 +74,7 @@ class DelugeAPI(GenericClient):
 
         try:
             self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
-                                              verify=sickbeard.TORRENT_VERIFY_CERT)
+                                              verify=app.TORRENT_VERIFY_CERT)
         except RequestException:
             return None
 
@@ -88,7 +88,7 @@ class DelugeAPI(GenericClient):
             })
             try:
                 self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
-                                                  verify=sickbeard.TORRENT_VERIFY_CERT)
+                                                  verify=app.TORRENT_VERIFY_CERT)
             except RequestException:
                 return None
 
@@ -107,7 +107,7 @@ class DelugeAPI(GenericClient):
 
             try:
                 self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
-                                                  verify=sickbeard.TORRENT_VERIFY_CERT)
+                                                  verify=app.TORRENT_VERIFY_CERT)
             except RequestException:
                 return None
 
@@ -119,7 +119,7 @@ class DelugeAPI(GenericClient):
 
             try:
                 self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
-                                                  verify=sickbeard.TORRENT_VERIFY_CERT)
+                                                  verify=app.TORRENT_VERIFY_CERT)
             except RequestException:
                 return None
 
@@ -167,9 +167,9 @@ class DelugeAPI(GenericClient):
 
     def _set_torrent_label(self, result):
 
-        label = sickbeard.TORRENT_LABEL.lower()
+        label = app.TORRENT_LABEL.lower()
         if result.show.is_anime:
-            label = sickbeard.TORRENT_LABEL_ANIME.lower()
+            label = app.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
             logger.error('{name}: Invalid label. Label must not contain a space', name=self.name)
             return False
@@ -267,7 +267,7 @@ class DelugeAPI(GenericClient):
 
     def _set_torrent_path(self, result):
 
-        if sickbeard.TORRENT_PATH:
+        if app.TORRENT_PATH:
             post_data = json.dumps({
                 'method': 'core.set_torrent_move_completed',
                 'params': [
@@ -283,7 +283,7 @@ class DelugeAPI(GenericClient):
                 'method': 'core.set_torrent_move_completed_path',
                 'params': [
                     result.hash,
-                    sickbeard.TORRENT_PATH,
+                    app.TORRENT_PATH,
                 ],
                 'id': 8,
             })
@@ -296,7 +296,7 @@ class DelugeAPI(GenericClient):
 
     def _set_torrent_pause(self, result):
 
-        if sickbeard.TORRENT_PAUSED:
+        if app.TORRENT_PAUSED:
             post_data = json.dumps({
                 'method': 'core.pause_torrent',
                 'params': [

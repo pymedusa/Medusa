@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import os
 
 from github import GithubException
-import medusa as sickbeard
+import medusa as app
 from tornado.routes import route
 from .handler import Config
 from ..core import PageTemplate
@@ -33,7 +33,7 @@ class ConfigGeneral(Config):
 
     @staticmethod
     def saveRootDirs(rootDirString=None):
-        sickbeard.ROOT_DIRS = rootDirString
+        app.ROOT_DIRS = rootDirString
 
     @staticmethod
     def saveAddShowDefaults(defaultStatus, anyQualities, bestQualities, defaultFlattenFolders, subtitles=False,
@@ -44,17 +44,17 @@ class ConfigGeneral(Config):
 
         new_quality = Quality.combineQualities([int(quality) for quality in allowed_qualities], [int(quality) for quality in preferred_qualities])
 
-        sickbeard.STATUS_DEFAULT = int(defaultStatus)
-        sickbeard.STATUS_DEFAULT_AFTER = int(defaultStatusAfter)
-        sickbeard.QUALITY_DEFAULT = int(new_quality)
+        app.STATUS_DEFAULT = int(defaultStatus)
+        app.STATUS_DEFAULT_AFTER = int(defaultStatusAfter)
+        app.QUALITY_DEFAULT = int(new_quality)
 
-        sickbeard.FLATTEN_FOLDERS_DEFAULT = config.checkbox_to_value(defaultFlattenFolders)
-        sickbeard.SUBTITLES_DEFAULT = config.checkbox_to_value(subtitles)
+        app.FLATTEN_FOLDERS_DEFAULT = config.checkbox_to_value(defaultFlattenFolders)
+        app.SUBTITLES_DEFAULT = config.checkbox_to_value(subtitles)
 
-        sickbeard.ANIME_DEFAULT = config.checkbox_to_value(anime)
+        app.ANIME_DEFAULT = config.checkbox_to_value(anime)
 
-        sickbeard.SCENE_DEFAULT = config.checkbox_to_value(scene)
-        sickbeard.save_config()
+        app.SCENE_DEFAULT = config.checkbox_to_value(scene)
+        app.save_config()
 
     def saveGeneral(self, log_dir=None, log_nr=5, log_size=1, web_port=None, notify_on_login=None, web_log=None, encryption_version=None, web_ipv6=None,
                     trash_remove_show=None, trash_rotate_logs=None, update_frequency=None, skip_removed_files=None,
@@ -71,55 +71,55 @@ class ConfigGeneral(Config):
         results = []
 
         # Misc
-        sickbeard.DOWNLOAD_URL = download_url
-        sickbeard.INDEXER_DEFAULT_LANGUAGE = indexerDefaultLang
-        sickbeard.EP_DEFAULT_DELETED_STATUS = ep_default_deleted_status
-        sickbeard.SKIP_REMOVED_FILES = config.checkbox_to_value(skip_removed_files)
-        sickbeard.LAUNCH_BROWSER = config.checkbox_to_value(launch_browser)
+        app.DOWNLOAD_URL = download_url
+        app.INDEXER_DEFAULT_LANGUAGE = indexerDefaultLang
+        app.EP_DEFAULT_DELETED_STATUS = ep_default_deleted_status
+        app.SKIP_REMOVED_FILES = config.checkbox_to_value(skip_removed_files)
+        app.LAUNCH_BROWSER = config.checkbox_to_value(launch_browser)
         config.change_SHOWUPDATE_HOUR(showupdate_hour)
         config.change_VERSION_NOTIFY(config.checkbox_to_value(version_notify))
-        sickbeard.AUTO_UPDATE = config.checkbox_to_value(auto_update)
-        sickbeard.NOTIFY_ON_UPDATE = config.checkbox_to_value(notify_on_update)
-        # sickbeard.LOG_DIR is set in config.change_LOG_DIR()
-        sickbeard.LOG_NR = log_nr
-        sickbeard.LOG_SIZE = float(log_size)
+        app.AUTO_UPDATE = config.checkbox_to_value(auto_update)
+        app.NOTIFY_ON_UPDATE = config.checkbox_to_value(notify_on_update)
+        # app.LOG_DIR is set in config.change_LOG_DIR()
+        app.LOG_NR = log_nr
+        app.LOG_SIZE = float(log_size)
 
-        sickbeard.TRASH_REMOVE_SHOW = config.checkbox_to_value(trash_remove_show)
-        sickbeard.TRASH_ROTATE_LOGS = config.checkbox_to_value(trash_rotate_logs)
+        app.TRASH_REMOVE_SHOW = config.checkbox_to_value(trash_remove_show)
+        app.TRASH_ROTATE_LOGS = config.checkbox_to_value(trash_rotate_logs)
         config.change_UPDATE_FREQUENCY(update_frequency)
-        sickbeard.LAUNCH_BROWSER = config.checkbox_to_value(launch_browser)
-        sickbeard.SORT_ARTICLE = config.checkbox_to_value(sort_article)
-        sickbeard.CPU_PRESET = cpu_preset
-        sickbeard.ANON_REDIRECT = anon_redirect
-        sickbeard.PROXY_SETTING = proxy_setting
-        sickbeard.PROXY_INDEXERS = config.checkbox_to_value(proxy_indexers)
-        sickbeard.GIT_USERNAME = git_username
-        sickbeard.GIT_PASSWORD = git_password
-        sickbeard.GIT_RESET = config.checkbox_to_value(git_reset)
-        sickbeard.GIT_RESET_BRANCHES = helpers.ensure_list(git_reset_branches)
-        sickbeard.GIT_PATH = git_path
-        sickbeard.GIT_REMOTE = git_remote
-        sickbeard.CALENDAR_UNPROTECTED = config.checkbox_to_value(calendar_unprotected)
-        sickbeard.CALENDAR_ICONS = config.checkbox_to_value(calendar_icons)
-        sickbeard.NO_RESTART = config.checkbox_to_value(no_restart)
+        app.LAUNCH_BROWSER = config.checkbox_to_value(launch_browser)
+        app.SORT_ARTICLE = config.checkbox_to_value(sort_article)
+        app.CPU_PRESET = cpu_preset
+        app.ANON_REDIRECT = anon_redirect
+        app.PROXY_SETTING = proxy_setting
+        app.PROXY_INDEXERS = config.checkbox_to_value(proxy_indexers)
+        app.GIT_USERNAME = git_username
+        app.GIT_PASSWORD = git_password
+        app.GIT_RESET = config.checkbox_to_value(git_reset)
+        app.GIT_RESET_BRANCHES = helpers.ensure_list(git_reset_branches)
+        app.GIT_PATH = git_path
+        app.GIT_REMOTE = git_remote
+        app.CALENDAR_UNPROTECTED = config.checkbox_to_value(calendar_unprotected)
+        app.CALENDAR_ICONS = config.checkbox_to_value(calendar_icons)
+        app.NO_RESTART = config.checkbox_to_value(no_restart)
 
-        sickbeard.SSL_VERIFY = config.checkbox_to_value(ssl_verify)
-        # sickbeard.LOG_DIR is set in config.change_LOG_DIR()
-        sickbeard.COMING_EPS_MISSED_RANGE = try_int(coming_eps_missed_range, 7)
-        sickbeard.DISPLAY_ALL_SEASONS = config.checkbox_to_value(display_all_seasons)
-        sickbeard.NOTIFY_ON_LOGIN = config.checkbox_to_value(notify_on_login)
-        sickbeard.WEB_PORT = try_int(web_port)
-        sickbeard.WEB_IPV6 = config.checkbox_to_value(web_ipv6)
+        app.SSL_VERIFY = config.checkbox_to_value(ssl_verify)
+        # app.LOG_DIR is set in config.change_LOG_DIR()
+        app.COMING_EPS_MISSED_RANGE = try_int(coming_eps_missed_range, 7)
+        app.DISPLAY_ALL_SEASONS = config.checkbox_to_value(display_all_seasons)
+        app.NOTIFY_ON_LOGIN = config.checkbox_to_value(notify_on_login)
+        app.WEB_PORT = try_int(web_port)
+        app.WEB_IPV6 = config.checkbox_to_value(web_ipv6)
         if config.checkbox_to_value(encryption_version) == 1:
-            sickbeard.ENCRYPTION_VERSION = 2
+            app.ENCRYPTION_VERSION = 2
         else:
-            sickbeard.ENCRYPTION_VERSION = 0
-        sickbeard.WEB_USERNAME = web_username
-        sickbeard.WEB_PASSWORD = web_password
+            app.ENCRYPTION_VERSION = 0
+        app.WEB_USERNAME = web_username
+        app.WEB_PASSWORD = web_password
 
-        sickbeard.DEBUG = config.checkbox_to_value(debug)
-        sickbeard.WEB_LOG = config.checkbox_to_value(web_log)
-        sickbeard.SUBLIMINAL_LOG = config.checkbox_to_value(subliminal_log)
+        app.DEBUG = config.checkbox_to_value(debug)
+        app.WEB_LOG = config.checkbox_to_value(web_log)
+        app.SUBLIMINAL_LOG = config.checkbox_to_value(subliminal_log)
 
         if not config.change_LOG_DIR(log_dir):
             results += ['Unable to create directory {dir}, '
@@ -130,33 +130,33 @@ class ConfigGeneral(Config):
 
         # Validate github credentials
         try:
-            github_client.authenticate(sickbeard.GIT_USERNAME, sickbeard.GIT_PASSWORD)
+            github_client.authenticate(app.GIT_USERNAME, app.GIT_PASSWORD)
         except (GithubException, IOError):
             logger.log('Error while validating your Github credentials.', logger.WARNING)
 
-        sickbeard.PRIVACY_LEVEL = privacy_level.lower()
+        app.PRIVACY_LEVEL = privacy_level.lower()
 
-        sickbeard.FUZZY_DATING = config.checkbox_to_value(fuzzy_dating)
-        sickbeard.TRIM_ZERO = config.checkbox_to_value(trim_zero)
+        app.FUZZY_DATING = config.checkbox_to_value(fuzzy_dating)
+        app.TRIM_ZERO = config.checkbox_to_value(trim_zero)
 
         if date_preset:
-            sickbeard.DATE_PRESET = date_preset
+            app.DATE_PRESET = date_preset
 
         if indexer_default:
-            sickbeard.INDEXER_DEFAULT = try_int(indexer_default)
+            app.INDEXER_DEFAULT = try_int(indexer_default)
 
         if indexer_timeout:
-            sickbeard.INDEXER_TIMEOUT = try_int(indexer_timeout)
+            app.INDEXER_TIMEOUT = try_int(indexer_timeout)
 
         if time_preset:
-            sickbeard.TIME_PRESET_W_SECONDS = time_preset
-            sickbeard.TIME_PRESET = sickbeard.TIME_PRESET_W_SECONDS.replace(u':%S', u'')
+            app.TIME_PRESET_W_SECONDS = time_preset
+            app.TIME_PRESET = app.TIME_PRESET_W_SECONDS.replace(u':%S', u'')
 
-        sickbeard.TIMEZONE_DISPLAY = timezone_display
+        app.TIMEZONE_DISPLAY = timezone_display
 
-        sickbeard.API_KEY = api_key
+        app.API_KEY = api_key
 
-        sickbeard.ENABLE_HTTPS = config.checkbox_to_value(enable_https)
+        app.ENABLE_HTTPS = config.checkbox_to_value(enable_https)
 
         if not config.change_HTTPS_CERT(https_cert):
             results += ['Unable to create directory {dir}, '
@@ -166,15 +166,15 @@ class ConfigGeneral(Config):
             results += ['Unable to create directory {dir}, '
                         'https key directory not changed.'.format(dir=ek(os.path.normpath, https_key))]
 
-        sickbeard.HANDLE_REVERSE_PROXY = config.checkbox_to_value(handle_reverse_proxy)
+        app.HANDLE_REVERSE_PROXY = config.checkbox_to_value(handle_reverse_proxy)
 
-        sickbeard.THEME_NAME = theme_name
-        sickbeard.FANART_BACKGROUND = config.checkbox_to_value(fanart_background)
-        sickbeard.FANART_BACKGROUND_OPACITY = fanart_background_opacity
+        app.THEME_NAME = theme_name
+        app.FANART_BACKGROUND = config.checkbox_to_value(fanart_background)
+        app.FANART_BACKGROUND_OPACITY = fanart_background_opacity
 
-        sickbeard.DEFAULT_PAGE = default_page
+        app.DEFAULT_PAGE = default_page
 
-        sickbeard.save_config()
+        app.save_config()
 
         if results:
             for x in results:
@@ -182,6 +182,6 @@ class ConfigGeneral(Config):
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:
-            ui.notifications.message('Configuration Saved', ek(os.path.join, sickbeard.CONFIG_FILE))
+            ui.notifications.message('Configuration Saved', ek(os.path.join, app.CONFIG_FILE))
 
         return self.redirect('/config/general/')

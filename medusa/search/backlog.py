@@ -21,7 +21,7 @@
 import datetime
 import threading
 
-import medusa as sickbeard
+import medusa as app
 from six import iteritems
 from .queue import BacklogQueueItem
 from .. import common, db, logger, scheduler, ui
@@ -43,7 +43,7 @@ class BacklogSearcher(object):
     def __init__(self):
 
         self._lastBacklog = self._get_lastBacklog()
-        self.cycleTime = sickbeard.BACKLOG_FREQUENCY / 60 / 24
+        self.cycleTime = app.BACKLOG_FREQUENCY / 60 / 24
         self.lock = threading.Lock()
         self.amActive = False
         self.amPaused = False
@@ -71,7 +71,7 @@ class BacklogSearcher(object):
             logger.log(u"Backlog is still running, not starting it again", logger.DEBUG)
             return
 
-        if sickbeard.forcedSearchQueueScheduler.action.is_forced_search_in_progress():
+        if app.forcedSearchQueueScheduler.action.is_forced_search_in_progress():
             logger.log(u"Manual search is running. Can't start Backlog Search", logger.WARNING)
             return
 
@@ -81,7 +81,7 @@ class BacklogSearcher(object):
         if which_shows:
             show_list = which_shows
         else:
-            show_list = sickbeard.showList
+            show_list = app.showList
 
         self._get_lastBacklog()
 
@@ -89,8 +89,8 @@ class BacklogSearcher(object):
         fromDate = datetime.date.fromordinal(1)
 
         if not which_shows and not ((curDate - self._lastBacklog) >= self.cycleTime):
-            logger.log(u"Running limited backlog on missed episodes " + str(sickbeard.BACKLOG_DAYS) + " day(s) and older only")
-            fromDate = datetime.date.today() - datetime.timedelta(days=sickbeard.BACKLOG_DAYS)
+            logger.log(u"Running limited backlog on missed episodes " + str(app.BACKLOG_DAYS) + " day(s) and older only")
+            fromDate = datetime.date.today() - datetime.timedelta(days=app.BACKLOG_DAYS)
 
         # go through non air-by-date shows and see if they need any episodes
         for curShow in show_list:
@@ -104,7 +104,7 @@ class BacklogSearcher(object):
                 self.currentSearchInfo = {'title': curShow.name + " Season " + str(season)}
 
                 backlog_queue_item = BacklogQueueItem(curShow, segment)
-                sickbeard.searchQueueScheduler.action.add_item(backlog_queue_item)  # @UndefinedVariable
+                app.searchQueueScheduler.action.add_item(backlog_queue_item)  # @UndefinedVariable
 
             if not segments:
                 logger.log(u"Nothing needs to be downloaded for %s, skipping" % curShow.name, logger.DEBUG)

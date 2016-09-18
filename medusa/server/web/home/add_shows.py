@@ -7,7 +7,7 @@ import json
 import os
 import re
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import unquote_plus
 from simpleanidb import REQUEST_HOT
 from six import iteritems
@@ -41,7 +41,7 @@ class HomeAddShows(Home):
 
     @staticmethod
     def getIndexerLanguages():
-        result = sickbeard.indexerApi().config['valid_languages']
+        result = app.indexerApi().config['valid_languages']
 
         return json.dumps({'results': result})
 
@@ -52,7 +52,7 @@ class HomeAddShows(Home):
     @staticmethod
     def searchIndexersForShowName(search_term, lang=None, indexer=None):
         if not lang or lang == 'null':
-            lang = sickbeard.INDEXER_DEFAULT_LANGUAGE
+            lang = app.INDEXER_DEFAULT_LANGUAGE
 
         search_term = search_term.encode('utf-8')
 
@@ -73,14 +73,14 @@ class HomeAddShows(Home):
         final_results = []
 
         # Query Indexers for each search term and build the list of results
-        for indexer in sickbeard.indexerApi().indexers if not int(indexer) else [int(indexer)]:
-            l_indexer_api_parms = sickbeard.indexerApi(indexer).api_params.copy()
+        for indexer in app.indexerApi().indexers if not int(indexer) else [int(indexer)]:
+            l_indexer_api_parms = app.indexerApi(indexer).api_params.copy()
             l_indexer_api_parms['language'] = lang
             l_indexer_api_parms['custom_ui'] = classes.AllShowsListUI
-            t = sickbeard.indexerApi(indexer).indexer(**l_indexer_api_parms)
+            t = app.indexerApi(indexer).indexer(**l_indexer_api_parms)
 
             logger.log(u'Searching for Show with searchterm(s): %s on Indexer: %s' % (
-                search_terms, sickbeard.indexerApi(indexer).name), logger.DEBUG)
+                search_terms, app.indexerApi(indexer).name), logger.DEBUG)
             for searchTerm in search_terms:
                 try:
                     indexer_results = t[searchTerm]
@@ -90,10 +90,10 @@ class HomeAddShows(Home):
                     logger.log(u'Error searching for show: {error}'.format(error=msg))
 
         for i, shows in iteritems(results):
-            final_results.extend({(sickbeard.indexerApi(i).name, i, sickbeard.indexerApi(i).config['show_url'], int(show['id']),
+            final_results.extend({(app.indexerApi(i).name, i, app.indexerApi(i).config['show_url'], int(show['id']),
                                    show['seriesname'], show['firstaired']) for show in shows})
 
-        lang_id = sickbeard.indexerApi().config['langabbv_to_id'][lang]
+        lang_id = app.indexerApi().config['langabbv_to_id'][lang]
         return json.dumps({'results': final_results, 'langid': lang_id})
 
     def massAddTable(self, rootDir=None):
@@ -108,8 +108,8 @@ class HomeAddShows(Home):
 
         root_dirs = [unquote_plus(x) for x in root_dirs]
 
-        if sickbeard.ROOT_DIRS:
-            default_index = int(sickbeard.ROOT_DIRS.split('|')[0])
+        if app.ROOT_DIRS:
+            default_index = int(app.ROOT_DIRS.split('|')[0])
         else:
             default_index = 0
 
@@ -159,7 +159,7 @@ class HomeAddShows(Home):
                 dir_list.append(cur_dir)
 
                 indexer_id = show_name = indexer = None
-                for cur_provider in sickbeard.metadata_provider_dict.values():
+                for cur_provider in app.metadata_provider_dict.values():
                     if not (indexer_id and show_name):
                         (indexer_id, show_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
 
@@ -176,7 +176,7 @@ class HomeAddShows(Home):
 
                 cur_dir['existing_info'] = (indexer_id, show_name, indexer)
 
-                if indexer_id and Show.find(sickbeard.showList, indexer_id):
+                if indexer_id and Show.find(app.showList, indexer_id):
                     cur_dir['added_already'] = True
         return t.render(dirList=dir_list)
 
@@ -216,14 +216,14 @@ class HomeAddShows(Home):
         provided_indexer_id = int(indexer_id or 0)
         provided_indexer_name = show_name
 
-        provided_indexer = int(indexer or sickbeard.INDEXER_DEFAULT)
+        provided_indexer = int(indexer or app.INDEXER_DEFAULT)
 
         return t.render(
             enable_anime_options=True, use_provided_info=use_provided_info,
             default_show_name=default_show_name, other_shows=other_shows,
             provided_show_dir=show_dir, provided_indexer_id=provided_indexer_id,
             provided_indexer_name=provided_indexer_name, provided_indexer=provided_indexer,
-            indexers=sickbeard.indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
+            indexers=app.indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
             title='New Show', header='New Show', topmenu='home',
             controller='addShows', action='newShow'
         )
@@ -348,15 +348,15 @@ class HomeAddShows(Home):
         # URL parameters
         data = {'shows': [{'ids': {'tvdb': indexer_id}}]}
 
-        trakt_settings = {'trakt_api_secret': sickbeard.TRAKT_API_SECRET,
-                          'trakt_api_key': sickbeard.TRAKT_API_KEY,
-                          'trakt_access_token': sickbeard.TRAKT_ACCESS_TOKEN}
+        trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
+                          'trakt_api_key': app.TRAKT_API_KEY,
+                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN}
 
         show_name = get_showname_from_indexer(1, indexer_id)
         try:
-            trakt_api = TraktApi(timeout=sickbeard.TRAKT_TIMEOUT, ssl_verify=sickbeard.SSL_VERIFY, **trakt_settings)
+            trakt_api = TraktApi(timeout=app.TRAKT_TIMEOUT, ssl_verify=app.SSL_VERIFY, **trakt_settings)
             trakt_api.request('users/{0}/lists/{1}/items'.format
-                              (sickbeard.TRAKT_USERNAME, sickbeard.TRAKT_BLACKLIST_NAME), data, method='POST')
+                              (app.TRAKT_USERNAME, app.TRAKT_BLACKLIST_NAME), data, method='POST')
             ui.notifications.message('Success!',
                                      "Added show '{0}' to blacklist".format(show_name))
         except Exception as e:
@@ -398,7 +398,7 @@ class HomeAddShows(Home):
 
             indexer_id = try_int(tvdb_id, None)
 
-        if Show.find(sickbeard.showList, int(indexer_id)):
+        if Show.find(app.showList, int(indexer_id)):
             return
 
         # Sanitize the paramater allowed_qualities and preferred_qualities. As these would normally be passed as lists
@@ -444,16 +444,16 @@ class HomeAddShows(Home):
             location = root_dir
 
         else:
-            default_status = sickbeard.STATUS_DEFAULT
-            quality = sickbeard.QUALITY_DEFAULT
-            flatten_folders = sickbeard.FLATTEN_FOLDERS_DEFAULT
-            subtitles = sickbeard.SUBTITLES_DEFAULT
-            anime = sickbeard.ANIME_DEFAULT
-            scene = sickbeard.SCENE_DEFAULT
-            default_status_after = sickbeard.STATUS_DEFAULT_AFTER
+            default_status = app.STATUS_DEFAULT
+            quality = app.QUALITY_DEFAULT
+            flatten_folders = app.FLATTEN_FOLDERS_DEFAULT
+            subtitles = app.SUBTITLES_DEFAULT
+            anime = app.ANIME_DEFAULT
+            scene = app.SCENE_DEFAULT
+            default_status_after = app.STATUS_DEFAULT_AFTER
 
-            if sickbeard.ROOT_DIRS:
-                root_dirs = sickbeard.ROOT_DIRS.split('|')
+            if app.ROOT_DIRS:
+                root_dirs = app.ROOT_DIRS.split('|')
                 location = root_dirs[int(root_dirs[0]) + 1]
             else:
                 location = None
@@ -467,9 +467,9 @@ class HomeAddShows(Home):
         show_dir = None
 
         # add the show
-        sickbeard.showQueueScheduler.action.addShow(1, int(indexer_id), show_dir, int(default_status), quality, flatten_folders,
-                                                    indexer_lang, subtitles, anime, scene, None, blacklist, whitelist,
-                                                    int(default_status_after), root_dir=location)
+        app.showQueueScheduler.action.addShow(1, int(indexer_id), show_dir, int(default_status), quality, flatten_folders,
+                                              indexer_lang, subtitles, anime, scene, None, blacklist, whitelist,
+                                              int(default_status_after), root_dir=location)
 
         ui.notifications.message('Show added', 'Adding the specified show {0}'.format(show_name))
 
@@ -488,7 +488,7 @@ class HomeAddShows(Home):
         allowed_qualities = anyQualities
         preferred_qualities = bestQualities
 
-        indexer_lang = sickbeard.INDEXER_DEFAULT_LANGUAGE if not indexerLang else indexerLang
+        indexer_lang = app.INDEXER_DEFAULT_LANGUAGE if not indexerLang else indexerLang
 
         # grab our list of other dirs if given
         if not other_shows:
@@ -533,7 +533,7 @@ class HomeAddShows(Home):
         else:
             # if no indexer was provided use the default indexer set in General settings
             if not provided_indexer:
-                provided_indexer = sickbeard.INDEXER_DEFAULT
+                provided_indexer = app.INDEXER_DEFAULT
 
             indexer = int(provided_indexer)
             indexer_id = int(whichSeries)
@@ -551,7 +551,7 @@ class HomeAddShows(Home):
             return self.redirect('/addShows/existingShows/')
 
         # don't create show dir if config says not to
-        if sickbeard.ADD_SHOWS_WO_DIR:
+        if app.ADD_SHOWS_WO_DIR:
             logger.log(u'Skipping initial creation of {path} due to config.ini setting'.format
                        (path=show_dir))
         else:
@@ -588,9 +588,9 @@ class HomeAddShows(Home):
         new_quality = Quality.combineQualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
 
         # add the show
-        sickbeard.showQueueScheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
-                                                    flatten_folders, indexer_lang, subtitles, anime,
-                                                    scene, None, blacklist, whitelist, int(defaultStatusAfter))
+        app.showQueueScheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
+                                              flatten_folders, indexer_lang, subtitles, anime,
+                                              scene, None, blacklist, whitelist, int(defaultStatusAfter))
         ui.notifications.message('Show added', 'Adding the specified show into {path}'.format(path=show_dir))
 
         return finishAddShow()
@@ -657,15 +657,15 @@ class HomeAddShows(Home):
 
             if indexer is not None and indexer_id is not None:
                 # add the show
-                sickbeard.showQueueScheduler.action.addShow(
+                app.showQueueScheduler.action.addShow(
                     indexer, indexer_id, show_dir,
-                    default_status=sickbeard.STATUS_DEFAULT,
-                    quality=sickbeard.QUALITY_DEFAULT,
-                    flatten_folders=sickbeard.FLATTEN_FOLDERS_DEFAULT,
-                    subtitles=sickbeard.SUBTITLES_DEFAULT,
-                    anime=sickbeard.ANIME_DEFAULT,
-                    scene=sickbeard.SCENE_DEFAULT,
-                    default_status_after=sickbeard.STATUS_DEFAULT_AFTER
+                    default_status=app.STATUS_DEFAULT,
+                    quality=app.QUALITY_DEFAULT,
+                    flatten_folders=app.FLATTEN_FOLDERS_DEFAULT,
+                    subtitles=app.SUBTITLES_DEFAULT,
+                    anime=app.ANIME_DEFAULT,
+                    scene=app.SCENE_DEFAULT,
+                    default_status_after=app.STATUS_DEFAULT_AFTER
                 )
                 num_added += 1
 

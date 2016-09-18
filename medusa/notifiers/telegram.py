@@ -21,7 +21,7 @@
 
 from __future__ import unicode_literals
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urlencode
 from six.moves.urllib.request import Request, urlopen
 from .. import logger
@@ -56,8 +56,8 @@ class Notifier(object):
 
         :returns: True if the message succeeded, False otherwise
         """
-        id = sickbeard.TELEGRAM_ID if id is None else id
-        api_key = sickbeard.TELEGRAM_APIKEY if api_key is None else api_key
+        id = app.TELEGRAM_ID if id is None else id
+        api_key = app.TELEGRAM_APIKEY if api_key is None else api_key
 
         logger.log('Telegram in use with API KEY: %s' % api_key, logger.DEBUG)
 
@@ -99,7 +99,7 @@ class Notifier(object):
         :param title: The title of the notification to send
         """
         title=notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
-        if sickbeard.TELEGRAM_NOTIFY_ONSNATCH:
+        if app.TELEGRAM_NOTIFY_ONSNATCH:
             self._notify_telegram(title, ep_name)
 
     def notify_download(self, ep_name, title=notifyStrings[NOTIFY_DOWNLOAD]):
@@ -109,7 +109,7 @@ class Notifier(object):
         :param ep_name: The name of the episode downloaded
         :param title: The title of the notification to send
         """
-        if sickbeard.TELEGRAM_NOTIFY_ONDOWNLOAD:
+        if app.TELEGRAM_NOTIFY_ONDOWNLOAD:
             self._notify_telegram(title, ep_name)
 
     def notify_subtitle_download(self, ep_name, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
@@ -120,7 +120,7 @@ class Notifier(object):
         :param lang: The language of the downloaded subtitles
         :param title: The title of the notification to send
         """
-        if sickbeard.TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD:
+        if app.TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._notify_telegram(title, '%s: %s' % (ep_name, lang))
 
     def notify_git_update(self, new_version='??'):
@@ -129,7 +129,7 @@ class Notifier(object):
 
         :param new_version: The new version available from git
         """
-        if sickbeard.USE_TELEGRAM:
+        if app.USE_TELEGRAM:
             update_text = notifyStrings[NOTIFY_GIT_UPDATE_TEXT]
             title = notifyStrings[NOTIFY_GIT_UPDATE]
             self._notify_telegram(title, update_text + new_version)
@@ -140,7 +140,7 @@ class Notifier(object):
 
         :param ipaddress: The ip address the login is originating from
         """
-        if sickbeard.USE_TELEGRAM:
+        if app.USE_TELEGRAM:
             update_text = notifyStrings[NOTIFY_LOGIN_TEXT]
             title = notifyStrings[NOTIFY_LOGIN]
             self._notify_telegram(title, update_text.format(ipaddress))
@@ -158,7 +158,7 @@ class Notifier(object):
         :returns: the message to send
         """
 
-        if not (force or sickbeard.USE_TELEGRAM):
+        if not (force or app.USE_TELEGRAM):
             logger.log('Notification for Telegram not enabled, skipping this notification', logger.DEBUG)
             return False, 'Disabled'
 

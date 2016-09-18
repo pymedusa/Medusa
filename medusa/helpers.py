@@ -48,7 +48,7 @@ import certifi
 import cfscrape
 from contextlib2 import closing, suppress
 import guessit
-import medusa as sickbeard
+import medusa as app
 import requests
 from requests.compat import urlparse
 import shutil_custom
@@ -191,9 +191,9 @@ def searchIndexerForShowID(show_name, indexer=None, indexer_id=None, ui=None):
     show_names = [re.sub('[. -]', ' ', show_name)]
 
     # Query Indexers for each search term and build the list of results
-    for i in sickbeard.indexerApi().indexers if not indexer else int(indexer or []):
+    for i in app.indexerApi().indexers if not indexer else int(indexer or []):
         # Query Indexers for each search term and build the list of results
-        indexer_api = sickbeard.indexerApi(i)
+        indexer_api = app.indexerApi(i)
         indexer_api_params = indexer_api.api_params.copy()
         if ui is not None:
             indexer_api_params['custom_ui'] = ui
@@ -219,7 +219,7 @@ def searchIndexerForShowID(show_name, indexer=None, indexer_id=None, ui=None):
 
             if not (seriesname and series_id):
                 continue
-            show = Show.find(sickbeard.showList, int(series_id))
+            show = Show.find(app.showList, int(series_id))
             # Check if we can find the show in our list (if not, it's not the right show)
             if (indexer_id is None) and (show is not None) and (show.indexerid == int(series_id)):
                 return seriesname, i, int(series_id)
@@ -452,7 +452,7 @@ def rename_ep_file(cur_path, new_path, old_path_length=0):
         sublang = ek(os.path.splitext, cur_file_name)[1][1:]
 
         # Check if the language extracted from filename is a valid language
-        if sublang in sickbeard.subtitles.subtitle_code_filter():
+        if sublang in app.subtitles.subtitle_code_filter():
             cur_file_ext = '.' + sublang + cur_file_ext
 
     # put the extension on the incoming file
@@ -546,7 +546,7 @@ def chmodAsParent(child_path):
     parent_path_stat = ek(os.stat, parent_path)
     parent_mode = stat.S_IMODE(parent_path_stat[stat.ST_MODE])
 
-    child_path_stat = ek(os.stat, child_path.encode(sickbeard.SYS_ENCODING))
+    child_path_stat = ek(os.stat, child_path.encode(app.SYS_ENCODING))
     child_path_mode = stat.S_IMODE(child_path_stat[stat.ST_MODE])
 
     if ek(os.path.isfile, child_path):
@@ -591,7 +591,7 @@ def fixSetGroupID(child_path):
 
     if parent_mode & stat.S_ISGID:
         parent_gid = parent_stat[stat.ST_GID]
-        child_stat = ek(os.stat, child_path.encode(sickbeard.SYS_ENCODING))
+        child_stat = ek(os.stat, child_path.encode(app.SYS_ENCODING))
         child_gid = child_stat[stat.ST_GID]
 
         if child_gid == parent_gid:
@@ -618,7 +618,7 @@ def is_anime_in_show_list():
 
     :return: True if global showlist contains Anime, False if not
     """
-    for show in sickbeard.showList:
+    for show in app.showList:
         if show.is_anime:
             return True
     return False
@@ -626,7 +626,7 @@ def is_anime_in_show_list():
 
 def update_anime_support():
     """Check if we need to support anime, and if we do, enable the feature."""
-    sickbeard.ANIMESUPPORT = is_anime_in_show_list()
+    app.ANIMESUPPORT = is_anime_in_show_list()
 
 
 def get_absolute_number_from_season_and_episode(show, season, episode):
@@ -661,7 +661,7 @@ def get_all_episodes_from_absolute_number(show, absolute_numbers, indexer_id=Non
 
     if absolute_numbers:
         if not show and indexer_id:
-            show = Show.find(sickbeard.showList, indexer_id)
+            show = Show.find(app.showList, indexer_id)
 
         for absolute_number in absolute_numbers if show else []:
             ep = show.get_episode(None, None, absolute_number=absolute_number)
@@ -857,7 +857,7 @@ def check_url(url):
 
 def anon_url(*url):
     """Return a URL string consisting of the Anonymous redirect URL and an arbitrary number of values appended."""
-    return '' if None in url else '%s%s' % (sickbeard.ANON_REDIRECT, ''.join(str(s) for s in url))
+    return '' if None in url else '%s%s' % (app.ANON_REDIRECT, ''.join(str(s) for s in url))
 
 
 """
@@ -891,10 +891,10 @@ def encrypt(data, encryption_version=0, _decrypt=False):
     elif encryption_version == 2:
         if _decrypt:
             return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(base64.decodestring(data),
-                                                                   cycle(sickbeard.ENCRYPTION_SECRET)))
+                                                                   cycle(app.ENCRYPTION_SECRET)))
         else:
             return base64.encodestring(
-                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(data, cycle(sickbeard.ENCRYPTION_SECRET)))).strip()
+                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(data, cycle(app.ENCRYPTION_SECRET)))).strip()
     # Version 0: Plain text
     else:
         return data
@@ -910,7 +910,7 @@ def full_sanitizeSceneName(name):
 
 def get_show(name, tryIndexers=False):
     from . import name_cache, scene_exceptions
-    if not sickbeard.showList:
+    if not app.showList:
         return
 
     show = None
@@ -924,18 +924,18 @@ def get_show(name, tryIndexers=False):
         cache = name_cache.retrieveNameFromCache(name)
         if cache:
             from_cache = True
-            show = Show.find(sickbeard.showList, int(cache))
+            show = Show.find(app.showList, int(cache))
 
         # try indexers
         if not show and tryIndexers:
             show = Show.find(
-                sickbeard.showList, searchIndexerForShowID(full_sanitizeSceneName(name), ui=classes.ShowListUI)[2])
+                app.showList, searchIndexerForShowID(full_sanitizeSceneName(name), ui=classes.ShowListUI)[2])
 
         # try scene exceptions
         if not show:
             show_id = scene_exceptions.get_scene_exception_by_name(name)[0]
             if show_id:
-                show = Show.find(sickbeard.showList, int(show_id))
+                show = Show.find(app.showList, int(show_id))
 
         # add show to cache
         if show and not from_cache:
@@ -984,53 +984,53 @@ def validateShow(show, season=None, episode=None):
     indexer_lang = show.lang
 
     try:
-        indexer_api_params = sickbeard.indexerApi(show.indexer).api_params.copy()
+        indexer_api_params = app.indexerApi(show.indexer).api_params.copy()
 
-        if indexer_lang and not indexer_lang == sickbeard.INDEXER_DEFAULT_LANGUAGE:
+        if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
             indexer_api_params['language'] = indexer_lang
 
         if show.dvdorder != 0:
             indexer_api_params['dvdorder'] = True
 
-        t = sickbeard.indexerApi(show.indexer).indexer(**indexer_api_params)
+        t = app.indexerApi(show.indexer).indexer(**indexer_api_params)
         if season is None and episode is None:
             return t
 
         return t[show.indexerid][season][episode]
-    except (sickbeard.indexer_episodenotfound, sickbeard.indexer_seasonnotfound):
+    except (app.indexer_episodenotfound, app.indexer_seasonnotfound):
         pass
 
 
 def set_up_anidb_connection():
     """Connect to anidb."""
-    if not sickbeard.USE_ANIDB:
+    if not app.USE_ANIDB:
         logger.debug(u"Usage of anidb disabled. Skiping")
         return False
 
-    if not sickbeard.ANIDB_USERNAME and not sickbeard.ANIDB_PASSWORD:
+    if not app.ANIDB_USERNAME and not app.ANIDB_PASSWORD:
         logger.debug(u"anidb username and/or password are not set. Aborting anidb lookup.")
         return False
 
-    if not sickbeard.ADBA_CONNECTION:
+    if not app.ADBA_CONNECTION:
         def anidb_logger(msg):
             return logger.debug(u"anidb: %s " % msg)
 
         try:
-            sickbeard.ADBA_CONNECTION = adba.Connection(keepAlive=True, log=anidb_logger)
+            app.ADBA_CONNECTION = adba.Connection(keepAlive=True, log=anidb_logger)
         except Exception as e:
             logger.warning(u"anidb exception msg: %r " % repr(e))
             return False
 
     try:
-        if not sickbeard.ADBA_CONNECTION.authed():
-            sickbeard.ADBA_CONNECTION.auth(sickbeard.ANIDB_USERNAME, sickbeard.ANIDB_PASSWORD)
+        if not app.ADBA_CONNECTION.authed():
+            app.ADBA_CONNECTION.auth(app.ANIDB_USERNAME, app.ANIDB_PASSWORD)
         else:
             return True
     except Exception as e:
         logger.warning(u"anidb exception msg: %r " % repr(e))
         return False
 
-    return sickbeard.ADBA_CONNECTION.authed()
+    return app.ADBA_CONNECTION.authed()
 
 
 def backupConfigZip(fileList, archive, arcname=None):
@@ -1084,7 +1084,7 @@ def mapIndexersToShow(show):
     mapped = {}
 
     # init mapped indexers object
-    for indexer in sickbeard.indexerApi().indexers:
+    for indexer in app.indexerApi().indexers:
         mapped[indexer] = show.indexerid if int(indexer) == int(show.indexer) else 0
 
     main_db_con = db.DBConnection()
@@ -1102,24 +1102,24 @@ def mapIndexersToShow(show):
             break
     else:
         sql_l = []
-        for indexer in sickbeard.indexerApi().indexers:
+        for indexer in app.indexerApi().indexers:
             if indexer == show.indexer:
                 mapped[indexer] = show.indexerid
                 continue
 
-            indexer_api_params = sickbeard.indexerApi(indexer).api_params.copy()
+            indexer_api_params = app.indexerApi(indexer).api_params.copy()
             indexer_api_params['custom_ui'] = classes.ShowListUI
-            t = sickbeard.indexerApi(indexer).indexer(**indexer_api_params)
+            t = app.indexerApi(indexer).indexer(**indexer_api_params)
 
             try:
                 mapped_show = t[show.name]
             except Exception:
-                logger.debug(u"Unable to map " + sickbeard.indexerApi(show.indexer).name + "->" + sickbeard.indexerApi(
+                logger.debug(u"Unable to map " + app.indexerApi(show.indexer).name + "->" + app.indexerApi(
                     indexer).name + " for show: " + show.name + ", skipping it")
                 continue
 
             if mapped_show and len(mapped_show) == 1:
-                logger.debug(u"Mapping " + sickbeard.indexerApi(show.indexer).name + "->" + sickbeard.indexerApi(
+                logger.debug(u"Mapping " + app.indexerApi(show.indexer).name + "->" + app.indexerApi(
                     indexer).name + " for show: " + show.name)
 
                 mapped[indexer] = int(mapped_show[0]['id'])
@@ -1162,13 +1162,13 @@ def make_session():
 def request_defaults(kwargs):
     hooks = kwargs.pop(u'hooks', None)
     cookies = kwargs.pop(u'cookies', None)
-    verify = certifi.old_where() if all([sickbeard.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
+    verify = certifi.old_where() if all([app.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
 
     # request session proxies
-    if sickbeard.PROXY_SETTING:
-        logger.debug(u"Using global proxy: " + sickbeard.PROXY_SETTING)
-        scheme, address = splittype(sickbeard.PROXY_SETTING)
-        address = sickbeard.PROXY_SETTING if scheme else 'http://' + sickbeard.PROXY_SETTING
+    if app.PROXY_SETTING:
+        logger.debug(u"Using global proxy: " + app.PROXY_SETTING)
+        scheme, address = splittype(app.PROXY_SETTING)
+        address = app.PROXY_SETTING if scheme else 'http://' + app.PROXY_SETTING
         proxies = {
             "http": address,
             "https": address,
@@ -1307,7 +1307,7 @@ def handle_requests_exception(requests_exception):
         if ssl.OPENSSL_VERSION_INFO < (1, 0, 1, 5):
             logger.info("SSL Error requesting url: '{0}' You have {1}, try upgrading OpenSSL to 1.0.1e+".format(
                 error.request.url, ssl.OPENSSL_VERSION))
-        if sickbeard.SSL_VERIFY:
+        if app.SSL_VERIFY:
             logger.info(
                 "SSL Error requesting url: '{0}'. Disable Cert Verification on the advanced tab of /config/general")
         logger.debug(default.format(error))
@@ -1530,13 +1530,13 @@ def getTVDBFromID(indexer_id, indexer):
 
 
 def get_showname_from_indexer(indexer, indexer_id, lang='en'):
-    indexer_api_params = sickbeard.indexerApi(indexer).api_params.copy()
+    indexer_api_params = app.indexerApi(indexer).api_params.copy()
     if lang:
         indexer_api_params['language'] = lang
 
-    logger.info(u"" + str(sickbeard.indexerApi(indexer).name) + ": " + repr(indexer_api_params))
+    logger.info(u"" + str(app.indexerApi(indexer).name) + ": " + repr(indexer_api_params))
 
-    t = sickbeard.indexerApi(indexer).indexer(**indexer_api_params)
+    t = app.indexerApi(indexer).indexer(**indexer_api_params)
     s = t[int(indexer_id)]
 
     if hasattr(s, 'data'):

@@ -2,7 +2,7 @@
 <%!
     import datetime
     import locale
-    import medusa as sickbeard
+    import medusa as app
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets
     from medusa.sbdatetime import sbdatetime, date_presets, time_presets
@@ -17,8 +17,8 @@
     <h1 class="title">${title}</h1>
 % endif
 <% indexer = 0 %>
-% if sickbeard.INDEXER_DEFAULT:
-    <% indexer = sickbeard.INDEXER_DEFAULT %>
+% if app.INDEXER_DEFAULT:
+    <% indexer = app.INDEXER_DEFAULT %>
 % endif
 <div id="config">
     <div id="config-content">

@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import logging
 import os.path
 
-import medusa as sickbeard
+import medusa as app
 from . import processTV
 from .helper.encoding import ek
 
@@ -45,17 +45,17 @@ class PostProcessor(object):
         """
         self.amActive = True
         try:
-            if not ek(os.path.isdir, sickbeard.TV_DOWNLOAD_DIR):
+            if not ek(os.path.isdir, app.TV_DOWNLOAD_DIR):
                 logger.error(u"Automatic post-processing attempted but directory doesn't exist: {folder}",
-                             folder=sickbeard.TV_DOWNLOAD_DIR)
+                             folder=app.TV_DOWNLOAD_DIR)
                 return
 
-            if not (force or ek(os.path.isabs, sickbeard.TV_DOWNLOAD_DIR)):
+            if not (force or ek(os.path.isabs, app.TV_DOWNLOAD_DIR)):
                 logger.error(u"Automatic post-processing attempted but directory is relative "
                              u"(and probably not what you really want to process): {folder}",
-                             folder=sickbeard.TV_DOWNLOAD_DIR)
+                             folder=app.TV_DOWNLOAD_DIR)
                 return
 
-            processTV.processDir(sickbeard.TV_DOWNLOAD_DIR, force=force)
+            processTV.processDir(app.TV_DOWNLOAD_DIR, force=force)
         finally:
             self.amActive = False

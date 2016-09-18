@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 import datetime
 from base64 import standard_b64encode
 
-import medusa as sickbeard
+import medusa as app
 from six.moves.http_client import socket
 from six.moves.xmlrpc_client import ProtocolError, ServerProxy
 from . import logger
@@ -85,21 +85,21 @@ def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-sta
     :param nzb: nzb object
     :param proper: True if this is a Proper download, False if not. Defaults to False
     """
-    if sickbeard.NZBGET_HOST is None:
+    if app.NZBGET_HOST is None:
         logger.log('No NZBget host found in configuration. Please configure it.', logger.WARNING)
         return False
 
     addToTop = False
     nzbgetprio = 0
-    category = sickbeard.NZBGET_CATEGORY
+    category = app.NZBGET_CATEGORY
     if nzb.show.is_anime:
-        category = sickbeard.NZBGET_CATEGORY_ANIME
+        category = app.NZBGET_CATEGORY_ANIME
 
     url = 'http{}://{}:{}@{}/xmlrpc'.format(
-        's' if sickbeard.NZBGET_USE_HTTPS else '',
-        sickbeard.NZBGET_USERNAME,
-        sickbeard.NZBGET_PASSWORD,
-        sickbeard.NZBGET_HOST)
+        's' if app.NZBGET_USE_HTTPS else '',
+        app.NZBGET_USERNAME,
+        app.NZBGET_PASSWORD,
+        app.NZBGET_HOST)
 
     if not NZBConnection(url):
         return False
@@ -118,11 +118,11 @@ def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-sta
         dupekey += '-' + str(curEp.season) + '.' + str(curEp.episode)
         if datetime.date.today() - curEp.airdate <= datetime.timedelta(days=7):
             addToTop = True
-            nzbgetprio = sickbeard.NZBGET_PRIORITY
+            nzbgetprio = app.NZBGET_PRIORITY
         else:
-            category = sickbeard.NZBGET_CATEGORY_BACKLOG
+            category = app.NZBGET_CATEGORY_BACKLOG
             if nzb.show.is_anime:
-                category = sickbeard.NZBGET_CATEGORY_ANIME_BACKLOG
+                category = app.NZBGET_CATEGORY_ANIME_BACKLOG
 
     if nzb.quality != Quality.UNKNOWN:
         dupescore = nzb.quality * 100

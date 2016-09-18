@@ -1,7 +1,7 @@
 # coding=utf-8
 
 """
-Unit Tests for sickbeard/common.py
+Unit Tests for medusa/common.py
 
 Classes:
     Quality

@@ -19,7 +19,7 @@
 
 from datetime import date, timedelta
 
-import medusa as sickbeard
+import medusa as app
 from ..common import IGNORED, Quality, UNAIRED, WANTED
 from ..db import DBConnection
 from ..helper.common import dateFormat, timeFormat
@@ -46,7 +46,7 @@ class ComingEpisodes(object):
         pass
 
     @staticmethod
-    def get_coming_episodes(categories, sort, group, paused=sickbeard.COMING_EPS_DISPLAY_PAUSED):
+    def get_coming_episodes(categories, sort, group, paused=app.COMING_EPS_DISPLAY_PAUSED):
         """
         :param categories: The categories of coming episodes. See ``ComingEpisodes.categories``
         :param sort: The sort to apply to the coming episodes. See ``ComingEpisodes.sorts``
@@ -60,7 +60,7 @@ class ComingEpisodes(object):
 
         today = date.today().toordinal()
         next_week = (date.today() + timedelta(days=7)).toordinal()
-        recently = (date.today() - timedelta(days=sickbeard.COMING_EPS_MISSED_RANGE)).toordinal()
+        recently = (date.today() - timedelta(days=app.COMING_EPS_MISSED_RANGE)).toordinal()
         qualities_list = Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST + Quality.SNATCHED_PROPER + Quality.ARCHIVED + [IGNORED]
 
         db = DBConnection()

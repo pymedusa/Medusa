@@ -1,5 +1,5 @@
 <%
-    import medusa as sickbeard
+    import medusa as app
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, qualityPresetStrings, statusStrings
     from medusa import subtitles
@@ -8,17 +8,17 @@
             <label for="customQuality" class="clearfix">
                 <span class="component-title">Preferred Quality</span>
                 <span class="component-desc">
-                    <% anyQualities, bestQualities = Quality.splitQuality(sickbeard.QUALITY_DEFAULT) %>
+                    <% anyQualities, bestQualities = Quality.splitQuality(app.QUALITY_DEFAULT) %>
                     <%include file="/inc_qualityChooser.mako"/>
                 </span>
             </label>
         </div>
-        % if sickbeard.USE_SUBTITLES:
+        % if app.USE_SUBTITLES:
         <br><div class="field-pair">
             <label for="subtitles" class="clearfix">
                 <span class="component-title">Subtitles</span>
                 <span class="component-desc">
-                     <input type="checkbox" name="subtitles" id="subtitles" ${'checked="checked"' if sickbeard.SUBTITLES_DEFAULT else ''} />
+                     <input type="checkbox" name="subtitles" id="subtitles" ${'checked="checked"' if app.SUBTITLES_DEFAULT else ''} />
                     <p>Download subtitles for this show?</p>
                 </span>
             </label>
@@ -30,7 +30,7 @@
                 <span class="component-desc">
                     <select name="defaultStatus" id="statusSelect" class="form-control form-control-inline input-sm">
                     % for curStatus in [SKIPPED, WANTED, IGNORED]:
-                        <option value="${curStatus}" ${'selected="selected"' if sickbeard.STATUS_DEFAULT == curStatus else ''}>${statusStrings[curStatus]}</option>
+                        <option value="${curStatus}" ${'selected="selected"' if app.STATUS_DEFAULT == curStatus else ''}>${statusStrings[curStatus]}</option>
                     % endfor
                     </select>
                 </span>
@@ -42,7 +42,7 @@
                 <span class="component-desc">
                     <select name="defaultStatusAfter" id="statusSelectAfter" class="form-control form-control-inline input-sm">
                     % for curStatus in [SKIPPED, WANTED, IGNORED]:
-                        <option value="${curStatus}" ${'selected="selected"' if sickbeard.STATUS_DEFAULT_AFTER == curStatus else ''}>${statusStrings[curStatus]}</option>
+                        <option value="${curStatus}" ${'selected="selected"' if app.STATUS_DEFAULT_AFTER == curStatus else ''}>${statusStrings[curStatus]}</option>
                     % endfor
                     </select>
                 </span>
@@ -52,7 +52,7 @@
             <label for="flatten_folders" class="clearfix">
                 <span class="component-title">Flatten Folders</span>
                 <span class="component-desc">
-                    <input class="cb" type="checkbox" name="flatten_folders" id="flatten_folders" ${'checked="checked"' if sickbeard.FLATTEN_FOLDERS_DEFAULT else ''}/>
+                    <input class="cb" type="checkbox" name="flatten_folders" id="flatten_folders" ${'checked="checked"' if app.FLATTEN_FOLDERS_DEFAULT else ''}/>
                     <p>Disregard sub-folders?</p>
                 </span>
             </label>
@@ -62,7 +62,7 @@
             <label for="anime" class="clearfix">
                 <span class="component-title">Anime</span>
                 <span class="component-desc">
-                    <input type="checkbox" name="anime" id="anime" ${'checked="checked"' if sickbeard.ANIME_DEFAULT else ''} />
+                    <input type="checkbox" name="anime" id="anime" ${'checked="checked"' if app.ANIME_DEFAULT else ''} />
                     <p>Is this show an Anime?<p>
                 </span>
             </label>
@@ -72,7 +72,7 @@
             <label for="scene" class="clearfix">
                 <span class="component-title">Scene Numbering</span>
                 <span class="component-desc">
-                    <input type="checkbox" name="scene" id="scene" ${'checked="checked"' if sickbeard.SCENE_DEFAULT else ''} />
+                    <input type="checkbox" name="scene" id="scene" ${'checked="checked"' if app.SCENE_DEFAULT else ''} />
                     <p>Is this show scene numbered?</p>
                 </span>
             </label>

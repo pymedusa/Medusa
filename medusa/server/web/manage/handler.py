@@ -6,7 +6,7 @@ import json
 import os
 import re
 
-import medusa as sickbeard
+import medusa as app
 from tornado.routes import route
 from ..core import PageTemplate, WebRoot
 from ..home import Home
@@ -268,16 +268,16 @@ class Manage(Home, WebRoot):
             for epResult in to_download[cur_indexer_id]:
                 season, episode = epResult.split('x')
 
-                show = Show.find(sickbeard.showList, int(cur_indexer_id))
+                show = Show.find(app.showList, int(cur_indexer_id))
                 show.get_episode(season, episode).download_subtitles()
 
         return self.redirect('/manage/subtitleMissed/')
 
     def backlogShow(self, indexer_id):
-        show_obj = Show.find(sickbeard.showList, int(indexer_id))
+        show_obj = Show.find(app.showList, int(indexer_id))
 
         if show_obj:
-            sickbeard.backlogSearchScheduler.action.searchBacklog([show_obj])
+            app.backlogSearchScheduler.action.searchBacklog([show_obj])
 
         return self.redirect('/manage/backlogOverview/')
 
@@ -289,7 +289,7 @@ class Manage(Home, WebRoot):
         show_sql_results = {}
 
         main_db_con = db.DBConnection()
-        for cur_show in sickbeard.showList:
+        for cur_show in app.showList:
 
             ep_counts = {
                 Overview.SKIPPED: 0,
@@ -344,7 +344,7 @@ class Manage(Home, WebRoot):
         show_names = []
         for cur_id in show_ids:
             cur_id = int(cur_id)
-            show_obj = Show.find(sickbeard.showList, cur_id)
+            show_obj = Show.find(app.showList, cur_id)
             if show_obj:
                 show_list.append(show_obj)
                 show_names.append(show_obj.name)
@@ -478,7 +478,7 @@ class Manage(Home, WebRoot):
         errors = []
         for cur_show in show_ids:
             cur_errors = []
-            show_obj = Show.find(sickbeard.showList, int(cur_show))
+            show_obj = Show.find(app.showList, int(cur_show))
             if not show_obj:
                 continue
 
@@ -591,36 +591,36 @@ class Manage(Home, WebRoot):
         subtitles = []
 
         for cur_show_id in set(to_update + to_refresh + to_rename + to_subtitle + to_delete + to_remove + to_metadata):
-            show_obj = Show.find(sickbeard.showList, int(cur_show_id)) if cur_show_id else None
+            show_obj = Show.find(app.showList, int(cur_show_id)) if cur_show_id else None
 
             if not show_obj:
                 continue
 
             if cur_show_id in to_delete + to_remove:
-                sickbeard.showQueueScheduler.action.removeShow(show_obj, cur_show_id in to_delete)
+                app.showQueueScheduler.action.removeShow(show_obj, cur_show_id in to_delete)
                 continue  # don't do anything else if it's being deleted or removed
 
             if cur_show_id in to_update:
                 try:
-                    sickbeard.showQueueScheduler.action.updateShow(show_obj)
+                    app.showQueueScheduler.action.updateShow(show_obj)
                     updates.append(show_obj.name)
                 except CantUpdateShowException as msg:
                     errors.append('Unable to update show: {error}'.format(error=msg))
 
             elif cur_show_id in to_refresh:  # don't bother refreshing shows that were updated
                 try:
-                    sickbeard.showQueueScheduler.action.refreshShow(show_obj)
+                    app.showQueueScheduler.action.refreshShow(show_obj)
                     refreshes.append(show_obj.name)
                 except CantRefreshShowException as msg:
                     errors.append('Unable to refresh show {show.name}: {error}'.format
                                   (show=show_obj, error=msg))
 
             if cur_show_id in to_rename:
-                sickbeard.showQueueScheduler.action.renameShowEpisodes(show_obj)
+                app.showQueueScheduler.action.renameShowEpisodes(show_obj)
                 renames.append(show_obj.name)
 
             if cur_show_id in to_subtitle:
-                sickbeard.showQueueScheduler.action.download_subtitles(show_obj)
+                app.showQueueScheduler.action.download_subtitles(show_obj)
                 subtitles.append(show_obj.name)
 
         if errors:
@@ -659,18 +659,18 @@ class Manage(Home, WebRoot):
         t = PageTemplate(rh=self, filename='manage_torrents.mako')
         info_download_station = ''
 
-        if re.search('localhost', sickbeard.TORRENT_HOST):
+        if re.search('localhost', app.TORRENT_HOST):
 
-            if sickbeard.LOCALHOST_IP == '':
-                webui_url = re.sub('localhost', helpers.get_lan_ip(), sickbeard.TORRENT_HOST)
+            if app.LOCALHOST_IP == '':
+                webui_url = re.sub('localhost', helpers.get_lan_ip(), app.TORRENT_HOST)
             else:
-                webui_url = re.sub('localhost', sickbeard.LOCALHOST_IP, sickbeard.TORRENT_HOST)
+                webui_url = re.sub('localhost', app.LOCALHOST_IP, app.TORRENT_HOST)
         else:
-            webui_url = sickbeard.TORRENT_HOST
+            webui_url = app.TORRENT_HOST
 
-        if sickbeard.TORRENT_METHOD == 'utorrent':
+        if app.TORRENT_METHOD == 'utorrent':
             webui_url = '/'.join(s.strip('/') for s in (webui_url, 'gui/'))
-        if sickbeard.TORRENT_METHOD == 'download_station':
+        if app.TORRENT_METHOD == 'download_station':
             if helpers.check_url('{url}download/'.format(url=webui_url)):
                 webui_url += 'download/'
             else:
@@ -687,9 +687,9 @@ class Manage(Home, WebRoot):
                 <br />
                 """
 
-        if not sickbeard.TORRENT_PASSWORD == '' and not sickbeard.TORRENT_USERNAME == '':
-            webui_url = re.sub('://', '://{username}:{password}@'.format(username=sickbeard.TORRENT_USERNAME,
-                                                                         password=sickbeard.TORRENT_PASSWORD), webui_url)
+        if not app.TORRENT_PASSWORD == '' and not app.TORRENT_USERNAME == '':
+            webui_url = re.sub('://', '://{username}:{password}@'.format(username=app.TORRENT_USERNAME,
+                                                                         password=app.TORRENT_PASSWORD), webui_url)
 
         return t.render(
             webui_url=webui_url, info_download_station=info_download_station,

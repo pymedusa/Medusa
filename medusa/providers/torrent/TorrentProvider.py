@@ -19,7 +19,7 @@
 
 from feedparser.util import FeedParserDict
 from hachoir_parser import createParser
-import medusa as sickbeard
+import medusa as app
 from ..GenericProvider import GenericProvider
 from ... import logger
 from ...classes import TorrentSearchResult
@@ -34,14 +34,14 @@ class TorrentProvider(GenericProvider):
         self.provider_type = GenericProvider.TORRENT
 
     def is_active(self):
-        return bool(sickbeard.USE_TORRENTS) and self.is_enabled()
+        return bool(app.USE_TORRENTS) and self.is_enabled()
 
     @property
     def _custom_trackers(self):
-        if not (sickbeard.TRACKERS_LIST and self.public):
+        if not (app.TRACKERS_LIST and self.public):
             return ''
 
-        return '&tr=' + '&tr='.join({x.strip() for x in sickbeard.TRACKERS_LIST.split(',') if x.strip()})
+        return '&tr=' + '&tr='.join({x.strip() for x in app.TRACKERS_LIST.split(',') if x.strip()})
 
     def _get_result(self, episodes):
         return TorrentSearchResult(episodes)
@@ -61,7 +61,7 @@ class TorrentProvider(GenericProvider):
         return try_int(size, -1)
 
     def _get_storage_dir(self):
-        return sickbeard.TORRENT_DIR
+        return app.TORRENT_DIR
 
     def _get_result_info(self, item):
         if isinstance(item, (dict, FeedParserDict)):

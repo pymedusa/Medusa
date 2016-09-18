@@ -18,7 +18,7 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
-import medusa as sickbeard
+import medusa as app
 import requests
 from simpleanidb import Anidb
 from traktor import (TokenExpiredException, TraktApi, TraktException)
@@ -40,7 +40,7 @@ class TraktPopular(object):
         self.session = requests.Session()
         self.recommender = "Trakt Popular"
         self.default_img_src = 'http://www.trakt.tv/assets/placeholders/thumb/poster-2d5709c1b640929ca1ab60137044b152.png'
-        self.anidb = Anidb(cache_dir=sickbeard.CACHE_DIR)
+        self.anidb = Anidb(cache_dir=app.CACHE_DIR)
 
     def _create_recommended_show(self, show_obj):
         """Create the RecommendedShow object from the returned showobj."""
@@ -73,10 +73,10 @@ class TraktPopular(object):
         try:
             library_shows = trakt_api.request(path) or []
             if trakt_api.access_token_refreshed:
-                sickbeard.TRAKT_ACCESS_TOKEN = trakt_api.access_token
-                sickbeard.TRAKT_REFRESH_TOKEN = trakt_api.refresh_token
+                app.TRAKT_ACCESS_TOKEN = trakt_api.access_token
+                app.TRAKT_REFRESH_TOKEN = trakt_api.refresh_token
         except TokenExpiredException:
-            sickbeard.TRAKT_ACCESS_TOKEN = ''
+            app.TRAKT_ACCESS_TOKEN = ''
             raise
 
         return library_shows
@@ -93,23 +93,23 @@ class TraktPopular(object):
         removed_from_medusa = []
 
         # Create a trakt settings dict
-        trakt_settings = {'trakt_api_secret': sickbeard.TRAKT_API_SECRET, 'trakt_api_key': sickbeard.TRAKT_API_KEY,
-                          'trakt_access_token': sickbeard.TRAKT_ACCESS_TOKEN}
+        trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET, 'trakt_api_key': app.TRAKT_API_KEY,
+                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN}
 
-        trakt_api = TraktApi(timeout=sickbeard.TRAKT_TIMEOUT, ssl_verify=sickbeard.SSL_VERIFY, **trakt_settings)
+        trakt_api = TraktApi(timeout=app.TRAKT_TIMEOUT, ssl_verify=app.SSL_VERIFY, **trakt_settings)
 
         try:  # pylint: disable=too-many-nested-blocks
             not_liked_show = ''
-            if sickbeard.TRAKT_ACCESS_TOKEN != '':
+            if app.TRAKT_ACCESS_TOKEN != '':
                 library_shows = self.fetch_and_refresh_token(trakt_api, 'sync/watched/shows?extended=noseasons') + \
                     self.fetch_and_refresh_token(trakt_api, 'sync/collection/shows?extended=full')
 
-                medusa_shows = [show.indexerid for show in sickbeard.showList if show.indexerid]
+                medusa_shows = [show.indexerid for show in app.showList if show.indexerid]
                 removed_from_medusa = [lshow['show']['ids']['tvdb'] for lshow in library_shows if lshow['show']['ids']['tvdb'] not in medusa_shows]
 
-                if sickbeard.TRAKT_BLACKLIST_NAME is not None and sickbeard.TRAKT_BLACKLIST_NAME:
-                    not_liked_show = trakt_api.request('users/' + sickbeard.TRAKT_USERNAME + '/lists/' +
-                                                       sickbeard.TRAKT_BLACKLIST_NAME + '/items') or []
+                if app.TRAKT_BLACKLIST_NAME is not None and app.TRAKT_BLACKLIST_NAME:
+                    not_liked_show = trakt_api.request('users/' + app.TRAKT_USERNAME + '/lists/' +
+                                                       app.TRAKT_BLACKLIST_NAME + '/items') or []
                 else:
                     logger.log('Trakt blacklist name is empty', logger.DEBUG)
 
@@ -135,7 +135,7 @@ class TraktPopular(object):
                 except MultipleShowObjectsException:
                     continue
 
-            blacklist = sickbeard.TRAKT_BLACKLIST_NAME not in ''
+            blacklist = app.TRAKT_BLACKLIST_NAME not in ''
 
         except TraktException as e:
             logger.log('Could not connect to Trakt service: %s' % ex(e), logger.WARNING)

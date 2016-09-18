@@ -20,7 +20,7 @@
 
 import os
 
-import medusa as sickbeard
+import medusa as app
 from requests.compat import urlencode
 from six.moves.urllib.error import HTTPError
 from six.moves.urllib.request import Request, urlopen
@@ -49,12 +49,12 @@ class Notifier(object):
 
         # Values from config
 
-        if not sickbeard.USE_PYTIVO:
+        if not app.USE_PYTIVO:
             return False
 
-        host = sickbeard.PYTIVO_HOST
-        shareName = sickbeard.PYTIVO_SHARE_NAME
-        tsn = sickbeard.PYTIVO_TIVO_NAME
+        host = app.PYTIVO_HOST
+        shareName = app.PYTIVO_SHARE_NAME
+        tsn = app.PYTIVO_TIVO_NAME
 
         # There are two more values required, the container and file.
         #

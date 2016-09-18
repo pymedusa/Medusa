@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for sickbeard.logger.py."""
+"""Tests for medusa.logger.py."""
 from datetime import datetime
 
 import medusa.logger as sut
