@@ -36,8 +36,8 @@ from sickrage.helper.encoding import ek
 from sickrage.providers.GenericProvider import GenericProvider
 from sickrage.system.Shutdown import Shutdown
 from . import (
-    auto_postprocessor, dailysearcher, db, helpers, logger, metadata, naming, properFinder, providers,
-    scheduler, searchBacklog, search_queue, showUpdater, show_queue, subtitles, traktChecker, versionChecker
+    auto_postprocessor, db, helpers, logger, metadata, naming, providers,
+    scheduler, showUpdater, show_queue, subtitles, traktChecker, versionChecker
 )
 from .common import SD, SKIPPED, WANTED
 from .config import (
@@ -52,6 +52,11 @@ from .indexers.indexer_exceptions import (
     indexer_seasonnotfound, indexer_showincomplete, indexer_shownotfound, indexer_userabort
 )
 from .providers import NewznabProvider, TorrentRssProvider
+from .search import backlog, daily, proper
+from .search.backlog import BacklogSearchScheduler, BacklogSearcher
+from .search.daily import DailySearcher
+from .search.proper import ProperFinder
+from .search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -1346,30 +1351,30 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                   start_time=datetime.time(hour=SHOWUPDATE_HOUR, minute=random.randint(0, 59)))
 
         # snatcher used for manual search, manual picked results
-        manualSnatchScheduler = scheduler.Scheduler(search_queue.SnatchQueue(),
+        manualSnatchScheduler = scheduler.Scheduler(SnatchQueue(),
                                                     cycleTime=datetime.timedelta(seconds=3),
                                                     threadName="MANUALSNATCHQUEUE")
         # searchers
-        searchQueueScheduler = scheduler.Scheduler(search_queue.SearchQueue(),
+        searchQueueScheduler = scheduler.Scheduler(SearchQueue(),
                                                    cycleTime=datetime.timedelta(seconds=3),
                                                    threadName="SEARCHQUEUE")
 
-        forcedSearchQueueScheduler = scheduler.Scheduler(search_queue.ForcedSearchQueue(),
+        forcedSearchQueueScheduler = scheduler.Scheduler(ForcedSearchQueue(),
                                                          cycleTime=datetime.timedelta(seconds=3),
                                                          threadName="FORCEDSEARCHQUEUE")
 
         # TODO: update_interval should take last daily/backlog times into account!
         update_interval = datetime.timedelta(minutes=DAILYSEARCH_FREQUENCY)
-        dailySearchScheduler = scheduler.Scheduler(dailysearcher.DailySearcher(),
+        dailySearchScheduler = scheduler.Scheduler(DailySearcher(),
                                                    cycleTime=update_interval,
                                                    threadName="DAILYSEARCHER",
                                                    run_delay=update_interval)
 
         update_interval = datetime.timedelta(minutes=BACKLOG_FREQUENCY)
-        backlogSearchScheduler = searchBacklog.BacklogSearchScheduler(searchBacklog.BacklogSearcher(),
-                                                                      cycleTime=update_interval,
-                                                                      threadName="BACKLOG",
-                                                                      run_delay=update_interval)
+        backlogSearchScheduler = BacklogSearchScheduler(BacklogSearcher(),
+                                                        cycleTime=update_interval,
+                                                        threadName="BACKLOG",
+                                                        run_delay=update_interval)
 
         search_intervals = {'15m': 15, '45m': 45, '90m': 90, '4h': 4 * 60, 'daily': 24 * 60}
         if CHECK_PROPERS_INTERVAL in search_intervals:
@@ -1379,7 +1384,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             update_interval = datetime.timedelta(hours=1)
             run_at = datetime.time(hour=1)  # 1 AM
 
-        properFinderScheduler = scheduler.Scheduler(properFinder.ProperFinder(),
+        properFinderScheduler = scheduler.Scheduler(ProperFinder(),
                                                     cycleTime=update_interval,
                                                     threadName="FINDPROPERS",
                                                     start_time=run_at,
