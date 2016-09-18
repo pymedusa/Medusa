@@ -10,10 +10,10 @@ import sys
 from datetime import datetime, timedelta
 
 from github import InputFileContent
-from github.GithubException import BadCredentialsException, RateLimitExceededException
-from github.MainClass import Github
+from github.GithubException import GithubException, RateLimitExceededException
 import sickbeard
-from sickbeard.classes import ErrorViewer
+from .classes import ErrorViewer
+from .github_client import authenticate, get_github_repo
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +27,7 @@ class IssueSubmitter(object):
     ALREADY_RUNNING = 'An issue is already being submitted, please wait for it to complete.'
     BAD_CREDENTIALS = 'Please check your Github credentials in Medusa settings. Bad Credentials error'
     RATE_LIMIT = 'Please wait before submit new issues. Github Rate Limit Exceeded error'
+    GITHUB_EXCEPTION = 'Error trying to contact Github. Please try again'
     EXISTING_ISSUE_LOCKED = 'Issue #{number} is locked, check GitHub to find info about the error.'
     COMMENTED_EXISTING_ISSUE = 'Commented on existing issue #{number} successfully!'
     ISSUE_CREATED = 'Your issue ticket #{number} was submitted successfully!'
@@ -158,18 +159,21 @@ class IssueSubmitter(object):
 
         self.running = True
         try:
-            github = Github(login_or_token=sickbeard.GIT_USERNAME, password=sickbeard.GIT_PASSWORD, user_agent='Medusa')
-            github_repo = github.get_organization(sickbeard.GIT_ORG).get_repo(sickbeard.GIT_REPO)
+            github = authenticate(sickbeard.GIT_USERNAME, sickbeard.GIT_PASSWORD)
+            if not github:
+                return [(IssueSubmitter.BAD_CREDENTIALS, None)]
+
+            github_repo = get_github_repo(sickbeard.GIT_ORG, sickbeard.GIT_REPO, gh=github)
             loglines = ErrorViewer.errors[:max_issues]
             similar_issues = IssueSubmitter.find_similar_issues(github_repo, loglines)
 
             return IssueSubmitter.submit_issues(github, github_repo, loglines, similar_issues)
-        except BadCredentialsException:
-            logger.warning(IssueSubmitter.BAD_CREDENTIALS)
-            return [(IssueSubmitter.BAD_CREDENTIALS, None)]
         except RateLimitExceededException:
             logger.warning(IssueSubmitter.RATE_LIMIT)
             return [(IssueSubmitter.RATE_LIMIT, None)]
+        except (GithubException, IOError):
+            logger.warning(IssueSubmitter.GITHUB_EXCEPTION)
+            return [(IssueSubmitter.GITHUB_EXCEPTION, None)]
         finally:
             self.running = False
 

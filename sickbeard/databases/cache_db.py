@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-from sickbeard import db
+from .. import db
 
 
 # Add new migrations at the bottom of the list; subclass the previous migration.

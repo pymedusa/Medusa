@@ -23,51 +23,41 @@
 # pylint: disable=line-too-long,too-many-lines,abstract-method
 # pylint: disable=no-member,method-hidden,missing-docstring,invalid-name
 
-from collections import OrderedDict
-from datetime import datetime, date
 import json
 import os
 import time
 import traceback
+from collections import OrderedDict
+from datetime import date, datetime
 
 from requests.compat import unquote_plus
-from sickbeard.logger import filter_logline, read_loglines
-from six import iteritems, text_type
-from tornado.web import RequestHandler
-
 import sickbeard
-from sickbeard import (
-    classes, db, helpers, image_cache, logger, network_timezones,
-    processTV, sbdatetime, search_queue, ui,
-)
-from sickbeard.common import (
-    Overview, Quality, statusStrings,
-    ARCHIVED, DOWNLOADED, FAILED, IGNORED, SKIPPED, SNATCHED, SNATCHED_PROPER,
-    UNAIRED, UNKNOWN, WANTED,
-)
-from sickbeard.versionChecker import CheckVersion
-
 from sickrage.helper.common import (
     dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
     timeFormat, try_int,
 )
 from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import (
-    ex,
-    CantUpdateShowException,
-    ShowDirectoryNotFoundException,
-)
+from sickrage.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from sickrage.helper.quality import get_quality_string
+from sickrage.media.ShowBanner import ShowBanner
 from sickrage.media.ShowFanArt import ShowFanArt
 from sickrage.media.ShowNetworkLogo import ShowNetworkLogo
 from sickrage.media.ShowPoster import ShowPoster
-from sickrage.media.ShowBanner import ShowBanner
 from sickrage.show.ComingEpisodes import ComingEpisodes
 from sickrage.show.History import History
 from sickrage.show.Show import Show
 from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
-
+from six import iteritems, text_type
+from tornado.web import RequestHandler
+from .... import (
+    classes, db, helpers, image_cache, logger, network_timezones,
+    processTV, sbdatetime, search_queue, ui,
+)
+from ....common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, UNAIRED, UNKNOWN, WANTED, \
+    statusStrings
+from ....logger import filter_logline, read_loglines
+from ....versionChecker import CheckVersion
 
 indexer_ids = ["indexerid", "tvdbid"]
 
@@ -2704,7 +2694,7 @@ class CMD_ShowUpdate(ApiCall):
             return _responds(RESULT_FAILURE, msg="Show not found")
 
         try:
-            sickbeard.showQueueScheduler.action.updateShow(show_obj, True)  # @UndefinedVariable
+            sickbeard.showQueueScheduler.action.updateShow(show_obj)
             return _responds(RESULT_SUCCESS, msg=str(show_obj.name) + " has queued to be updated")
         except CantUpdateShowException as e:
             logger.log(u"API::Unable to update show: {0}".format(str(e)), logger.DEBUG)

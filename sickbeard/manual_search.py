@@ -19,15 +19,15 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 
-import time
-import sickbeard
-import threading
 import json
-from sickbeard import search_queue
-from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
-from sickbeard import logger, db
-from sickrage.helper.common import try_int, enabled_providers
+import threading
+import time
+
+import sickbeard
+from sickrage.helper.common import enabled_providers
 from sickrage.show.Show import Show
+from . import db, logger, search_queue
+from .common import Overview, Quality, cpu_presets, statusStrings
 
 SEARCH_STATUS_FINISHED = "finished"
 SEARCH_STATUS_QUEUED = "queued"

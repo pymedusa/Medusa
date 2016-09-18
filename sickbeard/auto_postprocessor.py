@@ -16,46 +16,46 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+"""Post Processor Module."""
+from __future__ import unicode_literals
 
+import logging
 import os.path
-import threading
-import sickbeard
 
-from sickbeard import logger
-from sickbeard import processTV
+import sickbeard
 from sickrage.helper.encoding import ek
+from . import processTV
+
+
+logger = logging.getLogger(__name__)
 
 
 class PostProcessor(object):
+    """Post Processor Scheduler Action."""
+
     def __init__(self):
-        self.lock = threading.Lock()
+        """Init method."""
         self.amActive = False
 
     def run(self, force=False):
-        """
-        Runs the postprocessor
+        """Run the postprocessor.
 
         :param force: Forces postprocessing run
-        :return: Returns when done without a return state/code
+        :type force: bool
         """
         self.amActive = True
+        try:
+            if not ek(os.path.isdir, sickbeard.TV_DOWNLOAD_DIR):
+                logger.error(u"Automatic post-processing attempted but directory doesn't exist: {folder}",
+                             folder=sickbeard.TV_DOWNLOAD_DIR)
+                return
 
-        if not ek(os.path.isdir, sickbeard.TV_DOWNLOAD_DIR):
-            logger.log(u"Automatic post-processing attempted but directory doesn't exist: %s" %
-                       sickbeard.TV_DOWNLOAD_DIR, logger.ERROR)
+            if not (force or ek(os.path.isabs, sickbeard.TV_DOWNLOAD_DIR)):
+                logger.error(u"Automatic post-processing attempted but directory is relative "
+                             u"(and probably not what you really want to process): {folder}",
+                             folder=sickbeard.TV_DOWNLOAD_DIR)
+                return
+
+            processTV.processDir(sickbeard.TV_DOWNLOAD_DIR, force=force)
+        finally:
             self.amActive = False
-            return
-
-        if not (force or ek(os.path.isabs, sickbeard.TV_DOWNLOAD_DIR)):
-            logger.log(u"Automatic post-processing attempted but directory is relative "
-                       u"(and probably not what you really want to process): %s" %
-                       sickbeard.TV_DOWNLOAD_DIR, logger.ERROR)
-            self.amActive = False
-            return
-
-        processTV.processDir(sickbeard.TV_DOWNLOAD_DIR, force=force)
-
-        self.amActive = False
-
-    def __del__(self):
-        pass

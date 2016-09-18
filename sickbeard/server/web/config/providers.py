@@ -8,17 +8,18 @@ from __future__ import unicode_literals
 
 import json
 import os
-from tornado.routes import route
+
 import sickbeard
-from sickbeard import (
-    config, logger, ui,
-)
-from sickbeard.providers import NewznabProvider, TorrentRssProvider
 from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
 from sickrage.providers.GenericProvider import GenericProvider
-from sickbeard.server.web.core import PageTemplate
-from sickbeard.server.web.config.handler import Config
+from tornado.routes import route
+from .handler import Config
+from ..core import PageTemplate
+from .... import (
+    config, logger, ui,
+)
+from ....providers import NewznabProvider, TorrentRssProvider
 
 
 @route('/config/providers(/?.*)')

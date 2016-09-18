@@ -652,7 +652,7 @@ class SubtitlesFinder(object):
     @staticmethod
     def subtitles_download_in_pp():  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """Check for needed subtitles in the post process folder."""
-        from sickbeard.tv import TVEpisode
+        from .tv import TVEpisode
 
         logger.info(u'Checking for needed subtitles in Post-Process folder')
 

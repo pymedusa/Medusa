@@ -23,7 +23,6 @@ from __future__ import unicode_literals
 
 from requests.auth import HTTPDigestAuth
 import sickbeard
-
 from .generic import GenericClient
 
 

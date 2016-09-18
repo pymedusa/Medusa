@@ -10,6 +10,8 @@ MEDUSA.config.search = function() {
         var sabnzbdSettings = '#sabnzbd_settings';
         var testSABnzbd = '#testSABnzbd';
         var testSABnzbdResult = '#testSABnzbd_result';
+        var testNZBget = '#testNZBget';
+        var testNZBgetResult = '#testNZBgetResult';
         var nzbgetSettings = '#nzbget_settings';
 
         $('#nzb_method_icon').removeClass(function (index, css) {
@@ -22,11 +24,15 @@ MEDUSA.config.search = function() {
         $(testSABnzbd).hide();
         $(testSABnzbdResult).hide();
         $(nzbgetSettings).hide();
+        $(testNZBget).hide();
+        $(testNZBgetResult).hide();
 
         if (selectedProvider.toLowerCase() === 'blackhole') {
             $(blackholeSettings).show();
         } else if (selectedProvider.toLowerCase() === 'nzbget') {
             $(nzbgetSettings).show();
+            $(testNZBget).show();
+            $(testNZBgetResult).show();
         } else {
             $(sabnzbdSettings).show();
             $(testSABnzbd).show();
@@ -185,6 +191,24 @@ MEDUSA.config.search = function() {
             apikey: sab.apiKey
         }, function(data) {
             $('#testSABnzbd_result').html(data);
+        });
+    });
+
+    $('#testNZBget').on('click', function() {
+        var nzbget = {};
+        $('#testNZBget_result').html(MEDUSA.info.loading);
+        nzbget.host = $('#nzbget_host').val();
+        nzbget.username = $('#nzbget_username').val();
+        nzbget.password = $('#nzbget_password').val();
+        nzbget.use_https = $('#nzbget_use_https').val();
+
+        $.get('home/testNZBget', {
+            host: nzbget.host,
+            username: nzbget.username,
+            password: nzbget.password,
+            use_https: nzbget.use_https
+        }, function(data) {
+            $('#testNZBget_result').html(data);
         });
     });
 

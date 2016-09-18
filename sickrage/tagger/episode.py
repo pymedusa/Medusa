@@ -7,8 +7,9 @@ Episode tagger to extract information from episodes
 from __future__ import unicode_literals
 
 import re
-from sickrage.recompiled import tags
-from sickrage.helper.common import try_int
+
+from ..helper.common import try_int
+from ..recompiled import tags
 
 
 class EpisodeTags(object):
@@ -133,10 +134,10 @@ class EpisodeTags(object):
         """
         if 'dlmux' in self.name.lower():
             return 'dlmux'
-            
-        if self.netflix: 
+
+        if self.netflix:
             return self.netflix
-            
+
         else:
             attr = 'web'
             match = self._get_match_obj(attr)

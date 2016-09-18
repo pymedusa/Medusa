@@ -2,30 +2,30 @@
 
 from __future__ import unicode_literals
 
-import os
 import json
+import os
 import re
-from tornado.routes import route
+
 import sickbeard
-from sickbeard import (
-    db, helpers, logger,
-    subtitles, ui,
-)
-from sickbeard.common import (
-    Overview, Quality, SNATCHED,
-)
 from sickrage.helper.common import (
     episode_num, try_int,
 )
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import (
-    ex,
     CantRefreshShowException,
     CantUpdateShowException,
 )
 from sickrage.show.Show import Show
-from sickbeard.server.web.home import Home
-from sickbeard.server.web.core import WebRoot, PageTemplate
+from tornado.routes import route
+from ..core import PageTemplate, WebRoot
+from ..home import Home
+from .... import (
+    db, helpers, logger,
+    subtitles, ui,
+)
+from ....common import (
+    Overview, Quality, SNATCHED,
+)
 
 
 @route('/manage(/?.*)')
@@ -459,8 +459,10 @@ class Manage(Home, WebRoot):
 
     def massEditSubmit(self, paused=None, default_ep_status=None,
                        anime=None, sports=None, scene=None, flatten_folders=None, quality_preset=None,
-                       subtitles=None, air_by_date=None, anyQualities=[], bestQualities=[], toEdit=None, *args,
+                       subtitles=None, air_by_date=None, anyQualities=None, bestQualities=None, toEdit=None, *args,
                        **kwargs):
+        anyQualities = anyQualities or []
+        bestQualities = bestQualities or []
         allowed_qualities = anyQualities
         preferred_qualities = bestQualities
 
@@ -600,7 +602,7 @@ class Manage(Home, WebRoot):
 
             if cur_show_id in to_update:
                 try:
-                    sickbeard.showQueueScheduler.action.updateShow(show_obj, True)
+                    sickbeard.showQueueScheduler.action.updateShow(show_obj)
                     updates.append(show_obj.name)
                 except CantUpdateShowException as msg:
                     errors.append('Unable to update show: {error}'.format(error=msg))

@@ -6,14 +6,14 @@ from __future__ import unicode_literals
 from datetime import datetime, timedelta
 
 from mako.filters import html_escape
-from sickbeard import logger, ui
-from sickbeard.classes import ErrorViewer, WarningViewer
-from sickbeard.issuesubmitter import IssueSubmitter
-from sickbeard.logger import filter_logline, read_loglines
-from sickbeard.server.web.core.base import PageTemplate, WebRoot
-from sickbeard.versionChecker import CheckVersion
 from six import text_type
 from tornado.routes import route
+from .base import PageTemplate, WebRoot
+from .... import logger, ui
+from ....classes import ErrorViewer, WarningViewer
+from ....issuesubmitter import IssueSubmitter
+from ....logger import filter_logline, read_loglines
+from ....versionChecker import CheckVersion
 
 
 # log name filters
@@ -23,7 +23,7 @@ log_name_filters = {
     'BACKLOG': 'Backlog',
     'SHOWUPDATER': 'Show Updater',
     'CHECKVERSION': 'Check Version',
-    'SHOWQUEUE': 'Show Queue',
+    'SHOWQUEUE': 'Show Queue (All)',
     'SEARCHQUEUE': 'Search Queue (All)',
     'SEARCHQUEUE-DAILY-SEARCH': 'Search Queue (Daily Searcher)',
     'SEARCHQUEUE-BACKLOG': 'Search Queue (Backlog)',
@@ -31,10 +31,8 @@ log_name_filters = {
     'SEARCHQUEUE-FORCED': 'Search Queue (Forced)',
     'SEARCHQUEUE-RETRY': 'Search Queue (Retry/Failed)',
     'SEARCHQUEUE-RSS': 'Search Queue (RSS)',
-    'SHOWQUEUE-FORCE-UPDATE': 'Show Queue (Forced Update)',
     'SHOWQUEUE-UPDATE': 'Show Queue (Update)',
     'SHOWQUEUE-REFRESH': 'Show Queue (Refresh)',
-    'SHOWQUEUE-FORCE-REFRESH': 'Show Queue (Forced Refresh)',
     'FINDPROPERS': 'Find Propers',
     'POSTPROCESSOR': 'PostProcessor',
     'FINDSUBTITLES': 'Find Subtitles',

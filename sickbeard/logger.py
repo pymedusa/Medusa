@@ -28,14 +28,12 @@ import os
 import pkgutil
 import re
 import sys
-
 from inspect import getargspec
 from logging import NullHandler
 from logging.handlers import RotatingFileHandler
 
 from requests.compat import quote
 import sickbeard
-from sickbeard import classes
 import sickrage
 from sickrage.helper.common import dateTimeFormat
 from sickrage.helper.encoding import ek
@@ -43,6 +41,7 @@ from six import itervalues, text_type
 import subliminal
 from tornado.log import access_log, app_log, gen_log
 import traktor
+from . import classes
 
 
 # log levels
@@ -139,6 +138,9 @@ def read_loglines(log_file=None, modification_time=None, max_lines=None, max_tra
                 continue
 
         for line in reverse_readlines(f):
+            if not line or not line.strip():
+                continue
+
             logline = LogLine.from_line(line)
             if logline:
                 if logline.timestamp and modification_time and logline.timestamp < modification_time:
@@ -327,7 +329,7 @@ class LogLine(object):
         return self.level_name and self.level_name in LOGGING_LEVELS and (
             min_level is None or min_level <= LOGGING_LEVELS[self.level_name])
 
-    def get_context_loglines(self, max_lines=100, timedelta=datetime.timedelta(seconds=45)):
+    def get_context_loglines(self, max_lines=75, timedelta=datetime.timedelta(seconds=45)):
         """Return the n log lines before current log line or log lines within the timedelta specified.
 
         :param max_lines:

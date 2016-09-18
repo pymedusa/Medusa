@@ -83,7 +83,7 @@ def test_submit_github_issue__basic_validations(monkeypatch, logger, version_che
     monkeypatch.setattr(version_checker, 'need_update', lambda: p.get('need_update', False))
     monkeypatch.setattr(sut, 'running', p.get('running', False))
     if 'exception' in p:
-        monkeypatch.setattr('sickbeard.issuesubmitter.Github', lambda *args, **kwargs: raise_github_exception(*p['exception']))
+        monkeypatch.setattr('github.MainClass.Github', lambda *args, **kwargs: raise_github_exception(*p['exception']))
 
     # When
     actual = sut.submit_github_issue(version_checker)

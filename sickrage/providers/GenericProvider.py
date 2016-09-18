@@ -19,29 +19,27 @@
 from __future__ import unicode_literals
 
 import re
-import sickbeard
-
-from collections import defaultdict
 from base64 import b16encode, b32decode
+from collections import defaultdict
 from datetime import datetime
 from itertools import chain
 from os.path import join
 from random import shuffle
 
+from requests.utils import add_dict_to_cookiejar
+import sickbeard
 from sickbeard import logger, ui
 from sickbeard.classes import Proper, SearchResult
 from sickbeard.common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
 from sickbeard.db import DBConnection
-from sickbeard.helpers import download_file, getURL, remove_file_failed, make_session
+from sickbeard.helpers import download_file, getURL, make_session, remove_file_failed
 from sickbeard.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from sickbeard.show_name_helpers import allPossibleShowNames
 from sickbeard.tvcache import TVCache
-from sickrage.helper.common import replace_extension, sanitize_filename
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex
-from sickrage.show.Show import Show
-
-from requests.utils import add_dict_to_cookiejar
+from ..helper.common import replace_extension, sanitize_filename
+from ..helper.encoding import ek
+from ..helper.exceptions import ex
+from ..show.Show import Show
 
 # Keep a list of per provider of recent provider search results
 recent_results = {}
@@ -144,7 +142,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                         torrent_hash = self._get_hash(item)
 
                         # This will be retrived from parser
-                        proper_tags = None
+                        proper_tags = ''
 
                         results.append(Proper(title, url, datetime.today(), show_obj, seeders, leechers, size, pubdate, torrent_hash, proper_tags))
 
@@ -158,7 +156,6 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         results = {}
         items_list = []
-        searched_scene_season = None
 
         for episode in episodes:
             if not manual_search:
@@ -173,8 +170,6 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                     continue
 
             search_strings = []
-            searched_scene_season = episode.scene_season
-
             if (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly':
                 search_strings = self._get_season_search_strings(episode)
             elif search_mode == 'eponly':
@@ -320,7 +315,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                         break
 
                 if not episode_wanted:
-                    logger.log('Ignoring result %s.' % (title), logger.DEBUG)
+                    logger.log('Ignoring result %s.' % title, logger.DEBUG)
                     continue
 
             logger.log('Found result %s at %s' % (title, url), logger.DEBUG)
@@ -465,7 +460,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             'Season': []
         }
 
-        for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
+        for show_name in allPossibleShowNames(episode.show, season=episode.season):
             episode_string = show_name + ' '
 
             if episode.show.air_by_date or episode.show.sports:
@@ -473,7 +468,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             elif episode.show.anime:
                 episode_string += '%d' % int(episode.scene_absolute_number)
             else:
-                episode_string += 'S%02d' % int(episode.scene_season)
+                episode_string += 'S%02d' % int(episode.season)
 
             search_string['Season'].append(episode_string.strip())
 

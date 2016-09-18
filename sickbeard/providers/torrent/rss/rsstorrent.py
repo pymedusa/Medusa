@@ -21,15 +21,13 @@ from __future__ import unicode_literals
 import io
 import os
 import re
-import sickbeard
 
 from bencode import bdecode
-
-from sickbeard import helpers, logger, tvcache
-
+import sickbeard
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from .... import helpers, logger, tvcache
 
 
 class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
@@ -87,7 +85,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return title, url
 
     def config_string(self):  # pylint: disable=too-many-arguments
-        return '{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(
+        return '{}|{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(
             self.name or '',
             self.url or '',
             self.cookies or '',

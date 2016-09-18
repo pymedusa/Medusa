@@ -18,20 +18,18 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import warnings
 import os.path
 import re
 import sqlite3
-import time
 import threading
-
-from six import text_type
+import time
+import warnings
 
 import sickbeard
-from sickbeard import logger
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
-from sqlite3 import OperationalError
+from six import text_type
+from . import logger
 
 db_cons = {}
 db_locks = {}
@@ -77,7 +75,7 @@ class DBConnection(object):
             with db_locks[self.filename]:
                 self._set_row_factory()
 
-        except OperationalError:
+        except sqlite3.OperationalError:
             logger.log(u'Please check your database owner/permissions: {}'.format(dbFilename(self.filename, self.suffix)), logger.WARNING)
         except Exception as e:
             logger.log(u"DB error: " + ex(e), logger.ERROR)
@@ -114,7 +112,17 @@ class DBConnection(object):
                 return sql_results.fetchone()
             else:
                 return sql_results
-        except Exception:
+        except sqlite3.OperationalError as e:
+            # This errors user should be able to fix it.
+            if 'unable to open database file' in e.args[0] or \
+               'database is locked' in e.args[0] or \
+               'database or disk is full' in e.args[0]:
+                logger.log(u'DB error: {0!r}'.format(e), logger.WARNING)
+            else:
+                logger.log(u'DB error: {0!r}'.format(e), logger.ERROR)
+                raise
+        except Exception as e:
+            logger.log(u'DB error: {0!r}'.format(e), logger.ERROR)
             raise
 
     def checkDBVersion(self):
@@ -138,7 +146,7 @@ class DBConnection(object):
         try:
             if self.hasTable('db_version'):
                 result = self.select("SELECT db_version FROM db_version")
-        except:
+        except sqlite3.OperationalError:
             return 0
 
         if result:
@@ -173,7 +181,7 @@ class DBConnection(object):
         """
         return self.check_db_major_version(), self.check_db_minor_version()
 
-    def mass_action(self, querylist=[], logTransaction=False, fetchall=False):
+    def mass_action(self, querylist=None, logTransaction=False, fetchall=False):
         """
         Execute multiple queries
 
@@ -182,6 +190,7 @@ class DBConnection(object):
         :param fetchall: Boolean, when using a select query force returning all results
         :return: list of results
         """
+        querylist = querylist or []
         # remove None types
         querylist = [i for i in querylist if i is not None and len(i)]
 

@@ -19,20 +19,18 @@
 
 from __future__ import unicode_literals
 
-import time
 import datetime
 import itertools
+import time
 import traceback
 
-from six import text_type
-
 import sickbeard
-from sickbeard import db, logger, show_name_helpers
-from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
-from sickbeard.rssfeeds import getFeed
-
-from sickrage.helper.exceptions import AuthException, ex
+from sickrage.helper.exceptions import AuthException
 from sickrage.show.Show import Show
+from six import text_type
+from . import db, logger, show_name_helpers
+from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from .rssfeeds import getFeed
 
 
 class CacheDBConnection(db.DBConnection):
@@ -103,7 +101,7 @@ class CacheDBConnection(db.DBConnection):
                 self.action(b'CREATE TABLE lastUpdate (provider TEXT, time NUMERIC)')
         except Exception as e:
             logger.log('Error while searching {provider_id}, skipping: {e!r}'.
-                       format(provider_id=self.provider.name, e=e), logger.DEBUG)
+                       format(provider_id=provider_id, e=e), logger.DEBUG)
             logger.log(traceback.format_exc(), logger.DEBUG)
             if str(e) != 'table lastUpdate already exists':
                 raise

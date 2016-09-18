@@ -17,12 +17,9 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import sickbeard
-
-from sickbeard import logger
 from sickbeard.classes import NZBSearchResult
-from sickrage.helper.common import try_int
-
-from sickrage.providers.GenericProvider import GenericProvider
+from ..GenericProvider import GenericProvider
+from ...helper.common import try_int
 
 
 class NZBProvider(GenericProvider):

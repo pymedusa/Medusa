@@ -18,35 +18,20 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import shutil
 import stat
-from functools import wraps
-
-import sickbeard
-from sickbeard import postProcessor
-from sickbeard import db, helpers
-from sickbeard import logger
-from sickbeard import notifiers
-from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
-from sickbeard import common
-from sickbeard import failedProcessor
-from sickrage.helper.common import is_sync_file, is_torrent_or_nzb_file, subtitle_extensions
-from sickrage.helper.encoding import ek, ss
-from sickrage.helper.exceptions import EpisodePostProcessingFailedException, ex, FailedPostProcessingFailedException
-
-from unrar2 import RarFile
-from unrar2.rar_exceptions import FileOpenError
-from unrar2.rar_exceptions import ArchiveHeaderBroken
-from unrar2.rar_exceptions import InvalidRARArchive
-from unrar2.rar_exceptions import InvalidRARArchiveUsage
-from unrar2.rar_exceptions import IncorrectRARPassword
-
-from subliminal import (refine, scan_video)
 
 from babelfish import Language
-
-import shutil
 import shutil_custom
-
+import sickbeard
+from sickrage.helper.common import is_sync_file, is_torrent_or_nzb_file, subtitle_extensions
+from sickrage.helper.encoding import ek, ss
+from sickrage.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
+from subliminal import (refine, scan_video)
+from unrar2 import RarFile
+from unrar2.rar_exceptions import ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive, InvalidRARArchiveUsage
+from . import common, db, failedProcessor, helpers, logger, notifiers, postProcessor
+from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -578,7 +563,7 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
             # This feature prevents PP for files that do not have subtitle associated with the video file
             if sickbeard.POSTPONE_IF_NO_SUBS:
                 if not ignore_subs:
-                    if subtitles_enabled(cur_video_file, nzbName):
+                    if subtitles_enabled(cur_video_file_path, nzbName):
                         # If user don't want to ignore embedded subtitles and video has at least one, don't post pone PP
                         if has_matching_unknown_subtitles(cur_video_file_path):
                             result.output += logHelper(u"Found embedded unknown subtitles and we don't want to ignore them. "

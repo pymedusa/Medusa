@@ -26,7 +26,6 @@ import time
 from collections import OrderedDict
 
 import guessit
-
 import sickbeard
 from .. import common, db, helpers, scene_exceptions, scene_numbering
 
@@ -84,7 +83,7 @@ class NameParser(object):
         # if we have an air-by-date show and the result is air-by-date,
         # then get the real season/episode numbers
         if result.show.air_by_date and result.is_air_by_date:
-            logger.debug('Show {name} is air by date', name=show.name)
+            logger.debug('Show {name} is air by date', name=result.show.name)
             airdate = result.air_date.toordinal()
             main_db_con = db.DBConnection()
             sql_result = main_db_con.select(
@@ -98,10 +97,10 @@ class NameParser(object):
                 season_number = int(sql_result[0][0])
                 episode_numbers = [int(sql_result[0][1])]
                 logger.debug('Database info for show {name}: S{season} E{episodes}',
-                             name=show.name, season=season_number, episodes=episode_numbers)
+                             name=result.show.name, season=season_number, episodes=episode_numbers)
 
             if season_number is None or not episode_numbers:
-                logger.debug('Show {name} has no season or episodes, using indexer...', name=show.name)
+                logger.debug('Show {name} has no season or episodes, using indexer...', name=result.show.name)
                 indexer_api = sickbeard.indexerApi(result.show.indexer)
                 try:
                     indexer_api_params = indexer_api.api_params.copy()
@@ -115,10 +114,10 @@ class NameParser(object):
                     season_number = int(tv_episode['seasonnumber'])
                     episode_numbers = [int(tv_episode['episodenumber'])]
                     logger.debug('Indexer info for show {name}: S{season}E{episodes}',
-                                 name=show.name, season=season_number, episodes=episode_numbers)
+                                 name=result.show.name, season=season_number, episodes=episode_numbers)
                 except sickbeard.indexer_episodenotfound:
                     logger.warn('Unable to find episode with date {date} for show {name} skipping',
-                                date=result.air_date, name=show.name)
+                                date=result.air_date, name=result.show.name)
                     episode_numbers = []
                 except sickbeard.indexer_error as e:
                     logger.warn('Unable to contact {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
@@ -134,12 +133,12 @@ class NameParser(object):
                                                                    season_number,
                                                                    episode_number)
                     logger.debug('Scene show {name}, using indexer numbering: S{season}E{episodes}',
-                                 name=show.name, season=s, episodes=e)
+                                 name=result.show.name, season=s, episodes=e)
                 new_episode_numbers.append(e)
                 new_season_numbers.append(s)
 
         elif result.show.is_anime and result.is_anime:
-            logger.debug('Scene show {name} is anime', name=show.name)
+            logger.debug('Scene show {name} is anime', name=result.show.name)
             scene_season = scene_exceptions.get_scene_exception_by_name(result.series_name)[1]
             for absolute_episode in result.ab_episode_numbers:
                 a = absolute_episode
@@ -151,7 +150,7 @@ class NameParser(object):
 
                 (s, e) = helpers.get_all_episodes_from_absolute_number(result.show, [a])
                 logger.debug('Scene show {name} using indexer for absolute {absolute}: S{season}E{episodes}',
-                             name=show.name, absolute=a, season=s, episodes=e)
+                             name=result.show.name, absolute=a, season=s, episodes=e)
 
                 new_absolute_numbers.append(a)
                 new_episode_numbers.extend(e)
@@ -168,14 +167,14 @@ class NameParser(object):
                                                                    result.season_number,
                                                                    episode_number)
                     logger.debug('Scene show {name} using indexer numbering: S{season}E{episodes}',
-                                 name=show.name, season=s, episodes=e)
+                                 name=result.show.name, season=s, episodes=e)
 
                 if result.show.is_anime:
                     a = helpers.get_absolute_number_from_season_and_episode(result.show, s, e)
                     if a:
                         new_absolute_numbers.append(a)
                         logger.debug('Scene anime show {name} using indexer with absolute {absolute}: S{season}E{episodes}',
-                                     name=show.name, absolute=a, season=s, episodes=e)
+                                     name=result.show.name, absolute=a, season=s, episodes=e)
 
                 new_episode_numbers.append(e)
                 new_season_numbers.append(s)
@@ -273,8 +272,12 @@ class NameParser(object):
         :return:
         :rtype: ParseResult
         """
+        season_numbers = helpers.ensure_list(guess.get('season'))
+        if len(season_numbers) > 1 and not self.allow_multi_season:
+            raise InvalidNameException('Discarding result. Multi-season detected for {name}: {guess}'.format(name=name, guess=guess))
+
         return ParseResult(guess, original_name=name, series_name=guess.get('alias') or guess.get('title'),
-                           season_number=helpers.single_or_list(guess.get('season'), self.allow_multi_season),
+                           season_number=helpers.single_or_list(season_numbers, self.allow_multi_season),
                            episode_numbers=helpers.ensure_list(guess.get('episode'))
                            if guess.get('episode') != guess.get('absolute_episode') else [],
                            ab_episode_numbers=helpers.ensure_list(guess.get('absolute_episode')),
@@ -341,7 +344,8 @@ class ParseResult(object):
             self.quality == other.quality,
             self.version == other.version,
             self.proper_tags == other.proper_tags,
-            self.is_episode_special == other.is_episode_special
+            self.is_episode_special == other.is_episode_special,
+            self.video_codec == other.video_codec
         ])
 
     def __str__(self):
@@ -382,6 +386,15 @@ class ParseResult(object):
         :rtype: bool
         """
         return self.guess.get('episode_details') == 'Special'
+
+    @property
+    def video_codec(self):
+        """Return video codec.
+
+        :return:
+        :rtype: str
+        """
+        return self.guess.get('video_codec')
 
 
 class NameParserCache(object):

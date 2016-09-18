@@ -18,16 +18,12 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 
+import threading
 import time
 import traceback
-import threading
+
 import sickbeard
-from sickbeard import common
-from sickbeard import logger
-from sickbeard import generic_queue
-from sickbeard import search, failed_history, history
-from sickbeard import ui
-from sickbeard import providers
+from . import common, failed_history, generic_queue, history, logger, providers, search, ui
 
 search_queue_lock = threading.Lock()
 
@@ -397,7 +393,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         search_result.leechers = int(self.cached_result['leechers'])
         search_result.release_group = self.cached_result['release_group']
         search_result.version = int(self.cached_result['version'])
-        search_result.proper_tags = self.cached_result['proper_tags']
+        search_result.proper_tags = self.cached_result['proper_tags'].split('|') if self.cached_result['proper_tags'] else u''
 
         try:
             logger.log(u"Beginning to manual snatch release: {0}".format(search_result.name))

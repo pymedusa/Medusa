@@ -19,10 +19,8 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import sickbeard
-
-from sickbeard.notifiers import kodi, plex, emby, nmj, nmjv2, synoindex, \
-    synologynotifier, pytivo, growl, prowl, libnotify, pushover, boxcar2, \
-    nma, pushalot, pushbullet, freemobile, telegram, tweet, trakt, emailnotify
+from ..notifiers import boxcar2, emailnotify, emby, freemobile, growl, kodi, libnotify, nma, nmj, nmjv2, plex, prowl, pushalot, pushbullet, pushover, \
+    pytivo, synoindex, synologynotifier, telegram, trakt, tweet
 
 # home theater / nas
 kodi_notifier = kodi.Notifier()

@@ -1,6 +1,4 @@
 # coding=utf-8
-# Author: Gonçalo M. (aka duramato/supergonkas) <supergonkas@gmail.com>
-# Author: Dustyn Gibson <miigotu@gmail.com>
 #
 # This file is part of Medusa.
 #
@@ -23,19 +21,18 @@ import traceback
 
 from requests.compat import urljoin
 
-from sickbeard import logger, tvcache
-from sickbeard.bs4_parser import BS4Parser
-
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+
+from .... import logger, tvcache
+from ....bs4_parser import BS4Parser
 
 
 class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """ExtraTorrent Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
+        """Provider Init."""
         TorrentProvider.__init__(self, 'ExtraTorrent')
 
         # Credentials
@@ -114,9 +111,6 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         :param mode: The current mode used to search, e.g. RSS
         :return: A list of items found
         """
-        # RSS search has one less column
-        decrease = 1 if mode == 'RSS' else 0
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -124,26 +118,38 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
-            if len(torrent_rows) < 3 or (len(torrent_rows) == 3 and
-                                         torrent_rows[2].get_text() == 'No torrents'):
+            if len(torrent_rows) < 3 or (torrent_rows == 3 and torrent_rows[2].get_text() == 'No torrents'):
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
 
+            # RSS search has one less column
+            decrease = 1
+
+            # Avoid parsing of 'related torrents'
+            if mode != 'RSS':
+                h2s = html.find_all('h2')
+                if len(h2s) > 2 and h2s[1].get_text() == 'Related torrents':
+                    logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                    return items
+
+                # Don't decrease column
+                decrease = 0
+
             # Skip column headers
             for result in torrent_rows[2:]:
-
                 try:
                     cells = result('td')
 
                     torrent_info = cells[0].find('a')
+                    if not torrent_info:
+                        continue
+
                     title = torrent_info.get('title').strip('Download torrent')
                     download_url = urljoin(self.url, torrent_info.get('href').replace
                                            ('torrent_download', 'download'))
-                    if not all([title, download_url]):
-                        continue
 
-                    seeders = try_int(cells[4 - decrease].get_text(), 1)
-                    leechers = try_int(cells[5 - decrease].get_text())
+                    seeders = try_int(cells[5 - decrease].get_text(), 1)
+                    leechers = try_int(cells[6 - decrease].get_text())
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -153,7 +159,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[3 - decrease].get_text().replace('\xa0', ' ')
+                    torrent_size = cells[4 - decrease].get_text().replace('\xa0', ' ')
                     size = convert_size(torrent_size) or -1
 
                     item = {

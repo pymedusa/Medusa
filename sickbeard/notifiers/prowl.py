@@ -20,9 +20,15 @@
 #
 ##############################################################################
 
+import ast
 import socket
-from six.moves.http_client import HTTPSConnection, HTTPException
+import time
+
 from requests.compat import urlencode
+import sickbeard
+from sickrage.helper.encoding import ss
+from six.moves.http_client import HTTPException, HTTPSConnection
+from .. import common, db, logger
 
 try:
     # this only exists in 2.6
@@ -31,13 +37,6 @@ except ImportError:
     # make a fake one since I don't know what it is supposed to be in 2.5
     class SSLError(Exception):
         pass
-
-import sickbeard
-import time
-import ast
-
-from sickbeard import logger, common, db
-from sickrage.helper.encoding import ss
 
 
 class Notifier(object):

@@ -24,12 +24,10 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-
-from sickbeard import logger, tvcache
-from sickbeard.bs4_parser import BS4Parser
-
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from .... import logger, tvcache
+from ....bs4_parser import BS4Parser
 
 
 class SCCProvider(TorrentProvider):
@@ -59,9 +57,9 @@ class SCCProvider(TorrentProvider):
             # need to include non-scene because WEB-DL packs get added to those categories
             'Season': 'c26=26&c44=44&c45=45',
             # TV HD, TV SD, non-scene HD, non-scene SD, foreign XviD, foreign x264
-            'Episode': 'c17=17&c27=27&c33=33&c34=34&c44=44&c45=45',
+            'Episode': 'c11=11&c17=17&c27=27&c33=33&c34=34&c44=44&c45=45',
             # Season + Episode
-            'RSS': 'c17=17&c26=26&c27=27&c33=33&c34=34&c44=44&c45=45',
+            'RSS': 'c11=11&c17=17&c26=26&c27=27&c33=33&c34=34&c44=44&c45=45',
         }
 
         # Torrent Stats
@@ -127,12 +125,13 @@ class SCCProvider(TorrentProvider):
             for row in torrent_rows[1:]:
                 try:
                     title = row.find('td', class_='ttr_name').find('a').get('title')
-                    download_url = urljoin(self.url, row.find('td', class_='td_dl').find('a').get('href'))
-                    if not all([title, download_url]):
+                    torrent_url = row.find('td', class_='td_dl').find('a').get('href')
+                    download_url = urljoin(self.url, torrent_url)
+                    if not all([title, torrent_url]):
                         continue
 
                     seeders = try_int(row.find('td', class_='ttr_seeders').get_text(), 1)
-                    leechers = try_int(row.find('td', class_='ttr_leechers').get_text(), 0)
+                    leechers = try_int(row.find('td', class_='ttr_leechers').get_text())
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):

@@ -1,9 +1,8 @@
 # coding=utf-8
 
-import sickbeard
-
-from sickbeard import logger, common
 from pynma import pynma
+import sickbeard
+from .. import common, logger
 
 
 class Notifier(object):

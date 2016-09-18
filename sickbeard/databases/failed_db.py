@@ -18,8 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-from sickbeard import db
-from sickbeard.common import Quality
+from .. import db
+from ..common import Quality
 
 
 # Add new migrations at the bottom of the list; subclass the previous migration.

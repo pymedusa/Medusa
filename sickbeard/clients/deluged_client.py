@@ -9,11 +9,10 @@
 from __future__ import unicode_literals
 
 import logging
-
 from base64 import b64encode
+
 import sickbeard
 from synchronousdeluge import DelugeClient
-
 from .generic import GenericClient
 
 

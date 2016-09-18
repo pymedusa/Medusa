@@ -6,7 +6,6 @@ import logging
 import re
 
 from subliminal.video import Episode
-
 from ..common import Quality
 
 logger = logging.getLogger(__name__)

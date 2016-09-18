@@ -8,14 +8,15 @@ Works with iCloud, Google Calendar and Outlook.
 from __future__ import unicode_literals
 
 import datetime
+
 from dateutil import tz
-from tornado.web import authenticated
 import sickbeard
-from sickbeard import (
+from sickrage.helper.common import try_int
+from tornado.web import authenticated
+from .base import BaseHandler
+from .... import (
     db, logger, network_timezones,
 )
-from sickrage.helper.common import try_int
-from sickbeard.server.web.core.base import BaseHandler
 
 
 class CalendarHandler(BaseHandler):

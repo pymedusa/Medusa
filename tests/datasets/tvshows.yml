@@ -3034,3 +3034,15 @@
   season: 1
   episode: 2
   type: episode
+
+# Regression test:
+# Anime with numbers in title inside a folder (folder without season info)
+# Anime with numbers and using _ as separators
+? 'C:\folder\[GROUP]_An_Anime_Show_100_-_10_[1080p]_mkv_-_`[GROUP]_An_Anime_Show_100_-_10_[1080p]_vol03+04_par2`'
+: title: An Anime Show 100
+  absolute_episode: 10
+  episode: 10
+  screen_size: 1080p
+  container: MKV
+  release_group: GROUP
+  type: episode

@@ -31,13 +31,13 @@ from socket import timeout as SocketTimeout
 
 from requests import exceptions as requests_exceptions
 import sickbeard
-from sickbeard import db, helpers, logger
-from sickbeard.common import DOWNLOADED, Quality, SNATCHED, cpu_presets
-from sickbeard.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from sickbeard.search import pickBestResult, snatchEpisode
 from sickrage.helper.common import enabled_providers
 from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.History import History
+from . import db, helpers, logger
+from .common import Quality, cpu_presets
+from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from .search import pickBestResult, snatchEpisode
 
 
 class ProperFinder(object):  # pylint: disable=too-few-public-methods
@@ -63,6 +63,11 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         self.amActive = True
 
+        # If force we should ignore existing processed propers
+        if force:
+            current_processed_propers = self.processed_propers
+            self.processed_propers = []
+
         propers = self._get_proper_results()
 
         if propers:
@@ -78,6 +83,11 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             run_at = ', next check in approx. {0}'.format(
                 '{0}h, {1}m'.format(hours, minutes) if 0 < hours else '{0}m, {1}s'.format(minutes, seconds))
 
+        # Restore processed propers and add new ones to the end of the list
+        if force:
+            current_processed_propers.extend(set(self.processed_propers).difference(set(current_processed_propers)))
+            self.processed_propers = current_processed_propers
+
         logger.log('Completed the search for new propers{0}'.format(run_at))
 
         self.amActive = False
@@ -88,23 +98,28 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         """
         propers = {}
 
-        # for each provider get a list of the
+        # For each provider get the list of propers
         original_thread_name = threading.currentThread().name
         providers = enabled_providers('backlog')
 
-        # Get the recently aired (last 2 days) shows from db
         search_date = datetime.datetime.today() - datetime.timedelta(days=2)
         main_db_con = db.DBConnection()
-        search_qualities = list(set(Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_BEST))
-        search_q_params = ','.join('?' for _ in search_qualities)
-        recently_aired = main_db_con.select(
-            b'SELECT s.show_name, e.showid, e.season, e.episode, e.status, e.airdate'
-            b' FROM tv_episodes AS e'
-            b' INNER JOIN tv_shows AS s ON (e.showid = s.indexer_id)'
-            b' WHERE e.airdate >= ?'
-            b' AND e.status IN ({0})'.format(search_q_params),
-            [search_date.toordinal()] + search_qualities
-        )
+        if not sickbeard.POSTPONE_IF_NO_SUBS:
+            # Get the recently aired (last 2 days) shows from DB
+            search_q_params = ','.join('?' for _ in Quality.DOWNLOADED)
+            recently_aired = main_db_con.select(
+                b'SELECT showid, season, episode, status, airdate'
+                b' FROM tv_episodes'
+                b' WHERE airdate >= ?'
+                b' AND status IN ({0})'.format(search_q_params),
+                [search_date.toordinal()] + Quality.DOWNLOADED
+            )
+        else:
+            # Get recently subtitled episodes (last 2 days) from DB
+            # Episode status becomes downloaded only after found subtitles
+            last_subtitled = search_date.strftime(History.date_format)
+            recently_aired = main_db_con.select(b'SELECT showid, season, episode FROM history '
+                                                b"WHERE date >= ? AND action LIKE '%10'", [last_subtitled])
 
         if not recently_aired:
             logger.log('No recently aired new episodes, nothing to search for')
@@ -237,23 +252,35 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     self.processed_propers.append(cur_proper.name)
                     continue
 
-            # check if we actually want this proper (if it's the right quality)
+            # check if we have the episode as DOWNLOADED
             main_db_con = db.DBConnection()
-            sql_results = main_db_con.select(b'SELECT status FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?',
+            sql_results = main_db_con.select(b"SELECT status, release_name FROM tv_episodes WHERE "
+                                             b"showid = ? AND season = ? AND episode = ? AND status LIKE '%04'",
                                              [best_result.indexerid, best_result.season, best_result.episode])
             if not sql_results:
-                logger.log('Ignoring proper with incorrect quality: {name}'.format
+                logger.log("Ignoring proper because this episode doesn't have 'DOWNLOADED' status: {name}".format
                            (name=best_result.name))
+                continue
+
+            # only keep the proper if we have already downloaded an episode with the same quality
+            _, old_quality = Quality.splitCompositeStatus(int(sql_results[0][b'status']))
+            if old_quality != best_result.quality:
+                logger.log('Ignoring proper because quality is different: {name}'.format(name=best_result.name))
                 self.processed_propers.append(cur_proper.name)
                 continue
 
-            # only keep the proper if we have already retrieved the same quality ep (don't get better/worse ones)
-            old_status, old_quality = Quality.splitCompositeStatus(int(sql_results[0][b'status']))
-            if old_status not in (DOWNLOADED, SNATCHED) or old_quality != best_result.quality:
-                logger.log('Ignoring proper because quality is different or episode is already archived: {name}'.format
-                           (name=best_result.name))
-                self.processed_propers.append(cur_proper.name)
-                continue
+            # only keep the proper if we have already downloaded an episode with the same codec
+            release_name = sql_results[0][b'release_name']
+            if release_name:
+                current_codec = NameParser()._parse_string(release_name).video_codec
+                # Ignore proper if codec differs from downloaded release codec
+                if all([current_codec, parse_result.video_codec, parse_result.video_codec != current_codec]):
+                    logger.log('Ignoring proper because codec is different: {name}'.format(name=best_result.name))
+                    self.processed_propers.append(cur_proper.name)
+                    continue
+            else:
+                logger.log("Coudn't find a release name in database. Skipping codec comparison for: {name}".format
+                           (name=cur_proper.name), logger.DEBUG)
 
             # check if we actually want this proper (if it's the right release group and a higher version)
             if best_result.show.is_anime:
@@ -301,7 +328,6 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             history_limit = datetime.datetime.today() - datetime.timedelta(days=30)
 
-            # make sure the episode has been downloaded before
             main_db_con = db.DBConnection()
             history_results = main_db_con.select(
                 b'SELECT resource FROM history '
@@ -310,7 +336,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 b'AND episode = ? '
                 b'AND quality = ? '
                 b'AND date >= ? '
-                b"AND (action LIKE '%2' OR action LIKE '%4')",
+                b"AND (action LIKE '%02' OR action LIKE '%04' OR action LIKE '%09' OR action LIKE '%12')",
                 [cur_proper.indexerid, cur_proper.season, cur_proper.episode, cur_proper.quality,
                  history_limit.strftime(History.date_format)])
 

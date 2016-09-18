@@ -2,18 +2,26 @@
 
 from __future__ import unicode_literals
 
-import json
 import datetime
+import json
 import os
 import re
 import time
 import traceback
+
 from concurrent.futures import ThreadPoolExecutor
 from mako.exceptions import RichTraceback
 from mako.lookup import TemplateLookup
 from mako.runtime import UNDEFINED
 from mako.template import Template as MakoTemplate
 from requests.compat import urljoin
+import sickbeard
+from sickrage.helper.encoding import ek
+from sickrage.media.ShowBanner import ShowBanner
+from sickrage.media.ShowFanArt import ShowFanArt
+from sickrage.media.ShowNetworkLogo import ShowNetworkLogo
+from sickrage.media.ShowPoster import ShowPoster
+from sickrage.show.ComingEpisodes import ComingEpisodes
 from six import iteritems
 from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
@@ -21,20 +29,11 @@ from tornado.gen import coroutine
 from tornado.ioloop import IOLoop
 from tornado.process import cpu_count
 from tornado.routes import route
-from tornado.web import RequestHandler, HTTPError, authenticated
-
-import sickbeard
-from sickbeard import (
+from tornado.web import HTTPError, RequestHandler, authenticated
+from ...api.v1.core import function_mapper
+from .... import (
     classes, db, helpers, logger, network_timezones, ui
 )
-from sickbeard.server.api.v1.core import function_mapper
-
-from sickrage.helper.encoding import ek
-from sickrage.media.ShowBanner import ShowBanner
-from sickrage.media.ShowFanArt import ShowFanArt
-from sickrage.media.ShowNetworkLogo import ShowNetworkLogo
-from sickrage.media.ShowPoster import ShowPoster
-from sickrage.show.ComingEpisodes import ComingEpisodes
 
 mako_lookup = None
 mako_cache = None
