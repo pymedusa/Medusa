@@ -1189,13 +1189,13 @@ class TestIncreaseMajorVersion(AddMinorVersion):
     """
     def test(self):
         """
-        Test if the version is at least 44.1
+        Test if the version is at least 44.0
         """
-        return self.connection.version >= (44, 1)
+        return self.connection.version >= (44, 0)
 
     def execute(self):
         """
-        Updates the version to 44.1
+        Updates the version to 44.0
         """
         backupDatabase(self.connection.version)
 
