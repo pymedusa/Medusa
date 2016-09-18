@@ -32,7 +32,6 @@ import re
 
 from requests.compat import urljoin
 from requests.exceptions import RequestException
-
 import sickbeard
 from .generic import GenericClient
 from ..helpers import handle_requests_exception

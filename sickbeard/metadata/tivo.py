@@ -19,16 +19,16 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 
+import datetime
 import io
 import os
-import datetime
 
 import sickbeard
-from sickbeard import logger, helpers
-from sickbeard.metadata import generic
 from sickrage.helper.common import episode_num
 from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex, ShowNotFoundException
+from sickrage.helper.exceptions import ShowNotFoundException, ex
+from .. import helpers, logger
+from ..metadata import generic
 
 
 class TIVOMetadata(generic.GenericMetadata):
@@ -226,7 +226,7 @@ class TIVOMetadata(generic.GenericMetadata):
             # This seems to disappear once the video is transferred to TiVo.
 
             # NOTE: May not be correct format, missing season, but based on description from wiki leaving as is.
-            data += ('episodeNumber : {ep_num}\n'.format(ep_to_write.episode))
+            data += ('episodeNumber : {ep_num}\n'.format(ep_num=ep_to_write.episode))
 
             # Must be entered as true or false. If true, the year from originalAirDate will be shown in parentheses
             # after the episode's title and before the description on the Program screen.

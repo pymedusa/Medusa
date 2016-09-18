@@ -18,9 +18,10 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
-from sickbeard.server.web.core import PageTemplate
-from sickbeard.server.web.home.handler import Home
+
 from tornado.routes import route
+from .handler import Home
+from ..core import PageTemplate
 
 
 @route('/addRecommended(/?.*)')

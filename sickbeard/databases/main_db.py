@@ -19,18 +19,15 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-
-import warnings
 import os.path
-
-from six import iteritems
+import warnings
 
 import sickbeard
-from sickbeard import db, common, helpers, logger, subtitles
-from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
-
 from sickrage.helper.common import dateTimeFormat, episode_num
 from sickrage.helper.encoding import ek
+from six import iteritems
+from .. import common, db, helpers, logger, subtitles
+from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 
 MIN_DB_VERSION = 9  # oldest db version we support migrating from
 MAX_DB_VERSION = 43
@@ -51,6 +48,23 @@ class MainSanityCheck(db.DBSanityCheck):
         self.convert_tvrage_to_tvdb()
         self.convert_archived_to_compound()
         self.fix_subtitle_reference()
+
+    def update_old_propers(self):
+        logger.log(u'Checking for old propers without proper tags', logger.DEBUG)
+        query = "SELECT resource FROM history WHERE (proper_tags is null or proper_tags is '') " + \
+                "AND (action LIKE '%2' OR action LIKE '%9') AND " + \
+                "(resource LIKE '%REPACK%' or resource LIKE '%PROPER%' or resource LIKE '%REAL%')"
+        sql_results = self.connection.select(query)
+        if sql_results:
+            for sql_result in sql_results:
+                proper_release = sql_result['resource']
+                logger.log(u"Found old propers without proper tags: {0}".format(proper_release), logger.DEBUG)
+                parse_result = NameParser()._parse_string(proper_release)
+                if parse_result.proper_tags:
+                    proper_tags = '|'.join(parse_result.proper_tags)
+                    logger.log(u"Add proper tags '{0}' to '{1}'".format(proper_tags, proper_release), logger.DEBUG)
+                    self.connection.action("UPDATE history SET proper_tags = ? WHERE resource = ?",
+                                           [proper_tags, proper_release])
 
     def fix_subtitle_reference(self):
         logger.log(u'Checking for delete episodes with subtitle reference', logger.DEBUG)
@@ -93,8 +107,8 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def convert_tvrage_to_tvdb(self):
         logger.log(u"Checking for shows with tvrage id's, since tvrage is gone", logger.DEBUG)
-        from sickbeard.indexers.indexer_config import INDEXER_TVRAGE
-        from sickbeard.indexers.indexer_config import INDEXER_TVDB
+        from ..indexers.indexer_config import INDEXER_TVRAGE
+        from ..indexers.indexer_config import INDEXER_TVDB
 
         sql_results = self.connection.select("SELECT indexer_id, show_name, location FROM tv_shows WHERE indexer = %i" % INDEXER_TVRAGE)
 
@@ -1190,3 +1204,22 @@ class TestIncreaseMajorVersion(AddMinorVersion):
         self.inc_minor_version()
 
         logger.log(u'Updated to: %d.%d' % self.connection.version)
+
+
+class AddProperTags(TestIncreaseMajorVersion):
+    """Adds column proper_tags to history table."""
+
+    def test(self):
+        """
+        Test if the version is at least 43.2
+        """
+        return self.connection.version >= (43, 2)
+
+    def execute(self):
+        backupDatabase(self.checkDBVersion())
+
+        logger.log(u'Adding column proper_tags in history')
+        if not self.hasColumn('history', 'proper_tags'):
+            self.addColumn('history', 'proper_tags', 'TEXT', u'')
+        MainSanityCheck(self.connection).update_old_propers()
+        self.inc_minor_version()

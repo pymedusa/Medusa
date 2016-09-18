@@ -28,6 +28,7 @@ import threading
 import traceback
 
 from imdb import imdb
+from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 import shutil_custom
 import sickbeard
 from sickrage.helper.common import (
@@ -697,7 +698,6 @@ class TVShow(TVObject):
                     cur_ep.delete_episode()
 
                 cur_ep.load_from_db(cur_season, cur_episode)
-                cur_ep.load_from_indexer(tvapi=t, cached_season=cached_seasons[cur_season])
                 scanned_eps[cur_season][cur_episode] = True
             except EpisodeDeletedException:
                 logger.log(u'{id}: Tried loading {show} {ep} from the DB that should have been deleted, '
@@ -710,18 +710,15 @@ class TVShow(TVObject):
 
         return scanned_eps
 
-    def load_episodes_from_indexer(self, cache=True):
+    def load_episodes_from_indexer(self):
         """Load episodes from indexer.
 
-        :param cache:
-        :type cache: bool
         :return:
         :rtype: dict(int -> dict(int -> bool))
         """
         indexer_api_params = sickbeard.indexerApi(self.indexer).api_params.copy()
 
-        if not cache:
-            indexer_api_params['cache'] = False
+        indexer_api_params['cache'] = False
 
         if self.lang:
             indexer_api_params['language'] = self.lang
@@ -767,7 +764,6 @@ class TVShow(TVObject):
                         continue
 
                 with ep.lock:
-                    ep.load_from_indexer(season, episode, tvapi=t)
                     sql_l.append(ep.get_sql())
 
                 scanned_eps[season][episode] = True
@@ -1019,11 +1015,9 @@ class TVShow(TVObject):
         self.reset_dirty()
         return True
 
-    def load_from_indexer(self, cache=True, tvapi=None):
+    def load_from_indexer(self, tvapi=None):
         """Load show from indexer.
 
-        :param cache:
-        :type cache: bool
         :param tvapi:
         """
         if self.indexer == INDEXER_TVRAGE:
@@ -1039,8 +1033,7 @@ class TVShow(TVObject):
         else:
             indexer_api_params = sickbeard.indexerApi(self.indexer).api_params.copy()
 
-            if not cache:
-                indexer_api_params['cache'] = False
+            indexer_api_params['cache'] = False
 
             if self.lang:
                 indexer_api_params['language'] = self.lang
@@ -1079,22 +1072,40 @@ class TVShow(TVObject):
     def load_imdb_info(self):
         """Load all required show information from IMDb with IMDbPY."""
         imdb_api = imdb.IMDb()
-        if not self.imdbid:
-            self.imdbid = imdb_api.title2imdbID(self.name, kind='tv series')
 
-        if not self.imdbid:
-            logger.log(u'{0}: Not loading show info from IMDb, '
-                       u"because we don't know its ID".format(self.indexerid))
+        try:
+            if not self.imdbid:
+                self.imdbid = imdb_api.title2imdbID(self.name, kind='tv series')
+
+            if not self.imdbid:
+                logger.log(u'{0}: Not loading show info from IMDb, '
+                           u"because we don't know its ID".format(self.indexerid))
+                return
+
+            # Make sure we only use one ID
+            imdb_id = self.imdbid.split(',')[0]
+
+            logger.log(u'{0}: Loading show info from IMDb with ID: {1}'.format(
+                       self.indexerid, imdb_id), logger.DEBUG)
+
+            # Remove first two chars from ID
+            imdb_obj = imdb_api.get_movie(imdb_id[2:])
+
+            # IMDb returned something we don't want
+            if not imdb_obj.get('year'):
+                logger.log(u'{0}: IMDb returned invalid info for {1}, skipping update.'.format(
+                           self.indexerid, imdb_id), logger.DEBUG)
+                return
+
+        except IMDbDataAccessError:
+            logger.log(u'{0}: Failed to obtain info from IMDb for: {1}'.format(
+                       self.indexerid, self.name), logger.DEBUG)
             return
 
-        # Make sure we only use one ID
-        imdb_id = self.imdbid.split(',')[0]
-
-        logger.log(u'{0}: Loading show info from IMDb with ID: {1}'.format(
-                   self.indexerid, imdb_id), logger.DEBUG)
-
-        # Remove first two chars from ID
-        imdb_obj = imdb_api.get_movie(imdb_id[2:])
+        except IMDbParserError:
+            logger.log(u'{0}: Failed to parse info from IMDb for: {1}'.format(
+                       self.indexerid, self.name), logger.ERROR)
+            return
 
         self.imdb_info = {
             'imdb_id': imdb_id,
@@ -1334,8 +1345,9 @@ class TVShow(TVObject):
                                            (id=self.indexerid, related_file=related_file, error_msg=e), logger.WARNING)
 
         # clean up any empty season folders after deletion of associated files
-        for sub_dir in ek(os.listdir, self.location):
-            helpers.delete_empty_folders(ek(os.path.join, self.location, sub_dir), self.location)
+        if ek(os.path.isdir, self.location):
+            for sub_dir in ek(os.listdir, self.location):
+                    helpers.delete_empty_folders(ek(os.path.join, self.location, sub_dir), self.location)
 
         if sql_l:
             main_db_con = db.DBConnection()
@@ -1414,6 +1426,8 @@ class TVShow(TVObject):
 
             main_db_con = db.DBConnection()
             main_db_con.upsert('imdb_info', new_value_dict, control_value_dict)
+
+        self.reset_dirty()
 
     def __str__(self):
         """String representation.
@@ -1673,6 +1687,7 @@ class TVEpisode(TVObject):
         self.scene_absolute_number = 0
         self.related_episodes = []
         self.wanted_quality = []
+        self.loaded = False
         if show:
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
@@ -1760,7 +1775,7 @@ class TVEpisode(TVObject):
         if not self.is_location_valid():
             logger.log(u"{id}: {show} {ep} file doesn't exist, can't download subtitles".format
                        (id=self.show.indexerid, show=self.show.name,
-                        ep=(episode_num(self.season, self.episode) or episode_num(self.season, self.episode_, numbering='absolute'))),
+                        ep=(episode_num(self.season, self.episode) or episode_num(self.season, self.episode, numbering='absolute'))),
                        logger.DEBUG)
             return
 
@@ -1859,6 +1874,8 @@ class TVEpisode(TVObject):
         :return:
         :rtype: bool
         """
+        if self.loaded:
+            return True
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             b'SELECT '
@@ -1937,18 +1954,17 @@ class TVEpisode(TVObject):
             if sql_results[0][b'release_group'] is not None:
                 self.release_group = sql_results[0][b'release_group']
 
+            self.loaded = True
             self.reset_dirty()
             return True
 
-    def load_from_indexer(self, season=None, episode=None, cache=True, tvapi=None, cached_season=None):
+    def load_from_indexer(self, season=None, episode=None, tvapi=None, cached_season=None):
         """Load episode information from indexer.
 
         :param season:
         :type season: int
         :param episode:
         :type episode: int
-        :param cache:
-        :type cache: bool
         :param tvapi:
         :param cached_season:
         :return:
@@ -1970,8 +1986,7 @@ class TVEpisode(TVObject):
                 else:
                     indexer_api_params = sickbeard.indexerApi(self.indexer).api_params.copy()
 
-                    if not cache:
-                        indexer_api_params['cache'] = False
+                    indexer_api_params['cache'] = False
 
                     if indexer_lang:
                         indexer_api_params['language'] = indexer_lang
@@ -2445,6 +2460,8 @@ class TVEpisode(TVObject):
         # use a custom update/insert method to get the data into the DB
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_episodes', new_value_dict, control_value_dict)
+        self.loaded = False
+        self.reset_dirty()
 
     def full_path(self):
         """Return episode full path.

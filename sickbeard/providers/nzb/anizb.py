@@ -21,12 +21,10 @@ from __future__ import unicode_literals
 import traceback
 
 from requests.compat import urljoin
-
-from sickbeard import logger, tvcache
-from sickbeard.bs4_parser import BS4Parser
-
-from sickrage.providers.nzb.NZBProvider import NZBProvider
 from sickrage.helper.common import try_int
+from sickrage.providers.nzb.NZBProvider import NZBProvider
+from ... import logger, tvcache
+from ...bs4_parser import BS4Parser
 
 
 class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes

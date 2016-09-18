@@ -18,34 +18,21 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import re
-import errno
-import threading
 import datetime
+import errno
+import os
+import threading
 import traceback
+from socket import timeout as SocketTimeout
+
 import requests
 import sickbeard
-
-from sickbeard.common import SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, Quality, SEASON_RESULT, MULTI_EP_RESULT
-from sickbeard import logger, db, show_name_helpers, helpers
-from sickbeard import sab
-from sickbeard import nzbget
-from sickbeard import clients
-from sickbeard import history
-from sickbeard import notifiers
-from sickbeard import nzbSplitter
-from sickbeard import ui
-from sickbeard import failed_history
-from sickbeard import common
-
+from sickrage.helper.common import enabled_providers, episode_num
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import AuthException, ex
-from sickrage.helper.common import episode_num
 from sickrage.providers.GenericProvider import GenericProvider
-from sickrage.helper.common import enabled_providers
-
-from socket import timeout as SocketTimeout
+from . import clients, common, db, failed_history, helpers, history, logger, notifiers, nzbSplitter, nzbget, sab, show_name_helpers, ui
+from .common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 
 
 def _downloadResult(result):
@@ -170,6 +157,18 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
                 curEpObj.status = Quality.compositeStatus(SNATCHED_BEST, result.quality)
             else:
                 curEpObj.status = Quality.compositeStatus(endStatus, result.quality)
+            # Reset all others fields to a "snatch" status
+            curEpObj.hasnfo = False
+            curEpObj.hastbn = False
+            curEpObj.location = ''
+            curEpObj.file_size = 0
+            curEpObj.release_name = ''
+            curEpObj.subtitles = list()
+            curEpObj.subtitles_searchcount = 0
+            curEpObj.subtitles_lastsearch = '0001-01-01 00:00:00'
+            curEpObj.is_proper = True if result.proper_tags else False
+            curEpObj.version = 0
+            curEpObj.release_group = ''
 
             sql_l.append(curEpObj.get_sql())
 

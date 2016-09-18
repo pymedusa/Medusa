@@ -3,8 +3,8 @@
 from __future__ import unicode_literals
 
 from tornado.routes import route
-from sickbeard.server.web.core import PageTemplate
-from sickbeard.server.web.home.handler import Home
+from .handler import Home
+from ..core import PageTemplate
 
 
 @route('/IRC(/?.*)')

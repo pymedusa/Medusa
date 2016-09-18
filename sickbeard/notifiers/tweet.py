@@ -18,15 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import sickbeard
-
-from sickbeard import logger, common
-from sickrage.helper.exceptions import ex
-
-from six.moves.urllib.parse import parse_qsl
-
 import oauth2 as oauth
 import pythontwitter as twitter
+import sickbeard
+from six.moves.urllib.parse import parse_qsl
+from .. import common, logger
 
 
 class Notifier(object):

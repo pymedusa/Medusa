@@ -23,13 +23,59 @@ from __future__ import unicode_literals
 import datetime
 from base64 import standard_b64encode
 
-from six.moves.http_client import socket
-from six.moves.xmlrpc_client import ServerProxy, ProtocolError
-
 import sickbeard
-from sickbeard import logger
-from sickbeard.common import Quality
 from sickrage.helper.common import try_int
+from six.moves.http_client import socket
+from six.moves.xmlrpc_client import ProtocolError, ServerProxy
+from . import logger
+from .common import Quality
+
+
+def NZBConnection(url):
+    """Method to connect to NZBget client
+
+    :param url: nzb url to connect
+
+    :return: True if connected, else False
+    """
+    nzbGetRPC = ServerProxy(url)
+    try:
+        if nzbGetRPC.writelog('INFO', 'Medusa connected to test connection.'):
+            logger.log('Successful connected to NZBget', logger.DEBUG)
+        else:
+            logger.log('Successful connected to NZBget, but unable to send a message', logger.WARNING)
+        return True
+
+    except socket.error:
+        logger.log(
+            'Please check your NZBget host and port (if it is running). NZBget is not responding to this combination',
+            logger.WARNING)
+        return False
+
+    except ProtocolError as e:
+        if e.errmsg == 'Unauthorized':
+            logger.log('NZBget username or password is incorrect.', logger.WARNING)
+        else:
+            logger.log('Protocol Error: ' + e.errmsg, logger.ERROR)
+        return False
+
+
+def testNZB(host, username, password, use_https):
+    """Test NZBget client connection.
+
+    :param host: nzb host to connect
+    :param username: nzb username
+    :param password: nzb password
+    :param use_http: If we should use https or not
+
+    :return  True if connected. Else False
+    """
+    url = 'http{}://{}:{}@{}/xmlrpc'.format(
+        's' if use_https else '',
+        username,
+        password,
+        host)
+    return NZBConnection(url)
 
 
 def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-return-statements
@@ -55,25 +101,10 @@ def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-sta
         sickbeard.NZBGET_PASSWORD,
         sickbeard.NZBGET_HOST)
 
+    if not NZBConnection(url):
+        return False
+
     nzbGetRPC = ServerProxy(url)
-    try:
-        if nzbGetRPC.writelog('INFO', 'SickRage connected to drop off {} any moment now.'.format(nzb.name + '.nzb')):
-            logger.log('Successful connected to NZBget', logger.DEBUG)
-        else:
-            logger.log('Successful connected to NZBget, but unable to send a message', logger.WARNING)
-
-    except socket.error:
-        logger.log(
-            'Please check your NZBget host and port (if it is running). NZBget is not responding to this combination',
-            logger.WARNING)
-        return False
-
-    except ProtocolError as e:
-        if e.errmsg == 'Unauthorized':
-            logger.log('NZBget username or password is incorrect.', logger.WARNING)
-        else:
-            logger.log('Protocol Error: ' + e.errmsg, logger.ERROR)
-        return False
 
     dupekey = ''
     dupescore = 0
@@ -81,9 +112,9 @@ def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-sta
     for curEp in nzb.episodes:
         if dupekey == '':
             if curEp.show.indexer == 1:
-                dupekey = 'SickRage-' + str(curEp.show.indexerid)
+                dupekey = 'Medusa-' + str(curEp.show.indexerid)
             elif curEp.show.indexer == 2:
-                dupekey = 'SickRage-tvr' + str(curEp.show.indexerid)
+                dupekey = 'Medusa-tvr' + str(curEp.show.indexerid)
         dupekey += '-' + str(curEp.season) + '.' + str(curEp.episode)
         if datetime.date.today() - curEp.airdate <= datetime.timedelta(days=7):
             addToTop = True

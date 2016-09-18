@@ -3,61 +3,37 @@
 from __future__ import unicode_literals
 
 import ast
-from datetime import date
 import json
 import os
 import time
+from datetime import date
 
 import adba
-from traktor import TraktApi
-from traktor import (MissingTokenException, TokenExpiredException, TraktException)
-from requests.compat import unquote_plus, quote_plus
-from six import iteritems
-from tornado.routes import route
-
+from requests.compat import quote_plus, unquote_plus
 import sickbeard
-from sickbeard import (
-    clients, config, db, helpers, logger,
-    notifiers, sab, search_queue,
-    subtitles, ui, show_name_helpers,
-)
-from sickbeard.blackandwhitelist import BlackAndWhiteList, short_group_names
-from sickbeard.common import (
-    cpu_presets, Overview, Quality, statusStrings,
-    UNAIRED, IGNORED, WANTED, FAILED, SKIPPED
-)
-from sickbeard.manual_search import (
-    collectEpisodesFromSearchThread, get_provider_cache_results, getEpisode, update_finished_search_queue_item,
-    SEARCH_STATUS_FINISHED, SEARCH_STATUS_SEARCHING, SEARCH_STATUS_QUEUED,
-)
-from sickbeard.scene_exceptions import (
-    get_scene_exceptions,
-    get_all_scene_exceptions,
-    update_scene_exceptions,
-)
-from sickbeard.scene_numbering import (
-    get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
-    get_scene_numbering, get_scene_numbering_for_show,
-    get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
-    set_scene_numbering,
-)
-from sickbeard.versionChecker import CheckVersion
-from sickbeard.server.web.core import WebRoot, PageTemplate
-
-from sickrage.helper.common import (
-    try_int, enabled_providers,
-)
+from sickrage.helper.common import enabled_providers, try_int
 from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import (
-    ex,
-    CantRefreshShowException,
-    CantUpdateShowException,
-    NoNFOException,
-    ShowDirectoryNotFoundException,
-)
+from sickrage.helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from sickrage.show.Show import Show
 from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
+from six import iteritems
+from tornado.routes import route
+from traktor import MissingTokenException, TokenExpiredException, TraktApi, TraktException
+from ..core import PageTemplate, WebRoot
+from .... import clients, config, db, helpers, logger, notifiers, nzbget, sab, search_queue, show_name_helpers, subtitles, ui
+from ....blackandwhitelist import BlackAndWhiteList, short_group_names
+from ....common import FAILED, IGNORED, Overview, Quality, SKIPPED, UNAIRED, WANTED, cpu_presets, statusStrings
+from ....manual_search import SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING, collectEpisodesFromSearchThread, getEpisode, \
+    get_provider_cache_results, update_finished_search_queue_item
+from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
+from ....scene_numbering import (
+    get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
+    get_scene_numbering, get_scene_numbering_for_show,
+    get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
+    set_scene_numbering, xem_refresh
+)
+from ....versionChecker import CheckVersion
 
 
 @route('/home(/?.*)')
@@ -211,6 +187,16 @@ class Home(WebRoot):
             else:
                 return 'Authentication failed. SABnzbd expects {access!r} as authentication method, {auth!r}'.format(
                     access=acces_msg, auth=auth_msg)
+        else:
+            return 'Unable to connect to host'
+
+    @staticmethod
+    def testNZBget(host=None, username=None, password=None, use_https=False):
+        # self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
+
+        connected_status = nzbget.testNZB(host, username, password, use_https)
+        if connected_status:
+            return 'Success. Connected and authenticated'
         else:
             return 'Unable to connect to host'
 
@@ -437,12 +423,18 @@ class Home(WebRoot):
         trakt_api = TraktApi(sickbeard.SSL_VERIFY, sickbeard.TRAKT_TIMEOUT, **trakt_settings)
         try:
             (access_token, refresh_token) = trakt_api.get_token(sickbeard.TRAKT_REFRESH_TOKEN, trakt_pin=trakt_pin)
-        except (MissingTokenException, TokenExpiredException):
-            ui.notifications.error('Wrong PIN. Reload the page to get new token!')
-            return 'Wrong PIN. Reload the page to get new token!'
+        except MissingTokenException:
+            ui.notifications.error('You need to get a PIN and authorize Medusa app')
+            return 'You need to get a PIN and authorize Medusa app'
+        except TokenExpiredException:
+            # Clear existing tokens
+            sickbeard.TRAKT_ACCESS_TOKEN = ''
+            sickbeard.TRAKT_REFRESH_TOKEN = ''
+            ui.notifications.error('TOKEN expired. Reload page, get a new PIN and authorize Medusa app')
+            return 'TOKEN expired. Reload page, get a new PIN and authorize Medusa app'
         except TraktException:
-            ui.notifications.error('Connection error. Reload the page to get new token!')
-            return 'Error while connection to Trakt. Reload the page to get new token!'
+            ui.notifications.error("Connection error. Click 'Authorize Medusa' button again")
+            return "Connection error. Click 'Authorize Medusa' button again"
         if access_token:
             sickbeard.TRAKT_ACCESS_TOKEN = access_token
             sickbeard.TRAKT_REFRESH_TOKEN = refresh_token
@@ -802,7 +794,7 @@ class Home(WebRoot):
                 })
                 submenu.append({
                     'title': 'Force Full Update',
-                    'path': 'home/updateShow?show={show}&amp;force=1'.format(show=show_obj.indexerid),
+                    'path': 'home/updateShow?show={show}'.format(show=show_obj.indexerid),
                     'icon': 'ui-icon ui-icon-transfer-e-w',
                 })
                 submenu.append({
@@ -1108,7 +1100,7 @@ class Home(WebRoot):
                 })
                 submenu.append({
                     'title': 'Force Full Update',
-                    'path': 'home/updateShow?show={show}&amp;force=1'.format(show=show_obj.indexerid),
+                    'path': 'home/updateShow?show={show}'.format(show=show_obj.indexerid),
                     'icon': 'ui-icon ui-icon-transfer-e-w',
                 })
                 submenu.append({
@@ -1419,7 +1411,7 @@ class Home(WebRoot):
         # force the update
         if do_update:
             try:
-                sickbeard.showQueueScheduler.action.updateShow(show_obj, True)
+                sickbeard.showQueueScheduler.action.updateShow(show_obj)
                 time.sleep(cpu_presets[sickbeard.CPU_PRESET])
             except CantUpdateShowException as msg:
                 errors.append('Unable to update show: {0}'.format(str(msg)))
@@ -1433,7 +1425,7 @@ class Home(WebRoot):
 
         if do_update_scene_numbering:
             try:
-                sickbeard.scene_numbering.xem_refresh(show_obj.indexerid, show_obj.indexer)
+                xem_refresh(show_obj.indexerid, show_obj.indexer)
                 time.sleep(cpu_presets[sickbeard.CPU_PRESET])
             except CantUpdateShowException:
                 errors.append('Unable to force an update on scene numbering of the show.')
@@ -1527,7 +1519,7 @@ class Home(WebRoot):
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
-    def updateShow(self, show=None, force=0):
+    def updateShow(self, show=None):
 
         if show is None:
             return self._genericMessage('Error', 'Invalid show ID')
@@ -1539,7 +1531,7 @@ class Home(WebRoot):
 
         # force the update
         try:
-            sickbeard.showQueueScheduler.action.updateShow(show_obj, bool(force))
+            sickbeard.showQueueScheduler.action.updateShow(show_obj)
         except CantUpdateShowException as e:
             ui.notifications.error('Unable to update this show.', ex(e))
 
@@ -1548,7 +1540,7 @@ class Home(WebRoot):
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
-    def subtitleShow(self, show=None, force=0):
+    def subtitleShow(self, show=None):
 
         if show is None:
             return self._genericMessage('Error', 'Invalid show ID')
@@ -1559,7 +1551,7 @@ class Home(WebRoot):
             return self._genericMessage('Error', 'Unable to find the specified show')
 
         # search and download subtitles
-        sickbeard.showQueueScheduler.action.download_subtitles(show_obj, bool(force))
+        sickbeard.showQueueScheduler.action.download_subtitles(show_obj)
 
         time.sleep(cpu_presets[sickbeard.CPU_PRESET])
 

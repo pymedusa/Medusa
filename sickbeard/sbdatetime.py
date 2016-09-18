@@ -19,11 +19,11 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import locale
 import functools
+import locale
 
 import sickbeard
-from sickbeard.network_timezones import sb_timezone
+from .network_timezones import sb_timezone
 
 date_presets = (
     '%Y-%m-%d',

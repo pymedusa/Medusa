@@ -22,21 +22,18 @@ import re
 import traceback
 
 from requests.compat import urljoin
-from requests.compat import quote
 from requests.utils import dict_from_cookiejar
-
-from sickbeard import logger, tvcache
-from sickbeard.bs4_parser import BS4Parser
-
-from sickrage.helper.common import convert_size
+from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from .... import logger, tvcache
+from ....bs4_parser import BS4Parser
 
 
-class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """Pretome Torrent provider"""
+class PretomeProvider(TorrentProvider):
+    """Pretome Torrent provider."""
+
     def __init__(self):
-
-        # Provider Init
+        """Provider Init."""
         TorrentProvider.__init__(self, 'Pretome')
 
         # Credentials
@@ -47,18 +44,12 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # URLs
         self.url = 'https://pretome.info'
         self.urls = {
-            'base_url': self.url,
             'login': urljoin(self.url, 'takelogin.php'),
-            'search': urljoin(self.url, 'browse.php?search=%s%s'),
-            'download': urljoin(self.url, 'download.php/%s/%s.torrent'),
-            'detail': urljoin(self.url, 'details.php?id=%s'),
+            'search': urljoin(self.url, 'browse.php'),
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK']
-
-        # Miscellaneous Options
-        self.categories = '&st=1&cat%5B%5D=7'
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
         # Torrent Stats
         self.minseed = None
@@ -67,9 +58,9 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # Cache
         self.cache = tvcache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -80,6 +71,13 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         if not self.login():
             return results
 
+        # Search Params
+        search_params = {
+            'search': '',
+            'st': 1,
+            'cat[]': 7,
+        }
+
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
@@ -89,8 +87,8 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
 
-                search_url = self.urls['search'] % (quote(search_string), self.categories)
-                response = self.get_url(search_url, returns='response')
+                search_params['search'] = search_string
+                response = self.get_url(self.urls['search'], params=search_params, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -108,42 +106,30 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            # Continue only if one Release is found
+            # Continue only if at least one release is found
             empty = html.find('h2', text='No .torrents fit this filter criteria')
             if empty:
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
 
             torrent_table = html.find('table', attrs={'style': 'border: none; width: 100%;'})
-            if not torrent_table:
-                logger.log('Could not find table of torrents', logger.ERROR)
-                return items
-
-            torrent_rows = torrent_table('tr', attrs={'class': 'browse'})
+            torrent_rows = torrent_table('tr', class_='browse') if torrent_table else []
 
             for row in torrent_rows:
                 cells = row('td')
+
                 try:
-                    size = None
-                    link = cells[1].find('a', attrs={'style': 'font-size: 1.25em; font-weight: bold;'})
-
-                    torrent_id = link['href'].replace('details.php?id=', '')
-
-                    if link.get('title', ''):
-                        title = link['title']
-                    else:
-                        title = link.contents[0]
-
-                    download_url = self.urls['download'] % (torrent_id, link.contents[0])
-                    if not all([title, download_url]):
+                    title = cells[1].find('a').get('title')
+                    torrent_url = cells[2].find('a').get('href')
+                    download_url = urljoin(self.url, torrent_url)
+                    if not all([title, torrent_url]):
                         continue
 
-                    seeders = int(cells[9].contents[0])
-                    leechers = int(cells[10].contents[0])
+                    seeders = try_int(cells[9].get_text(), 1)
+                    leechers = try_int(cells[10].get_text())
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -153,10 +139,8 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    # Need size for failed downloads handling
-                    if size is None:
-                        torrent_size = cells[7].text
-                        size = convert_size(torrent_size) or -1
+                    torrent_size = self._norm_size(cells[7].get_text(strip=True))
+                    size = convert_size(torrent_size) or -1
 
                     item = {
                         'title': title,
@@ -201,11 +185,17 @@ class PretomeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         return True
 
     def _check_auth(self):
-
-        if not self.username or not self.password or not self.pin:
-            logger.log('Invalid username or password or pin. Check your settings', logger.WARNING)
+        if not all([self.username, self.password, self.pin]):
+            logger.log('Invalid username, password or pin. Check your settings', logger.WARNING)
 
         return True
+
+    @staticmethod
+    def _norm_size(size_string):
+        """Normalize the size from the parsed string."""
+        if not size_string:
+            return size_string
+        return re.sub(r'(?P<unit>[A-Z]+)', ' \g<unit>', size_string)
 
 
 provider = PretomeProvider()

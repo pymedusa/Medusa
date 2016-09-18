@@ -8,7 +8,7 @@ MEDUSA.manage.episodeStatuses = function() {
         var curIndexerId = $(this).attr('id');
         var checked = $('#allCheck-' + curIndexerId).prop('checked');
         var lastRow = $('tr#' + curIndexerId);
-        var clicked = $(this).attr('data-clicked');
+        var clicked = $(this).data('clicked');
         var action = $(this).attr('value');
 
         if (clicked) {
@@ -30,7 +30,7 @@ MEDUSA.manage.episodeStatuses = function() {
                     });
                 });
             });
-            $(this).prop('data-clicked', 1);
+            $(this).data('clicked', 1);
             $(this).prop('value', 'Collapse');
         }
     });

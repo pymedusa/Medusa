@@ -2,12 +2,12 @@
 
 from __future__ import unicode_literals
 
-from tornado.routes import route
 import sickbeard
-from sickbeard import ui
 from sickrage.helper.common import try_int
 from sickrage.show.History import History as HistoryTool
-from sickbeard.server.web.core.base import WebRoot, PageTemplate
+from tornado.routes import route
+from .base import PageTemplate, WebRoot
+from .... import ui
 
 
 @route('/history(/?.*)')

@@ -17,32 +17,26 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import xml.etree.ElementTree as ET
-import requests
-import time
 import datetime
-import threading
-import sickbeard
 import logging
+import threading
+import time
+import xml.etree.ElementTree as ET
 
-from sickbeard import ui
-from sickbeard import db
-from sickbeard import network_timezones
-from sickbeard import failed_history
-from sickbeard import helpers
-from sickrage.helper.exceptions import CantRefreshShowException, CantUpdateShowException, ex
-from sickbeard.indexers.indexer_config import INDEXER_TVRAGE
-from sickbeard.indexers.indexer_config import INDEXER_TVDB
+import sickbeard
+from sickrage.helper.exceptions import CantRefreshShowException, CantUpdateShowException
+from . import db, failed_history, helpers, network_timezones, ui
+from .indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
 
 logger = logging.getLogger(__name__)
 
-class ShowUpdater(object):  # pylint: disable=too-few-public-methods
+class ShowUpdater(object):
     def __init__(self):
         self.lock = threading.Lock()
         self.amActive = False
         self.session = helpers.make_session()
 
-    def run(self, force=False):  # pylint: disable=unused-argument, too-many-locals, too-many-branches, too-many-statements
+    def run(self, force=False):
 
         self.amActive = True
 
@@ -107,7 +101,7 @@ class ShowUpdater(object):  # pylint: disable=too-few-public-methods
                     if cur_show.indexerid in updated_shows:
                         # If the cur_show is not 'paused' then add to the showQueueSchedular
                         if not cur_show.paused:
-                            pi_list.append(sickbeard.showQueueScheduler.action.updateShow(cur_show, True))
+                            pi_list.append(sickbeard.showQueueScheduler.action.updateShow(cur_show))
                         else:
                             logger.info(u'Show update skipped, show: {show} is paused.', show=cur_show.name)
                 else:
@@ -115,14 +109,16 @@ class ShowUpdater(object):  # pylint: disable=too-few-public-methods
 
                     if cur_show.should_update(update_date=update_date):
                         try:
-                            pi_list.append(sickbeard.showQueueScheduler.action.updateShow(cur_show, True))
+                            pi_list.append(sickbeard.showQueueScheduler.action.updateShow(cur_show))
                         except CantUpdateShowException as e:
                             logger.debug(u'Unable to update show: {error}', error=e)
                     else:
                         logger.debug(
                             u'Not updating episodes for show {show} because the last or next episode is not within the grace period.', show = cur_show.name)
             except (CantUpdateShowException, CantRefreshShowException) as e:
-                logger.error(u'Automatic update failed: {0}', error=e)
+                logger.warning(u'Automatic update failed. Error: {error}', error=e)
+            except Exception as e:
+                logger.error(u'Automatic update failed: Error: {error}', error=e)
 
         ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator("Daily Update", pi_list))
 

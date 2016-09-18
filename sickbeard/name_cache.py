@@ -20,14 +20,11 @@
 
 import threading
 
-from six import iteritems
-
 import sickbeard
-from sickbeard import db, logger
-from sickbeard.scene_exceptions import (
-    retrieve_exceptions, get_scene_seasons, get_scene_exceptions,
-)
-from sickbeard.helpers import full_sanitizeSceneName
+from six import iteritems
+from . import db, logger
+from .helpers import full_sanitizeSceneName
+from .scene_exceptions import get_scene_exceptions, get_scene_seasons, retrieve_exceptions
 
 nameCache = {}
 nameCacheLock = threading.Lock()

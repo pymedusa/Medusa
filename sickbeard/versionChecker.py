@@ -17,28 +17,27 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import os
 import platform
-import subprocess
 import re
-
-import tarfile
-import stat
-import traceback
-import time
-import datetime
 import shutil
+import stat
+import subprocess
+import tarfile
+import time
+import traceback
+
 import shutil_custom
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
 import sickbeard
-from sickbeard import db
-from sickbeard import ui
-from sickbeard import notifiers
-from sickbeard import logger, helpers
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
+
+from . import db, helpers, logger, notifiers, ui
+from .github_client import get_github_repo
 
 
 class CheckVersion(object):
@@ -50,12 +49,11 @@ class CheckVersion(object):
         self.updater = None
         self.install_type = None
         self.amActive = False
-        if sickbeard.gh:
-            self.install_type = self.find_install_type()
-            if self.install_type == 'git':
-                self.updater = GitUpdateManager()
-            elif self.install_type == 'source':
-                self.updater = SourceUpdateManager()
+        self.install_type = self.find_install_type()
+        if self.install_type == 'git':
+            self.updater = GitUpdateManager()
+        elif self.install_type == 'source':
+            self.updater = SourceUpdateManager()
 
         self.session = helpers.make_session()
 
@@ -335,7 +333,8 @@ class CheckVersion(object):
         return news
 
     def need_update(self):
-        return self.updater.need_update()
+        if self.updater:
+            return self.updater.need_update()
 
     def update(self):
         if self.updater:
@@ -347,7 +346,8 @@ class CheckVersion(object):
                 return self.updater.update()
 
     def list_remote_branches(self):
-        sickbeard.GIT_REMOTE_BRANCHES = self.updater.list_remote_branches()
+        if self.updater:
+            sickbeard.GIT_REMOTE_BRANCHES = self.updater.list_remote_branches()
         return sickbeard.GIT_REMOTE_BRANCHES
 
     def get_branch(self):
@@ -659,7 +659,7 @@ class GitUpdateManager(UpdateManager):
 
         # remove untracked files and performs a hard reset on git branch to avoid update issues
         if self._is_hard_reset_allowed():
-            # self.clean() # This is removing user data and backups
+            self.clean()
             self.reset()
 
         if self.branch == self._find_installed_branch():
@@ -691,13 +691,20 @@ class GitUpdateManager(UpdateManager):
                                         sickbeard.BRANCH in sickbeard.GIT_RESET_BRANCHES)
 
     def clean(self):
+        """Call git clean to remove all untracked files.
+
+        It only affects source folders (sickbeard, sickrage) and the lib folder,
+        to prevent deleting untracked user data not known by .gitignore
+
+        :return:
+        :rtype: bool
         """
-        Calls git clean to remove all untracked files. Returns a bool depending
-        on the call's success.
-        """
-        _, _, exit_status = self._run_git(self._git_path, 'clean -df ""')  # @UnusedVariable
-        if exit_status == 0:
-            return True
+        for folder in ('lib', 'sickbeard', 'sickrage'):
+            _, _, exit_status = self._run_git(self._git_path, 'clean -d -f {0}'.format(folder))
+            if exit_status != 0:
+                return False
+
+        return True
 
     def reset(self):
         """
@@ -805,10 +812,11 @@ class SourceUpdateManager(UpdateManager):
         self._num_commits_behind = 0
         self._newest_commit_hash = None
 
+        gh = get_github_repo(sickbeard.GIT_ORG, sickbeard.GIT_REPO)
         # try to get newest commit hash and commits behind directly by comparing branch and current commit
         if self._cur_commit_hash:
             try:
-                branch_compared = sickbeard.gh.compare(base=self.branch, head=self._cur_commit_hash)
+                branch_compared = gh.compare(base=self.branch, head=self._cur_commit_hash)
                 self._newest_commit_hash = branch_compared.base_commit.sha
                 self._num_commits_behind = branch_compared.behind_by
                 self._num_commits_ahead = branch_compared.ahead_by
@@ -821,7 +829,7 @@ class SourceUpdateManager(UpdateManager):
         # fall back and iterate over last 100 (items per page in gh_api) commits
         if not self._newest_commit_hash:
 
-            for curCommit in sickbeard.gh.get_commits():
+            for curCommit in gh.get_commits():
                 if not self._newest_commit_hash:
                     self._newest_commit_hash = curCommit.sha
                     if not self._cur_commit_hash:
@@ -955,4 +963,5 @@ class SourceUpdateManager(UpdateManager):
 
     @staticmethod
     def list_remote_branches():
-        return [x.name for x in sickbeard.gh.get_branches() if x]
+        gh = get_github_repo(sickbeard.GIT_ORG, sickbeard.GIT_REPO)
+        return [x.name for x in gh.get_branches() if x]

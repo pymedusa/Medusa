@@ -22,19 +22,17 @@ from __future__ import unicode_literals
 import os
 import re
 import time
-import validators
-import sickbeard
 import traceback
 
 from requests.compat import urljoin
-
-from sickbeard import logger, tvcache
-from sickbeard.bs4_parser import BS4Parser
-from sickbeard.common import cpu_presets
-
+import sickbeard
 from sickrage.helper.common import convert_size, try_int
 from sickrage.helper.encoding import ek, ss
 from sickrage.providers.nzb.NZBProvider import NZBProvider
+import validators
+from ... import logger, tvcache
+from ...bs4_parser import BS4Parser
+from ...common import cpu_presets
 
 
 class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attributes, too-many-arguments

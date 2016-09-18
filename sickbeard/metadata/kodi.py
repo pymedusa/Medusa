@@ -20,10 +20,9 @@
 
 import os
 
-from sickbeard.metadata import generic
-from sickbeard.metadata import kodi_12plus
 from sickrage.helper.common import replace_extension
 from sickrage.helper.encoding import ek
+from ..metadata import kodi_12plus
 
 
 class KODIMetadata(kodi_12plus.KODI_12PlusMetadata):
@@ -54,19 +53,16 @@ class KODIMetadata(kodi_12plus.KODI_12PlusMetadata):
                  season_banners=False,
                  season_all_poster=False,
                  season_all_banner=False):
-
-        generic.GenericMetadata.__init__(self,
-                                         show_metadata,
-                                         episode_metadata,
-                                         fanart,
-                                         poster,
-                                         banner,
-                                         episode_thumbnails,
-                                         season_posters,
-                                         season_banners,
-                                         season_all_poster,
-                                         season_all_banner)
-
+        super(KODIMetadata, self).__init__(show_metadata,
+                                           episode_metadata,
+                                           fanart,
+                                           poster,
+                                           banner,
+                                           episode_thumbnails,
+                                           season_posters,
+                                           season_banners,
+                                           season_all_poster,
+                                           season_all_banner)
         self.name = 'KODI'
 
         self.poster_name = self.banner_name = "folder.jpg"

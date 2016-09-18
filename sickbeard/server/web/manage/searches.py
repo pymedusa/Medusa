@@ -2,13 +2,13 @@
 
 from __future__ import unicode_literals
 
-from tornado.routes import route
 import sickbeard
-from sickbeard import (
+from tornado.routes import route
+from .handler import Manage
+from ..core import PageTemplate
+from .... import (
     logger, ui,
 )
-from sickbeard.server.web.core import PageTemplate
-from sickbeard.server.web.manage.handler import Manage
 
 
 @route('/manage/manageSearches(/?.*)')

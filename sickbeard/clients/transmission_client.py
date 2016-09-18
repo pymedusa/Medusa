@@ -24,11 +24,10 @@ from __future__ import unicode_literals
 import json
 import os
 import re
-
 from base64 import b64encode
+
 from requests.compat import urljoin
 import sickbeard
-
 from .generic import GenericClient
 
 

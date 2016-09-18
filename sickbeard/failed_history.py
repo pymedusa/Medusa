@@ -18,18 +18,15 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import re
 import datetime
+import re
 
 from requests.compat import unquote
-
-from sickbeard import db
-from sickbeard import logger
-from sickbeard.common import Quality
-from sickbeard.common import WANTED, FAILED
 from sickrage.helper.encoding import ss
 from sickrage.helper.exceptions import EpisodeNotFoundException, ex
 from sickrage.show.History import History
+from . import db, logger
+from .common import FAILED, Quality, WANTED
 
 
 def prepareFailedName(release):

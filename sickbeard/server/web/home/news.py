@@ -3,11 +3,11 @@
 from __future__ import unicode_literals
 
 import markdown2
-from tornado.routes import route
 import sickbeard
-from sickbeard import logger
-from sickbeard.server.web.core import PageTemplate
-from sickbeard.server.web.home.handler import Home
+from tornado.routes import route
+from .handler import Home
+from ..core import PageTemplate
+from .... import logger
 
 
 @route('/news(/?.*)')

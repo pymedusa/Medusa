@@ -23,10 +23,9 @@
 import time
 from xml.dom.minidom import parseString
 
-from six.moves.urllib.request import Request, urlopen
-
 import sickbeard
-from sickbeard import logger
+from six.moves.urllib.request import Request, urlopen
+from .. import logger
 
 try:
     import xml.etree.cElementTree as etree

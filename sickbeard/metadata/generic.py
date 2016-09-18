@@ -18,22 +18,19 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import io
+import os
 import re
 
+import sickbeard
+from sickrage.helper.common import replace_extension
+from sickrage.helper.encoding import ek
+from sickrage.helper.exceptions import ex
 from six import iterkeys, text_type
 from tmdb_api.tmdb_api import TMDB
-
-import sickbeard
-from sickbeard import helpers
-from sickbeard import logger
-from sickbeard.metadata import helpers as metadata_helpers
-from sickbeard.show_name_helpers import allPossibleShowNames
-
-from sickrage.helper.common import replace_extension
-from sickrage.helper.exceptions import ex
-from sickrage.helper.encoding import ek
+from .. import helpers, logger
+from ..metadata import helpers as metadata_helpers
+from ..show_name_helpers import allPossibleShowNames
 
 try:
     import xml.etree.cElementTree as etree
@@ -287,6 +284,9 @@ class GenericMetadata(object):
                 helpers.chmodAsParent(nfo_file_path)
 
                 return True
+            except etree.ParseError as error:
+                logger.log('Received an invalid XML for {show}, try again later. Error: {error_msg}'.format
+                           (show=show_obj.name, error_msg=error), logger.WARNING)
             except IOError as e:
                 logger.log(
                     u"Unable to write file to " + nfo_file_path + " - are you sure the folder is writable? " + ex(e),
@@ -410,7 +410,7 @@ class GenericMetadata(object):
 
             logger.log(u"Writing show nfo file to " + nfo_file_path, logger.DEBUG)
 
-            nfo_file = io.open(nfo_file_path, 'wb')
+            nfo_file = ek(io.open, nfo_file_path, 'wb')
             data.write(nfo_file, encoding='UTF-8')
             nfo_file.close()
             helpers.chmodAsParent(nfo_file_path)
@@ -454,7 +454,7 @@ class GenericMetadata(object):
                 helpers.chmodAsParent(nfo_file_dir)
 
             logger.log(u"Writing episode nfo file to " + nfo_file_path, logger.DEBUG)
-            nfo_file = io.open(nfo_file_path, 'wb')
+            nfo_file = ek(io.open, nfo_file_path, 'wb')
             data.write(nfo_file, encoding='UTF-8')
             nfo_file.close()
             helpers.chmodAsParent(nfo_file_path)
@@ -702,7 +702,7 @@ class GenericMetadata(object):
                 ek(os.makedirs, image_dir)
                 helpers.chmodAsParent(image_dir)
 
-            outFile = io.open(image_path, 'wb')
+            outFile = ek(io.open, image_path, 'wb')
             outFile.write(image_data)
             outFile.close()
             helpers.chmodAsParent(image_path)

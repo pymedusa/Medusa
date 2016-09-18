@@ -20,9 +20,8 @@
 
 import os
 
-from sickbeard.metadata import generic
-
 from sickrage.helper.encoding import ek
+from ..metadata import generic
 
 
 class PS3Metadata(generic.GenericMetadata):

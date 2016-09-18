@@ -21,15 +21,12 @@ from __future__ import unicode_literals
 import time
 import traceback
 
-from requests.compat import urljoin
 from requests.auth import AuthBase
-
-from sickbeard import logger, tvcache
-from sickbeard.common import USER_AGENT
-
-from sickrage.helper.common import try_int
-from sickrage.helper.common import convert_size
+from requests.compat import urljoin
+from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
+from .... import logger, tvcache
+from ....common import USER_AGENT
 
 
 class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attributes

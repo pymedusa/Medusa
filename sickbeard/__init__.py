@@ -19,53 +19,47 @@
 # pylint: disable=too-many-lines
 
 import datetime
-import socket
 import os
-import re
 import os.path
-import shutil
-import shutil_custom
 import random
-
-from threading import Lock
+import re
+import shutil
+import socket
 import sys
-
-from github import Github
-
-from sickbeard import metadata
-from sickbeard import providers
-from sickbeard.config import (
-    CheckSection, ConfigMigrator,
-    check_provider_setting, check_setting_int, check_setting_bool, check_setting_str, check_setting_float,
-    load_provider_setting, save_provider_setting
-)
-from sickbeard import (
-    searchBacklog, showUpdater, versionChecker, properFinder, auto_postprocessor, subtitles, traktChecker,
-)
-from sickbeard import db, helpers, scheduler, search_queue, show_queue, logger, naming, dailysearcher
-from sickbeard.indexers import indexer_api
-from sickbeard.indexers.indexer_exceptions import (
-    indexer_shownotfound, indexer_showincomplete, indexer_exception, indexer_error, indexer_episodenotfound,
-    indexer_attributenotfound, indexer_seasonnotfound, indexer_userabort,
-)
-from sickbeard.common import SD, SKIPPED, WANTED
-from sickbeard.providers import NewznabProvider, TorrentRssProvider
-from sickbeard.databases import main_db, cache_db, failed_db
-
-from sickrage.helper.encoding import ek
-from sickrage.helper.exceptions import ex
-from sickrage.providers.GenericProvider import GenericProvider
-from sickrage.system.Shutdown import Shutdown
+from threading import Lock
 
 from configobj import ConfigObj
-
 import requests
+import shutil_custom
+import sickrage.helper.exceptions
+from sickrage.helper.encoding import ek
+from sickrage.providers.GenericProvider import GenericProvider
+from sickrage.system.Shutdown import Shutdown
+from . import (
+    auto_postprocessor, dailysearcher, db, helpers, logger, metadata, naming, properFinder, providers,
+    scheduler, searchBacklog, search_queue, showUpdater, show_queue, subtitles, traktChecker, versionChecker
+)
+from .common import SD, SKIPPED, WANTED
+from .config import (
+    CheckSection, ConfigMigrator, check_provider_setting, check_setting_bool, check_setting_float,
+    check_setting_int, check_setting_str, load_provider_setting, save_provider_setting
+)
+from .databases import cache_db, failed_db, main_db
+from .github_client import authenticate
+from .indexers import indexer_api
+from .indexers.indexer_exceptions import (
+    indexer_attributenotfound, indexer_episodenotfound, indexer_error, indexer_exception,
+    indexer_seasonnotfound, indexer_showincomplete, indexer_shownotfound, indexer_userabort
+)
+from .providers import NewznabProvider, TorrentRssProvider
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
 requests.packages.urllib3.disable_warnings()
 
 indexerApi = indexer_api.indexerApi
+
+ex = sickrage.helper.exceptions.ex
 
 PID = None
 
@@ -94,10 +88,7 @@ NO_RESIZE = False
 # system events
 events = None
 
-# github
-gh = None
-
-# schedualers
+# schedulers
 dailySearchScheduler = None
 backlogSearchScheduler = None
 showUpdateScheduler = None
@@ -666,7 +657,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             AUTOPOSTPROCESSOR_FREQUENCY, SHOWUPDATE_HOUR, \
             ANIME_DEFAULT, NAMING_ANIME, ANIMESUPPORT, USE_ANIDB, ANIDB_USERNAME, ANIDB_PASSWORD, ANIDB_USE_MYLIST, \
             ANIME_SPLIT_HOME, SCENE_DEFAULT, DOWNLOAD_URL, BACKLOG_DAYS, GIT_USERNAME, GIT_PASSWORD, \
-            DEVELOPER, gh, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, BROKEN_PROVIDERS, SOCKET_TIMEOUT, RECENTLY_DELETED, \
+            DEVELOPER, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, BROKEN_PROVIDERS, SOCKET_TIMEOUT, RECENTLY_DELETED, \
             FANART_BACKGROUND, FANART_BACKGROUND_OPACITY, GIT_REMOTE_BRANCHES
 
         if __INITIALIZED__:
@@ -715,20 +706,6 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         # init logging
         logger.init_logging(console_logging=consoleLogging)
 
-        try:
-            if GIT_USERNAME and GIT_PASSWORD:
-                gh = Github(login_or_token=GIT_USERNAME, password=GIT_PASSWORD, user_agent="Medusa").get_organization(GIT_ORG).get_repo(GIT_REPO)
-        except Exception as error:
-            logger.log(u'Unable to setup GitHub properly with your github login. Please check your credentials. Error: {}'.format(error), logger.WARNING)
-            gh = None
-
-        if not gh:
-            try:
-                gh = Github(user_agent="Medusa").get_organization(GIT_ORG).get_repo(GIT_REPO)
-            except Exception as error:
-                logger.log(u'Unable to setup GitHub properly. GitHub will not be available. Error: {}'.format(error), logger.WARNING)
-                gh = None
-
         # git reset on update
         GIT_RESET = bool(check_setting_int(CFG, 'General', 'git_reset', 1))
         GIT_RESET_BRANCHES = check_setting_str(CFG, 'General', 'git_reset_branches', GIT_RESET_BRANCHES).split(',')
@@ -768,40 +745,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             CACHE_DIR = None
 
         # Check if we need to perform a restore of the cache folder
-        try:
-            restoreDir = ek(os.path.join, DATA_DIR, 'restore')
-            if ek(os.path.exists, restoreDir) and ek(os.path.exists, ek(os.path.join, restoreDir, 'cache')):
-                def restoreCache(srcDir, dstDir):
-                    def path_leaf(path):
-                        head, tail = ek(os.path.split, path)
-                        return tail or ek(os.path.basename, head)
-
-                    try:
-                        if ek(os.path.isdir, dstDir):
-                            bak_filename = '{0}-{1}'.format(path_leaf(dstDir), datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d_%H%M%S'))
-                            shutil.move(dstDir, ek(os.path.join, ek(os.path.dirname, dstDir), bak_filename))
-
-                        shutil.move(srcDir, dstDir)
-                        logger.log(u"Restore: restoring cache successful", logger.INFO)
-                    except Exception as e:
-                        logger.log(u"Restore: restoring cache failed: {0}".format(str(e)), logger.ERROR)
-
-                restoreCache(ek(os.path.join, restoreDir, 'cache'), CACHE_DIR)
-        except Exception as e:
-            logger.log(u"Restore: restoring cache failed: {0}".format(ex(e)), logger.ERROR)
-        finally:
-            if ek(os.path.exists, ek(os.path.join, DATA_DIR, 'restore')):
-                try:
-                    shutil.rmtree(ek(os.path.join, DATA_DIR, 'restore'))
-                except Exception as e:
-                    logger.log(u"Restore: Unable to remove the restore directory: {0}".format(ex(e)), logger.ERROR)
-
-                for cleanupDir in ['mako', 'sessions', 'indexers', 'rss']:
-                    try:
-                        shutil.rmtree(ek(os.path.join, CACHE_DIR, cleanupDir))
-                    except Exception as e:
-                        if cleanupDir not in ['rss', 'sessions', 'indexers']:
-                            logger.log(u"Restore: Unable to remove the cache/{0} directory: {1}".format(cleanupDir, ex(e)), logger.WARNING)
+        restore_cache_folder(CACHE_DIR)
 
         FANART_BACKGROUND = bool(check_setting_int(CFG, 'GUI', 'fanart_background', 1))
         FANART_BACKGROUND_OPACITY = check_setting_float(CFG, 'GUI', 'fanart_background_opacity', 0.4)
@@ -1312,8 +1256,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             # since the attr name does not match the default provider option style of '{provider}_{attribute}'
             provider.enabled = check_setting_bool(CFG, provider.get_id().upper(), provider.get_id(), 0)
 
-            load_provider_setting(CFG, provider, 'string', 'username', '', censor_log='normal'),
-            load_provider_setting(CFG, provider, 'string', 'api_key', '', censor_log='low'),
+            load_provider_setting(CFG, provider, 'string', 'username', '', censor_log='normal')
+            load_provider_setting(CFG, provider, 'string', 'api_key', '', censor_log='low')
             load_provider_setting(CFG, provider, 'string', 'search_mode', 'eponly')
             load_provider_setting(CFG, provider, 'bool', 'search_fallback', 0)
             load_provider_setting(CFG, provider, 'bool', 'enable_daily', 1)
@@ -1321,26 +1265,26 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             load_provider_setting(CFG, provider, 'bool', 'enable_manualsearch', 1)
 
             if provider.provider_type == GenericProvider.TORRENT:
-                load_provider_setting(CFG, provider, 'string', 'custom_url', '', censor_log='low'),
-                load_provider_setting(CFG, provider, 'string', 'hash', '', censor_log='low'),
-                load_provider_setting(CFG, provider, 'string', 'digest', '', censor_log='low'),
-                load_provider_setting(CFG, provider, 'string', 'password', '', censor_log='low'),
-                load_provider_setting(CFG, provider, 'string', 'passkey', '', censor_log='low'),
-                load_provider_setting(CFG, provider, 'string', 'pin', '', censor_log='low'),
-                load_provider_setting(CFG, provider, 'string', 'sorting', 'seeders'),
-                load_provider_setting(CFG, provider, 'string', 'options', ''),
-                load_provider_setting(CFG, provider, 'string', 'ratio', ''),
-                load_provider_setting(CFG, provider, 'bool', 'confirmed', 1),
-                load_provider_setting(CFG, provider, 'bool', 'ranked', 1),
-                load_provider_setting(CFG, provider, 'bool', 'engrelease', 0),
-                load_provider_setting(CFG, provider, 'bool', 'onlyspasearch', 0),
-                load_provider_setting(CFG, provider, 'int', 'minseed', 1),
-                load_provider_setting(CFG, provider, 'int', 'minleech', 0),
-                load_provider_setting(CFG, provider, 'bool', 'freeleech', 0),
-                load_provider_setting(CFG, provider, 'int', 'cat', 0),
-                load_provider_setting(CFG, provider, 'bool', 'subtitle', 0),
+                load_provider_setting(CFG, provider, 'string', 'custom_url', '', censor_log='low')
+                load_provider_setting(CFG, provider, 'string', 'hash', '', censor_log='low')
+                load_provider_setting(CFG, provider, 'string', 'digest', '', censor_log='low')
+                load_provider_setting(CFG, provider, 'string', 'password', '', censor_log='low')
+                load_provider_setting(CFG, provider, 'string', 'passkey', '', censor_log='low')
+                load_provider_setting(CFG, provider, 'string', 'pin', '', censor_log='low')
+                load_provider_setting(CFG, provider, 'string', 'sorting', 'seeders')
+                load_provider_setting(CFG, provider, 'string', 'options', '')
+                load_provider_setting(CFG, provider, 'string', 'ratio', '')
+                load_provider_setting(CFG, provider, 'bool', 'confirmed', 1)
+                load_provider_setting(CFG, provider, 'bool', 'ranked', 1)
+                load_provider_setting(CFG, provider, 'bool', 'engrelease', 0)
+                load_provider_setting(CFG, provider, 'bool', 'onlyspasearch', 0)
+                load_provider_setting(CFG, provider, 'int', 'minseed', 1)
+                load_provider_setting(CFG, provider, 'int', 'minleech', 0)
+                load_provider_setting(CFG, provider, 'bool', 'freeleech', 0)
+                load_provider_setting(CFG, provider, 'int', 'cat', 0)
+                load_provider_setting(CFG, provider, 'bool', 'subtitle', 0)
                 if provider.enable_cookies:
-                    load_provider_setting(CFG, provider, 'string', 'cookies', '', censor_log='low'),
+                    load_provider_setting(CFG, provider, 'string', 'cookies', '', censor_log='low')
 
         if not ek(os.path.isfile, CONFIG_FILE):
             logger.log(u"Unable to find '" + CONFIG_FILE + "', all settings will be default!", logger.DEBUG)
@@ -1464,6 +1408,40 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         __INITIALIZED__ = True
         return True
+
+
+def restore_cache_folder(cache_folder):
+    """Restore cache folder.
+
+    :param cache_folder:
+    :type cache_folder: string
+    """
+    restore_folder = ek(os.path.join, DATA_DIR, 'restore')
+    if not ek(os.path.exists, restore_folder) or not ek(os.path.exists, ek(os.path.join, restore_folder, 'cache')):
+        return
+
+    try:
+        def restore_cache(src_folder, dest_folder):
+            def path_leaf(path):
+                head, tail = ek(os.path.split, path)
+                return tail or ek(os.path.basename, head)
+
+            try:
+                if ek(os.path.isdir, dest_folder):
+                    bak_filename = '{0}-{1}'.format(path_leaf(dest_folder), datetime.datetime.now().strftime('%Y%m%d_%H%M%S'))
+                    shutil.move(dest_folder, ek(os.path.join, ek(os.path.dirname, dest_folder), bak_filename))
+
+                shutil.move(src_folder, dest_folder)
+                logger.log(u"Restore: restoring cache successful", logger.INFO)
+            except OSError as e:
+                logger.log(u"Restore: restoring cache failed: {0!r}".format(e), logger.ERROR)
+
+        restore_cache(ek(os.path.join, restore_folder, 'cache'), cache_folder)
+    finally:
+        helpers.remove_folder(restore_folder)
+        for name in ('mako', 'sessions', 'indexers', 'rss'):
+            folder_path = ek(os.path.join, cache_folder, name)
+            helpers.remove_folder(folder_path)
 
 
 def start():

@@ -16,34 +16,26 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+"""Common interface for Quality and Status."""
 
-"""
-Common interface for Quality and Status
-"""
-
-# pylint: disable=line-too-long
-
-from collections import namedtuple
 import operator
-from os import path
 import platform
 import re
 import uuid
 
+from collections import namedtuple
+from os import path
+
+from fake_useragent import UserAgent, settings as UA_SETTINGS
+from hachoir_core.log import log as hachoir_log
+from hachoir_metadata import extractMetadata
+from hachoir_parser import createParser
+from sickrage.helper.encoding import ek
+from sickrage.recompiled import tags
+from sickrage.tagger.episode import EpisodeTags
 from six import PY3
 from six.moves import reduce
-from fake_useragent import (
-    settings as UA_SETTINGS,
-    UserAgent,
-)
-from hachoir_parser import createParser  # pylint: disable=import-error
-from hachoir_metadata import extractMetadata  # pylint: disable=import-error
-from hachoir_core.log import log as hachoir_log  # pylint: disable=import-error
-
-from sickbeard.numdict import NumDict
-from sickrage.helper.encoding import ek
-from sickrage.tagger.episode import EpisodeTags
-from sickrage.recompiled import tags
+from .numdict import NumDict
 
 if PY3:
     long = int

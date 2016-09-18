@@ -18,15 +18,15 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import db
 import datetime
 
-from sickbeard.common import SNATCHED, SUBTITLED, FAILED, Quality
+import db
 from sickrage.helper.encoding import ss
 from sickrage.show.History import History
+from .common import FAILED, Quality, SNATCHED, SUBTITLED
 
 
-def _logHistoryItem(action, showid, season, episode, quality, resource, provider, version=-1):
+def _logHistoryItem(action, showid, season, episode, quality, resource, provider, version=-1, proper_tags=''):
     """
     Insert a history item in DB
 
@@ -44,8 +44,8 @@ def _logHistoryItem(action, showid, season, episode, quality, resource, provider
 
     main_db_con = db.DBConnection()
     main_db_con.action(
-        "INSERT INTO history (action, date, showid, season, episode, quality, resource, provider, version) VALUES (?,?,?,?,?,?,?,?,?)",
-        [action, logDate, showid, season, episode, quality, resource, provider, version])
+        "INSERT INTO history (action, date, showid, season, episode, quality, resource, provider, version, proper_tags) VALUES (?,?,?,?,?,?,?,?,?,?)",
+        [action, logDate, showid, season, episode, quality, resource, provider, version, proper_tags])
 
 
 def logSnatch(searchResult):
@@ -61,6 +61,7 @@ def logSnatch(searchResult):
         episode = int(curEpObj.episode)
         quality = searchResult.quality
         version = searchResult.version
+        proper_tags = '|'.join(searchResult.proper_tags)
 
         providerClass = searchResult.provider
         if providerClass is not None:
@@ -72,7 +73,7 @@ def logSnatch(searchResult):
 
         resource = searchResult.name
 
-        _logHistoryItem(action, showid, season, episode, quality, resource, provider, version)
+        _logHistoryItem(action, showid, season, episode, quality, resource, provider, version, proper_tags)
 
 
 def logDownload(episode, filename, new_ep_quality, release_group=None, version=-1):
