@@ -1189,13 +1189,13 @@ class TestIncreaseMajorVersion(AddMinorVersion):
     """
     def test(self):
         """
-        Test if the version is at least 43.1
+        Test if the version is at least 44.0
         """
-        return self.connection.version >= (43, 1)
+        return self.connection.version >= (44, 0)
 
     def execute(self):
         """
-        Updates the version to 43.1
+        Updates the version to 44.0
         """
         backupDatabase(self.connection.version)
 
@@ -1211,15 +1211,21 @@ class AddProperTags(TestIncreaseMajorVersion):
 
     def test(self):
         """
-        Test if the version is at least 43.2
+        Test if the version is at least 44.2
         """
-        return self.connection.version >= (43, 2)
+        return self.connection.version >= (44, 2)
 
     def execute(self):
-        backupDatabase(self.checkDBVersion())
+        """
+        Updates the version to 44.2 and adds proper_tags column
+        """
+        backupDatabase(self.connection.version)
 
-        logger.log(u'Adding column proper_tags in history')
         if not self.hasColumn('history', 'proper_tags'):
+            logger.log(u'Adding column proper_tags to history')
             self.addColumn('history', 'proper_tags', 'TEXT', u'')
+
         MainSanityCheck(self.connection).update_old_propers()
         self.inc_minor_version()
+
+        logger.log(u'Updated to: %d.%d' % self.connection.version)
