@@ -111,9 +111,6 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         :param mode: The current mode used to search, e.g. RSS
         :return: A list of items found
         """
-        # RSS search has one less column
-        decrease = 1 if mode == 'RSS' else 0
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -121,15 +118,22 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
-            if torrent_rows < 3 or (torrent_rows == 3 and torrent_rows[2].get_text() == 'No torrents'):
+            if len(torrent_rows) < 3 or (torrent_rows == 3 and torrent_rows[2].get_text() == 'No torrents'):
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
 
+            # RSS search has one less column
+            decrease = 1
+
             # Avoid parsing of 'related torrents'
-            h2s = html.find_all('h2')
-            if h2s > 2 and h2s[1].get_text() == 'Related torrents':
-                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
-                return items
+            if mode != 'RSS':
+                h2s = html.find_all('h2')
+                if len(h2s) > 2 and h2s[1].get_text() == 'Related torrents':
+                    logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                    return items
+
+                # Don't decrease column
+                decrease = 0
 
             # Skip column headers
             for result in torrent_rows[2:]:
