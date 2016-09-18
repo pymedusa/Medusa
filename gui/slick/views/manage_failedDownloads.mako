@@ -1,12 +1,12 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
+    import medusa as sickbeard
     import os.path
     import datetime
     import re
-    from sickbeard import providers
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from sickbeard.common import Quality, qualityPresets, qualityPresetStrings, statusStrings, Overview
+    from medusa import providers
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
+    from medusa.common import Quality, qualityPresets, qualityPresetStrings, statusStrings, Overview
     from sickrage.providers.GenericProvider import GenericProvider
     from sickrage.helper.common import pretty_file_size
 %>

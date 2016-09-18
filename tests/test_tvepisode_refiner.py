@@ -2,8 +2,8 @@
 """Tests for sickbeard.refiners.tvepisode.py."""
 
 import pytest
-from sickbeard.common import DOWNLOADED, Quality
-from sickbeard.refiners import tvepisode as sut
+from medusa.common import DOWNLOADED, Quality
+from medusa.refiners import tvepisode as sut
 from subliminal.video import Video
 
 

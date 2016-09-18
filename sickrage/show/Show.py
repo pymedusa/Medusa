@@ -19,9 +19,9 @@
 
 from datetime import date
 
-import sickbeard
-from sickbeard.common import Quality, SKIPPED, WANTED
-from sickbeard.db import DBConnection
+import medusa as sickbeard
+from medusa.common import Quality, SKIPPED, WANTED
+from medusa.db import DBConnection
 from ..helper.exceptions import CantRefreshShowException, CantRemoveShowException, MultipleShowObjectsException, ex
 
 

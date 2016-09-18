@@ -24,7 +24,7 @@ import re
 import traceback
 from fnmatch import fnmatch
 
-import sickbeard
+import medusa as sickbeard
 from six import PY3, text_type
 
 logger = logging.getLogger(__name__)

@@ -24,7 +24,7 @@ from __future__ import unicode_literals
 import logging
 
 from adba.aniDBerrors import AniDBCommandTimeoutError
-import sickbeard
+import medusa as sickbeard
 from . import db, helpers
 
 

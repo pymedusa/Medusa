@@ -25,7 +25,7 @@ import logging
 import re
 
 from requests.compat import urljoin
-import sickbeard
+import medusa as sickbeard
 from six import iteritems
 from .generic import GenericClient
 

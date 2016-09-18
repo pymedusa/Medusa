@@ -20,7 +20,7 @@
 
 import oauth2 as oauth
 import pythontwitter as twitter
-import sickbeard
+import medusa as sickbeard
 from six.moves.urllib.parse import parse_qsl
 from .. import common, logger
 

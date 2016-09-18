@@ -1,9 +1,9 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
+    import medusa as sickbeard
     import calendar
-    from sickbeard import sbdatetime
-    from sickbeard import network_timezones
+    from medusa import sbdatetime
+    from medusa import network_timezones
     from sickrage.helper.common import pretty_file_size
     import re
 %>

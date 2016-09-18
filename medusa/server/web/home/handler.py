@@ -10,7 +10,7 @@ from datetime import date
 
 import adba
 from requests.compat import quote_plus, unquote_plus
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import enabled_providers, try_int
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex

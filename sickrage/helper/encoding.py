@@ -21,7 +21,7 @@
 from os import name
 
 from chardet import detect
-import sickbeard
+import medusa as sickbeard
 from six import text_type
 
 

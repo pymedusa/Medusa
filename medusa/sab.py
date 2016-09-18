@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 import datetime
 
 from requests.compat import urljoin
-import sickbeard
+import medusa as sickbeard
 from . import helpers, logger
 
 session = helpers.make_session()

@@ -4,20 +4,20 @@
     import urllib
     import ntpath
     import os.path
-    import sickbeard
+    import medusa as sickbeard
     import time
-    from sickbeard import subtitles, sbdatetime, network_timezones, helpers
-    import sickbeard.helpers
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
-    from sickbeard.common import Quality, qualityPresets, statusStrings, Overview
-    from sickbeard.helpers import anon_url
-    from sickbeard.show_name_helpers import containsAtLeastOneWord, filterBadReleases
+    from medusa import subtitles, sbdatetime, network_timezones, helpers
+    import medusa.helpers
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
+    from medusa.common import Quality, qualityPresets, statusStrings, Overview
+    from medusa.helpers import anon_url
+    from medusa.show_name_helpers import containsAtLeastOneWord, filterBadReleases
     from sickrage.helper.common import pretty_file_size, episode_num
-    from sickbeard.sbdatetime import sbdatetime
+    from medusa.sbdatetime import sbdatetime
     from sickrage.show.History import History
-    from sickbeard.failed_history import prepareFailedName
+    from medusa.failed_history import prepareFailedName
     from sickrage.providers.GenericProvider import GenericProvider
-    from sickbeard import providers
+    from medusa import providers
     from sickrage.helper.encoding import ek
 %>
 <%block name="scripts">

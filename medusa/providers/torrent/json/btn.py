@@ -22,7 +22,7 @@ import socket
 import time
 
 import jsonrpclib
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import episode_num
 from sickrage.helper.exceptions import ex
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider

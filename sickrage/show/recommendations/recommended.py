@@ -22,8 +22,8 @@ from __future__ import unicode_literals
 import os
 import posixpath
 
-import sickbeard
-from sickbeard import helpers
+import medusa as sickbeard
+from medusa import helpers
 
 
 class RecommendedShow(object):

@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
-import sickbeard
+import medusa as sickbeard
 
-from sickbeard.event_queue import Events
+from medusa.event_queue import Events
 
 
 class Restart(object):

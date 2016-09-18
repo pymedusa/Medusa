@@ -34,7 +34,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 
 from six import iteritems
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import http_code_description, is_sync_file, is_torrent_or_nzb_file, pretty_file_size
 from sickrage.helper.common import remove_extension, replace_extension, sanitize_filename, try_int, convert_size, episode_num
 

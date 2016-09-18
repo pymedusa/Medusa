@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import datetime
 import traceback
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import episode_num
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show

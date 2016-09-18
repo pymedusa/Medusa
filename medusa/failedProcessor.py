@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.exceptions import FailedPostProcessingFailedException
 
 from . import logger, show_name_helpers

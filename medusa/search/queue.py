@@ -22,7 +22,7 @@ import threading
 import time
 import traceback
 
-import sickbeard
+import medusa as sickbeard
 from .. import common, failed_history, generic_queue, history, logger, providers, ui
 from ..search.core import (
     searchForNeededEpisodes,

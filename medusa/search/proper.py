@@ -30,7 +30,7 @@ import traceback
 from socket import timeout as SocketTimeout
 
 from requests import exceptions as requests_exceptions
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import enabled_providers
 from sickrage.helper.exceptions import AuthException, ex
 from sickrage.show.History import History

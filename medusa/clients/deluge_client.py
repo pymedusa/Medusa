@@ -25,7 +25,7 @@ import logging
 from base64 import b64encode
 
 from requests.exceptions import RequestException
-import sickbeard
+import medusa as sickbeard
 from .generic import GenericClient
 
 

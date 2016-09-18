@@ -2,7 +2,7 @@
 
 from __future__ import unicode_literals
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import try_int
 from sickrage.show.History import History as HistoryTool
 from tornado.routes import route

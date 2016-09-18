@@ -20,7 +20,7 @@
 
 import threading
 
-import sickbeard
+import medusa as sickbeard
 from six import iteritems
 from . import db, logger
 from .helpers import full_sanitizeSceneName

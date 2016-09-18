@@ -4,8 +4,8 @@ from datetime import datetime
 
 import pytest
 
-import sickbeard.logger as sut
-from sickbeard.logger import DEBUG, INFO, LogLine, WARNING
+import medusa.logger as sut
+from medusa.logger import DEBUG, INFO, LogLine, WARNING
 
 
 class TestStandardLoggingApi(object):

@@ -11,12 +11,12 @@ from github.Organization import Organization
 from github.Repository import Repository
 from mock.mock import Mock
 import pytest
-from sickbeard.common import DOWNLOADED, Quality
-from sickbeard.indexers.indexer_config import INDEXER_TVDB
-from sickbeard.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance
-from sickbeard.logger import read_loglines as logger_read_loglines
-from sickbeard.tv import TVEpisode, TVShow
-from sickbeard.versionChecker import CheckVersion
+from medusa.common import DOWNLOADED, Quality
+from medusa.indexers.indexer_config import INDEXER_TVDB
+from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance
+from medusa.logger import read_loglines as logger_read_loglines
+from medusa.tv import TVEpisode, TVShow
+from medusa.versionChecker import CheckVersion
 from sickrage.helper.common import dateTimeFormat
 from subliminal.subtitle import Subtitle
 from subliminal.video import Video
@@ -102,7 +102,7 @@ def create_sub(monkeypatch):
 def create_tvshow(monkeypatch):
     def create(indexer=INDEXER_TVDB, indexerid=0, lang='', quality=Quality.UNKNOWN, flatten_folders=0,
                enabled_subtitles=0, **kwargs):
-        monkeypatch.setattr('sickbeard.tv.TVShow._load_from_db', lambda method: None)
+        monkeypatch.setattr('medusa.tv.TVShow._load_from_db', lambda method: None)
         target = TVShow(indexer=indexer, indexerid=indexerid, lang=lang, quality=quality,
                         flatten_folders=flatten_folders, enabled_subtitles=enabled_subtitles)
         return _patch_object(monkeypatch, target, **kwargs)
@@ -113,7 +113,7 @@ def create_tvshow(monkeypatch):
 @pytest.fixture
 def create_tvepisode(monkeypatch):
     def create(show, season, episode, filepath='', **kwargs):
-        monkeypatch.setattr('sickbeard.tv.TVEpisode._specify_episode', lambda method, season, episode: None)
+        monkeypatch.setattr('medusa.tv.TVEpisode._specify_episode', lambda method, season, episode: None)
         target = TVEpisode(show=show, season=season, episode=episode, filepath=filepath)
         return _patch_object(monkeypatch, target, **kwargs)
 
@@ -140,7 +140,7 @@ def version_checker(monkeypatch):
 @pytest.fixture
 def commit_hash(monkeypatch):
     target = 'abcdef0'
-    monkeypatch.setattr('sickbeard.CUR_COMMIT_HASH', target)
+    monkeypatch.setattr('medusa.CUR_COMMIT_HASH', target)
     return target
 
 

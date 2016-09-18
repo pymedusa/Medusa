@@ -15,11 +15,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+import pkgutil
 from os import sys
 from random import shuffle
 
-import sickbeard
+import medusa as sickbeard
 from .nzb import (
     anizb, binsearch, omgwtfnzbs, womble,
 )
@@ -79,13 +79,8 @@ def makeProviderList():
 
 def getProviderModule(name):
     name = name.lower()
-    prefixes = [
-        "sickbeard.providers.nzb.",
-        "sickbeard.providers.torrent.html.",
-        "sickbeard.providers.torrent.json.",
-        "sickbeard.providers.torrent.rss.",
-        "sickbeard.providers.torrent.xml.",
-    ]
+    prefixes = [modname + '.' for importer, modname, ispkg in pkgutil.walk_packages(
+        path=__path__, prefix=__name__ + '.', onerror=lambda x: None) if ispkg]
 
     for prefix in prefixes:
         if name in __all__ and prefix + name in sys.modules:

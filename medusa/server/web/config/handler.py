@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 
 import os
 
-import sickbeard
+import medusa as sickbeard
 from tornado.routes import route
 from ..core import PageTemplate, WebRoot
 from ....versionChecker import CheckVersion

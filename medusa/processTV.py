@@ -23,7 +23,7 @@ import stat
 
 from babelfish import Language
 import shutil_custom
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import is_sync_file, is_torrent_or_nzb_file, subtitle_extensions
 from sickrage.helper.encoding import ek, ss
 from sickrage.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex

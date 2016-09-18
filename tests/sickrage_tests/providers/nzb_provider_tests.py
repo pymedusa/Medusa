@@ -31,7 +31,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from six import iteritems
-import sickbeard
+import medusa as sickbeard
 from generic_provider_tests import GenericProviderTests
 from sickrage.providers.GenericProvider import GenericProvider
 from sickrage.providers.nzb.NZBProvider import NZBProvider

@@ -25,7 +25,7 @@ import time
 import traceback
 
 from requests.compat import urljoin
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import convert_size, try_int
 from sickrage.helper.encoding import ek, ss
 from sickrage.providers.nzb.NZBProvider import NZBProvider

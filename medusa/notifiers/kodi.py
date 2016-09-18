@@ -24,7 +24,7 @@ import socket
 import time
 
 from requests.compat import quote, unquote, unquote_plus, urlencode
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ss
 from sickrage.helper.exceptions import ex
 from six import text_type

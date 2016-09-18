@@ -22,7 +22,7 @@
 
 from __future__ import unicode_literals
 
-import sickbeard
+import medusa as sickbeard
 from .. import common, logger
 
 

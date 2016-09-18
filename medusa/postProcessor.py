@@ -28,7 +28,7 @@ import subprocess
 
 import adba
 from babelfish import language_converters
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import remove_extension, replace_extension, subtitle_extensions
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import EpisodeNotFoundException, EpisodePostProcessingFailedException, ShowDirectoryNotFoundException

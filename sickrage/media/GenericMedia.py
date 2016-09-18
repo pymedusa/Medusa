@@ -21,7 +21,7 @@ from abc import abstractmethod
 from mimetypes import guess_type
 from os.path import isfile, join, normpath
 
-import sickbeard
+import medusa as sickbeard
 from ..helper.common import try_int
 from ..helper.encoding import ek
 from ..helper.exceptions import MultipleShowObjectsException

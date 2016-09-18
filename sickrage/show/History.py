@@ -19,8 +19,8 @@
 from collections import namedtuple
 from datetime import datetime, timedelta
 
-from sickbeard.common import Quality
-from sickbeard.db import DBConnection
+from medusa.common import Quality
+from medusa.db import DBConnection
 from six import text_type
 from ..helper.common import try_int
 

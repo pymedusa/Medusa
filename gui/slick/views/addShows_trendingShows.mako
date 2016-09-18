@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
+    import medusa as sickbeard
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
@@ -27,7 +27,7 @@
 	            </span>
 	        </label>
 	    </div>
-	
+
 	   <div id="content_configure_show_options">
             <div class="field-pair">
                 <label class="clearfix" for="configure_show_options">

@@ -1,8 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
-    from sickbeard import helpers
-    from sickbeard.show_queue import ShowQueueActions
+    import medusa as sickbeard
+    from medusa import helpers
+    from medusa.show_queue import ShowQueueActions
     from sickrage.helper.common import dateTimeFormat
 %>
 <%block name="content">

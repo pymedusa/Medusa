@@ -19,11 +19,11 @@
 
 from datetime import date, timedelta
 
-import sickbeard
-from sickbeard.common import IGNORED, Quality, UNAIRED, WANTED
-from sickbeard.db import DBConnection
-from sickbeard.network_timezones import parse_date_time
-from sickbeard.sbdatetime import sbdatetime
+import medusa as sickbeard
+from medusa.common import IGNORED, Quality, UNAIRED, WANTED
+from medusa.db import DBConnection
+from medusa.network_timezones import parse_date_time
+from medusa.sbdatetime import sbdatetime
 from ..helper.common import dateFormat, timeFormat
 from ..helper.quality import get_quality_string
 

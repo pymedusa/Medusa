@@ -19,7 +19,7 @@
 
 import datetime
 
-import sickbeard
+import medusa as sickbeard
 
 MESSAGE = 'notice'
 ERROR = 'error'

@@ -1,7 +1,7 @@
 # coding=utf-8
 """Request handler for general information."""
 
-import sickbeard
+import medusa as sickbeard
 from .base import BaseRequestHandler
 
 

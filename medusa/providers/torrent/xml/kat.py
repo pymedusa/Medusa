@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import traceback
 
 from requests.compat import urljoin
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 import validators

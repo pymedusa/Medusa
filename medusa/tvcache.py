@@ -24,7 +24,7 @@ import itertools
 import time
 import traceback
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.exceptions import AuthException
 from sickrage.show.Show import Show
 from six import text_type

@@ -1,10 +1,10 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
+    import medusa as sickbeard
     import re
-    from sickbeard.helpers import anon_url
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from sickbeard.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
+    from medusa.helpers import anon_url
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
+    from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
 %>
 <%block name="content">
 % if not header is UNDEFINED:

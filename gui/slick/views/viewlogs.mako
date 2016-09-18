@@ -1,8 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
-    from sickbeard import classes
-    from sickbeard.logger import LOGGING_LEVELS
+    import medusa as sickbeard
+    from medusa import classes
+    from medusa.logger import LOGGING_LEVELS
 %>
 <%block name="css">
 <style>

@@ -25,7 +25,7 @@ import socket
 import time
 
 from requests.compat import urlencode
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ss
 from six.moves.http_client import HTTPException, HTTPSConnection
 from .. import common, db, logger

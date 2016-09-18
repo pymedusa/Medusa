@@ -3,12 +3,12 @@
     import datetime
     import urllib
     import ntpath
-    import sickbeard
-    from sickbeard import subtitles, sbdatetime, network_timezones
-    import sickbeard.helpers
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
-    from sickbeard.common import Quality, qualityPresets, statusStrings, Overview
-    from sickbeard.helpers import anon_url
+    import medusa as sickbeard
+    from medusa import subtitles, sbdatetime, network_timezones
+    import medusa.helpers
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
+    from medusa.common import Quality, qualityPresets, statusStrings, Overview
+    from medusa.helpers import anon_url
     from sickrage.helper.common import pretty_file_size
 %>
 <%block name="scripts">

@@ -51,7 +51,7 @@ import guessit
 import requests
 from requests.compat import urlparse
 import shutil_custom
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, \
     subtitle_extensions
 from sickrage.helper.encoding import ek

@@ -21,7 +21,7 @@
 import os
 
 from indexer_config import indexerConfig, initConfig
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
 

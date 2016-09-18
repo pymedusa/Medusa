@@ -23,7 +23,7 @@ import datetime
 import io
 import os
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import episode_num
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ShowNotFoundException, ex

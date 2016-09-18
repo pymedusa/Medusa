@@ -1,7 +1,7 @@
 <%!
     import datetime
     import re
-    import sickbeard
+    import medusa as sickbeard
     from sickrage.helper.common import pretty_file_size
     from sickrage.show.Show import Show
     from time import time

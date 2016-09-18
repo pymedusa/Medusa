@@ -23,7 +23,7 @@ import json
 import threading
 import time
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import enabled_providers
 from sickrage.show.Show import Show
 from .queue import ForcedSearchQueueItem

@@ -22,7 +22,7 @@ import datetime
 import functools
 import locale
 
-import sickbeard
+import medusa as sickbeard
 from .network_timezones import sb_timezone
 
 date_presets = (

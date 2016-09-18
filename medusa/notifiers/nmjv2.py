@@ -23,7 +23,7 @@
 import time
 from xml.dom.minidom import parseString
 
-import sickbeard
+import medusa as sickbeard
 from six.moves.urllib.request import Request, urlopen
 from .. import logger
 

@@ -11,7 +11,7 @@ from __future__ import unicode_literals
 import logging
 from base64 import b64encode
 
-import sickbeard
+import medusa as sickbeard
 from synchronousdeluge import DelugeClient
 from .generic import GenericClient
 

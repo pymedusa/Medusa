@@ -22,7 +22,7 @@ import os
 import re
 from collections import namedtuple
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ek
 from six import string_types
 from . import common, logger

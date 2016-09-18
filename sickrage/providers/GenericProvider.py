@@ -27,15 +27,15 @@ from os.path import join
 from random import shuffle
 
 from requests.utils import add_dict_to_cookiejar
-import sickbeard
-from sickbeard import logger, ui
-from sickbeard.classes import Proper, SearchResult
-from sickbeard.common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
-from sickbeard.db import DBConnection
-from sickbeard.helpers import download_file, getURL, make_session, remove_file_failed
-from sickbeard.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from sickbeard.show_name_helpers import allPossibleShowNames
-from sickbeard.tvcache import TVCache
+import medusa as sickbeard
+from medusa import logger, ui
+from medusa.classes import Proper, SearchResult
+from medusa.common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
+from medusa.db import DBConnection
+from medusa.helpers import download_file, getURL, make_session, remove_file_failed
+from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.show_name_helpers import allPossibleShowNames
+from medusa.tvcache import TVCache
 from ..helper.common import replace_extension, sanitize_filename
 from ..helper.encoding import ek
 from ..helper.exceptions import ex

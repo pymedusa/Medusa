@@ -2,7 +2,7 @@
 """Tests for sickbeard.common.py."""
 import pytest
 
-from sickbeard.common import DOWNLOADED, Quality
+from medusa.common import DOWNLOADED, Quality
 
 
 class TestQuality(object):

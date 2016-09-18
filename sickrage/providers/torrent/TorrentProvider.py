@@ -19,9 +19,9 @@
 
 from feedparser.util import FeedParserDict
 from hachoir_parser import createParser
-import sickbeard
-from sickbeard import logger
-from sickbeard.classes import TorrentSearchResult
+import medusa as sickbeard
+from medusa import logger
+from medusa.classes import TorrentSearchResult
 from ..GenericProvider import GenericProvider
 from ...helper.common import try_int
 from ...helper.exceptions import ex

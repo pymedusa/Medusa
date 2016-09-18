@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 import markdown2
-import sickbeard
+import medusa as sickbeard
 from tornado.routes import route
 from .handler import Home
 from ..core import PageTemplate

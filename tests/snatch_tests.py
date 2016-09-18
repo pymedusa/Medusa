@@ -32,10 +32,10 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from sickbeard.tv import TVEpisode, TVShow
-import sickbeard
-from sickbeard.search.core import searchProviders
-import sickbeard.common as common
+from medusa.tv import TVEpisode, TVShow
+import medusa as sickbeard
+from medusa.search.core import searchProviders
+import medusa.common as common
 import tests.test_lib as test
 
 TESTS = {

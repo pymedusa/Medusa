@@ -27,7 +27,7 @@ import datetime
 import time
 import traceback
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
 from . import db, logger

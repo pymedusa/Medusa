@@ -50,12 +50,12 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../l
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from configobj import ConfigObj
-from sickbeard import db, providers
-from sickbeard.databases import cache_db, failed_db, main_db
-from sickbeard.providers.nzb.newznab import NewznabProvider
-from sickbeard.tv import TVEpisode
+from medusa import db, providers
+from medusa.databases import cache_db, failed_db, main_db
+from medusa.providers.nzb.newznab import NewznabProvider
+from medusa.tv import TVEpisode
 import shutil_custom  # pylint: disable=import-error
-import sickbeard
+import medusa as sickbeard
 
 # pylint: disable=import-error
 
@@ -267,7 +267,7 @@ def teardown_test_db():
     """
     Tear down the test database.
     """
-    from sickbeard.db import db_cons
+    from medusa.db import db_cons
     for connection in db_cons:
         db_cons[connection].commit()
     #     db_cons[connection].close()

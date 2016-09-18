@@ -3,7 +3,7 @@
 
 import base64
 
-import sickbeard
+import medusa as sickbeard
 from tornado.web import RequestHandler
 
 

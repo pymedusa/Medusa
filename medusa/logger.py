@@ -33,7 +33,7 @@ from logging import NullHandler
 from logging.handlers import RotatingFileHandler
 
 from requests.compat import quote
-import sickbeard
+import medusa as sickbeard
 import sickrage
 from sickrage.helper.common import dateTimeFormat
 from sickrage.helper.encoding import ek

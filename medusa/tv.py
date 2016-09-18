@@ -30,7 +30,7 @@ import traceback
 from imdb import imdb
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 import shutil_custom
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import (
     dateTimeFormat, episode_num, remove_extension, replace_extension, sanitize_filename, try_int
 )

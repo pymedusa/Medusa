@@ -1,8 +1,8 @@
 <%
-    import sickbeard
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from sickbeard.common import Quality, qualityPresets, qualityPresetStrings, statusStrings
-    from sickbeard import subtitles
+    import medusa as sickbeard
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
+    from medusa.common import Quality, qualityPresets, qualityPresetStrings, statusStrings
+    from medusa import subtitles
 %>
         <div class="field-pair alt">
             <label for="customQuality" class="clearfix">
@@ -87,7 +87,7 @@
             </label>
         </div><br>
 % if enable_anime_options:
-    <% import sickbeard.blackandwhitelist %>
+    <% import medusa.blackandwhitelist %>
     <%include file="/inc_blackwhitelist.mako"/>
 % else:
         <input type="hidden" name="anime" id="anime" value="0" />

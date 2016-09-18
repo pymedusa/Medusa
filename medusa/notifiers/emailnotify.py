@@ -32,7 +32,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ss
 from .. import db, logger
 

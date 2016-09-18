@@ -33,9 +33,9 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from six import iteritems
-import sickbeard
-from sickbeard.common import Quality
-from sickbeard.tv import TVShow
+import medusa as sickbeard
+from medusa.common import Quality
+from medusa.tv import TVShow
 from sickrage.helper.exceptions import MultipleShowObjectsException
 from sickrage.show.Show import Show
 

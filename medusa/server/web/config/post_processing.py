@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 
 import os
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from tornado.routes import route

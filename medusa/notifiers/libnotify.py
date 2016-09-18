@@ -21,7 +21,7 @@
 import cgi
 import os
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ek
 from .. import common, logger
 

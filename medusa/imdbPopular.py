@@ -5,7 +5,7 @@ import re
 from datetime import date
 
 from bs4 import BeautifulSoup
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ek
 from . import helpers
 

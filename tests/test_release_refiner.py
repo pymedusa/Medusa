@@ -4,7 +4,7 @@
 import os
 
 import pytest
-from sickbeard.refiners import release as sut
+from medusa.refiners import release as sut
 from subliminal.video import Video
 
 

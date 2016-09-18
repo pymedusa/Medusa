@@ -21,7 +21,7 @@ import os
 import traceback
 
 from imdb import _exceptions as imdb_exceptions
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import episode_num, sanitize_filename
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import CantRefreshShowException, CantRemoveShowException, CantUpdateShowException, EpisodeDeletedException, \

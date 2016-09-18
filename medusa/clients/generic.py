@@ -12,7 +12,7 @@ from hashlib import sha1
 from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
 import requests
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import http_code_description
 from six.moves.http_cookiejar import CookieJar
 from .. import db, helpers, logger

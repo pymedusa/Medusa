@@ -22,7 +22,7 @@ import re
 import telnetlib
 
 from requests.compat import urlencode
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.exceptions import ex
 from six.moves.urllib.request import Request, urlopen
 from .. import logger

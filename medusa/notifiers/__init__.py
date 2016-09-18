@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import sickbeard
+import medusa as sickbeard
 from ..notifiers import boxcar2, emailnotify, emby, freemobile, growl, kodi, libnotify, nma, nmj, nmjv2, plex, prowl, pushalot, pushbullet, pushover, \
     pytivo, synoindex, synologynotifier, telegram, trakt, tweet
 

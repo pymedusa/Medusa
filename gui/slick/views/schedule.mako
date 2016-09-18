@@ -1,8 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
-    from sickbeard.helpers import anon_url
-    from sickbeard import sbdatetime
+    import medusa as sickbeard
+    from medusa.helpers import anon_url
+    from medusa import sbdatetime
     import datetime
     import time
     import re

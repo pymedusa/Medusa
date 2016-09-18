@@ -1,8 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
-    from sickbeard import db
-    from sickbeard.helpers import anon_url
+    import medusa as sickbeard
+    from medusa import db
+    from medusa.helpers import anon_url
     import sys
     import platform
 %>

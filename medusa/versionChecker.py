@@ -32,7 +32,7 @@ import shutil_custom
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 

@@ -6,14 +6,14 @@ import sys
 from babelfish.language import Language
 from mock.mock import Mock
 import pytest
-import sickbeard.subtitles as sut
+import medusa.subtitles as sut
 from subliminal.subtitle import Subtitle
 
 
 def test_sorted_service_list(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_SERVICES_LIST', ['legendastv', 'trash', 'itasa', 'thesubdb', 'shooter'])
-    monkeypatch.setattr('sickbeard.SUBTITLES_SERVICES_ENABLED', [1, 1, 0, 1, 0])
+    monkeypatch.setattr('medusa.SUBTITLES_SERVICES_LIST', ['legendastv', 'trash', 'itasa', 'thesubdb', 'shooter'])
+    monkeypatch.setattr('medusa.SUBTITLES_SERVICES_ENABLED', [1, 1, 0, 1, 0])
 
     # When
     actual = sut.sorted_service_list()
@@ -36,8 +36,8 @@ def test_sorted_service_list(monkeypatch):
 
 def test_enabled_service_list(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_SERVICES_LIST', ['legendastv', 'a', 'itasa', 'tvsubtitles', 'shooter'])
-    monkeypatch.setattr('sickbeard.SUBTITLES_SERVICES_ENABLED', [1, 1, 0, 1, 0])
+    monkeypatch.setattr('medusa.SUBTITLES_SERVICES_LIST', ['legendastv', 'a', 'itasa', 'tvsubtitles', 'shooter'])
+    monkeypatch.setattr('medusa.SUBTITLES_SERVICES_ENABLED', [1, 1, 0, 1, 0])
 
     # When
     actual = sut.enabled_service_list()
@@ -49,7 +49,7 @@ def test_enabled_service_list(monkeypatch):
 
 def test_wanted_languages__only_valid_3letter_codes(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', ['pob', 'trash', 'eng', 'fre', 'abc', 'pt-BR'])
+    monkeypatch.setattr('medusa.SUBTITLES_LANGUAGES', ['pob', 'trash', 'eng', 'fre', 'abc', 'pt-BR'])
 
     # When
     actual = sut.wanted_languages()
@@ -60,8 +60,8 @@ def test_wanted_languages__only_valid_3letter_codes(monkeypatch):
 
 def test_get_needed_languages__multi_enabled(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', True)
-    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', ['pob', 'trash', 'eng', 'fre', 'abc'])
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', True)
+    monkeypatch.setattr('medusa.SUBTITLES_LANGUAGES', ['pob', 'trash', 'eng', 'fre', 'abc'])
     existing_subtitles = {'pob', 'eng'}
 
     # When
@@ -73,8 +73,8 @@ def test_get_needed_languages__multi_enabled(monkeypatch):
 
 def test_get_needed_languages__multi_disabled_and_und_present(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', False)
-    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', ['pob', 'trash', 'eng', 'fre', 'abc'])
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', False)
+    monkeypatch.setattr('medusa.SUBTITLES_LANGUAGES', ['pob', 'trash', 'eng', 'fre', 'abc'])
     existing_subtitles = {'pob', 'eng', 'und'}
 
     # When
@@ -90,7 +90,7 @@ def test_get_needed_languages__multi_disabled_and_und_present(monkeypatch):
 
 def test_needs_subtitles__no_wanted_language(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', [])
+    monkeypatch.setattr('medusa.SUBTITLES_LANGUAGES', [])
     existing_subtitles = {'pob', 'eng'}
 
     # When
@@ -102,8 +102,8 @@ def test_needs_subtitles__no_wanted_language(monkeypatch):
 
 def test_needs_subtitles__multi_enabled(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', True)
-    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', ['pob', 'eng', 'fre'])
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', True)
+    monkeypatch.setattr('medusa.SUBTITLES_LANGUAGES', ['pob', 'eng', 'fre'])
     existing_subtitles = {'pob', 'eng'}
 
     # When
@@ -115,8 +115,8 @@ def test_needs_subtitles__multi_enabled(monkeypatch):
 
 def test_needs_subtitles__multi_enabled_with_string(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', True)
-    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', ['pob', 'eng', 'fre'])
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', True)
+    monkeypatch.setattr('medusa.SUBTITLES_LANGUAGES', ['pob', 'eng', 'fre'])
     existing_subtitles = 'pob,eng,fre'
 
     # When
@@ -128,8 +128,8 @@ def test_needs_subtitles__multi_enabled_with_string(monkeypatch):
 
 def test_needs_subtitles__multi_disabled_and_und_present(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', False)
-    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', ['pob', 'eng', 'fre'])
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', False)
+    monkeypatch.setattr('medusa.SUBTITLES_LANGUAGES', ['pob', 'eng', 'fre'])
     existing_subtitles = {'pob', 'eng', 'und'}
 
     # When
@@ -240,7 +240,7 @@ def test_code_from_code__valid_2letter_code():
 
 def test_compute_subtitle_path__multi_with_valid_language(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', True)
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', True)
     subtitle = Subtitle(language=Language('por', 'BR'))
     video_path = '/folder/subfolder/video.mkv'
     subtitles_dir = None
@@ -254,7 +254,7 @@ def test_compute_subtitle_path__multi_with_valid_language(monkeypatch):
 
 def test_compute_subtitle_path__multi_with_und_language(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', True)
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', True)
     subtitle = Subtitle(language=Language('und'))
     video_path = '/folder/subfolder/video.mkv'
     subtitles_dir = None
@@ -268,7 +268,7 @@ def test_compute_subtitle_path__multi_with_und_language(monkeypatch):
 
 def test_compute_subtitle_path__single_with_valid_language(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', False)
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', False)
     subtitle = Subtitle(language=Language('por', 'BR'))
     video_path = '/folder/subfolder/video.mkv'
     subtitles_dir = None
@@ -282,7 +282,7 @@ def test_compute_subtitle_path__single_with_valid_language(monkeypatch):
 
 def test_compute_subtitle_path__single_with_valid_language_and_subs_folder(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', False)
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', False)
     subtitle = Subtitle(language=Language('por', 'BR'))
     video_path = '/folder/subfolder/video.mkv'
     subtitles_dir = '/folder/subtitles'
@@ -296,7 +296,7 @@ def test_compute_subtitle_path__single_with_valid_language_and_subs_folder(monke
 
 def test_merge_subtitles__with_multi_enabled(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', True)
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', True)
     existing_subtitles = ['pob', 'eng']
     new_subtitles = ['fre']
 
@@ -309,7 +309,7 @@ def test_merge_subtitles__with_multi_enabled(monkeypatch):
 
 def test_merge_subtitles__with_multi_disabled_and_multiple_new_languages(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', False)
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', False)
     existing_subtitles = ['pob']
     new_subtitles = ['fre', 'eng']
 
@@ -322,7 +322,7 @@ def test_merge_subtitles__with_multi_disabled_and_multiple_new_languages(monkeyp
 
 def test_merge_subtitles__with_multi_disabled_and_single_new_language(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', False)
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', False)
     existing_subtitles = ['pob', 'eng']
     new_subtitles = ['fre']
 
@@ -335,7 +335,7 @@ def test_merge_subtitles__with_multi_disabled_and_single_new_language(monkeypatc
 
 def test_get_subtitles_dir__no_subtitles_dir(monkeypatch):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_DIR', '')
+    monkeypatch.setattr('medusa.SUBTITLES_DIR', '')
     video_path = '/somefolder/subfolder/video.mkv'
     expected = '/somefolder/subfolder'
 
@@ -349,7 +349,7 @@ def test_get_subtitles_dir__no_subtitles_dir(monkeypatch):
 def test_get_subtitles_dir__absolute_subtitles_dir(monkeypatch, tmpdir):
     # Given
     expected = str(tmpdir.ensure('subtitles'))
-    monkeypatch.setattr('sickbeard.SUBTITLES_DIR', expected)
+    monkeypatch.setattr('medusa.SUBTITLES_DIR', expected)
     video_path = '/somefolder/subfolder/video.mkv'
 
     # When
@@ -362,8 +362,8 @@ def test_get_subtitles_dir__absolute_subtitles_dir(monkeypatch, tmpdir):
 def test_get_subtitles_dir__relative_subtitles_dir(monkeypatch, tmpdir):
     # Given
     relative_folder = 'subtitles'
-    monkeypatch.setattr('sickbeard.SYS_ENCODING', sys.getdefaultencoding())
-    monkeypatch.setattr('sickbeard.SUBTITLES_DIR', relative_folder)
+    monkeypatch.setattr('medusa.SYS_ENCODING', sys.getdefaultencoding())
+    monkeypatch.setattr('medusa.SUBTITLES_DIR', relative_folder)
     video_path = str(tmpdir.ensure('video.mkv'))
     expected = os.path.join(str(tmpdir), 'subtitles')
 
@@ -377,9 +377,9 @@ def test_get_subtitles_dir__relative_subtitles_dir(monkeypatch, tmpdir):
 
 def test_delete_unwanted_subtitles__existing_subtitles_in_unwanted_languages(monkeypatch, tmpdir):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', True)
-    monkeypatch.setattr('sickbeard.SUBTITLES_KEEP_ONLY_WANTED', True)
-    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', ['pob', 'eng'])
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', True)
+    monkeypatch.setattr('medusa.SUBTITLES_KEEP_ONLY_WANTED', True)
+    monkeypatch.setattr('medusa.SUBTITLES_LANGUAGES', ['pob', 'eng'])
     subtitle_pob = str(tmpdir.ensure('video.pt-BR.srt'))
     subtitle_eng = str(tmpdir.ensure('video.en.srt'))
     subtitle_fre = str(tmpdir.ensure('video.fr.srt'))
@@ -399,9 +399,9 @@ def test_delete_unwanted_subtitles__existing_subtitles_in_unwanted_languages(mon
 
 def test_delete_unwanted_subtitles__multi_disabled(monkeypatch, tmpdir):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', False)
-    monkeypatch.setattr('sickbeard.SUBTITLES_KEEP_ONLY_WANTED', True)
-    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', ['pob', 'eng'])
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', False)
+    monkeypatch.setattr('medusa.SUBTITLES_KEEP_ONLY_WANTED', True)
+    monkeypatch.setattr('medusa.SUBTITLES_LANGUAGES', ['pob', 'eng'])
     subtitle_pob = str(tmpdir.ensure('video.pt-BR.srt'))
     subtitle_fre = str(tmpdir.ensure('video.fr.srt'))
 
@@ -416,9 +416,9 @@ def test_delete_unwanted_subtitles__multi_disabled(monkeypatch, tmpdir):
 
 def test_delete_unwanted_subtitles__keep_only_wanted_disabled(monkeypatch, tmpdir):
     # Given
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', True)
-    monkeypatch.setattr('sickbeard.SUBTITLES_KEEP_ONLY_WANTED', False)
-    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', ['pob', 'eng'])
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', True)
+    monkeypatch.setattr('medusa.SUBTITLES_KEEP_ONLY_WANTED', False)
+    monkeypatch.setattr('medusa.SUBTITLES_LANGUAGES', ['pob', 'eng'])
     subtitle_pob = str(tmpdir.ensure('video.pt-BR.srt'))
     subtitle_fre = str(tmpdir.ensure('video.fr.srt'))
 
@@ -511,14 +511,14 @@ def test_download_subtitles(monkeypatch, tmpdir, video, tvshow, create_sub, crea
     list_subtitles = Mock(return_value=subtitles)
     download_best_subtitles = Mock(return_value=best_subtitles)
     popen = Mock()
-    monkeypatch.setattr('sickbeard.SYS_ENCODING', 'utf-8')
-    monkeypatch.setattr('sickbeard.SUBTITLES_MULTI', p['multiple_subtitles'])
-    monkeypatch.setattr('sickbeard.SUBTITLES_LANGUAGES', p['wanted_languages'])
-    monkeypatch.setattr('sickbeard.SUBTITLES_PRE_SCRIPTS', p['pre_scripts'])
-    monkeypatch.setattr('sickbeard.SUBTITLES_EXTRA_SCRIPTS', p['post_scripts'])
-    monkeypatch.setattr('sickbeard.SUBTITLES_HEARING_IMPAIRED', p['hearing_impaired'])
-    monkeypatch.setattr('sickbeard.subtitles.refine', refine)
-    monkeypatch.setattr('sickbeard.subtitles.compute_score', compute_score)
+    monkeypatch.setattr('medusa.SYS_ENCODING', 'utf-8')
+    monkeypatch.setattr('medusa.SUBTITLES_MULTI', p['multiple_subtitles'])
+    monkeypatch.setattr('medusa.SUBTITLES_LANGUAGES', p['wanted_languages'])
+    monkeypatch.setattr('medusa.SUBTITLES_PRE_SCRIPTS', p['pre_scripts'])
+    monkeypatch.setattr('medusa.SUBTITLES_EXTRA_SCRIPTS', p['post_scripts'])
+    monkeypatch.setattr('medusa.SUBTITLES_HEARING_IMPAIRED', p['hearing_impaired'])
+    monkeypatch.setattr('medusa.subtitles.refine', refine)
+    monkeypatch.setattr('medusa.subtitles.compute_score', compute_score)
     monkeypatch.setattr('subliminal.core.ProviderPool.list_subtitles', list_subtitles)
     monkeypatch.setattr('subliminal.core.ProviderPool.download_best_subtitles', download_best_subtitles)
     monkeypatch.setattr('subprocess.Popen', popen)

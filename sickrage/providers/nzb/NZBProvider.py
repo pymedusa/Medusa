@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import sickbeard
-from sickbeard.classes import NZBSearchResult
+import medusa as sickbeard
+from medusa.classes import NZBSearchResult
 from ..GenericProvider import GenericProvider
 from ...helper.common import try_int
 

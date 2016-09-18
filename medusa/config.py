@@ -23,7 +23,7 @@ import os.path
 import re
 
 from requests.compat import urlsplit
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
 from six import iteritems

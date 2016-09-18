@@ -21,7 +21,7 @@
 import json
 
 from requests.compat import urlencode
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.exceptions import ex
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import Request, urlopen

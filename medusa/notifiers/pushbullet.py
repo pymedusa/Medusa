@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 import re
 
 from requests.compat import urljoin
-import sickbeard
+import medusa as sickbeard
 from .. import common, helpers, logger
 
 

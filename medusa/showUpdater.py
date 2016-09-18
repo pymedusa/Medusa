@@ -23,7 +23,7 @@ import threading
 import time
 import xml.etree.ElementTree as ET
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from . import db, failed_history, helpers, network_timezones, ui
 from .indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE

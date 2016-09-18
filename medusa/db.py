@@ -25,7 +25,7 @@ import threading
 import time
 import warnings
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from six import text_type

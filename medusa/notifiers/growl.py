@@ -23,7 +23,7 @@ from __future__ import print_function
 import socket
 
 from libgrowl import gntp
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.exceptions import ex
 from .. import common, logger
 

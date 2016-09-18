@@ -31,8 +31,8 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from sickbeard.tv import TVShow
-import sickbeard
+from medusa.tv import TVShow
+import medusa as sickbeard
 import tests.test_lib as test
 
 

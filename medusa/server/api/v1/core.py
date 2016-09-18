@@ -31,7 +31,7 @@ from collections import OrderedDict
 from datetime import date, datetime
 
 from requests.compat import unquote_plus
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import (
     dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
     timeFormat, try_int,

@@ -1,6 +1,6 @@
 <%!
-    import sickbeard
-    from sickbeard.common import Quality, qualityPresets, qualityPresetStrings
+    import medusa as sickbeard
+    from medusa.common import Quality, qualityPresets, qualityPresetStrings
 %>
 <%
 if not show is UNDEFINED:

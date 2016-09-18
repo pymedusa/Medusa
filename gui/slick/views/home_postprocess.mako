@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
+    import medusa as sickbeard
 %>
 <%block name="content">
 <div id="content800">

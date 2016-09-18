@@ -22,7 +22,7 @@
 from __future__ import unicode_literals
 
 from requests.compat import urlencode
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import http_status_code
 from six.moves.urllib.request import Request, urlopen
 from .. import logger

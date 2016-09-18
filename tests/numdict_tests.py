@@ -16,7 +16,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../l
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from six.moves import UserDict
-from sickbeard.numdict import NumDict
+from medusa.numdict import NumDict
 
 
 class NumDictTest(unittest.TestCase):

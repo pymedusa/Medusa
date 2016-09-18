@@ -8,7 +8,7 @@ import os
 import re
 
 from requests.compat import unquote_plus
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import sanitize_filename, try_int
 from sickrage.helper.encoding import ek
 from sickrage.show.Show import Show

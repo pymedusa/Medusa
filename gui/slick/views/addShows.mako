@@ -2,7 +2,7 @@
 <%!
     import os.path
     import urllib
-    import sickbeard
+    import medusa as sickbeard
 %>
 <%block name="content">
 % if not header is UNDEFINED:

@@ -1,10 +1,10 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
+    import medusa as sickbeard
     import calendar
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from sickbeard.common import Quality, qualityPresets, qualityPresetStrings
-    from sickbeard import db, sbdatetime, network_timezones
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
+    from medusa.common import Quality, qualityPresets, qualityPresetStrings
+    from medusa import db, sbdatetime, network_timezones
     import datetime
     import re
 %>

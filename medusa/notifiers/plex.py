@@ -20,7 +20,7 @@
 
 import re
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.exceptions import ex
 from six import iteritems
 from .. import common, logger

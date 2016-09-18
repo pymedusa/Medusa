@@ -21,7 +21,7 @@
 import os
 
 from requests.compat import urlencode
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from six.moves.urllib.error import HTTPError

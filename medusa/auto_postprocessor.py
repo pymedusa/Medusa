@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 import logging
 import os.path
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ek
 from . import processTV
 

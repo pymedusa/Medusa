@@ -4,7 +4,7 @@
     from contextlib2 import suppress
     import os
     import re
-    from sickbeard import (
+    from medusa import (
         dailySearchScheduler as daily_search_scheduler,
         backlogSearchScheduler as backlog_search_scheduler,
         BRANCH, DATE_PRESET, TIME_PRESET

@@ -17,8 +17,8 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../l
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from six import text_type
-import sickbeard
-from sickbeard import ek, ex
+import medusa as sickbeard
+from medusa import ek, ex
 from sickrage.helper.common import sanitize_filename
 
 

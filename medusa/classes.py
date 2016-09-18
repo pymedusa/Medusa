@@ -19,7 +19,7 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 from dateutil import parser
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import dateTimeFormat
 from six.moves.urllib.request import FancyURLopener
 from .common import Quality, USER_AGENT

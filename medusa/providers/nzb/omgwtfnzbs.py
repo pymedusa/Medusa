@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import re
 import traceback
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import convert_size, try_int
 from sickrage.providers.nzb.NZBProvider import NZBProvider
 from ... import logger, tvcache

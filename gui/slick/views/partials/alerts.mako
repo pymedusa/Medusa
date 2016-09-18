@@ -1,5 +1,5 @@
 <%!
-    import sickbeard
+    import medusa as sickbeard
 %>
 <!-- BEGIN ALERTS -->
 % if sickbeard.BRANCH and sickbeard.BRANCH != 'master' and not sickbeard.DEVELOPER and loggedIn:

@@ -20,8 +20,8 @@ from __future__ import unicode_literals
 
 import traceback
 
-import sickbeard
-from sickbeard import helpers, logger
+import medusa as sickbeard
+from medusa import helpers, logger
 from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
 from .recommended import RecommendedShow

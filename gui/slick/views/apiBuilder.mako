@@ -1,5 +1,5 @@
 <%!
-    import sickbeard
+    import medusa as sickbeard
 %>
 <!DOCTYPE html>
 <html>

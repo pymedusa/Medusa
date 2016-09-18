@@ -22,7 +22,7 @@
 import time
 
 from requests.compat import urlencode
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.exceptions import ex
 from six.moves.http_client import HTTPSConnection
 from six.moves.urllib.error import HTTPError

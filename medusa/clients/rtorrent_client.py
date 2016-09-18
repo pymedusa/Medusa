@@ -30,7 +30,7 @@ from __future__ import unicode_literals
 import logging
 
 from rtorrent import RTorrent
-import sickbeard
+import medusa as sickbeard
 from .generic import GenericClient
 from .. import ex
 

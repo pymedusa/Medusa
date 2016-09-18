@@ -8,7 +8,7 @@ from datetime import timedelta
 
 from dogpile.cache.region import make_region
 from guessit.rules.common.date import valid_year
-import sickbeard
+import medusa as sickbeard
 from .rules import default_api
 from ..helpers import normalize
 

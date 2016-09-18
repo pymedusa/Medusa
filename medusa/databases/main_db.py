@@ -22,7 +22,7 @@ import datetime
 import os.path
 import warnings
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import dateTimeFormat, episode_num
 from sickrage.helper.encoding import ek
 from six import iteritems

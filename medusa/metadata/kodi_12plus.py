@@ -21,7 +21,7 @@ import datetime
 import re
 
 from babelfish import Country
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import dateFormat, episode_num
 from sickrage.helper.exceptions import ShowNotFoundException
 from six import string_types

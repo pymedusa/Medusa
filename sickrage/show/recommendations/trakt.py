@@ -19,8 +19,8 @@
 from __future__ import unicode_literals
 
 import requests
-import sickbeard
-from sickbeard import logger
+import medusa as sickbeard
+from medusa import logger
 from simpleanidb import Anidb
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 from .recommended import RecommendedShow

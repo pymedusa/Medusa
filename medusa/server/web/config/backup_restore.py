@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import os
 import time
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ek
 from tornado.routes import route
 from .handler import Config

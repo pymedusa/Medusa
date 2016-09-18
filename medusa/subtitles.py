@@ -31,7 +31,7 @@ import traceback
 
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
@@ -53,8 +53,9 @@ VIDEO_EXPIRATION_TIME = datetime.timedelta(days=1).total_seconds()
 provider_manager.register('itasa = subliminal.providers.itasa:ItaSAProvider')
 provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider')
 
-refiner_manager.register('release = sickbeard.refiners.release:refine')
-refiner_manager.register('tvepisode = sickbeard.refiners.tvepisode:refine')
+basename = __name__.split('.')[0]
+refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
+refiner_manager.register('tvepisode = {basename}.refiners.tvepisode:refine'.format(basename=basename))
 
 region.configure('dogpile.cache.memory')
 video_key = u'{name}:video|{{video_path}}'.format(name=__name__)

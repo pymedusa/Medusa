@@ -26,7 +26,7 @@ import time
 from collections import OrderedDict
 
 import guessit
-import sickbeard
+import medusa as sickbeard
 from .. import common, db, helpers, scene_exceptions, scene_numbering
 
 

@@ -6,7 +6,7 @@ import json
 import os
 import re
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import (
     episode_num, try_int,
 )

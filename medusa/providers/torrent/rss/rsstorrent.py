@@ -23,7 +23,7 @@ import os
 import re
 
 from bencode import bdecode
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider

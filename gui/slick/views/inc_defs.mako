@@ -1,6 +1,6 @@
 <%!
     import cgi
-    from sickbeard.common import Quality, qualityPresets, qualityPresetStrings
+    from medusa.common import Quality, qualityPresets, qualityPresetStrings
 %>
 <%def name="renderQualityPill(quality, showTitle=False, overrideClass=None)"><%
     # Build a string of quality names to use as title attribute

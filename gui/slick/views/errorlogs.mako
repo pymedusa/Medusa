@@ -1,7 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
-    from sickbeard import classes
+    import medusa as sickbeard
+    from medusa import classes
 %>
 <%block name="css">
 <style>

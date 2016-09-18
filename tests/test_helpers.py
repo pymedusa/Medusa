@@ -2,7 +2,7 @@
 """Tests for sickbeard.helpers.py."""
 import pytest
 
-import sickbeard.helpers as sut
+import medusa.helpers as sut
 
 
 @pytest.mark.parametrize('p', [

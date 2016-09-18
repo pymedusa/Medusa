@@ -92,11 +92,11 @@ if os.path.isdir(OLD_TORNADO):
     shutil.move(OLD_TORNADO, OLD_TORNADO + '_kill')
     shutil.rmtree(OLD_TORNADO + '_kill')
 
-import sickbeard
-from sickbeard import db, failed_history, logger, name_cache, network_timezones
-from sickbeard.event_queue import Events
-from sickbeard.server.core import SRWebServer
-from sickbeard.tv import TVShow
+import medusa as sickbeard
+from medusa import db, failed_history, logger, name_cache, network_timezones
+from medusa.event_queue import Events
+from medusa.server.core import SRWebServer
+from medusa.tv import TVShow
 from sickrage.helper.encoding import ek
 
 # http://bugs.python.org/issue7980#msg221094

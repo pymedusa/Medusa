@@ -21,7 +21,7 @@
 import datetime
 import threading
 
-import sickbeard
+import medusa as sickbeard
 from six import iteritems
 from .queue import BacklogQueueItem
 from .. import common, db, logger, scheduler, ui

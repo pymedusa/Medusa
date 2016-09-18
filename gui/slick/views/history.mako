@@ -1,14 +1,14 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
+    import medusa as sickbeard
     import os.path
     from datetime import datetime
     import re
     import time
-    from sickbeard import providers
-    from sickbeard.sbdatetime import sbdatetime
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED, DOWNLOADED, SUBTITLED
-    from sickbeard.common import Quality, statusStrings, Overview
+    from medusa import providers
+    from medusa.sbdatetime import sbdatetime
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED, DOWNLOADED, SUBTITLED
+    from medusa.common import Quality, statusStrings, Overview
     from sickrage.show.History import History
     from sickrage.helper.encoding import ek
     from sickrage.providers.GenericProvider import GenericProvider

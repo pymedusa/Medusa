@@ -2,13 +2,13 @@
 <%!
     import os.path
     import datetime
-    import sickbeard
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from sickbeard.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
-    from sickbeard import config
-    from sickbeard import metadata
-    from sickbeard.metadata.generic import GenericMetadata
-    from sickbeard import naming
+    import medusa as sickbeard
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
+    from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
+    from medusa import config
+    from medusa import metadata
+    from medusa.metadata.generic import GenericMetadata
+    from medusa import naming
     from sickrage.helper.encoding import ek
 %>
 <%block name="content">

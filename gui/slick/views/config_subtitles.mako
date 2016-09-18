@@ -1,8 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    from sickbeard import subtitles
-    import sickbeard
-    from sickbeard.helpers import anon_url
+    from medusa import subtitles
+    import medusa as sickbeard
+    from medusa.helpers import anon_url
 %>
 <%block name="scripts">
 <script>

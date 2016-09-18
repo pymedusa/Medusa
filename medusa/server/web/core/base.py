@@ -15,7 +15,7 @@ from mako.lookup import TemplateLookup
 from mako.runtime import UNDEFINED
 from mako.template import Template as MakoTemplate
 from requests.compat import urljoin
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ek
 from sickrage.media.ShowBanner import ShowBanner
 from sickrage.media.ShowFanArt import ShowFanArt

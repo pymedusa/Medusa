@@ -8,8 +8,8 @@ import traceback
 from datetime import date
 
 from bs4 import BeautifulSoup
-import sickbeard
-from sickbeard import (helpers, logger)
+import medusa as sickbeard
+from medusa import (helpers, logger)
 from simpleanidb import Anidb
 from .recommended import RecommendedShow
 

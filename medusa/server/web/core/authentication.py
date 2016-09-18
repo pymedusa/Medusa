@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 
 import traceback
 
-import sickbeard
+import medusa as sickbeard
 from tornado.web import RequestHandler
 from .base import BaseHandler, PageTemplate
 from .... import (

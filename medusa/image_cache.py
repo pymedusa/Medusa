@@ -23,7 +23,7 @@ import os.path
 from hachoir_core.log import log
 from hachoir_metadata import extractMetadata
 from hachoir_parser import createParser
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ShowDirectoryNotFoundException
 from . import helpers, logger

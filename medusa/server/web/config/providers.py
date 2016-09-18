@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 import json
 import os
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import try_int
 from sickrage.helper.encoding import ek
 from sickrage.providers.GenericProvider import GenericProvider

@@ -1,7 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
-    from sickbeard import clients
+    import medusa as sickbeard
+    from medusa import clients
 %>
 <%block name="content">
 % if not header is UNDEFINED:

@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 import datetime
 
 from dateutil import tz
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import try_int
 from tornado.web import authenticated
 from .base import BaseHandler

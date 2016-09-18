@@ -21,7 +21,7 @@
 
 from __future__ import unicode_literals
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.exceptions import ex
 from traktor import AuthException, ServerBusy, TraktApi, TraktException
 from .. import logger

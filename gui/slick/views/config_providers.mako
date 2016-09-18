@@ -1,7 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
-    from sickbeard.helpers import anon_url
+    import medusa as sickbeard
+    from medusa.helpers import anon_url
     from sickrage.providers.GenericProvider import GenericProvider
 %>
 <%block name="scripts">

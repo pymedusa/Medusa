@@ -59,7 +59,6 @@ from .search.proper import ProperFinder
 from .search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 
 shutil.copyfile = shutil_custom.copyfile_custom
-
 requests.packages.urllib3.disable_warnings()
 
 indexerApi = indexer_api.indexerApi
@@ -67,7 +66,6 @@ indexerApi = indexer_api.indexerApi
 ex = sickrage.helper.exceptions.ex
 
 PID = None
-
 CFG = None
 CONFIG_FILE = None
 

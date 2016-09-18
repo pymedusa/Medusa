@@ -3,7 +3,7 @@
 
 import datetime
 
-import sickbeard
+import medusa as sickbeard
 from sickrage.helper.common import dateFormat, try_int
 from sickrage.helper.quality import get_quality_string
 from sickrage.show.Show import Show

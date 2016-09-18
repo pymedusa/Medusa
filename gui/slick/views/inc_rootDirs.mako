@@ -1,5 +1,5 @@
 <%
-    import sickbeard
+    import medusa as sickbeard
     if sickbeard.ROOT_DIRS:
         backend_pieces = sickbeard.ROOT_DIRS.split('|')
         backend_default = 'rd-' + backend_pieces[0]

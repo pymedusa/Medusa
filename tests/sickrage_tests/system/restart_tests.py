@@ -31,8 +31,8 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from six import iteritems
-import sickbeard
-from sickbeard.event_queue import Events
+import medusa as sickbeard
+from medusa.event_queue import Events
 from sickrage.system.Restart import Restart
 
 
