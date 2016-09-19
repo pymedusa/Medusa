@@ -1,6 +1,5 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
-# Git: https://github.com/PyMedusa/SickRage.git
 #
 # This file is part of Medusa.
 #

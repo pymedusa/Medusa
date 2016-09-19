@@ -2,7 +2,6 @@
 
 # Author: Maciej Olesinski (https://github.com/molesinski/)
 # Based on prowl.py by Nic Wolfe <nic@wolfeden.ca>
-# URL: http://code.google.com/p/sickbeard/
 #
 # This file is part of Medusa.
 #
