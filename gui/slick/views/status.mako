@@ -43,7 +43,7 @@
         </thead>
         <tbody>
             % for schedulerName, scheduler in schedulerList.iteritems():
-               <% service = getattr(sickbeard, scheduler) %>
+               <% service = getattr(app, scheduler) %>
            <tr>
                <td>${schedulerName}</td>
                % if service.isAlive():
@@ -52,7 +52,7 @@
                <td style="background-color:rgb(255, 0, 0);">${service.isAlive()}</td>
                % endif
                % if scheduler == 'backlogSearchScheduler':
-                   <% searchQueue = getattr(sickbeard, 'searchQueueScheduler') %>
+                   <% searchQueue = getattr(app, 'searchQueueScheduler') %>
                    <% BLSpaused = searchQueue.action.is_backlog_paused() %>
                    <% del searchQueue %>
                    % if BLSpaused:
@@ -64,7 +64,7 @@
                <td>${service.enable}</td>
                % endif
                % if scheduler == 'backlogSearchScheduler':
-                   <% searchQueue = getattr(sickbeard, 'searchQueueScheduler') %>
+                   <% searchQueue = getattr(app, 'searchQueueScheduler') %>
                    <% BLSinProgress = searchQueue.action.is_backlog_in_progress() %>
                    <% del searchQueue %>
                    % if BLSinProgress:
@@ -194,10 +194,10 @@
             </tr>
         </thead>
         <tbody>
-            % if medusa.tv_DOWNLOAD_DIR:
+            % if app.TV_DOWNLOAD_DIR:
             <tr>
                 <td>TV Download Directory</td>
-                <td>${medusa.tv_DOWNLOAD_DIR}</td>
+                <td>${app.TV_DOWNLOAD_DIR}</td>
                 % if tvdirFree is not False:
                 <td align="middle">${tvdirFree}</td>
                 % else:
