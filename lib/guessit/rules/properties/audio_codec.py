@@ -32,7 +32,7 @@ def audio_codec():
         """
         if match1.name == 'audio_codec' and match2.name in ['audio_profile', 'audio_channels']:
             return match2
-        if match1.name == ['audio_profile', 'audio_channels'] and match2.name == 'audio_codec':
+        if match1.name in ['audio_profile', 'audio_channels'] and match2.name == 'audio_codec':
             return match1
         return '__default__'
 
