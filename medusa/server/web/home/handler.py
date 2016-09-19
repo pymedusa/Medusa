@@ -1923,7 +1923,7 @@ class Home(WebRoot):
             'episodes': episodes,
         })
 
-    def searchEpisodeSubtitles(self, show=None, season=None, episode=None):
+    def searchEpisodeSubtitles(self, show=None, season=None, episode=None, lang=None):
         # retrieve the episode object and fail if we can't get one
         ep_obj = getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
@@ -1932,7 +1932,7 @@ class Home(WebRoot):
             })
 
         try:
-            new_subtitles = ep_obj.download_subtitles()
+            new_subtitles = ep_obj.download_subtitles(lang=lang)
         except Exception:
             return json.dumps({
                 'result': 'failure',
@@ -1942,12 +1942,14 @@ class Home(WebRoot):
             new_languages = [subtitles.name_from_code(code) for code in new_subtitles]
             status = 'New subtitles downloaded: {languages}'.format(languages=', '.join(new_languages))
         else:
+            new_languages = []
             status = 'No subtitles downloaded'
 
         ui.notifications.message(ep_obj.show.name, status)
         return json.dumps({
             'result': status,
             'subtitles': ','.join(ep_obj.subtitles),
+            'new_subtitles': ','.join(new_languages),
         })
 
     def setSceneNumbering(self, show, indexer, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
