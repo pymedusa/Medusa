@@ -2216,10 +2216,7 @@ class TVEpisode(TVObject):
             else:
                 self.hasnfo = False
 
-            if ek(os.path.isfile, replace_extension(nfo_file, 'tbn')):
-                self.hastbn = True
-            else:
-                self.hastbn = False
+            self.hastbn = bool(ek(os.path.isfile, replace_extension(nfo_file, 'tbn')))
 
     def __str__(self):
         """String representation.

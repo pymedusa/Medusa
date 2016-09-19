@@ -65,10 +65,7 @@ class TVShow(object):  # pylint: disable=too-few-public-methods
         Find out if show is anime
         :return: True if show is anime, False if not
         """
-        if self.anime > 0:
-            return True
-        else:
-            return False
+        return bool(self.anime)
 
     is_anime = property(_is_anime)
 
@@ -77,10 +74,7 @@ class TVShow(object):  # pylint: disable=too-few-public-methods
         Find out if show is sports
         :return: True if show is sports, False if not
         """
-        if self.sports > 0:
-            return True
-        else:
-            return False
+        return bool(self.sports)
 
     is_sports = property(_is_sports)
 
@@ -89,10 +83,7 @@ class TVShow(object):  # pylint: disable=too-few-public-methods
         Find out if show is scene numbering
         :return: True if show is scene numbering, False if not
         """
-        if self.scene > 0:
-            return True
-        else:
-            return False
+        return bool(self.scene)
 
     is_scene = property(_is_scene)
 

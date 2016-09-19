@@ -602,7 +602,4 @@ class Notifier(object):
 
             # needed for the 'update kodi' submenu command
             # as it only cares of the final result vs the individual ones
-            if result == 0:
-                return True
-            else:
-                return False
+            return not bool(result)

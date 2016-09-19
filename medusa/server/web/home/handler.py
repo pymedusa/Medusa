@@ -171,12 +171,9 @@ class Home(WebRoot):
 
     @staticmethod
     def haveTORRENT():
-        if app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and \
-                (app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'https' or not
-                 app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'http:'):
-            return True
-        else:
-            return False
+        return bool(app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and
+                    (app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'https' or not
+                     app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'http:'))
 
     @staticmethod
     def testSABnzbd(host=None, username=None, password=None, apikey=None):
