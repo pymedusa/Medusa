@@ -547,7 +547,7 @@ class Match(object):
         self.pattern = pattern
         self.private = private
         self.conflict_solver = conflict_solver
-        self.children = []
+        self.children = Matches([], input_string)
         self._raw_start = None
         self._raw_end = None
         self.defined_at = pattern.defined_at if pattern else defined_at()

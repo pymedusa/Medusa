@@ -916,16 +916,14 @@
 # https://github.com/guessit-io/guessit/issues/316
 ? Show.Name.x264-CDD
 : title: Show Name
-#  video_codec: h264
-  cd_count: 264 # TODO fix when guessit bug is fixed
+  video_codec: h264
   release_group: CDD
   type: episode
 
 # https://github.com/guessit-io/guessit/issues/316
 ? Show.Name.x264-CDP
 : title: Show Name
-#  video_codec: h264
-  cd_count: 264 # TODO fix when guessit bug is fixed
+  video_codec: h264
   release_group: CDP
   type: episode
 
@@ -934,7 +932,6 @@
 : title: Show Name
   video_codec: h264
   release_group: HDD
-  audio_codec: DolbyDigital # TODO remove when guessit bug is fixed
   type: episode
 
 # expected_group
@@ -2460,7 +2457,6 @@
   screen_size: 720p
   format: BluRay
   video_codec: h264
-  part: 1000 # not a big issue
   release_group: PtM
   type: episode
 
@@ -3044,5 +3040,20 @@
   episode: 10
   screen_size: 1080p
   container: MKV
+  release_group: GROUP
+  type: episode
+
+# Regression test for #1088
+# episode title has s1 that might lead to season detection issues
+? Show.Name.S02E06.eps2.4.m4ster-s1ave.aes.1080p.AMZN.WEBRip.DD5.1.x264-GROUP
+: title: Show Name
+  season: 2
+  episode: 6
+  episode_title: eps2 4 m4ster-s1ave aes
+  screen_size: 1080p
+  format: WEBRip
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
   release_group: GROUP
   type: episode
