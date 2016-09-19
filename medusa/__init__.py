@@ -65,6 +65,11 @@ indexerApi = indexer_api.indexerApi
 
 ex = exceptions.ex
 
+# Fixed values
+SRC_FOLDER = __name__
+LEGACY_SRC_FOLDERS = ('sickbeard', 'sickrage')
+LIB_FOLDER = 'lib'
+
 PID = None
 CFG = None
 CONFIG_FILE = None
