@@ -165,7 +165,7 @@ class DBConnection(object):
         try:
             if self.hasColumn('db_version', 'db_minor_version'):
                 result = self.select("SELECT db_minor_version FROM db_version")
-        except:
+        except sqlite3.OperationalError:
             return 0
 
         if result:
@@ -362,7 +362,7 @@ class DBConnection(object):
         try:
             # Just revert to the old code for now, until we can fix unicode
             return text_type(x, 'utf-8')
-        except:
+        except Exception:
             return text_type(x, app.SYS_ENCODING, errors="ignore")
 
     @staticmethod
