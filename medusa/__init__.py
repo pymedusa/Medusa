@@ -765,7 +765,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         except Exception:
             WEB_PORT = 8081
 
-        if not (21 < WEB_PORT < 65535):
+        if not 21 < WEB_PORT < 65535:
             WEB_PORT = 8081
 
         WEB_HOST = check_setting_str(CFG, 'General', 'web_host', '0.0.0.0')
@@ -1238,6 +1238,9 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         POSTER_SORTBY = check_setting_str(CFG, 'GUI', 'poster_sortby', 'name')
         POSTER_SORTDIR = check_setting_int(CFG, 'GUI', 'poster_sortdir', 1)
         DISPLAY_ALL_SEASONS = bool(check_setting_int(CFG, 'General', 'display_all_seasons', 1))
+        RECENTLY_DELETED = set()
+        GIT_REMOTE_BRANCHES = []
+        KODI_LIBRARY_CLEAN_PENDING = False
 
         # reconfigure the logger
         logger.reconfigure()

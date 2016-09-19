@@ -141,7 +141,7 @@ class BTNProvider(TorrentProvider):
                 'seeders': seeders,
                 'leechers': leechers,
                 'pubdate': None,
-                'hash': None,
+                'torrent_hash': None,
             }
             logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
                        (title, seeders, leechers), logger.DEBUG)

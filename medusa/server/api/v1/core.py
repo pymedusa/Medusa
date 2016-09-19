@@ -259,11 +259,8 @@ class ApiCall(ApiHandler):
 
     def __init__(self, args, kwargs):
         # missing
-        try:
-            if self._missing:
-                self.run = self.return_missing
-        except AttributeError:
-            pass
+        if hasattr(self, '_missing'):
+            self.run = self.return_missing
 
         # help
         if 'help' in kwargs:
@@ -344,10 +341,9 @@ class ApiCall(ApiHandler):
             default = kwargs.get(key)
             missing = False
         if required:
-            try:
-                self._missing
+            if hasattr(self, '_missing'):
                 self._requiredParams.append(key)
-            except AttributeError:
+            else:
                 self._missing = []
                 self._requiredParams = {key: {"allowedValues": allowed_values,
                                               "defaultValue": org_default,
@@ -783,7 +779,7 @@ class CMD_EpisodeSearch(ApiCall):
 
         # return the correct json value
         if ep_queue_item.success:
-            status, quality = Quality.splitCompositeStatus(ep_obj.status)  # @UnusedVariable
+            _, quality = Quality.splitCompositeStatus(ep_obj.status)
             # TODO: split quality and status?
             return _responds(RESULT_SUCCESS, {"quality": get_quality_string(quality)},
                              "Snatched (" + get_quality_string(quality) + ")")

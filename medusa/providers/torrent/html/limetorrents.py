@@ -165,7 +165,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'hash': torrent_hash,
+                        'torrent_hash': torrent_hash,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

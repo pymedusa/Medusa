@@ -151,10 +151,7 @@ class HomeAddShows(Home):
                     [cur_path]
                 )
 
-                if dir_results:
-                    cur_dir['added_already'] = True
-                else:
-                    cur_dir['added_already'] = False
+                cur_dir['added_already'] = bool(dir_results)
 
                 dir_list.append(cur_dir)
 
@@ -188,11 +185,7 @@ class HomeAddShows(Home):
         t = PageTemplate(rh=self, filename='addShows_newShow.mako')
 
         indexer, show_dir, indexer_id, show_name = self.split_extra_show(show_to_add)
-
-        if indexer_id and indexer and show_name:
-            use_provided_info = True
-        else:
-            use_provided_info = False
+        use_provided_info = bool(indexer_id and indexer and show_name)
 
         # use the given show_dir for the indexer search if available
         if not show_dir:

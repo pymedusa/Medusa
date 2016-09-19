@@ -19,9 +19,7 @@
 
 from __future__ import print_function
 
-"""
-Test torrents
-"""
+# Test torrents
 
 # pylint: disable=line-too-long
 

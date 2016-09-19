@@ -75,17 +75,17 @@ class Notification(object):
     Represents a single notification. Tracks its own timeout and a list of which clients have
     seen it before.
     """
-    def __init__(self, title, message='', type=None, timeout=None):
+    def __init__(self, title, message='', notification_type=None, timeout=None):
         self.title = title
         self.message = message
 
         self._when = datetime.datetime.now()
         self._seen = []
 
-        if type:
-            self.type = type
+        if notification_type:
+            self.notification_type = notification_type
         else:
-            self.type = MESSAGE
+            self.notification_type = MESSAGE
 
         if timeout:
             self._timeout = timeout
@@ -178,6 +178,6 @@ class QueueProgressIndicator(object):
 
 
 class LoadingTVShow(object):
-    def __init__(self, dir):
-        self.dir = dir
+    def __init__(self, show_dir):
+        self.show_dir = show_dir
         self.show = None

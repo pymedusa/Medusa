@@ -133,7 +133,7 @@ def logFailed(epObj, release, provider=None):
     showid = int(epObj.show.indexerid)
     season = int(epObj.season)
     epNum = int(epObj.episode)
-    status, quality = Quality.splitCompositeStatus(epObj.status)
+    _, quality = Quality.splitCompositeStatus(epObj.status)
     action = Quality.compositeStatus(FAILED, quality)
 
     _logHistoryItem(action, showid, season, epNum, quality, release, provider)

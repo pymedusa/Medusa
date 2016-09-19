@@ -2,9 +2,7 @@
 
 from __future__ import print_function
 
-"""
-Test encoding
-"""
+# Test encoding
 
 # pylint: disable=line-too-long
 

@@ -78,7 +78,7 @@ def sendNZB(nzb):  # pylint:disable=too-many-return-statements, too-many-branche
 
     logger.log('Result text from SAB: {0}'.format(jdata), logger.DEBUG)
 
-    result, error_ = _checkSabResponse(jdata)
+    result, _ = _checkSabResponse(jdata)
     return result
 
 

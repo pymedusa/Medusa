@@ -136,7 +136,7 @@ class PageTemplate(MakoTemplate):
             kwargs['title'] = '500'
             kwargs['header'] = 'Mako Error'
             kwargs['backtrace'] = RichTraceback()
-            for (filename, lineno, function, line) in kwargs['backtrace'].traceback:
+            for (filename, lineno, function, _) in kwargs['backtrace'].traceback:
                 logger.log(u'File {name}, line {line}, in {func}'.format
                            (name=filename, line=lineno, func=function), logger.DEBUG)
             logger.log(u'{name}: {error}'.format
@@ -479,7 +479,7 @@ class UI(WebRoot):
             messages['notification-{number}'.format(number=cur_notification_num)] = {
                 'title': '{0}'.format(cur_notification.title),
                 'message': '{0}'.format(cur_notification.message),
-                'type': '{0}'.format(cur_notification.type),
+                'type': '{0}'.format(cur_notification.notification_type),
             }
             cur_notification_num += 1
 

@@ -165,7 +165,7 @@ class DBConnection(object):
         try:
             if self.hasColumn('db_version', 'db_minor_version'):
                 result = self.select("SELECT db_minor_version FROM db_version")
-        except:
+        except sqlite3.OperationalError:
             return 0
 
         if result:
@@ -362,7 +362,7 @@ class DBConnection(object):
         try:
             # Just revert to the old code for now, until we can fix unicode
             return text_type(x, 'utf-8')
-        except:
+        except Exception:
             return text_type(x, app.SYS_ENCODING, errors="ignore")
 
     @staticmethod
@@ -391,7 +391,7 @@ class DBConnection(object):
         """
         return column in self.tableInfo(tableName)
 
-    def addColumn(self, table, column, type="NUMERIC", default=0):
+    def addColumn(self, table, column, column_type="NUMERIC", default=0):
         """
         Adds a column to a table, default column type is NUMERIC
         TODO: Make this return true/false on success/failure
@@ -401,7 +401,7 @@ class DBConnection(object):
         :param type: Column type to add
         :param default: Default value for column
         """
-        self.action("ALTER TABLE [%s] ADD %s %s" % (table, column, type))
+        self.action("ALTER TABLE [%s] ADD %s %s" % (table, column, column_type))
         self.action("UPDATE [%s] SET %s = ?" % (table, column), (default,))
 
 
@@ -481,8 +481,8 @@ class SchemaUpgrade(object):
     def hasColumn(self, tableName, column):
         return column in self.connection.tableInfo(tableName)
 
-    def addColumn(self, table, column, type="NUMERIC", default=0):
-        self.connection.action("ALTER TABLE [%s] ADD %s %s" % (table, column, type))
+    def addColumn(self, table, column, column_type="NUMERIC", default=0):
+        self.connection.action("ALTER TABLE [%s] ADD %s %s" % (table, column, column_type))
         self.connection.action("UPDATE [%s] SET %s = ?" % (table, column), (default,))
 
     def checkDBVersion(self):

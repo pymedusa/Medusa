@@ -191,7 +191,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': None,
-                                'hash': None,
+                                'torrent_hash': None,
                             }
                             if mode != 'RSS':
                                 if seeders == -1:

@@ -168,7 +168,7 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'hash': torrent_hash,
+                        'torrent_hash': torrent_hash,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -139,7 +139,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                         seeders, leechers = self._get_result_info(item)
                         size = self._get_size(item)
                         pubdate = self._get_pubdate(item)
-                        torrent_hash = self._get_hash(item)
+                        torrent_hash = self._get_torrent_hash(item)
 
                         # This will be retrived from parser
                         proper_tags = ''
@@ -207,7 +207,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             (seeders, leechers) = self._get_result_info(item)
             size = self._get_size(item)
             pubdate = self._get_pubdate(item)
-            torrent_hash = self._get_hash(item)
+            torrent_hash = self._get_torrent_hash(item)
 
             try:
                 parse_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]).parse(title)
@@ -336,7 +336,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             result.content = None
             result.size = self._get_size(item)
             result.pubdate = self._get_pubdate(item)
-            result.hash = self._get_hash(item)
+            result.hash = self._get_torrent_hash(item)
 
             if not episode_object:
                 episode_number = SEASON_RESULT
@@ -490,10 +490,10 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         """
         return None
 
-    def _get_hash(self, item):  # pylint: disable=unused-argument,no-self-use
+    def _get_torrent_hash(self, item):  # pylint: disable=unused-argument,no-self-use
         """
         Return hash of the item. If provider doesnt
-        have _get_hash function this will be used
+        have _get_torrent_hash function this will be used
         """
         return None
 

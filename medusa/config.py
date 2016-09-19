@@ -867,9 +867,9 @@ class ConfigMigrator(object):
 
     # Migration v5: Metadata upgrade
     def _migrate_v5(self):
-        """ Updates metadata values to the new format """
+        """Updates metadata values to the new format.
 
-        """ Quick overview of what the upgrade does:
+        Quick overview of what the upgrade does:
 
         new | old | description (new)
         ----+-----+--------------------
