@@ -1238,6 +1238,9 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         POSTER_SORTBY = check_setting_str(CFG, 'GUI', 'poster_sortby', 'name')
         POSTER_SORTDIR = check_setting_int(CFG, 'GUI', 'poster_sortdir', 1)
         DISPLAY_ALL_SEASONS = bool(check_setting_int(CFG, 'General', 'display_all_seasons', 1))
+        RECENTLY_DELETED = set()
+        GIT_REMOTE_BRANCHES = []
+        KODI_LIBRARY_CLEAN_PENDING = False
 
         # reconfigure the logger
         logger.reconfigure()
