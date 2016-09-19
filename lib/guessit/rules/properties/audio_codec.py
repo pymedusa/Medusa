@@ -19,7 +19,24 @@ def audio_codec():
     :rtype: Rebulk
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash]).string_defaults(ignore_case=True)
-    rebulk.defaults(name="audio_codec")
+
+    def audio_codec_priority(match1, match2):
+        """
+        Gives priority to audio_codec
+        :param match1:
+        :type match1:
+        :param match2:
+        :type match2:
+        :return:
+        :rtype:
+        """
+        if match1.name == 'audio_codec' and match2.name in ['audio_profile', 'audio_channels']:
+            return match2
+        if match1.name == ['audio_profile', 'audio_channels'] and match2.name == 'audio_codec':
+            return match1
+        return '__default__'
+
+    rebulk.defaults(name="audio_codec", conflict_solver=audio_codec_priority)
 
     rebulk.regex("MP3", "LAME", r"LAME(?:\d)+-?(?:\d)+", value="MP3")
     rebulk.regex("Dolby", "DolbyDigital", "Dolby-Digital", "DD", value="DolbyDigital")

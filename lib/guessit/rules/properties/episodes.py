@@ -7,7 +7,7 @@ import copy
 from collections import defaultdict
 
 from rebulk import Rebulk, RemoveMatch, Rule, AppendMatch, RenameMatch
-from rebulk.match import Matches
+from rebulk.match import Match
 from rebulk.remodule import re
 from rebulk.utils import is_iterable
 
@@ -15,7 +15,7 @@ from .title import TitleFromPosition
 from ..common import dash, alt_dash, seps
 from ..common.formatters import strip
 from ..common.numeral import numeral, parse_numeral
-from ..common.validators import compose, seps_surround
+from ..common.validators import compose, seps_surround, seps_before, int_coercable
 from ...reutils import build_or_pattern
 
 
@@ -58,15 +58,6 @@ def episodes():
     season_episode_seps.extend(seps)
     season_episode_seps.extend(['x', 'X', 'e', 'E'])
 
-    def season_episode_validator(match):
-        """
-        Validator for season/episode matches
-        """
-        if match.name in ['season', 'episode'] and match.initiator.start:
-            return match.initiator.input_string[match.initiator.start] in season_episode_seps \
-                   or match.initiator.input_string[match.initiator.start - 1] in season_episode_seps
-        return True
-
     season_words = ['season', 'saison', 'serie', 'seasons', 'saisons', 'series']
     episode_words = ['episode', 'episodes', 'ep']
     of_words = ['of', 'sur']
@@ -81,7 +72,7 @@ def episodes():
         """
         Validator for season list. They should be in natural order to be validated.
         """
-        values = Matches(match.children).to_dict(implicit=True)
+        values = match.children.to_dict(implicit=True)
         if 'season' in values and is_iterable(values['season']):
             # Season numbers must be in natural order to be validated.
             return list(sorted(values['season'])) == values['season']
@@ -96,22 +87,29 @@ def episodes():
                  abbreviations=[alt_dash],
                  children=True,
                  private_parent=True,
+                 validate_all=True,
+                 validator={'__parent__': ordering_validator},
                  conflict_solver=season_episode_conflict_solver) \
-        .defaults(validator=season_episode_validator) \
         .regex(build_or_pattern(season_markers) + r'(?P<season>\d+)@?' +
-               build_or_pattern(episode_markers) + r'@?(?P<episode>\d+)') \
+               build_or_pattern(episode_markers) + r'@?(?P<episode>\d+)',
+               validate_all=True,
+               validator={'__parent__': seps_before}) \
         .regex(r'(?:(?P<episodeSeparator>' +
                build_or_pattern(episode_markers + discrete_separators + range_separators) + ')' +
                r'(?P<episode>\d+))').repeater('*') \
         .chain() \
         .regex(r'(?P<season>\d+)@?' +
                build_or_pattern(season_ep_markers) +
-               r'@?(?P<episode>\d+)') \
+               r'@?(?P<episode>\d+)',
+               validate_all=True,
+               validator={'__parent__': seps_before}) \
         .regex(r'(?:(?P<episodeSeparator>' +
                build_or_pattern(season_ep_markers + discrete_separators + range_separators) + ')' +
                r'(?P<episode>\d+))').repeater('*') \
         .chain() \
-        .regex(build_or_pattern(season_markers) + r'(?P<season>\d+)') \
+        .regex(build_or_pattern(season_markers) + r'(?P<season>\d+)',
+               validate_all=True,
+               validator={'__parent__': seps_before}) \
         .regex(r'(?:(?P<seasonSeparator>' +
                build_or_pattern(season_markers + discrete_separators + range_separators) + ')' +
                r'(?P<season>\d+))').repeater('*')
@@ -124,8 +122,23 @@ def episodes():
     rebulk.defaults(private_names=['episodeSeparator', 'seasonSeparator'],
                     validate_all=True, validator={'__parent__': seps_surround}, children=True, private_parent=True)
 
-    rebulk.chain(abbreviations=[alt_dash], formatter={'season': parse_numeral, 'count': parse_numeral},
-                 validator={'__parent__': compose(seps_surround, ordering_validator)}) \
+    def validate_roman(match):
+        """
+        Validate a roman match if surrounded by separators
+        :param match:
+        :type match:
+        :return:
+        :rtype:
+        """
+        if int_coercable(match.raw):
+            return True
+        return seps_surround(match)
+
+    rebulk.chain(abbreviations=[alt_dash],
+                 formatter={'season': parse_numeral, 'count': parse_numeral},
+                 validator={'__parent__': compose(seps_surround, ordering_validator),
+                            'season': validate_roman,
+                            'count': validate_roman}) \
         .defaults(validator=None) \
         .regex(build_or_pattern(season_words) + '@?(?P<season>' + numeral + ')') \
         .regex(r'' + build_or_pattern(of_words) + '@?(?P<count>' + numeral + ')').repeater('?') \
@@ -141,7 +154,9 @@ def episodes():
     rebulk.regex(build_or_pattern(episode_words) + r'-?(?P<episode>' + numeral + ')' +
                  r'(?:v(?P<version>\d+))?' +
                  r'(?:-?' + build_or_pattern(of_words) + r'-?(?P<count>\d+))?',  # Episode 4
-                 abbreviations=[dash], formatter={'episode': parse_numeral, 'version': int, 'count': int},
+                 abbreviations=[dash],
+                 validator={'episode': validate_roman},
+                 formatter={'episode': parse_numeral, 'version': int, 'count': int},
                  disabled=lambda context: context.get('type') != 'episode')
 
     rebulk.regex(r'S?(?P<season>\d+)-?(?:xE|Ex|E|x)-?(?P<other>' + build_or_pattern(all_words) + ')',
@@ -297,7 +312,11 @@ class AbstractSeparatorRange(Rule):
                         match = copy.copy(next_match)
                         match.value = episode_number
                         to_append.append(match)
-                to_remove.append(next_match) # Remove and append match to support proper ordering
+                    to_append.append(Match(previous_match.end, next_match.start - 1,
+                                           name=self.property_name + 'Separator',
+                                           private=True,
+                                           input_string=matches.input_string))
+                to_remove.append(next_match)  # Remove and append match to support proper ordering
                 to_append.append(next_match)
 
             previous_match = next_match

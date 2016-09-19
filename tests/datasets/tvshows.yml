@@ -932,7 +932,6 @@
 : title: Show Name
   video_codec: h264
   release_group: HDD
-  audio_codec: DolbyDigital # TODO remove when guessit bug is fixed
   type: episode
 
 # expected_group
@@ -1473,7 +1472,6 @@
 ? show name s01.to.s04
 : title: show name
   season: [1, 2, 3, 4]
-  episode_title: to # not a big issue for us
   type: episode
 
 # https://github.com/guessit-io/guessit/issues/287 (negative scenario - not a season range)

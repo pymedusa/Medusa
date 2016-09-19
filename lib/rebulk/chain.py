@@ -7,7 +7,7 @@ Chain patterns and handle repetiting capture group
 import itertools
 
 from .loose import call, set_defaults
-from .match import Match
+from .match import Match, Matches
 from .pattern import Pattern, filter_match_kwargs
 from .remodule import re
 
@@ -170,11 +170,12 @@ class Chain(Pattern):
             is_chain_start = True
             for chain_part in self.parts:
                 try:
-                    chain_part_matches = Chain._match_chain_part(is_chain_start, chain_part, chain_input_string,
-                                                                 context)
-                    if chain_part_matches:
-                        Chain._fix_matches_offset(chain_part_matches, input_string, offset)
-                        offset = chain_part_matches[-1].raw_end
+                    chain_part_matches, raw_chain_part_matches = Chain._match_chain_part(is_chain_start, chain_part,
+                                                                                         chain_input_string,
+                                                                                         context)
+                    if raw_chain_part_matches:
+                        Chain._fix_matches_offset(raw_chain_part_matches, input_string, offset)
+                        offset = raw_chain_part_matches[-1].raw_end
                         chain_input_string = input_string[offset:]
                         if not chain_part.is_hidden:
                             current_chain_matches.extend(chain_part_matches)
@@ -203,7 +204,7 @@ class Chain(Pattern):
         :rtype:
         """
         ret = super(Chain, self)._match_parent(match, yield_parent)
-        original_children = list(match.children)
+        original_children = Matches(match.children)
         original_end = match.end
         while not ret and match.children:
             last_pattern = match.children[-1].pattern
@@ -255,11 +256,15 @@ class Chain(Pattern):
 
     @staticmethod
     def _match_chain_part(is_chain_start, chain_part, chain_input_string, context):
-        chain_part_matches = chain_part.pattern.matches(chain_input_string, context)
+        chain_part_matches, raw_chain_part_matches = chain_part.pattern.matches(chain_input_string, context,
+                                                                                with_raw_matches=True)
         chain_part_matches = Chain._truncate_chain_part_matches(is_chain_start, chain_part_matches, chain_part,
                                                                 chain_input_string)
-        Chain._validate_chain_part_matches(chain_part_matches, chain_part)
-        return chain_part_matches
+        raw_chain_part_matches = Chain._truncate_chain_part_matches(is_chain_start, raw_chain_part_matches, chain_part,
+                                                                    chain_input_string)
+
+        Chain._validate_chain_part_matches(raw_chain_part_matches, chain_part)
+        return chain_part_matches, raw_chain_part_matches
 
     @staticmethod
     def _truncate_chain_part_matches(is_chain_start, chain_part_matches, chain_part, chain_input_string):

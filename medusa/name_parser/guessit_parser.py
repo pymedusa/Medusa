@@ -35,9 +35,6 @@ expected_groups = {
     r're:\bRipPourBox\b',
     r're:\bRiPRG\b',
 
-    # https://github.com/guessit-io/guessit/issues/317
-    r're:\bHDD\b',
-
     # release groups with numbers
     # https://github.com/guessit-io/guessit/issues/294
     r're:\b4EVERHD\b',

@@ -2005,3 +2005,44 @@
   title: How I Met Your Mother
   type: movie
   video_codec: XviD
+
+? Show Name The Complete Seasons 1 to 5 720p BluRay x265 HEVC-SUJAIDR[UTR]
+: format: BluRay
+  other: Complete
+  release_group: SUJAIDR[UTR]
+  screen_size: 720p
+  season:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  title: Show Name
+  type: episode
+  video_codec: h265
+
+? Fear.the.Walking.Dead.-.Season.2.epi.02.XviD.Eng.Ac3-5.1.sub.ita.eng.iCV-MIRCrew
+: options: -t episode
+  audio_channels: '5.1'
+  audio_codec: AC3
+  episode: 2
+  episode_title: epi
+  language: en
+  release_group: iCV-MIRCrew
+  season: 2
+  subtitle_language: it
+  title: Fear the Walking Dead
+  type: episode
+  video_codec: XviD
+
+? Game.Of.Thrones.S06E04.720p.PROPER.HDTV.x264-HDD
+: episode: 4
+  format: HDTV
+  other: Proper
+  proper_count: 1
+  release_group: HDD
+  screen_size: 720p
+  season: 6
+  title: Game Of Thrones
+  type: episode
+  video_codec: h264

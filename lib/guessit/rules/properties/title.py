@@ -42,6 +42,8 @@ def title():
                 search = search.replace(' ', '-')
                 matches = RePattern(search, abbreviations=[dash], flags=re.IGNORECASE).matches(input_string, context)
                 for match in matches:
+                    # Instance of 'list' has no 'span' member (no-member). Seems to be a pylint bug.
+                    # pylint: disable=no-member
                     ret.append(match.span)
             else:
                 for start in find_all(input_string, search, ignore_case=True):

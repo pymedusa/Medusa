@@ -61,6 +61,20 @@ def test_build_chain():
     assert chain.parts[4].repeater_end is None
 
 
+def test_chain_defaults():
+    rebulk = Rebulk()
+    rebulk.defaults(validator=lambda x: True, ignore_names=['testIgnore'], children=True)
+
+    rebulk.chain()\
+        .regex("(?P<test>test)") \
+        .regex(" ").repeater("*") \
+        .regex("(?P<testIgnore>testIgnore)")
+    matches = rebulk.matches("test testIgnore")
+
+    assert len(matches) == 1
+    assert matches[0].name == "test"
+
+
 def test_matches():
     rebulk = Rebulk()
 

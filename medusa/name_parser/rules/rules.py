@@ -37,7 +37,6 @@ from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule
 
 simple_separator = ('.', 'and', ',.', '.,', '.,.', ',')
 range_separator = ('-', '~', '_-_', 'to', '.to.')
-season_range_separator = range_separator + ('_-_s', '-s', '.to.s', '_to_s')
 episode_range_separator = range_separator + ('_-_e', '-e', '.to.e', '_to_e')
 
 
@@ -711,85 +710,6 @@ class CreateAliasWithCountryOrYear(Rule):
                 alias.end = after_title.end
                 alias.raw_end = after_title.raw_end
                 return alias
-
-
-class FixWrongTitlesWithCompleteKeyword(Rule):
-    """Fix wrong titles due to COMPLETE keyword.
-
-    Guessit bug: https://github.com/guessit-io/guessit/issues/310
-
-    e.g.: Show.Name.COMPLETE.SERIES.DVDRip.XviD-GROUP
-
-    guessit -t episode "Show.Name.COMPLETE.SERIES.DVDRip.XviD-GROUP"
-
-    without this fix:
-        For: Show.Name.COMPLETE.SERIES.DVDRip.XviD-GROUP
-        GuessIt found: {
-            "title": "Show Name COMPLETE SERIES",
-            "format": "DVD",
-            "video_codec": "XviD",
-            "release_group": "GROUP",
-            "type": "episode"
-        }
-
-    with this fix:
-        For: Show.Name.COMPLETE.SERIES.DVDRip.XviD-GROUP
-        GuessIt found: {
-            "title": "Show Name",
-            "other": "Complete",
-            "format": "DVD",
-            "video_codec": "XviD",
-            "release_group": "GROUP",
-            "type": "episode"
-        }
-    """
-
-    priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch]
-    complete_re = re.compile(r'(\W+The)?\W+complete(\W+(series|seasons?))?\W*$', flags=re.IGNORECASE)
-
-    def when(self, matches, context):
-        """Evaluate the rule.
-
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        to_remove = []
-        to_append = []
-
-        titles = []
-        titles.extend(matches.named('title'))
-        titles.extend(matches.named('alternative_title'))
-        titles.extend(matches.named('episode_titles'))
-
-        for title in titles:
-            complete = matches.next(title, index=0,
-                                    predicate=lambda match: match.name == 'other' and match.value.lower() == 'complete')
-            title_raw = title.raw + complete.raw if complete else title.raw
-            m = self.complete_re.search(title_raw)
-            if not m:
-                continue
-
-            new_title = copy.copy(title)
-            new_title.value = cleanup(title.raw[:m.start()])
-            new_title.end = m.start()
-
-            if not complete:
-                other = copy.copy(title)
-                other.name = 'other'
-                other.value = 'Complete'
-                other.tags = []
-                other.start = m.start()
-                other.end = m.end()
-                to_append.append(other)
-
-            to_remove.append(title)
-            to_append.append(new_title)
-
-        return to_remove, to_append
 
 
 class FixTvChaosUkWorkaround(Rule):
@@ -1679,7 +1599,6 @@ def rules():
         FixSeasonAndEpisodeConflicts,
         FixWrongTitleDueToFilmTitle,
         FixEpisodeRangeDetection,
-        FixWrongTitlesWithCompleteKeyword,
         AnimeWithSeasonAbsoluteEpisodeNumbers,
         AnimeAbsoluteEpisodeNumbers,
         AbsoluteEpisodeNumbers,

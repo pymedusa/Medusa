@@ -233,11 +233,14 @@
   type: episode
 
 ? show name s01.to.s04
-: episode_title: to
-  season:
+: season:
   - 1
   - 2
   - 3
   - 4
   title: show name
   type: episode
+
+? epi
+: options: -t episode
+  title: epi
