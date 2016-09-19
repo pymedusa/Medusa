@@ -1236,13 +1236,15 @@ class Home(WebRoot):
             out.append('S{season}: {names}'.format(season=season, names=', '.join(names)))
         return '<br>'.join(out)
 
-    def editShow(self, show=None, location=None, anyQualities=[], bestQualities=[],
-                 exceptions_list=[], flatten_folders=None, paused=None, directCall=False,
+    def editShow(self, show=None, location=None, anyQualities=None, bestQualities=None,
+                 exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
                  air_by_date=None, sports=None, dvdorder=None, indexerLang=None,
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
                  defaultEpStatus=None, quality_preset=None):
-
+        anyQualities = anyQualities or []
+        bestQualities = bestQualities or []
+        exceptions_list = exceptions_list or []
         allowed_qualities = anyQualities
         preferred_qualities = bestQualities
 
