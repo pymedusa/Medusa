@@ -862,10 +862,10 @@ def anon_url(*url):
 # Encryption
 # ==========
 # By Pedro Jose Pereira Vieito <pvieito@gmail.com> (@pvieito)
-# 
+#
 # * If encryption_version==0 then return data without encryption
 # * The keys should be unique for each device
-# 
+#
 # To add a new encryption_version:
 #   1) Code your new encryption_version
 #   2) Update the last encryption_version available in sickbeard/server/web/config/general.py
@@ -875,6 +875,7 @@ def anon_url(*url):
 unique_key1 = hex(uuid.getnode() ** 2)  # Used in encryption v1
 
 # Encryption Functions
+
 
 def encrypt(data, encryption_version=0, _decrypt=False):
     # Version 1: Simple XOR encryption (this is not very secure, but works)
