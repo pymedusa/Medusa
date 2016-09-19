@@ -40,7 +40,7 @@ var UTIL = {
 $.extend({
     isMeta: function(pyVar, result) { // eslint-disable-line no-unused-vars
         var reg = new RegExp(result.length > 1 ? result.join('|') : result);
-        if (pyVar.match('sickbeard')) {
+        if (pyVar.match('medusa')) {
             pyVar.split('.')[1].toLowerCase().replace(/(_\w)/g, function(m) {
                 return m[1].toUpperCase();
             });
