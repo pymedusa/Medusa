@@ -706,9 +706,6 @@ class GitUpdateManager(UpdateManager):
         status = 0
         for folder in (app.LIB_FOLDER, app.SRC_FOLDER) + app.LEGACY_SRC_FOLDERS:
             _, _, exit_status = self._run_git(self._git_path, 'clean -d -f -x {0}'.format(folder))
-            if exit_status != 0:
-                logger.log('Git clean exit status was {exit_status} for folder {folder}'.format(
-                    exit_status=exit_status, folder=folder), logger.WARNING)
             status |= exit_status
 
         return status
