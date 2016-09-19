@@ -859,26 +859,23 @@ def anon_url(*url):
     """Return a URL string consisting of the Anonymous redirect URL and an arbitrary number of values appended."""
     return '' if None in url else '%s%s' % (app.ANON_REDIRECT, ''.join(str(s) for s in url))
 
-
-"""
-Encryption
-==========
-By Pedro Jose Pereira Vieito <pvieito@gmail.com> (@pvieito)
-
-* If encryption_version==0 then return data without encryption
-* The keys should be unique for each device
-
-To add a new encryption_version:
-  1) Code your new encryption_version
-  2) Update the last encryption_version available in sickbeard/server/web/config/general.py
-  3) Remember to maintain old encryption versions and key generators for retro-compatibility
-"""
+# Encryption
+# ==========
+# By Pedro Jose Pereira Vieito <pvieito@gmail.com> (@pvieito)
+# 
+# * If encryption_version==0 then return data without encryption
+# * The keys should be unique for each device
+# 
+# To add a new encryption_version:
+#   1) Code your new encryption_version
+#   2) Update the last encryption_version available in sickbeard/server/web/config/general.py
+#   3) Remember to maintain old encryption versions and key generators for retro-compatibility
 
 # Key Generators
 unique_key1 = hex(uuid.getnode() ** 2)  # Used in encryption v1
 
-
 # Encryption Functions
+
 def encrypt(data, encryption_version=0, _decrypt=False):
     # Version 1: Simple XOR encryption (this is not very secure, but works)
     if encryption_version == 1:
