@@ -165,12 +165,12 @@ class TVCache(object):
         """
         return self.provider._get_pubdate(item)
 
-    def _get_hash(self, item):
+    def _get_torrent_hash(self, item):
         """
         Return hash of the item. If provider doesnt
-        have _get_hash function this will be used
+        have _get_torrent_hash function this will be used
         """
-        return self.provider._get_hash(item)
+        return self.provider._get_torrent_hash(item)
 
     def _getRSSData(self):
         return {'entries': self.provider.search(self.search_params)} if self.search_params else None
@@ -272,7 +272,7 @@ class TVCache(object):
         seeders, leechers = self._get_result_info(item)
         size = self._get_size(item)
         pubdate = self._get_pubdate(item)
-        torrent_hash = self._get_hash(item)
+        torrent_hash = self._get_torrent_hash(item)
 
         self._checkItemAuth(title, url)
 

@@ -169,7 +169,7 @@ class AlphaRatioProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'hash': None,
+                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

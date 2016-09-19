@@ -150,7 +150,7 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     'seeders': seeders,
                     'leechers': leechers,
                     'pubdate': None,
-                    'hash': info_hash,
+                    'torrent_hash': info_hash,
                 }
                 if mode != 'RSS':
                     logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
