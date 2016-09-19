@@ -36,16 +36,16 @@ class Notifier(object):
 
     https://telegram.org/
     """
-    def test_notify(self, id=None, api_key=None):
+    def test_notify(self, user_id=None, api_key=None):
         """
         Send a test notification
         :param id: The Telegram user/group id to send the message to
         :param api_key: Your Telegram bot API token
         :returns: the notification
         """
-        return self._notify_telegram('Test', 'This is a test notification from Medusa', id, api_key, force=True)
+        return self._notify_telegram('Test', 'This is a test notification from Medusa', user_id, api_key, force=True)
 
-    def _send_telegram_msg(self, title, msg, id=None, api_key=None):
+    def _send_telegram_msg(self, title, msg, user_id=None, api_key=None):
         """
         Sends a Telegram notification
 
@@ -56,13 +56,13 @@ class Notifier(object):
 
         :returns: True if the message succeeded, False otherwise
         """
-        id = app.TELEGRAM_ID if id is None else id
+        user_id = app.TELEGRAM_ID if user_id is None else user_id
         api_key = app.TELEGRAM_APIKEY if api_key is None else api_key
 
         logger.log('Telegram in use with API KEY: %s' % api_key, logger.DEBUG)
 
         message = '%s : %s' % (title.encode(), msg.encode())
-        payload = urlencode({'chat_id': id, 'text': message})
+        payload = urlencode({'chat_id': user_id, 'text': message})
         telegram_api = 'https://api.telegram.org/bot%s/%s'
 
         req = Request(telegram_api % (api_key, 'sendMessage'), payload)
@@ -145,7 +145,7 @@ class Notifier(object):
             title = notifyStrings[NOTIFY_LOGIN]
             self._notify_telegram(title, update_text.format(ipaddress))
 
-    def _notify_telegram(self, title, message, id=None, api_key=None, force=False):
+    def _notify_telegram(self, title, message, user_id=None, api_key=None, force=False):
         """
         Sends a Telegram notification
 
@@ -164,4 +164,4 @@ class Notifier(object):
 
         logger.log('Sending a Telegram message for %s' % message, logger.DEBUG)
 
-        return self._send_telegram_msg(title, message, id, api_key)
+        return self._send_telegram_msg(title, message, user_id, api_key)

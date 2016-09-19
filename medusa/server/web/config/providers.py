@@ -184,21 +184,21 @@ class ConfigProviders(Config):
             return '|'.join([new_provider.get_id(), new_provider.config_string()])
 
     @staticmethod
-    def deleteTorrentRssProvider(id):
+    def deleteTorrentRssProvider(provider_id):
         """
         Delete a Torrent Provider
         """
         provider_dict = dict(
             zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
 
-        if id not in provider_dict:
+        if provider_id not in provider_dict:
             return '0'
 
         # delete it from the list
-        app.torrentRssProviderList.remove(provider_dict[id])
+        app.torrentRssProviderList.remove(provider_dict[provider_id])
 
-        if id in app.PROVIDER_ORDER:
-            app.PROVIDER_ORDER.remove(id)
+        if provider_id in app.PROVIDER_ORDER:
+            app.PROVIDER_ORDER.remove(provider_id)
 
         return '1'
 
