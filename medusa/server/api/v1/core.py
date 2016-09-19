@@ -1,9 +1,7 @@
 # coding=utf-8
 # Author: Dennis Lutter <lad1337@gmail.com>
 # Author: Jonathon Saine <thezoggy@gmail.com>
-# URL: http://code.google.com/p/sickbeard/
 #
-# Git: https://github.com/PyMedusa/SickRage.git
 # This file is part of Medusa.
 #
 # Medusa is free software: you can redistribute it and/or modify

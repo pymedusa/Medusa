@@ -1,6 +1,5 @@
 # coding=utf-8
 #
-# Git: https://github.com/PyMedusa/SickRage.git
 # This file is part of Medusa.
 #
 # Medusa is free software: you can redistribute it and/or modify
