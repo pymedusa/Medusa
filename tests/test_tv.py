@@ -1,9 +1,9 @@
 # coding=utf-8
-"""Tests for sickbeard.tv.py."""
-import pytest
+"""Tests for medusa.tv.py."""
 
-from sickbeard.common import DOWNLOADED, Quality, SNATCHED, SNATCHED_PROPER, WANTED
-from sickbeard.tv import TVEpisode
+from medusa.common import DOWNLOADED, Quality, SNATCHED, SNATCHED_PROPER, WANTED
+from medusa.tv import TVEpisode
+import pytest
 
 
 @pytest.mark.parametrize('p', [
