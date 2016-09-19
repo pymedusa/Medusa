@@ -21,9 +21,7 @@
 
 from __future__ import print_function
 
-"""
-Test SNI and SSL
-"""
+#  Test SNI and SSL
 
 import os.path
 import sys

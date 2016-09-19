@@ -22,9 +22,7 @@
 
 from __future__ import print_function
 
-"""
-Test searches
-"""
+#  Test searches
 
 import os.path
 import sys

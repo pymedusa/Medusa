@@ -83,7 +83,7 @@ class Notifier(object):
             try:
                 p = subprocess.Popen(synoindex_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                      cwd=app.PROG_DIR)
-                out, err = p.communicate()  # @UnusedVariable
+                out, _ = p.communicate()
                 logger.log(u"Script result: " + str(out), logger.DEBUG)
             except OSError as e:
                 logger.log(u"Unable to run synoindex: " + ex(e), logger.ERROR)

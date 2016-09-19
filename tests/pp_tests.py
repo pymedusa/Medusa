@@ -19,9 +19,7 @@
 
 from __future__ import print_function
 
-"""
-Test post processing
-"""
+#  Test post processing
 
 import os.path
 import sys

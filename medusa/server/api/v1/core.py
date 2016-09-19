@@ -259,11 +259,8 @@ class ApiCall(ApiHandler):
 
     def __init__(self, args, kwargs):
         # missing
-        try:
-            if self._missing:
-                self.run = self.return_missing
-        except AttributeError:
-            pass
+        if hasattr(self, '_missing'):
+            self.run = self.return_missing
 
         # help
         if 'help' in kwargs:
@@ -344,10 +341,9 @@ class ApiCall(ApiHandler):
             default = kwargs.get(key)
             missing = False
         if required:
-            try:
-                self._missing
+            if hasattr(self, '_missing'):
                 self._requiredParams.append(key)
-            except AttributeError:
+            else:
                 self._missing = []
                 self._requiredParams = {key: {"allowedValues": allowed_values,
                                               "defaultValue": org_default,
