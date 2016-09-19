@@ -89,7 +89,7 @@ class XthorProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         }
 
         for mode in search_strings:
-            items = []
+            results = []
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             # Sorting: 1: Name, 3: Comments, 5: Size, 6: Completed, 7: Seeders, 8: Leechers (4: Time ?)

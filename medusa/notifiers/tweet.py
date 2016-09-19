@@ -63,7 +63,6 @@ class Notifier(object):
 
     def _get_authorization(self):
 
-        signature_method_hmac_sha1 = oauth.SignatureMethod_HMAC_SHA1()  # @UnusedVariable
         oauth_consumer = oauth.Consumer(key=self.consumer_key, secret=self.consumer_secret)
         oauth_client = oauth.Client(oauth_consumer)
 
@@ -93,7 +92,6 @@ class Notifier(object):
 
         logger.log(u'Generating and signing request for an access token using key {0}'.format(key), logger.DEBUG)
 
-        signature_method_hmac_sha1 = oauth.SignatureMethod_HMAC_SHA1()  # @UnusedVariable
         oauth_consumer = oauth.Consumer(key=self.consumer_key, secret=self.consumer_secret)
         logger.log(u'oauth_consumer: {0}'.format(oauth_consumer), logger.DEBUG)
         oauth_client = oauth.Client(oauth_consumer, token)

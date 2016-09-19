@@ -136,7 +136,7 @@ class PageTemplate(MakoTemplate):
             kwargs['title'] = '500'
             kwargs['header'] = 'Mako Error'
             kwargs['backtrace'] = RichTraceback()
-            for (filename, lineno, function, line) in kwargs['backtrace'].traceback:
+            for (filename, lineno, function, _) in kwargs['backtrace'].traceback:
                 logger.log(u'File {name}, line {line}, in {func}'.format
                            (name=filename, line=lineno, func=function), logger.DEBUG)
             logger.log(u'{name}: {error}'.format
