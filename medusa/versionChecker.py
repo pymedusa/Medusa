@@ -703,12 +703,10 @@ class GitUpdateManager(UpdateManager):
         :return:
         :rtype: int
         """
-        status = 0
-        for folder in (app.LIB_FOLDER, app.SRC_FOLDER) + app.LEGACY_SRC_FOLDERS:
-            _, _, exit_status = self._run_git(self._git_path, 'clean -d -f -x {0}'.format(folder))
-            status |= exit_status
+        folders = [app.LIB_FOLDER, app.SRC_FOLDER] + app.LEGACY_SRC_FOLDERS
+        _, _, exit_status = self._run_git(self._git_path, 'clean -d -f -x {0}'.format(' '.join(folders)))
 
-        return status
+        return exit_status
 
     def reset(self):
         """
