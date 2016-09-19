@@ -33,7 +33,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from six import iteritems
-from sickrage.providers.GenericProvider import GenericProvider
+from medusa.providers.GenericProvider import GenericProvider
 
 
 class GenericProviderTests(unittest.TestCase):
@@ -341,9 +341,8 @@ class GenericProviderTests(unittest.TestCase):
         """
         self.assertTrue(GenericProvider('Test Provider')._verify_download())
 
-
-    @patch('sickrage.providers.GenericProvider.download_file')
-    @patch('sickrage.providers.GenericProvider.remove_file_failed')
+    @patch('medusa.providers.GenericProvider.download_file')
+    @patch('medusa.providers.GenericProvider.remove_file_failed')
     def test_download_file(self, remove_file_mock, df_mock):
         """
         Test download_result

@@ -4,13 +4,13 @@
     from contextlib2 import suppress
     import os
     import re
-    from sickbeard import (
+    from medusa import (
         dailySearchScheduler as daily_search_scheduler,
         backlogSearchScheduler as backlog_search_scheduler,
         BRANCH, DATE_PRESET, TIME_PRESET
     )
-    from sickrage.helper.common import pretty_file_size
-    from sickrage.show.Show import Show
+    from medusa.helper.common import pretty_file_size
+    from medusa.show.Show import Show
 
     mem_usage = None
     with suppress(ImportError):

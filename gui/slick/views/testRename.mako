@@ -1,10 +1,10 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
+    import medusa as app
     import calendar
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from sickbeard.common import Quality, qualityPresets, qualityPresetStrings
-    from sickbeard import db, sbdatetime, network_timezones
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
+    from medusa.common import Quality, qualityPresets, qualityPresetStrings
+    from medusa import db, sbdatetime, network_timezones
     import datetime
     import re
 %>
@@ -20,12 +20,12 @@
 <input type="hidden" id="showID" value="${show.indexerid}" />
 <h3>Preview of the proposed name changes</h3>
 <blockquote>
-% if int(show.air_by_date) == 1 and sickbeard.NAMING_CUSTOM_ABD:
-    ${sickbeard.NAMING_ABD_PATTERN}
-% elif int(show.sports) == 1 and sickbeard.NAMING_CUSTOM_SPORTS:
-    ${sickbeard.NAMING_SPORTS_PATTERN}
+% if int(show.air_by_date) == 1 and app.NAMING_CUSTOM_ABD:
+    ${app.NAMING_ABD_PATTERN}
+% elif int(show.sports) == 1 and app.NAMING_CUSTOM_SPORTS:
+    ${app.NAMING_SPORTS_PATTERN}
 % else:
-    ${sickbeard.NAMING_PATTERN}
+    ${app.NAMING_PATTERN}
 % endif
 </blockquote>
 <% curSeason = -1 %>
@@ -47,7 +47,7 @@
 <br>
 <input type="submit" value="Rename Selected" class="btn btn-success"> <a href="home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
 
-<table id="testRenameTable" class="sickbeardTable ${"summaryFanArt" if sickbeard.FANART_BACKGROUND else ""}" cellspacing="1" border="0" cellpadding="0">
+<table id="testRenameTable" class="sickbeardTable ${"summaryFanArt" if app.FANART_BACKGROUND else ""}" cellspacing="1" border="0" cellpadding="0">
 % for cur_ep_obj in ep_obj_list:
 <%
     curLoc = cur_ep_obj.location[len(cur_ep_obj.show.location)+1:]

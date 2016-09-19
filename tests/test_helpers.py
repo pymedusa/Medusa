@@ -1,8 +1,8 @@
 # coding=utf-8
-"""Tests for sickbeard.helpers.py."""
-import pytest
+"""Tests for medusa.helpers.py."""
 
-import sickbeard.helpers as sut
+import medusa.helpers as sut
+import pytest
 
 
 @pytest.mark.parametrize('p', [

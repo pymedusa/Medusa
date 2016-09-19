@@ -20,7 +20,7 @@
 # pylint: disable=line-too-long
 
 """
-Test sickrage.common
+Test medusa.common
 """
 
 from __future__ import print_function
@@ -34,9 +34,9 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 
 from six import iteritems
 
-import sickbeard
-from sickrage.helper.common import http_code_description, is_sync_file, is_torrent_or_nzb_file, pretty_file_size
-from sickrage.helper.common import remove_extension, replace_extension, sanitize_filename, try_int, convert_size, episode_num
+import medusa as app
+from medusa.helper.common import http_code_description, is_sync_file, is_torrent_or_nzb_file, pretty_file_size
+from medusa.helper.common import remove_extension, replace_extension, sanitize_filename, try_int, convert_size, episode_num
 
 
 class CommonTests(unittest.TestCase):
@@ -82,7 +82,7 @@ class CommonTests(unittest.TestCase):
         """
         Test is sync file
         """
-        sickbeard.SYNC_FILES = '!sync,lftp-pget-status,part'
+        app.SYNC_FILES = '!sync,lftp-pget-status,part'
 
         test_cases = {
             None: False,

@@ -2,14 +2,14 @@
 <%!
     import os.path
     import datetime
-    import sickbeard
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from sickbeard.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
-    from sickbeard import config
-    from sickbeard import metadata
-    from sickbeard.metadata.generic import GenericMetadata
-    from sickbeard import naming
-    from sickrage.helper.encoding import ek
+    import medusa as app
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
+    from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
+    from medusa import config
+    from medusa import metadata
+    from medusa.metadata.generic import GenericMetadata
+    from medusa import naming
+    from medusa.helper.encoding import ek
 %>
 <%block name="content">
 <div id="content960">
@@ -35,7 +35,7 @@
                         </div>
                         <fieldset class="component-group-list">
                             <div class="field-pair">
-                                <input type="checkbox" name="process_automatically" id="process_automatically" ${'checked="checked"' if sickbeard.PROCESS_AUTOMATICALLY else ''}/>
+                                <input type="checkbox" name="process_automatically" id="process_automatically" ${'checked="checked"' if app.PROCESS_AUTOMATICALLY else ''}/>
                                 <label for="process_automatically">
                                     <span class="component-title">Enable</span>
                                     <span class="component-desc">Enable the automatic post processor to scan and process any files in your <i>Post Processing Dir</i>?</span>
@@ -48,7 +48,7 @@
                             <div class="field-pair">
                                 <label class="nocheck" for="tv_download_dir">
                                     <span class="component-title">Post Processing Dir</span>
-                                    <input type="text" name="tv_download_dir" id="tv_download_dir" value="${sickbeard.TV_DOWNLOAD_DIR}" class="form-control input-sm input350"/>
+                                    <input type="text" name="tv_download_dir" id="tv_download_dir" value="${medusa.tv_DOWNLOAD_DIR}" class="form-control input-sm input350"/>
                                 </label>
                                 <label class="nocheck">
                                     <span class="component-title">&nbsp;</span>
@@ -66,7 +66,7 @@
                                         <select name="process_method" id="process_method" class="form-control input-sm">
                                             <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link"} %>
                                             % for curAction in ('copy', 'move', 'hardlink', 'symlink'):
-                                            <option value="${curAction}" ${'selected="selected"' if sickbeard.PROCESS_METHOD == curAction else ''}>${process_method_text[curAction]}</option>
+                                            <option value="${curAction}" ${'selected="selected"' if app.PROCESS_METHOD == curAction else ''}>${process_method_text[curAction]}</option>
                                             % endfor
                                         </select>
                                     </span>
@@ -83,7 +83,7 @@
                             <div class="field-pair">
                                 <label class="nocheck">
                                     <span class="component-title">Auto Post-Processing Frequency</span>
-                                    <input type="number" min="10" step="1" name="autopostprocessor_frequency" id="autopostprocessor_frequency" value="${sickbeard.AUTOPOSTPROCESSOR_FREQUENCY}" class="form-control input-sm input75" />
+                                    <input type="number" min="10" step="1" name="autopostprocessor_frequency" id="autopostprocessor_frequency" value="${app.AUTOPOSTPROCESSOR_FREQUENCY}" class="form-control input-sm input75" />
                                 </label>
                                 <label class="nocheck">
                                     <span class="component-title">&nbsp;</span>
@@ -91,7 +91,7 @@
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <input type="checkbox" name="postpone_if_sync_files" id="postpone_if_sync_files" ${'checked="checked"' if sickbeard.POSTPONE_IF_SYNC_FILES else ''}/>
+                                <input type="checkbox" name="postpone_if_sync_files" id="postpone_if_sync_files" ${'checked="checked"' if app.POSTPONE_IF_SYNC_FILES else ''}/>
                                 <label for="postpone_if_sync_files">
                                     <span class="component-title">Postpone post processing</span>
                                     <span class="component-desc">Wait to process a folder if sync files are present.</span>
@@ -100,7 +100,7 @@
                             <div class="field-pair">
                                 <label class="nocheck">
                                     <span class="component-title">Sync File Extensions</span>
-                                    <input type="text" name="sync_files" id="sync_files" value="${sickbeard.SYNC_FILES}" class="form-control input-sm input350"/>
+                                    <input type="text" name="sync_files" id="sync_files" value="${app.SYNC_FILES}" class="form-control input-sm input350"/>
                                 </label>
                                 <label class="nocheck">
                                     <span class="component-title">&nbsp;</span>
@@ -108,7 +108,7 @@
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <input type="checkbox" name="postpone_if_no_subs" id="postpone_if_no_subs" ${'checked="checked"' if sickbeard.POSTPONE_IF_NO_SUBS else ''}/>
+                                <input type="checkbox" name="postpone_if_no_subs" id="postpone_if_no_subs" ${'checked="checked"' if app.POSTPONE_IF_NO_SUBS else ''}/>
                                 <label for="postpone_if_no_subs">
                                     <span class="component-title">Postpone if no subtitle</span>
                                     <span class="component-desc">Wait to process a file until subtitles are present</span>
@@ -119,28 +119,28 @@
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <input type="checkbox" name="rename_episodes" id="rename_episodes" ${'checked="checked"' if sickbeard.RENAME_EPISODES else ''}/>
+                                <input type="checkbox" name="rename_episodes" id="rename_episodes" ${'checked="checked"' if app.RENAME_EPISODES else ''}/>
                                 <label for="rename_episodes">
                                     <span class="component-title">Rename Episodes</span>
                                     <span class="component-desc">Rename episode using the Episode Naming settings?</span>
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <input type="checkbox" name="create_missing_show_dirs" id="create_missing_show_dirs" ${'checked="checked"' if sickbeard.CREATE_MISSING_SHOW_DIRS else ''}/>
+                                <input type="checkbox" name="create_missing_show_dirs" id="create_missing_show_dirs" ${'checked="checked"' if app.CREATE_MISSING_SHOW_DIRS else ''}/>
                                 <label for="create_missing_show_dirs">
                                     <span class="component-title">Create missing show directories</span>
                                     <span class="component-desc">Create missing show directories when they get deleted</span>
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <input type="checkbox" name="add_shows_wo_dir" id="add_shows_wo_dir" ${'checked="checked"' if sickbeard.ADD_SHOWS_WO_DIR else ''}/>
+                                <input type="checkbox" name="add_shows_wo_dir" id="add_shows_wo_dir" ${'checked="checked"' if app.ADD_SHOWS_WO_DIR else ''}/>
                                 <label for="add_shows_wo_dir">
                                     <span class="component-title">Add shows without directory</span>
                                     <span class="component-desc">Add shows without creating a directory (not recommended)</span>
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <input type="checkbox" name="move_associated_files" id="move_associated_files" ${'checked="checked"' if sickbeard.MOVE_ASSOCIATED_FILES else ''}/>
+                                <input type="checkbox" name="move_associated_files" id="move_associated_files" ${'checked="checked"' if app.MOVE_ASSOCIATED_FILES else ''}/>
                                 <label for="move_associated_files">
                                     <span class="component-title">Delete associated files</span>
                                     <span class="component-desc">Delete srt/srr/sfv/etc files while post processing?</span>
@@ -149,7 +149,7 @@
                             <div class="field-pair">
                                 <label class="nocheck">
                                     <span class="component-title">Keep associated file extensions</span>
-                                    <input type="text" name="allowed_extensions" id="allowed_extensions" value="${sickbeard.ALLOWED_EXTENSIONS}" class="form-control input-sm input350"/>
+                                    <input type="text" name="allowed_extensions" id="allowed_extensions" value="${app.ALLOWED_EXTENSIONS}" class="form-control input-sm input350"/>
                                 </label>
                                 <label class="nocheck">
                                     <span class="component-title">&nbsp;</span>
@@ -157,14 +157,14 @@
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <input type="checkbox" name="nfo_rename" id="nfo_rename" ${'checked="checked"' if sickbeard.NFO_RENAME else ''}/>
+                                <input type="checkbox" name="nfo_rename" id="nfo_rename" ${'checked="checked"' if app.NFO_RENAME else ''}/>
                                 <label for="nfo_rename">
                                     <span class="component-title">Rename .nfo file</span>
                                     <span class="component-desc">Rename the original .nfo file to .nfo-orig to avoid conflicts?</span>
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <input type="checkbox" name="airdate_episodes" id="airdate_episodes" ${'checked="checked"' if sickbeard.AIRDATE_EPISODES else ''}/>
+                                <input type="checkbox" name="airdate_episodes" id="airdate_episodes" ${'checked="checked"' if app.AIRDATE_EPISODES else ''}/>
                                 <label for="airdate_episodes">
                                     <span class="component-title">Change File Date</span>
                                     <span class="component-desc">Set last modified filedate to the date that the episode aired?</span>
@@ -180,7 +180,7 @@
                                     <span class="component-desc">
                                         <select name="file_timestamp_timezone" id="file_timestamp_timezone" class="form-control input-sm">
                                             % for curTimezone in ('local','network'):
-                                            <option value="${curTimezone}" ${'selected="selected"' if sickbeard.FILE_TIMESTAMP_TIMEZONE == curTimezone else ''}>${curTimezone}</option>
+                                            <option value="${curTimezone}" ${'selected="selected"' if app.FILE_TIMESTAMP_TIMEZONE == curTimezone else ''}>${curTimezone}</option>
                                             % endfor
                                         </select>
                                     </span>
@@ -191,7 +191,7 @@
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <input id="unpack" type="checkbox" name="unpack" ${'checked="checked"' if sickbeard.UNPACK else ''} />
+                                <input id="unpack" type="checkbox" name="unpack" ${'checked="checked"' if app.UNPACK else ''} />
                                 <label for="unpack">
                                     <span class="component-title">Unpack</span>
                                     <span class="component-desc">Unpack any TV releases in your <i>TV Download Dir</i>?</span>
@@ -202,14 +202,14 @@
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <input type="checkbox" name="del_rar_contents" id="del_rar_contents" ${'checked="checked"' if sickbeard.DELRARCONTENTS else ''}/>
+                                <input type="checkbox" name="del_rar_contents" id="del_rar_contents" ${'checked="checked"' if app.DELRARCONTENTS else ''}/>
                                 <label for="del_rar_contents">
                                     <span class="component-title">Delete RAR contents</span>
                                     <span class="component-desc">Delete content of RAR files, even if Process Method not set to move?</span>
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <input type="checkbox" name="no_delete" id="no_delete" ${'checked="checked"' if sickbeard.NO_DELETE else ''}/>
+                                <input type="checkbox" name="no_delete" id="no_delete" ${'checked="checked"' if app.NO_DELETE else ''}/>
                                 <label for="no_delete">
                                     <span class="component-title">Don't delete empty folders</span>
                                     <span class="component-desc">Leave empty folders when Post Processing?</span>
@@ -222,7 +222,7 @@
                             <div class="field-pair">
                                 <label class="nocheck">
                                     <span class="component-title">Extra Scripts</span>
-                                    <input type="text" name="extra_scripts" value="${'|'.join(sickbeard.EXTRA_SCRIPTS)}" class="form-control input-sm input350"/>
+                                    <input type="text" name="extra_scripts" value="${'|'.join(app.EXTRA_SCRIPTS)}" class="form-control input-sm input350"/>
                                 </label>
                                 <label class="nocheck">
                                     <span class="component-title">&nbsp;</span>
@@ -246,12 +246,12 @@
                                             <% is_custom = True %>
                                             % for cur_preset in naming.name_presets:
                                                 <% tmp = naming.test_name(cur_preset, anime_type=3) %>
-                                                % if cur_preset == sickbeard.NAMING_PATTERN:
+                                                % if cur_preset == app.NAMING_PATTERN:
                                                     <% is_custom = False %>
                                                 % endif
-                                                <option id="${cur_preset}" ${'selected="selected"' if sickbeard.NAMING_PATTERN == cur_preset else ''}>${ek(os.path.join, tmp['dir'], tmp['name'])}</option>
+                                                <option id="${cur_preset}" ${'selected="selected"' if app.NAMING_PATTERN == cur_preset else ''}>${ek(os.path.join, tmp['dir'], tmp['name'])}</option>
                                             % endfor
-                                            <option id="${sickbeard.NAMING_PATTERN}" ${'selected="selected"' if is_custom else ''}>Custom...</option>
+                                            <option id="${app.NAMING_PATTERN}" ${'selected="selected"' if is_custom else ''}>Custom...</option>
                                         </select>
                                     </span>
                                 </label>
@@ -263,7 +263,7 @@
                                             &nbsp;
                                         </span>
                                         <span class="component-desc">
-                                            <input type="text" name="naming_pattern" id="naming_pattern" value="${sickbeard.NAMING_PATTERN}" class="form-control input-sm input350"/>
+                                            <input type="text" name="naming_pattern" id="naming_pattern" value="${app.NAMING_PATTERN}" class="form-control input-sm input350"/>
                                             <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_key" title="Toggle Naming Legend" class="legend" class="legend" />
                                         </span>
                                     </label>
@@ -443,7 +443,7 @@
                                     <span class="component-desc">
                                         <select id="naming_multi_ep" name="naming_multi_ep" class="form-control input-sm">
                                         % for cur_multi_ep in sorted(MULTI_EP_STRINGS.iteritems(), key=lambda x: x[1]):
-                                            <option value="${cur_multi_ep[0]}" ${('', 'selected="selected"')[cur_multi_ep[0] == sickbeard.NAMING_MULTI_EP]}>${cur_multi_ep[1]}</option>
+                                            <option value="${cur_multi_ep[0]}" ${('', 'selected="selected"')[cur_multi_ep[0] == app.NAMING_MULTI_EP]}>${cur_multi_ep[1]}</option>
                                         % endfor
                                         </select>
                                     </span>
@@ -464,7 +464,7 @@
                                 <br>
                             </div>
                             <div class="field-pair">
-                                <input type="checkbox" id="naming_strip_year"  name="naming_strip_year" ${'checked="checked"' if sickbeard.NAMING_STRIP_YEAR else ''}/>
+                                <input type="checkbox" id="naming_strip_year"  name="naming_strip_year" ${'checked="checked"' if app.NAMING_STRIP_YEAR else ''}/>
                                 <label for="naming_strip_year">
                                     <span class="component-title">Strip Show Year</span>
                                     <span class="component-desc">Remove the TV show's year when renaming the file?</span>
@@ -475,7 +475,7 @@
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <input type="checkbox" class="enabler" id="naming_custom_abd" name="naming_custom_abd" ${'checked="checked"' if sickbeard.NAMING_CUSTOM_ABD else ''}/>
+                                <input type="checkbox" class="enabler" id="naming_custom_abd" name="naming_custom_abd" ${'checked="checked"' if app.NAMING_CUSTOM_ABD else ''}/>
                                 <label for="naming_custom_abd">
                                     <span class="component-title">Custom Air-By-Date</span>
                                     <span class="component-desc">Name Air-By-Date shows differently than regular shows?</span>
@@ -490,12 +490,12 @@
                                                 <% is_abd_custom = True %>
                                                 % for cur_preset in naming.name_abd_presets:
                                                     <% tmp = naming.test_name(cur_preset) %>
-                                                    % if cur_preset == sickbeard.NAMING_ABD_PATTERN:
+                                                    % if cur_preset == app.NAMING_ABD_PATTERN:
                                                         <% is_abd_custom = False %>
                                                     % endif
-                                                    <option id="${cur_preset}" ${'selected="selected"' if sickbeard.NAMING_ABD_PATTERN == cur_preset else ''}>${ek(os.path.join, tmp['dir'], tmp['name'])}</option>
+                                                    <option id="${cur_preset}" ${'selected="selected"' if app.NAMING_ABD_PATTERN == cur_preset else ''}>${ek(os.path.join, tmp['dir'], tmp['name'])}</option>
                                                 % endfor
-                                                <option id="${sickbeard.NAMING_ABD_PATTERN}" ${'selected="selected"' if is_abd_custom else ''}>Custom...</option>
+                                                <option id="${app.NAMING_ABD_PATTERN}" ${'selected="selected"' if is_abd_custom else ''}>Custom...</option>
                                             </select>
                                         </span>
                                     </label>
@@ -507,7 +507,7 @@
                                                 &nbsp;
                                             </span>
                                             <span class="component-desc">
-                                                <input type="text" name="naming_abd_pattern" id="naming_abd_pattern" value="${sickbeard.NAMING_ABD_PATTERN}" class="form-control input-sm input350"/>
+                                                <input type="text" name="naming_abd_pattern" id="naming_abd_pattern" value="${app.NAMING_ABD_PATTERN}" class="form-control input-sm input350"/>
                                                 <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_abd_key" title="Toggle ABD Naming Legend" class="legend" />
                                             </span>
                                         </label>
@@ -646,7 +646,7 @@
                                 </div>
                             </div><!-- /naming_abd_different -->
                             <div class="field-pair">
-                                <input type="checkbox" class="enabler" id="naming_custom_sports" name="naming_custom_sports" ${'checked="checked"' if sickbeard.NAMING_CUSTOM_SPORTS else ''}/>
+                                <input type="checkbox" class="enabler" id="naming_custom_sports" name="naming_custom_sports" ${'checked="checked"' if app.NAMING_CUSTOM_SPORTS else ''}/>
                                 <label for="naming_custom_sports">
                                     <span class="component-title">Custom Sports</span>
                                     <span class="component-desc">Name Sports shows differently than regular shows?</span>
@@ -661,12 +661,12 @@
                                                 <% is_sports_custom = True %>
                                                 % for cur_preset in naming.name_sports_presets:
                                                     <% tmp = naming.test_name(cur_preset) %>
-                                                    % if cur_preset == sickbeard.NAMING_SPORTS_PATTERN:
+                                                    % if cur_preset == app.NAMING_SPORTS_PATTERN:
                                                         <% is_sports_custom = False %>
                                                     % endif
-                                                    <option id="${cur_preset}" ${'selected="selected"' if sickbeard.NAMING_SPORTS_PATTERN == cur_preset else ''}>${ek(os.path.join, tmp['dir'], tmp['name'])}</option>
+                                                    <option id="${cur_preset}" ${'selected="selected"' if app.NAMING_SPORTS_PATTERN == cur_preset else ''}>${ek(os.path.join, tmp['dir'], tmp['name'])}</option>
                                                 % endfor
-                                                <option id="${sickbeard.NAMING_SPORTS_PATTERN}" ${'selected="selected"' if is_sports_custom else ''}>Custom...</option>
+                                                <option id="${app.NAMING_SPORTS_PATTERN}" ${'selected="selected"' if is_sports_custom else ''}>Custom...</option>
                                             </select>
                                         </span>
                                     </label>
@@ -678,7 +678,7 @@
                                                 &nbsp;
                                             </span>
                                             <span class="component-desc">
-                                                <input type="text" name="naming_sports_pattern" id="naming_sports_pattern" value="${sickbeard.NAMING_SPORTS_PATTERN}" class="form-control input-sm input350"/>
+                                                <input type="text" name="naming_sports_pattern" id="naming_sports_pattern" value="${app.NAMING_SPORTS_PATTERN}" class="form-control input-sm input350"/>
                                                 <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_sports_key" title="Toggle Sports Naming Legend" class="legend" />
                                             </span>
                                         </label>
@@ -818,7 +818,7 @@
                             </div><!-- /naming_sports_different -->
                             <!-- naming_anime_custom -->
                             <div class="field-pair">
-                                <input type="checkbox" class="enabler" id="naming_custom_anime" name="naming_custom_anime" ${'checked="checked"' if sickbeard.NAMING_CUSTOM_ANIME else ''}/>
+                                <input type="checkbox" class="enabler" id="naming_custom_anime" name="naming_custom_anime" ${'checked="checked"' if app.NAMING_CUSTOM_ANIME else ''}/>
                                 <label for="naming_custom_anime">
                                     <span class="component-title">Custom Anime</span>
                                     <span class="component-desc">Name Anime shows differently than regular shows?</span>
@@ -833,12 +833,12 @@
                                                 <% is_anime_custom = True %>
                                                 % for cur_preset in naming.name_anime_presets:
                                                     <% tmp = naming.test_name(cur_preset) %>
-                                                    % if cur_preset == sickbeard.NAMING_ANIME_PATTERN:
+                                                    % if cur_preset == app.NAMING_ANIME_PATTERN:
                                                         <% is_anime_custom = False %>
                                                     % endif
-                                                    <option id="${cur_preset}" ${'selected="selected"' if cur_preset == sickbeard.NAMING_ANIME_PATTERN else ''}>${ek(os.path.join, tmp['dir'], tmp['name'])}</option>
+                                                    <option id="${cur_preset}" ${'selected="selected"' if cur_preset == app.NAMING_ANIME_PATTERN else ''}>${ek(os.path.join, tmp['dir'], tmp['name'])}</option>
                                                 % endfor
-                                                <option id="${sickbeard.NAMING_ANIME_PATTERN}" ${'selected="selected"' if is_anime_custom else ''}>Custom...</option>
+                                                <option id="${app.NAMING_ANIME_PATTERN}" ${'selected="selected"' if is_anime_custom else ''}>Custom...</option>
                                             </select>
                                         </span>
                                     </label>
@@ -850,7 +850,7 @@
                                                 &nbsp;
                                             </span>
                                             <span class="component-desc">
-                                                <input type="text" name="naming_anime_pattern" id="naming_anime_pattern" value="${sickbeard.NAMING_ANIME_PATTERN}" class="form-control input-sm input350"/>
+                                                <input type="text" name="naming_anime_pattern" id="naming_anime_pattern" value="${app.NAMING_ANIME_PATTERN}" class="form-control input-sm input350"/>
                                                 <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_anime_key" title="Toggle Anime Naming Legend" class="legend" />
                                             </span>
                                         </label>
@@ -981,7 +981,7 @@
                                         <span class="component-desc">
                                             <select id="naming_anime_multi_ep" name="naming_anime_multi_ep" class="form-control input-sm">
                                             % for cur_multi_ep in sorted(MULTI_EP_STRINGS.iteritems(), key=lambda x: x[1]):
-                                                <option value="${cur_multi_ep[0]}" ${('', 'selected="selected" class="selected"')[cur_multi_ep[0] == sickbeard.NAMING_ANIME_MULTI_EP]}>${cur_multi_ep[1]}</option>
+                                                <option value="${cur_multi_ep[0]}" ${('', 'selected="selected" class="selected"')[cur_multi_ep[0] == app.NAMING_ANIME_MULTI_EP]}>${cur_multi_ep[1]}</option>
                                             % endfor
                                             </select>
                                         </span>
@@ -1002,7 +1002,7 @@
                                     <br>
                                 </div>
                                 <div class="field-pair">
-                                    <input type="radio" name="naming_anime" id="naming_anime" value="1" ${'checked="checked"' if sickbeard.NAMING_ANIME == 1 else ''}/>
+                                    <input type="radio" name="naming_anime" id="naming_anime" value="1" ${'checked="checked"' if app.NAMING_ANIME == 1 else ''}/>
                                     <label for="naming_anime">
                                         <span class="component-title">Add Absolute Number</span>
                                         <span class="component-desc">Add the absolute number to the season/episode format?</span>
@@ -1013,7 +1013,7 @@
                                     </label>
                                 </div>
                                 <div class="field-pair">
-                                    <input type="radio" name="naming_anime" id="naming_anime_only" value="2" ${'checked="checked"' if sickbeard.NAMING_ANIME == 2 else ''}/>
+                                    <input type="radio" name="naming_anime" id="naming_anime_only" value="2" ${'checked="checked"' if app.NAMING_ANIME == 2 else ''}/>
                                     <label for="naming_anime_only">
                                         <span class="component-title">Only Absolute Number</span>
                                         <span class="component-desc">Replace season/episode format with absolute number</span>
@@ -1024,7 +1024,7 @@
                                     </label>
                                 </div>
                                 <div class="field-pair">
-                                    <input type="radio" name="naming_anime" id="naming_anime_none" value="3" ${'checked="checked"' if sickbeard.NAMING_ANIME == 3 else ''}/>
+                                    <input type="radio" name="naming_anime" id="naming_anime_none" value="3" ${'checked="checked"' if app.NAMING_ANIME == 3 else ''}/>
                                     <label for="naming_anime_none">
                                         <span class="component-title">No Absolute Number</span>
                                         <span class="component-desc">Dont include the absolute number</span>
@@ -1059,7 +1059,7 @@
                                 <span>Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>
                             </div>
                             % for (cur_name, cur_generator) in m_dict.iteritems():
-                            <% cur_metadata_inst = sickbeard.metadata_provider_dict[cur_generator.name] %>
+                            <% cur_metadata_inst = app.metadata_provider_dict[cur_generator.name] %>
                             <% cur_id = cur_generator.get_id() %>
                             <div class="metadataDiv" id="${cur_id}">
                                 <div class="metadata_options_wrapper">
@@ -1100,7 +1100,7 @@
                         </fieldset>
                     </div><!-- /component-group3 //-->
                     <br>
-                    <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${sickbeard.DATA_DIR}</span></b> </h6>
+                    <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${app.DATA_DIR}</span></b> </h6>
                     <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
             </form>
         </div>

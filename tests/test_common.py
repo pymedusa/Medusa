@@ -1,8 +1,8 @@
 # coding=utf-8
-"""Tests for sickbeard.common.py."""
-import pytest
+"""Tests for medusa.common.py."""
 
-from sickbeard.common import DOWNLOADED, Quality
+from medusa.common import DOWNLOADED, Quality
+import pytest
 
 
 class TestQuality(object):

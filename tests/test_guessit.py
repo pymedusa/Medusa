@@ -6,8 +6,8 @@ import datetime
 import os
 
 import guessit
+import medusa.name_parser.guessit_parser as sut
 import pytest
-import sickbeard.name_parser.guessit_parser as sut
 from six import binary_type, text_type
 import yaml
 
@@ -81,7 +81,7 @@ def test_pre_configured_guessit():
 @pytest.mark.parametrize('release_name,expected', _parameters(['tvshows.yml']))
 def test_guess(monkeypatch, show_list, release_name, expected):
     # Given
-    monkeypatch.setattr('sickbeard.showList', show_list)
+    monkeypatch.setattr('medusa.showList', show_list)
     options = expected.pop('options', {})
 
     # When

@@ -1,7 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    from sickbeard import common
-    import sickbeard
+    from medusa import common
+    import medusa as app
 %>
 <%block name="content">
 <div id="content960">
@@ -45,7 +45,7 @@ Set checked shows/episodes to <select name="newStatus" class="form-control form-
     statusList.remove(common.ARCHIVED)
     if int(whichStatus) in statusList:
         statusList.remove(int(whichStatus))
-    if int(whichStatus) in [common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST] + common.Quality.ARCHIVED + common.Quality.DOWNLOADED and sickbeard.USE_FAILED_DOWNLOADS:
+    if int(whichStatus) in [common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST] + common.Quality.ARCHIVED + common.Quality.DOWNLOADED and app.USE_FAILED_DOWNLOADS:
         statusList.append(common.FAILED)
 %>
 % for curStatus in statusList:

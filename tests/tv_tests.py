@@ -30,8 +30,8 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from sickbeard.tv import TVEpisode, TVShow
-import sickbeard
+from medusa.tv import TVEpisode, TVShow
+import medusa as app
 import tests.test_lib as test
 
 
@@ -44,7 +44,7 @@ class TVShowTests(test.SickbeardTestDBCase):
         Set up tests
         """
         super(TVShowTests, self).setUp()
-        sickbeard.showList = []
+        app.showList = []
 
     def test_init_indexerid(self):
         """
@@ -96,7 +96,7 @@ class TVEpisodeTests(test.SickbeardTestDBCase):
         Set up
         """
         super(TVEpisodeTests, self).setUp()
-        sickbeard.showList = []
+        app.showList = []
 
     def test_init_empty_db(self):
         """
@@ -119,7 +119,7 @@ class TVTests(test.SickbeardTestDBCase):
         Set up
         """
         super(TVTests, self).setUp()
-        sickbeard.showList = []
+        app.showList = []
 
     @staticmethod
     def test_get_episode():
@@ -136,7 +136,7 @@ class TVTests(test.SickbeardTestDBCase):
         show.airs = "monday"
         show.startyear = 1987
         show.save_to_db()
-        sickbeard.showList = [show]
+        app.showList = [show]
         # TODO: implement
 
 

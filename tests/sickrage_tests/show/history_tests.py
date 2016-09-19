@@ -31,8 +31,8 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from six import iteritems
-from sickbeard.common import Quality
-from sickrage.show.History import History
+from medusa.common import Quality
+from medusa.show.History import History
 
 
 class HistoryTests(unittest.TestCase):

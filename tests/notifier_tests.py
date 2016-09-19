@@ -38,12 +38,12 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from sickbeard import db
-from sickbeard.tv import TVEpisode, TVShow
-from sickbeard.server.web import Home
-from sickbeard.notifiers.emailnotify import Notifier as EmailNotifier
-from sickbeard.notifiers.prowl import Notifier as ProwlNotifier
-from sickrage.helper.encoding import ss
+from medusa import db
+from medusa.tv import TVEpisode, TVShow
+from medusa.server.web import Home
+from medusa.notifiers.emailnotify import Notifier as EmailNotifier
+from medusa.notifiers.prowl import Notifier as ProwlNotifier
+from medusa.helper.encoding import ss
 import tests.test_lib as test
 
 

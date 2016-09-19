@@ -1,11 +1,11 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
+    import medusa as app
     import datetime
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from sickbeard.common import Overview, Quality, qualityPresets, qualityPresetStrings
-    from sickrage.helper.common import episode_num
-    from sickbeard import sbdatetime, network_timezones
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
+    from medusa.common import Overview, Quality, qualityPresets, qualityPresetStrings
+    from medusa.helper.common import episode_num
+    from medusa import sbdatetime, network_timezones
 %>
 <%block name="scripts">
 <script type="text/javascript">
@@ -21,7 +21,7 @@
 <%
     showQualSnatched = lambda x: Quality.splitQuality(x.quality)[1]
     totalWanted = totalQual = totalQualSnatched = 0
-    backLogShows = sorted([x for x in sickbeard.showList if showCounts[x.indexerid][Overview.QUAL] + showCounts[x.indexerid][Overview.WANTED] + (0, showCounts[x.indexerid][Overview.SNATCHED])[len(showQualSnatched(x)) > 0]], key=lambda x: x.name)
+    backLogShows = sorted([x for x in app.showList if showCounts[x.indexerid][Overview.QUAL] + showCounts[x.indexerid][Overview.WANTED] + (0, showCounts[x.indexerid][Overview.SNATCHED])[len(showQualSnatched(x)) > 0]], key=lambda x: x.name)
     for curShow in backLogShows:
         totalWanted += showCounts[curShow.indexerid][Overview.WANTED]
         totalQual += showCounts[curShow.indexerid][Overview.QUAL]

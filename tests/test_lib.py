@@ -50,12 +50,12 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../l
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from configobj import ConfigObj
-from sickbeard import db, providers
-from sickbeard.databases import cache_db, failed_db, main_db
-from sickbeard.providers.nzb.newznab import NewznabProvider
-from sickbeard.tv import TVEpisode
+from medusa import db, providers
+from medusa.databases import cache_db, failed_db, main_db
+from medusa.providers.nzb.newznab import NewznabProvider
+from medusa.tv import TVEpisode
 import shutil_custom  # pylint: disable=import-error
-import sickbeard
+import medusa as app
 
 # pylint: disable=import-error
 
@@ -85,57 +85,57 @@ def create_test_log_folder():
     """
     Create a log folder for test logs.
     """
-    if not os.path.isdir(sickbeard.LOG_DIR):
-        os.mkdir(sickbeard.LOG_DIR)
+    if not os.path.isdir(app.LOG_DIR):
+        os.mkdir(app.LOG_DIR)
 
 
 def create_test_cache_folder():
     """
     Create a cache folder for caching tests.
     """
-    if not os.path.isdir(sickbeard.CACHE_DIR):
-        os.mkdir(sickbeard.CACHE_DIR)
+    if not os.path.isdir(app.CACHE_DIR):
+        os.mkdir(app.CACHE_DIR)
 
 # call env functions at appropriate time during SickBeard var setup
 
 # =================
 #  SickBeard globals
 # =================
-sickbeard.SYS_ENCODING = 'UTF-8'
+app.SYS_ENCODING = 'UTF-8'
 
-sickbeard.showList = []
-sickbeard.QUALITY_DEFAULT = 4  # hdtv
-sickbeard.FLATTEN_FOLDERS_DEFAULT = 0
+app.showList = []
+app.QUALITY_DEFAULT = 4  # hdtv
+app.FLATTEN_FOLDERS_DEFAULT = 0
 
-sickbeard.NAMING_PATTERN = ''
-sickbeard.NAMING_ABD_PATTERN = ''
-sickbeard.NAMING_SPORTS_PATTERN = ''
-sickbeard.NAMING_MULTI_EP = 1
+app.NAMING_PATTERN = ''
+app.NAMING_ABD_PATTERN = ''
+app.NAMING_SPORTS_PATTERN = ''
+app.NAMING_MULTI_EP = 1
 
 
-sickbeard.PROVIDER_ORDER = ["sick_beard_index"]
-sickbeard.newznabProviderList = NewznabProvider.get_providers_list("'Sick Beard Index|http://lolo.sickbeard.com/|0|5030,5040|0|eponly|0|0|0!!!NZBs.org|https://nzbs.org/||5030,5040,5060,5070,5090|0|eponly|0|0|0!!!Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040,5060|0|eponly|0|0|0'")
-sickbeard.providerList = providers.makeProviderList()
+app.PROVIDER_ORDER = ["sick_beard_index"]
+app.newznabProviderList = NewznabProvider.get_providers_list("'Sick Beard Index|http://lolo.medusa.com/|0|5030,5040|0|eponly|0|0|0!!!NZBs.org|https://nzbs.org/||5030,5040,5060,5070,5090|0|eponly|0|0|0!!!Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040,5060|0|eponly|0|0|0'")
+app.providerList = providers.makeProviderList()
 
-sickbeard.PROG_DIR = os.path.abspath(os.path.join(TEST_DIR, '..'))
-sickbeard.DATA_DIR = TEST_DIR
-sickbeard.CONFIG_FILE = os.path.join(sickbeard.DATA_DIR, "config.ini")
-sickbeard.CFG = ConfigObj(sickbeard.CONFIG_FILE)
+app.PROG_DIR = os.path.abspath(os.path.join(TEST_DIR, '..'))
+app.DATA_DIR = TEST_DIR
+app.CONFIG_FILE = os.path.join(app.DATA_DIR, "config.ini")
+app.CFG = ConfigObj(app.CONFIG_FILE)
 
-sickbeard.BRANCH = sickbeard.config.check_setting_str(sickbeard.CFG, 'General', 'branch', '')
-sickbeard.CUR_COMMIT_HASH = sickbeard.config.check_setting_str(sickbeard.CFG, 'General', 'cur_commit_hash', '')
-sickbeard.GIT_USERNAME = sickbeard.config.check_setting_str(sickbeard.CFG, 'General', 'git_username', '')
-sickbeard.GIT_PASSWORD = sickbeard.config.check_setting_str(sickbeard.CFG, 'General', 'git_password', '', censor_log='low')
+app.BRANCH = app.config.check_setting_str(app.CFG, 'General', 'branch', '')
+app.CUR_COMMIT_HASH = app.config.check_setting_str(app.CFG, 'General', 'cur_commit_hash', '')
+app.GIT_USERNAME = app.config.check_setting_str(app.CFG, 'General', 'git_username', '')
+app.GIT_PASSWORD = app.config.check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
 
-sickbeard.LOG_DIR = os.path.join(TEST_DIR, 'Logs')
-sickbeard.logger.log_file = os.path.join(sickbeard.LOG_DIR, 'test_sickbeard.log')
+app.LOG_DIR = os.path.join(TEST_DIR, 'Logs')
+app.logger.log_file = os.path.join(app.LOG_DIR, 'test_sickbeard.log')
 create_test_log_folder()
 
-sickbeard.CACHE_DIR = os.path.join(TEST_DIR, 'cache')
+app.CACHE_DIR = os.path.join(TEST_DIR, 'cache')
 create_test_cache_folder()
 
 # pylint: disable=no-member
-sickbeard.logger.init_logging(False)
+app.logger.init_logging(False)
 
 
 # =================
@@ -151,7 +151,7 @@ def _dummy_save_config():
 
 # this overrides the SickBeard save_config which gets called during a db upgrade
 # this might be considered a hack
-main_db.sickbeard.save_config = _dummy_save_config
+main_db.app.save_config = _dummy_save_config
 
 
 def _fake_specify_ep(self, season, episode):
@@ -181,13 +181,13 @@ class SickbeardTestDBCase(unittest.TestCase):
         tearDown
     """
     def setUp(self):
-        sickbeard.showList = []
+        app.showList = []
         setup_test_db()
         setup_test_episode_file()
         setup_test_show_dir()
 
     def tearDown(self):
-        sickbeard.showList = []
+        app.showList = []
         teardown_test_db()
         teardown_test_episode_file()
         teardown_test_show_dir()
@@ -238,8 +238,8 @@ class TestCacheDBConnection(TestDBConnection, object):
                 raise
 
 # this will override the normal db connection
-sickbeard.db.DBConnection = TestDBConnection
-sickbeard.tvcache.CacheDBConnection = TestCacheDBConnection
+app.db.DBConnection = TestDBConnection
+app.tvcache.CacheDBConnection = TestCacheDBConnection
 
 
 # =================
@@ -267,7 +267,7 @@ def teardown_test_db():
     """
     Tear down the test database.
     """
-    from sickbeard.db import db_cons
+    from medusa.db import db_cons
     for connection in db_cons:
         db_cons[connection].commit()
     #     db_cons[connection].close()

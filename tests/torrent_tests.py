@@ -33,9 +33,9 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../l
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from bs4 import BeautifulSoup
-from sickbeard.helpers import getURL, make_session
-from sickbeard.providers.torrent.json.bitcannon import BitCannonProvider
-from sickbeard.tv import TVEpisode, TVShow
+from medusa.helpers import getURL, make_session
+from medusa.providers.torrent.json.bitcannon import BitCannonProvider
+from medusa.tv import TVEpisode, TVShow
 import tests.test_lib as test
 from six.moves.urllib_parse import urljoin
 

@@ -31,9 +31,9 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from six import iteritems
-import sickbeard
-from sickbeard.event_queue import Events
-from sickrage.system.Restart import Restart
+import medusa as app
+from medusa.event_queue import Events
+from medusa.system.Restart import Restart
 
 
 class RestartTests(unittest.TestCase):
@@ -44,8 +44,8 @@ class RestartTests(unittest.TestCase):
         """
         Test restart
         """
-        sickbeard.PID = 123456
-        sickbeard.events = Events(None)
+        app.PID = 123456
+        app.events = Events(None)
 
         test_cases = {
             0: False,

@@ -1,11 +1,10 @@
 # coding=utf-8
-"""Tests for sickbeard.logger.py."""
+"""Tests for medusa.logger.py."""
 from datetime import datetime
 
+import medusa.logger as sut
+from medusa.logger import DEBUG, INFO, LogLine, WARNING
 import pytest
-
-import sickbeard.logger as sut
-from sickbeard.logger import DEBUG, INFO, LogLine, WARNING
 
 
 class TestStandardLoggingApi(object):

@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
+    import medusa as app
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
@@ -27,7 +27,7 @@
 	            </span>
 	        </label>
 	    </div>
-	
+
 	   <div id="content_configure_show_options">
             <div class="field-pair">
                 <label class="clearfix" for="configure_show_options">
@@ -68,7 +68,7 @@
         <option value="watched" ${'selected="selected"' if traktList == "watched" else '' }>Most Watched</option>
         <option value="played" ${'selected="selected"' if traktList == "played" else '' }>Most Played</option>
         <option value="collected" ${'selected="selected"' if traktList == "collected" else ''}>Most Collected</option>
-% if sickbeard.TRAKT_ACCESS_TOKEN:
+% if app.TRAKT_ACCESS_TOKEN:
         <option value="recommended"  ${'selected="selected"' if traktList == "recommended" else ''}>Recommended</option>
 % endif
     </select>

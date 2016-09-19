@@ -1,9 +1,9 @@
 <%!
     import datetime
     import re
-    import sickbeard
-    from sickrage.helper.common import pretty_file_size
-    from sickrage.show.Show import Show
+    import medusa as app
+    from medusa.helper.common import pretty_file_size
+    from medusa.show.Show import Show
     from time import time
 %>
 <!-- BEGIN HEADER -->
@@ -30,9 +30,9 @@
                         <li><a href="addShows/"><i class="menu-icon-addshow"></i>&nbsp;Add Shows</a></li>
                         <li><a href="addRecommended/"><i class="menu-icon-addshow"></i>&nbsp;Add Recommended Shows</a></li>
                         <li><a href="home/postprocess/"><i class="menu-icon-postprocess"></i>&nbsp;Manual Post-Processing</a></li>
-                        % if sickbeard.SHOWS_RECENT:
+                        % if app.SHOWS_RECENT:
                             <li role="separator" class="divider"></li>
-                            % for recentShow in sickbeard.SHOWS_RECENT:
+                            % for recentShow in app.SHOWS_RECENT:
                                 <li><a href="home/displayShow?show=${recentShow['indexerid']}"><i class="menu-icon-addshow"></i>&nbsp;${recentShow['name']|trim,h}</a></li>
                             % endfor
                         % endif
@@ -54,22 +54,22 @@
                         <li><a href="manage/backlogOverview/"><i class="menu-icon-backlog-view"></i>&nbsp;Backlog Overview</a></li>
                         <li><a href="manage/manageSearches/"><i class="menu-icon-manage-searches"></i>&nbsp;Manage Searches</a></li>
                         <li><a href="manage/episodeStatuses/"><i class="menu-icon-manage2"></i>&nbsp;Episode Status Management</a></li>
-                    % if sickbeard.USE_PLEX_SERVER and sickbeard.PLEX_SERVER_HOST != "":
+                    % if app.USE_PLEX_SERVER and app.PLEX_SERVER_HOST != "":
                         <li><a href="home/updatePLEX/"><i class="menu-icon-plex"></i>&nbsp;Update PLEX</a></li>
                     % endif
-                    % if sickbeard.USE_KODI and sickbeard.KODI_HOST != "":
+                    % if app.USE_KODI and app.KODI_HOST != "":
                         <li><a href="home/updateKODI/"><i class="menu-icon-kodi"></i>&nbsp;Update KODI</a></li>
                     % endif
-                    % if sickbeard.USE_EMBY and sickbeard.EMBY_HOST != "" and sickbeard.EMBY_APIKEY != "":
+                    % if app.USE_EMBY and app.EMBY_HOST != "" and app.EMBY_APIKEY != "":
                         <li><a href="home/updateEMBY/"><i class="menu-icon-emby"></i>&nbsp;Update Emby</a></li>
                     % endif
-                    % if sickbeard.USE_TORRENTS and sickbeard.TORRENT_METHOD != 'blackhole' and (sickbeard.ENABLE_HTTPS and sickbeard.TORRENT_HOST[:5] == 'https' or not sickbeard.ENABLE_HTTPS and sickbeard.TORRENT_HOST[:5] == 'http:'):
+                    % if app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and (app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'https' or not app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'http:'):
                         <li><a href="manage/manageTorrents/"><i class="menu-icon-bittorrent"></i>&nbsp;Manage Torrents</a></li>
                     % endif
-                    % if sickbeard.USE_FAILED_DOWNLOADS:
+                    % if app.USE_FAILED_DOWNLOADS:
                         <li><a href="manage/failedDownloads/"><i class="menu-icon-failed-download"></i>&nbsp;Failed Downloads</a></li>
                     % endif
-                    % if sickbeard.USE_SUBTITLES:
+                    % if app.USE_SUBTITLES:
                         <li><a href="manage/subtitleMissed/"><i class="menu-icon-backlog"></i>&nbsp;Missed Subtitle Management</a></li>
                     % endif
                     </ul>
@@ -100,13 +100,13 @@
                         <li><a href="news/"><i class="menu-icon-news"></i>&nbsp;News${newsBadge}</a></li>
                         <li><a href="IRC/"><i class="menu-icon-irc"></i>&nbsp;IRC</a></li>
                         <li><a href="changes/"><i class="menu-icon-changelog"></i>&nbsp;Changelog</a></li>
-                        <li><a href="https://github.com/PyMedusa/SickRage/wiki/Donations" rel="noreferrer" onclick="window.open('${sickbeard.ANON_REDIRECT}' + this.href); return false;"><i class="menu-icon-support"></i>&nbsp;Support Medusa</a></li>
+                        <li><a href="https://github.com/PyMedusa/SickRage/wiki/Donations" rel="noreferrer" onclick="window.open('${app.ANON_REDIRECT}' + this.href); return false;"><i class="menu-icon-support"></i>&nbsp;Support Medusa</a></li>
                         <li role="separator" class="divider"></li>
                         %if numErrors:
                             <li><a href="errorlogs/"><i class="menu-icon-error"></i>&nbsp;View Errors <span class="badge btn-danger">${numErrors}</span></a></li>
                         %endif
                         %if numWarnings:
-                            <li><a href="errorlogs/?level=${sickbeard.logger.WARNING}"><i class="menu-icon-viewlog-errors"></i>&nbsp;View Warnings <span class="badge btn-warning">${numWarnings}</span></a></li>
+                            <li><a href="errorlogs/?level=${app.logger.WARNING}"><i class="menu-icon-viewlog-errors"></i>&nbsp;View Warnings <span class="badge btn-warning">${numWarnings}</span></a></li>
                         %endif
                         <li><a href="errorlogs/viewlog/"><i class="menu-icon-viewlog"></i>&nbsp;View Log</a></li>
                         <li role="separator" class="divider"></li>

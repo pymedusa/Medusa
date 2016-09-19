@@ -31,8 +31,8 @@ import unittest
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from sickbeard.tv import TVShow
-import sickbeard
+from medusa.tv import TVShow
+import medusa as app
 import tests.test_lib as test
 
 
@@ -53,7 +53,7 @@ class XEMBasicTests(test.SickbeardTestDBCase):
         for sql_show in sql_results:
             try:
                 cur_show = TVShow(int(sql_show["indexer"]), int(sql_show["indexer_id"]))
-                sickbeard.showList.append(cur_show)
+                app.showList.append(cur_show)
             except Exception:  # pylint: disable=broad-except
                 pass
 
@@ -68,7 +68,7 @@ class XEMBasicTests(test.SickbeardTestDBCase):
         for sql_show in sql_results:
             try:
                 cur_show = TVShow(int(sql_show["indexer"]), int(sql_show["indexer_id"]))
-                sickbeard.showList.append(cur_show)
+                app.showList.append(cur_show)
             except Exception as error:  # pylint: disable=broad-except
                 print("There was an error creating the show {}".format(error))
 

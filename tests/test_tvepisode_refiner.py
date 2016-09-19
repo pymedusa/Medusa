@@ -1,9 +1,9 @@
 # coding=utf-8
-"""Tests for sickbeard.refiners.tvepisode.py."""
+"""Tests for medusa.refiners.tvepisode.py."""
 
+from medusa.common import DOWNLOADED, Quality
+from medusa.refiners import tvepisode as sut
 import pytest
-from sickbeard.common import DOWNLOADED, Quality
-from sickbeard.refiners import tvepisode as sut
 from subliminal.video import Video
 
 

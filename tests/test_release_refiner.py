@@ -1,10 +1,10 @@
 # coding=utf-8
-"""Tests for sickbeard.refiners.release.py."""
+"""Tests for medusa.refiners.release.py."""
 
 import os
 
+from medusa.refiners import release as sut
 import pytest
-from sickbeard.refiners import release as sut
 from subliminal.video import Video
 
 

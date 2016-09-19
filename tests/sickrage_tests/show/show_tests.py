@@ -33,11 +33,11 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from six import iteritems
-import sickbeard
-from sickbeard.common import Quality
-from sickbeard.tv import TVShow
-from sickrage.helper.exceptions import MultipleShowObjectsException
-from sickrage.show.Show import Show
+import medusa as app
+from medusa.common import Quality
+from medusa.tv import TVShow
+from medusa.helper.exceptions import MultipleShowObjectsException
+from medusa.show.Show import Show
 
 
 class ShowTests(unittest.TestCase):
@@ -49,9 +49,9 @@ class ShowTests(unittest.TestCase):
         """
         Test find
         """
-        sickbeard.QUALITY_DEFAULT = Quality.FULLHDTV
+        app.QUALITY_DEFAULT = Quality.FULLHDTV
 
-        sickbeard.showList = []
+        app.showList = []
 
         show123 = TestTVShow(0, 123)
         show456 = TestTVShow(0, 456)
@@ -95,14 +95,14 @@ class ShowTests(unittest.TestCase):
         """
         Test validate indexer id
         """
-        sickbeard.QUALITY_DEFAULT = Quality.FULLHDTV
+        app.QUALITY_DEFAULT = Quality.FULLHDTV
 
-        sickbeard.showList = []
+        app.showList = []
 
         show123 = TestTVShow(0, 123)
         show456 = TestTVShow(0, 456)
         show789 = TestTVShow(0, 789)
-        sickbeard.showList = [
+        app.showList = [
             show123,
             show456,
             show789,
