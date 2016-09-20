@@ -225,13 +225,27 @@ class CheckVersion(object):
                 check_url.replace('main_db.py', 'mainDB.py')
                 response = helpers.getURL(check_url, session=self.session, returns='response')
 
-            match = re.search(r'MAX_DB_VERSION\s=\s(?P<version>\d{2,3})', response.text)
-            new_branch_db_version = int(match.group('version'))
+            # Get remote DB version
+            match_max_db = re.search(r'MAX_DB_VERSION\s*=\s*(?P<version>\d{2,3})', response.text)
+            new_branch_major_db_version = int(match_max_db.group('version')) if match_max_db else None
+            match_minor_db = re.search(r'CURRENT_MINOR_DB_VERSION\s*=\s*(?P<version>\d{1,2})', response.text)
+            new_branch_min_db_version = int(match_minor_db.group('version')) if match_minor_db else None
+
+            # Check local DB version
             main_db_con = db.DBConnection()
-            cur_branch_db_version = main_db_con.checkDBVersion()
-            if new_branch_db_version > cur_branch_db_version:
+            cur_branch_major_db_version, cur_branch_minor_db_version = main_db_con.checkDBVersion()
+
+            if any([cur_branch_major_db_version is None, cur_branch_minor_db_version is None,
+                    new_branch_major_db_version is None, new_branch_min_db_version is None]):
+                return 'Could not compare database versions, aborting'
+
+            if new_branch_major_db_version > cur_branch_major_db_version:
                 return 'upgrade'
-            elif new_branch_db_version == cur_branch_db_version:
+            elif new_branch_major_db_version == cur_branch_major_db_version:
+                if new_branch_min_db_version < cur_branch_minor_db_version:
+                    return 'downgrade'
+                elif new_branch_min_db_version > cur_branch_minor_db_version:
+                    return 'upgrade'
                 return 'equal'
             else:
                 return 'downgrade'

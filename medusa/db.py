@@ -132,7 +132,7 @@ class DBConnection(object):
         """
         if self.hasColumn('db_version', 'db_minor_version'):
             warnings.warn('Deprecated: Use the version property', DeprecationWarning)
-        return self.check_db_major_version()
+        return self.check_db_major_version(), self.check_db_minor_version()
 
     def check_db_major_version(self):
         """
@@ -146,12 +146,12 @@ class DBConnection(object):
             if self.hasTable('db_version'):
                 result = self.select("SELECT db_version FROM db_version")
         except sqlite3.OperationalError:
-            return 0
+            return None
 
         if result:
             return int(result[0]["db_version"])
         else:
-            return 0
+            return None
 
     def check_db_minor_version(self):
         """
@@ -165,12 +165,12 @@ class DBConnection(object):
             if self.hasColumn('db_version', 'db_minor_version'):
                 result = self.select("SELECT db_minor_version FROM db_version")
         except sqlite3.OperationalError:
-            return 0
+            return None
 
         if result:
             return int(result[0]["db_minor_version"])
         else:
-            return 0
+            return None
 
     @property
     def version(self):
