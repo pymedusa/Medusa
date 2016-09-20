@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from github import InputFileContent
 from github.GithubException import GithubException, RateLimitExceededException
 import medusa as app
+from . import db
 from .classes import ErrorViewer
 from .github_client import authenticate, get_github_repo
 
@@ -70,6 +71,10 @@ class IssueSubmitter(object):
         except ValueError:
             locale_name = 'unknown'
 
+        # Get current DB version
+        main_db_con = db.DBConnection()
+        cur_branch_major_db_version, cur_branch_minor_db_version = main_db_con.checkDBVersion()
+
         commit = app.CUR_COMMIT_HASH
         base_url = '../blob/{commit}'.format(commit=commit) if commit else None
         return '\n'.join([
@@ -78,6 +83,7 @@ class IssueSubmitter(object):
             '**Operating System**: `{os}`'.format(os=platform.platform()),
             '**Locale**: `{locale}`'.format(locale=locale_name),
             '**Branch**: [{branch}](../tree/{branch})'.format(branch=app.BRANCH),
+            '**Database**: `{0}.{1}`'.format(cur_branch_major_db_version, cur_branch_minor_db_version),
             '**Commit**: PyMedusa/SickRage@{commit}'.format(commit=commit),
             '**Link to Log**: {log_url}'.format(log_url=log_url) if log_url else '**No Log available**',
             '### ERROR',
