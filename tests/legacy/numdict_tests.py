@@ -238,11 +238,11 @@ class NumDictTest(unittest.TestCase):
         # test __getitem__
         self.assertEqual(num_dict_2[1], 'Elephant')
         with self.assertRaises(KeyError):
-            num_dict_1['Mouse']  # key is not numeric
+            print(num_dict_1['Mouse'])  # key is not numeric
         with self.assertRaises(KeyError):
             num_dict_1.__getitem__('Mouse')  # key is not numeric
         with self.assertRaises(KeyError):
-            num_dict_1[None]  # key does not exist
+            print(num_dict_1[None])  # key does not exist
         with self.assertRaises(KeyError):
             num_dict_1.__getitem__(None)  # key does not exist
 
