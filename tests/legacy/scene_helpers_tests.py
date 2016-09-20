@@ -14,7 +14,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from medusa import show_name_helpers, scene_exceptions, common, name_cache, db
 from medusa.tv import TVShow as Show
-import tests.test_lib as test
+from . import test_lib as test
 
 
 class SceneTests(test.SickbeardTestDBCase):

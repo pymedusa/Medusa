@@ -44,7 +44,7 @@ from medusa.server.web import Home
 from medusa.notifiers.emailnotify import Notifier as EmailNotifier
 from medusa.notifiers.prowl import Notifier as ProwlNotifier
 from medusa.helper.encoding import ss
-import tests.test_lib as test
+from . import test_lib as test
 
 
 class NotifierTests(test.SickbeardTestDBCase):  # pylint: disable=too-many-public-methods

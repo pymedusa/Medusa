@@ -35,7 +35,7 @@ from medusa.tv import TVEpisode, TVShow
 import medusa as app
 import medusa.common as common
 from medusa.providers.GenericProvider import GenericProvider
-import tests.test_lib as test
+from . import test_lib as test
 
 TESTS = {
     "Game of Thrones": {

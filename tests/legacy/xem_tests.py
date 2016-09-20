@@ -33,7 +33,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from medusa.tv import TVShow
 import medusa as app
-import tests.test_lib as test
+from . import test_lib as test
 
 
 class XEMBasicTests(test.SickbeardTestDBCase):
