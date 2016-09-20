@@ -1,102 +1,56 @@
 # coding=UTF-8
 # Author: Dennis Lutter <lad1337@gmail.com>
-# URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Test show database functionality.
-
-Tests:
-    DBBasicTests
-    DBMultiTests
-"""
+"""Test show database functionality."""
 
 from __future__ import print_function
 
-import os.path
-import sys
 import threading
-import unittest
-
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from . import test_lib as test
 
 
-class DBBasicTests(test.SickbeardTestDBCase):
-    """
-    Perform basic database tests.
-
-    Tests:
-        test_select
-    """
+class DBBasicTests(test.AppTestDBCase):
+    """Perform basic database tests."""
 
     def setUp(self):
-        """
-        Set up test.
-        """
+        """Unittest set up."""
         super(DBBasicTests, self).setUp()
         self.sr_db = test.db.DBConnection()
 
     def test_select(self):
-        """
-        Test selecting from the database
-        """
         self.sr_db.select("SELECT * FROM tv_episodes WHERE showid = ? AND location != ''", [0000])
 
 
-class DBMultiTests(test.SickbeardTestDBCase):
-    """
-    Perform multi-threaded test of the database
+class DBMultiTests(test.AppTestDBCase):
+    """Perform multi-threaded test of the database."""
 
-    Tests:
-        test_threaded
-    """
     def setUp(self):
-        """
-        Set up test.
-        """
+        """Unittest set up."""
         super(DBMultiTests, self).setUp()
         self.sr_db = test.db.DBConnection()
 
     def select(self):
-        """
-        Select from the database.
-        """
+        """Select from the database."""
         self.sr_db.select("SELECT * FROM tv_episodes WHERE showid = ? AND location != ''", [0000])
 
     def test_threaded(self):
-        """
-        Test multi-threaded selection from the database
-        """
+        """Test multi-threaded selection from the database."""
         for _ in range(4):
             thread = threading.Thread(target=self.select)
             thread.start()
-
-if __name__ == '__main__':
-    print("""
-    ==================
-    STARTING - DB TESTS
-    ==================
-    ######################################################################
-    """)
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(DBBasicTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-    # suite = unittest.TestLoader().loadTestsFromTestCase(DBMultiTests)
-    # unittest.TextTestRunner(verbosity=2).run(suite)

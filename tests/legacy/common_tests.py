@@ -1,48 +1,17 @@
 # coding=utf-8
 
-"""
-Unit Tests for medusa/common.py
-
-Classes:
-    Quality
-        _getStatusStrings
-        combineQualities
-        splitQuality
-        nameQuality
-        scene_quality
-        assumeQuality
-        qualityFromFileMeta
-        compositeStatus
-        qualityDownloaded
-        splitCompositeStatus
-        sceneQualityFromName
-        statusFromName
-    StatusStrings
-        statusStrings
-        __missing__
-        __contains__
-    OverView
-
-"""
-
-# TODO: Implement skipped tests
+"""Unit Tests for common package."""
 
 from __future__ import print_function
 
-import os.path
-import sys
 import unittest
-
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from medusa import common
 
 
 class QualityStringTests(unittest.TestCase):
-    """
-    Test Case for strings in common.Quality
-    """
+    """Test Case for strings in common.Quality."""
+
     test_cases = {
         'sd_tv': [
             "Test.Show.S01E02.PDTV.XViD-GROUP",
@@ -118,15 +87,12 @@ class QualityStringTests(unittest.TestCase):
             "Test.Show.S01E02.1080p.HDDVD.x264-GROUP"
         ],
         'unknown': [
-            "Test.Show.S01E02-SiCKBEARD",
+            "Test.Show.S01E02-SomeGroup",
             "Test.Show.S01E01-20.1080i.[Mux.-.1080i.-.H264.-.Ac3.].HDTVMux.GROUP",
         ],
     }
 
     def test_sd_tv(self):
-        """
-        Test SDTV against nameQuality
-        """
         cur_test = 'sd_tv'
         cur_qual = common.Quality.SDTV
 
@@ -138,9 +104,6 @@ class QualityStringTests(unittest.TestCase):
                     self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
 
     def test_sd_dvd(self):
-        """
-        Test SDDVD against nameQuality
-        """
         cur_test = 'sd_dvd'
         cur_qual = common.Quality.SDDVD
 
@@ -152,9 +115,6 @@ class QualityStringTests(unittest.TestCase):
                     self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
 
     def test_hd_tv(self):
-        """
-        Test HDTV against nameQuality
-        """
         cur_test = 'hd_tv'
         cur_qual = common.Quality.HDTV
 
@@ -166,9 +126,6 @@ class QualityStringTests(unittest.TestCase):
                     self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
 
     def test_raw_hd_tv(self):
-        """
-        Test RAWHDTV against nameQuality
-        """
         cur_test = 'raw_hd_tv'
         cur_qual = common.Quality.RAWHDTV
 
@@ -180,9 +137,6 @@ class QualityStringTests(unittest.TestCase):
                     self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
 
     def test_full_hd_tv(self):
-        """
-        Test FULLHDTV against nameQuality
-        """
         cur_test = 'full_hd_tv'
         cur_qual = common.Quality.FULLHDTV
 
@@ -194,9 +148,6 @@ class QualityStringTests(unittest.TestCase):
                     self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
 
     def test_hd_web_dl(self):
-        """
-        Test HDWEBDL against nameQuality
-        """
         cur_test = 'hd_web_dl'
         cur_qual = common.Quality.HDWEBDL
 
@@ -208,9 +159,6 @@ class QualityStringTests(unittest.TestCase):
                     self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
 
     def test_full_hd_web_dl(self):
-        """
-        Test FULLHDWEBDL against nameQuality
-        """
         cur_test = 'full_hd_web_dl'
         cur_qual = common.Quality.FULLHDWEBDL
 
@@ -222,9 +170,6 @@ class QualityStringTests(unittest.TestCase):
                     self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
 
     def test_hd_bluray(self):
-        """
-        Test HDBLURAY against nameQuality
-        """
         cur_test = 'hd_bluray'
         cur_qual = common.Quality.HDBLURAY
 
@@ -236,9 +181,6 @@ class QualityStringTests(unittest.TestCase):
                     self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
 
     def test_full_hd_bluray(self):
-        """
-        Test FULLHDBLURAY against nameQuality
-        """
         cur_test = 'full_hd_bluray'
         cur_qual = common.Quality.FULLHDBLURAY
 
@@ -250,9 +192,6 @@ class QualityStringTests(unittest.TestCase):
                     self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
 
     def test_unknown(self):
-        """
-        Test UNKNOWN against nameQuality
-        """
         cur_test = 'unknown'
         cur_qual = common.Quality.UNKNOWN
 
@@ -264,9 +203,6 @@ class QualityStringTests(unittest.TestCase):
                     self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
 
     def test_anime(self):
-        """
-        Test Anime against nameQuality
-        """
         test_cases = {
             'sd_dvd': [
                 '[DeadFish].Shingeki.no.Kyojin.-.01.-.OVA.[DVD][480p][AAC].mp4',
@@ -299,17 +235,12 @@ class QualityStringTests(unittest.TestCase):
 
 
 class QualityTests(unittest.TestCase):
-    """
-    Test Case for common.Quality
-    """
+    """Test Case for common.Quality."""
 
     # TODO: repack / proper ? air-by-date ? season rip? multi-ep?
     @unittest.expectedFailure
     # reverse parsing does not work
     def test_reverse_parsing(self):
-        """
-        Test reverse parsing for all qualities
-        """
         tests = [
             (common.Quality.SDTV, "Test Show - S01E02 - SDTV - GROUP"),
             (common.Quality.SDDVD, "Test Show - S01E02 - SD DVD - GROUP"),
@@ -320,108 +251,19 @@ class QualityTests(unittest.TestCase):
             (common.Quality.FULLHDWEBDL, "Test Show - S01E02 - 1080p WEB-DL - GROUP"),
             (common.Quality.HDBLURAY, "Test Show - S01E02 - 720p BluRay - GROUP"),
             (common.Quality.FULLHDBLURAY, "Test Show - S01E02 - 1080p BluRay - GROUP"),
-            (common.Quality.UNKNOWN, "Test Show - S01E02 - Unknown - SiCKBEARD"),
+            (common.Quality.UNKNOWN, "Test Show - S01E02 - Unknown - SomeGroup"),
         ]
         for test in tests:
             quality, test = test
             self.assertEqual(quality, common.Quality.nameQuality(test),
                              (quality, common.Quality.nameQuality(test), test))
 
-    @unittest.skip('Not yet implemented')
-    def test_get_status_strings(self):
-        """
-        Test _getStatusStrings
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_combine_qualities(self):
-        """
-        Test combineQualities
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_split_quality(self):
-        """
-        Test splitQuality
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_name_quality(self):
-        """
-        Test nameQuality
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_scene_quality(self):
-        """
-        Test scene_quality
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_assume_quality(self):
-        """
-        Test assumeQuality
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_quality_from_file_meta(self):
-        """
-        Test qualityFromFileMeta
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_composite_status(self):
-        """
-        Test compositeStatus
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_quality_downloaded(self):
-        """
-        Test qualityDownloaded
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_split_composite_status(self):
-        """
-        Test splitCompositeStatus
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_scene_quality_from_name(self):
-        """
-        Test sceneQualityFromName
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_status_from_name(self):
-        """
-        Test statusFromName
-        """
-        pass
-
 
 class StatusStringsTests(unittest.TestCase):
-    """
-    Test Case for common.StatusStrings
-    """
-    # TODO: Split tests into separate tests and add additional tests
+    """Test Case for common.StatusStrings."""
 
+    # TODO: Split tests into separate tests and add additional tests
     def test_all(self):
-        """
-        Run all status strings tests
-        """
         status_strings = common.statusStrings
 
         valid = 1, 112, '1', '112'
@@ -459,13 +301,9 @@ class StatusStringsTests(unittest.TestCase):
 
 
 class OverviewTests(unittest.TestCase):
-    """
-    Test common.Overview
-    """
+    """Test common.Overview."""
+
     def test_overview_strings(self):
-        """
-        Test common.Overview.overviewStrings
-        """
         overview = common.Overview()
 
         self.assertEqual(overview.overviewStrings[overview.SKIPPED], "skipped")
@@ -474,22 +312,3 @@ class OverviewTests(unittest.TestCase):
         self.assertEqual(overview.overviewStrings[overview.GOOD], "good")
         self.assertEqual(overview.overviewStrings[overview.UNAIRED], "unaired")
         self.assertEqual(overview.overviewStrings[overview.SNATCHED], "snatched")
-
-if __name__ == '__main__':
-    print("""
-    =======================
-    STARTING - COMMON TESTS
-    =======================
-    """)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(QualityStringTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(QualityTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(StatusStringsTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(OverviewTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)

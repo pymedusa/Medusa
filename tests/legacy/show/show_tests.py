@@ -1,54 +1,37 @@
 # coding=utf-8
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-
-# Git: https://github.com/PyMedusa/SickRage.git
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Test shows
-"""
-
-# pylint: disable=line-too-long
+"""Test shows."""
 
 from __future__ import print_function
 
-import os
-import sys
 import unittest
 
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
-
-from six import iteritems
 import medusa as app
 from medusa.common import Quality
-from medusa.tv import TVShow
 from medusa.helper.exceptions import MultipleShowObjectsException
 from medusa.show.Show import Show
+from medusa.tv import TVShow
+from six import iteritems
 
 
 class ShowTests(unittest.TestCase):
-    """
-    Test shows
-    """
+    """Test shows."""
 
     def test_find(self):
-        """
-        Test find
-        """
         app.QUALITY_DEFAULT = Quality.FULLHDTV
 
         app.showList = []
@@ -92,9 +75,6 @@ class ShowTests(unittest.TestCase):
             Show.find(shows_duplicate, 456)
 
     def test_validate_indexer_id(self):
-        """
-        Test validate indexer id
-        """
         app.QUALITY_DEFAULT = Quality.FULLHDTV
 
         app.showList = []
@@ -130,22 +110,11 @@ class ShowTests(unittest.TestCase):
 
 
 class TestTVShow(TVShow):
-    """
-    A test `TVShow` object that does not need DB access.
-    """
+    """A test `TVShow` object that does not need DB access."""
 
     def __init__(self, indexer, indexer_id):
         super(TestTVShow, self).__init__(indexer, indexer_id)
 
     def _load_from_db(self):
-        """
-        Override TVShow._load_from_db to avoid DB access during testing
-        """
+        """Override TVShow._load_from_db to avoid DB access during testing."""
         pass
-
-
-if __name__ == '__main__':
-    print('=====> Testing %s' % __file__)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(ShowTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)

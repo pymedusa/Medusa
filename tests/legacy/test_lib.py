@@ -1,63 +1,38 @@
 # coding=UTF-8
 # Author: Dennis Lutter <lad1337@gmail.com>
-
-# URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 # pylint: disable=line-too-long
 
-"""
-Create a test database for testing.
-
-Methods:
-    create_test_log_folder
-    create_test_cache_folder
-    setup_test_db
-    teardown_test_db
-    setup_test_episode_file
-    teardown_test_episode_file
-    setup_test_show_dir
-    teardown_test_show_dir
-
-Classes:
-    SickbeardTestDBCase
-    TestDBConnection
-    TestCacheDBConnection
-"""
+"""Create a test database for testing."""
 
 from __future__ import print_function
 
 import os.path
 import shutil
-import sys
 import unittest
 
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from configobj import ConfigObj
+import medusa as app
 from medusa import db, providers
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.tv import TVEpisode
-import shutil_custom  # pylint: disable=import-error
-import medusa as app
-
-# pylint: disable=import-error
+import shutil_custom
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -65,7 +40,7 @@ shutil.copyfile = shutil_custom.copyfile_custom
 #  test globals
 # =================
 TEST_DIR = os.path.abspath(os.path.dirname(__file__))
-TEST_DB_NAME = "sickbeard.db"
+TEST_DB_NAME = "application.db"
 TEST_CACHE_DB_NAME = "cache.db"
 TEST_FAILED_DB_NAME = "failed.db"
 
@@ -82,24 +57,20 @@ SHOW_DIR = os.path.join(TEST_DIR, SHOW_NAME + " final")
 #  prepare env functions
 # =================
 def create_test_log_folder():
-    """
-    Create a log folder for test logs.
-    """
+    """Create a log folder for test logs."""
     if not os.path.isdir(app.LOG_DIR):
         os.mkdir(app.LOG_DIR)
 
 
 def create_test_cache_folder():
-    """
-    Create a cache folder for caching tests.
-    """
+    """Create a cache folder for caching tests."""
     if not os.path.isdir(app.CACHE_DIR):
         os.mkdir(app.CACHE_DIR)
 
-# call env functions at appropriate time during SickBeard var setup
+# call env functions at appropriate time during application var setup
 
 # =================
-#  SickBeard globals
+#  app globals
 # =================
 app.SYS_ENCODING = 'UTF-8'
 
@@ -113,8 +84,10 @@ app.NAMING_SPORTS_PATTERN = ''
 app.NAMING_MULTI_EP = 1
 
 
-app.PROVIDER_ORDER = ["sick_beard_index"]
-app.newznabProviderList = NewznabProvider.get_providers_list("'Sick Beard Index|http://lolo.medusa.com/|0|5030,5040|0|eponly|0|0|0!!!NZBs.org|https://nzbs.org/||5030,5040,5060,5070,5090|0|eponly|0|0|0!!!Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040,5060|0|eponly|0|0|0'")
+app.PROVIDER_ORDER = ["app_index"]
+app.newznabProviderList = NewznabProvider.get_providers_list("'Application Index|http://lolo.medusa.com/|0|5030,5040|0|eponly|0|0|0!!!NZBs.org|"
+                                                             "https://nzbs.org/||5030,5040,5060,5070,5090|0|eponly|0|0|0!!!Usenet-Crawler|"
+                                                             "https://www.usenet-crawler.com/||5030,5040,5060|0|eponly|0|0|0'")
 app.providerList = providers.makeProviderList()
 
 app.PROG_DIR = os.path.abspath(os.path.join(TEST_DIR, '..'))
@@ -128,7 +101,7 @@ app.GIT_USERNAME = app.config.check_setting_str(app.CFG, 'General', 'git_usernam
 app.GIT_PASSWORD = app.config.check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
 
 app.LOG_DIR = os.path.join(TEST_DIR, 'Logs')
-app.logger.log_file = os.path.join(app.LOG_DIR, 'test_sickbeard.log')
+app.logger.log_file = os.path.join(app.LOG_DIR, 'test_application.log')
 create_test_log_folder()
 
 app.CACHE_DIR = os.path.join(TEST_DIR, 'cache')
@@ -137,33 +110,19 @@ create_test_cache_folder()
 # pylint: disable=no-member
 app.logger.init_logging(False)
 
-
-# =================
-#  dummy functions
-# =================
-def _dummy_save_config():
-    """
-    Override the SickBeard save_config which gets called during a db upgrade.
-
-    :return: True
-    """
-    return True
-
-# this overrides the SickBeard save_config which gets called during a db upgrade
+# this overrides the app save_config which gets called during a db upgrade
 # this might be considered a hack
-main_db.app.save_config = _dummy_save_config
+main_db.app.save_config = lambda: True
 
 
 def _fake_specify_ep(self, season, episode):
-    """
-    Override contact to TVDB indexer.
+    """Override contact to TVDB indexer.
 
     :param self: ...not used
     :param season: Season to search for  ...not used
     :param episode: Episode to search for  ...not used
     """
-    _ = self, season, episode  # throw away unused variables
-
+    pass
 
 # the real one tries to contact TVDB just stop it from getting more info on the ep
 TVEpisode._specify_episode = _fake_specify_ep
@@ -172,14 +131,9 @@ TVEpisode._specify_episode = _fake_specify_ep
 # =================
 #  test classes
 # =================
-class SickbeardTestDBCase(unittest.TestCase):
-    """
-    Superclass for testing the database.
+class AppTestDBCase(unittest.TestCase):
+    """Superclass for testing the database."""
 
-    Methods:
-        setUp
-        tearDown
-    """
     def setUp(self):
         app.showList = []
         setup_test_db()
@@ -194,18 +148,16 @@ class SickbeardTestDBCase(unittest.TestCase):
 
 
 class TestDBConnection(db.DBConnection, object):
-    """
-    Test connecting to the database.
-    """
+    """Test connecting to the database."""
+
     def __init__(self, db_file_name=TEST_DB_NAME):
         db_file_name = os.path.join(TEST_DIR, db_file_name)
         super(TestDBConnection, self).__init__(db_file_name)
 
 
 class TestCacheDBConnection(TestDBConnection, object):
-    """
-    Test connecting to the cache database.
-    """
+    """Test connecting to the cache database."""
+
     def __init__(self, provider_name):
         # pylint: disable=non-parent-init-called
         db.DBConnection.__init__(self, os.path.join(TEST_DIR, TEST_CACHE_DB_NAME))
@@ -213,7 +165,8 @@ class TestCacheDBConnection(TestDBConnection, object):
         # Create the table if it's not already there
         try:
             if not self.hasTable(provider_name):
-                sql = "CREATE TABLE [" + provider_name + "] (name TEXT, season NUMERIC, episodes TEXT, indexerid NUMERIC, url TEXT, time NUMERIC, quality TEXT, release_group TEXT)"
+                sql = "CREATE TABLE [" + provider_name + \
+                      "] (name TEXT, season NUMERIC, episodes TEXT, indexerid NUMERIC, url TEXT, time NUMERIC, quality TEXT, release_group TEXT)"
                 self.connection.execute(sql)
                 self.connection.commit()
         # pylint: disable=broad-except
@@ -246,9 +199,7 @@ app.tvcache.CacheDBConnection = TestCacheDBConnection
 #  test functions
 # =================
 def setup_test_db():
-    """
-    Set up the test databases.
-    """
+    """Set up the test databases."""
     # Upgrade the db to the latest version.
     # upgrading the db
     db.upgradeDatabase(db.DBConnection(), main_db.InitialSchema)
@@ -264,9 +215,7 @@ def setup_test_db():
 
 
 def teardown_test_db():
-    """
-    Tear down the test database.
-    """
+    """Tear down the test database."""
     from medusa.db import db_cons
     for connection in db_cons:
         db_cons[connection].commit()
@@ -283,9 +232,7 @@ def teardown_test_db():
 
 
 def setup_test_episode_file():
-    """
-    Create a test episode directory with a test episode in it.
-    """
+    """Create a test episode directory with a test episode in it."""
     if not os.path.exists(FILE_DIR):
         os.makedirs(FILE_DIR)
 
@@ -301,24 +248,18 @@ def setup_test_episode_file():
 
 
 def teardown_test_episode_file():
-    """
-    Remove the test episode.
-    """
+    """Remove the test episode."""
     if os.path.exists(FILE_DIR):
         shutil.rmtree(FILE_DIR)
 
 
 def setup_test_show_dir():
-    """
-    Create a test show directory.
-    """
+    """Create a test show directory."""
     if not os.path.exists(SHOW_DIR):
         os.makedirs(SHOW_DIR)
 
 
 def teardown_test_show_dir():
-    """
-    Remove the test show.
-    """
+    """Remove the test show."""
     if os.path.exists(SHOW_DIR):
         shutil.rmtree(SHOW_DIR)

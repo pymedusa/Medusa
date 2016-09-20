@@ -1,50 +1,34 @@
 # coding=utf-8
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-
-# Git: https://github.com/PyMedusa/SickRage.git
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Test GenericProvider
-"""
+"""Test GenericProvider."""
 
 from __future__ import print_function
 
-import os
-import sys
 import unittest
 
-from mock import patch, MagicMock
-
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
-
-from six import iteritems
 from medusa.providers.GenericProvider import GenericProvider
+from mock import MagicMock, patch
+from six import iteritems
 
 
 class GenericProviderTests(unittest.TestCase):
-    """
-    Test GenericProvider
-    """
+    """Test GenericProvider."""
 
     def test_get_id(self):
-        """
-        Test get_id
-        """
         test_cases = {
             None: '',
             123: '123',
@@ -104,9 +88,6 @@ class GenericProviderTests(unittest.TestCase):
                 self.assertEqual(GenericProvider(name).get_id(), result)
 
     def test_image_name(self):
-        """
-        Test image_name
-        """
         test_cases = {
             None: '.png',
             123: '123.png',
@@ -166,21 +147,14 @@ class GenericProviderTests(unittest.TestCase):
                 self.assertEqual(GenericProvider(name).image_name(), result)
 
     def test_is_active(self):
-        """
-        Test is_active
-        """
+        """Test is active."""
         self.assertFalse(GenericProvider('Test Provider').is_active())
 
     def test_is_enabled(self):
-        """
-        Test is_enabled
-        """
+        """Test is enabled."""
         self.assertFalse(GenericProvider('Test Provider').is_enabled())
 
     def test_make_id(self):
-        """
-        Test make_id
-        """
         test_cases = {
             None: '',
             123: '123',
@@ -240,27 +214,15 @@ class GenericProviderTests(unittest.TestCase):
                 self.assertEqual(GenericProvider.make_id(name), result)
 
     def test_seed_ratio(self):
-        """
-        Test seed_ratio
-        """
         self.assertEqual(GenericProvider('Test Provider').seed_ratio(), '')
 
     def test__check_auth(self):
-        """
-        Test _check_auth
-        """
         self.assertTrue(GenericProvider('Test Provider')._check_auth())
 
     def test_login(self):
-        """
-        Test login
-        """
         self.assertTrue(GenericProvider('Test Provider').login())
 
     def test_search(self):
-        """
-        Test search
-        """
         test_cases = {
             None: [],
             123: [],
@@ -287,21 +249,13 @@ class GenericProviderTests(unittest.TestCase):
                 self.assertEqual(GenericProvider('Test Provider').search(search_params), result)
 
     def test__get_size(self):
-        """
-        Test _get_size
-        """
         self.assertEqual(GenericProvider('Test Provider')._get_size(None), -1)
 
     def test__get_storage_dir(self):
-        """
-        Test _get_storage_dir
-        """
         self.assertEqual(GenericProvider('Test Provider')._get_storage_dir(), '')
 
     def test__get_title_and_url(self):
-        """
-        Test _get_title_and_url
-        """
+        """Test _get_title_and_url."""
         items_list = [
             None, {}, {'link': None, 'title': None}, {'link': '', 'title': ''},
             {'link': 'http://www.google.com/&amp;foo=bar%26tr%3Dtest', 'title': 'Some Title'}
@@ -336,17 +290,12 @@ class GenericProviderTests(unittest.TestCase):
             self.assertEqual(GenericProvider('Test Provider')._get_title_and_url(item), unicode_results_list[index])
 
     def test__verify_download(self):
-        """
-        Test _verify_download
-        """
+        """Test _verify_download."""
         self.assertTrue(GenericProvider('Test Provider')._verify_download())
 
     @patch('medusa.providers.GenericProvider.download_file')
     @patch('medusa.providers.GenericProvider.remove_file_failed')
     def test_download_file(self, remove_file_mock, df_mock):
-        """
-        Test download_result
-        """
         domain = 'domain'
         filename = 'TestFilename.nzb'
         urls = [
@@ -386,10 +335,3 @@ class GenericProviderTests(unittest.TestCase):
                 resp = gp3.download_result('result 3')
                 self.assertFalse(resp)
                 self.assertTrue(remove_file_mock.called)
-
-
-if __name__ == '__main__':
-    print('=====> Testing %s' % __file__)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(GenericProviderTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)

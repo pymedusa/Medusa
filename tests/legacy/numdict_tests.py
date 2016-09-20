@@ -1,32 +1,21 @@
 # coding=utf-8
 
-"""
-Unit Tests for sickbeard/numdict.py
-"""
+"""Unit Tests for numdict."""
 
 # pylint: disable=line-too-long
 
 from __future__ import print_function
 
-import os.path
-import sys
 import unittest
 
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from six.moves import UserDict
 from medusa.numdict import NumDict
+from six.moves import UserDict
 
 
 class NumDictTest(unittest.TestCase):
-    """
-    Test the NumDict class
-    """
+    """Test the NumDict class."""
+
     def test_constructors(self):  # pylint: disable=too-many-locals, too-many-statements
-        """
-        Test NumDict constructors
-        """
         # dicts for testing
         dict_0 = {}  # Empty dictionary
         dict_1 = {1: 'Elephant'}  # Single numeric key
@@ -139,9 +128,6 @@ class NumDictTest(unittest.TestCase):
         self.assertIsInstance(num_dict_4.fromkeys('1 2'.split()), NumDict)
 
     def test_repr(self):  # pylint: disable=too-many-locals
-        """
-        Test representation of NumDicts
-        """
         # dicts for testing
         dict_0 = {}  # Empty dictionary
         dict_1 = {1: 'Elephant'}  # Single numeric key
@@ -215,9 +201,6 @@ class NumDictTest(unittest.TestCase):
         self.assertIn(repr(num_dict_7), reps)
 
     def test_rich_comparison_and_len(self):
-        """
-        Test rich comparison and length
-        """
         # dicts for testing
         dict_0 = {}  # Empty dictionary
         dict_1 = {1: 'Elephant'}  # Single numeric key
@@ -235,15 +218,13 @@ class NumDictTest(unittest.TestCase):
         num_dict_from_num_dict_1 = NumDict(num_dict_1)
         num_dict_from_num_dict_2 = NumDict(num_dict_2)
 
-        all_dicts = [dict_0, dict_1, dict_2, num_dict, num_dict_0, num_dict_1, num_dict_2, num_dict_from_num_dict, num_dict_from_num_dict_0, num_dict_from_num_dict_1, num_dict_from_num_dict_2]
+        all_dicts = [dict_0, dict_1, dict_2, num_dict, num_dict_0, num_dict_1, num_dict_2, num_dict_from_num_dict,
+                     num_dict_from_num_dict_0, num_dict_from_num_dict_1, num_dict_from_num_dict_2]
         for val_a in all_dicts:
             for val_b in all_dicts:
                 self.assertEqual(val_a == val_b, len(val_a) == len(val_b))
 
     def test_dict_access_and_mod(self):  # pylint: disable=too-many-locals, too-many-statements
-        """
-        Test num dict access and modification
-        """
         # dicts for testing
         dict_0 = {}  # Empty dictionary
         dict_1 = {1: 'Elephant'}  # Single numeric key
@@ -257,13 +238,13 @@ class NumDictTest(unittest.TestCase):
         # test __getitem__
         self.assertEqual(num_dict_2[1], 'Elephant')
         with self.assertRaises(KeyError):
-            _ = num_dict_1['Mouse']  # key is not numeric
+            num_dict_1['Mouse']  # key is not numeric
         with self.assertRaises(KeyError):
-            _ = num_dict_1.__getitem__('Mouse')  # key is not numeric
+            num_dict_1.__getitem__('Mouse')  # key is not numeric
         with self.assertRaises(KeyError):
-            _ = num_dict_1[None]  # key does not exist
+            num_dict_1[None]  # key does not exist
         with self.assertRaises(KeyError):
-            _ = num_dict_1.__getitem__(None)  # key does not exist
+            num_dict_1.__getitem__(None)  # key does not exist
 
         # Test __setitem__
         num_dict_3 = NumDict(num_dict_2)
@@ -314,13 +295,10 @@ class NumDictTest(unittest.TestCase):
         self.assertEqual(num_dict_2c, num_dict_2d)
 
         class MyNumDict(NumDict):
-            """
-            subclass Numdict for testing
-            """
+            """Subclass Numdict for testing."""
+
             def display(self):
-                """
-                add a method to subclass to differentiate from superclass
-                """
+                """Add a method to subclass to differentiate from superclass."""
                 print('MyNumDict:', self)
 
         my_num_dict = MyNumDict(num_dict_2)
@@ -412,16 +390,12 @@ class NumDictTest(unittest.TestCase):
         self.assertRaises(KeyError, test.popitem)
 
     def test_missing(self):
-        """
-        Test missing keys
-        """
         # Make sure NumDict doesn't have a __missing__ method
         self.assertEqual(hasattr(NumDict, "__missing__"), False)
 
         class NumDictD(NumDict):
-            """
-            subclass defines __missing__ method returning a value
-            """
+            """Subclass defines __missing__ method returning a value."""
+
             def __missing__(self, key):  # pylint: disable=no-self-use
                 key = 42
                 return key
@@ -434,9 +408,8 @@ class NumDictTest(unittest.TestCase):
         self.assertEqual(num_dict_d[2], 42)
 
         class NumDictE(NumDict):
-            """
-            subclass defines __missing__ method raising RuntimeError
-            """
+            """Subclass defines __missing__ method raising RuntimeError."""
+
             def __missing__(self, key):  # pylint: disable=no-self-use
                 raise RuntimeError(key)
 
@@ -449,9 +422,8 @@ class NumDictTest(unittest.TestCase):
             self.fail("num_dict_e[42] didn't raise RuntimeError")
 
         class NumDictF(NumDict):
-            """
-            subclass sets __missing__ instance variable (no effect)
-            """
+            """Subclass sets __missing__ instance variable (no effect)."""
+
             def __init__(self):
                 # An instance variable __missing__ should have no effect
                 self.__missing__ = lambda key: None
@@ -465,9 +437,8 @@ class NumDictTest(unittest.TestCase):
             self.fail("num_dict_f[42] didn't raise KeyError")
 
         class NumDictG(NumDict):
-            """
-            subclass doesn't define __missing__ at a all
-            """
+            """Subclass doesn't define __missing__ at a all."""
+
             pass
 
         num_dict_g = NumDictG()
@@ -479,32 +450,10 @@ class NumDictTest(unittest.TestCase):
             self.fail("num_dict_g[42] didn't raise KeyError")
 
         class NumDictH(NumDictD):
-            """
-            subclass calls super classes __missing__ and modifies the value before returning it
-            """
+            """Subclass calls super classes __missing__ and modifies the value before returning it."""
+
             def __missing__(self, key):  # pylint: disable=arguments-differ
                 return super(NumDictH, self).__missing__(key) + 1
 
         num_dict_h = NumDictH()
         self.assertEqual(num_dict_h[None], num_dict_d[None] + 1)
-
-
-def test_main():
-    """
-    Run tests when run as main
-    """
-    import logging
-    log = logging.getLogger(__name__)
-    logging.basicConfig(level=logging.DEBUG)
-
-    log.info("=======================")
-    log.info("STARTING - COMMON TESTS")
-    log.info("=======================")
-    log.info("######################################################################")
-
-    suite = unittest.TestLoader().loadTestsFromTestCase(NumDictTest)
-    unittest.TextTestRunner(verbosity=2).run(suite)
-
-
-if __name__ == "__main__":
-    test_main()

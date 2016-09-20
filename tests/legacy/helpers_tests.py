@@ -1,96 +1,33 @@
 #!/usr/bin/env python2.7
 # coding=utf-8
 # Author: Dustyn Gibson <miigotu@gmail.com>
-# URL: http://github.com/PyMedusa/SickRage
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Test medusa.helpers
-
-Public Methods:
-    fixGlob
-    indentXML
-    isMediaFile
-    isRarFile
-    remove_file_failed
-    makeDir
-    searchIndexerForShowID
-    listMediaFiles
-    copyFile
-    moveFile
-    link
-    hardlinkFile
-    symlink
-    moveAndSymlinkFile
-    make_dirs
-    rename_ep_file
-    delete_empty_folders
-    fileBitFilter
-    chmodAsParent
-    fixSetGroupID
-    is_anime_in_show_list
-    update_anime_support
-    get_absolute_number_from_season_and_episode
-    get_all_episodes_from_absolute_number
-    sanitizeSceneName
-    create_https_certificates
-    backupVersionedFile
-    restoreVersionedFile
-    get_lan_ip
-    check_url
-    anon_url
-    encrypt
-    decrypt
-    full_sanitizeSceneName
-    get_show
-    is_hidden_folder
-    real_path
-    validateShow
-    set_up_anidb_connection
-    backupConfigZip
-    restoreConfigZip
-    mapIndexersToShow
-    touchFile
-    getURL
-    download_file
-    get_size
-    generateApiKey
-    remove_article
-    generateCookieSecret
-    verify_freespace
-    pretty_time_delta
-    isFileLocked
-    getDiskSpaceUsage
-Private Methods:
-    _setUpSession
-"""
+"""Test helpers."""
 
 from __future__ import print_function
-import os.path
-import sys
-import unittest
 
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import unittest
 
 from medusa import helpers
 from medusa.helper.common import media_extensions, subtitle_extensions
 
 TEST_RESULT = 'Show.Name.S01E01.HDTV.x264-RLSGROUP'
+# TODO: py.test parameters
 TEST_CASES = {
     'removewords': [
         TEST_RESULT,
@@ -134,26 +71,22 @@ TEST_CASES = {
 
 
 class HelpersTests(unittest.TestCase):
-    """
-    Test using test generator
-    """
+    """Test using test generator."""
+
     def __init__(self, *args, **kwargs):
-        """
-        Initialize test
-        """
+        """Initialize test."""
         super(HelpersTests, self).__init__(*args, **kwargs)
 
 
 def generator(test_strings):
-    """
-    Generate tests from test strings
+    """Generate tests from test strings.
 
     :param test_strings: to generate tests from
     :return: test
     """
     def _test(self):
-        """
-        Generate tests
+        """Generate tests.
+
         :param self:
         :return: test to run
         """
@@ -162,82 +95,10 @@ def generator(test_strings):
     return _test
 
 
-class HelpersZipTests(unittest.TestCase):
-    """
-    Test zip methods
-    """
-
-    @unittest.skip('Not yet implemented')
-    def test_backup_config_zip(self):
-        """
-        Test backupConfigZip
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_restore_config_zip(self):
-        """
-        Test restoreConfigZip
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_is_rar_file(self):
-        """
-        Test isRarFile
-        """
-        pass
-
-
-class HelpersDirectoryTests(unittest.TestCase):
-    """
-    Test directory methods
-    """
-    @unittest.skip('Not yet implemented')
-    def test_make_dirs(self):
-        """
-        Test make_dirs
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_delete_empty_folders(self):
-        """
-        Test delete_empty_folders
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_make_dir(self):
-        """
-        Test makeDir
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_is_hidden_folder(self):
-        """
-        Test is_hidden_folder
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_real_path(self):
-        """
-        Test real_path
-        """
-        pass
-
-
 class HelpersFileTests(unittest.TestCase):
-    """
-    Test file helpers
-    """
+    """Test file helpers."""
 
     def test_is_media_file(self):
-        """
-        Test isMediaFile
-        """
         # TODO: Add unicode tests
         # TODO: Add MAC OS resource fork tests
         # TODO: Add RARBG release tests
@@ -249,6 +110,7 @@ class HelpersFileTests(unittest.TestCase):
         # Test all valid media extensions
         temp_name = 'Show.Name.S01E01.HDTV.x264-RLSGROUP'
         extension_tests = {'.'.join((temp_name, ext)): True for ext in media_extensions}
+
         # ...and some invalid ones
         other_extensions = ['txt', 'sfv', 'srr', 'rar', 'nfo', 'zip']
         extension_tests.update({'.'.join((temp_name, ext)): False for ext in other_extensions + subtitle_extensions})
@@ -280,382 +142,3 @@ class HelpersFileTests(unittest.TestCase):
         for cur_test in extension_tests, sample_tests, edge_cases:
             for cur_name, expected_result in cur_test.items():
                 self.assertEqual(helpers.isMediaFile(cur_name), expected_result, cur_name)
-
-    @unittest.skip('Not yet implemented')
-    def test_is_file_locked(self):
-        """
-        Test isFileLocked
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_remove_file_failed(self):
-        """
-        Test remove_file_failed
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_list_media_files(self):
-        """
-        Test listMediaFiles
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_copy_file(self):
-        """
-        Test copyFile
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_move_file(self):
-        """
-        Test moveFile
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_rename_ep_file(self):
-        """
-        Test rename_ep_file
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_file_bit_filter(self):
-        """
-        Test fileBitFilter
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_chmod_as_parent(self):
-        """
-        Test chmodAsParent
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_backup_versioned_file(self):
-        """
-        Test backupVersionedFile
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_restore_versioned_file(self):
-        """
-        Test restoreVersionedFile
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_verify_free_space(self):
-        """
-        Test verify_freespace
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_get_disk_space_usage(self):
-        """
-        Test getDiskSpaceUsage
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_download_file(self):
-        """
-        Test download_file
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_get_size(self):
-        """
-        Test get_size
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_touch_file(self):
-        """
-        Test touchFile
-        """
-        pass
-
-
-class HelpersFileLinksTests(unittest.TestCase):
-    """
-    Test sym and hard links
-    """
-    @unittest.skip('Not yet implemented')
-    def test_link(self):
-        """
-        Test link
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_hardlink_file(self):
-        """
-        Test hardlinkFile
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_symlink(self):
-        """
-        Test symlink
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_move_and_symlink_file(self):
-        """
-        Test moveAndSymlinkFile
-        """
-        pass
-
-
-class HelpersEncryptionTests(unittest.TestCase):
-    """
-    Test encryption and decryption
-    """
-    @unittest.skip('Not yet implemented')
-    def test_create_https_certificates(self):
-        """
-        Test create_https_certificates
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_encrypt(self):
-        """
-        Test encrypt
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_decrypt(self):
-        """
-        Test decrypt
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_generate_cookie_secret(self):
-        """
-        Test generateCookieSecret
-        """
-        pass
-
-
-class HelpersShowTests(unittest.TestCase):
-    """
-    Test show methods
-    """
-    @unittest.skip('Not yet implemented')
-    def test_search_indexer_for_show_id(self):
-        """
-        Test searchIndexerForShowID
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_is_anime_in_show_list(self):
-        """
-        Test is_anime_in_show_list
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_get_show(self):
-        """
-        Test get_show
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_validate_show(self):
-        """
-        Test validateShow
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_map_indexers_to_show(self):
-        """
-        Test mapIndexersToShow
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_get_abs_no_from_s_and_e(self):
-        """
-        Test get_absolute_number_from_season_and_episode
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_get_all_eps_from_abs_no(self):
-        """
-        Test get_all_episodes_from_absolute_number
-        """
-        pass
-
-
-class HelpersConnectionTests(unittest.TestCase):
-    """
-    Test connections
-    """
-    @unittest.skip('Not yet implemented')
-    def test_get_lan_ip(self):
-        """
-        Test get_lan_ip
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_check_url(self):
-        """
-        Test check_url
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_anon_url(self):
-        """
-        Test anon_url
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_set_up_anidb_connection(self):
-        """
-        Test set_up_anidb_connection
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_set_up_session(self):
-        """
-        Test _setUpSession
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_get_url(self):
-        """
-        Test getURL
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_generate_api_key(self):
-        """
-        Test generateApiKey
-        """
-        pass
-
-
-class HelpersMiscTests(unittest.TestCase):
-    """
-    Test misc helper methods
-    """
-    @unittest.skip('Not yet implemented')
-    def test_fix_glob(self):
-        """
-        Test fixGlob
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_indent_xml(self):
-        """
-        Test indentXML
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_fix_set_group_id(self):
-        """
-        Test fixSetGroupID
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_update_anime_support(self):
-        """
-        Test update_anime_support
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_sanitize_scene_name(self):
-        """
-        Test sanitizeSceneName
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_full_sanitize_scene_name(self):
-        """
-        Test full_sanitizeSceneName
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_remove_article(self):
-        """
-        Test remove_article
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_pretty_time_delta(self):
-        """
-        Test pretty_time_delta
-        """
-        pass
-
-if __name__ == '__main__':
-    print("""
-    ==================
-    STARTING - Helpers TESTS
-    ==================
-    ######################################################################
-    """)
-    for name, test_data in TEST_CASES.items():
-        test_name = 'test_%s' % name
-        test = generator(test_data)
-        setattr(HelpersTests, test_name, test)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(HelpersTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(HelpersConnectionTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(HelpersDirectoryTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(HelpersEncryptionTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(HelpersFileLinksTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(HelpersFileTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(HelpersMiscTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(HelpersShowTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(HelpersZipTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)

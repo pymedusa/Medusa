@@ -1,52 +1,38 @@
 # coding=UTF-8
 # Author: Dennis Lutter <lad1337@gmail.com>
-# URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Test XEM
-"""
+"""Test XEM."""
 
 from __future__ import print_function, unicode_literals
 
-import os.path
 import re
-import sys
-import unittest
 
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from medusa.tv import TVShow
 import medusa as app
+from medusa.tv import TVShow
 from . import test_lib as test
 
 
-class XEMBasicTests(test.SickbeardTestDBCase):
-    """
-    Perform basic xem tests
-    """
+class XEMBasicTests(test.AppTestDBCase):
+    """Perform basic xem tests."""
 
     @staticmethod
     def load_shows_from_db():
-        """
-        Populates the showList with shows from the database
-        """
-
+        """Populate the showList with shows from the database."""
         test_main_db_con = test.db.DBConnection()
         sql_results = test_main_db_con.select("SELECT * FROM tv_shows")
 
@@ -59,9 +45,7 @@ class XEMBasicTests(test.SickbeardTestDBCase):
 
     @staticmethod
     def load_from_db():
-        """
-        Populates the showList with shows from the database
-        """
+        """Populate the showList with shows from the database."""
         test_main_db_con = test.db.DBConnection()
         sql_results = test_main_db_con.select("SELECT * FROM tv_shows")
 
@@ -74,9 +58,6 @@ class XEMBasicTests(test.SickbeardTestDBCase):
 
     @staticmethod
     def test_formatting():
-        """
-        Test formatting
-        """
         name = "Game.of.Thrones.S03.720p.HDTV.x264-CtrlHD"
         release = "Game of Thrones"
 
@@ -93,13 +74,3 @@ class XEMBasicTests(test.SickbeardTestDBCase):
         if match:
             # print("Matched " + curRegex + " to " + name)
             pass
-
-
-if __name__ == "__main__":
-    print("==================")
-    print("STARTING - XEM Scene Numbering TESTS")
-    print("==================")
-    print("######################################################################")
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(XEMBasicTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)

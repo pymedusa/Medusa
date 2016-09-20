@@ -1,62 +1,43 @@
 # coding=UTF-8
 # Author: Dennis Lutter <lad1337@gmail.com>
-# URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Test tv
-"""
+"""Test tv."""
 
 from __future__ import print_function
 
-import os.path
-import sys
-import unittest
-
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from medusa.tv import TVEpisode, TVShow
 import medusa as app
+from medusa.tv import TVEpisode, TVShow
 from . import test_lib as test
 
 
-class TVShowTests(test.SickbeardTestDBCase):
-    """
-    Test tv shows
-    """
+class TVShowTests(test.AppTestDBCase):
+    """Test tv shows."""
+
     def setUp(self):
-        """
-        Set up tests
-        """
+        """Set up tests."""
         super(TVShowTests, self).setUp()
         app.showList = []
 
     def test_init_indexerid(self):
-        """
-        test init indexer id
-        """
         show = TVShow(1, 1, "en")
         self.assertEqual(show.indexerid, 1)
 
     def test_change_indexerid(self):
-        """
-        test change indexer id
-        """
         show = TVShow(1, 1, "en")
         show.name = "show name"
         show.network = "cbs"
@@ -77,9 +58,6 @@ class TVShowTests(test.SickbeardTestDBCase):
         self.assertEqual(show.indexerid, 2)
 
     def test_set_name(self):
-        """
-        test set name
-        """
         show = TVShow(1, 1, "en")
         show.name = "newName"
         show.save_to_db()
@@ -87,21 +65,15 @@ class TVShowTests(test.SickbeardTestDBCase):
         self.assertEqual(show.name, "newName")
 
 
-class TVEpisodeTests(test.SickbeardTestDBCase):
-    """
-    Test tv episode
-    """
+class TVEpisodeTests(test.AppTestDBCase):
+    """Test tv episode."""
+
     def setUp(self):
-        """
-        Set up
-        """
+        """Set up."""
         super(TVEpisodeTests, self).setUp()
         app.showList = []
 
     def test_init_empty_db(self):
-        """
-        test init empty db
-        """
         show = TVShow(1, 1, "en")
         episode = TVEpisode(show, 1, 1)
         episode.name = "asdasdasdajkaj"
@@ -110,22 +82,16 @@ class TVEpisodeTests(test.SickbeardTestDBCase):
         self.assertEqual(episode.name, "asdasdasdajkaj")
 
 
-class TVTests(test.SickbeardTestDBCase):
-    """
-    Test tv
-    """
+class TVTests(test.AppTestDBCase):
+    """Test tv."""
+
     def setUp(self):
-        """
-        Set up
-        """
+        """Set up."""
         super(TVTests, self).setUp()
         app.showList = []
 
     @staticmethod
     def test_get_episode():
-        """
-        Test get episodes
-        """
         show = TVShow(1, 1, "en")
         show.name = "show name"
         show.network = "cbs"
@@ -138,20 +104,3 @@ class TVTests(test.SickbeardTestDBCase):
         show.save_to_db()
         app.showList = [show]
         # TODO: implement
-
-
-if __name__ == '__main__':
-    print("""
-    ==================
-    STARTING - TV TESTS
-    ==================
-    ######################################################################
-    """)
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(TVShowTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-    print("######################################################################")
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(TVEpisodeTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
-    print("######################################################################")
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(TVTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)

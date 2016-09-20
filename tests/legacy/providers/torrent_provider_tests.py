@@ -1,58 +1,39 @@
 # coding=utf-8
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-
-# Git: https://github.com/PyMedusa/SickRage.git
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Test TorrentProvider
-"""
+"""Test TorrentProvider."""
 
 from __future__ import print_function
 
 import os
-import sys
-import unittest
 
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
-
-from six import iteritems
 import medusa as app
-
-from generic_provider_tests import GenericProviderTests
 from medusa.providers.GenericProvider import GenericProvider
 from medusa.providers.torrent.TorrentProvider import TorrentProvider
+from six import iteritems
+from .generic_provider_tests import GenericProviderTests
 
 
 class TorrentProviderTests(GenericProviderTests):
-    """
-    Test TorrentProvider
-    """
+    """Test TorrentProvider."""
 
     def test___init__(self):
-        """
-        Test __init__
-        """
         self.assertEqual(TorrentProvider('Test Provider').provider_type, GenericProvider.TORRENT)
 
     def test_is_active(self):
-        """
-        Test is_active
-        """
         test_cases = {
             (False, False): False,
             (False, None): False,
@@ -74,9 +55,6 @@ class TorrentProviderTests(GenericProviderTests):
             self.assertEqual(provider.is_active(), result)
 
     def test__get_size(self):
-        """
-        Test _get_size
-        """
         items_list = [
             None, {}, {'size': None}, {'size': ''}, {'size': '0'}, {'size': '123'}, {'size': '12.3'}, {'size': '-123'},
             {'size': '-12.3'}, {'size': '1100000'}, {'size': 0}, {'size': 123}, {'size': 12.3}, {'size': -123},
@@ -125,9 +103,6 @@ class TorrentProviderTests(GenericProviderTests):
             self.assertEqual(TorrentProvider('Test Provider')._get_size(item), unicode_results_list[index])
 
     def test__get_storage_dir(self):
-        """
-        Test _get_storage_dir
-        """
         test_cases = [
             None, 123, 12.3, '', os.path.join('some', 'path', 'to', 'folder')
         ]
@@ -136,10 +111,3 @@ class TorrentProviderTests(GenericProviderTests):
             app.TORRENT_DIR = torrent_dir
 
             self.assertEqual(TorrentProvider('Test Provider')._get_storage_dir(), torrent_dir)
-
-
-if __name__ == '__main__':
-    print('=====> Testing %s' % __file__)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(TorrentProviderTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)

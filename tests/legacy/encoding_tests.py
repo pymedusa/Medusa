@@ -1,33 +1,22 @@
 # coding=utf-8
+"""General encoding tests."""
 
 from __future__ import print_function
 
-# Test encoding
-
-# pylint: disable=line-too-long
-
 import locale
 import os.path
-import sys
 import unittest
 
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from six import text_type
 import medusa as app
 from medusa import ek, ex
 from medusa.helper.common import sanitize_filename
+from six import text_type
 
 
 class EncodingTests(unittest.TestCase):
-    """
-    Test encodings
-    """
+    """Test encodings."""
+
     def test_encoding(self):
-        """
-        Test encoding
-        """
         root_dir = 'C:\\Temp\\TV'
         strings = [u'Les Enfants De La T\xe9l\xe9', u'RT� One']
 
@@ -49,14 +38,3 @@ class EncodingTests(unittest.TestCase):
                 self.assertTrue(isinstance(show_dir, text_type))
             except Exception as error:  # pylint: disable=broad-except
                 ex(error)
-
-if __name__ == "__main__":
-    print("""
-    ==================
-    STARTING - ENCODING TESTS
-    ==================
-    ######################################################################
-    """)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(EncodingTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)

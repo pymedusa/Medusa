@@ -1,58 +1,43 @@
 # coding=UTF-8
-# URL: https://github.com/PyMedusa/SickRage
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 #
-##############################################################################
-
-###
+################################################################################
 # As a test case, there are instances in which it is necessary to call protected members of
 # classes in order to test those classes.  Therefore we will be pylint disable protected-access
-###
 
-# pylint: disable=line-too-long
-
-"""
-Test notifiers
-"""
+"""Test notifiers."""
 
 from __future__ import print_function
 
-import os.path
-import sys
-import unittest
-
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from medusa import db
-from medusa.tv import TVEpisode, TVShow
-from medusa.server.web import Home
+from medusa.helper.encoding import ss
 from medusa.notifiers.emailnotify import Notifier as EmailNotifier
 from medusa.notifiers.prowl import Notifier as ProwlNotifier
-from medusa.helper.encoding import ss
+from medusa.server.web import Home
+from medusa.tv import TVEpisode, TVShow
 from . import test_lib as test
 
 
-class NotifierTests(test.SickbeardTestDBCase):  # pylint: disable=too-many-public-methods
-    """
-    Test notifiers
-    """
+class NotifierTests(test.AppTestDBCase):
+    """Test notifiers."""
+
     @classmethod
     def setUpClass(cls):
+        """Setup class for tests."""
         num_legacy_shows = 3
         num_shows = 3
         num_episodes_per_show = 5
@@ -90,22 +75,11 @@ class NotifierTests(test.SickbeardTestDBCase):  # pylint: disable=too-many-publi
             cls.shows.append(show)
 
     def setUp(self):
-        """
-        Set up tests
-        """
+        """Set up tests."""
         self._debug_spew("\n\r")
 
-    @unittest.skip('Not yet implemented')
-    def test_boxcar(self):
-        """
-        Test boxcar notifications
-        """
-        pass
-
     def test_email(self):
-        """
-        Test email notifications
-        """
+        """Test email notifications."""
         email_notifier = EmailNotifier()
 
         # Per-show-email notifications were added early on and utilized a different format than the other notifiers.
@@ -136,73 +110,8 @@ class NotifierTests(test.SickbeardTestDBCase):  # pylint: disable=too-many-publi
 
         return True
 
-    @unittest.skip('Not yet implemented')
-    def test_emby(self):
-        """
-        Test emby notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_freemobile(self):
-        """
-        Test freemobile notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_growl(self):
-        """
-        Test growl notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_kodi(self):
-        """
-        Test kodi notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_libnotify(self):
-        """
-        Test libnotify notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_nma(self):
-        """
-        Test nma notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_nmj(self):
-        """
-        Test nmj notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_nmjv2(self):
-        """
-        Test nmjv2 notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_plex(self):
-        """
-        Test plex notifications
-        """
-        pass
-
     def test_prowl(self):
-        """
-        Test prowl notifications
-        """
+        """Test prowl notifications."""
         prowl_notifier = ProwlNotifier()
 
         # Prowl per-show-notifications only utilize the new methodology for storage; therefore, the list of legacy_shows
@@ -226,66 +135,9 @@ class NotifierTests(test.SickbeardTestDBCase):  # pylint: disable=too-many-publi
 
         return True
 
-    @unittest.skip('Not yet implemented')
-    def test_pushalot(self):
-        """
-        Test pushalot notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_pushbullet(self):
-        """
-        Test pushbullet notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_pushover(self):
-        """
-        Test pushover notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_pytivo(self):
-        """
-        Test pytivo notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_synoindex(self):
-        """
-        Test synoindex notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_synologynotifier(self):
-        """
-        Test synologynotifier notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_trakt(self):
-        """
-        Test trakt notifications
-        """
-        pass
-
-    @unittest.skip('Not yet implemented')
-    def test_tweet(self):
-        """
-        Test tweet notifications
-        """
-        pass
-
     @staticmethod
     def _debug_spew(text):
-        """
-        Spew text notifications
+        """Spew text notifications.
 
         :param text: to spew
         :return:
@@ -294,8 +146,7 @@ class NotifierTests(test.SickbeardTestDBCase):  # pylint: disable=too-many-publi
             print(text)
 
     def _get_showid_by_showname(self, showname):
-        """
-        Get show ID by show name
+        """Get show ID by show name.
 
         :param showname:
         :return:
@@ -305,14 +156,3 @@ class NotifierTests(test.SickbeardTestDBCase):  # pylint: disable=too-many-publi
             if len(rows) == 1:
                 return rows[0]['show_id']
         return -1
-
-if __name__ == '__main__':
-    print("""
-    ==================
-    STARTING - NOTIFIER TESTS
-    ==================
-    ######################################################################
-    """)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(NotifierTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)

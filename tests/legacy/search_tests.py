@@ -1,40 +1,31 @@
 #!/usr/bin/env python2.7
 # coding=UTF-8
 # Author: Dennis Lutter <lad1337@gmail.com>
-# URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
-
-# pylint: disable=line-too-long
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+"""Test searches."""
 
 from __future__ import print_function
 
-#  Test searches
-
-import os.path
-import sys
 import unittest
 
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from medusa.tv import TVEpisode, TVShow
 import medusa as app
 import medusa.common as common
 from medusa.providers.GenericProvider import GenericProvider
+from medusa.tv import TVEpisode, TVShow
 from . import test_lib as test
 
 TESTS = {
@@ -46,28 +37,23 @@ TESTS = {
 }
 
 
-class SearchTest(test.SickbeardTestDBCase):
-    """
-    Test search
-    """
+class SearchTest(test.AppTestDBCase):
+    """Test search."""
+
     def __init__(self, something):
         super(SearchTest, self).__init__(something)
 
 
 def generator(cur_data, cur_name, cur_provider):
-    """
-    Generate test
+    """Generate test.
 
     :param cur_data:
     :param cur_name:
     :param cur_provider:
     :return:
     """
-
-    def do_test(self):
-        """
-        Test to perform
-        """
+    def do_test():
+        """Test to perform."""
         show = TVShow(1, int(cur_data["tvdbid"]))
         show.name = cur_name
         show.quality = common.ANY | common.Quality.UNKNOWN | common.Quality.RAWHDTV
@@ -141,6 +127,7 @@ def generator(cur_data, cur_name, cur_provider):
 
     return do_test
 
+# TODO: py.test parameters
 if __name__ == '__main__':
     print("""
     ==================

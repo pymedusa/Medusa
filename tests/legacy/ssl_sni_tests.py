@@ -1,51 +1,40 @@
 # coding=UTF-8
 # Author: Dustyn Gibson <miigotu@gmail.com>
-# URL: http://github.come/PyMedusa/SickRage
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
-
-# pylint: disable=line-too-long
-
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+"""SSL SNI Tests."""
 from __future__ import print_function
 
-#  Test SNI and SSL
-
-import os.path
-import sys
 import unittest
 
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from medusa import ex
-import certifi  # pylint: disable=import-error
-import requests  # pylint: disable=import-error
+import certifi
 import medusa.providers as providers
+from medusa import ex
+import requests
 
 
 def generator(_provider):
-    """
-    Generate tests for each provider
+    """Generate tests for each provider.
 
     :param test_strings: to generate tests from
     :return: test
     """
     def _connectivity_test():
-        """
-        Generate tests
+        """Generate tests.
+
         :param self:
         :return: test to run
         """
@@ -68,6 +57,8 @@ def generator(_provider):
 
 
 class SniTests(unittest.TestCase):
+    """Unittest class."""
+
     pass
 
 if __name__ == "__main__":

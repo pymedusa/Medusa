@@ -1,34 +1,23 @@
 # coding=UTF-8
 # Author: Dennis Lutter <lad1337@gmail.com>
-# URL: http://code.google.com/p/sickbeard/
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+"""Torrent tests."""
 
 from __future__ import print_function
-
-# Test torrents
-
-# pylint: disable=line-too-long
-
-import os.path
-import sys
-import unittest
-
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from bs4 import BeautifulSoup
 from medusa.helpers import getURL, make_session
@@ -38,10 +27,9 @@ from six.moves.urllib_parse import urljoin
 from . import test_lib as test
 
 
-class TorrentBasicTests(test.SickbeardTestDBCase):
-    """
-    Test torrents
-    """
+class TorrentBasicTests(test.AppTestDBCase):
+    """Test torrents."""
+
     @classmethod
     def setUpClass(cls):
         cls.shows = []
@@ -57,9 +45,6 @@ class TorrentBasicTests(test.SickbeardTestDBCase):
         cls.shows.append(show)
 
     def test_bitcannon(self):
-        """
-        Test bitcannon
-        """
         bitcannon = BitCannonProvider()
         bitcannon.custom_url = ""        # true testing requires a valid URL here (e.g., "http://localhost:3000/")
         bitcannon.api_key = ""
@@ -74,9 +59,6 @@ class TorrentBasicTests(test.SickbeardTestDBCase):
 
     @staticmethod
     def test_search():  # pylint: disable=too-many-locals
-        """
-        Test searching
-        """
         url = 'http://kickass.to/'
         search_url = 'http://kickass.to/usearch/American%20Dad%21%20S08%20-S08E%20category%3Atv/?field=seeders&sorder=desc'
 
@@ -108,18 +90,8 @@ class TorrentBasicTests(test.SickbeardTestDBCase):
                 trusted = True if row.find('img', {'alt': 'verified'}) else False
                 seeders = int(row.find_all('td')[-2].text)
                 leechers = int(row.find_all('td')[-1].text)
-                _ = link, _id, verified, trusted, seeders, leechers
+                print((link, _id, verified, trusted, seeders, leechers))
             except (AttributeError, TypeError):
                 continue
 
             print(title)
-
-if __name__ == "__main__":
-    print("""
-    ==================
-    STARTING - Torrent Basic TESTS
-    ==================
-    ######################################################################
-    """)
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(TorrentBasicTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)

@@ -1,48 +1,34 @@
 # coding=utf-8
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-
-# Git: https://github.com/PyMedusa/SickRage.git
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
-
-# pylint: disable=line-too-long
-
-"""
-Test medusa.common
-"""
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+"""Tests for helper.common package."""
 
 from __future__ import print_function
 
 import unittest
-import os
-import sys
-
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
-
-from six import iteritems
 
 import medusa as app
-from medusa.helper.common import http_code_description, is_sync_file, is_torrent_or_nzb_file, pretty_file_size
-from medusa.helper.common import remove_extension, replace_extension, sanitize_filename, try_int, convert_size, episode_num
+from medusa.helper.common import (
+    convert_size, episode_num, http_code_description, is_sync_file, is_torrent_or_nzb_file,
+    pretty_file_size, remove_extension, replace_extension, sanitize_filename, try_int
+)
+from six import iteritems
 
 
 class CommonTests(unittest.TestCase):
-    """
-    Test common
-    """
+    """Test common."""
 
     def test_http_code_description(self):
         test_cases = {
@@ -79,9 +65,6 @@ class CommonTests(unittest.TestCase):
                 self.assertEqual(http_code_description(http_code), result)
 
     def test_is_sync_file(self):
-        """
-        Test is sync file
-        """
         app.SYNC_FILES = '!sync,lftp-pget-status,part'
 
         test_cases = {
@@ -125,9 +108,6 @@ class CommonTests(unittest.TestCase):
                 self.assertEqual(is_sync_file(filename), result)
 
     def test_is_torrent_or_nzb_file(self):
-        """
-        Test is torrent or nzb file
-        """
         test_cases = {
             None: False,
             42: False,
@@ -157,9 +137,6 @@ class CommonTests(unittest.TestCase):
                 self.assertEqual(is_torrent_or_nzb_file(filename), result)
 
     def test_pretty_file_size(self):
-        """
-        Test pretty file size
-        """
         test_cases = {
             None: '0.00 B',
             '': '0.00 B',
@@ -194,9 +171,6 @@ class CommonTests(unittest.TestCase):
                 self.assertEqual(pretty_file_size(size), result)
 
     def test_remove_extension(self):
-        """
-        Test remove extension
-        """
         test_cases = {
             None: None,
             42: 42,
@@ -235,9 +209,6 @@ class CommonTests(unittest.TestCase):
                 self.assertEqual(remove_extension(extension), result)
 
     def test_replace_extension(self):
-        """
-        Test replace extension
-        """
         test_cases = {
             (None, None): None,
             (None, ''): None,
@@ -311,9 +282,6 @@ class CommonTests(unittest.TestCase):
                 self.assertEqual(replace_extension(filename, extension), result)
 
     def test_sanitize_filename(self):
-        """
-        Test sanitize filename
-        """
         test_cases = {
             None: '',
             42: '',
@@ -339,9 +307,6 @@ class CommonTests(unittest.TestCase):
                 self.assertEqual(sanitize_filename(filename), result)
 
     def test_try_int(self):
-        """
-        Test try int
-        """
         test_cases = {
             None: 0,
             '': 0,
@@ -369,9 +334,6 @@ class CommonTests(unittest.TestCase):
                 self.assertEqual(try_int(candidate), result)
 
     def test_try_int_with_default(self):
-        """
-        Test try int
-        """
         default_value = 42
         test_cases = {
             None: default_value,
@@ -470,10 +432,3 @@ class CommonTests(unittest.TestCase):
 
         # Absolute numbering can't have both season and episode
         self.assertEqual(episode_num(1, 1, numbering='absolute'), None)
-
-
-if __name__ == '__main__':
-    print('=====> Testing %s' % __file__)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(CommonTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)

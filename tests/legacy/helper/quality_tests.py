@@ -1,48 +1,34 @@
 # coding=utf-8
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-
-# Git: https://github.com/PyMedusa/SickRage.git
-#
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-Test qualities
-"""
+"""Test qualities."""
 
 from __future__ import print_function
 
-import os
-import sys
 import unittest
 
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
-
-from six import iteritems
 from medusa.common import ANY, HD, HD1080p, HD720p, Quality, SD
 from medusa.helper.quality import get_quality_string
+from six import iteritems
 
 
 class QualityTests(unittest.TestCase):
-    """
-    Test qualities
-    """
+    """Test qualities."""
+
     def test_get_quality_string(self):
-        """
-        Test get quality string
-        """
         tests = {
             ANY: 'Any',
             HD: 'HD',
@@ -65,10 +51,3 @@ class QualityTests(unittest.TestCase):
 
         for (quality, result) in iteritems(tests):
             self.assertEqual(get_quality_string(quality), result)
-
-
-if __name__ == '__main__':
-    print('=====> Testing %s' % __file__)
-
-    SUITE = unittest.TestLoader().loadTestsFromTestCase(QualityTests)
-    unittest.TextTestRunner(verbosity=2).run(SUITE)
