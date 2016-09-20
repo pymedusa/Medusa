@@ -3046,3 +3046,13 @@
   container: MKV
   release_group: GROUP
   type: episode
+
+# Regression test for #1155
+# Expected titles shouldn't contain number-only items.
+? Show Name\Season 01\S01E24 A Touch of Glass.m4v
+: title: Show Name
+  season: 1
+  episode: 24
+  episode_title: A Touch of Glass
+  container: m4v
+  type: episode

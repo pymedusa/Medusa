@@ -114,6 +114,10 @@ def get_expected_titles(show_list):
     for show in show_list:
         names = [show.name] + show.exceptions
         for name in names:
+            if name.isdigit():
+                # do not add numbers to expected titles.
+                continue
+
             match = series_re.match(name)
             if not match:
                 continue
