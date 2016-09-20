@@ -225,13 +225,20 @@ class CheckVersion(object):
                 check_url.replace('main_db.py', 'mainDB.py')
                 response = helpers.getURL(check_url, session=self.session, returns='response')
 
-            match = re.search(r'MAX_DB_VERSION\s=\s(?P<version>\d{2,3})', response.text)
-            new_branch_db_version = int(match.group('version'))
+            match_max_db = re.search(r'MAX_DB_VERSION\s=\s(?P<version>\d{2,3})', response.text)
+            new_branch_major_db_version = int(match_max_db.group('version'))
+            match_minor_db = re.search(r'CURRENT_MINOR_DB_VERSION\s=\s(?P<version>\d{2,3})', response.text)
+            new_branch_min_db_version = int(match_minor_db.group('version'))
             main_db_con = db.DBConnection()
             cur_branch_major_db_version, cur_branch_minor_db_version = main_db_con.checkDBVersion()
-            if new_branch_db_version > cur_branch_major_db_version:
+            if new_branch_major_db_version > cur_branch_major_db_version:
                 return 'upgrade'
-            elif new_branch_db_version == cur_branch_major_db_version:
+            elif new_branch_major_db_version == cur_branch_major_db_version:
+                if new_branch_min_db_version:
+                    if cur_branch_minor_db_version < new_branch_min_db_version:
+                        return 'downgrade'
+                    elif cur_branch_minor_db_version > new_branch_min_db_version:
+                        return 'upgrade'
                 return 'equal'
             else:
                 return 'downgrade'

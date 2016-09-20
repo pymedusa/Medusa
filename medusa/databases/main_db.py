@@ -21,6 +21,7 @@ import datetime
 import os.path
 import warnings
 
+import medusa as app
 from six import iteritems
 from .. import common, db, helpers, logger, subtitles
 from ..helper.common import dateTimeFormat, episode_num
@@ -29,6 +30,9 @@ from ..name_parser.parser import NameParser
 
 MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
+
+# Used to check when checking for updates
+CURRENT_MINOR_DB_VERSION = 2
 
 
 class MainSanityCheck(db.DBSanityCheck):
