@@ -14,12 +14,13 @@
 % endif
 <div id="config-content">
 <table class="infoTable" cellspacing="1" border="0" cellpadding="0" width="100%">
-    % if sr_version:
+    % if app_version:
     <tr><td class="infoTableHeader" style="vertical-align: top;"><i class="icon16-config-sickrage"></i> Medusa Info:</td>
         <td class="infoTableCell">
         Branch: <a href="${anon_url('https://github.com/PyMedusa/SickRage/tree/%s' % app.BRANCH)}">${app.BRANCH}</a><br>
         Commit: <a href="${anon_url('https://github.com/PyMedusa/SickRage/commit/%s' % app.CUR_COMMIT_HASH)}">${app.CUR_COMMIT_HASH}</a><br>
-        Version: <a href="${anon_url('https://github.com/PyMedusa/SickRage/releases/tag/%s' % sr_version)}">${sr_version}</a>
+        Version: <a href="${anon_url('https://github.com/PyMedusa/SickRage/releases/tag/%s' % app_version)}">${app_version}</a><br>
+        Database: ${cur_branch_major_db_version}.${cur_branch_minor_db_version}
         </td>
     </tr>
     % endif

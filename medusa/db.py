@@ -132,7 +132,7 @@ class DBConnection(object):
         """
         if self.hasColumn('db_version', 'db_minor_version'):
             warnings.warn('Deprecated: Use the version property', DeprecationWarning)
-        return self.check_db_major_version()
+        return self.check_db_major_version(), self.check_db_minor_version()
 
     def check_db_major_version(self):
         """

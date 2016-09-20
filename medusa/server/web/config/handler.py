@@ -11,6 +11,7 @@ import os
 import medusa as app
 from tornado.routes import route
 from ..core import PageTemplate, WebRoot
+from .... import db
 from ....versionChecker import CheckVersion
 
 
@@ -68,15 +69,19 @@ class Config(WebRoot):
         except StandardError:
             ssl_version = 'Unknown'
 
-        sr_version = ''
+        app_version = ''
         if app.VERSION_NOTIFY:
             updater = CheckVersion().updater
             if updater:
-                sr_version = updater.get_cur_version()
+                app_version = updater.get_cur_version()
+
+        main_db_con = db.DBConnection()
+        cur_branch_major_db_version, cur_branch_minor_db_version = main_db_con.checkDBVersion()
 
         return t.render(
             submenu=self.ConfigMenu(), title='Medusa Configuration',
             header='Medusa Configuration', topmenu='config',
             sr_user=sr_user, sr_locale=sr_locale, ssl_version=ssl_version,
-            sr_version=sr_version
+            app_version=app_version, cur_branch_major_db_version=cur_branch_major_db_version,
+            cur_branch_minor_db_version=cur_branch_minor_db_version
         )
