@@ -122,3 +122,29 @@ def test_is_ip_private(p):
 
     # Then
     assert p['expected'] == actual
+
+
+@pytest.mark.parametrize('p', [
+    {  # p0: simple dict
+        'input': {'a': 'one', 'b': 'two'},
+        'expected': u'a:one|b:two',
+    },
+    {  # p1: dict with special chars
+        'input': {'a': 'one', 'b': 'π'},
+        'expected': u'a:one|b:π',
+    },
+    {  # p2: dict with unicode chars
+        'input': {'a': 'one', 'b': u'π'},
+        'expected': u'a:one|b:π',
+    },
+])
+def test_canonical_name(p):
+    # Given
+    obj = p['input']
+    expected = p['expected']
+
+    # When
+    actual = sut.canonical_name(obj)
+
+    # Then
+    assert expected == actual

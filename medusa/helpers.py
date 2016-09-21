@@ -1616,8 +1616,10 @@ def ensure_list(value):
     return sorted(value) if isinstance(value, list) else [value] if value is not None else []
 
 
-def canonical_name(obj, fmt='{key}:{value}', separator='|', ignore_list=frozenset()):
+def canonical_name(obj, fmt=u'{key}:{value}', separator=u'|', ignore_list=frozenset()):
     """Create a canonical name from a release name or a guessed dictionary.
+
+    The return value is always unicode.
 
     :param obj:
     :type obj: str or dict
@@ -1628,10 +1630,13 @@ def canonical_name(obj, fmt='{key}:{value}', separator='|', ignore_list=frozense
     :param ignore_list:
     :type ignore_list: set
     :return:
-    :rtype: str
+    :rtype: text_type
     """
     guess = obj if isinstance(obj, dict) else guessit.guessit(obj)
-    return str(separator.join([fmt.format(key=k, value=v) for k, v in guess.items() if k not in ignore_list]))
+    return text_type(
+        text_type(separator).join(
+            [text_type(fmt).format(key=unicodify(k), value=unicodify(v))
+             for k, v in guess.items() if k not in ignore_list]))
 
 
 def get_broken_providers():
