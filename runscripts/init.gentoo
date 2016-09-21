@@ -11,7 +11,7 @@
 #
 # SICKRAGE_USER=<user you want medusa to run under>
 # SICKRAGE_GROUP=<group you want medusa to run under>
-# SICKRAGE_DIR=<path to Sickbeard.py>
+# SICKRAGE_DIR=<path to start.py>
 # PATH_TO_PYTHON_2=/usr/bin/python2.7
 # SICKRAGE_DATADIR=<directory that contains sickbeard.db file>
 # SICKRAGE_CONFDIR=<directory that contains Medusa's config.ini file>
@@ -50,7 +50,7 @@ start() {
         --pidfile $(get_pidfile) \
         --exec ${PATH_TO_PYTHON_2} \
         -- \
-        ${SICKRAGE_DIR}/SickBeard.py \
+        ${SICKRAGE_DIR}/start.py \
         -d \
         --pidfile $(get_pidfile) \
         --config ${SICKRAGE_CONFDIR}/config.ini \

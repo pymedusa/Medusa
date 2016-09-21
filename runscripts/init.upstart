@@ -6,7 +6,7 @@
 #    - For all other settings edit /etc/default/medusa instead of this file.
 #
 #      The following settings can be set in /etc/default/medusa and are used to run Medusa.
-#       APP_HOME=         #$APP_PATH, the location of SickBeard.py, the default is /opt/medusa
+#       APP_HOME=         #$APP_PATH, the location of start.py, the default is /opt/medusa
 #       APP_DATA=         #$DATA_DIR, the location of sickbeard.db, cache, logs, the default is /opt/medusa
 #       APP_OPTS=         #$EXTRA_DAEMON_OPTS, extra cli option for medusa, i.e. " --config=/home/medusa/config.ini"
 
@@ -32,5 +32,5 @@ script
 
     [ -z $APP_HOME ] && echo "I can't start Medusa if I don't know where it is"
 
-    exec ${APP_HOME}/SickBeard.py -q --nolaunch --datadir=${APP_DATA-APP_HOME} ${APP_OPTS-}
+    exec ${APP_HOME}/start.py -q --nolaunch --datadir=${APP_DATA-APP_HOME} ${APP_OPTS-}
 end script

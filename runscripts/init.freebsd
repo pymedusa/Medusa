@@ -37,7 +37,7 @@ load_rc_config ${name}
 
 pidfile="/var/run/PyMedusa/Medusa.pid"
 command="/usr/local/bin/python2.7"
-command_args="${medusa_dir}/SickBeard.py --datadir ${medusa_datadir} -d --pidfile ${pidfile} --quiet --nolaunch"
+command_args="${medusa_dir}/start.py --datadir ${medusa_datadir} -d --pidfile ${pidfile} --quiet --nolaunch"
 
 start_precmd="medusa_prestart"
 medusa_prestart() {

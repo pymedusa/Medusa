@@ -68,7 +68,7 @@
     <exec_method
         type='method'
         name='start'
-        exec='/opt/medusa/SickBeard.py --daemon'
+        exec='/opt/medusa/start.py --daemon'
         timeout_seconds='60'>
     </exec_method>
 

@@ -32,7 +32,7 @@ DESC=Medusa
 ## Edit user configuation in /etc/default/medusa to change
 ##
 ## APP_USER=         #$RUN_AS, username to run medusa under, the default is medusa
-## APP_HOME=         #$APP_PATH, the location of SickBeard.py, the default is /opt/medusa
+## APP_HOME=         #$APP_PATH, the location of start.py, the default is /opt/medusa
 ## APP_DATA=         #$DATA_DIR, the location of sickbeard.db, cache, logs, the default is /opt/medusa
 ## APP_PIDFILE=      #$PID_FILE, the location of medusa.pid, the default is /var/run/PyMedusa/Medusa.pid
 ## PYTHON_BIN=      #$DAEMON, the location of the python binary, the default is /usr/bin/python2.7
@@ -47,7 +47,7 @@ DESC=Medusa
 # Run as username
 RUN_AS=${APP_USER-medusa}
 
-# Path to app APP_HOME=path_to_app_SickBeard.py
+# Path to app APP_HOME=path_to_app_start.py
 APP_PATH=${APP_HOME-/opt/medusa}
 
 # Data directory where sickbeard.db, cache and logs are stored
@@ -67,7 +67,7 @@ EXTRA_SSD_OPTS=${SSD_OPTS-}
 ##
 
 PID_PATH=`dirname $PID_FILE`
-DAEMON_OPTS=" SickBeard.py -q --daemon --nolaunch --pidfile=${PID_FILE} --datadir=${DATA_DIR} ${EXTRA_DAEMON_OPTS}"
+DAEMON_OPTS=" start.py -q --daemon --nolaunch --pidfile=${PID_FILE} --datadir=${DATA_DIR} ${EXTRA_DAEMON_OPTS}"
 
 ##
 

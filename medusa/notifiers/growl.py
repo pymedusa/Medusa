@@ -29,7 +29,7 @@ from ..helper.exceptions import ex
 
 class Notifier(object):
     def test_notify(self, host, password):
-        self._sendRegistration(host, password, 'Test')
+        self._sendRegistration(host, password)
         return self._sendGrowl("Test Growl", "Testing Growl settings from Medusa", "Test", host, password,
                                force=True)
 
@@ -142,7 +142,7 @@ class Notifier(object):
                 if self._send_growl(opts, message):
                     return True
                 else:
-                    if self._sendRegistration(host, password, 'Sickbeard'):
+                    if self._sendRegistration(host, password):
                         return self._send_growl(opts, message)
                     else:
                         return False
@@ -150,7 +150,7 @@ class Notifier(object):
                 logger.log(u"GROWL: Unable to send growl to " + opts['host'] + ":" + str(opts['port']) + " - " + ex(e), logger.WARNING)
                 return False
 
-    def _sendRegistration(self, host=None, password=None, name='Medusa Notification'):
+    def _sendRegistration(self, host=None, password=None):
         opts = {}
 
         if host is None:
