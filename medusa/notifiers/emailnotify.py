@@ -4,8 +4,6 @@
 # Derek Battams <derek@battams.ca>
 # Pedro Jose Pereira Vieito (@pvieito) <pvieito@gmail.com>
 #
-# URL: https://github.com/pymedusa/SickRage
-#
 # This file is part of medusa.
 #
 # medusa is free software: you can redistribute it and/or modify

@@ -98,9 +98,9 @@ notifyStrings = NumDict({
     NOTIFY_SNATCH: "Started Download",
     NOTIFY_DOWNLOAD: "Download Finished",
     NOTIFY_SUBTITLE_DOWNLOAD: "Subtitle Download Finished",
-    NOTIFY_GIT_UPDATE: "SickRage Updated",
-    NOTIFY_GIT_UPDATE_TEXT: "SickRage Updated To Commit#: ",
-    NOTIFY_LOGIN: "SickRage new login",
+    NOTIFY_GIT_UPDATE: "Medusa Updated",
+    NOTIFY_GIT_UPDATE_TEXT: "Medusa Updated To Commit#: ",
+    NOTIFY_LOGIN: "Medusa new login",
     NOTIFY_LOGIN_TEXT: "New login from IP: {0}. http://geomaplookup.net/?ip={0}",
     NOTIFY_SNATCH_PROPER: "Started PROPER Download"
 })
@@ -291,7 +291,7 @@ class Quality(object):
     @staticmethod
     def nameQuality(name, anime=False):
         """
-        Return The quality from an episode File renamed by SickRage
+        Return The quality from an episode File renamed by the application
         If no quality is achieved it will try scene_quality regex
 
         :param name: to parse

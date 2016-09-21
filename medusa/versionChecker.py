@@ -68,8 +68,8 @@ class CheckVersion(object):
 
             if self.check_for_new_version(force):
                 if app.AUTO_UPDATE:
-                    logger.log(u"New update found for SickRage, starting auto-updater ...")
-                    ui.notifications.message('New update found for SickRage, starting auto-updater')
+                    logger.log(u"New update found, starting auto-updater ...")
+                    ui.notifications.message('New update found, starting auto-updater')
                     if self.run_backup_if_safe():
                         if app.versionCheckScheduler.action.update():
                             logger.log(u"Update was successful!")
@@ -137,12 +137,12 @@ class CheckVersion(object):
         if not backupDir:
             return False
         source = [
-            ek(os.path.join, app.DATA_DIR, 'sickbeard.db'),
+            ek(os.path.join, app.DATA_DIR, app.APPLICATION_DB),
             app.CONFIG_FILE,
-            ek(os.path.join, app.DATA_DIR, 'failed.db'),
-            ek(os.path.join, app.DATA_DIR, 'cache.db')
+            ek(os.path.join, app.DATA_DIR, app.FAILED_DB),
+            ek(os.path.join, app.DATA_DIR, app.CACHE_DB)
         ]
-        target = ek(os.path.join, backupDir, 'sickrage-' + time.strftime('%Y%m%d%H%M%S') + '.zip')
+        target = ek(os.path.join, backupDir, app.BACKUP_FILENAME.format(timestamp=time.strftime('%Y%m%d%H%M%S')))
 
         for (path, dirs, files) in ek(os.walk, app.CACHE_DIR, topdown=True):
             for dirname in dirs:
@@ -421,7 +421,8 @@ class GitUpdateManager(UpdateManager):
 
     @staticmethod
     def _git_error():
-        error_message = 'Unable to find your git executable - Shutdown SickRage and EITHER set git_path in your config.ini OR delete your .git folder and run from source to enable updates.'
+        error_message = ('Unable to find your git executable - Shutdown the application and EITHER set git_path '
+                         'in your config.ini OR delete your .git folder and run from source to enable updates.')
         app.NEWEST_VERSION_STRING = error_message
 
     def _find_working_git(self):
@@ -467,7 +468,8 @@ class GitUpdateManager(UpdateManager):
                     logger.log(u"Not using: " + cur_git, logger.DEBUG)
 
         # Still haven't found a working git
-        error_message = 'Unable to find your git executable - Shutdown SickRage and EITHER set git_path in your config.ini OR delete your .git folder and run from source to enable updates.'
+        error_message = ('Unable to find your git executable - Shutdown the application and EITHER set git_path '
+                         'in your config.ini OR delete your .git folder and run from source to enable updates.')
         app.NEWEST_VERSION_STRING = error_message
 
         return None
@@ -520,8 +522,7 @@ class GitUpdateManager(UpdateManager):
         return output, err, exit_status
 
     def _find_installed_version(self):
-        """
-        Attempts to find the currently installed version of SickRage.
+        """Attempt to find the currently installed version of the application.
 
         Uses git show to get commit version.
 
@@ -661,11 +662,10 @@ class GitUpdateManager(UpdateManager):
         return self._num_commits_ahead <= 0 or self._is_hard_reset_allowed()
 
     def update(self):
-        """
-        Calls git pull origin <branch> in order to update SickRage. Returns a bool depending
-        on the call's success.
-        """
+        """Call git pull origin <branch> in order to update the application.
 
+        Returns a bool depending on the call's success.
+        """
         # update remote origin url
         self.update_remote_origin()
 
@@ -817,9 +817,9 @@ class SourceUpdateManager(UpdateManager):
         return True
 
     def _check_github_for_update(self):
-        """
-        Uses pygithub to ask github if there is a newer version that the provided
-        commit hash. If there is a newer version it sets SickRage's version text.
+        """Use pygithub to ask github if there is a newer version..
+
+        If there is a newer version it sets application's version text.
 
         commit_hash: hash that we're checking against
         """
@@ -867,7 +867,7 @@ class SourceUpdateManager(UpdateManager):
         if not self._cur_commit_hash:
             logger.log(u"Unknown current version number, don't know if we should update or not", logger.DEBUG)
 
-            newest_text = "Unknown current version number: If you've never used the SickRage upgrade system before then current version is not set."
+            newest_text = "Unknown current version number: If you've never used the application upgrade system before then current version is not set."
             newest_text += "&mdash; <a href=\"" + self.get_update_url() + "\">Update Now</a>"
 
         elif self._num_commits_behind > 0:

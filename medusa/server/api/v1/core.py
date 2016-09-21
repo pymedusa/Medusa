@@ -212,7 +212,7 @@ class ApiHandler(RequestHandler):
             if multi_commands:  # if we had multiple commands we have to wrap it in a response dict
                 out_dict = _responds(RESULT_SUCCESS, out_dict)
         else:  # index / no cmd given
-            out_dict = CMD_SickBeard(args, kwargs).run()
+            out_dict = CMD_(args, kwargs).run()
 
         return out_dict
 
@@ -1279,7 +1279,7 @@ class CMD_PostProcess(ApiCall):
         return _responds(RESULT_SUCCESS, data=data, msg="Started post-process for %s" % self.path)
 
 
-class CMD_SickBeard(ApiCall):
+class CMD_(ApiCall):
     _help = {"desc": "Get miscellaneous information about Medusa"}
 
     def __init__(self, args, kwargs):
@@ -1295,7 +1295,7 @@ class CMD_SickBeard(ApiCall):
         return _responds(RESULT_SUCCESS, data)
 
 
-class CMD_SickBeardAddRootDir(ApiCall):
+class CMD_AddRootDir(ApiCall):
     _help = {
         "desc": "Add a new root (parent) directory to Medusa",
         "requiredParameters": {
@@ -1356,7 +1356,7 @@ class CMD_SickBeardAddRootDir(ApiCall):
         return _responds(RESULT_SUCCESS, _get_root_dirs(), msg="Root directories updated")
 
 
-class CMD_SickBeardCheckVersion(ApiCall):
+class CMD_CheckVersion(ApiCall):
     _help = {"desc": "Check if a new version of Medusa is available"}
 
     def __init__(self, args, kwargs):
@@ -1387,7 +1387,7 @@ class CMD_SickBeardCheckVersion(ApiCall):
         return _responds(RESULT_SUCCESS, data)
 
 
-class CMD_SickBeardCheckScheduler(ApiCall):
+class CMD_CheckScheduler(ApiCall):
     _help = {"desc": "Get information about the scheduler"}
 
     def __init__(self, args, kwargs):
@@ -1411,7 +1411,7 @@ class CMD_SickBeardCheckScheduler(ApiCall):
         return _responds(RESULT_SUCCESS, data)
 
 
-class CMD_SickBeardDeleteRootDir(ApiCall):
+class CMD_DeleteRootDir(ApiCall):
     _help = {
         "desc": "Delete a root (parent) directory from Medusa",
         "requiredParameters": {
@@ -1460,7 +1460,7 @@ class CMD_SickBeardDeleteRootDir(ApiCall):
         return _responds(RESULT_SUCCESS, _get_root_dirs(), msg="Root directory deleted")
 
 
-class CMD_SickBeardGetDefaults(ApiCall):
+class CMD_GetDefaults(ApiCall):
     _help = {"desc": "Get Medusa's user default configuration value"}
 
     def __init__(self, args, kwargs):
@@ -1480,7 +1480,7 @@ class CMD_SickBeardGetDefaults(ApiCall):
         return _responds(RESULT_SUCCESS, data)
 
 
-class CMD_SickBeardGetMessages(ApiCall):
+class CMD_GetMessages(ApiCall):
     _help = {"desc": "Get all messages"}
 
     def __init__(self, args, kwargs):
@@ -1498,7 +1498,7 @@ class CMD_SickBeardGetMessages(ApiCall):
         return _responds(RESULT_SUCCESS, messages)
 
 
-class CMD_SickBeardGetRootDirs(ApiCall):
+class CMD_GetRootDirs(ApiCall):
     _help = {"desc": "Get all root (parent) directories"}
 
     def __init__(self, args, kwargs):
@@ -1513,7 +1513,7 @@ class CMD_SickBeardGetRootDirs(ApiCall):
         return _responds(RESULT_SUCCESS, _get_root_dirs())
 
 
-class CMD_SickBeardPauseBacklog(ApiCall):
+class CMD_PauseBacklog(ApiCall):
     _help = {
         "desc": "Pause or un-pause the backlog search",
         "optionalParameters": {
@@ -1538,7 +1538,7 @@ class CMD_SickBeardPauseBacklog(ApiCall):
             return _responds(RESULT_SUCCESS, msg="Backlog un-paused")
 
 
-class CMD_SickBeardPing(ApiCall):
+class CMD_Ping(ApiCall):
     _help = {"desc": "Ping Medusa to check if it is running"}
 
     def __init__(self, args, kwargs):
@@ -1555,7 +1555,7 @@ class CMD_SickBeardPing(ApiCall):
             return _responds(RESULT_SUCCESS, msg="Pong")
 
 
-class CMD_SickBeardRestart(ApiCall):
+class CMD_Restart(ApiCall):
     _help = {"desc": "Restart Medusa"}
 
     def __init__(self, args, kwargs):
@@ -1572,7 +1572,7 @@ class CMD_SickBeardRestart(ApiCall):
         return _responds(RESULT_SUCCESS, msg="Medusa is restarting...")
 
 
-class CMD_SickBeardSearchIndexers(ApiCall):
+class CMD_SearchIndexers(ApiCall):
     _help = {
         "desc": "Search for a show with a given name on all the indexers, in a specific language",
         "optionalParameters": {
@@ -1662,7 +1662,7 @@ class CMD_SickBeardSearchIndexers(ApiCall):
             return _responds(RESULT_FAILURE, msg="Either a unique id or name is required!")
 
 
-class CMD_SickBeardSearchTVDB(CMD_SickBeardSearchIndexers):
+class CMD_SearchTVDB(CMD_SearchIndexers):
     _help = {
         "desc": "Search for a show with a given name on The TVDB, in a specific language",
         "optionalParameters": {
@@ -1673,11 +1673,11 @@ class CMD_SickBeardSearchTVDB(CMD_SickBeardSearchIndexers):
     }
 
     def __init__(self, args, kwargs):
-        CMD_SickBeardSearchIndexers.__init__(self, args, kwargs)
+        CMD_SearchIndexers.__init__(self, args, kwargs)
         self.indexerid, args = self.check_params(args, kwargs, "tvdbid", None, False, "int", [])
 
 
-class CMD_SickBeardSearchTVRAGE(CMD_SickBeardSearchIndexers):
+class CMD_SearchTVRAGE(CMD_SearchIndexers):
     """
     Deprecated, TVRage is no more.
     """
@@ -1701,7 +1701,7 @@ class CMD_SickBeardSearchTVRAGE(CMD_SickBeardSearchIndexers):
         return _responds(RESULT_FAILURE, msg="TVRage is no more, invalid result")
 
 
-class CMD_SickBeardSetDefaults(ApiCall):
+class CMD_SetDefaults(ApiCall):
     _help = {
         "desc": "Set Medusa's user default configuration value",
         "optionalParameters": {
@@ -1764,7 +1764,7 @@ class CMD_SickBeardSetDefaults(ApiCall):
         return _responds(RESULT_SUCCESS, msg="Saved defaults")
 
 
-class CMD_SickBeardShutdown(ApiCall):
+class CMD_Shutdown(ApiCall):
     _help = {"desc": "Shutdown Medusa"}
 
     def __init__(self, args, kwargs):
@@ -1781,7 +1781,7 @@ class CMD_SickBeardShutdown(ApiCall):
         return _responds(RESULT_SUCCESS, msg="Medusa is shutting down...")
 
 
-class CMD_SickBeardUpdate(ApiCall):
+class CMD_Update(ApiCall):
     _help = {"desc": "Update Medusa to the latest version available"}
 
     def __init__(self, args, kwargs):
@@ -1938,7 +1938,7 @@ class CMD_ShowAddExisting(ApiCall):
             return _responds(RESULT_FAILURE, msg='Not a valid location')
 
         indexer_name = None
-        indexer_result = CMD_SickBeardSearchIndexers([], {indexer_ids[self.indexer]: self.indexerid}).run()
+        indexer_result = CMD_SearchIndexers([], {indexer_ids[self.indexer]: self.indexerid}).run()
 
         if indexer_result['result'] == result_type_map[RESULT_SUCCESS]:
             if not indexer_result['data']['results']:
@@ -2092,7 +2092,7 @@ class CMD_ShowAddNew(ApiCall):
             default_ep_status_after = self.future_status
 
         indexer_name = None
-        indexer_result = CMD_SickBeardSearchIndexers([], {indexer_ids[self.indexer]: self.indexerid, 'lang': self.lang}).run()
+        indexer_result = CMD_SearchIndexers([], {indexer_ids[self.indexer]: self.indexerid, 'lang': self.lang}).run()
 
         if indexer_result['result'] == result_type_map[RESULT_SUCCESS]:
             if not indexer_result['data']['results']:
@@ -2799,24 +2799,24 @@ function_mapper = {
     "backlog": CMD_Backlog,
     "logs": CMD_Logs,
     "logs.clear": CMD_LogsClear,
-    "sb": CMD_SickBeard,
+    "sb": CMD_,
     "postprocess": CMD_PostProcess,
-    "sb.addrootdir": CMD_SickBeardAddRootDir,
-    "sb.checkversion": CMD_SickBeardCheckVersion,
-    "sb.checkscheduler": CMD_SickBeardCheckScheduler,
-    "sb.deleterootdir": CMD_SickBeardDeleteRootDir,
-    "sb.getdefaults": CMD_SickBeardGetDefaults,
-    "sb.getmessages": CMD_SickBeardGetMessages,
-    "sb.getrootdirs": CMD_SickBeardGetRootDirs,
-    "sb.pausebacklog": CMD_SickBeardPauseBacklog,
-    "sb.ping": CMD_SickBeardPing,
-    "sb.restart": CMD_SickBeardRestart,
-    "sb.searchindexers": CMD_SickBeardSearchIndexers,
-    "sb.searchtvdb": CMD_SickBeardSearchTVDB,
-    "sb.searchtvrage": CMD_SickBeardSearchTVRAGE,
-    "sb.setdefaults": CMD_SickBeardSetDefaults,
-    "sb.update": CMD_SickBeardUpdate,
-    "sb.shutdown": CMD_SickBeardShutdown,
+    "sb.addrootdir": CMD_AddRootDir,
+    "sb.checkversion": CMD_CheckVersion,
+    "sb.checkscheduler": CMD_CheckScheduler,
+    "sb.deleterootdir": CMD_DeleteRootDir,
+    "sb.getdefaults": CMD_GetDefaults,
+    "sb.getmessages": CMD_GetMessages,
+    "sb.getrootdirs": CMD_GetRootDirs,
+    "sb.pausebacklog": CMD_PauseBacklog,
+    "sb.ping": CMD_Ping,
+    "sb.restart": CMD_Restart,
+    "sb.searchindexers": CMD_SearchIndexers,
+    "sb.searchtvdb": CMD_SearchTVDB,
+    "sb.searchtvrage": CMD_SearchTVRAGE,
+    "sb.setdefaults": CMD_SetDefaults,
+    "sb.update": CMD_Update,
+    "sb.shutdown": CMD_Shutdown,
     "show": CMD_Show,
     "show.addexisting": CMD_ShowAddExisting,
     "show.addnew": CMD_ShowAddNew,

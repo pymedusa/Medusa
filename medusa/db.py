@@ -34,23 +34,24 @@ db_cons = {}
 db_locks = {}
 
 
-def dbFilename(filename="sickbeard.db", suffix=None):
+def dbFilename(filename=None, suffix=None):
     """
     @param filename: The sqlite database filename to use. If not specified,
-                     will be made to be sickbeard.db
+                     will be made to be application db file
     @param suffix: The suffix to append to the filename. A '.' will be added
                    automatically, i.e. suffix='v0' will make dbfile.db.v0
     @return: the correct location of the database file.
     """
+    filename = filename or app.APPLICATION_DB
     if suffix:
         filename = "%s.%s" % (filename, suffix)
     return ek(os.path.join, app.DATA_DIR, filename)
 
 
 class DBConnection(object):
-    def __init__(self, filename="sickbeard.db", suffix=None, row_type=None):
+    def __init__(self, filename=None, suffix=None, row_type=None):
 
-        self.filename = filename
+        self.filename = filename or app.APPLICATION_DB
         self.suffix = suffix
         self.row_type = row_type
 

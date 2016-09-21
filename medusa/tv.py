@@ -2571,7 +2571,7 @@ class TVEpisode(TVObject):
 
         # try to get the release group
         rel_grp = {
-            'SickRage': 'SickRage'
+            app.UNKNOWN_RELEASE_GROUP: app.UNKNOWN_RELEASE_GROUP
         }
         if hasattr(self, 'location'):  # from the location name
             rel_grp['location'] = release_group(self.show, self.location)
@@ -2594,7 +2594,7 @@ class TVEpisode(TVObject):
         elif 'location' in rel_grp:
             relgrp = 'location'
         else:
-            relgrp = 'SickRage'
+            relgrp = app.UNKNOWN_RELEASE_GROUP
 
         # try to get the release encoder to comply with scene naming standards
         encoder = Quality.sceneQualityFromName(self.release_name.replace(rel_grp[relgrp], ''), ep_qual)
@@ -2692,7 +2692,7 @@ class TVEpisode(TVObject):
         result_name = pattern
 
         # if there's no release group in the db, let the user know we replaced it
-        if replace_map['%RG'] and replace_map['%RG'] != 'SickRage':
+        if replace_map['%RG'] and replace_map['%RG'] != app.UNKNOWN_RELEASE_GROUP:
             if not hasattr(self, 'release_group') or not self.release_group:
                 logger.log(u'{id}: Episode has no release group, replacing it with {rg}'.format
                            (id=self.show.indexerid, rg=replace_map['%RG']), logger.DEBUG)

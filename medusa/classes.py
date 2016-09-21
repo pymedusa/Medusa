@@ -1,8 +1,6 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
 #
-
-#
 # This file is part of Medusa.
 #
 # Medusa is free software: you can redistribute it and/or modify
@@ -25,7 +23,7 @@ from .common import Quality, USER_AGENT
 from .helper.common import dateTimeFormat
 
 
-class SickBeardURLopener(FancyURLopener, object):
+class ApplicationURLopener(FancyURLopener, object):
     version = USER_AGENT
 
 
@@ -136,7 +134,7 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
 
     Instead of prompting with a UI to pick the desired result out of a
     list of shows it tries to be smart about it based on what shows
-    are in SickRage.
+    are in the application.
     """
 
     def __init__(self, config, log=None):
@@ -178,7 +176,7 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
 
     Instead of prompting with a UI to pick the desired result out of a
     list of shows it tries to be smart about it based on what shows
-    are in SickRage.
+    are in the application.
     """
 
     def __init__(self, config, log=None):

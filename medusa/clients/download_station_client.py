@@ -2,8 +2,6 @@
 # Authors:
 # Pedro Jose Pereira Vieito <pvieito@gmail.com> (Twitter: @pvieito)
 #
-# URL: https://github.com/pymedusa/SickRage
-#
 # This file is part of Medusa.
 #
 # Medusa is free software: you can redistribute it and/or modify

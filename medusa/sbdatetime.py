@@ -1,6 +1,5 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
-
 #
 # This file is part of Medusa.
 #
@@ -114,11 +113,11 @@ class sbdatetime(datetime.datetime):
         except Exception:
             return dt if self is None else self
 
-    # display Time in SickRage Format
+    # display Time in application Format
     @static_or_instance
     def sbftime(self, dt=None, show_seconds=False, t_preset=None):
         """
-        Display time in Medusa format
+        Display time in application format
         TODO: Rename this to srftime
 
         :param dt: datetime object
@@ -168,11 +167,11 @@ class sbdatetime(datetime.datetime):
 
         return strt.decode(app.SYS_ENCODING)
 
-    # display Date in SickRage Format
+    # display Date in application Format
     @static_or_instance
     def sbfdate(self, dt=None, d_preset=None):
         """
-        Display date in Medusa format
+        Display date in application format
         TODO: Rename this to srfdate
 
         :param dt: datetime object
@@ -207,11 +206,11 @@ class sbdatetime(datetime.datetime):
 
         return strd.decode(app.SYS_ENCODING)
 
-    # display Datetime in SickRage Format
+    # display Datetime in application Format
     @static_or_instance
     def sbfdatetime(self, dt=None, show_seconds=False, d_preset=None, t_preset=None):
         """
-        Show datetime in Medusa format
+        Show datetime in application format
         TODO: Rename this to srfdatetime
 
         :param dt: datetime object

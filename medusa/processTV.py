@@ -170,7 +170,7 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
         dirName = ek(os.path.realpath, dirName)
         result.output += logHelper(u"Processing folder %s" % dirName, logger.DEBUG)
 
-    # if the client and SickRage are not on the same machine translate the directory into a network directory
+    # if the client and the application are not on the same machine translate the directory into a network directory
     elif all([app.TV_DOWNLOAD_DIR,
               ek(os.path.isdir, app.TV_DOWNLOAD_DIR),
               ek(os.path.normpath, dirName) == ek(os.path.normpath, app.TV_DOWNLOAD_DIR)]):
@@ -180,7 +180,7 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
     # if we didn't find a real dir then quit
     if not ek(os.path.isdir, dirName):
         result.output += logHelper(u"Unable to figure out what folder to process. "
-                                   u"If your downloader and SickRage aren't on the same PC "
+                                   u"If your downloader and Medusa aren't on the same PC "
                                    u"make sure you fill out your TV download dir in the config.",
                                    logger.DEBUG)
         return result.output

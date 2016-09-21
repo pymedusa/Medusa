@@ -1634,10 +1634,10 @@
                                         </label>
                                     </div>
                                     <div class="field-pair">
-                                        <label for="trakt_remove_show_from_sickrage">
+                                        <label for="trakt_remove_show_from_application">
                                             <span class="component-title">Remove watched show:</span>
                                             <span class="component-desc">
-                                                <input type="checkbox" name="trakt_remove_show_from_sickrage" id="trakt_remove_show_from_sickrage" ${'checked="checked"' if app.TRAKT_REMOVE_SHOW_FROM_SICKRAGE else ''}/>
+                                                <input type="checkbox" name="trakt_remove_show_from_application" id="trakt_remove_show_from_application" ${'checked="checked"' if app.TRAKT_REMOVE_SHOW_FROM_APPLICATION else ''}/>
                                                 <p>remove the show from Medusa if it's ended and completely watched</p>
                                             </span>
                                         </label>

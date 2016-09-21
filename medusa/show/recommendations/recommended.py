@@ -1,7 +1,5 @@
 # coding=utf-8
 #
-# URL: https://sickrage.github.io
-#
 # This file is part of Medusa.
 #
 # Medusa is free software: you can redistribute it and/or modify

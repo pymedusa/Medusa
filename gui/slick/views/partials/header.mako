@@ -16,7 +16,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="home/" title="SickRage"><img alt="SickRage" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
+            <a class="navbar-brand" href="home/" title="Medusa"><img alt="Medusa" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
         </div>
     % if loggedIn:
         <div class="collapse navbar-collapse" id="main_nav">
@@ -100,7 +100,7 @@
                         <li><a href="news/"><i class="menu-icon-news"></i>&nbsp;News${newsBadge}</a></li>
                         <li><a href="IRC/"><i class="menu-icon-irc"></i>&nbsp;IRC</a></li>
                         <li><a href="changes/"><i class="menu-icon-changelog"></i>&nbsp;Changelog</a></li>
-                        <li><a href="https://github.com/PyMedusa/SickRage/wiki/Donations" rel="noreferrer" onclick="window.open('${app.ANON_REDIRECT}' + this.href); return false;"><i class="menu-icon-support"></i>&nbsp;Support Medusa</a></li>
+                        <li><a href="${app.DONATIONS_URL}" rel="noreferrer" onclick="window.open('${app.ANON_REDIRECT}' + this.href); return false;"><i class="menu-icon-support"></i>&nbsp;Support Medusa</a></li>
                         <li role="separator" class="divider"></li>
                         %if numErrors:
                             <li><a href="errorlogs/"><i class="menu-icon-error"></i>&nbsp;View Errors <span class="badge btn-danger">${numErrors}</span></a></li>

@@ -2,7 +2,7 @@
 
 """
 This file is for automated updates of old versions prior to the
-refactor, or for migration from SickRage
+refactor, or for migration from SickRage.
 """
 
 # oldest db version we support migrating from
