@@ -48,7 +48,7 @@
                             <div class="field-pair">
                                 <label class="nocheck" for="tv_download_dir">
                                     <span class="component-title">Post Processing Dir</span>
-                                    <input type="text" name="tv_download_dir" id="tv_download_dir" value="${medusa.tv_DOWNLOAD_DIR}" class="form-control input-sm input350"/>
+                                    <input type="text" name="tv_download_dir" id="tv_download_dir" value="${app.TV_DOWNLOAD_DIR}" class="form-control input-sm input350"/>
                                 </label>
                                 <label class="nocheck">
                                     <span class="component-title">&nbsp;</span>
