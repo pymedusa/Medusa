@@ -2,7 +2,6 @@
 """Tests for medusa.server.web.core.error_logs.py."""
 
 from github.GithubException import BadCredentialsException, RateLimitExceededException
-import medusa as app
 from medusa import classes
 from medusa.classes import ErrorViewer
 from medusa.issuesubmitter import IssueSubmitter
@@ -140,7 +139,7 @@ def test_create_gist(logger, read_loglines, github):
     line = 'Some Log Line'
     logger.error(line)
     logline = list(read_loglines)[0]
-    filename = app.LOG_FILENAME
+    filename = 'application.log'
 
     # When
     actual = sut.create_gist(github, logline)
