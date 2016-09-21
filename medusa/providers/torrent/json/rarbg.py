@@ -22,6 +22,7 @@ import datetime
 import time
 import traceback
 
+import medusa as app
 from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
 from ....helper.common import convert_size, try_int
@@ -76,7 +77,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
 
         # Search Params
         search_params = {
-            'app_id': 'sickrage2',
+            'app_id': app.RARBG_APPID,
             'category': 'tv',
             'min_seeders': try_int(self.minseed),
             'min_leechers': try_int(self.minleech),
@@ -218,7 +219,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         login_params = {
             'get_token': 'get_token',
             'format': 'json',
-            'app_id': 'sickrage2',
+            'app_id': app.RARBG_APPID,
         }
 
         response = self.get_url(self.urls['api'], params=login_params, returns='json')

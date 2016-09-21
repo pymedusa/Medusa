@@ -228,7 +228,7 @@ class BaseHandler(RequestHandler):
 
     def get_current_user(self):
         if not isinstance(self, UI) and app.WEB_USERNAME and app.WEB_PASSWORD:
-            return self.get_secure_cookie('sickrage_user')
+            return self.get_secure_cookie(app.SECURE_TOKEN)
         else:
             return True
 

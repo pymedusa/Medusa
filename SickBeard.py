@@ -1,7 +1,6 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*
 # Author: Nic Wolfe <nic@wolfeden.ca>
-# URL: http://code.google.com/p/sickbeard/
 #
 # This file is part of Medusa.
 #
@@ -83,7 +82,7 @@ mimetypes.add_type("application/font-woff", ".woff")
 # Not sure about this one, but we also have halflings in .woff so I think it wont matter
 # mimetypes.add_type("application/font-woff2", ".woff2")
 
-# Do this before importing sickbeard, to prevent locked files and incorrect import
+# Do this before application imports, to prevent locked files and incorrect import
 OLD_TORNADO = os.path.abspath(os.path.join(os.path.dirname(__file__), 'tornado'))
 if os.path.isdir(OLD_TORNADO):
     shutil.move(OLD_TORNADO, OLD_TORNADO + '_kill')
@@ -106,10 +105,10 @@ signal.signal(signal.SIGINT, app.sig_handler)
 signal.signal(signal.SIGTERM, app.sig_handler)
 
 
-class SickRage(object):
+class Application(object):
     # pylint: disable=too-many-instance-attributes
     """
-    Main Medusa module
+    Main application module
     """
 
     def __init__(self):
@@ -302,7 +301,7 @@ class SickRage(object):
             if self.console_logging:
                 sys.stdout.write('Restore: restoring DB and config.ini %s!\n' % ('FAILED', 'SUCCESSFUL')[success])
 
-        # Load the config and publish it to the sickbeard package
+        # Load the config and publish it to the application package
         if self.console_logging and not ek(os.path.isfile, app.CONFIG_FILE):
             sys.stdout.write('Unable to find %s, all settings will be default!\n' % app.CONFIG_FILE)
 
@@ -494,7 +493,7 @@ class SickRage(object):
         :return:
         """
         try:
-            files_list = ['sickbeard.db', 'config.ini', 'failed.db', 'cache.db']
+            files_list = [app.APPLICATION_DB, app.CONFIG_INI, app.FAILED_DB, app.CACHE_DB]
 
             for filename in files_list:
                 src_file = ek(os.path.join, src_dir, filename)
@@ -559,6 +558,6 @@ class SickRage(object):
 
 
 if __name__ == '__main__':
-    # start Medusa
-    medusa = SickRage()
-    medusa.start()
+    # start application
+    application = Application()
+    application.start()

@@ -76,6 +76,7 @@ APPLICATION_DB = 'sickbeard.db'
 FAILED_DB = 'failed.db'
 CACHE_DB = 'cache.db'
 LOG_FILENAME = 'sickrage.log'
+CONFIG_INI = 'config.ini'
 GIT_ORG = 'pymedusa'
 GIT_REPO = 'SickRage'
 CHANGES_URL = 'https://cdn.pymedusa.com/sickrage-news/CHANGES.md'
@@ -85,6 +86,9 @@ WIKI_URL = '{0}/wiki'.format(APPLICATION_URL)
 GITHUB_IO_URL = 'http://github.com/PyMedusa/sickrage.github.io/'
 EXTRA_SCRIPTS_URL = '{0}/wiki/Post-Processing#extra-scripts'.format(APPLICATION_URL)
 SUBTITLES_URL = '{0}/wiki/Subtitle%20Scripts'.format(APPLICATION_URL)
+PUSHOVER_URL = 'https://pushover.net/apps/clone/sickrage'
+RARBG_APPID = 'sickrage2'
+SECURE_TOKEN = 'sickrage_user'
 
 PID = None
 CFG = None
@@ -715,7 +719,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         SEEDERS_LEECHERS_IN_NOTIFY = check_setting_int(CFG, 'General', 'seeders_leechers_in_notify', 1)
         ACTUAL_LOG_DIR = check_setting_str(CFG, 'General', 'log_dir', 'Logs')
         LOG_DIR = ek(os.path.normpath, ek(os.path.join, DATA_DIR, ACTUAL_LOG_DIR))
-        LOG_NR = check_setting_int(CFG, 'General', 'log_nr', 5)  # Default to 5 backup file (sickrage.log.x)
+        LOG_NR = check_setting_int(CFG, 'General', 'log_nr', 5)  # Default to 5 backup file (application.log.x)
         LOG_SIZE = check_setting_float(CFG, 'General', 'log_size', 10.0)  # Default to max 10MB per logfile
 
         if LOG_SIZE > 100:
