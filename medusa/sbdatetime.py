@@ -21,7 +21,7 @@ import functools
 import locale
 
 import medusa as app
-from .network_timezones import sb_timezone
+from .network_timezones import app_timezone
 
 date_presets = (
     '%Y-%m-%d',
@@ -107,7 +107,7 @@ class sbdatetime(datetime.datetime):
     def convert_to_setting(self, dt=None):
         try:
             if app.TIMEZONE_DISPLAY == 'local':
-                return dt.astimezone(sb_timezone) if self is None else self.astimezone(sb_timezone)
+                return dt.astimezone(app_timezone) if self is None else self.astimezone(app_timezone)
             else:
                 return dt if self is None else self
         except Exception:

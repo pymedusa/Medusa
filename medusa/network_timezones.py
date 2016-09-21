@@ -26,9 +26,9 @@ from . import db, helpers, logger
 from .helper.common import try_int
 
 try:
-    sb_timezone = tz.tzwinlocal() if tz.tzwinlocal else tz.tzlocal()
+    app_timezone = tz.tzwinlocal() if tz.tzwinlocal else tz.tzlocal()
 except Exception:
-    sb_timezone = tz.tzlocal()
+    app_timezone = tz.tzlocal()
 
 # regex to parse time (12/24 hour format)
 time_regex = re.compile(r'(?P<hour>\d{1,2})(?:[:.](?P<minute>\d{2})?)? ?(?P<meridiem>[PA]\.? ?M?)?\b', re.I)
@@ -121,7 +121,7 @@ def get_network_timezone(network, _network_dict):
         if network is not None:
             logger.log(u'Missing time zone for network: %s' % network, logger.ERROR)
 
-    return tz.gettz(network_tz_name) if network_tz_name else sb_timezone
+    return tz.gettz(network_tz_name) if network_tz_name else app_timezone
 
 
 # parse date and time string into local time

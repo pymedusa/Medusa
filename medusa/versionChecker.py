@@ -896,18 +896,18 @@ class SourceUpdateManager(UpdateManager):
 
         try:
             # prepare the update dir
-            sr_update_dir = ek(os.path.join, app.PROG_DIR, u'sr-update')
+            app_update_dir = ek(os.path.join, app.PROG_DIR, u'sr-update')
 
-            if ek(os.path.isdir, sr_update_dir):
-                logger.log(u"Clearing out update folder " + sr_update_dir + " before extracting")
-                shutil.rmtree(sr_update_dir)
+            if ek(os.path.isdir, app_update_dir):
+                logger.log(u"Clearing out update folder " + app_update_dir + " before extracting")
+                shutil.rmtree(app_update_dir)
 
-            logger.log(u"Creating update folder " + sr_update_dir + " before extracting")
-            ek(os.makedirs, sr_update_dir)
+            logger.log(u"Creating update folder " + app_update_dir + " before extracting")
+            ek(os.makedirs, app_update_dir)
 
             # retrieve file
             logger.log(u"Downloading update from " + repr(tar_download_url))
-            tar_download_path = ek(os.path.join, sr_update_dir, u'sr-update.tar')
+            tar_download_path = ek(os.path.join, app_update_dir, u'sr-update.tar')
             helpers.download_file(tar_download_url, tar_download_path, session=self.session)
 
             if not ek(os.path.isfile, tar_download_path):
@@ -921,7 +921,7 @@ class SourceUpdateManager(UpdateManager):
             # extract to sr-update dir
             logger.log(u"Extracting file " + tar_download_path)
             tar = tarfile.open(tar_download_path)
-            tar.extractall(sr_update_dir)
+            tar.extractall(app_update_dir)
             tar.close()
 
             # delete .tar.gz
@@ -929,12 +929,12 @@ class SourceUpdateManager(UpdateManager):
             ek(os.remove, tar_download_path)
 
             # find update dir name
-            update_dir_contents = [x for x in ek(os.listdir, sr_update_dir) if
-                                   ek(os.path.isdir, ek(os.path.join, sr_update_dir, x))]
+            update_dir_contents = [x for x in ek(os.listdir, app_update_dir) if
+                                   ek(os.path.isdir, ek(os.path.join, app_update_dir, x))]
             if len(update_dir_contents) != 1:
                 logger.log(u"Invalid update data, update failed: " + str(update_dir_contents), logger.WARNING)
                 return False
-            content_dir = ek(os.path.join, sr_update_dir, update_dir_contents[0])
+            content_dir = ek(os.path.join, app_update_dir, update_dir_contents[0])
 
             # walk temp folder and move files to main folder
             logger.log(u"Moving files from " + content_dir + " to " + app.PROG_DIR)

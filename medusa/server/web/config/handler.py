@@ -49,19 +49,19 @@ class Config(WebRoot):
 
         try:
             import pwd
-            sr_user = pwd.getpwuid(os.getuid()).pw_name
+            app_user = pwd.getpwuid(os.getuid()).pw_name
         except ImportError:
             try:
                 import getpass
-                sr_user = getpass.getuser()
+                app_user = getpass.getuser()
             except StandardError:
-                sr_user = 'Unknown'
+                app_user = 'Unknown'
 
         try:
             import locale
-            sr_locale = locale.getdefaultlocale()
+            app_locale = locale.getdefaultlocale()
         except StandardError:
-            sr_locale = 'Unknown', 'Unknown'
+            app_locale = 'Unknown', 'Unknown'
 
         try:
             import ssl
@@ -81,7 +81,7 @@ class Config(WebRoot):
         return t.render(
             submenu=self.ConfigMenu(), title='Medusa Configuration',
             header='Medusa Configuration', topmenu='config',
-            sr_user=sr_user, sr_locale=sr_locale, ssl_version=ssl_version,
+            app_user=app_user, app_locale=app_locale, ssl_version=ssl_version,
             app_version=app_version, cur_branch_major_db_version=cur_branch_major_db_version,
             cur_branch_minor_db_version=cur_branch_minor_db_version
         )

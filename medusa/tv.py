@@ -3015,10 +3015,10 @@ class TVEpisode(TVObject):
             airdatetime = network_timezones.parse_date_time(airdate_ordinal, self.show.airs, self.show.network)
 
             if app.FILE_TIMESTAMP_TIMEZONE == 'local':
-                airdatetime = airdatetime.astimezone(network_timezones.sb_timezone)
+                airdatetime = airdatetime.astimezone(network_timezones.app_timezone)
 
             filemtime = datetime.datetime.fromtimestamp(
-                ek(os.path.getmtime, self.location)).replace(tzinfo=network_timezones.sb_timezone)
+                ek(os.path.getmtime, self.location)).replace(tzinfo=network_timezones.app_timezone)
 
             if filemtime != airdatetime:
                 import time

@@ -27,10 +27,10 @@
     <tr><td class="infoTableHeader"><i class="icon16-config-python"></i> Python Version:</td><td class="infoTableCell">${sys.version[:120]}</td></tr>
     <tr><td class="infoTableHeader"><i class="icon16-config-ssl"></i> SSL Version:</td><td class="infoTableCell">${ssl_version}</td></tr>
     <tr><td class="infoTableHeader"><i class="icon16-config-os"></i> OS:</td><td class="infoTableCell">${platform.platform()}</td></tr>
-    <tr><td class="infoTableHeader" style="vertical-align: top;"><i class="icon16-config-locale"></i> Locale:</td><td class="infoTableCell">${'.'.join([str(loc) for loc in sr_locale])}</td></tr>
+    <tr><td class="infoTableHeader" style="vertical-align: top;"><i class="icon16-config-locale"></i> Locale:</td><td class="infoTableCell">${'.'.join([str(loc) for loc in app_locale])}</td></tr>
     <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
     <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
-    <tr><td class="infoTableHeader"><i class="icon16-config-user"></i> User:</td><td class="infoTableCell">${sr_user}</td></tr>
+    <tr><td class="infoTableHeader"><i class="icon16-config-user"></i> User:</td><td class="infoTableCell">${app_user}</td></tr>
     <tr><td class="infoTableHeader"><i class="icon16-config-dir"></i> Program Folder:</td><td class="infoTableCell">${app.PROG_DIR}</td></tr>
     <tr><td class="infoTableHeader"><i class="icon16-config-config"></i> Config File:</td><td class="infoTableCell">${app.CONFIG_FILE}</td></tr>
     <tr><td class="infoTableHeader"><i class="icon16-config-db"></i> Database File:</td><td class="infoTableCell">${db.dbFilename()}</td></tr>
