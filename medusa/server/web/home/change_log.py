@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 import markdown2
+import medusa as app
 from tornado.routes import route
 from .handler import Home
 from ..core import PageTemplate
@@ -18,10 +19,10 @@ class HomeChangeLog(Home):
 
     def index(self):
         try:
-            changes = helpers.getURL('https://cdn.pymedusa.com/sickrage-news/CHANGES.md', session=helpers.make_session(), returns='text')
+            changes = helpers.getURL(app.CHANGES_URL, session=helpers.make_session(), returns='text')
         except Exception:
             logger.log('Could not load changes from repo, giving a link!', logger.DEBUG)
-            changes = 'Could not load changes from the repo. [Click here for CHANGES.md](https://cdn.pymedusa.com/sickrage-news/CHANGES.md)'
+            changes = 'Could not load changes from the repo. [Click here for CHANGES.md]({url})'.format(url=app.CHANGES_URL)
 
         t = PageTemplate(rh=self, filename='markdown.mako')
         data = markdown2.markdown(changes if changes else 'The was a problem connecting to github, please refresh and try again', extras=['header-ids'])

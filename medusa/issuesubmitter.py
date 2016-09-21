@@ -53,7 +53,7 @@ class IssueSubmitter(object):
         context_loglines = logline.get_context_loglines()
         if context_loglines:
             content = '\n'.join([str(ll) for ll in context_loglines])
-            return github.get_user().create_gist(False, {'sickrage.log': InputFileContent(content)})
+            return github.get_user().create_gist(False, {'application.log': InputFileContent(content)})
 
     @staticmethod
     def create_issue_data(logline, log_url):
@@ -84,12 +84,12 @@ class IssueSubmitter(object):
             '**Locale**: `{locale}`'.format(locale=locale_name),
             '**Branch**: [{branch}](../tree/{branch})'.format(branch=app.BRANCH),
             '**Database**: `{0}.{1}`'.format(cur_branch_major_db_version, cur_branch_minor_db_version),
-            '**Commit**: PyMedusa/SickRage@{commit}'.format(commit=commit),
+            '**Commit**: {org}/{repo}@{commit}'.format(org=app.GIT_ORG, repo=app.GIT_REPO, commit=commit),
             '**Link to Log**: {log_url}'.format(log_url=log_url) if log_url else '**No Log available**',
             '### ERROR',
             logline.format_to_html(base_url=base_url),
             '---',
-            '_STAFF NOTIFIED_: @pymedusa/support @pymedusa/moderators',
+            '_STAFF NOTIFIED_: @{org}/support @{org}/moderators'.format(org=app.GIT_ORG),
         ])
 
     @staticmethod

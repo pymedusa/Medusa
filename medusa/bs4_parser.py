@@ -1,7 +1,4 @@
 # coding=utf-8
-# Author: The SickRage Dev Team
-#
-
 #
 # This file is part of Medusa.
 #

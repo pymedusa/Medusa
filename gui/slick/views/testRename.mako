@@ -30,7 +30,7 @@
 </blockquote>
 <% curSeason = -1 %>
 <% odd = False%>
-<table id="SelectAllTable" class="sickbeardTable" cellspacing="1" border="0" cellpadding="0">
+<table id="SelectAllTable" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr class="seasonheader" id="season-all">
             <td colspan="4">
@@ -47,7 +47,7 @@
 <br>
 <input type="submit" value="Rename Selected" class="btn btn-success"> <a href="home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
 
-<table id="testRenameTable" class="sickbeardTable ${"summaryFanArt" if app.FANART_BACKGROUND else ""}" cellspacing="1" border="0" cellpadding="0">
+<table id="testRenameTable" class="defaultTable ${"summaryFanArt" if app.FANART_BACKGROUND else ""}" cellspacing="1" border="0" cellpadding="0">
 % for cur_ep_obj in ep_obj_list:
 <%
     curLoc = cur_ep_obj.location[len(cur_ep_obj.show.location)+1:]

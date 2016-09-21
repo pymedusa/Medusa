@@ -41,7 +41,7 @@
 </div>
 <br>
 % if app.HISTORY_LAYOUT == "detailed":
-    <table id="historyTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
+    <table id="historyTable" class="defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
         <thead>
             <tr>
                 <th class="nowrap" width="15%">Time</th>
@@ -104,7 +104,7 @@
         </tbody>
     </table>
 % else:
-    <table id="historyTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
+    <table id="historyTable" class="defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
         <thead>
             <tr>
                 <th class="nowrap" width="18%">Time</th>

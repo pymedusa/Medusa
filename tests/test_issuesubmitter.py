@@ -139,7 +139,7 @@ def test_create_gist(logger, read_loglines, github):
     line = 'Some Log Line'
     logger.error(line)
     logline = list(read_loglines)[0]
-    filename = 'sickrage.log'
+    filename = 'application.log'
 
     # When
     actual = sut.create_gist(github, logline)

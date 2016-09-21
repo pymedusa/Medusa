@@ -369,7 +369,7 @@ class TraktChecker(object):
                         logger.log('Could not connect to Trakt. Error: {0}'.format(ex(e)), logger.WARNING)
 
     def remove_from_library(self):
-        if app.TRAKT_SYNC_WATCHLIST and app.USE_TRAKT and app.TRAKT_REMOVE_SHOW_FROM_SICKRAGE:
+        if app.TRAKT_SYNC_WATCHLIST and app.USE_TRAKT and app.TRAKT_REMOVE_SHOW_FROM_APPLICATION:
             logger.log('Retrieving ended/completed shows to remove from Medusa', logger.DEBUG)
 
             if app.showList:

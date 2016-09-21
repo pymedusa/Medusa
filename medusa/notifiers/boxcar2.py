@@ -3,7 +3,6 @@
 # Author: Rafael Silva <rpluto@gmail.com>
 # Author: Marvin Pinto <me@marvinp.ca>
 # Author: Dennis Lutter <lad1337@gmail.com>
-# URL: https://github.com/pymedusa/SickRage
 #
 # This file is part of Medusa.
 #

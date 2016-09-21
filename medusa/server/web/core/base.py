@@ -228,7 +228,7 @@ class BaseHandler(RequestHandler):
 
     def get_current_user(self):
         if not isinstance(self, UI) and app.WEB_USERNAME and app.WEB_PASSWORD:
-            return self.get_secure_cookie('sickrage_user')
+            return self.get_secure_cookie(app.SECURE_TOKEN)
         else:
             return True
 
@@ -414,9 +414,9 @@ class WebRoot(WebHandler):
 
     def schedule(self, layout=None):
         next_week = datetime.date.today() + datetime.timedelta(days=7)
-        next_week1 = datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.sb_timezone))
+        next_week1 = datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.app_timezone))
         results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, app.COMING_EPS_SORT, False)
-        today = datetime.datetime.now().replace(tzinfo=network_timezones.sb_timezone)
+        today = datetime.datetime.now().replace(tzinfo=network_timezones.app_timezone)
 
         submenu = [
             {

@@ -63,7 +63,7 @@
                 <button type="button" class="btn btn-xs unselectAllShows">Clear all</button>
             </div>
             <br>
-            <table class="sickbeardTable manageTable" cellspacing="1" border="0" cellpadding="0">
+            <table class="defaultTable manageTable" cellspacing="1" border="0" cellpadding="0">
             % for cur_indexer_id in sorted_show_ids:
                 <tr id="${cur_indexer_id}">
                     <th style="width: 1%;"><input type="checkbox" class="allCheck" id="allCheck-${cur_indexer_id}" name="${cur_indexer_id}-all"checked="checked" /></th>

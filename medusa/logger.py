@@ -574,7 +574,7 @@ class Logger(object):
 
     def reconfigure_file_handler(self):
         """Reconfigure rotating file handler."""
-        target_file = ek(os.path.join, app.LOG_DIR, 'sickrage.log')
+        target_file = ek(os.path.join, app.LOG_DIR, app.LOG_FILENAME)
         target_size = int(app.LOG_SIZE * 1024 * 1024)
         target_number = int(app.LOG_NR)
         if not self.file_handler or self.log_file != target_file or self.file_handler.backupCount != target_number or self.file_handler.maxBytes != target_size:

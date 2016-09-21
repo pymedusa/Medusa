@@ -56,91 +56,91 @@ def ex(e):
     return message
 
 
-class SickRageException(Exception):
+class ApplicationException(Exception):
     """
-    Generic SickRage Exception - should never be thrown, only sub-classed
+    Generic Application Exception - should never be thrown, only sub-classed
     """
 
 
-class AuthException(SickRageException):
+class AuthException(ApplicationException):
     """
     Authentication information is incorrect
     """
 
 
-class CantRefreshShowException(SickRageException):
+class CantRefreshShowException(ApplicationException):
     """
     The show can't be refreshed right now
     """
 
 
-class CantRemoveShowException(SickRageException):
+class CantRemoveShowException(ApplicationException):
     """
     The show can't be removed right now
     """
 
 
-class CantUpdateShowException(SickRageException):
+class CantUpdateShowException(ApplicationException):
     """
     The show can't be updated right now
     """
 
 
-class EpisodeDeletedException(SickRageException):
+class EpisodeDeletedException(ApplicationException):
     """
     This episode has been deleted
     """
 
 
-class EpisodeNotFoundException(SickRageException):
+class EpisodeNotFoundException(ApplicationException):
     """
     The episode wasn't found on the Indexer
     """
 
 
-class EpisodePostProcessingFailedException(SickRageException):
+class EpisodePostProcessingFailedException(ApplicationException):
     """
     The episode post-processing failed
     """
 
 
-class FailedPostProcessingFailedException(SickRageException):
+class FailedPostProcessingFailedException(ApplicationException):
     """
     The failed post-processing failed
     """
 
 
-class MultipleEpisodesInDatabaseException(SickRageException):
+class MultipleEpisodesInDatabaseException(ApplicationException):
     """
     Multiple episodes were found in the database! The database must be fixed first
     """
 
 
-class MultipleShowsInDatabaseException(SickRageException):
+class MultipleShowsInDatabaseException(ApplicationException):
     """
     Multiple shows were found in the database! The database must be fixed first
     """
 
 
-class MultipleShowObjectsException(SickRageException):
+class MultipleShowObjectsException(ApplicationException):
     """
     Multiple objects for the same show were found! Something is very wrong
     """
 
 
-class NoNFOException(SickRageException):
+class NoNFOException(ApplicationException):
     """
     No NFO was found
     """
 
 
-class ShowDirectoryNotFoundException(SickRageException):
+class ShowDirectoryNotFoundException(ApplicationException):
     """
     The show directory was not found
     """
 
 
-class ShowNotFoundException(SickRageException):
+class ShowNotFoundException(ApplicationException):
     """
     The show wasn't found on the Indexer
     """

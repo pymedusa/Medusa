@@ -226,7 +226,7 @@
                                 </label>
                                 <label class="nocheck">
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc">See <a href="https://github.com/PyMedusa/SickRage/wiki/Post-Processing#extra-scripts" class="wikie"><strong>Wiki</strong></a> for script arguments description and usage.</span>
+                                    <span class="component-desc">See <a href="${app.EXTRA_SCRIPTS_URL}" class="wikie"><strong>Wiki</strong></a> for script arguments description and usage.</span>
                                 </label>
                             </div>
                             <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
@@ -423,7 +423,7 @@
                                               <td>Show.Name.S02E03.HDTV.XviD-RLSGROUP</td>
                                             </tr>
                                             <tr>
-                                              <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="'SickRage' is used in place of RLSGROUP if it could not be properly detected"></i> <b>Release Group:</b></td>
+                                              <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="'${app.UNKNOWN_RELEASE_GROUP}' is used in place of RLSGROUP if it could not be properly detected"></i> <b>Release Group:</b></td>
                                               <td>%RG</td>
                                               <td>RLSGROUP</td>
                                             </tr>
@@ -623,7 +623,7 @@
                                                   <td>Show.Name.2010.03.09.HDTV.XviD-RLSGROUP</td>
                                                 </tr>
                                                 <tr class="even">
-                                                  <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="'SickRage' is used in place of RLSGROUP if it could not be properly detected"></i> <b>Release Group:</b></td>
+                                                  <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="'${app.UNKNOWN_RELEASE_GROUP}' is used in place of RLSGROUP if it could not be properly detected"></i> <b>Release Group:</b></td>
                                                   <td>%RG</td>
                                                   <td>RLSGROUP</td>
                                                 </tr>
@@ -794,7 +794,7 @@
                                                   <td>Show.Name.9th.Mar.2011.HDTV.XviD-RLSGROUP</td>
                                                 </tr>
                                                 <tr class="even">
-                                                  <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="'SickRage' is used in place of RLSGROUP if it could not be properly detected"></i> <b>Release Group:</b></td>
+                                                  <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="'${app.UNKNOWN_RELEASE_GROUP}' is used in place of RLSGROUP if it could not be properly detected"></i> <b>Release Group:</b></td>
                                                   <td>%RG</td>
                                                   <td>RLSGROUP</td>
                                                 </tr>
@@ -961,7 +961,7 @@
                                                   <td>Show.Name.S02E03.HDTV.XviD-RLSGROUP</td>
                                                 </tr>
                                                 <tr>
-                                                  <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="'SickRage' is used in place of RLSGROUP if it could not be properly detected"></i> <b>Release Group:</b></td>
+                                                  <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="'${app.UNKNOWN_RELEASE_GROUP}' is used in place of RLSGROUP if it could not be properly detected"></i> <b>Release Group:</b></td>
                                                   <td>%RG</td>
                                                   <td>RLSGROUP</td>
                                                 </tr>

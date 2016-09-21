@@ -43,7 +43,7 @@
                             <label for="edit_root_dir_0">
                                 <span class="component-title">Root Directories (<span class="separator">*</span>)</span>
                                 <span class="component-desc">
-                                    <table class="sickbeardTable" cellspacing="1" cellpadding="0" border="0">
+                                    <table class="defaultTable" cellspacing="1" cellpadding="0" border="0">
                                         <thead>
                                             <tr>
                                                 <th class="nowrap tablesorter-header">Current</th>

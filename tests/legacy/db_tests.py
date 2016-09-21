@@ -31,10 +31,10 @@ class DBBasicTests(test.AppTestDBCase):
     def setUp(self):
         """Unittest set up."""
         super(DBBasicTests, self).setUp()
-        self.sr_db = test.db.DBConnection()
+        self.db = test.db.DBConnection()
 
     def test_select(self):
-        self.sr_db.select("SELECT * FROM tv_episodes WHERE showid = ? AND location != ''", [0000])
+        self.db.select("SELECT * FROM tv_episodes WHERE showid = ? AND location != ''", [0000])
 
 
 class DBMultiTests(test.AppTestDBCase):
@@ -43,11 +43,11 @@ class DBMultiTests(test.AppTestDBCase):
     def setUp(self):
         """Unittest set up."""
         super(DBMultiTests, self).setUp()
-        self.sr_db = test.db.DBConnection()
+        self.db = test.db.DBConnection()
 
     def select(self):
         """Select from the database."""
-        self.sr_db.select("SELECT * FROM tv_episodes WHERE showid = ? AND location != ''", [0000])
+        self.db.select("SELECT * FROM tv_episodes WHERE showid = ? AND location != ''", [0000])
 
     def test_threaded(self):
         """Test multi-threaded selection from the database."""

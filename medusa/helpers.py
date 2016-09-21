@@ -65,7 +65,7 @@ logger = logging.getLogger(__name__)
 
 try:
     import urllib
-    urllib._urlopener = classes.SickBeardURLopener()
+    urllib._urlopener = classes.ApplicationURLopener()
 except ImportError:
     logger.debug(u'Unable to import _urlopener, not using user_agent for urllib')
 
@@ -867,7 +867,7 @@ def anon_url(*url):
 #
 # To add a new encryption_version:
 #   1) Code your new encryption_version
-#   2) Update the last encryption_version available in sickbeard/server/web/config/general.py
+#   2) Update the last encryption_version available in server/web/config/general.py
 #   3) Remember to maintain old encryption versions and key generators for retro-compatibility
 
 # Key Generators
@@ -938,7 +938,7 @@ def get_show(name, tryIndexers=False):
         if show and not from_cache:
             name_cache.addNameToCache(name, show.indexerid)
     except Exception as e:
-        logger.debug(u"Error when attempting to find show: %s in SickRage. Error: %r " % (name, repr(e)))
+        logger.debug(u"Error when attempting to find show: %s. Error: %r " % (name, repr(e)))
 
     return show
 

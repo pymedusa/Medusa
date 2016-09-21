@@ -26,6 +26,7 @@ import shutil
 import socket
 import sys
 from threading import Lock
+from xmlrpclib import APPLICATION_ERROR
 
 from configobj import ConfigObj
 import requests
@@ -65,9 +66,29 @@ indexerApi = indexer_api.indexerApi
 ex = exceptions.ex
 
 # Fixed values
+__title__ = __name__
 SRC_FOLDER = __name__
 LEGACY_SRC_FOLDERS = ('sickbeard', 'sickrage')
 LIB_FOLDER = 'lib'
+UNKNOWN_RELEASE_GROUP = 'SickRage'
+BACKUP_FILENAME = 'sickrage-{timestamp}.zip'
+APPLICATION_DB = 'sickbeard.db'
+FAILED_DB = 'failed.db'
+CACHE_DB = 'cache.db'
+LOG_FILENAME = 'sickrage.log'
+CONFIG_INI = 'config.ini'
+GIT_ORG = 'pymedusa'
+GIT_REPO = 'SickRage'
+CHANGES_URL = 'https://cdn.pymedusa.com/sickrage-news/CHANGES.md'
+APPLICATION_URL = 'https://github.com/PyMedusa/SickRage'
+DONATIONS_URL = '{0}/wiki/Donations'.format(APPLICATION_URL)
+WIKI_URL = '{0}/wiki'.format(APPLICATION_URL)
+GITHUB_IO_URL = 'http://github.com/PyMedusa/sickrage.github.io/'
+EXTRA_SCRIPTS_URL = '{0}/wiki/Post-Processing#extra-scripts'.format(APPLICATION_URL)
+SUBTITLES_URL = '{0}/wiki/Subtitle%20Scripts'.format(APPLICATION_URL)
+PUSHOVER_URL = 'https://pushover.net/apps/clone/sickrage'
+RARBG_APPID = 'sickrage2'
+SECURE_TOKEN = 'sickrage_user'
 
 PID = None
 CFG = None
@@ -131,8 +152,6 @@ GIT_REMOTE_BRANCHES = ''
 GIT_REMOTE = ''
 GIT_REMOTE_URL = ''
 CUR_COMMIT_BRANCH = ''
-GIT_ORG = 'pymedusa'
-GIT_REPO = 'SickRage'
 GIT_USERNAME = None
 GIT_PASSWORD = None
 GIT_PATH = None
@@ -462,7 +481,7 @@ TRAKT_ACCESS_TOKEN = None
 TRAKT_REFRESH_TOKEN = None
 TRAKT_REMOVE_WATCHLIST = False
 TRAKT_REMOVE_SERIESLIST = False
-TRAKT_REMOVE_SHOW_FROM_SICKRAGE = False
+TRAKT_REMOVE_SHOW_FROM_APPLICATION = False
 TRAKT_SYNC_WATCHLIST = False
 TRAKT_METHOD_ADD = None
 TRAKT_START_PAUSED = False
@@ -627,7 +646,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             TORRENT_USERNAME, TORRENT_PASSWORD, TORRENT_HOST, TORRENT_PATH, TORRENT_SEED_TIME, TORRENT_PAUSED, TORRENT_HIGH_BANDWIDTH, TORRENT_LABEL, TORRENT_LABEL_ANIME, TORRENT_VERIFY_CERT, TORRENT_RPCURL, TORRENT_AUTH_TYPE, \
             USE_KODI, KODI_ALWAYS_ON, KODI_NOTIFY_ONSNATCH, KODI_NOTIFY_ONDOWNLOAD, KODI_NOTIFY_ONSUBTITLEDOWNLOAD, KODI_UPDATE_FULL, KODI_UPDATE_ONLYFIRST, \
             KODI_UPDATE_LIBRARY, KODI_HOST, KODI_USERNAME, KODI_PASSWORD, BACKLOG_FREQUENCY, KODI_LIBRARY_CLEAN_PENDING, KODI_CLEAN_LIBRARY, \
-            USE_TRAKT, TRAKT_USERNAME, TRAKT_ACCESS_TOKEN, TRAKT_REFRESH_TOKEN, TRAKT_REMOVE_WATCHLIST, TRAKT_SYNC_WATCHLIST, TRAKT_REMOVE_SHOW_FROM_SICKRAGE, TRAKT_METHOD_ADD, TRAKT_START_PAUSED, traktCheckerScheduler, TRAKT_USE_RECOMMENDED, TRAKT_SYNC, TRAKT_SYNC_REMOVE, TRAKT_DEFAULT_INDEXER, TRAKT_REMOVE_SERIESLIST, TRAKT_TIMEOUT, TRAKT_BLACKLIST_NAME, \
+            USE_TRAKT, TRAKT_USERNAME, TRAKT_ACCESS_TOKEN, TRAKT_REFRESH_TOKEN, TRAKT_REMOVE_WATCHLIST, TRAKT_SYNC_WATCHLIST, TRAKT_REMOVE_SHOW_FROM_APPLICATION, TRAKT_METHOD_ADD, TRAKT_START_PAUSED, traktCheckerScheduler, TRAKT_USE_RECOMMENDED, TRAKT_SYNC, TRAKT_SYNC_REMOVE, TRAKT_DEFAULT_INDEXER, TRAKT_REMOVE_SERIESLIST, TRAKT_TIMEOUT, TRAKT_BLACKLIST_NAME, \
             USE_PLEX_SERVER, PLEX_NOTIFY_ONSNATCH, PLEX_NOTIFY_ONDOWNLOAD, PLEX_NOTIFY_ONSUBTITLEDOWNLOAD, PLEX_UPDATE_LIBRARY, USE_PLEX_CLIENT, PLEX_CLIENT_USERNAME, PLEX_CLIENT_PASSWORD, \
             PLEX_SERVER_HOST, PLEX_SERVER_TOKEN, PLEX_CLIENT_HOST, PLEX_SERVER_USERNAME, PLEX_SERVER_PASSWORD, PLEX_SERVER_HTTPS, MIN_BACKLOG_FREQUENCY, SKIP_REMOVED_FILES, ALLOWED_EXTENSIONS, \
             USE_EMBY, EMBY_HOST, EMBY_APIKEY, \
@@ -700,7 +719,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         SEEDERS_LEECHERS_IN_NOTIFY = check_setting_int(CFG, 'General', 'seeders_leechers_in_notify', 1)
         ACTUAL_LOG_DIR = check_setting_str(CFG, 'General', 'log_dir', 'Logs')
         LOG_DIR = ek(os.path.normpath, ek(os.path.join, DATA_DIR, ACTUAL_LOG_DIR))
-        LOG_NR = check_setting_int(CFG, 'General', 'log_nr', 5)  # Default to 5 backup file (sickrage.log.x)
+        LOG_NR = check_setting_int(CFG, 'General', 'log_nr', 5)  # Default to 5 backup file (application.log.x)
         LOG_SIZE = check_setting_float(CFG, 'General', 'log_size', 10.0)  # Default to max 10MB per logfile
 
         if LOG_SIZE > 100:
@@ -1097,7 +1116,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         TRAKT_REFRESH_TOKEN = check_setting_str(CFG, 'Trakt', 'trakt_refresh_token', '', censor_log='low')
         TRAKT_REMOVE_WATCHLIST = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_watchlist', 0))
         TRAKT_REMOVE_SERIESLIST = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_serieslist', 0))
-        TRAKT_REMOVE_SHOW_FROM_SICKRAGE = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_sickrage', 0))
+        TRAKT_REMOVE_SHOW_FROM_APPLICATION = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_sickrage', 0))
         TRAKT_SYNC_WATCHLIST = bool(check_setting_int(CFG, 'Trakt', 'trakt_sync_watchlist', 0))
         TRAKT_METHOD_ADD = check_setting_int(CFG, 'Trakt', 'trakt_method_add', 0)
         TRAKT_START_PAUSED = bool(check_setting_int(CFG, 'Trakt', 'trakt_start_paused', 0))
@@ -1968,7 +1987,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['Trakt']['trakt_refresh_token'] = TRAKT_REFRESH_TOKEN
     new_config['Trakt']['trakt_remove_watchlist'] = int(TRAKT_REMOVE_WATCHLIST)
     new_config['Trakt']['trakt_remove_serieslist'] = int(TRAKT_REMOVE_SERIESLIST)
-    new_config['Trakt']['trakt_remove_show_from_sickrage'] = int(TRAKT_REMOVE_SHOW_FROM_SICKRAGE)
+    new_config['Trakt']['trakt_remove_show_from_sickrage'] = int(TRAKT_REMOVE_SHOW_FROM_APPLICATION)
     new_config['Trakt']['trakt_sync_watchlist'] = int(TRAKT_SYNC_WATCHLIST)
     new_config['Trakt']['trakt_method_add'] = int(TRAKT_METHOD_ADD)
     new_config['Trakt']['trakt_start_paused'] = int(TRAKT_START_PAUSED)

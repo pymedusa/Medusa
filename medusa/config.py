@@ -682,8 +682,8 @@ class ConfigMigrator(object):
 
         if self.config_version > self.expected_config_version:
             logger.log_error_and_exit(
-                u"""Your config version (%i) has been incremented past what this version of SickRage supports (%i).
-                If you have used other forks or a newer version of SickRage, your config file may be unusable due to their modifications.""" %
+                u"""Your config version (%i) has been incremented past what this version of the application supports (%i).
+                If you have used other forks or a newer version of the application, your config file may be unusable due to their modifications.""" %
                 (self.config_version, self.expected_config_version)
             )
 

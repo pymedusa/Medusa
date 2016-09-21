@@ -77,7 +77,7 @@ class LoginHandler(BaseHandler):
 
         if api_key:
             remember_me = int(self.get_argument('remember_me', default=0) or 0)
-            self.set_secure_cookie('sickrage_user', api_key, expires_days=30 if remember_me else None)
+            self.set_secure_cookie(app.SECURE_TOKEN, api_key, expires_days=30 if remember_me else None)
             logger.log('User logged into the Medusa web interface', logger.INFO)
         else:
             logger.log('User attempted a failed login to the Medusa web interface from IP: {ip}'.format
@@ -98,5 +98,5 @@ class LogoutHandler(BaseHandler):
         """
         Logout and redirect to the Login page
         """
-        self.clear_cookie('sickrage_user')
+        self.clear_cookie(app.SECURE_TOKEN)
         self.redirect('/login/')

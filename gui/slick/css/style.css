@@ -1254,7 +1254,7 @@ span.snatched b {
     background-color: transparent !important;
 }
 
-.sickbeardTable {
+.defaultTable {
     table-layout: auto;
     width: 100%;
     border-collapse: collapse;
@@ -1264,19 +1264,19 @@ span.snatched b {
     empty-cells: show;
 }
 
-.sickbeardTable.display_show {
+.defaultTable.display_show {
     clear: both;
 }
 
-.sickbeardTable th {
+.defaultTable th {
     color: rgb(255, 255, 255);
     text-align: center;
     background-color: rgb(51, 51, 51);
     white-space: nowrap;
 }
 
-.sickbeardTable th,
-.sickbeardTable td {
+.defaultTable th,
+.defaultTable td {
     border-top: 1px solid rgb(255, 255, 255);
     border-left: 1px solid rgb(255, 255, 255);
     padding: 4px;
@@ -1796,7 +1796,7 @@ select .selected {
     width: 16px;
 }
 
-.icon16-config-sickrage {
+.icon16-config-application {
     background-position: 0 0;
 }
 
@@ -3207,12 +3207,12 @@ thead.tablesorter-stickyHeader {
 
 /* Zebra Widget - row alternating colors */
 .tablesorter tr.odd,
-.sickbeardTable tr.odd {
+.defaultTable tr.odd {
     background-color: rgb(245, 241, 228);
 }
 
 .tablesorter tr.even,
-.sickbeardTable tr.even {
+.defaultTable tr.even {
     background-color: rgb(223, 218, 207);
 }
 

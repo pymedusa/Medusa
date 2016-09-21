@@ -28,7 +28,7 @@ from .. import common, logger
 from ..db import DBConnection
 from ..helper.common import try_int
 from ..helper.exceptions import MultipleShowObjectsException
-from ..network_timezones import network_dict, parse_date_time, sb_timezone, update_network_dict
+from ..network_timezones import app_timezone, network_dict, parse_date_time, update_network_dict
 from ..show.Show import Show
 
 
@@ -59,7 +59,7 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         if not network_dict:
             update_network_dict()
 
-        cur_time = datetime.now(sb_timezone)
+        cur_time = datetime.now(app_timezone)
         cur_date = (
             date.today() + timedelta(days=1 if network_dict else 2)
         ).toordinal()
@@ -92,7 +92,7 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
             if show.airs and show.network:
                 # This is how you assure it is always converted to local time
                 show_air_time = parse_date_time(db_episode[b'airdate'], show.airs, show.network)
-                end_time = show_air_time.astimezone(sb_timezone) + timedelta(minutes=try_int(show.runtime, 60))
+                end_time = show_air_time.astimezone(app_timezone) + timedelta(minutes=try_int(show.runtime, 60))
 
                 # filter out any episodes that haven't finished airing yet,
                 if end_time > cur_time:

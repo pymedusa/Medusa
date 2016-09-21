@@ -64,7 +64,7 @@
 % if 'list' == layout:
 <!-- start list view //-->
 <% show_div = 'listing-default' %>
-<table id="showListTable" class="sickbeardTable tablesorter seasonstyle" cellspacing="1" border="0" cellpadding="0">
+<table id="showListTable" class="defaultTable tablesorter seasonstyle" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr>
             <th>Airdate (${('local', 'network')[app.TIMEZONE_DISPLAY == 'network']})</th>
@@ -315,7 +315,7 @@
 <div class="calendarWrapper">
     % for day in dates:
     <% tbl_day += 1 %>
-        <table class="sickbeardTable tablesorter calendarTable ${'cal-%s' % (('even', 'odd')[bool(tbl_day % 2)])}" cellspacing="0" border="0" cellpadding="0">
+        <table class="defaultTable tablesorter calendarTable ${'cal-%s' % (('even', 'odd')[bool(tbl_day % 2)])}" cellspacing="0" border="0" cellpadding="0">
         <thead><tr><th>${day.strftime('%A').decode(app.SYS_ENCODING).capitalize()}</th></tr></thead>
         <tbody>
         <% day_has_show = False %>

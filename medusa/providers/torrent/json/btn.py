@@ -172,7 +172,7 @@ class BTNProvider(TorrentProvider):
     def _process_title_and_url(parsed_json):
 
         # The BTN API gives a lot of information in response,
-        # however SickRage is built mostly around Scene or
+        # however this application is built mostly around Scene or
         # release names, which is why we are using them here.
 
         if 'ReleaseName' in parsed_json and parsed_json['ReleaseName']:

@@ -887,7 +887,7 @@
                     </div><!-- /libnotify component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-pushover" title="Pushover"></span>
-                            <h3><a href="${anon_url('https://pushover.net/apps/clone/sickrage')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Pushover</a></h3>
+                            <h3><a href="${anon_url('${app.PUSHOVER_URL}')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Pushover</a></h3>
                             <p>Pushover makes it easy to send real-time notifications to your Android and iOS devices.</p>
                         </div>
                     <div class="component-group">
@@ -947,7 +947,7 @@
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc"><a href="${anon_url('https://pushover.net/apps/clone/sickrage')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><b>Click here</b></a> to create a Pushover API key</span>
+                                        <span class="component-desc"><a href="${anon_url('${app.PUSHOVER_URL}')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><b>Click here</b></a> to create a Pushover API key</span>
                                     </label>
                                 </div>
                                 <div class="field-pair">
@@ -1634,10 +1634,10 @@
                                         </label>
                                     </div>
                                     <div class="field-pair">
-                                        <label for="trakt_remove_show_from_sickrage">
+                                        <label for="trakt_remove_show_from_application">
                                             <span class="component-title">Remove watched show:</span>
                                             <span class="component-desc">
-                                                <input type="checkbox" name="trakt_remove_show_from_sickrage" id="trakt_remove_show_from_sickrage" ${'checked="checked"' if app.TRAKT_REMOVE_SHOW_FROM_SICKRAGE else ''}/>
+                                                <input type="checkbox" name="trakt_remove_show_from_application" id="trakt_remove_show_from_application" ${'checked="checked"' if app.TRAKT_REMOVE_SHOW_FROM_APPLICATION else ''}/>
                                                 <p>remove the show from Medusa if it's ended and completely watched</p>
                                             </span>
                                         </label>

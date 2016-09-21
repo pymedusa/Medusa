@@ -31,9 +31,9 @@ class ConfigBackupRestore(Config):
         final_result = ''
 
         if backupDir:
-            source = [ek(os.path.join, app.DATA_DIR, 'sickbeard.db'), app.CONFIG_FILE,
-                      ek(os.path.join, app.DATA_DIR, 'failed.db'),
-                      ek(os.path.join, app.DATA_DIR, 'cache.db')]
+            source = [ek(os.path.join, app.DATA_DIR, app.APPLICATION_DB), app.CONFIG_FILE,
+                      ek(os.path.join, app.DATA_DIR, app.FAILED_DB),
+                      ek(os.path.join, app.DATA_DIR, app.CACHE_DB)]
             target = ek(os.path.join, backupDir, 'medusa-{date}.zip'.format(date=time.strftime('%Y%m%d%H%M%S')))
 
             for (path, dirs, files) in ek(os.walk, app.CACHE_DIR, topdown=True):
