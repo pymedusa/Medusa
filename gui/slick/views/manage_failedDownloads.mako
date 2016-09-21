@@ -24,7 +24,7 @@
         <option value="0" ${'selected="selected"' if limit == '0' else ''}>All</option>
     </select>
 </div>
-<table id="failedTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
+<table id="failedTable" class="defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
   <thead>
     <tr>
       <th class="nowrap" width="75%" style="text-align: left;">Release</th>

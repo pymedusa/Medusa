@@ -47,7 +47,7 @@ Jump to Show:
     % endfor
     </select>
 </div>
-<table class="sickbeardTable" cellspacing="0" border="0" cellpadding="0">
+<table class="defaultTable" cellspacing="0" border="0" cellpadding="0">
 % for curShow in backLogShows:
     % if not showQualSnatched(curShow) and not showCounts[curShow.indexerid][Overview.WANTED] + showCounts[curShow.indexerid][Overview.QUAL]:
         <% continue %>

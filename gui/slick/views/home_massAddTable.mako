@@ -2,7 +2,7 @@
     import medusa as app
     from medusa.helpers import anon_url
 %>
-<table id="addRootDirTable" class="sickbeardTable tablesorter">
+<table id="addRootDirTable" class="defaultTable tablesorter">
     <thead>
         <tr>
             <th class="col-checkbox"><input type="checkbox" id="checkAll" checked=checked></th>
