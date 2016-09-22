@@ -1,6 +1,6 @@
 MEDUSA.history.index = function() {
     $('#historyTable:has(tbody tr)').tablesorter({
-        widgets: ['zebra', 'filter'],
+        widgets: ['saveSort', 'zebra', 'filter'],
         sortList: [[0, 1]],
         textExtraction: (function() {
             if ($.isMeta('HISTORY_LAYOUT', ['detailed'])) {
@@ -25,7 +25,6 @@ MEDUSA.history.index = function() {
             }
             return {
                 0: {sorter: 'realISODate'},
-                4: {sorter: false},
                 5: {sorter: 'quality'}
             };
         }())
