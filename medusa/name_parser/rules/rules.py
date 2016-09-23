@@ -1270,6 +1270,37 @@ class ExpectedTitlePostProcessor(Rule):
         return to_remove, to_append
 
 
+class FixReleaseGroupGuessedAsTitle(Rule):
+    """Fix release group being guessed as title.
+
+    TODO: document.
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        # In case of duplicated titles, keep only the first one
+        titles = matches.named('title')
+
+        if (titles and len(titles) == 2 and matches.tagged('anime') and
+                'equivalent' not in titles[-1].tags and 'expected' not in titles[-1].tags):
+            release_group = copy.copy(titles[-1])
+            release_group.name = 'release_group'
+            release_group.tags = []
+
+            to_remove = matches.named('release_group', predicate=lambda match: match.span != release_group.span)
+            return to_remove, release_group
+
+
 class FixMultipleTitles(Rule):
     """Fix multiple titles.
 
@@ -1327,6 +1358,35 @@ class FixMultipleTitles(Rule):
             # Safety: https://github.com/pymedusa/SickRage/pull/812#issuecomment-235824102
             # Only remove matches that are different from the first match
             to_remove = matches.named('title', predicate=lambda match: match.span != titles[0].span)
+            return to_remove
+
+
+class FixMultipleReleaseGroups(Rule):
+    """Fix multiple titles.
+
+    TODO: Document
+    """
+
+    priority = POST_PROCESS
+    consequence = RemoveMatch
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        # In case of duplicated titles, keep only the first one
+        release_groups = matches.named('release_group')
+
+        if release_groups and len(release_groups) > 1:
+            selected = release_groups[0] if matches.tagged('anime') else release_groups[-1]
+            # Safety:
+            # Only remove matches that are different from the first match
+            to_remove = matches.named('release_group', predicate=lambda match: match.span != selected.span)
             return to_remove
 
 
@@ -1593,6 +1653,7 @@ def rules():
     return Rebulk().rules(
         BlacklistedReleaseGroup,
         FixTvChaosUkWorkaround,
+        FixReleaseGroupGuessedAsTitle,
         FixAnimeReleaseGroup,
         SpanishNewpctReleaseName,
         FixInvalidTitleOrAlternativeTitle,
@@ -1609,5 +1670,6 @@ def rules():
         ReleaseGroupPostProcessor,
         FixMultipleTitles,
         FixMultipleFormats,
+        FixMultipleReleaseGroups,
         CreateProperTags
     )
