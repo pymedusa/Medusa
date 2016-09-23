@@ -22,7 +22,6 @@ import subprocess
 
 import medusa as app
 from .. import logger
-from ..helper.encoding import ek
 from ..helper.exceptions import ex
 
 
@@ -50,10 +49,10 @@ class Notifier(object):
 
     def moveObject(self, old_path, new_path):
         if app.USE_SYNOINDEX:
-            synoindex_cmd = ['/usr/syno/bin/synoindex', '-N', ek(os.path.abspath, new_path),
-                             ek(os.path.abspath, old_path)]
+            synoindex_cmd = ['/usr/syno/bin/synoindex', '-N', os.path.abspath(new_path),
+                             os.path.abspath(old_path)]
             logger.log(u"Executing command " + str(synoindex_cmd), logger.DEBUG)
-            logger.log(u"Absolute path to command: " + ek(os.path.abspath, synoindex_cmd[0]), logger.DEBUG)
+            logger.log(u"Absolute path to command: " + os.path.abspath(synoindex_cmd[0]), logger.DEBUG)
             try:
                 p = subprocess.Popen(synoindex_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                      cwd=app.PROG_DIR)
@@ -76,9 +75,9 @@ class Notifier(object):
 
     def makeObject(self, cmd_arg, cur_path):
         if app.USE_SYNOINDEX:
-            synoindex_cmd = ['/usr/syno/bin/synoindex', cmd_arg, ek(os.path.abspath, cur_path)]
+            synoindex_cmd = ['/usr/syno/bin/synoindex', cmd_arg, os.path.abspath(cur_path)]
             logger.log(u"Executing command " + str(synoindex_cmd), logger.DEBUG)
-            logger.log(u"Absolute path to command: " + ek(os.path.abspath, synoindex_cmd[0]), logger.DEBUG)
+            logger.log(u"Absolute path to command: " + os.path.abspath(synoindex_cmd[0]), logger.DEBUG)
             try:
                 p = subprocess.Popen(synoindex_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                      cwd=app.PROG_DIR)

@@ -15,7 +15,6 @@ from ..core import PageTemplate
 from .... import (
     config, logger, ui,
 )
-from ....helper.encoding import ek
 
 
 @route('/config/anime(/?.*)')
@@ -59,6 +58,6 @@ class ConfigAnime(Config):
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:
-            ui.notifications.message('Configuration Saved', ek(os.path.join, app.CONFIG_FILE))
+            ui.notifications.message('Configuration Saved', os.path.join(app.CONFIG_FILE))
 
         return self.redirect('/config/anime/')

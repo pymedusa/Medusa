@@ -32,7 +32,7 @@ from ... import logger, tvcache
 from ...bs4_parser import BS4Parser
 from ...common import cpu_presets
 from ...helper.common import convert_size, try_int
-from ...helper.encoding import ek, ss
+from ...helper.encoding import ss
 
 
 class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attributes, too-many-arguments
@@ -317,9 +317,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         Checks if we have an image for this provider already.
         Returns found image or the default newznab image
         """
-        if ek(os.path.isfile,
-              ek(os.path.join, app.PROG_DIR, 'static/images/providers/',
-                 self.get_id() + '.png')):
+        if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'newznab.png'
 

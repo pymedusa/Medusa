@@ -22,7 +22,6 @@ import os
 import medusa as app
 from .indexer_config import indexerConfig, initConfig
 from ..helper.common import try_int
-from ..helper.encoding import ek
 
 
 class indexerApi(object):
@@ -56,7 +55,7 @@ class indexerApi(object):
     def api_params(self):
         if self.indexerID:
             if app.CACHE_DIR:
-                indexerConfig[self.indexerID]['api_params']['cache'] = ek(os.path.join, app.CACHE_DIR, 'indexers', self.name)
+                indexerConfig[self.indexerID]['api_params']['cache'] = os.path.join(app.CACHE_DIR, 'indexers', self.name)
             if app.PROXY_SETTING and app.PROXY_INDEXERS:
                 indexerConfig[self.indexerID]['api_params']['proxy'] = app.PROXY_SETTING
 

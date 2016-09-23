@@ -34,7 +34,6 @@ shutil.copyfile = shutil_custom.copyfile_custom
 
 from . import db, helpers, logger, notifiers, ui
 from .github_client import get_github_repo
-from .helper.encoding import ek
 from .helper.exceptions import ex
 
 
@@ -91,9 +90,9 @@ class CheckVersion(object):
         logger.log(u"Config backup in progress...")
         ui.notifications.message('Backup', 'Config backup in progress...')
         try:
-            backupDir = ek(os.path.join, app.DATA_DIR, 'backup')
-            if not ek(os.path.isdir, backupDir):
-                ek(os.mkdir, backupDir)
+            backupDir = os.path.join(app.DATA_DIR, 'backup')
+            if not os.path.isdir(backupDir):
+                os.mkdir(backupDir)
 
             if self._keeplatestbackup(backupDir) and self._backup(backupDir):
                 logger.log(u"Config backup successful, updating...")
@@ -114,20 +113,20 @@ class CheckVersion(object):
             return False
 
         import glob
-        files = glob.glob(ek(os.path.join, backupDir, '*.zip'))
+        files = glob.glob(os.path.join(backupDir, '*.zip'))
         if not files:
             return True
 
         now = time.time()
-        newest = files[0], now - ek(os.path.getctime, files[0])
+        newest = files[0], now - os.path.getctime(files[0])
         for f in files[1:]:
-            age = now - ek(os.path.getctime, f)
+            age = now - os.path.getctime(f)
             if age < newest[1]:
                 newest = f, age
         files.remove(newest[0])
 
         for f in files:
-            ek(os.remove, f)
+            os.remove(f)
 
         return True
 
@@ -137,19 +136,19 @@ class CheckVersion(object):
         if not backupDir:
             return False
         source = [
-            ek(os.path.join, app.DATA_DIR, app.APPLICATION_DB),
+            os.path.join(app.DATA_DIR, app.APPLICATION_DB),
             app.CONFIG_FILE,
-            ek(os.path.join, app.DATA_DIR, app.FAILED_DB),
-            ek(os.path.join, app.DATA_DIR, app.CACHE_DB)
+            os.path.join(app.DATA_DIR, app.FAILED_DB),
+            os.path.join(app.DATA_DIR, app.CACHE_DB)
         ]
-        target = ek(os.path.join, backupDir, app.BACKUP_FILENAME.format(timestamp=time.strftime('%Y%m%d%H%M%S')))
+        target = os.path.join(backupDir, app.BACKUP_FILENAME.format(timestamp=time.strftime('%Y%m%d%H%M%S')))
 
-        for (path, dirs, files) in ek(os.walk, app.CACHE_DIR, topdown=True):
+        for (path, dirs, files) in os.walk(app.CACHE_DIR, topdown=True):
             for dirname in dirs:
                 if path == app.CACHE_DIR and dirname not in ['images']:
                     dirs.remove(dirname)
             for filename in files:
-                source.append(ek(os.path.join, path, filename))
+                source.append(os.path.join(path, filename))
 
         return helpers.backupConfigZip(source, target, app.DATA_DIR)
 
@@ -266,7 +265,7 @@ class CheckVersion(object):
         # check if we're a windows build
         if app.BRANCH.startswith('build '):
             install_type = 'win'
-        elif ek(os.path.isdir, ek(os.path.join, app.PROG_DIR, u'.git')):
+        elif os.path.isdir(os.path.join(app.PROG_DIR, u'.git')):
             install_type = 'git'
         else:
             install_type = 'source'
@@ -896,25 +895,25 @@ class SourceUpdateManager(UpdateManager):
 
         try:
             # prepare the update dir
-            app_update_dir = ek(os.path.join, app.PROG_DIR, u'sr-update')
+            app_update_dir = os.path.join(app.PROG_DIR, u'sr-update')
 
-            if ek(os.path.isdir, app_update_dir):
+            if os.path.isdir(app_update_dir):
                 logger.log(u"Clearing out update folder " + app_update_dir + " before extracting")
                 shutil.rmtree(app_update_dir)
 
             logger.log(u"Creating update folder " + app_update_dir + " before extracting")
-            ek(os.makedirs, app_update_dir)
+            os.makedirs(app_update_dir)
 
             # retrieve file
             logger.log(u"Downloading update from " + repr(tar_download_url))
-            tar_download_path = ek(os.path.join, app_update_dir, u'sr-update.tar')
+            tar_download_path = os.path.join(app_update_dir, u'sr-update.tar')
             helpers.download_file(tar_download_url, tar_download_path, session=self.session)
 
-            if not ek(os.path.isfile, tar_download_path):
+            if not os.path.isfile(tar_download_path):
                 logger.log(u"Unable to retrieve new version from " + tar_download_url + ", can't update", logger.WARNING)
                 return False
 
-            if not ek(tarfile.is_tarfile, tar_download_path):
+            if not tarfile.is_tarfile(tar_download_path):
                 logger.log(u"Retrieved version from " + tar_download_url + " is corrupt, can't update", logger.WARNING)
                 return False
 
@@ -926,40 +925,40 @@ class SourceUpdateManager(UpdateManager):
 
             # delete .tar.gz
             logger.log(u"Deleting file " + tar_download_path)
-            ek(os.remove, tar_download_path)
+            os.remove(tar_download_path)
 
             # find update dir name
-            update_dir_contents = [x for x in ek(os.listdir, app_update_dir) if
-                                   ek(os.path.isdir, ek(os.path.join, app_update_dir, x))]
+            update_dir_contents = [x for x in os.listdir(app_update_dir) if
+                                   os.path.isdir(os.path.join(app_update_dir, x))]
             if len(update_dir_contents) != 1:
                 logger.log(u"Invalid update data, update failed: " + str(update_dir_contents), logger.WARNING)
                 return False
-            content_dir = ek(os.path.join, app_update_dir, update_dir_contents[0])
+            content_dir = os.path.join(app_update_dir, update_dir_contents[0])
 
             # walk temp folder and move files to main folder
             logger.log(u"Moving files from " + content_dir + " to " + app.PROG_DIR)
-            for dirname, _, filenames in ek(os.walk, content_dir):  # @UnusedVariable
+            for dirname, _, filenames in os.walk(content_dir):  # @UnusedVariable
                 dirname = dirname[len(content_dir) + 1:]
                 for curfile in filenames:
-                    old_path = ek(os.path.join, content_dir, dirname, curfile)
-                    new_path = ek(os.path.join, app.PROG_DIR, dirname, curfile)
+                    old_path = os.path.join(content_dir, dirname, curfile)
+                    new_path = os.path.join(app.PROG_DIR, dirname, curfile)
 
                     # Avoid DLL access problem on WIN32/64
                     # These files needing to be updated manually
                     # or find a way to kill the access from memory
                     if curfile in ('unrar.dll', 'unrar64.dll'):
                         try:
-                            ek(os.chmod, new_path, stat.S_IWRITE)
-                            ek(os.remove, new_path)
-                            ek(os.renames, old_path, new_path)
+                            os.chmod(new_path, stat.S_IWRITE)
+                            os.remove(new_path)
+                            os.renames(old_path, new_path)
                         except Exception as e:
                             logger.log(u"Unable to update " + new_path + ': ' + ex(e), logger.DEBUG)
-                            ek(os.remove, old_path)  # Trash the updated file without moving in new path
+                            os.remove(old_path)  # Trash the updated file without moving in new path
                         continue
 
-                    if ek(os.path.isfile, new_path):
-                        ek(os.remove, new_path)
-                    ek(os.renames, old_path, new_path)
+                    if os.path.isfile(new_path):
+                        os.remove(new_path)
+                    os.renames(old_path, new_path)
 
             app.CUR_COMMIT_HASH = self._newest_commit_hash
             app.CUR_COMMIT_BRANCH = self.branch

@@ -21,7 +21,6 @@ from .... import (
 from ....blackandwhitelist import short_group_names
 from ....common import Quality
 from ....helper.common import sanitize_filename, try_int
-from ....helper.encoding import ek
 from ....helpers import get_showname_from_indexer
 from ....indexers.indexer_exceptions import indexer_exception
 from ....show.Show import Show
@@ -124,15 +123,15 @@ class HomeAddShows(Home):
         main_db_con = db.DBConnection()
         for root_dir in root_dirs:
             try:
-                file_list = ek(os.listdir, root_dir)
+                file_list = os.listdir(root_dir)
             except Exception:
                 continue
 
             for cur_file in file_list:
 
                 try:
-                    cur_path = ek(os.path.normpath, ek(os.path.join, root_dir, cur_file))
-                    if not ek(os.path.isdir, cur_path):
+                    cur_path = os.path.normpath(os.path.join(root_dir, cur_file))
+                    if not os.path.isdir(cur_path):
                         continue
                 except Exception:
                     continue
@@ -140,7 +139,7 @@ class HomeAddShows(Home):
                 cur_dir = {
                     'dir': cur_path,
                     'display_dir': '<b>{dir}{sep}</b>{base}'.format(
-                        dir=ek(os.path.dirname, cur_path), sep=os.sep, base=ek(os.path.basename, cur_path)),
+                        dir=os.path.dirname(cur_path), sep=os.sep, base=os.path.basename(cur_path)),
                 }
 
                 # see if the folder is in KODI already
@@ -196,7 +195,7 @@ class HomeAddShows(Home):
 
         elif not show_name:
             default_show_name = re.sub(r' \(\d{4}\)', '',
-                                       ek(os.path.basename, ek(os.path.normpath, show_dir)).replace('.', ' '))
+                                       os.path.basename(os.path.normpath(show_dir)).replace('.', ' '))
         else:
             default_show_name = show_name
 
@@ -530,16 +529,16 @@ class HomeAddShows(Home):
 
             indexer = int(provided_indexer)
             indexer_id = int(whichSeries)
-            show_name = ek(os.path.basename, ek(os.path.normpath, fullShowPath))
+            show_name = os.path.basename(os.path.normpath(fullShowPath))
 
         # use the whole path if it's given, or else append the show name to the root dir to get the full show path
         if fullShowPath:
-            show_dir = ek(os.path.normpath, fullShowPath)
+            show_dir = os.path.normpath(fullShowPath)
         else:
-            show_dir = ek(os.path.join, rootDir, sanitize_filename(show_name))
+            show_dir = os.path.join(rootDir, sanitize_filename(show_name))
 
         # blanket policy - if the dir exists you should have used 'add existing show' numbnuts
-        if ek(os.path.isdir, show_dir) and not fullShowPath:
+        if os.path.isdir(show_dir) and not fullShowPath:
             ui.notifications.error('Unable to add show', 'Folder {path} exists already'.format(path=show_dir))
             return self.redirect('/addShows/existingShows/')
 

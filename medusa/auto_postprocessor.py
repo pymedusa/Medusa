@@ -23,7 +23,6 @@ import os.path
 
 import medusa as app
 from . import processTV
-from .helper.encoding import ek
 
 
 logger = logging.getLogger(__name__)
@@ -44,12 +43,12 @@ class PostProcessor(object):
         """
         self.amActive = True
         try:
-            if not ek(os.path.isdir, app.TV_DOWNLOAD_DIR):
+            if not os.path.isdir(app.TV_DOWNLOAD_DIR):
                 logger.error(u"Automatic post-processing attempted but directory doesn't exist: {folder}",
                              folder=app.TV_DOWNLOAD_DIR)
                 return
 
-            if not (force or ek(os.path.isabs, app.TV_DOWNLOAD_DIR)):
+            if not (force or os.path.isabs(app.TV_DOWNLOAD_DIR)):
                 logger.error(u"Automatic post-processing attempted but directory is relative "
                              u"(and probably not what you really want to process): {folder}",
                              folder=app.TV_DOWNLOAD_DIR)

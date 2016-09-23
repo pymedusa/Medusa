@@ -19,7 +19,6 @@ from .... import clients, config, db, helpers, logger, notifiers, nzbget, sab, s
 from ....blackandwhitelist import BlackAndWhiteList, short_group_names
 from ....common import FAILED, IGNORED, Overview, Quality, SKIPPED, UNAIRED, WANTED, cpu_presets, statusStrings
 from ....helper.common import enabled_providers, try_int
-from ....helper.encoding import ek
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
 from ....scene_numbering import (
@@ -1393,11 +1392,11 @@ class Home(WebRoot):
                 show_obj.rls_require_words = rls_require_words.strip()
 
             # if we change location clear the db of episodes, change it, write to db, and rescan
-            old_location = ek(os.path.normpath, show_obj._location)
-            new_location = ek(os.path.normpath, location)
+            old_location = os.path.normpath(show_obj._location)
+            new_location = os.path.normpath(location)
             if old_location != new_location:
                 logger.log('{old} != {new}'.format(old=old_location, new=new_location), logger.DEBUG)  # pylint: disable=protected-access
-                if not ek(os.path.isdir, location) and not app.CREATE_MISSING_SHOW_DIRS:
+                if not os.path.isdir(location) and not app.CREATE_MISSING_SHOW_DIRS:
                     errors.append('New location <tt>{location}</tt> does not exist'.format(location=location))
 
                 # don't bother if we're going to update anyway
@@ -1695,7 +1694,7 @@ class Home(WebRoot):
                     snatched_qualities = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
                     if all([int(status) in Quality.DOWNLOADED,
                             ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + [IGNORED],
-                            not ek(os.path.isfile, ep_obj.location)]):
+                            not os.path.isfile(ep_obj.location)]):
                         logger.log(u'Refusing to change status of {episode} to DOWNLOADED '
                                    u'because it\'s not SNATCHED/DOWNLOADED'.format
                                    (episode=curEp), logger.WARNING)
@@ -1985,7 +1984,7 @@ class Home(WebRoot):
                        (mode=mode, error_msg=e), logger.ERROR)
             return json.dumps({'result': 'failure'})
 
-        if not ek(os.path.isfile, video_path):
+        if not os.path.isfile(video_path):
             ui.notifications.message(ep_obj.show.name, "Video file no longer exists. Can't search for subtitles")
             logger.log('Video file no longer exists: {video_file}'.format(video_file=video_path), logger.DEBUG)
             return json.dumps({'result': 'failure'})

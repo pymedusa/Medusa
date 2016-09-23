@@ -20,7 +20,6 @@
 import os
 
 from ..helper.common import replace_extension
-from ..helper.encoding import ek
 from ..metadata import kodi_12plus
 
 
@@ -94,7 +93,7 @@ class KODIMetadata(kodi_12plus.KODI_12PlusMetadata):
 
         ep_obj: a TVEpisode instance for which to create the thumbnail
         """
-        if ek(os.path.isfile, ep_obj.location):
+        if os.path.isfile(ep_obj.location):
             tbn_filename = replace_extension(ep_obj.location, 'tbn')
         else:
             return None
@@ -117,7 +116,7 @@ class KODIMetadata(kodi_12plus.KODI_12PlusMetadata):
         else:
             season_poster_filename = 'season' + str(season).zfill(2)
 
-        return ek(os.path.join, show_obj.location, season_poster_filename + '.tbn')
+        return os.path.join(show_obj.location, season_poster_filename + '.tbn')
 
 
 # present a standard "interface" from the module

@@ -39,7 +39,6 @@ from tornado.log import access_log, app_log, gen_log
 import traktor
 from . import classes
 from .helper.common import dateTimeFormat
-from .helper.encoding import ek
 
 
 # log levels
@@ -128,10 +127,10 @@ def read_loglines(log_file=None, modification_time=None, max_lines=None, max_tra
     traceback_lines = []
     counter = 0
     for f in log_files:
-        if not f or not ek(os.path.isfile, f):
+        if not f or not os.path.isfile(f):
             continue
         if modification_time:
-            log_mtime = ek(os.path.getmtime, f)
+            log_mtime = os.path.getmtime(f)
             if log_mtime and datetime.datetime.fromtimestamp(log_mtime) < modification_time:
                 continue
 
@@ -578,7 +577,7 @@ class Logger(object):
 
     def reconfigure_file_handler(self):
         """Reconfigure rotating file handler."""
-        target_file = ek(os.path.join, app.LOG_DIR, app.LOG_FILENAME)
+        target_file = os.path.join(app.LOG_DIR, app.LOG_FILENAME)
         target_size = int(app.LOG_SIZE * 1024 * 1024)
         target_number = int(app.LOG_NR)
         if not self.file_handler or self.log_file != target_file or self.file_handler.backupCount != target_number or self.file_handler.maxBytes != target_size:

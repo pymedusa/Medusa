@@ -32,7 +32,6 @@ from ..classes import Proper, SearchResult
 from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
 from ..db import DBConnection
 from ..helper.common import replace_extension, sanitize_filename
-from ..helper.encoding import ek
 from ..helper.exceptions import ex
 from ..helpers import download_file, getURL, make_session, remove_file_failed
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
@@ -545,7 +544,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         else:
             urls = [result.url]
 
-        filename = ek(join, self._get_storage_dir(), sanitize_filename(result.name) + '.' + self.provider_type)
+        filename = join(self._get_storage_dir(), sanitize_filename(result.name) + '.' + self.provider_type)
 
         return urls, filename
 

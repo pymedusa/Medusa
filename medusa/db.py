@@ -27,7 +27,6 @@ import warnings
 import medusa as app
 from six import text_type
 from . import logger
-from .helper.encoding import ek
 from .helper.exceptions import ex
 
 db_cons = {}
@@ -45,7 +44,7 @@ def dbFilename(filename=None, suffix=None):
     filename = filename or app.APPLICATION_DB
     if suffix:
         filename = "%s.%s" % (filename, suffix)
-    return ek(os.path.join, app.DATA_DIR, filename)
+    return os.path.join(app.DATA_DIR, filename)
 
 
 class DBConnection(object):

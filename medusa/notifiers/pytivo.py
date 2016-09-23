@@ -24,7 +24,6 @@ from requests.compat import urlencode
 from six.moves.urllib.error import HTTPError
 from six.moves.urllib.request import Request, urlopen
 from .. import logger
-from ..helper.encoding import ek
 from ..helper.exceptions import ex
 
 
@@ -70,7 +69,7 @@ class Notifier(object):
         # Calculated values
         showPath = ep_obj.show.location
         showName = ep_obj.show.name
-        rootShowAndSeason = ek(os.path.dirname, ep_obj.location)
+        rootShowAndSeason = os.path.dirname(ep_obj.location)
         absPath = ep_obj.location
 
         # Some show names have colons in them which are illegal in a path location, so strip them out.

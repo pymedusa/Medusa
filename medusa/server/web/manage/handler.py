@@ -20,7 +20,6 @@ from ....common import (
 from ....helper.common import (
     episode_num, try_int,
 )
-from ....helper.encoding import ek
 from ....helper.exceptions import (
     CantRefreshShowException,
     CantUpdateShowException,
@@ -411,7 +410,7 @@ class Manage(Home, WebRoot):
 
         for cur_show in show_list:
 
-            cur_root_dir = ek(os.path.dirname, cur_show._location)  # pylint: disable=protected-access
+            cur_root_dir = os.path.dirname(cur_show._location)  # pylint: disable=protected-access
             if cur_root_dir not in root_dir_list:
                 root_dir_list.append(cur_root_dir)
 
@@ -513,10 +512,10 @@ class Manage(Home, WebRoot):
             if not show_obj:
                 continue
 
-            cur_root_dir = ek(os.path.dirname, show_obj._location)  # pylint: disable=protected-access
-            cur_show_dir = ek(os.path.basename, show_obj._location)  # pylint: disable=protected-access
+            cur_root_dir = os.path.dirname(show_obj._location)  # pylint: disable=protected-access
+            cur_show_dir = os.path.basename(show_obj._location)  # pylint: disable=protected-access
             if cur_root_dir in dir_map and cur_root_dir != dir_map[cur_root_dir]:
-                new_show_dir = ek(os.path.join, dir_map[cur_root_dir], cur_show_dir)
+                new_show_dir = os.path.join(dir_map[cur_root_dir], cur_show_dir)
                 logger.log(u'For show {show.name} changing dir from {show.location} to {location}'.format
                            (show=show_obj, location=new_show_dir))  # pylint: disable=protected-access
             else:

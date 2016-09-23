@@ -10,7 +10,6 @@ from tornado.routes import route
 from .handler import Config
 from ..core import PageTemplate
 from .... import helpers
-from ....helper.encoding import ek
 
 
 @route('/config/backuprestore(/?.*)')
@@ -31,17 +30,17 @@ class ConfigBackupRestore(Config):
         final_result = ''
 
         if backupDir:
-            source = [ek(os.path.join, app.DATA_DIR, app.APPLICATION_DB), app.CONFIG_FILE,
-                      ek(os.path.join, app.DATA_DIR, app.FAILED_DB),
-                      ek(os.path.join, app.DATA_DIR, app.CACHE_DB)]
-            target = ek(os.path.join, backupDir, 'medusa-{date}.zip'.format(date=time.strftime('%Y%m%d%H%M%S')))
+            source = [os.path.join(app.DATA_DIR, app.APPLICATION_DB), app.CONFIG_FILE,
+                      os.path.join(app.DATA_DIR, app.FAILED_DB),
+                      os.path.join(app.DATA_DIR, app.CACHE_DB)]
+            target = os.path.join(backupDir, 'medusa-{date}.zip'.format(date=time.strftime('%Y%m%d%H%M%S')))
 
-            for (path, dirs, files) in ek(os.walk, app.CACHE_DIR, topdown=True):
+            for (path, dirs, files) in os.walk(app.CACHE_DIR, topdown=True):
                 for dirname in dirs:
                     if path == app.CACHE_DIR and dirname not in ['images']:
                         dirs.remove(dirname)
                 for filename in files:
-                    source.append(ek(os.path.join, path, filename))
+                    source.append(os.path.join(path, filename))
 
             if helpers.backupConfigZip(source, target, app.DATA_DIR):
                 final_result += 'Successful backup to {location}'.format(location=target)
@@ -61,7 +60,7 @@ class ConfigBackupRestore(Config):
 
         if backupFile:
             source = backupFile
-            target_dir = ek(os.path.join, app.DATA_DIR, 'restore')
+            target_dir = os.path.join(app.DATA_DIR, 'restore')
 
             if helpers.restoreConfigZip(source, target_dir):
                 final_result += 'Successfully extracted restore files to {location}'.format(location=target_dir)

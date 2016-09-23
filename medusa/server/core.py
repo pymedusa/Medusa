@@ -16,7 +16,6 @@ from .api.v2.log import LogHandler
 from .api.v2.show import ShowHandler
 from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
 from .. import logger
-from ..helper.encoding import ek
 from ..helpers import create_https_certificates, generateApiKey
 
 
@@ -64,14 +63,14 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
 
         if self.enable_https:
             # If either the HTTPS certificate or key do not exist, make some self-signed ones.
-            if not (self.https_cert and ek(os.path.exists, self.https_cert)) or not (
-                    self.https_key and ek(os.path.exists, self.https_key)):
+            if not (self.https_cert and os.path.exists(self.https_cert)) or not (
+                    self.https_key and os.path.exists(self.https_key)):
                 if not create_https_certificates(self.https_cert, self.https_key):
                     logger.log('Unable to create CERT/KEY files, disabling HTTPS')
                     app.ENABLE_HTTPS = False
                     self.enable_https = False
 
-            if not (ek(os.path.exists, self.https_cert) and ek(os.path.exists, self.https_key)):
+            if not (os.path.exists(self.https_cert) and os.path.exists(self.https_key)):
                 logger.log('Disabled HTTPS because of missing CERT and KEY files', logger.WARNING)
                 app.ENABLE_HTTPS = False
                 self.enable_https = False
@@ -121,27 +120,27 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         self.app.add_handlers('.*$', [
             # favicon
             (r'{base}/(favicon\.ico)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': ek(os.path.join, self.options['data_root'], 'images/ico/favicon.ico')}),
+             {'path': os.path.join(self.options['data_root'], 'images/ico/favicon.ico')}),
 
             # images
             (r'{base}/images/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': ek(os.path.join, self.options['data_root'], 'images')}),
+             {'path': os.path.join(self.options['data_root'], 'images')}),
 
             # cached images
             (r'{base}/cache/images/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': ek(os.path.join, app.CACHE_DIR, 'images')}),
+             {'path': os.path.join(app.CACHE_DIR, 'images')}),
 
             # css
             (r'{base}/css/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': ek(os.path.join, self.options['data_root'], 'css')}),
+             {'path': os.path.join(self.options['data_root'], 'css')}),
 
             # javascript
             (r'{base}/js/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': ek(os.path.join, self.options['data_root'], 'js')}),
+             {'path': os.path.join(self.options['data_root'], 'js')}),
 
             # fonts
             (r'{base}/fonts/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': ek(os.path.join, self.options['data_root'], 'fonts')}),
+             {'path': os.path.join(self.options['data_root'], 'fonts')}),
 
             # videos
             (r'{base}/videos/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
