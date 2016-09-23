@@ -398,12 +398,12 @@ class TVCache(object):
                         isinstance(indexer_id, int), isinstance(url, str), isinstance(time, int),
                         isinstance(quality, int), isinstance(release_group, str), isinstance(seeders, int),
                         isinstance(leechers, int), isinstance(size, int), isinstance(pubdate, int),
-                        isinstance(hash, int), isinstance(proper_tags, str)]):
+                        isinstance(torrent_hash, int), isinstance(proper_tags, str)]):
                 logger.log("Wrong instance. Discarding result. name: '{0}', season: '{1}', episodes: '{2}', "
                            "indexer_id: '{3}', url: '{4}', time: '{5}', quality: '{6}', "
                            "release_group: '{7}', seeders: '{8}', leechers: '{9}', size: '{10}', "
                            "pubdate: '{11}', hash: '{12}', proper_tags: '{13}'".format
-                           (name, season, episodeText, parse_result.show.indexerid, url, cur_timestamp, 
+                           (name, season, episodeText, parse_result.show.indexerid, url, cur_timestamp,
                             quality, release_group, version, seeders, leechers, size, pubdate, torrent_hash, proper_tags), logger.WARNING)
                 return None
 
