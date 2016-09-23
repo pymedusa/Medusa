@@ -257,7 +257,7 @@ class ApiCall(ApiHandler):
 
     def __init__(self, args, kwargs):
         # missing
-        if hasattr(self, '_missing'):
+        if hasattr(self, '_missing') and self._missing:
             self.run = self.return_missing
 
         # help
@@ -339,7 +339,7 @@ class ApiCall(ApiHandler):
             default = kwargs.get(key)
             missing = False
         if required:
-            if hasattr(self, '_missing'):
+            if hasattr(self, '_requiredParams') and isinstance(self._requiredParams, list):
                 self._requiredParams.append(key)
             else:
                 self._missing = []
