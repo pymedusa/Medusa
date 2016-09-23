@@ -3068,3 +3068,30 @@
   episode_title: A Touch of Glass
   container: m4v
   type: episode
+
+
+# Regression Test for release group detection
+# https://github.com/guessit-io/guessit/issues/343
+? /series/Show.Name.S10E01.1080p.HDTV.X264-DIMENSION[rarbg]/Show.Name.S10E01.1080p.HDTV.X264-DIMENSION.mkv
+: title: Show Name
+  season: 10
+  episode: 1
+  screen_size: 1080p
+  format: HDTV
+  video_codec: h264
+  release_group: DIMENSION
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+
+# Regression test
+# UNCENSORED might lead to multiple release groups
+? Show Name (Season 02) [UNCENSORED] [1080p] [BD] [x265] [pseudo]
+: title: Show Name
+  season: 2
+  release_group: 'pseudo'
+  screen_size: 1080p
+  format: BluRay
+  video_codec: h265
+  type: episode
