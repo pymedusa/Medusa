@@ -69,14 +69,23 @@ def set_last_refresh(ex_list):
     )
 
 
-def get_scene_exceptions(indexer_id, season=-1):
+def get_scene_exceptions(indexer_id, indexer=1, season=-1):
     """Given a indexer_id, return a list of all the scene exceptions."""
     exceptions_list = []
+    mapped_indexer_id = helpers.get_mapped_indexer_id(indexer_id)
 
     if indexer_id not in exceptionsCache or season not in exceptionsCache[indexer_id]:
         cache_db_con = db.DBConnection('cache.db')
-        exceptions = cache_db_con.select(b'SELECT show_name FROM scene_exceptions WHERE indexer_id = ? AND season = ?',
-                                         [indexer_id, season])
+        exceptions = cache_db_con.select(b'SELECT exception_id, show_name FROM scene_exceptions WHERE indexer_id = ? and season = ?',
+                                         [mapped_indexer_id or indexer_id, season])
+
+        exceptions_unmapped = cache_db_con.select(b'SELECT exception_id, show_name FROM scene_exceptions WHERE indexer_id = ? and indexer = ? and season = ?',
+                                                  [indexer_id, indexer, season])
+
+        for exception in exceptions_unmapped:
+            if exception[b'exception_id'] not in {ex[b'exception_id'] for ex in exceptions}:
+                exceptions.append(exception)
+
         if exceptions:
             exceptions_list = list({cur_exception[b'show_name'] for cur_exception in exceptions})
 
@@ -88,7 +97,7 @@ def get_scene_exceptions(indexer_id, season=-1):
 
     # Add generic exceptions regardless of the season if there is no exception for season
     if season != -1 and not exceptions_list:
-        exceptions_list += get_scene_exceptions(indexer_id, season=-1)
+        exceptions_list += get_scene_exceptions(indexer_id, indexer=indexer, season=-1)
 
     return list({exception for exception in exceptions_list})
 
@@ -101,10 +110,11 @@ def get_all_scene_exceptions(indexer_id):
     :return: dict of exceptions
     """
     exceptions_dict = {}
+    mapped_indexer_id = helpers.get_mapped_indexer_id(indexer_id)
 
     cache_db_con = db.DBConnection('cache.db')
-    exceptions = cache_db_con.select(b'SELECT show_name, season FROM scene_exceptions WHERE indexer_id = ?',
-                                     [indexer_id])
+    exceptions = cache_db_con.select(b'SELECT show_name,season FROM scene_exceptions WHERE indexer_id = ?', [mapped_indexer_id or indexer_id])
+
     if exceptions:
         for cur_exception in exceptions:
             if not cur_exception[b'season'] in exceptions_dict:
@@ -117,20 +127,21 @@ def get_all_scene_exceptions(indexer_id):
 def get_scene_seasons(indexer_id):
     """Return a list of season numbers that have scene exceptions."""
     exceptions_season_list = []
+    mapped_indexer_id = helpers.get_mapped_indexer_id(indexer_id)
 
     if indexer_id not in exceptionsSeasonCache:
         cache_db_con = db.DBConnection('cache.db')
-        sql_results = cache_db_con.select(
-            b'SELECT DISTINCT(season) AS season FROM scene_exceptions WHERE indexer_id = ?', [indexer_id])
+        sql_results = cache_db_con.select(b'SELECT DISTINCT(season) AS season FROM scene_exceptions WHERE indexer_id = ?',
+                                          [mapped_indexer_id or indexer_id])
         if sql_results:
             exceptions_season_list = list({int(x[b'season']) for x in sql_results})
 
-            if indexer_id not in exceptionsSeasonCache:
-                exceptionsSeasonCache[indexer_id] = {}
+            if mapped_indexer_id or indexer_id not in exceptionsSeasonCache:
+                exceptionsSeasonCache[mapped_indexer_id or indexer_id] = {}
 
-            exceptionsSeasonCache[indexer_id] = exceptions_season_list
+            exceptionsSeasonCache[mapped_indexer_id or indexer_id] = exceptions_season_list
     else:
-        exceptions_season_list = exceptionsSeasonCache[indexer_id]
+        exceptions_season_list = exceptionsSeasonCache[mapped_indexer_id or indexer_id]
 
     return exceptions_season_list
 
@@ -232,6 +243,9 @@ def combine_exceptions(*scene_exceptions):
 
     for _ in scene_exceptions:
         current_ex = next(ex_dicts, {})
+        if not current_ex:
+            continue
+
         for ex_id in current_ex:
             if not combined_ex:
                 combined_ex = next(ex_dicts, {})
@@ -282,8 +296,6 @@ def _get_custom_exceptions():
                 continue
 
             set_last_refresh(app.indexerApi(indexer).name)
-
-    return custom_exceptions
 
 
 def _get_xem_exceptions():

@@ -1,6 +1,7 @@
 # coding=utf-8
 
 from tvdb_api.tvdb_api import Tvdb
+from .tvmaze.tvmaze_api import TVmaze
 from .. import helpers
 
 initConfig = {
@@ -18,9 +19,11 @@ initConfig = {
 
 INDEXER_TVDB = 1
 INDEXER_TVRAGE = 2  # Must keep
+INDEXER_TVMAZE = 3
 
 indexerConfig = {
     INDEXER_TVDB: {
+        'enabled': True,
         'id': INDEXER_TVDB,
         'name': 'theTVDB',
         'module': Tvdb,
@@ -28,14 +31,34 @@ indexerConfig = {
             'apikey': 'F9C450E78D99172E',
             'language': 'en',
             'useZip': True,
+            'session': helpers.make_session(cache_etags=False),
         },
-        'session': helpers.make_session(),
         'trakt_id': 'tvdb_id',
         'xem_origin': 'tvdb',
         'icon': 'thetvdb16.png',
         'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
         'show_url': 'http://thetvdb.com/?tab=series&id=',
-        'base_url': 'http://thetvdb.com/api/%(apikey)s/series/'
+        'base_url': 'http://thetvdb.com/api/%(apikey)s/series/',
+        'mapped_to': 'tvdbid'  # The attribute to which other indexers can map there thetvdb id to
+    },
+    INDEXER_TVMAZE: {
+        'enabled': True,
+        'id': INDEXER_TVMAZE,
+        'name': 'TVmaze',
+        'module': TVmaze,
+        'api_params': {
+            'language': 'en',
+            'useZip': True,
+            'session': helpers.make_session(cache_etags=False),
+        },
+        'trakt_id': 'tvdb_id',
+        'xem_origin': 'tvdb',
+        'xem_mapped_to': INDEXER_TVDB,
+        'icon': 'tvmaze16.png',
+        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
+        'show_url': 'http://www.tvmaze.com/shows/',
+        'base_url': 'http://api.tvmaze.com/',
+        'mapped_to': 'tvmazeid'  # The attribute to which other indexers can map there tvmaze id to
     }
 }
 

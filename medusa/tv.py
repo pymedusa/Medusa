@@ -151,6 +151,9 @@ class TVShow(TVObject):
         super(TVShow, self).__init__(indexer, indexerid, {'episodes', 'nextaired', 'release_groups'})
         self.name = ''
         self.imdbid = ''
+        self.tvdbid = ''
+        self.tvrageid = ''
+        self.tvmazeid = ''
         self.network = ''
         self.genre = ''
         self.classification = ''
@@ -1055,7 +1058,13 @@ class TVShow(TVObject):
         self.network = getattr(my_ep, 'network', '')
         self.runtime = getattr(my_ep, 'runtime', '')
 
+        # New indexers2indexers mappable attributes need to be added here
+        # The indexer_config setting mapped_to, should correspond to the attribute.
+        # Like mapped_to = 'tvdbid' -> self.tvdbid
         self.imdbid = getattr(my_ep, 'imdb_id', '')
+        self.tvdbid = getattr(my_ep, 'tvdb_id', '')
+        self.tvrageid = getattr(my_ep, 'tvrage_id', '')
+        self.tvmazeid = getattr(my_ep, 'tvmaze_id', '')
 
         if getattr(my_ep, 'airs_dayofweek', None) is not None and getattr(my_ep, 'airs_time', None) is not None:
             self.airs = my_ep['airs_dayofweek'] + ' ' + my_ep['airs_time']
@@ -2035,8 +2044,6 @@ class TVEpisode(TVObject):
         self.name = getattr(my_ep, 'episodename', '')
         self.season = season
         self.episode = episode
-
-        xem_refresh(self.show.indexerid, self.show.indexer)
 
         self.scene_absolute_number = get_scene_absolute_numbering(
             self.show.indexerid,
