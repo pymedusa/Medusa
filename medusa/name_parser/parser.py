@@ -204,7 +204,7 @@ class NameParser(object):
 
         if result.show.is_scene:
             logger.debug('Converted parsed result {original} into {result}', original=result.original_name,
-                         result=str(result))
+                         result=result)
 
         # CPU sleep
         time.sleep(0.02)
