@@ -986,7 +986,7 @@ class Home(WebRoot):
         refresh_results = 'refresh'
 
         # Check if all params are integer. When JS issue, it can send show='undefined'
-        if not all([isinstance(show, int), 
+        if not all([isinstance(show, int),
                     isinstance(season, int),
                     isinstance(episode, int)]):
             return {'result': 'error'}
