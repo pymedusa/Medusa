@@ -236,7 +236,7 @@ class NameParser(object):
         if cache_result:
             name_parser_cache.add(name, result)
 
-        logger.debug('Parsed {name} into {result}', name=name, result=str(result))
+        logger.debug('Parsed {name} into {result}', name=name, result=result)
         return result
 
     @staticmethod
