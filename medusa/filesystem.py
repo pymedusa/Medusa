@@ -34,7 +34,7 @@ def make_closure(f):
 def replace_functions():
     """Replace original functions if the fs encoding is not utf-8."""
     fs_encoding = sys.getfilesystemencoding()
-    if not fs_encoding or fs_encoding.lower() != 'utf-8':
+    if os.name != 'nt' and (not fs_encoding or fs_encoding.lower() != 'utf-8'):
         affected_functions = {
             glob: ['glob'],
             io: ['open'],
