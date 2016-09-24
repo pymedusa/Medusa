@@ -133,7 +133,7 @@ class PageTemplate(MakoTemplate):
 
         kwargs['makoStartTime'] = time.time()
         try:
-            return self.template.render_unicode(*args, **kwargs)
+            return self.template.render_unicode(*args, **kwargs).encode('utf-8', 'replace')
         except Exception:
             kwargs['title'] = '500'
             kwargs['header'] = 'Mako Error'
