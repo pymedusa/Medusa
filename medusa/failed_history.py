@@ -20,10 +20,8 @@
 import datetime
 import re
 
-from requests.compat import unquote
 from . import db, logger
 from .common import FAILED, Quality, WANTED
-from .helper.encoding import ss
 from .helper.exceptions import EpisodeNotFoundException, ex
 from .show.History import History
 
@@ -31,12 +29,10 @@ from .show.History import History
 def prepareFailedName(release):
     """Standardizes release name for failed DB"""
 
-    fixed = unquote(release)
-    if fixed.endswith(".nzb"):
-        fixed = fixed.rpartition(".")[0]
+    if release.endswith(".nzb"):
+        release = release.rpartition(".")[0]
 
-    fixed = re.sub(r"[\.\-\+\ ]", "_", fixed)
-    fixed = ss(fixed)
+    fixed = re.sub(r"\W", "_", release)
 
     return fixed
 
