@@ -101,7 +101,7 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                 error = jdata.get('error')
                 if error:
-                    logger.log('{0}'.format(error), logger.DEBUG)
+                    logger.log('HD4Free returned an error: {0}'.format(error), logger.DEBUG)
                     return results
                 try:
                     if jdata['0']['total_results'] == 0:
