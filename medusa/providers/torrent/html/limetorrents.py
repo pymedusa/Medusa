@@ -29,7 +29,7 @@ from .... import logger, tvcache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
-id_regex = re.compile(r'(?:torrent-([0-9]*).html)', re.I)
+id_regex = re.compile(r'(?:\/)(.*)(?:-torrent-([0-9]*).html)', re.I)
 hash_regex = re.compile(r'(.*)([0-9a-f]{40})(.*)', re.I)
 
 
@@ -132,7 +132,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     if not all([url, title_info, info]):
                         continue
 
-                    title = title_info[1].get_text(strip=True)
+                    title = id_regex.search(info).group(1)
                     torrent_id = id_regex.search(info).group(1)
                     torrent_hash = hash_regex.search(url['href']).group(2)
                     if not all([title, torrent_id, torrent_hash]):
