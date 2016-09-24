@@ -17,9 +17,9 @@
     % if app_version:
     <tr><td class="infoTableHeader" style="vertical-align: top;"><i class="icon16-config-application"></i> Medusa Info:</td>
         <td class="infoTableCell">
-        Branch: <a href="${anon_url('{0}/tree/{1}'.format(app.APPLICATION_URL, app.BRANCH)}">${app.BRANCH}</a><br>
-        Commit: <a href="${anon_url('{0}/commit/{1}'.format(app.APPLICATION_URL, app.CUR_COMMIT_HASH)}">${app.CUR_COMMIT_HASH}</a><br>
-        Version: <a href="${anon_url('{0}/releases/tag/{1}'.format(app.APPLICATION_URL, app_version)}">${app_version}</a><br>
+        Branch: <a href="${anon_url('{0}/tree/{1}'.format(app.APPLICATION_URL, app.BRANCH))}">${app.BRANCH}</a><br>
+        Commit: <a href="${anon_url('{0}/commit/{1}'.format(app.APPLICATION_URL, app.CUR_COMMIT_HASH))}">${app.CUR_COMMIT_HASH}</a><br>
+        Version: <a href="${anon_url('{0}/releases/tag/{1}'.format(app.APPLICATION_URL, app_version))}">${app_version}</a><br>
         Database: ${cur_branch_major_db_version}.${cur_branch_minor_db_version}
         </td>
     </tr>
