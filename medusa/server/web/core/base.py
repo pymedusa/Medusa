@@ -54,8 +54,6 @@ def get_lookup():
         use_strict = app.BRANCH and app.BRANCH != 'master'
         mako_lookup = TemplateLookup(directories=[mako_path],
                                      module_directory=mako_cache,
-                                     output_encoding='utf-8',
-                                     encoding_errors='replace',
                                      #  format_exceptions=True,
                                      strict_undefined=use_strict,
                                      filesystem_checks=True)
@@ -133,7 +131,7 @@ class PageTemplate(MakoTemplate):
 
         kwargs['makoStartTime'] = time.time()
         try:
-            return self.template.render_unicode(*args, **kwargs).encode('utf-8', 'replace')
+            return self.template.render_unicode(*args, **kwargs)
         except Exception:
             kwargs['title'] = '500'
             kwargs['header'] = 'Mako Error'
