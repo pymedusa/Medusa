@@ -132,7 +132,10 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     if not all([url, title_info, info]):
                         continue
 
-                    title = id_regex.search(info).group(1)
+                    title = title_info[1].get_text(strip=True)
+                    title2 = id_regex.search(info).group(1)
+                    if len(title) < len(title2):
+                        title = title2
                     torrent_id = id_regex.search(info).group(2)
                     torrent_hash = hash_regex.search(url['href']).group(2)
                     if not all([title, torrent_id, torrent_hash]):
