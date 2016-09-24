@@ -458,7 +458,7 @@
                 % for hItem in provider_results['found_items']:
                     <%
                         # Hides special episodes from season search
-                        if manual_search_type == 'season' and 'E00' in hItem["name"]:
+                        if manual_search_type == 'season' and u'E00' in hItem["name"]:
                             continue
 
                         hItem = dict(hItem)
