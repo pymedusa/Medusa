@@ -24,6 +24,7 @@ from hachoir_metadata import extractMetadata
 from hachoir_parser import createParser
 import medusa as app
 from . import helpers, logger
+from .helper.common import try_int
 from .helper.encoding import ek
 from .helper.exceptions import ShowDirectoryNotFoundException
 from .metadata.generic import GenericMetadata
@@ -158,7 +159,7 @@ class ImageCache(object):
             logger.log(u"Couldn't check the type of " + str(path) + " cause it doesn't exist", logger.WARNING)
             return None
 
-        if ek(os.path.getsize, path) == "0L":
+        if try_int(ek(os.path.getsize, path), 0) == 0:
             logger.log(u'Image has 0 bytes size. Deleting it: {path}'.format(path=path), logger.WARNING)
             try:
                 ek(os.remove, path)
