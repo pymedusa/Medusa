@@ -2600,8 +2600,10 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     color: rgb(0, 0, 0);
 }
 
+/* @TODO: Fix this stupid bootstrap hack http://stackoverflow.com/a/24008735/2311366 */
 .form-control-inline {
     display: inline;
+    width: auto;
 }
 
 .btn {
