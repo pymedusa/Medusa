@@ -159,13 +159,13 @@ class ImageCache(object):
             logger.log(u"Couldn't check the type of " + str(path) + " cause it doesn't exist", logger.WARNING)
             return None
 
-        if try_int(ek(os.path.getsize, path), 0) == 0:
+        if try_int(ek(os.path.getsize, path)) == 0:
             logger.log(u'Image has 0 bytes size. Deleting it: {path}'.format(path=path), logger.WARNING)
             try:
                 ek(os.remove, path)
             except OSError:
                 logger.log(u"Could't delete file. Please manually delete it: {path}".format(path=path), logger.WARNING)
-            return None
+            return
 
         # use hachoir to parse the image for us
         img_parser = createParser(path)
