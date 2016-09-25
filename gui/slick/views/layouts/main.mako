@@ -48,14 +48,18 @@
     </head>
     <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="api/v2/"', '')[title == 'Login']}>
         <%include file="/partials/header.mako"/>
-        % if submenu:
-        <%include file="/partials/submenu.mako"/>
-        % endif
-        <%include file="/partials/alerts.mako"/>
+        
         <div id="contentWrapper">
+        <div class="row">
             <div id="content">
-                <%block name="content" />
+% if submenu:
+<%include file="/partials/submenu.mako"/>
+% endif
+<%include file="/partials/alerts.mako"/>
+        
+<%block name="content" />
             </div><!-- /content -->
+        </div><!-- /row -->
         </div><!-- /contentWrapper -->
         <%include file="/partials/footer.mako" />
     <%block name="scripts" />

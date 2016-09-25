@@ -23,13 +23,12 @@
 <div id="config">
     <div id="config-content">
         <form name="configForm" method="post" action="config/backuprestore">
-            <div id="config-components">
+            <div id="config-components" class="ui-tabs">
                 <ul>
-                    ## @TODO: Fix this stupid hack
-                    <script>document.write('<li><a href="' + document.location.href + '#backup">Backup</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#restore">Restore</a></li>');</script>
+                    <li><a href="config/backuprestore/#backup">Backup</a></li>
+                    <li><a href="config/backuprestore/#restore">Restore</a></li>
                 </ul>
-                <div id="backup" class="component-group clearfix">
+                <div data-tab-id="backup" class="component-group clearfix">
                     <div class="component-group-desc">
                         <h3>Backup</h3>
                         <p><b>Backup your main database file and config.</b></p>
@@ -45,7 +44,7 @@
                         <div class="Backup" id="Backup-result"></div>
                     </fieldset>
                 </div><!-- /component-group1 //-->
-                <div id="restore" class="component-group clearfix">
+                <div data-tab-id="restore" class="component-group clearfix">
                     <div class="component-group-desc">
                         <h3>Restore</h3>
                         <p><b>Restore your main database file and config.</b></p>

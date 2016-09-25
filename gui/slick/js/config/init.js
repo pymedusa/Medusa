@@ -1,5 +1,6 @@
 MEDUSA.config.init = function() {
-    $('#config-components').tabs();
+    // Initialize all the ui tabs elements
+    $('.ui-tabs').uiTabs();
 
     $('.viewIf').on('click', function() {
         if ($(this).prop('checked')) {

@@ -66,6 +66,7 @@
     <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
     <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
     <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
+    <script type="text/javascript" src="js/ui-tabs.js?${sbPID}"></script>
     <script type="text/javascript" src="js/core.js?${sbPID}"></script>
 
     <script type="text/javascript" src="js/config/backup-restore.js?${sbPID}"></script>
