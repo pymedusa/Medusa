@@ -8,23 +8,13 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-# Matches multiple files with brace expansion notation
-# Set default charset
-[*.{js,py}]
+[*.{js,py,css}]
 charset = utf-8
-
-# Python styling
-[*.py]
 indent_style = space
 indent_size = 4
 
 # Mako styling
 [*.mako]
-indent_style = space
-indent_size = 4
-
-# Indentation override for all JS under lib directory
-[*.js]
 indent_style = space
 indent_size = 4
 
