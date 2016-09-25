@@ -108,6 +108,8 @@ class IssueSubmitter(object):
         results = dict()
         issues = github_repo.get_issues(state='all', since=datetime.now() - max_age)
         for issue in issues:
+            if hasattr(issue, 'pull_request') and issue.pull_request:
+                continue
             issue_title = issue.title
             if issue_title.startswith(IssueSubmitter.TITLE_PREFIX):
                 issue_title = issue_title[len(IssueSubmitter.TITLE_PREFIX):]
