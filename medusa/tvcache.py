@@ -445,8 +445,8 @@ class TVCache(object):
                 sql_results = list(itertools.chain(*sql_results))
             else:
                 sql_results = []
-                logger.log("No cached results in {provider} for show id '{show_id}' episode '{ep}'".format
-                           (provider=self.provider_id, show_id=ep_obj.show.indexerid,
+                logger.log("No cached results in {provider} for show '{show_name}' episode '{ep}'".format
+                           (provider=self.provider_id, show_name=ep_obj.show.name,
                             ep=episode_num(ep_obj.season, ep_obj.episode)), logger.DEBUG)
 
         # for each cache entry
