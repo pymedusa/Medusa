@@ -24,6 +24,7 @@ from hachoir_metadata import extractMetadata
 from hachoir_parser import createParser
 import medusa as app
 from . import helpers, logger
+from .helper.common import try_int
 from .helper.encoding import ek
 from .helper.exceptions import ShowDirectoryNotFoundException
 from .metadata.generic import GenericMetadata
@@ -146,32 +147,35 @@ class ImageCache(object):
     POSTER_THUMB = 4
     FANART = 5
 
-    def which_type(self, path):
+    def which_type(self, image_path):
         """
         Analyzes the image provided and attempts to determine whether it is a poster or banner.
 
-        :param path: full path to the image
+        :param image_path: full path to the image
         :return: BANNER, POSTER if it concluded one or the other, or None if the image was neither (or didn't exist)
         """
 
-        if not ek(os.path.isfile, path):
-            logger.log(u"Couldn't check the type of " + str(path) + " cause it doesn't exist", logger.WARNING)
+        if not ek(os.path.isfile, image_path):
+            logger.log(u"Couldn't check the type of {image_path} cause it doesn't exist".format
+                       (image_path=image_path), logger.WARNING)
             return None
 
-        if ek(os.path.getsize, path) == "0L":
-            logger.log(u'Image has 0 bytes size. Deleting it: {path}'.format(path=path), logger.WARNING)
+        if try_int(ek(os.path.getsize, image_path)) == 0:
+            logger.log(u'Image has 0 bytes size. Deleting it: {image_path}'.format(image_path=image_path), logger.WARNING)
             try:
-                ek(os.remove, path)
-            except OSError:
-                logger.log(u"Could't delete file. Please manually delete it: {path}".format(path=path), logger.WARNING)
-            return None
+                ek(os.remove, image_path)
+            except OSError as e:
+                logger.log(u"Could't delete file: '{image_path}'. Please manually delete it. Error: {error_msg}".format
+                           (image_path=image_path, error_msg=e), logger.WARNING)
+            return
 
         # use hachoir to parse the image for us
-        img_parser = createParser(path)
+        img_parser = createParser(image_path)
         img_metadata = extractMetadata(img_parser)
 
         if not img_metadata:
-            logger.log(u"Unable to get metadata from " + str(path) + ", not using your existing image", logger.DEBUG)
+            logger.log(u"Unable to get metadata from {image_path}, not using your existing image".format
+                       (image_path=image_path), logger.DEBUG)
             return None
 
         img_ratio = float(img_metadata.get('width')) / float(img_metadata.get('height'))
@@ -190,8 +194,8 @@ class ImageCache(object):
         elif 1.7 < img_ratio < 1.8:
             return self.FANART
         else:
-            logger.log(u"Image has size ratio of " + str(img_ratio) + ", unknown type", logger.WARNING)
-            return None
+            logger.log(u"Image has size ratio of {img_ratio}, unknown type".format(img_ratio=img_ratio), logger.WARNING)
+            return
 
     def _cache_image_from_file(self, image_path, img_type, indexer_id):
         """
