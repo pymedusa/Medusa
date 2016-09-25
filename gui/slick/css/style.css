@@ -2977,6 +2977,7 @@ input sizing (for config pages)
 ========================================================================== */
 
 #config select {
+    width: auto;
     display: inline;
 }
 
