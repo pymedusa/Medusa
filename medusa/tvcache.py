@@ -26,6 +26,7 @@ import traceback
 import medusa as app
 from six import text_type
 from . import db, logger, show_name_helpers
+from .helper.common import episode_num
 from .helper.exceptions import AuthException
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .rssfeeds import getFeed
@@ -438,8 +439,15 @@ class TVCache(object):
                     format(self.provider_id, ','.join([str(x) for x in ep_obj.wanted_quality])),
                     [ep_obj.show.indexerid, ep_obj.season, b'%|{0}|%'.format(ep_obj.episode)]])
 
-            sql_results = cache_db_con.mass_action(cl, fetchall=True)
-            sql_results = list(itertools.chain(*sql_results))
+            if cl:
+                # Only execute the query if we have results
+                sql_results = cache_db_con.mass_action(cl, fetchall=True)
+                sql_results = list(itertools.chain(*sql_results))
+            else:
+                sql_results = []
+                logger.log("No cached results in {provider} for show id '{show_id}' episode '{ep}'".format
+                           (provider=self.provider_id, show_id=ep_obj.show.indexerid,
+                            ep=episode_num(ep_obj.season, ep_obj.episode)), logger.DEBUG)
 
         # for each cache entry
         for cur_result in sql_results:
