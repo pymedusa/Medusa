@@ -66,8 +66,8 @@
 
 (function() {
     $.ajaxEpRedownloadSubtitle = function() {
-        $('.epRedownloadSubtitle').on('click', function(evt) {
-            evt.preventDefault();
+        $('.epRedownloadSubtitle').on('click', function(e) {
+            e.preventDefault();
  
             // Check if we have disabled the click
             if ($(this).prop('enableClick') === '0') { return false; }
