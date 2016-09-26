@@ -986,8 +986,11 @@ class Home(WebRoot):
         refresh_results = 'refresh'
 
         # Check if all params are integer. When JS issue, it can send show='undefined'
-        # Default to -1 because we can have season and episode = 0
-        if not all([try_int(show) > 0, try_int(season, -1) >= 0, try_int(episode, -1) >= 0]):
+        try:
+            int(show)
+            int(episode)
+            int(season)
+        except ValueError:
             return {'result': 'error'}
 
         # To prevent it from keeping searching when no providers have been enabled
