@@ -1765,7 +1765,7 @@ class TVEpisode(TVObject):
             logger.log(u'{id}: Saving subtitles changes to database'.format(id=self.show.indexerid), logger.DEBUG)
             self.save_to_db()
 
-    def download_subtitles(self, force=False):
+    def download_subtitles(self, force=False, lang=None):
         """Download subtitles.
 
         :param force:
@@ -1778,7 +1778,7 @@ class TVEpisode(TVObject):
                        logger.DEBUG)
             return
 
-        new_subtitles = subtitles.download_subtitles(self)
+        new_subtitles = subtitles.download_subtitles(self, lang=lang)
         if new_subtitles:
             self.subtitles = subtitles.merge_subtitles(self.subtitles, new_subtitles)
 

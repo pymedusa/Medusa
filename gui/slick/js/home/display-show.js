@@ -9,6 +9,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     });
 
     $.ajaxEpSubtitlesSearch();
+    $.ajaxEpRedownloadSubtitle();
 
     $('#seasonJump').on('change', function() {
         var id = $('#seasonJump option:selected').val();
