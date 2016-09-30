@@ -143,7 +143,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     if not torrent_info:
                         continue
 
-                    title = torrent_info.get('title').strip('Download torrent')
+                    title = torrent_info.get('title').lstrip('Download ').rstrip(' torrent')
                     download_url = urljoin(self.url, torrent_info.get('href').replace
                                            ('torrent_download', 'download'))
 
