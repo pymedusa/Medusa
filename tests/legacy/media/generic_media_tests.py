@@ -109,4 +109,4 @@ class GenericMediaTests(unittest.TestCase):
     def test_get_media_root(self):
         app.PROG_DIR = os.path.join('some', 'path', 'to', 'application')
 
-        self.assertEqual(GenericMedia.get_media_root(), os.path.join('some', 'path', 'to', 'application', 'gui', 'slick'))
+        self.assertEqual(GenericMedia.get_media_root(), os.path.join('some', 'path', 'to', 'application', 'static'))

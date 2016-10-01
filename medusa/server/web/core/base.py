@@ -47,7 +47,7 @@ def get_lookup():
     global mako_path  # pylint: disable=global-statement
 
     if mako_path is None:
-        mako_path = ek(os.path.join, app.PROG_DIR, 'gui/{gui_name}/views/'.format(gui_name=app.GUI_NAME))
+        mako_path = ek(os.path.join, app.PROG_DIR, 'views/')
     if mako_cache is None:
         mako_cache = ek(os.path.join, app.CACHE_DIR, 'mako')
     if mako_lookup is None:

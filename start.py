@@ -346,7 +346,7 @@ class Application(object):
         self.web_options = {
             'port': int(self.start_port),
             'host': self.web_host,
-            'data_root': ek(os.path.join, app.PROG_DIR, 'gui', app.GUI_NAME),
+            'data_root': ek(os.path.join, app.PROG_DIR, 'static'),
             'web_root': app.WEB_ROOT,
             'log_dir': self.log_dir,
             'username': app.WEB_USERNAME,
