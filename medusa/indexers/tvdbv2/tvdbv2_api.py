@@ -26,21 +26,22 @@ import re
 import tempfile
 import time
 import warnings
+from six import next, iteritems
 from collections import OrderedDict
+
 import requests
 from requests.compat import urljoin
-
-from six import iteritems as six_iteritems, next as six_next
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi)
-
+from tvdbapiv2.rest import ApiException
+from .tvdbv2_exceptions import (
+    tvdbv2_attributenotfound, tvdbv2_episodenotfound, tvdbv2_error,
+    tvdbv2_seasonnotfound, tvdbv2_showincomplete, tvdbv2_shownotfound
+)
 from .tvdbv2_ui import BaseUI, ConsoleUI
-from ..indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerError,
-                                  IndexerException, IndexerSeasonNotFound, IndexerShowIncomplete,
-                                  IndexerShowNotFound)
 
 
 def log():
-    return logging.getLogger('tvdbv2_api')
+    return logging.getLogger('tvdb_api')
 
 
 class ShowContainer(dict):
@@ -103,16 +104,16 @@ class Show(dict):
         # Data wasn't found, raise appropriate error
         if isinstance(key, int) or key.isdigit():
             # Episode number x was not found
-            raise IndexerSeasonNotFound('Could not find season %s' % (repr(key)))
+            raise tvdbv2_seasonnotfound('Could not find season %s' % (repr(key)))
         else:
             # If it's not numeric, it must be an attribute name, which
             # doesn't exist, so attribute error.
-            raise IndexerAttributeNotFound('Cannot find attribute %s' % (repr(key)))
+            raise tvdbv2_attributenotfound('Cannot find attribute %s' % (repr(key)))
 
     def airedOn(self, date):
         ret = self.search(str(date), 'firstaired')
         if len(ret) == 0:
-            raise IndexerEpisodeNotFound('Could not find any episodes that aired on %s' % date)
+            raise tvdbv2_episodenotfound('Could not find any episodes that aired on %s' % date)
         return ret
 
     def search(self, term=None, key=None):
@@ -154,7 +155,7 @@ class Season(dict):
 
     def __getitem__(self, episode_number):
         if episode_number not in self:
-            raise IndexerEpisodeNotFound('Could not find episode %s' % (repr(episode_number)))
+            raise tvdbv2_episodenotfound('Could not find episode %s' % (repr(episode_number)))
         else:
             return dict.__getitem__(self, episode_number)
 
@@ -203,7 +204,7 @@ class Episode(dict):
         try:
             return dict.__getitem__(self, key)
         except KeyError:
-            raise IndexerAttributeNotFound('Cannot find attribute %s' % (repr(key)))
+            raise tvdbv2_attributenotfound('Cannot find attribute %s' % (repr(key)))
 
     def search(self, term=None, key=None):
         """Search episode data for term, if it matches, return the Episode (self).
@@ -356,7 +357,7 @@ class TVDBv2(object):
             else:
                 self.config['language'] = language
 
-        self.config['base_url'] = 'http://thetvdb.com'
+        self.config['base_url'] = "http://thetvdb.com"
 
         # Configure artwork prefix url
         self.config['artwork_prefix'] = '%(base_url)s/banners/%%s' % self.config
@@ -367,9 +368,9 @@ class TVDBv2(object):
 
         # client_id = 'username'  # (optional! Only required for the /user routes)
         # client_secret = 'pass'  # (optional! Only required for the /user routes)
-        apikey = '0629B785CE550C8D'
+        apikey = "0629B785CE550C8D"
 
-        authentication_string = {'apikey': apikey, 'username': '', 'userpass': ''}
+        authentication_string = {"apikey": apikey, "username": "", "userpass": ""}
         unauthenticated_client = ApiClient(api_base_url)
         auth_api = AuthenticationApi(unauthenticated_client)
         access_token = auth_api.login_post(authentication_string)
@@ -377,8 +378,46 @@ class TVDBv2(object):
         self.search_api = SearchApi(auth_client)
         self.series_api = SeriesApi(auth_client)
 
-        # An api to indexer series/episode object mapping
-        self.series_map = {
+    def _object_to_dict(self, response_object, key_mapping=None):
+        return_dict = {}
+
+        parse_object = getattr(response_object, 'data', response_object)
+
+        if parse_object.attribute_map:
+            for attribute in parse_object.attribute_map:
+                try:
+                    value = getattr(parse_object, attribute, None)
+                    if value is None:
+                        continue
+
+                    if isinstance(value, list):
+                        value = [self._object_to_dict(x, key_mapping) for x in value]
+                    if not isinstance(value, (eval(parse_object.swagger_types.get(attribute)), dict)):
+                        value = self._object_to_dict(value, key_mapping)
+
+                    if key_mapping and key_mapping.get(attribute):
+                        if isinstance(value, dict) and isinstance(key_mapping.get(attribute), dict):
+                            # Let's map the children
+                            for k, v in value.iteritems():
+                                if key_mapping.get(attribute)[k]:
+                                    return_dict[key_mapping.get(attribute)[k]] = str(v)
+
+                        else:
+                            if key_mapping.get(attribute):
+                                return_dict[key_mapping.get(attribute)] = str(value)
+                    else:
+                        return_dict[attribute] = str(value)
+
+                except Exception as e:
+                    pass
+        else:
+            log().debug('Missing attribute map, cant parse to dict')
+        return return_dict
+
+    def _parse_show_data(self, indexer_data, parsing_into_key='series'):  # pylint: disable=no-self-use
+        """ These are the fields we'd like to see for a show search"""
+
+        name_map = {
             'id': 'id',
             'series_name': 'seriesname',
             'summary': 'overview',
@@ -387,58 +426,27 @@ class TVDBv2(object):
             'url': 'show_url',
             'epnum': 'absolute_number',
             'episode_name': 'episodename',
+            'first_aired': 'firstaired',
             'aired_episode_number': 'episodenumber',
             'aired_season': 'seasonnumber',
             'dvd_episode_number': 'dvd_episodenumber',
-            'airs_day_of_week': 'airs_dayofweek',
-            'last_updated': 'lastupdated',
-            'network_id': 'networkid',
-            'rating': 'contentrating',
         }
 
-    def _object_to_dict(self, tvdb_response, key_mapping=None, list_separator='|'):
-        parsed_response = []
+        attributes = indexer_data.data if parsing_into_key else indexer_data
 
-        tvdb_response = getattr(tvdb_response, 'data', tvdb_response)
+        new_dict = OrderedDict()
 
-        if not isinstance(tvdb_response, list):
-            tvdb_response = [tvdb_response]
+        for attribute in attributes.attribute_map:
+            try:
+                value = getattr(attributes, attribute, None)
+                if isinstance(value, list):
+                    value = '|'.join(value)
 
-        for parse_object in tvdb_response:
-            return_dict = {}
-            if parse_object.attribute_map:
-                for attribute in parse_object.attribute_map:
-                    try:
-                        value = getattr(parse_object, attribute, None)
-                        if value is None or value == []:
-                            continue
+                new_dict[name_map.get(attribute, attribute)] = value or None
+            except Exception:
+                pass
 
-                        if isinstance(value, list):
-                            if list_separator and all(isinstance(x, (str, unicode)) for x in value):
-                                value = list_separator.join(value)
-                            else:
-                                value = [self._object_to_dict(x, key_mapping) for x in value]
-
-                        if key_mapping and key_mapping.get(attribute):
-                            if isinstance(value, dict) and isinstance(key_mapping[attribute], dict):
-                                # Let's map the children, i'm only going 1 deep, because usecases that I need it for, I don't need to go any further
-                                for k, v in value.iteritems():
-                                    if key_mapping.get(attribute)[k]:
-                                        return_dict[key_mapping[attribute][k]] = str(v)
-
-                            else:
-                                if key_mapping.get(attribute):
-                                    return_dict[key_mapping[attribute]] = str(value)
-                        else:
-                            return_dict[attribute] = str(value)
-
-                    except Exception as e:
-                        log().warning('Exception trying to parse attribute: %s, with exception: %r', attribute, e)
-                parsed_response.append(return_dict)
-            else:
-                log().debug('Missing attribute map, cant parse to dict')
-
-        return parsed_response if len(parsed_response) != 1 else parsed_response[0]
+        return OrderedDict({parsing_into_key: new_dict}) if parsing_into_key else new_dict
 
     def _get_temp_dir(self):  # pylint: disable=no-self-use
         """Returns the [system temp dir]/tvdb_api-u501 (or
@@ -493,8 +501,7 @@ class TVDBv2(object):
             # get series data / add the base_url to the image urls
             if image_type in ['banner', 'fanart', 'poster']:
                 # For each image type, where going to save one image based on the highest rating
-                merged_image_list = [y[1] for y in [six_next(six_iteritems(v))
-                                                    for _, v in six_iteritems(images[image_type])]]
+                merged_image_list = [y[1] for y in [next(iteritems(v)) for _, v in iteritems(images[image_type])]]
                 highest_rated = sorted(merged_image_list, key=lambda k: k['rating'], reverse=True)[0]
                 self._set_show_data(sid, image_type, highest_rated['_bannerpath'])
 
@@ -518,17 +525,14 @@ class TVDBv2(object):
 
         return data
 
-    def _show_search(self, show, request_language='en'):
+    def _show_search(self, show):
         """
         Uses the pytvdbv2 API to search for a show
         @param show: The show name that's searched for as a string
         @return: A list of Show objects.
         """
-        try:
-            results = self.search_api.search_series_get(name=show, accept_language=request_language)
-        except Exception as e:
-            raise IndexerException('Show search failed in getting a result with error: %r', e)
 
+        results = self.search_api.search_series_get(name=show)
         if results:
             return results
         else:
@@ -544,16 +548,24 @@ class TVDBv2(object):
         series = series.encode('utf-8')
         log().debug('Searching for show %s', [series])
 
-        results = self._show_search(series, request_language=self.config['language'])
+        results = self._show_search(series)
 
         if not results:
             return
 
-        mapped_results = self._object_to_dict(results, self.series_map, '|')
+        # Where expecting to a OrderedDict with Show information, let's standardize the returnd dict
+        def map_data(indexer_data):
+            # These are the fields we'd like to see for a show search
+            series_list = []
 
-        return OrderedDict({'series': mapped_results})['series']
+            for series in indexer_data.data:  # @UnusedVariable, pylint: disable=unused-variable
+                series_list.append(self._parse_show_data(series, None))
 
-    def _get_show_by_id(self, tvdbv2_id, request_language='en'):  # pylint: disable=unused-argument
+            return OrderedDict({'series': series_list})
+
+        return map_data(results)['series']
+
+    def _get_show_by_id(self, tvdbv2_id=None):  # pylint: disable=unused-argument
         """
         Retrieve tvdbv2 show information by tvdbv2 id, or if no tvdbv2 id provided by passed external id.
 
@@ -563,14 +575,12 @@ class TVDBv2(object):
 
         if tvdbv2_id:
             log().debug('Getting all show data for %s', [tvdbv2_id])
-            results = self.series_api.series_id_get(tvdbv2_id, accept_language=request_language)
+            results = self.series_api.series_id_get(tvdbv2_id)
 
         if not results:
             return
 
-        mapped_results = self._object_to_dict(results, self.series_map, '|')
-
-        return OrderedDict({'series': mapped_results})
+        return self._parse_show_data(results)
 
     def _get_episode_list(self, tvdb_id, specials=False):  # pylint: disable=unused-argument
         """
@@ -588,14 +598,18 @@ class TVDBv2(object):
         page = 1
         last = 1
         while page <= last:
-            paged_episodes = self.series_api.series_id_episodes_query_get(tvdb_id, page=page, accept_language=self.config['language'])
+            paged_episodes = self.series_api.series_id_episodes_query_get(tvdb_id, page=page)
             results += paged_episodes.data
             last = paged_episodes.links.last
             page += 1
 
-        mapped_episodes = self._object_to_dict(results, self.series_map, '|')
+        def map_episodes(indexer_data):
+            episode_list = []
+            for episode in indexer_data:
+                episode_list.append(self._parse_show_data(episode, None))
+            return episode_list
 
-        return OrderedDict({'episode': mapped_episodes})
+        return OrderedDict({'episode': map_episodes(results)})
 
     def _get_series(self, series):
         """This searches thetvdb.com for the series name,
@@ -610,7 +624,7 @@ class TVDBv2(object):
         allSeries = self.search(series)
         if not allSeries:
             log().debug('Series result returned zero')
-            IndexerShowNotFound('Show search returned zero results (cannot find show on TVDB)')
+            raise tvdbv2_shownotfound('Show search returned zero results (cannot find show on TVDB)')
 
         if not isinstance(allSeries, list):
             allSeries = [allSeries]
@@ -647,20 +661,18 @@ class TVDBv2(object):
 
         This interface will be improved in future versions.
         """
-        key_mapping = {'file_name': 'bannerpath', 'language_id': 'language', 'key_type': 'bannertype', 'resolution': 'bannertype2',
-                       'ratings_info': {'count': 'ratingcount', 'average': 'rating'}, 'thumbnail': 'thumbnailpath', 'sub_key': 'sub_key', 'id': 'id'}
+        key_mapping = {'file_name' : 'bannerpath', 'language_id': 'language', 'key_type': 'bannertype', 'resolution': 'bannertype2', 'ratings_info': {'count': 'ratingcount', 'average': 'rating'}, 'thumbnail': 'thumbnailpath', 'sub_key': 'sub_key', 'id': 'id'}
 
         search_for_image_type = self.config['image_type']
 
-        log().debug('Getting show banners for %s', sid)
+        log().debug('Getting show banners for %s', [sid])
         _images = {}
 
         # Let's fget the different type of images available for this series
 
         try:
-            series_images_count = self.series_api.series_id_images_get(sid, accept_language=self.config['language'])
-        except Exception as e:
-            log().debug('Could not get image count for showid: %s, with exception: %r', sid, e)
+            series_images_count = self.series_api.series_id_images_get(sid)
+        except ApiException as e:
             return False
 
         for image_type, image_count in self._object_to_dict(series_images_count).iteritems():
@@ -694,14 +706,14 @@ class TVDBv2(object):
                         _images[image_type][image.resolution][bid][k] = v
 
                     for k, v in _images[image_type][image.resolution][bid].items():
-                        if k.endswith('path'):
-                            new_key = '_%s' % (k)
-                            log().debug('Adding base url for image: %s', v)
+                        if k.endswith("path"):
+                            new_key = "_%s" % (k)
+                            log().debug("Adding base url for image: %s", v)
                             new_url = self.config['artwork_prefix'] % (v)
                             _images[image_type][image.resolution][bid][new_key] = new_url
 
             except Exception as e:
-                log().warning('Could not parse Poster for showid: %s, with exception: %r', sid, e)
+                log().debug('Could not parse Poster for showid: %s', [sid])
                 return False
 
         self._save_images(sid, _images)
@@ -731,21 +743,21 @@ class TVDBv2(object):
         Any key starting with an underscore has been processed (not the raw
         data from the XML)
         """
-        log().debug('Getting actors for %s', sid)
-
+        log().debug('Getting actors for %s', [sid])
+        # actorsEt = self._getetsrc(self.config['url_actorsInfo'] % (sid))
         actors = self.series_api.series_id_actors_get(sid)
 
-        if not actors or not actors.data:
+        if not actors:
             log().debug('Actors result returned zero')
             return
 
         cur_actors = Actors()
-        for cur_actor in actors.data if isinstance(actors.data, list) else [actors.data]:
+        for cur_actor in actors['data'] if isinstance(actors['data'], list) else [actors['data']]:
             new_actor = Actor()
-            new_actor['id'] = cur_actor.id
-            new_actor['image'] = cur_actor.image
-            new_actor['name'] = cur_actor.name
-            new_actor['role'] = cur_actor.role
+            new_actor['id'] = cur_actor['person']['id']
+            new_actor['image'] = cur_actor['person']['image']['original']
+            new_actor['name'] = cur_actor['person']['name']
+            new_actor['role'] = cur_actor['character']['name']
             new_actor['sortorder'] = 0
             cur_actors.append(new_actor)
         self._set_show_data(sid, '_actors', cur_actors)
@@ -758,7 +770,7 @@ class TVDBv2(object):
         if self.config['language'] is None:
             log().debug('Config language is none, using show language')
             if language is None:
-                raise IndexerError("config['language'] was None, this should not happen")
+                raise tvdbv2_error("config['language'] was None, this should not happen")
             get_show_in_language = language
         else:
             log().debug(
@@ -770,14 +782,11 @@ class TVDBv2(object):
             get_show_in_language = self.config['language']
 
         # Parse show information
-        log().debug('Getting all series data for %s' % (sid))
-
-        # Parse show information
-        series_info = self._get_show_by_id(sid, request_language=get_show_in_language)
+        series_info = self._get_show_by_id(sid)
 
         if not series_info:
             log().debug('Series result returned zero')
-            raise IndexerError('Series result returned zero')
+            raise tvdbv2_error('Series result returned zero')
 
         # get series data / add the base_url to the image urls
         for k, v in series_info['series'].items():
@@ -804,7 +813,7 @@ class TVDBv2(object):
 
             if not episode_data:
                 log().debug('Series results incomplete')
-                raise IndexerShowIncomplete('Show search returned incomplete results (cannot find complete show on TheTVDB)')
+                raise tvdbv2_showincomplete('Show search returned incomplete results (cannot find complete show on TheTVDB)')
 
             if 'episode' not in episode_data:
                 return False
@@ -861,10 +870,7 @@ class TVDBv2(object):
         selected_series = self._get_series(key)
         if isinstance(selected_series, dict):
             selected_series = [selected_series]
-
-        for show in selected_series:
-            for k, v in show.items():
-                self._set_show_data(show['id'], k, v)
+        [[self._set_show_data(show['id'], k, v) for k, v in show.items()] for show in selected_series]
         return selected_series
 
     def __repr__(self):
