@@ -26,11 +26,13 @@ import re
 import tempfile
 import time
 import warnings
+from six import next, iteritems
 from collections import OrderedDict
 
 import requests
 from requests.compat import urljoin
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi)
+from tvdbapiv2.rest import ApiException
 from .tvdbv2_exceptions import (
     tvdbv2_attributenotfound, tvdbv2_episodenotfound, tvdbv2_error,
     tvdbv2_seasonnotfound, tvdbv2_showincomplete, tvdbv2_shownotfound
@@ -281,7 +283,8 @@ class TVDBv2(object):
                  useZip=False,
                  dvdorder=False,
                  proxy=None,
-                 session=None):
+                 session=None,
+                 image_type=None):
 
         self.shows = ShowContainer()  # Holds all Show classes
         self.corrections = {}  # Holds show-name to show_id mapping
@@ -318,6 +321,7 @@ class TVDBv2(object):
         self.config['session'] = session if session else requests.Session()
 
         self.config['banners_enabled'] = banners
+        self.config['image_type'] = None
         self.config['actors_enabled'] = actors
 
         if self.config['debug_enabled']:
@@ -353,8 +357,11 @@ class TVDBv2(object):
             else:
                 self.config['language'] = language
 
+        self.config['base_url'] = "http://thetvdb.com"
+
         # Configure artwork prefix url
-        self.config['artwork_prefix'] = 'http://thetvdb.com/banners/'
+        self.config['artwork_prefix'] = '%(base_url)s/banners/%%s' % self.config
+        # Old: self.config['url_artworkPrefix'] = self.config['artwork_prefix']
 
         # Initiate the tvdb api v2
         api_base_url = 'https://api.thetvdb.com'
@@ -371,6 +378,42 @@ class TVDBv2(object):
         self.search_api = SearchApi(auth_client)
         self.series_api = SeriesApi(auth_client)
 
+    def _object_to_dict(self, response_object, key_mapping=None):
+        return_dict = {}
+
+        parse_object = getattr(response_object, 'data', response_object)
+
+        if parse_object.attribute_map:
+            for attribute in parse_object.attribute_map:
+                try:
+                    value = getattr(parse_object, attribute, None)
+                    if value is None:
+                        continue
+
+                    if isinstance(value, list):
+                        value = [self._object_to_dict(x, key_mapping) for x in value]
+                    if not isinstance(value, (eval(parse_object.swagger_types.get(attribute)), dict)):
+                        value = self._object_to_dict(value, key_mapping)
+
+                    if key_mapping and key_mapping.get(attribute):
+                        if isinstance(value, dict) and isinstance(key_mapping.get(attribute), dict):
+                            # Let's map the children
+                            for k, v in value.iteritems():
+                                if key_mapping.get(attribute)[k]:
+                                    return_dict[key_mapping.get(attribute)[k]] = str(v)
+
+                        else:
+                            if key_mapping.get(attribute):
+                                return_dict[key_mapping.get(attribute)] = str(value)
+                    else:
+                        return_dict[attribute] = str(value)
+
+                except Exception as e:
+                    pass
+        else:
+            log().debug('Missing attribute map, cant parse to dict')
+        return return_dict
+
     def _parse_show_data(self, indexer_data, parsing_into_key='series'):  # pylint: disable=no-self-use
         """ These are the fields we'd like to see for a show search"""
 
@@ -379,7 +422,7 @@ class TVDBv2(object):
             'series_name': 'seriesname',
             'summary': 'overview',
             'first_aired': 'firstaired',
-            'banner': 'fanart',
+            'banner': 'banner',
             'url': 'show_url',
             'epnum': 'absolute_number',
             'episode_name': 'episodename',
@@ -398,9 +441,8 @@ class TVDBv2(object):
                 value = getattr(attributes, attribute, None)
                 if isinstance(value, list):
                     value = '|'.join(value)
-                if name_map.get(attribute, attribute) == 'fanart':
-                    value = urljoin(self.config['artwork_prefix'], value)
-                new_dict[name_map.get(attribute, attribute)] = value
+
+                new_dict[name_map.get(attribute, attribute)] = value or None
             except Exception:
                 pass
 
@@ -450,6 +492,18 @@ class TVDBv2(object):
         if sid not in self.shows:
             self.shows[sid] = Show()
         self.shows[sid].data[key] = value
+
+    def _save_images(self, sid, images):
+        """Saves the highest rated image (banner, poster, fanart) as show data.
+        """
+
+        for image_type in images:
+            # get series data / add the base_url to the image urls
+            if image_type in ['banner', 'fanart', 'poster']:
+                # For each image type, where going to save one image based on the highest rating
+                merged_image_list = [y[1] for y in [next(iteritems(v)) for _, v in iteritems(images[image_type])]]
+                highest_rated = sorted(merged_image_list, key=lambda k: k['rating'], reverse=True)[0]
+                self._set_show_data(sid, image_type, highest_rated['_bannerpath'])
 
     def _clean_data(self, data):  # pylint: disable=no-self-use
         """Cleans up strings returned by tvrage.com
@@ -589,13 +643,13 @@ class TVDBv2(object):
 
         return ui.selectSeries(allSeries)
 
-    def _parse_banners(self, sid):
-        """Parses banners XML, from
+    def _parse_images(self, sid):
+        """Parses images XML, from
         http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/banners.xml
 
-        Banners are retrieved using t['show name]['_banners'], for example:
+        images are retrieved using t['show name]['_banners'], for example:
 
-        >>> t = Tvdb(banners = True)
+        >>> t = Tvdb(images = True)
         >>> t['scrubs']['_banners'].keys()
         ['fanart', 'poster', 'series', 'season']
         >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
@@ -607,25 +661,63 @@ class TVDBv2(object):
 
         This interface will be improved in future versions.
         """
+        key_mapping = {'file_name' : 'bannerpath', 'language_id': 'language', 'key_type': 'bannertype', 'resolution': 'bannertype2', 'ratings_info': {'count': 'ratingcount', 'average': 'rating'}, 'thumbnail': 'thumbnailpath', 'sub_key': 'sub_key', 'id': 'id'}
+
+        search_for_image_type = self.config['image_type']
+
         log().debug('Getting show banners for %s', [sid])
+        _images = {}
+
+        # Let's fget the different type of images available for this series
 
         try:
-            image_original = self.shows[sid]['image_original']
-        except Exception:
-            log().debug('Could not parse Poster for showid: %s', [sid])
+            series_images_count = self.series_api.series_id_images_get(sid)
+        except ApiException as e:
             return False
 
-        # Set the poster (using the original uploaded poster for now, as the medium formated is 210x195
-        banners = {u'poster': {u'1014x1500': {u'1': {u'rating': '',
-                                                     u'language': u'en',
-                                                     u'ratingcount': '',
-                                                     u'bannerpath': image_original.split('/')[-1],
-                                                     u'bannertype': u'poster',
-                                                     u'bannertype2': u'210x195',
-                                                     u'_bannerpath': image_original,
-                                                     u'id': u'1035106'}}}}
+        for image_type, image_count in self._object_to_dict(series_images_count).iteritems():
+            try:
 
-        self._set_show_data(sid, '_banners', banners)
+                if search_for_image_type and search_for_image_type != image_type:
+                    continue
+
+                if not image_count:
+                    continue
+
+                if image_type not in _images:
+                    _images[image_type] = {}
+
+                images = self.series_api.series_id_images_query_get(sid, key_type=image_type)
+                for image in images.data:
+                    # Store the images for each resolution available
+                    if image.resolution not in _images[image_type]:
+                        _images[image_type][image.resolution] = {}
+
+                    # _images[image_type][image.resolution][image.id] = image_dict
+                    image_attributes = self._object_to_dict(image, key_mapping)
+                    bid = image_attributes.pop('id')
+                    _images[image_type][image.resolution][bid] = {}
+
+                    for k, v in image_attributes.items():
+                        if k is None or v is None:
+                            continue
+
+                        k, v = k.lower(), v.lower()
+                        _images[image_type][image.resolution][bid][k] = v
+
+                    for k, v in _images[image_type][image.resolution][bid].items():
+                        if k.endswith("path"):
+                            new_key = "_%s" % (k)
+                            log().debug("Adding base url for image: %s", v)
+                            new_url = self.config['artwork_prefix'] % (v)
+                            _images[image_type][image.resolution][bid][new_key] = new_url
+
+            except Exception as e:
+                log().debug('Could not parse Poster for showid: %s', [sid])
+                return False
+
+        self._save_images(sid, _images)
+        self._set_show_data(sid, '_banners', _images)
 
     def _parse_actors(self, sid):
         """Parsers actors XML, from
@@ -671,7 +763,7 @@ class TVDBv2(object):
         self._set_show_data(sid, '_actors', cur_actors)
 
     def _get_show_data(self, sid, language, get_ep_info=False):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-        """Takes a series ID, gets the epInfo URL and parses the TVmaze json response
+        """Takes a series ID, gets the epInfo URL and parses the TheTVDB json response
         into the shows dict in layout:
         shows[series_id][season_number][episode_number]
         """
@@ -696,18 +788,21 @@ class TVDBv2(object):
             log().debug('Series result returned zero')
             raise tvdbv2_error('Series result returned zero')
 
-        # get series data
+        # get series data / add the base_url to the image urls
         for k, v in series_info['series'].items():
             if v is not None:
-                if k in ['image_medium', 'image_large']:
+                if k in ['banner', 'fanart', 'poster']:
+                    v = self.config['artwork_prefix'] % (v)
+                else:
                     v = self._clean_data(v)
+
             self._set_show_data(sid, k, v)
 
         # get episode data
         if get_ep_info:
             # Parse banners
             if self.config['banners_enabled']:
-                self._parse_banners(sid)
+                self._parse_images(sid)
 
             # Parse actors
             if self.config['actors_enabled']:
@@ -718,7 +813,7 @@ class TVDBv2(object):
 
             if not episode_data:
                 log().debug('Series results incomplete')
-                raise tvdbv2_showincomplete('Show search returned incomplete results (cannot find complete show on TVmaze)')
+                raise tvdbv2_showincomplete('Show search returned incomplete results (cannot find complete show on TheTVDB)')
 
             if 'episode' not in episode_data:
                 return False

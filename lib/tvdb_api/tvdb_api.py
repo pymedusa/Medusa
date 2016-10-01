@@ -367,7 +367,8 @@ class Tvdb:
                  useZip=False,
                  dvdorder=False,
                  proxy=None,
-                 session=None):
+                 session=None,
+                 image_type=None):
 
         """interactive (True/False):
             When True, uses built-in console UI is used to select the correct show.
@@ -541,6 +542,8 @@ class Tvdb:
         self.config['url_updates_month'] = u"%(base_url)s/api/%(apikey)s/updates_month.zip" % self.config
         self.config['url_updates_week'] = u"%(base_url)s/api/%(apikey)s/updates_week.zip" % self.config
         self.config['url_updates_day'] = u"%(base_url)s/api/%(apikey)s/updates_day.zip" % self.config
+
+        self.config['image_type'] = image_type
 
     def _getTempDir(self):
         """Returns the [system temp dir]/tvdb_api-u501 (or
