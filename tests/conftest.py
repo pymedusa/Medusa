@@ -18,6 +18,8 @@ from medusa.tv import TVEpisode, TVShow
 from medusa.versionChecker import CheckVersion
 from mock.mock import Mock
 import pytest
+
+from six import text_type
 from subliminal.subtitle import Subtitle
 from subliminal.video import Video
 import yaml
@@ -124,7 +126,7 @@ def create_tvepisode(monkeypatch):
 def create_file(tmpdir):
     def create(filename, lines=None, **kwargs):
         f = tmpdir.ensure(filename)
-        f.write('\n'.join(lines or []))
+        f.write_binary('\n'.join(lines or []))
         return str(f)
 
     return create
