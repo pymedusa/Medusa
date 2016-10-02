@@ -223,7 +223,7 @@ def filter_logline(logline, min_level=None, thread_name=None, search_query=None)
     :param min_level:
     :type min_level: int
     :param thread_name:
-    :type thread_name: str or function
+    :type thread_name: set, text_type or function
     :param search_query:
     :type search_query: str
     :return:
@@ -243,6 +243,9 @@ def filter_logline(logline, min_level=None, thread_name=None, search_query=None)
 
     if callable(thread_name):
         return thread_name(logline.thread_name)
+
+    if isinstance(thread_name, set):
+        return logline.thread_name in thread_name
 
     return thread_name == logline.thread_name
 

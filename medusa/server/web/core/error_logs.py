@@ -44,6 +44,11 @@ log_name_filters = {
     'MAIN': 'Main',
 }
 
+thread_names = {
+    'SHOWQUEUE': {name for name in log_name_filters if name and name.startswith('SHOWQUEUE-')},
+    'SEARCHQUEUE': {name for name in log_name_filters if name and name.startswith('SEARCHQUEUE-')}
+}
+
 log_periods = {
     'all': None,
     'one_day': timedelta(days=1),
@@ -125,7 +130,9 @@ class ErrorLogs(WebRoot):
         period = log_periods.get(log_period)
         modification_time = datetime.now() - period if period else None
         data = [line for line in read_loglines(modification_time=modification_time, formatter=text_type, max_lines=max_lines,
-                                               predicate=lambda l: filter_logline(l, min_level=min_level, thread_name=log_filter, search_query=log_search))]
+                                               predicate=lambda l: filter_logline(l, min_level=min_level,
+                                                                                  thread_name=thread_names.get(log_filter, log_filter),
+                                                                                  search_query=log_search))]
 
         return t.render(header='Log File', title='Logs', topmenu='system', log_lines='\n'.join([html_escape(line) for line in data]),
                         min_level=min_level, log_name_filters=log_name_filters, log_filter=log_filter, log_search=log_search, log_period=log_period,
