@@ -184,7 +184,8 @@ def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
     :return:
     :rtype: collections.Iterable of str
     """
-    with io.open(filename, 'r', encoding=encoding) as fh:
+    new_line = b'\n'
+    with io.open(filename, 'rb') as fh:
         segment = None
         offset = 0
         fh.seek(0, os.SEEK_END)
@@ -194,7 +195,7 @@ def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
             fh.seek(file_size - offset)
             buf = fh.read(min(remaining_size, buf_size))
             remaining_size -= buf_size
-            lines = buf.split('\n')
+            lines = buf.split(new_line)
             # the first line of the buffer is probably not a complete line so
             # we'll save it and append it to the last line of the next buffer
             # we read
@@ -202,7 +203,7 @@ def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
                 # if the previous chunk starts right from the beginning of line
                 # do not concact the segment to the last line of new chunk
                 # instead, yield the segment first
-                if buf[-1] is not '\n':
+                if buf[-1] is not new_line:
                     lines[-1] += segment
                 else:
                     yield segment
