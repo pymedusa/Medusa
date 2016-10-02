@@ -31,7 +31,7 @@ def make_closure(f):
     return lambda *args, **kwargs: f(*_varargs(*args), **_varkwargs(**kwargs))
 
 
-def replace_functions():
+def initialize():
     """Replace original functions if the fs encoding is not utf-8."""
     fs_encoding = sys.getfilesystemencoding()
     if os.name != 'nt' and (not fs_encoding or fs_encoding.lower() != 'utf-8'):
@@ -50,6 +50,3 @@ def replace_functions():
         for k, v in affected_functions.items():
             for f in v:
                 setattr(k, f, make_closure(getattr(k, f)))
-
-
-replace_functions()
