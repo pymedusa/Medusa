@@ -79,8 +79,7 @@ def describe_logline(logline):
 @pytest.mark.parametrize('line_pattern', [
     b'This is a example of log line with number {n}',
     u'This is a example of unicode log line with number {n}',
-    'This is a example of log line with number {n} using \xbb',
-    'This is a example of unicode log line with number {n} using \xbb',
+    b'This is a example of log line with number {n} using \xbb',
 ])
 def test_reverse_readlines(create_file, line_pattern):
     # Given

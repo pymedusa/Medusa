@@ -19,7 +19,6 @@ from medusa.versionChecker import CheckVersion
 from mock.mock import Mock
 import pytest
 
-from six import text_type
 from subliminal.subtitle import Subtitle
 from subliminal.video import Video
 import yaml
