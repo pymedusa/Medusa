@@ -3,6 +3,8 @@
 """Properties: This section contains additional properties to be guessed by guessit."""
 import re
 
+from guessit.reutils import build_or_pattern
+
 import babelfish
 from guessit.rules.common import alt_dash, dash
 from guessit.rules.common.validators import seps, seps_surround
@@ -149,6 +151,38 @@ def subtitle_language():
                  value='und', formatter=babelfish.Language, tags='subtitle.undefined')
 
     rebulk.rules(RemoveSubtitleUndefined)
+
+    return rebulk
+
+
+def container():
+    """
+    Builder for rebulk object.
+    :return: Created Rebulk object
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE).string_defaults(ignore_case=True)
+    rebulk.defaults(name='container',
+                    formatter=lambda value: value[1:],
+                    tags=['extension'],
+                    conflict_solver=lambda match, other: other
+                    if other.name in ['format', 'video_codec'] or
+                    other.name == 'container' and 'extension' not in other.tags
+                    else '__default__')
+
+    nzb = ['nzb']
+
+    rebulk.regex(r'\.'+build_or_pattern(nzb)+'$', exts=nzb, tags=['extension', 'torrent'])
+
+    rebulk.defaults(name='container',
+                    validator=seps_surround,
+                    formatter=lambda s: s.upper(),
+                    conflict_solver=lambda match, other: match
+                    if other.name in ['format',
+                                      'video_codec'] or other.name == 'container' and 'extension' in other.tags
+                    else '__default__')
+
+    rebulk.string(*nzb, tags=['nzb'])
 
     return rebulk
 

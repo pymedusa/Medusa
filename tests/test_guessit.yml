@@ -3132,3 +3132,19 @@
   screen_size: 1080p
   video_codec: h265
   type: episode
+
+# Regression test
+# nzb not detected as container leading to wrong release groups
+? Show.Name.S02E01.Super.Title.720p.WEB-DL.DD5.1.H.264-AG.nzb
+: title: Show Name
+  season: 2
+  episode: 1
+  episode_title: Super Title
+  screen_size: 720p
+  format: WEB-DL
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  container: nzb
+  release_group: AG
+  type: episode
