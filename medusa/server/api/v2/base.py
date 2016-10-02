@@ -29,12 +29,10 @@ class BaseRequestHandler(RequestHandler):
     def api_finish(self, status=None, error=None, data=None, **kwargs):
         """End the api request writing error or data to http response."""
         if error is not None and status is not None:
+            self.set_status(status)
             self.finish({
-                'status': status,
                 'error': error
             })
         else:
-            self.finish({
-                'status': 200,
-                'data': data if data is not None else kwargs
-            })
+            self.set_status(200)
+            self.finish(data if data is not None else kwargs)

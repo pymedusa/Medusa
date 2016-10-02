@@ -70,14 +70,14 @@ $.ajax({
     url: apiRoot + 'info?api_key=' + apiKey,
     type: 'GET',
     dataType: 'json'
-}).done(function(data) {
-    if (data.status === 200) {
-        MEDUSA.info = data.data;
-        MEDUSA.info.themeSpinner = MEDUSA.info.themeName === 'dark' ? '-dark' : '';
-        MEDUSA.info.loading = '<img src="images/loading16' + MEDUSA.info.themeSpinner + '.gif" height="16" width="16" />';
+}).success(function(data) {
+    MEDUSA.info = data;
+    MEDUSA.info.themeSpinner = MEDUSA.info.themeName === 'dark' ? '-dark' : '';
+    MEDUSA.info.loading = '<img src="images/loading16' + MEDUSA.info.themeSpinner + '.gif" height="16" width="16" />';
 
-        if (navigator.userAgent.indexOf('PhantomJS') === -1) {
-            $(document).ready(UTIL.init);
-        }
+    if (navigator.userAgent.indexOf('PhantomJS') === -1) {
+        $(document).ready(UTIL.init);
     }
+}).fail(function() {
+    alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
 });
