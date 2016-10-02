@@ -1022,10 +1022,12 @@ class AbsoluteEpisodeNumbers(Rule):
                     # and the hole is not an 'episode' word (e.g.: e, ep, episode)
                     if previous.name != 'episode':
                         if hole and self.non_words_re.sub('', hole.value).lower() in self.episode_words:
-                            # Some.Show.E07.1080p.HDTV.x265-GROUP
-                            # Some.Show.Episode.10.Some.Title.720p
-                            # not absolute episode
-                            return
+                            # if version is present, then it's an anime
+                            if not matches.named('version'):
+                                # Some.Show.E07.1080p.HDTV.x265-GROUP
+                                # Some.Show.Episode.10.Some.Title.720p
+                                # not absolute episode
+                                return
                     elif hole and hole.value == '.':
                         # [GroupName].Show.Name.-.02.5.(Special).[BD.1080p]
                         # 5 is not absolute, and not an episode BTW
