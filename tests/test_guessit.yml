@@ -3120,3 +3120,15 @@
   container: mkv
   mimetype: video/x-matroska
   type: episode
+
+# Regression test
+# website wrongly detected as release_group
+? "[.www.site.com.].-.Show.Name.S03E02.1080p.HEVC.x265-GROUP"
+: title: Show Name
+  release_group: GROUP
+  website: www.site.com
+  season: 3
+  episode: 2
+  screen_size: 1080p
+  video_codec: h265
+  type: episode
