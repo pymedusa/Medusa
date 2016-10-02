@@ -3,9 +3,8 @@
 """Properties: This section contains additional properties to be guessed by guessit."""
 import re
 
-from guessit.reutils import build_or_pattern
-
 import babelfish
+from guessit.reutils import build_or_pattern
 from guessit.rules.common import alt_dash, dash
 from guessit.rules.common.validators import seps, seps_surround
 from rebulk.processors import POST_PROCESS
@@ -156,8 +155,8 @@ def subtitle_language():
 
 
 def container():
-    """
-    Builder for rebulk object.
+    """Builder for rebulk object.
+
     :return: Created Rebulk object
     :rtype: Rebulk
     """
@@ -172,7 +171,7 @@ def container():
 
     nzb = ['nzb']
 
-    rebulk.regex(r'\.'+build_or_pattern(nzb)+'$', exts=nzb, tags=['extension', 'torrent'])
+    rebulk.regex(r'\.' + build_or_pattern(nzb) + '$', exts=nzb, tags=['extension', 'torrent'])
 
     rebulk.defaults(name='container',
                     validator=seps_surround,
