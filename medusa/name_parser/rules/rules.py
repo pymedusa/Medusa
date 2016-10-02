@@ -28,8 +28,11 @@ have a fixed execution order, that's why the rules() method should add the rules
 import copy
 import re
 
+from guessit.rules.common import seps
+
 from guessit.rules.common.comparators import marker_sorted
 from guessit.rules.common.formatters import cleanup
+from guessit.rules.properties import website
 from guessit.rules.properties.release_group import clean_groupname
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
@@ -93,7 +96,8 @@ class FixAnimeReleaseGroup(Rule):
     """
 
     priority = POST_PROCESS
-    consequence = RemoveMatch
+    consequence = [RemoveMatch, AppendMatch]
+    website_rebulk = website.website()
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -111,20 +115,29 @@ class FixAnimeReleaseGroup(Rule):
                 continue
 
             to_remove = []
+            to_append = []
             if matches.tagged('anime'):
                 # get the group (e.g.: [abc]) at the beginning of this filepart
                 group = matches.markers.at_index(filepart.start, index=0, predicate=lambda marker: marker.name == 'group')
-                if group and [rg for rg in groups if group and rg.span == group.span and rg.value.lower()]:
-                    to_remove.extend([rg for rg in groups if rg.span != group.span])
-                else:
-                    # anime should pick the first in the list and discard the rest
-                    to_remove.append(groups[1:])
+                if group:
+                    # https://github.com/guessit-io/guessit/issues/345
+                    if self.website_rebulk.matches(group.raw, context):
+                        ws = copy.copy(matches.at_span(group.span, index=0))
+                        ws.tags = []
+                        ws.name = 'website'
+                        ws.value = ws.value.strip(seps)
+                        to_append.append(ws)
+                        to_remove.append(group)
+                    elif [rg for rg in groups if group and rg.span == group.span and rg.value.lower()]:
+                        to_remove.extend([rg for rg in groups if rg.span != group.span])
+                # anime should pick the first in the list and discard the rest
+                to_remove.append(groups[1:])
             else:
                 # non anime should pick the last in the list and discard the rest
                 to_remove.append(groups[:-1])
 
             if to_remove:
-                return to_remove
+                return to_remove, to_append
 
 
 class SpanishNewpctReleaseName(Rule):
@@ -1022,10 +1035,12 @@ class AbsoluteEpisodeNumbers(Rule):
                     # and the hole is not an 'episode' word (e.g.: e, ep, episode)
                     if previous.name != 'episode':
                         if hole and self.non_words_re.sub('', hole.value).lower() in self.episode_words:
-                            # Some.Show.E07.1080p.HDTV.x265-GROUP
-                            # Some.Show.Episode.10.Some.Title.720p
-                            # not absolute episode
-                            return
+                            # if version is present, then it's an anime
+                            if not matches.named('version'):
+                                # Some.Show.E07.1080p.HDTV.x265-GROUP
+                                # Some.Show.Episode.10.Some.Title.720p
+                                # not absolute episode
+                                return
                     elif hole and hole.value == '.':
                         # [GroupName].Show.Name.-.02.5.(Special).[BD.1080p]
                         # 5 is not absolute, and not an episode BTW

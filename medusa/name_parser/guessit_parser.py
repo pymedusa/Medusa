@@ -34,6 +34,7 @@ expected_groups = {
     r're:\bPOURMOi\b',
     r're:\bRipPourBox\b',
     r're:\bRiPRG\b',
+    r're:\bNBY\b',
 
     # release groups with numbers
     # https://github.com/guessit-io/guessit/issues/294

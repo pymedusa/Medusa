@@ -3058,7 +3058,6 @@
   release_group: GROUP
   type: episode
 
-
 # Regression test for #1155
 # Expected titles shouldn't contain number-only items.
 ? Show Name\Season 01\S01E24 A Touch of Glass.m4v
@@ -3068,7 +3067,6 @@
   episode_title: A Touch of Glass
   container: m4v
   type: episode
-
 
 # Regression Test for release group detection
 # https://github.com/guessit-io/guessit/issues/343
@@ -3084,7 +3082,6 @@
   mimetype: video/x-matroska
   type: episode
 
-
 # Regression test
 # UNCENSORED might lead to multiple release groups
 ? Show Name (Season 02) [UNCENSORED] [1080p] [BD] [x265] [pseudo]
@@ -3094,4 +3091,60 @@
   screen_size: 1080p
   format: BluRay
   video_codec: h265
+  type: episode
+
+# Regression test
+# Anime with episode 00 should be detected as anime (have absolute number)
+? Anime Show Episode 59 v2 [VOSTFR][720p][AAC].mp4
+: title: Anime Show
+  absolute_episode: 59
+  episode: 59
+  version: 2
+  subtitle_language: fr
+  screen_size: 720p
+  audio_codec: AAC
+  container: mp4
+  mimetype: video/mp4
+  type: episode
+
+# Regression test
+# NBY release group not properly detected
+? My.Show.S13E22.720p.HDTV.x264-NBY.mkv
+: title: My Show
+  season: 13
+  episode: 22
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: NBY
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+# Regression test
+# website wrongly detected as release_group
+? "[.www.site.com.].-.Show.Name.S03E02.1080p.HEVC.x265-GROUP"
+: title: Show Name
+  release_group: GROUP
+  website: www.site.com
+  season: 3
+  episode: 2
+  screen_size: 1080p
+  video_codec: h265
+  type: episode
+
+# Regression test
+# nzb not detected as container leading to wrong release groups
+? Show.Name.S02E01.Super.Title.720p.WEB-DL.DD5.1.H.264-AG.nzb
+: title: Show Name
+  season: 2
+  episode: 1
+  episode_title: Super Title
+  screen_size: 720p
+  format: WEB-DL
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  container: nzb
+  release_group: AG
   type: episode
