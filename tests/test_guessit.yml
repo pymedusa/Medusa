@@ -3106,3 +3106,17 @@
   container: mp4
   mimetype: video/mp4
   type: episode
+
+# Regression test
+# NBY release group not properly detected
+? My.Show.S13E22.720p.HDTV.x264-NBY.mkv
+: title: My Show
+  season: 13
+  episode: 22
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: NBY
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
