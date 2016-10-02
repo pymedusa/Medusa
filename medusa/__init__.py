@@ -32,7 +32,7 @@ from configobj import ConfigObj
 import requests
 import shutil_custom
 from . import (
-    auto_postprocessor, db, helpers, logger, metadata, naming, providers,
+    app, auto_postprocessor, db, helpers, logger, metadata, naming, providers,
     scheduler, showUpdater, show_queue, subtitles, traktChecker, versionChecker
 )
 from .common import SD, SKIPPED, WANTED
