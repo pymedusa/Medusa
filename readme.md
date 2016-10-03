@@ -51,10 +51,15 @@ A full list can be found here: [Link](https://github.com/PyMedusa/SickRage/wiki/
 ![image](https://rarbg.com/favicon.ico)[RARBG](https://rarbg.to)
 ![image](https://torrentproject.se/favicon.ico)[TorrentProject](https://torrentproject.se/about)
 ![image](https://thepiratebay.se/favicon.ico)[ThePirateBay](https://thepiratebay.se/)
-![image](http://kat.cr/favicon.ico)[KickAssTorrents](https://kat.cr)
 ![image](https://nzb.cat/favicon.ico)[NZB.cat](https://nzb.cat/)
 ![image](https://nzbgeek.info/favicon.ico)[NZBGeek](https://nzbgeek.info)
 ![image](https://raw.githubusercontent.com/PyMedusa/SickRage/master/gui/slick/images/providers/dognzb.png)[DOGnzb](dognzb.cr)
+
+#### Browsers support <sub><sub>made by <a href="https://godban.github.io">godban</a></sub></sub>
+
+| [<img src="https://raw.githubusercontent.com/godban/browsers-support-badges/master/src/images/edge.png" alt="IE / Edge" width="16px" height="16px" />](http://godban.github.io/browsers-support-badges/)</br>IE / Edge | [<img src="https://raw.githubusercontent.com/godban/browsers-support-badges/master/src/images/firefox.png" alt="Firefox" width="16px" height="16px" />](http://godban.github.io/browsers-support-badges/)</br>Firefox | [<img src="https://raw.githubusercontent.com/godban/browsers-support-badges/master/src/images/chrome.png" alt="Chrome" width="16px" height="16px" />](http://godban.github.io/browsers-support-badges/)</br>Chrome | [<img src="https://raw.githubusercontent.com/godban/browsers-support-badges/master/src/images/safari.png" alt="Safari" width="16px" height="16px" />](http://godban.github.io/browsers-support-badges/)</br>Safari |
+| --------- | --------- | --------- | --------- |
+| Edge| last 2 versions| last 2 versions| last 2 versions
 
 #### News and Changelog
 [news.md and CHANGES.md have moved to a separate repo, click here](https://github.com/PyMedusa/SickRage.github.io)
