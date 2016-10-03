@@ -22,22 +22,23 @@ import logging
 import warnings
 from .tvdbv2_exceptions import tvdbv2_userabort
 
-__author__ = "p0psicles"
-__version__ = "1.0"
+__author__ = 'p0psicles'
+__version__ = '1.0'
 
 
 def log():
     return logging.getLogger(__name__)
 
-class BaseUI:
+
+class BaseUI(object):
     """Default non-interactive UI, which auto-selects first results
     """
     def __init__(self, config, log = None):
         self.config = config
         if log is not None:
             warnings.warn("the UI's log parameter is deprecated, instead use\n"
-                "use import logging; logging.getLogger('ui').info('blah')\n"
-                "The self.log attribute will be removed in the next version")
+                          "use import logging; logging.getLogger('ui').info('blah')\n"
+                          "The self.log attribute will be removed in the next version")
             self.log = logging.getLogger(__name__)
 
     def selectSeries(self, allSeries):
@@ -56,19 +57,19 @@ class ConsoleUI(BaseUI):
         else:
             toshow = allSeries
 
-        print "TVDB Search Results:"
+        print 'TVDB Search Results:'
         for i, cshow in enumerate(toshow):
             i_show = i + 1 # Start at more human readable number 1 (not 0)
             log().debug('Showing allSeries[%s], series %s)' % (i_show, allSeries[i]['seriesname']))
             if i == 0:
-                extra = " (default)"
+                extra = ' (default)'
             else:
-                extra = ""
+                extra = ''
 
-            print "%s -> %s [%s] # http://thetvdb.com/?tab=series&id=%s&lid=%s%s" % (
+            print '%s -> %s [%s] # http://thetvdb.com/?tab=series&id=%s&lid=%s%s' % (
                 i_show,
-                cshow['seriesname'].encode("UTF-8", "ignore"),
-                cshow['language'].encode("UTF-8", "ignore"),
+                cshow['seriesname'].encode('UTF-8', 'ignore'),
+                cshow['language'].encode('UTF-8', 'ignore'),
                 str(cshow['id']),
                 cshow['lid'],
                 extra
@@ -79,11 +80,11 @@ class ConsoleUI(BaseUI):
 
         if len(allSeries) == 1:
             # Single result, return it!
-            print "Automatically selecting only result"
+            print 'Automatically selecting only result'
             return allSeries[0]
 
         if self.config['select_first'] is True:
-            print "Automatically returning first search result"
+            print 'Automatically returning first search result'
             return allSeries[0]
 
         while True: # return breaks this loop
@@ -91,9 +92,9 @@ class ConsoleUI(BaseUI):
                 print "Enter choice (first number, return for default, 'all', ? for help):"
                 ans = raw_input()
             except KeyboardInterrupt:
-                raise tvdbv2_userabort("User aborted (^c keyboard interupt)")
+                raise tvdbv2_userabort('User aborted (^c keyboard interupt)')
             except EOFError:
-                raise tvdbv2_userabort("User aborted (EOF received)")
+                raise tvdbv2_userabort('User aborted (EOF received)')
 
             log().debug('Got choice of: %s' % (ans))
             try:
@@ -103,18 +104,18 @@ class ConsoleUI(BaseUI):
                     # Default option
                     log().debug('Default option, returning first series')
                     return allSeries[0]
-                if ans == "q":
+                if ans == 'q':
                     log().debug('Got quit command (q)')
                     raise tvdbv2_userabort("User aborted ('q' quit command)")
-                elif ans == "?":
-                    print "## Help"
-                    print "# Enter the number that corresponds to the correct show."
-                    print "# a - display all results"
-                    print "# all - display all results"
-                    print "# ? - this help"
-                    print "# q - abort tvnamer"
-                    print "# Press return with no input to select first result"
-                elif ans.lower() in ["a", "all"]:
+                elif ans == '?':
+                    print '## Help'
+                    print '# Enter the number that corresponds to the correct show.'
+                    print '# a - display all results'
+                    print '# all - display all results'
+                    print '# ? - this help'
+                    print '# q - abort tvnamer'
+                    print '# Press return with no input to select first result'
+                elif ans.lower() in ['a', 'all']:
                     self._displaySeries(allSeries, limit = None)
                 else:
                     log().debug('Unknown keypress %s' % (ans))
@@ -124,5 +125,5 @@ class ConsoleUI(BaseUI):
                     return allSeries[selected_id]
                 except IndexError:
                     log().debug('Invalid show number entered!')
-                    print "Invalid number (%s) selected!"
+                    print 'Invalid number (%s) selected!'
                     self._displaySeries(allSeries)
