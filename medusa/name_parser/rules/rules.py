@@ -1481,6 +1481,10 @@ class FixMultipleFormats(Rule):
                 to_remove = matches.named('format', predicate=lambda m: m.value in invalid_formats)
                 return to_remove
 
+            if matches.conflicting(last_format):
+                to_remove = matches.named('format', predicate=lambda m: m.value in last_format.value)
+                return to_remove
+
 
 class CreateProperTags(Rule):
     """Create the proper_tags property from the proper matches.

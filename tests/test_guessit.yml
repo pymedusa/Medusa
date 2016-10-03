@@ -3148,3 +3148,17 @@
   container: nzb
   release_group: AG
   type: episode
+
+# Regression test
+# br.srt being detected as BluRay
+? Show.Name.S01E07.Super, Title.WEB-DL 720p.br.srt
+: title: Show Name
+  season: 1
+  episode: 7
+  episode_title: Super, Title
+  format: WEB-DL
+  screen_size: 720p
+  subtitle_language: pt-BR
+  container: srt
+  mimetype: text/plain
+  type: episode
