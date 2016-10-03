@@ -378,46 +378,8 @@ class TVDBv2(object):
         self.search_api = SearchApi(auth_client)
         self.series_api = SeriesApi(auth_client)
 
-    def _object_to_dict(self, response_object, key_mapping=None):
-        return_dict = {}
-
-        parse_object = getattr(response_object, 'data', response_object)
-
-        if parse_object.attribute_map:
-            for attribute in parse_object.attribute_map:
-                try:
-                    value = getattr(parse_object, attribute, None)
-                    if value is None:
-                        continue
-
-                    if isinstance(value, list):
-                        value = [self._object_to_dict(x, key_mapping) for x in value]
-                    if not isinstance(value, (eval(parse_object.swagger_types.get(attribute)), dict)):
-                        value = self._object_to_dict(value, key_mapping)
-
-                    if key_mapping and key_mapping.get(attribute):
-                        if isinstance(value, dict) and isinstance(key_mapping.get(attribute), dict):
-                            # Let's map the children
-                            for k, v in value.iteritems():
-                                if key_mapping.get(attribute)[k]:
-                                    return_dict[key_mapping.get(attribute)[k]] = str(v)
-
-                        else:
-                            if key_mapping.get(attribute):
-                                return_dict[key_mapping.get(attribute)] = str(value)
-                    else:
-                        return_dict[attribute] = str(value)
-
-                except Exception as e:
-                    pass
-        else:
-            log().debug('Missing attribute map, cant parse to dict')
-        return return_dict
-
-    def _parse_show_data(self, indexer_data, parsing_into_key='series'):  # pylint: disable=no-self-use
-        """ These are the fields we'd like to see for a show search"""
-
-        name_map = {
+        # An api to indexer series/episode object mapping
+        self.series_map = {
             'id': 'id',
             'series_name': 'seriesname',
             'summary': 'overview',
@@ -432,21 +394,49 @@ class TVDBv2(object):
             'dvd_episode_number': 'dvd_episodenumber',
         }
 
-        attributes = indexer_data.data if parsing_into_key else indexer_data
+    def _object_to_dict(self, tvdb_response, key_mapping=None, list_separator='|'):
+        parsed_response = []
 
-        new_dict = OrderedDict()
+        tvdb_response = getattr(tvdb_response, 'data', tvdb_response)
 
-        for attribute in attributes.attribute_map:
-            try:
-                value = getattr(attributes, attribute, None)
-                if isinstance(value, list):
-                    value = '|'.join(value)
+        if not isinstance(tvdb_response, list):
+            tvdb_response = [tvdb_response]
 
-                new_dict[name_map.get(attribute, attribute)] = value or None
-            except Exception:
-                pass
+        for parse_object in tvdb_response:
+            return_dict = {}
+            if parse_object.attribute_map:
+                for attribute in parse_object.attribute_map:
+                    try:
+                        value = getattr(parse_object, attribute, None)
+                        if value is None or value == []:
+                            continue
 
-        return OrderedDict({parsing_into_key: new_dict}) if parsing_into_key else new_dict
+                        if isinstance(value, list):
+                            if list_separator and all(isinstance(x, (str, unicode)) for x in value):
+                                value = list_separator.join(value)
+                            else:
+                                value = [self._object_to_dict(x, key_mapping) for x in value]
+
+                        if key_mapping and key_mapping.get(attribute):
+                            if isinstance(value, dict) and isinstance(key_mapping[attribute], dict):
+                                # Let's map the children, i'm only going 1 deep, because usecases that I need it for, I don't need to go any further
+                                for k, v in value.iteritems():
+                                    if key_mapping.get(attribute)[k]:
+                                        return_dict[key_mapping[attribute][k]] = str(v)
+
+                            else:
+                                if key_mapping.get(attribute):
+                                    return_dict[key_mapping[attribute]] = str(value)
+                        else:
+                            return_dict[attribute] = str(value)
+
+                    except Exception as e:
+                        log().debug('Exception trying to parsing the tvdb object: %s' % (e))
+                parsed_response.append(return_dict)
+            else:
+                log().debug('Missing attribute map, cant parse to dict')
+
+        return parsed_response if len(parsed_response) != 1 else parsed_response[0]
 
     def _get_temp_dir(self):  # pylint: disable=no-self-use
         """Returns the [system temp dir]/tvdb_api-u501 (or
@@ -553,17 +543,9 @@ class TVDBv2(object):
         if not results:
             return
 
-        # Where expecting to a OrderedDict with Show information, let's standardize the returnd dict
-        def map_data(indexer_data):
-            # These are the fields we'd like to see for a show search
-            series_list = []
+        mapped_results = self._object_to_dict(results, self.series_map, '|')
 
-            for series in indexer_data.data:  # @UnusedVariable, pylint: disable=unused-variable
-                series_list.append(self._parse_show_data(series, None))
-
-            return OrderedDict({'series': series_list})
-
-        return map_data(results)['series']
+        return OrderedDict({'series': mapped_results})['series']
 
     def _get_show_by_id(self, tvdbv2_id=None):  # pylint: disable=unused-argument
         """
@@ -580,7 +562,9 @@ class TVDBv2(object):
         if not results:
             return
 
-        return self._parse_show_data(results)
+        mapped_results = self._object_to_dict(results, self.series_map, '|')
+
+        return OrderedDict({'series': mapped_results})
 
     def _get_episode_list(self, tvdb_id, specials=False):  # pylint: disable=unused-argument
         """
@@ -603,13 +587,9 @@ class TVDBv2(object):
             last = paged_episodes.links.last
             page += 1
 
-        def map_episodes(indexer_data):
-            episode_list = []
-            for episode in indexer_data:
-                episode_list.append(self._parse_show_data(episode, None))
-            return episode_list
+        mapped_episodes = self._object_to_dict(results, self.series_map, '|')
 
-        return OrderedDict({'episode': map_episodes(results)})
+        return OrderedDict({'episode': mapped_episodes})
 
     def _get_series(self, series):
         """This searches thetvdb.com for the series name,
