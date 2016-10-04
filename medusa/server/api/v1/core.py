@@ -1614,7 +1614,7 @@ class CMD_SearchIndexers(ApiCall):
 
                 try:
                     api_data = t[str(self.name).encode()]
-                except (app.indexer_shownotfound, app.indexer_showincomplete, app.indexer_error):
+                except (app.IndexerShowNotFound, app.indexer_showincomplete, app.IndexerError):
                     logger.log(u"API :: Unable to find show with id " + str(self.indexerid), logger.WARNING)
                     continue
 
@@ -1639,7 +1639,7 @@ class CMD_SearchIndexers(ApiCall):
 
                 try:
                     my_show = t[int(self.indexerid)]
-                except (app.indexer_shownotfound, app.indexer_showincomplete, app.indexer_error):
+                except (app.IndexerShowNotFound, app.indexer_showincomplete, app.IndexerError):
                     logger.log(u"API :: Unable to find show with id " + str(self.indexerid), logger.WARNING)
                     return _responds(RESULT_SUCCESS, {"results": [], "langid": lang_id})
 

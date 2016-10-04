@@ -728,20 +728,20 @@ class TVDBv2(object):
         data from the XML)
         """
         log().debug('Getting actors for %s', sid)
-        # actorsEt = self._getetsrc(self.config['url_actorsInfo'] % (sid))
+
         actors = self.series_api.series_id_actors_get(sid)
 
-        if not actors:
+        if not actors or not actors.data:
             log().debug('Actors result returned zero')
             return
 
         cur_actors = Actors()
-        for cur_actor in actors['data'] if isinstance(actors['data'], list) else [actors['data']]:
+        for cur_actor in actors.data if isinstance(actors.data, list) else [actors.data]:
             new_actor = Actor()
-            new_actor['id'] = cur_actor['person']['id']
-            new_actor['image'] = cur_actor['person']['image']['original']
-            new_actor['name'] = cur_actor['person']['name']
-            new_actor['role'] = cur_actor['character']['name']
+            new_actor['id'] = cur_actor.id
+            new_actor['image'] = cur_actor.image
+            new_actor['name'] = cur_actor.name
+            new_actor['role'] = cur_actor.role
             new_actor['sortorder'] = 0
             cur_actors.append(new_actor)
         self._set_show_data(sid, '_actors', cur_actors)

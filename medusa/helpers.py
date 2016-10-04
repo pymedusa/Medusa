@@ -995,7 +995,7 @@ def validateShow(show, season=None, episode=None):
             return t
 
         return t[show.indexerid][season][episode]
-    except (app.indexer_episodenotfound, app.indexer_seasonnotfound):
+    except (app.IndexerEpisodeNotFound, app.IndexerSeasonNotFound):
         pass
 
 

@@ -676,7 +676,7 @@ class TVShow(TVObject):
             if cur_season not in cached_seasons:
                 try:
                     cached_seasons[cur_season] = cached_show[cur_season]
-                except app.indexer_seasonnotfound as error:
+                except app.IndexerSeasonNotFound as error:
                     logger.log(u'{id}: {error_msg} (unaired/deleted) in the indexer {indexer} for {show}. '
                                u'Removing existing records from database'.format
                                (id=cur_show_id, error_msg=error.message, indexer=app.indexerApi(self.indexer).name,
@@ -727,7 +727,7 @@ class TVShow(TVObject):
         try:
             t = app.indexerApi(self.indexer).indexer(**indexer_api_params)
             show_obj = t[self.indexerid]
-        except app.indexer_error:
+        except app.IndexerError:
             logger.log(u'{id}: {indexer} timed out, unable to update episodes'.format
                        (id=self.indexerid, indexer=app.indexerApi(self.indexer).name), logger.WARNING)
             return None
@@ -1994,7 +1994,7 @@ class TVEpisode(TVObject):
                     t = app.indexerApi(self.indexer).indexer(**indexer_api_params)
                 my_ep = t[self.show.indexerid][season][episode]
 
-        except (app.indexer_error, IOError) as e:
+        except (app.IndexerError, IOError) as e:
             logger.log(u'{id}: {indexer} threw up an error: {error_msg}'.format
                        (id=self.show.indexerid, indexer=app.indexerApi(self.indexer).name, error_msg=ex(e)), logger.WARNING)
             # if the episode is already valid just log it, if not throw it up
@@ -2006,7 +2006,7 @@ class TVEpisode(TVObject):
                 logger.log(u'{id}: {indexer} timed out, unable to create the episode'.format
                            (id=self.show.indexerid, indexer=app.indexerApi(self.indexer).name), logger.WARNING)
                 return False
-        except (app.indexer_episodenotfound, app.indexer_seasonnotfound):
+        except (app.IndexerEpisodeNotFound, app.IndexerSeasonNotFound):
             logger.log(u'{id}: Unable to find the episode on {indexer}. Deleting it from db'.format
                        (id=self.show.indexerid, indexer=app.indexerApi(self.indexer).name), logger.DEBUG)
             # if I'm no longer on the Indexers but I once was then delete myself from the DB

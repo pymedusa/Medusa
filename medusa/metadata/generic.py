@@ -738,7 +738,7 @@ class GenericMetadata(object):
 
             t = app.indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
             indexer_show_obj = t[show_obj.indexerid]
-        except (app.indexer_error, IOError) as e:
+        except (app.IndexerError, IOError) as e:
             logger.log(u"Unable to look up show on " + app.indexerApi(
                 show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
             logger.log(u"%s may be experiencing some problems. Try again later." % app.indexerApi(show_obj.indexer).name, logger.DEBUG)
@@ -799,7 +799,7 @@ class GenericMetadata(object):
 
             t = app.indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
             indexer_show_obj = t[show_obj.indexerid]
-        except (app.indexer_error, IOError) as e:
+        except (app.IndexerError, IOError) as e:
             logger.log(u"Unable to look up show on " + app.indexerApi(
                 show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
             logger.log(u"%s may be experiencing some problems. Try again later." % app.indexerApi(show_obj.indexer).name, logger.DEBUG)
@@ -853,7 +853,7 @@ class GenericMetadata(object):
 
             t = app.indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
             indexer_show_obj = t[show_obj.indexerid]
-        except (app.indexer_error, IOError) as e:
+        except (app.IndexerError, IOError) as e:
             logger.log(u"Unable to look up show on " + app.indexerApi(
                 show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
             logger.log(u"%s may be experiencing some problems. Try again later." % app.indexerApi(show_obj.indexer).name, logger.DEBUG)
