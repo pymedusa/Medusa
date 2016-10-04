@@ -333,13 +333,17 @@ class Manage(Home, WebRoot):
             action='backlogOverview', title='Backlog Overview',
             header='Backlog Overview', topmenu='manage')
 
-    def massEdit(self, toEdit=None):
+    def massEdit(self, **shows):
         t = PageTemplate(rh=self, filename='manage_massEdit.mako')
 
-        if not toEdit:
-            return self.redirect('/manage/')
+        # I need to do this, because somewhere Tornado wraps the json in another json object.
+        show_ids = json.loads(shows.iteritems().next()[0]).get('editListOfShows')
 
-        show_ids = toEdit.split('|')
+        # This doesn't do anything, at least not that I can think of. Because of no checkboxes selected
+        # massEdit is never called.
+        if not show_ids:
+            return json.dumps({"redirect": "/manage/"})
+
         show_list = []
         show_names = []
         for cur_id in show_ids:
@@ -452,7 +456,7 @@ class Manage(Home, WebRoot):
         air_by_date_value = last_air_by_date if air_by_date_all_same else None
         root_dir_list = root_dir_list
 
-        return t.render(showList=toEdit, showNames=show_names, default_ep_status_value=default_ep_status_value,
+        return t.render(showList='|'.join(show_ids), showNames=show_names, default_ep_status_value=default_ep_status_value,
                         paused_value=paused_value, anime_value=anime_value, flatten_folders_value=flatten_folders_value,
                         quality_value=quality_value, subtitles_value=subtitles_value, scene_value=scene_value, sports_value=sports_value,
                         air_by_date_value=air_by_date_value, root_dir_list=root_dir_list, title='Mass Edit', header='Mass Edit', topmenu='manage')

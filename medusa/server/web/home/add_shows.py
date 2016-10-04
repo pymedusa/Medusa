@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import ast
 import datetime
 import json
 import os
@@ -34,6 +35,7 @@ from ....show.recommendations.trakt import TraktPopular
 class HomeAddShows(Home):
     def __init__(self, *args, **kwargs):
         super(HomeAddShows, self).__init__(*args, **kwargs)
+        self.shows_to_add = None
 
     def index(self):
         t = PageTemplate(rh=self, filename='addShows.mako')
@@ -171,20 +173,48 @@ class HomeAddShows(Home):
                             if not indexer_id and i:
                                 indexer_id = i
 
-                cur_dir['existing_info'] = (indexer_id, show_name, indexer)
+                cur_dir['existing_info'] = {"indexer_id": indexer_id or '', "show_name": show_name or '',
+                                            "indexer": indexer or ''}
 
                 if indexer_id and Show.find(app.showList, indexer_id):
                     cur_dir['added_already'] = True
         return t.render(dirList=dir_list)
 
-    def newShow(self, show_to_add=None, other_shows=None, search_string=None):
+    def newShow(self, show_to_add=None, other_shows=None, search_string=None, **shows_to_add):
         """
         Display the new show page which collects a tvdb id, folder, and extra options and
         posts them to addNewShow
         """
         t = PageTemplate(rh=self, filename='addShows_newShow.mako')
 
-        indexer, show_dir, indexer_id, show_name = self.split_extra_show(show_to_add)
+        if shows_to_add:
+            if isinstance(shows_to_add.items()[0][1], list):
+                shows_from_json = [{} for x in range(len(shows_to_add.items()[0][1]))]
+                for attribute in shows_to_add:
+                    for i, x in enumerate(shows_to_add[attribute]):
+                        try:
+                            shows_from_json[i][attribute] = x
+                        except:
+                            pass
+
+                # Get the first show from the list, and process this one
+                show_to_add = shows_from_json.pop(0)
+                other_shows = shows_from_json
+            else:
+                # This should be the last show to be added
+                show_to_add = shows_to_add
+        elif show_to_add:
+            # Sanitize unquote and eval to dict
+            show_to_add = ast.literal_eval(unquote_plus(show_to_add).strip())
+            other_shows = [ast.literal_eval(unquote_plus(x).strip()) for x in other_shows]
+        else:
+            return
+
+        indexer = show_to_add.get('selectedIndexer')
+        indexer_id = show_to_add.get('existingIndexerId')
+        show_name = show_to_add.get('showName')
+        show_dir = show_to_add.get('showDir')
+
         use_provided_info = bool(indexer_id and indexer and show_name)
 
         # use the given show_dir for the indexer search if available
@@ -604,12 +634,17 @@ class HomeAddShows(Home):
 
         return indexer, show_dir, indexer_id, show_name
 
-    def addExistingShows(self, shows_to_add=None, promptForSettings=None):
+    def addExistingShows(self, **data):
         """
         Receives a dir list and add them. Adds the ones with given TVDB IDs first, then forwards
         along to the newShow page.
         """
-        prompt_for_settings = promptForSettings
+        # We need to do this, because somewhere Tornado wraps the json in another json object.
+        json_param = json.loads(data.iteritems().next()[0])
+
+        # Get the passed attributes
+        shows_to_add = json_param.get('submitListOfShows')
+        prompt_for_settings = config.checkbox_to_value(json_param.get('promptForSettings'))
 
         # grab a list of other shows to add, if provided
         if not shows_to_add:
@@ -617,27 +652,35 @@ class HomeAddShows(Home):
         elif not isinstance(shows_to_add, list):
             shows_to_add = [shows_to_add]
 
-        shows_to_add = [unquote_plus(x) for x in shows_to_add]
-
-        prompt_for_settings = config.checkbox_to_value(prompt_for_settings)
+        # shows_to_add = [unquote_plus(x) for x in shows_to_add]
 
         indexer_id_given = []
         dirs_only = []
         # separate all the ones with Indexer IDs
         for cur_dir in shows_to_add:
-            if '|' in cur_dir:
-                split_vals = cur_dir.split('|')
-                if len(split_vals) < 3:
-                    dirs_only.append(cur_dir)
-            if '|' not in cur_dir:
+            # TODO: work in progress #434
+            # selected_indexer = cur_dir.get('selectedIndexer')
+            existing_indexer = cur_dir.get('existingIndexer')
+            existing_indexer_id = cur_dir.get('existingIndexerId')
+            # show_name = cur_dir.get('showName')
+            # show_dir = cur_dir.get('showDir')
+
+            if existing_indexer_id and existing_indexer:
+                # indexer = existing_indexer
+                pass
+            elif app.INDEXER_DEFAULT > 0:
+                # indexer = app.INDEXER_DEFAULT
+                pass
+
+            if not existing_indexer:
                 dirs_only.append(cur_dir)
             else:
                 indexer, show_dir, indexer_id, show_name = self.split_extra_show(cur_dir)
 
-                if not show_dir or not indexer_id or not show_name:
+                if not show_dir or not existing_indexer_id or not show_name:
                     continue
 
-                indexer_id_given.append((int(indexer), show_dir, int(indexer_id), show_name))
+                indexer_id_given.append((int(indexer), show_dir, int(existing_indexer_id), show_name))
 
         # if they want me to prompt for settings then I will just carry on to the newShow page
         if prompt_for_settings and shows_to_add:
@@ -670,5 +713,9 @@ class HomeAddShows(Home):
         if not dirs_only:
             return self.redirect('/home/')
 
+        # Keep track of the dirs, for shows that we want to add
+        self.shows_to_add = dirs_only
         # for the remaining shows we need to prompt for each one, so forward this on to the newShow page
-        return self.newShow(dirs_only[0], dirs_only[1:])
+        # We're going to return a json with info, that will be used to redirect
+        # return self.newShow(dirs_only[0], dirs_only[1:])
+        return json.dumps(dirs_only)
