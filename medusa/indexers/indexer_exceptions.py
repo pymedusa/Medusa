@@ -31,30 +31,30 @@ class IndexerError(IndexerException):
     """An error with the indexers api (Cannot connect, for example)"""
 
 
-class IndexerUserabort(IndexerException):
+class IndexerUserAbort(IndexerException):
     """User aborted the interactive selection (via
     the q command, ^c etc)
     """
 
 
-class IndexerShownotfound(IndexerException):
+class IndexerShowNotFound(IndexerException):
     """Show cannot be found in the indexer (non-existant show)"""
 
 
-class IndexerShowincomplete(IndexerException):
+class IndexerShowIncomplete(IndexerException):
     """Show found but incomplete in the indexer (incomplete show)"""
 
 
-class IndexerSeasonnotfound(IndexerException):
+class IndexerSeasonNotFound(IndexerException):
     """Season cannot be found in the indexer"""
 
 
-class IndexerEpisodenotfound(IndexerException):
+class IndexerEpisodeNotFound(IndexerException):
     """Episode cannot be found in the indexer
     """
 
 
-class IndexerAttributenotfound(IndexerException):
+class IndexerAttributeNotFound(IndexerException):
     """Raised if an episode does not have the requested
     attribute (such as a episode name)
     """

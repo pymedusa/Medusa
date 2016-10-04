@@ -441,7 +441,7 @@ class QueueItemAdd(ShowQueueItem):
             # if self.show.classification and "sports" in self.show.classification.lower():
             #     self.show.sports = 1
 
-        except app.indexer_exception as e:
+        except app.IndexerException as e:
             logger.log(
                 u"Unable to add show due to an error with " + app.indexerApi(self.indexer).name + ": " + ex(e),
                 logger.ERROR)
@@ -650,12 +650,12 @@ class QueueItemUpdate(ShowQueueItem):
                    logger.DEBUG)
         try:
             self.show.load_from_indexer()
-        except app.indexer_error as e:
+        except app.IndexerError as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
                        (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name,
                         error_msg=ex(e)), logger.WARNING)
             return
-        except app.indexer_attributenotfound as e:
+        except app.IndexerAttributenotfound as e:
             logger.log(u'{id}: Data retrieved from {indexer} was incomplete. Aborting: {error_msg}'.format
                        (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name,
                         error_msg=ex(e)), logger.WARNING)
@@ -686,7 +686,7 @@ class QueueItemUpdate(ShowQueueItem):
         # get episode list from TVDB
         try:
             IndexerEpList = self.show.load_episodes_from_indexer()
-        except app.indexer_exception as e:
+        except app.IndexerException as e:
             logger.log(u'{id}: Unable to get info from {indexer}. The show info will not be refreshed. '
                        u'Error: {error_msg}'.format
                        (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name, error_msg=ex(e)),

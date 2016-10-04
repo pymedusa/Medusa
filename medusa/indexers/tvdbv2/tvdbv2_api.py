@@ -34,9 +34,9 @@ from requests.compat import urljoin
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi)
 
 from .tvdbv2_ui import BaseUI, ConsoleUI
-from ..indexer_exceptions import (IndexerException, IndexerAttributenotfound,
-                                  IndexerEpisodenotfound, IndexerError, IndexerSeasonnotfound,
-                                  IndexerShowincomplete, IndexerShownotfound)
+from ..indexer_exceptions import (IndexerException, IndexerAttributeNotFound,
+                                  IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound,
+                                  IndexerShowIncomplete, IndexerShowNotFound)
 
 
 def log():
@@ -103,16 +103,16 @@ class Show(dict):
         # Data wasn't found, raise appropriate error
         if isinstance(key, int) or key.isdigit():
             # Episode number x was not found
-            raise IndexerSeasonnotfound('Could not find season %s' % (repr(key)))
+            raise IndexerSeasonNotFound('Could not find season %s' % (repr(key)))
         else:
             # If it's not numeric, it must be an attribute name, which
             # doesn't exist, so attribute error.
-            raise IndexerAttributenotfound('Cannot find attribute %s' % (repr(key)))
+            raise IndexerAttributeNotFound('Cannot find attribute %s' % (repr(key)))
 
     def airedOn(self, date):
         ret = self.search(str(date), 'firstaired')
         if len(ret) == 0:
-            raise IndexerEpisodenotfound('Could not find any episodes that aired on %s' % date)
+            raise IndexerEpisodeNotFound('Could not find any episodes that aired on %s' % date)
         return ret
 
     def search(self, term=None, key=None):
@@ -154,7 +154,7 @@ class Season(dict):
 
     def __getitem__(self, episode_number):
         if episode_number not in self:
-            raise IndexerEpisodenotfound('Could not find episode %s' % (repr(episode_number)))
+            raise IndexerEpisodeNotFound('Could not find episode %s' % (repr(episode_number)))
         else:
             return dict.__getitem__(self, episode_number)
 
@@ -203,7 +203,7 @@ class Episode(dict):
         try:
             return dict.__getitem__(self, key)
         except KeyError:
-            raise IndexerAttributenotfound('Cannot find attribute %s' % (repr(key)))
+            raise IndexerAttributeNotFound('Cannot find attribute %s' % (repr(key)))
 
     def search(self, term=None, key=None):
         """Search episode data for term, if it matches, return the Episode (self).
@@ -607,7 +607,7 @@ class TVDBv2(object):
         allSeries = self.search(series)
         if not allSeries:
             log().debug('Series result returned zero')
-            IndexerShownotfound('Show search returned zero results (cannot find show on TVDB)')
+            IndexerShowNotFound('Show search returned zero results (cannot find show on TVDB)')
 
         if not isinstance(allSeries, list):
             allSeries = [allSeries]
@@ -801,7 +801,7 @@ class TVDBv2(object):
 
             if not episode_data:
                 log().debug('Series results incomplete')
-                raise IndexerShowincomplete('Show search returned incomplete results (cannot find complete show on TheTVDB)')
+                raise IndexerShowIncomplete('Show search returned incomplete results (cannot find complete show on TheTVDB)')
 
             if 'episode' not in episode_data:
                 return False

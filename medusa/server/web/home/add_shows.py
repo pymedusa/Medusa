@@ -22,7 +22,7 @@ from ....blackandwhitelist import short_group_names
 from ....common import Quality
 from ....helper.common import sanitize_filename, try_int
 from ....helpers import get_showname_from_indexer
-from ....indexers.indexer_exceptions import indexer_exception
+from ....indexers.indexer_exceptions import IndexerException
 from ....show.Show import Show
 from ....show.recommendations.anidb import AnidbPopular
 from ....show.recommendations.imdb import ImdbPopular
@@ -85,7 +85,7 @@ class HomeAddShows(Home):
                     indexer_results = t[searchTerm]
                     # add search results
                     results.setdefault(indexer, []).extend(indexer_results)
-                except indexer_exception as msg:
+                except IndexerException as msg:
                     logger.log(u'Error searching for show: {error}'.format(error=msg))
 
         for i, shows in iteritems(results):
