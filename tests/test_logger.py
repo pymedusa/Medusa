@@ -1,11 +1,10 @@
 # coding=utf-8
-"""Tests for sickbeard.logger.py."""
+"""Tests for medusa.logger.py."""
 from datetime import datetime
 
+import medusa.logger as sut
+from medusa.logger import DEBUG, INFO, LogLine, WARNING
 import pytest
-
-import sickbeard.logger as sut
-from sickbeard.logger import DEBUG, INFO, LogLine, WARNING
 
 
 class TestStandardLoggingApi(object):
@@ -77,10 +76,14 @@ def describe_logline(logline):
     }
 
 
-def test_reverse_readlines(create_file):
+@pytest.mark.parametrize('line_pattern', [
+    b'This is a example of log line with number {n}',
+    u'This is a example of unicode log line with number {n}',
+    b'This is a example of log line with number {n} using \xbb',
+])
+def test_reverse_readlines(create_file, line_pattern):
     # Given
     no_lines = 10000
-    line_pattern = 'This is a example of log line with number {n}'
     filename = create_file(filename='samplefile.log', lines=[line_pattern.format(n=i) for i in range(0, no_lines)])
     expected = [line_pattern.format(n=no_lines - i - 1) for i in range(0, no_lines)]
 

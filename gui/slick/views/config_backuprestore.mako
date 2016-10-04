@@ -2,13 +2,13 @@
 <%!
     import datetime
     import locale
-    import sickbeard
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from sickbeard.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets
-    from sickbeard.sbdatetime import sbdatetime, date_presets, time_presets
-    from sickbeard import config
-    from sickbeard import metadata
-    from sickbeard.metadata.generic import GenericMetadata
+    import medusa as app
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
+    from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets
+    from medusa.sbdatetime import sbdatetime, date_presets, time_presets
+    from medusa import config
+    from medusa import metadata
+    from medusa.metadata.generic import GenericMetadata
 %>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -17,8 +17,8 @@
     <h1 class="title">${title}</h1>
 % endif
 <% indexer = 0 %>
-% if sickbeard.INDEXER_DEFAULT:
-    <% indexer = sickbeard.INDEXER_DEFAULT %>
+% if app.INDEXER_DEFAULT:
+    <% indexer = app.INDEXER_DEFAULT %>
 % endif
 <div id="config">
     <div id="config-content">

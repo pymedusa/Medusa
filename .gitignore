@@ -16,7 +16,7 @@ server.key
 
 #  Medusa Test Related   #
 ######################
-/tests/Logs/
+/tests/legacy/Logs/
 /tests/cache/
 /tests/sickbeard.db*
 /tests/cache.db*

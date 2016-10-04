@@ -4,21 +4,21 @@
     import urllib
     import ntpath
     import os.path
-    import sickbeard
+    import medusa as app
     import time
-    from sickbeard import subtitles, sbdatetime, network_timezones, helpers
-    import sickbeard.helpers
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
-    from sickbeard.common import Quality, qualityPresets, statusStrings, Overview
-    from sickbeard.helpers import anon_url
-    from sickbeard.show_name_helpers import containsAtLeastOneWord, filterBadReleases
-    from sickrage.helper.common import pretty_file_size, episode_num
-    from sickbeard.sbdatetime import sbdatetime
-    from sickrage.show.History import History
-    from sickbeard.failed_history import prepareFailedName
-    from sickrage.providers.GenericProvider import GenericProvider
-    from sickbeard import providers
-    from sickrage.helper.encoding import ek
+    from medusa import subtitles, sbdatetime, network_timezones, helpers
+    import medusa.helpers
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
+    from medusa.common import Quality, qualityPresets, statusStrings, Overview
+    from medusa.helpers import anon_url
+    from medusa.show_name_helpers import containsAtLeastOneWord, filterBadReleases
+    from medusa.helper.common import pretty_file_size, episode_num
+    from medusa.sbdatetime import sbdatetime
+    from medusa.show.History import History
+    from medusa.failed_history import prepareFailedName
+    from medusa.providers.GenericProvider import GenericProvider
+    from medusa import providers
+    from medusa.helper.encoding import ek
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
@@ -78,8 +78,8 @@
                     <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
             % endif
-                <a href="${anon_url(sickbeard.indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title='${sickbeard.indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}'>
-                    <img alt="${sickbeard.indexerApi(show.indexer).name}" height="16" width="16" src='images/${sickbeard.indexerApi(show.indexer).config["icon"]}' style="margin-top: -1px; vertical-align:middle;"/>
+                <a href="${anon_url(app.indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title='${app.indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}'>
+                    <img alt="${app.indexerApi(show.indexer).name}" height="16" width="16" src='images/${app.indexerApi(show.indexer).config["icon"]}' style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
             % if xem_numbering or xem_absolute_numbering:
                 <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
@@ -102,7 +102,7 @@
                 % endif
             </ul>
         </div><!-- #tags //-->
-        <div id="summary" ${"class=\"summaryFanArt\"" if sickbeard.FANART_BACKGROUND else ""}>
+        <div id="summary" ${"class=\"summaryFanArt\"" if app.FANART_BACKGROUND else ""}>
             <table class="summaryTable pull-left">
                 <% allowed_qualities, preferred_qualities = Quality.splitQuality(int(show.quality)) %>
                 <tr>
@@ -262,7 +262,7 @@
                         Size:
                     </td>
                     <td>
-                        ${pretty_file_size(sickbeard.helpers.get_size(showLoc[0]))}
+                        ${pretty_file_size(app.helpers.get_size(showLoc[0]))}
                     </td>
                 </tr><!-- Row: Size //-->
             </table><!-- Table: Summary //-->
@@ -280,7 +280,7 @@
                         <img src="images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/>
                     </td>
                 </tr><!-- Row: Language //-->
-                % if sickbeard.USE_SUBTITLES:
+                % if app.USE_SUBTITLES:
                 <tr>
                     <td class="showLegend">
                         Subtitles:
@@ -295,7 +295,7 @@
                         Season Folders:
                     </td>
                     <td>
-                        ${yes_img if not show.flatten_folders or sickbeard.NAMING_FORCE_FOLDERS else no_img}
+                        ${yes_img if not show.flatten_folders or app.NAMING_FORCE_FOLDERS else no_img}
                     </td>
                 </tr><!-- Row: Season Folders //-->
                 <tr>
@@ -361,10 +361,10 @@
     <div id="wrapper" data-history-toggle="hide">
         <div id="container">
         % if episode_history:
-            <table id="history" class="${"displayShowTableFanArt tablesorterFanArt" if sickbeard.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
+            <table id="history" class="${"displayShowTableFanArt tablesorterFanArt" if app.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
                 <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
                     <tr style="height: 60px;" role="row">
-                        <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader ${"displayShowTableFanArt" if sickbeard.FANART_BACKGROUND else "displayShowTable"}">
+                        <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader ${"displayShowTableFanArt" if app.FANART_BACKGROUND else "displayShowTable"}">
                             <h3 style="display: inline;">
                                 History
                             </h3>
@@ -418,11 +418,11 @@
         <!-- @TODO: Change this to use the REST API -->
         <!-- add provider meta data -->
             <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
-            <table id="showTableSeason" class="${"displayShowTableFanArt tablesorterFanArt" if sickbeard.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
+            <table id="showTableSeason" class="${"displayShowTableFanArt tablesorterFanArt" if app.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
                 <!-- @TODO: Change this first thead to a caption with CSS styling -->
                 <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
                     <tr style="height: 60px;" role="row">
-                        <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader ${"displayShowTableFanArt" if sickbeard.FANART_BACKGROUND else "displayShowTable"}">
+                        <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader ${"displayShowTableFanArt" if app.FANART_BACKGROUND else "displayShowTable"}">
                             <h3 style="display: inline;">
                                 Season ${season}
                             % if manual_search_type != 'season':
@@ -433,7 +433,7 @@
                     </tr>
                 </tbody>
             </table>
-            <table id="showTable" class="${"displayShowTableFanArt tablesorterFanArt" if sickbeard.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
+            <table id="showTable" class="${"displayShowTableFanArt tablesorterFanArt" if app.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
                 <thead aria-live="polite" aria-relevant="all">
                     <tr>
                         <th data-priority="critical" class="col-name">Release</th>
@@ -538,7 +538,7 @@
                         </td>
                         <td class="col-size">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
                         <td align="center">${hItem["provider_type"]}</td>
-                        <td class="col-date">${datetime.fromtimestamp(hItem["time"]).strftime(sickbeard.DATE_PRESET+" "+sickbeard.TIME_PRESET)}</td>
+                        <td class="col-date">${datetime.fromtimestamp(hItem["time"]).strftime(app.DATE_PRESET+" "+app.TIME_PRESET)}</td>
                         <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                     </tr>
                 % endfor

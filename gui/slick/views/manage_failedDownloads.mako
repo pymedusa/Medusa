@@ -1,14 +1,14 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
+    import medusa as app
     import os.path
     import datetime
     import re
-    from sickbeard import providers
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from sickbeard.common import Quality, qualityPresets, qualityPresetStrings, statusStrings, Overview
-    from sickrage.providers.GenericProvider import GenericProvider
-    from sickrage.helper.common import pretty_file_size
+    from medusa import providers
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
+    from medusa.common import Quality, qualityPresets, qualityPresetStrings, statusStrings, Overview
+    from medusa.providers.GenericProvider import GenericProvider
+    from medusa.helper.common import pretty_file_size
 %>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -24,7 +24,7 @@
         <option value="0" ${'selected="selected"' if limit == '0' else ''}>All</option>
     </select>
 </div>
-<table id="failedTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
+<table id="failedTable" class="defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
   <thead>
     <tr>
       <th class="nowrap" width="75%" style="text-align: left;">Release</th>

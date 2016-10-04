@@ -1,7 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
-    from sickbeard import classes
+    import medusa as app
+    from medusa import classes
 %>
 <%block name="css">
 <style>
@@ -14,7 +14,7 @@ pre {
 </%block>
 <%block name="content">
 <%
-    if logLevel == sickbeard.logger.WARNING:
+    if logLevel == app.logger.WARNING:
         errors = classes.WarningViewer.errors
         title = 'WARNING logs'
     else:

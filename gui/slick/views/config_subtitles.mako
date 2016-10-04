@@ -1,8 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    from sickbeard import subtitles
-    import sickbeard
-    from sickbeard.helpers import anon_url
+    from medusa import subtitles
+    import medusa as app
+    from medusa.helpers import anon_url
 %>
 <%block name="scripts">
 <script>
@@ -46,7 +46,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                             <label for="use_subtitles" class="clearfix">
                                 <span class="component-title">Search Subtitles</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" class="enabler" ${' checked="checked"' if sickbeard.USE_SUBTITLES else ''} id="use_subtitles" name="use_subtitles">
+                                    <input type="checkbox" class="enabler" ${' checked="checked"' if app.USE_SUBTITLES else ''} id="use_subtitles" name="use_subtitles">
                                 </span>
                             </label>
                         </div>
@@ -61,7 +61,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="subtitles_stop_at_first">
                                         <span class="component-title">Download only one language (any)</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="subtitles_stop_at_first" id="subtitles_stop_at_first" ${('', 'checked="checked"')[bool(sickbeard.SUBTITLES_STOP_AT_FIRST)]}/>
+                                            <input type="checkbox" name="subtitles_stop_at_first" id="subtitles_stop_at_first" ${('', 'checked="checked"')[bool(app.SUBTITLES_STOP_AT_FIRST)]}/>
                                             <p>Stop download subtitles after first download</p>
                                         </span>
                                     </label>
@@ -69,7 +69,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                 <div class="field-pair">
                                     <label>
                                         <span class="component-title">Subtitle Directory</span>
-                                        <input type="text" value="${sickbeard.SUBTITLES_DIR}" id="subtitles_dir" name="subtitles_dir" class="form-control input-sm input350">
+                                        <input type="text" value="${app.SUBTITLES_DIR}" id="subtitles_dir" name="subtitles_dir" class="form-control input-sm input350">
                                     </label>
                                     <label>
                                             <span class="component-title">&nbsp;</span>
@@ -83,7 +83,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                 <div class="field-pair">
                                     <label>
                                         <span class="component-title">Subtitle Find Frequency</span>
-                                        <input type="number" name="subtitles_finder_frequency" value="${sickbeard.SUBTITLES_FINDER_FREQUENCY}" hours="1" min="1" step="1" class="form-control input-sm input75" />
+                                        <input type="number" name="subtitles_finder_frequency" value="${app.SUBTITLES_FINDER_FREQUENCY}" hours="1" min="1" step="1" class="form-control input-sm input75" />
                                         <span class="component-desc">time in hours between scans (default: 1)</span>
                                     </label>
                                 </div>
@@ -91,7 +91,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label for="subtitles_perfect_match" class="clearfix">
                                         <span class="component-title">Perfect matches</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" class="enabler" ${' checked="checked"' if sickbeard.SUBTITLES_PERFECT_MATCH else ''} id="subtitles_perfect_match" name="subtitles_perfect_match">
+                                            <input type="checkbox" class="enabler" ${' checked="checked"' if app.SUBTITLES_PERFECT_MATCH else ''} id="subtitles_perfect_match" name="subtitles_perfect_match">
                                             <p>Only download subtitles that match: release group, video codec, audio codec and resolution</p>
                                             <p>If disabled you may get out of sync subtitles</p>
                                         </span>
@@ -101,7 +101,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="subtitles_history">
                                         <span class="component-title">Subtitles History</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="subtitles_history" id="subtitles_history" ${'checked="checked"' if sickbeard.SUBTITLES_HISTORY else ''}/>
+                                            <input type="checkbox" name="subtitles_history" id="subtitles_history" ${'checked="checked"' if app.SUBTITLES_HISTORY else ''}/>
                                             <p>Log downloaded Subtitle on History page?</p>
                                         </span>
                                     </label>
@@ -110,7 +110,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="subtitles_multi">
                                         <span class="component-title">Subtitles Multi-Language</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="subtitles_multi" id="subtitles_multi" ${'checked="checked"' if sickbeard.SUBTITLES_MULTI else ''}/>
+                                            <input type="checkbox" name="subtitles_multi" id="subtitles_multi" ${'checked="checked"' if app.SUBTITLES_MULTI else ''}/>
                                             <p>Append language codes to subtitle filenames?</p>
                                         </span>
                                     </label>
@@ -123,7 +123,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="subtitles_keep_only_wanted">
                                         <span class="component-title">Delete unwanted subtitles</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="subtitles_keep_only_wanted" id="subtitles_keep_only_wanted" ${'checked="checked"' if sickbeard.SUBTITLES_KEEP_ONLY_WANTED else ''}/>
+                                            <input type="checkbox" name="subtitles_keep_only_wanted" id="subtitles_keep_only_wanted" ${'checked="checked"' if app.SUBTITLES_KEEP_ONLY_WANTED else ''}/>
                                             <p>Enable to delete unwanted subtitle languages bundled with release</p>
                                             <p>Avoid post-process releases with unwanted language subtitles when feature 'postpone if no subs' is enabled</p>
                                         </span>
@@ -133,7 +133,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="embedded_subtitles_all">
                                         <span class="component-title">Embedded Subtitles</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="embedded_subtitles_all" id="embedded_subtitles_all" ${'checked="checked"' if sickbeard.EMBEDDED_SUBTITLES_ALL else ''}/>
+                                            <input type="checkbox" name="embedded_subtitles_all" id="embedded_subtitles_all" ${'checked="checked"' if app.EMBEDDED_SUBTITLES_ALL else ''}/>
                                             <p>Ignore subtitles embedded inside video file?</p>
                                             <p><b>Warning: </b>this will ignore <em>all</em> embedded subtitles for every video file!</p>
                                         </span>
@@ -143,7 +143,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="embedded_subtitles_unknown_lang">
                                         <span class="component-title">Unknown language</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="embedded_subtitles_unknown_lang" id="embedded_subtitles_unknown_lang" ${('', 'checked="checked"')[bool(sickbeard.EMBEDDED_SUBTITLES_UNKNOWN_LANG)]}/>
+                                            <input type="checkbox" name="embedded_subtitles_unknown_lang" id="embedded_subtitles_unknown_lang" ${('', 'checked="checked"')[bool(app.EMBEDDED_SUBTITLES_UNKNOWN_LANG)]}/>
                                             <p>Consider unknown embedded subtitles as wanted language to avoid postpone post-process</p>
                                             <p>Only works with setting 'Postpone post processing' enabled</p>
                                         </span>
@@ -153,7 +153,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="subtitles_hearing_impaired">
                                         <span class="component-title">Hearing Impaired Subtitles</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="subtitles_hearing_impaired" id="subtitles_hearing_impaired" ${'checked="checked"' if sickbeard.SUBTITLES_HEARING_IMPAIRED else ''}/>
+                                            <input type="checkbox" name="subtitles_hearing_impaired" id="subtitles_hearing_impaired" ${'checked="checked"' if app.SUBTITLES_HEARING_IMPAIRED else ''}/>
                                             <p>Download hearing impaired style subtitles?</p>
                                         </span>
                                     </label>
@@ -161,7 +161,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                 <div class="field-pair">
                                     <label>
                                         <span class="component-title">Pre-Scripts</span>
-                                        <input type="text" name="subtitles_pre_scripts" value="${'|'.join(sickbeard.SUBTITLES_PRE_SCRIPTS)}" class="form-control input-sm input350"/>
+                                        <input type="text" name="subtitles_pre_scripts" value="${'|'.join(app.SUBTITLES_PRE_SCRIPTS)}" class="form-control input-sm input350"/>
                                     </label>
                                     <label>
                                         <span class="component-desc">
@@ -172,11 +172,11 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                 <div class="field-pair">
                                         <label>
                                         <span class="component-title">Extra Scripts</span>
-                                           <input type="text" name="subtitles_extra_scripts" value="${'|'.join(sickbeard.SUBTITLES_EXTRA_SCRIPTS)}" class="form-control input-sm input350"/>
+                                           <input type="text" name="subtitles_extra_scripts" value="${'|'.join(app.SUBTITLES_EXTRA_SCRIPTS)}" class="form-control input-sm input350"/>
                                         </label>
                                         <label>
                                         <span class="component-desc">
-                                            <li>See the <a href="https://github.com/PyMedusa/SickRage/wiki/Subtitle%20Scripts" class="wiki"><strong>Wiki</strong></a> for a script arguments description.</li>
+                                            <li>See the <a href="${app.SUBTITLES_URL}" class="wiki"><strong>Wiki</strong></a> for a script arguments description.</li>
                                             <li>Additional scripts separated by <b>|</b>.</li>
                                             <li>Scripts are called after each episode has searched and downloaded subtitles.</li>
                                             <li>For any scripted languages, include the interpreter executable before the script. See the following example:</li>
@@ -200,7 +200,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                     </div>
                     <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px;">
                         <ul id="service_order_list">
-                        % for curService in sickbeard.subtitles.sorted_service_list():
+                        % for curService in app.subtitles.sorted_service_list():
                             <li class="ui-state-default" id="${curService['name']}">
                                 <input type="checkbox" id="enable_${curService['name']}" class="service_enabler" ${('', 'checked="checked"')[curService['enabled'] is True]}/>
                                 <a href="${anon_url(curService['url'])}" class="imgLink" target="_new">
@@ -211,7 +211,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                           </li>
                         % endfor
                         </ul>
-                        <input type="hidden" name="service_order" id="service_order" value="${' '.join(['%s:%d' % (x['name'], x['enabled']) for x in sickbeard.subtitles.sorted_service_list()])}"/>
+                        <input type="hidden" name="service_order" id="service_order" value="${' '.join(['%s:%d' % (x['name'], x['enabled']) for x in app.subtitles.sorted_service_list()])}"/>
                         <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group2 //-->
@@ -223,12 +223,12 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                     <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px;">
                         <%
                             providerLoginDict = {
-                                'addic7ed': {'user': sickbeard.ADDIC7ED_USER, 'pass': sickbeard.ADDIC7ED_PASS},
-                                'itasa': {'user': sickbeard.ITASA_USER, 'pass': sickbeard.ITASA_PASS},
-                                'legendastv': {'user': sickbeard.LEGENDASTV_USER, 'pass': sickbeard.LEGENDASTV_PASS},
-                                'opensubtitles': {'user': sickbeard.OPENSUBTITLES_USER, 'pass': sickbeard.OPENSUBTITLES_PASS}}
+                                'addic7ed': {'user': app.ADDIC7ED_USER, 'pass': app.ADDIC7ED_PASS},
+                                'itasa': {'user': app.ITASA_USER, 'pass': app.ITASA_PASS},
+                                'legendastv': {'user': app.LEGENDASTV_USER, 'pass': app.LEGENDASTV_PASS},
+                                'opensubtitles': {'user': app.OPENSUBTITLES_USER, 'pass': app.OPENSUBTITLES_PASS}}
                         %>
-                        % for curService in sickbeard.subtitles.sorted_service_list():
+                        % for curService in app.subtitles.sorted_service_list():
                             % if curService['name'] not in providerLoginDict.keys():
                                 <% continue %>
                             % endif

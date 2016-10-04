@@ -11,10 +11,6 @@ inc_top.mako
     margin-bottom: -15px;
 }
 
-#contentWrapper {
-/*	background: url("../images/bg.png") repeat 0 0 transparent; */
-}
-
 .icon-white {
     background-image: url("../images/glyphicons-halflings-white.png");
 }
@@ -137,12 +133,16 @@ inc_top.mako
     background: rgb(0, 0, 0) url("../css/lib/images/ui-bg_flat_0_000000_40x100.png") 50% 50% repeat-x;
 }
 
-.ui-state-active a, .ui-state-active a:link, .ui-state-active a:visited {
+.ui-state-active a,
+.ui-state-active a:link,
+.ui-state-active a:visited {
     color: rgb(20, 15, 6);
     text-decoration: none;
 }
 
-.ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited {
+.ui-state-default a,
+.ui-state-default a:link,
+.ui-state-default a:visited {
     color: rgb(34, 34, 34);
     text-decoration: none;
 }
@@ -156,7 +156,7 @@ inc_top.mako
 .ui-tabs .ui-tabs-nav {
     padding-left: 0;
     background: transparent;
-    border-width: 0 0 0 0;
+    border-width: 0;
     -moz-border-radius: 0;
     -webkit-border-radius: 0;
     border-radius: 0;
@@ -197,13 +197,11 @@ inc_top.mako
 .upgrade-notification {
     width: 600px;
     text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 50px;
-    margin-bottom: 0;
+    margin: 50px auto 0;
 }
 
-[class^="menu-icon-"], [class*=" menu-icon-"] {
+[class^="menu-icon-"],
+[class*=" menu-icon-"] {
     background: url("../images/menu/16x_sprite_colored_menu_icons.png");
     height: 16px;
     width: 16px;
@@ -366,7 +364,7 @@ inc_top.mako
 }
 
 .enable-daily-search-icon {
-    background-image: url("../images/search_daily_8x8.png")!important;
+    background-image: url("../images/search_daily_8x8.png") !important;
     width: 8px;
     height: 8px;
     margin-top: 5px;
@@ -374,7 +372,7 @@ inc_top.mako
 }
 
 .enable-backlog-search-icon {
-    background-image: url("../images/search_backlog_8x8.png")!important;
+    background-image: url("../images/search_backlog_8x8.png") !important;
     width: 8px;
     height: 8px;
     margin-top: 5px;
@@ -382,13 +380,12 @@ inc_top.mako
 }
 
 .enable-manual-search-icon {
-    background-image: url("../images/search_manual_8x8.png")!important;
+    background-image: url("../images/search_manual_8x8.png") !important;
     width: 8px;
     height: 8px;
     margin-top: 5px;
     margin-right: 3px;
 }
-
 
 /* =======================================================================
 inc_bottom.mako
@@ -415,9 +412,11 @@ inc_rootDirs.mako
 .rootdir-controls {
     width: 430px;
 }
+
 .rootdir-selectbox {
     padding: 0 0 5px;
 }
+
 .rootdir-controls {
     text-align: center;
 }
@@ -431,7 +430,6 @@ home.mako
     overflow: hidden;
     height: 66px;
     border-radius: 8px;
-    vertical-align: top;
     width: 360px;
     display: block;
     margin-left: auto;
@@ -469,9 +467,16 @@ home.mako
     overflow: visible;
     text-align: center;
     text-shadow: 0 0 0.1em rgb(255, 255, 255);
-    vertical-align: middle;
     font-size: 12px;
     color: rgb(0, 0, 0);
+}
+
+.progress-100,
+.progress-80,
+.progress-60,
+.progress-40,
+.progress-20 {
+    border-radius: 3px;
 }
 
 .progress-100 {
@@ -479,9 +484,6 @@ home.mako
     background-image: linear-gradient(rgb(57, 95, 7), rgb(42, 71, 5)) !important;
     background-image: -webkit-linear-gradient(rgb(57, 95, 7), rgb(42, 71, 5)) !important;
     background-image: -o-linear-gradient(rgb(57, 95, 7), rgb(42, 71, 5)) !important;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    border-radius: 3px;
 }
 
 .progress-80 {
@@ -489,9 +491,6 @@ home.mako
     background-image: linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
     background-image: -webkit-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
     background-image: -o-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    border-radius: 3px;
 }
 
 .progress-60 {
@@ -499,9 +498,6 @@ home.mako
     background-image: linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
     background-image: -webkit-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
     background-image: -o-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    border-radius: 3px;
 }
 
 .progress-40 {
@@ -509,9 +505,6 @@ home.mako
     background-image: linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
     background-image: -webkit-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
     background-image: -o-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    border-radius: 3px;
 }
 
 .progress-20 {
@@ -519,9 +512,6 @@ home.mako
     background-image: linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
     background-image: -webkit-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
     background-image: -o-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    border-radius: 3px;
 }
 
 span.show-option {
@@ -534,7 +524,8 @@ span.show-option {
     display: none;
 }
 
-#container, #container-anime {
+#container,
+#container-anime {
     margin: 0 auto;
 }
 
@@ -568,19 +559,31 @@ span.show-option {
     top: -2px;
 }
 
-.show-container .ui-corner-all, .ui-corner-bottom, .ui-corner-right, .ui-corner-br {
+.show-container .ui-corner-all,
+.ui-corner-bottom,
+.ui-corner-right,
+.ui-corner-br {
     border-bottom-right-radius: 0;
 }
 
-.show-container .ui-corner-all, .ui-corner-bottom, .ui-corner-left, .ui-corner-bl {
+.show-container .ui-corner-all,
+.ui-corner-bottom,
+.ui-corner-left,
+.ui-corner-bl {
     border-bottom-left-radius: 0;
 }
 
-.show-container .ui-corner-all, .ui-corner-top, .ui-corner-right, .ui-corner-tr {
+.show-container .ui-corner-all,
+.ui-corner-top,
+.ui-corner-right,
+.ui-corner-tr {
     border-top-right-radius: 0;
 }
 
-.show-container .ui-corner-all, .ui-corner-top, .ui-corner-left, .ui-corner-tl {
+.show-container .ui-corner-all,
+.ui-corner-top,
+.ui-corner-left,
+.ui-corner-tl {
     border-top-left-radius: 0;
 }
 
@@ -590,12 +593,15 @@ span.show-option {
     border-left: 0;
     border-right: 0;
 }
+
 .ui-progressbar .ui-progressbar-value {
-    height:20px;
+    height: 20px;
 }
+
 .ui-progressbar .progress-20 {
     border: none;
 }
+
 .show-container .progress-20,
 .show-container .progress-40,
 .show-container .progress-60,
@@ -609,14 +615,14 @@ span.show-option {
     overflow: hidden;
     white-space: nowrap;
     font-size: 11px;
-    margin: 4px 4px 0 4px;
+    margin: 4px 4px 0;
 }
 
 .show-attributes {
-    margin: 4px 4px 0px 4px;
+    margin: 4px 4px 0;
 }
 
-.show-title:after {
+.show-title::after {
     content: "";
     pointer-events: none;
     position: absolute;
@@ -636,11 +642,11 @@ span.show-option {
     overflow: hidden;
     white-space: nowrap;
     font-size: 11px;
-    margin: 0 4px 4px 4px;
+    margin: 0 4px 4px;
     color: rgb(148, 148, 148);
 }
 
-.show-date:after {
+.show-date::after {
     content: "";
     pointer-events: none;
     position: absolute;
@@ -656,8 +662,8 @@ span.show-option {
 }
 
 .show-table {
-    text-align:center;
-    vertical-align:middle;
+    text-align: center;
+    vertical-align: middle;
     width: 33%;
 }
 
@@ -699,9 +705,9 @@ span.show-option {
     margin-left: 5px;
 }
 
-#sort-by ul, #sort-by li {
+#sort-by ul,
+#sort-by li {
     display: inline;
-    margin: 0;
     padding: 0;
 }
 
@@ -743,7 +749,7 @@ home_addShows.mako
     margin-left: auto;
 }
 
-#addShowPortal  a {
+#addShowPortal a {
     padding: 10px;
 }
 
@@ -768,7 +774,8 @@ div.buttontext p {
     font-size: 13px;
 }
 
-[class^="add-list-icon-"], [class*=" add-list-icon-"] {
+[class^="add-list-icon-"],
+[class*=" add-list-icon-"] {
     background: url("../images/32x_sprite_colored_add_lists.png");
     height: 32px;
     width: 32px;
@@ -802,12 +809,13 @@ div.buttontext p {
 home_newShow.mako
 ========================================================================== */
 
-#addShowForm, #recommendedShowsForm {
+#addShowForm,
+#recommendedShowsForm {
     width: 800px;
     margin-left: auto;
     margin-right: auto;
     padding: 10px 0;
-    font-size:13px;
+    font-size: 13px;
 }
 
 #newShowPortal {
@@ -844,7 +852,7 @@ ul#rootDirStaticList {
 }
 
 ul#rootDirStaticList li {
-    padding: 4px 5px 4px 5px;
+    padding: 4px 5px;
     margin: 2px;
     list-style: none outside none;
     cursor: pointer;
@@ -913,7 +921,6 @@ div.recommended-image {
     white-space: nowrap;
     font-size: 12px;
     overflow: hidden;
-/*	text-shadow: 1px 1px 0px #000;*/
     margin: 0;
     text-decoration: none;
 }
@@ -984,9 +991,9 @@ displayShow.mako
 #nextShow,
 #topcontrol {
     -webkit-filter: grayscale(100%);
+    filter: url("data:image/svg+xml;utf8,<svg version='1.1' xmlns='https://www.w3.org/2000/svg' height='0'><filter id='greyscale'><feColorMatrix type='matrix' values='0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0' /></filter></svg>#greyscale");
     filter: grayscale(100%);
     filter: rgb(128, 128, 128);
-    filter: url("data:image/svg+xml;utf8,<svg version='1.1' xmlns='http://www.w3.org/2000/svg' height='0'><filter id='greyscale'><feColorMatrix type='matrix' values='0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0' /></filter></svg>#greyscale");
 }
 
 h1.title {
@@ -1234,7 +1241,7 @@ span.snatched b {
 }
 
 .summaryFanArt {
-   opacity: 0.9;
+    opacity: 0.9;
 }
 
 .displayShowTableFanArt th.row-seasonheader {
@@ -1257,7 +1264,7 @@ span.snatched b {
     background-color: transparent !important;
 }
 
-.sickbeardTable {
+.defaultTable {
     table-layout: auto;
     width: 100%;
     border-collapse: collapse;
@@ -1267,19 +1274,19 @@ span.snatched b {
     empty-cells: show;
 }
 
-.sickbeardTable.display_show {
+.defaultTable.display_show {
     clear: both;
 }
 
-.sickbeardTable th {
+.defaultTable th {
     color: rgb(255, 255, 255);
     text-align: center;
     background-color: rgb(51, 51, 51);
     white-space: nowrap;
 }
 
-.sickbeardTable th,
-.sickbeardTable td {
+.defaultTable th,
+.defaultTable td {
     border-top: 1px solid rgb(255, 255, 255);
     border-left: 1px solid rgb(255, 255, 255);
     padding: 4px;
@@ -1430,7 +1437,6 @@ div.season-scene-exception {
 .showOptions {
     width: 180px;
     float: right;
-    vertical-align: middle;
 }
 
 /* =======================================================================
@@ -1799,7 +1805,7 @@ select .selected {
     width: 16px;
 }
 
-.icon16-config-sickrage {
+.icon16-config-application {
     background-position: 0 0;
 }
 
@@ -2176,7 +2182,6 @@ td.tableright {
 .optionWrapper span.selectTitle {
     float: left;
     text-align: left;
-    vertical-align: middle;
     width: 225px;
     padding: 6px 0;
 }
@@ -2379,10 +2384,7 @@ option.flag {
 }
 
 #Anime div.component-group-desc p {
-    margin-bottom: 0.4em;
-    margin-left: 0;
-    margin-right: 0;
-    margin-top: 0.4em;
+    margin: 0.4em 0;
     width: 95%;
 }
 
@@ -2598,10 +2600,10 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     color: rgb(0, 0, 0);
 }
 
+/* @TODO: Fix this stupid bootstrap hack http://stackoverflow.com/a/24008735/2311366 */
 .form-control-inline {
-    min-width: 0;
-    width: auto;
     display: inline;
+    width: auto;
 }
 
 .btn {
@@ -2975,10 +2977,8 @@ input sizing (for config pages)
 ========================================================================== */
 
 #config select {
-    min-width: 0;
     width: auto;
     display: inline;
-    margin-top: -4px;
 }
 
 .btn-inline {
@@ -3185,19 +3185,16 @@ tablesorter.css
     background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAAP///////yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
     background-position: center right;
     background-repeat: no-repeat;
-    /* background-image: url("../images/tablesorter/bg.gif"); */
 }
 
 .tablesorter thead .tablesorter-headerDesc {
     background-color: rgb(85, 85, 85);
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
-    /* background-image: url("../images/tablesorter/asc.gif"); */
 }
 
 .tablesorter thead .tablesorter-headerAsc {
-  background-color: rgb(85, 85, 85);
-  background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
-  /* background-image: url("../images/tablesorter/desc.gif"); */
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
 }
 
 .tablesorter thead .sorter-false {
@@ -3213,12 +3210,12 @@ thead.tablesorter-stickyHeader {
 
 /* Zebra Widget - row alternating colors */
 .tablesorter tr.odd,
-.sickbeardTable tr.odd {
+.defaultTable tr.odd {
     background-color: rgb(245, 241, 228);
 }
 
 .tablesorter tr.even,
-.sickbeardTable tr.even {
+.defaultTable tr.even {
     background-color: rgb(223, 218, 207);
 }
 
@@ -3231,8 +3228,8 @@ thead.tablesorter-stickyHeader {
     width: 98%;
     height: auto;
     -webkit-box-sizing: border-box;
-        -moz-box-sizing: border-box;
-            box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 .tablesorter tr.tablesorter-filter-row,
@@ -3280,14 +3277,10 @@ ul.token-input-list {
     font-family: Verdana, sans-serif;
     z-index: 999;
     margin: 0;
-    padding: 0 0 1px 0;
+    padding: 0 0 1px;
     background-color: rgb(255, 255, 255);
     list-style-type: none;
-/*    clear: left; */
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-    border-bottom-left-radius: 3px;
-    border-bottom-right-radius: 3px;
+    border-radius: 3px;
 }
 
 ul.token-input-list li {
@@ -3298,7 +3291,6 @@ ul.token-input-list li input {
     border: 0;
     padding: 3px 4px;
     background-color: rgb(255, 255, 255);
-/*    -webkit-appearance: caret; */
 }
 
 li.token-input-token {
@@ -3306,7 +3298,7 @@ li.token-input-token {
     height: auto !important;
     height: 1%;
     margin: 3px;
-    padding: 3px 5px 0 5px;
+    padding: 3px 5px 0;
     background-color: rgb(208, 239, 160);
     color: rgb(0, 0, 0);
     font-weight: bold;
@@ -3426,8 +3418,8 @@ jquery.confirm.css
     top: 0;
     left: 0;
     background: url("../images/bg.gif");
-    background: -moz-linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)) repeat-x rgba(0,0,0,0.5);
-    background:-webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(0,0,0,0.5)), to(rgba(0,0,0,0.5))) repeat-x rgba(0,0,0,0.5);
+    background: -moz-linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)) repeat-x rgba(0, 0, 0, 0.5);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(0, 0, 0, 0.5)), to(rgba(0, 0, 0, 0.5))) repeat-x rgba(0, 0, 0, 0.5);
     z-index: 100000;
 }
 
@@ -3648,8 +3640,7 @@ input.tablesorter-filter.disabled {
     display: none;
 }
 
-/* This fixes bold font be used */
-/* @TODO replace this with proper CSS overrides */
+/* This fixes bold font be used | @TODO replace this with proper CSS overrides */
 .ui-state-default,
 .ui-widget-content .ui-state-default,
 .ui-widget-header {
@@ -3686,7 +3677,9 @@ viewLog.mako
     .checkbox-inline.pull-xs-left + .checkbox-inline.pull-xs-left {
         margin-left: 0;
     }
-    .radio-inline.pull-xs-left, .checkbox-inline.pull-xs-left {
+
+    .radio-inline.pull-xs-left,
+    .checkbox-inline.pull-xs-left {
         margin-right: 10px;
     }
 }

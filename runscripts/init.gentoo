@@ -7,17 +7,17 @@
 # 1/29 Created          Richard Powell          richard@powell.ws
 
 # You will need to create a configuration file in order for this script
-# to work properly. Please create /etc/conf.d/sickrage with the following:
+# to work properly. Please create /etc/conf.d/medusa with the following:
 #
-# SICKRAGE_USER=<user you want sickrage to run under>
-# SICKRAGE_GROUP=<group you want sickrage to run under>
-# SICKRAGE_DIR=<path to Sickbeard.py>
+# SICKRAGE_USER=<user you want medusa to run under>
+# SICKRAGE_GROUP=<group you want medusa to run under>
+# SICKRAGE_DIR=<path to start.py>
 # PATH_TO_PYTHON_2=/usr/bin/python2.7
 # SICKRAGE_DATADIR=<directory that contains sickbeard.db file>
-# SICKRAGE_CONFDIR=<directory that contains Sickrage's config.ini file>
+# SICKRAGE_CONFDIR=<directory that contains Medusa's config.ini file>
 #
 
-RUNDIR=/var/run/sickrage
+RUNDIR=/var/run/medusa
 
 depend() {
     need net
@@ -33,11 +33,11 @@ get_pidfile() {
        <  ${SICKRAGE_CONFDIR}/config.ini \
         | sed -n -e "/^\[General\]/,/^\s*\[/{/^[^;].*\=.*/p;}"`
 
-    echo "${RUNDIR}/sickrage-${web_port}.pid"
+    echo "${RUNDIR}/medusa-${web_port}.pid"
 }
 
 start() {
-    ebegin "Starting Sickrage"
+    ebegin "Starting Medusa"
 
     checkpath -q -d -o ${SICKRAGE_USER}:${SICKRAGE_GROUP} -m 0770 "${RUNDIR}"
 
@@ -50,7 +50,7 @@ start() {
         --pidfile $(get_pidfile) \
         --exec ${PATH_TO_PYTHON_2} \
         -- \
-        ${SICKRAGE_DIR}/SickBeard.py \
+        ${SICKRAGE_DIR}/start.py \
         -d \
         --pidfile $(get_pidfile) \
         --config ${SICKRAGE_CONFDIR}/config.ini \
@@ -73,5 +73,5 @@ stop() {
     local pidfile=$(get_pidfile)
     local rc
 
-    ebegin "Stopping Sickrage"
+    ebegin "Stopping Medusa"
 }

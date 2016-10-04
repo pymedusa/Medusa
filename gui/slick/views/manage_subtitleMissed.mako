@@ -1,9 +1,9 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    from sickbeard import subtitles
+    from medusa import subtitles
     import datetime
-    import sickbeard
-    from sickbeard import common
+    import medusa as app
+    from medusa import common
 %>
 <%block name="content">
     <div id="content960">
@@ -21,7 +21,7 @@
         <br>
         % endif
         <form action="manage/subtitleMissed" method="get">
-            % if sickbeard.SUBTITLES_MULTI:
+            % if app.SUBTITLES_MULTI:
                 Manage episodes without <select name="whichSubs" class="form-control form-control-inline input-sm">
                 <option value="all">All</option>
                 % for sub_code in subtitles.wanted_languages():
@@ -47,7 +47,7 @@
         ##Strange that this is used by js but is an input outside of any form?
         <input type="hidden" id="selectSubLang" name="selectSubLang" value="${whichSubs}" />
         <form action="manage/downloadSubtitleMissed" method="post">
-            % if sickbeard.SUBTITLES_MULTI:
+            % if app.SUBTITLES_MULTI:
                 <h2>Episodes without ${subsLanguage} subtitles.</h2>
             % else:
                 % for index, sub_code in enumerate(subtitles.wanted_languages()):
@@ -63,7 +63,7 @@
                 <button type="button" class="btn btn-xs unselectAllShows">Clear all</button>
             </div>
             <br>
-            <table class="sickbeardTable manageTable" cellspacing="1" border="0" cellpadding="0">
+            <table class="defaultTable manageTable" cellspacing="1" border="0" cellpadding="0">
             % for cur_indexer_id in sorted_show_ids:
                 <tr id="${cur_indexer_id}">
                     <th style="width: 1%;"><input type="checkbox" class="allCheck" id="allCheck-${cur_indexer_id}" name="${cur_indexer_id}-all"checked="checked" /></th>

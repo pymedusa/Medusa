@@ -1,7 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    from sickbeard import common
-    import sickbeard
+    from medusa import common
+    import medusa as app
 %>
 <%block name="content">
 <div id="content960">
@@ -45,7 +45,7 @@ Set checked shows/episodes to <select name="newStatus" class="form-control form-
     statusList.remove(common.ARCHIVED)
     if int(whichStatus) in statusList:
         statusList.remove(int(whichStatus))
-    if int(whichStatus) in [common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST] + common.Quality.ARCHIVED + common.Quality.DOWNLOADED and sickbeard.USE_FAILED_DOWNLOADS:
+    if int(whichStatus) in [common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST] + common.Quality.ARCHIVED + common.Quality.DOWNLOADED and app.USE_FAILED_DOWNLOADS:
         statusList.append(common.FAILED)
 %>
 % for curStatus in statusList:
@@ -58,7 +58,7 @@ Set checked shows/episodes to <select name="newStatus" class="form-control form-
     <button type="button" class="btn btn-xs unselectAllShows">Clear all</button>
 </div>
 <br>
-<table class="sickbeardTable manageTable" cellspacing="1" border="0" cellpadding="0">
+<table class="defaultTable manageTable" cellspacing="1" border="0" cellpadding="0">
     % for cur_indexer_id in sorted_show_ids:
     <tr id="${cur_indexer_id}">
         <th><input type="checkbox" class="allCheck" id="allCheck-${cur_indexer_id}" name="${cur_indexer_id}-all" checked="checked" /></th>

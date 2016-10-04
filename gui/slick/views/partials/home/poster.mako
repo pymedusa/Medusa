@@ -1,9 +1,9 @@
 <%!
-    import sickbeard
+    import medusa as app
     import calendar
-    from sickbeard import sbdatetime
-    from sickbeard import network_timezones
-    from sickrage.helper.common import pretty_file_size
+    from medusa import sbdatetime
+    from medusa import network_timezones
+    from medusa.helper.common import pretty_file_size
     import re
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
@@ -17,7 +17,7 @@
     % endif
 <div id="${('container', 'container-anime')[curListType == 'Anime']}" class="show-grid clearfix">
     <div class="posterview">
-    % for curLoadingShow in sickbeard.showQueueScheduler.action.loadingShowList:
+    % for curLoadingShow in app.showQueueScheduler.action.loadingShowList:
         % if curLoadingShow.show is None:
             <div class="show-container" data-name="0" data-date="010101" data-network="0" data-progress="101">
                 <img alt="" title="${curLoadingShow.show_name}" class="show-image" style="border-bottom: 1px solid rgb(17, 17, 17);" src="images/poster.png" />

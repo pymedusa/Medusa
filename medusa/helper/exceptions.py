@@ -1,0 +1,146 @@
+# coding=utf-8
+# This file is part of Medusa.
+#
+
+#
+# Medusa is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Medusa is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
+from six import text_type
+
+from .encoding import ss
+
+
+def ex(e):
+    """
+    :param e: The exception to convert into a unicode string
+    :return: A unicode string from the exception text if it exists
+    """
+
+    message = u''
+
+    if not e or not e.args:
+        return message
+
+    for arg in e.args:
+        if arg is not None:
+            if isinstance(arg, (str, text_type)):
+                fixed_arg = ss(arg)
+            else:
+                try:
+                    fixed_arg = u'error %s' % ss(str(arg))
+                except Exception:
+                    fixed_arg = None
+
+            if fixed_arg:
+                if not message:
+                    message = fixed_arg
+                else:
+                    try:
+                        message = u'{} : {}'.format(message, fixed_arg)
+                    except UnicodeError:
+                        message = u'{} : {}'.format(
+                            text_type(message, errors='replace'),
+                            text_type(fixed_arg, errors='replace'))
+
+    return message
+
+
+class ApplicationException(Exception):
+    """
+    Generic Application Exception - should never be thrown, only sub-classed
+    """
+
+
+class AuthException(ApplicationException):
+    """
+    Authentication information is incorrect
+    """
+
+
+class CantRefreshShowException(ApplicationException):
+    """
+    The show can't be refreshed right now
+    """
+
+
+class CantRemoveShowException(ApplicationException):
+    """
+    The show can't be removed right now
+    """
+
+
+class CantUpdateShowException(ApplicationException):
+    """
+    The show can't be updated right now
+    """
+
+
+class EpisodeDeletedException(ApplicationException):
+    """
+    This episode has been deleted
+    """
+
+
+class EpisodeNotFoundException(ApplicationException):
+    """
+    The episode wasn't found on the Indexer
+    """
+
+
+class EpisodePostProcessingFailedException(ApplicationException):
+    """
+    The episode post-processing failed
+    """
+
+
+class FailedPostProcessingFailedException(ApplicationException):
+    """
+    The failed post-processing failed
+    """
+
+
+class MultipleEpisodesInDatabaseException(ApplicationException):
+    """
+    Multiple episodes were found in the database! The database must be fixed first
+    """
+
+
+class MultipleShowsInDatabaseException(ApplicationException):
+    """
+    Multiple shows were found in the database! The database must be fixed first
+    """
+
+
+class MultipleShowObjectsException(ApplicationException):
+    """
+    Multiple objects for the same show were found! Something is very wrong
+    """
+
+
+class NoNFOException(ApplicationException):
+    """
+    No NFO was found
+    """
+
+
+class ShowDirectoryNotFoundException(ApplicationException):
+    """
+    The show directory was not found
+    """
+
+
+class ShowNotFoundException(ApplicationException):
+    """
+    The show wasn't found on the Indexer
+    """
