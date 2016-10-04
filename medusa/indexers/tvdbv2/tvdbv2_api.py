@@ -387,7 +387,6 @@ class TVDBv2(object):
             'url': 'show_url',
             'epnum': 'absolute_number',
             'episode_name': 'episodename',
-            'first_aired': 'firstaired',
             'aired_episode_number': 'episodenumber',
             'aired_season': 'seasonnumber',
             'dvd_episode_number': 'dvd_episodenumber',

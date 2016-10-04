@@ -713,15 +713,10 @@ class TVmaze(object):
             log().debug('Config language is none, using show language')
             if language is None:
                 raise tvmaze_error("config['language'] was None, this should not happen")
-            getShowInLanguage = language
+            # getShowInLanguage = language
         else:
-            log().debug(
-                'Configured language %s override show language of %s' % (
-                    self.config['language'],
-                    language
-                )
-            )
-            getShowInLanguage = self.config['language']
+            log().debug('Configured language %s override show language of %s', self.config['language'], language)
+            # getShowInLanguage = self.config['language']
 
         # Parse show information
         seriesInfoEt = self._get_show_by_id(sid)
@@ -809,7 +804,9 @@ class TVmaze(object):
         selected_series = self._getSeries(key)
         if isinstance(selected_series, dict):
             selected_series = [selected_series]
-        [[self._setShowData(show['id'], k, v) for k, v in show.items()] for show in selected_series]
+        for show in selected_series:
+            for k, v in show.items():
+                self._setShowData(show['id'], k, v)
         return selected_series
 
     def __repr__(self):

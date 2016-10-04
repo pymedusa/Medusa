@@ -33,9 +33,9 @@ def log():
 class BaseUI(object):
     """Default non-interactive UI, which auto-selects first results
     """
-    def __init__(self, config, log = None):
+    def __init__(self, config, enable_logging=None):
         self.config = config
-        if log is not None:
+        if enable_logging is not None:
             warnings.warn("the UI's log parameter is deprecated, instead use\n"
                           "use import logging; logging.getLogger('ui').info('blah')\n"
                           "The self.log attribute will be removed in the next version")
@@ -49,7 +49,7 @@ class ConsoleUI(BaseUI):
     """Interactively allows the user to select a show from a console based UI
     """
 
-    def _displaySeries(self, allSeries, limit = 6):
+    def _displaySeries(self, allSeries, limit=6):
         """Helper function, lists series with corresponding ID
         """
         if limit is not None:
@@ -59,8 +59,8 @@ class ConsoleUI(BaseUI):
 
         print 'TVDB Search Results:'
         for i, cshow in enumerate(toshow):
-            i_show = i + 1 # Start at more human readable number 1 (not 0)
-            log().debug('Showing allSeries[%s], series %s)' % (i_show, allSeries[i]['seriesname']))
+            i_show = i + 1  # Start at more human readable number 1 (not 0)
+            log().debug('Showing allSeries[%s], series %s)', i_show, allSeries[i]['seriesname'])
             if i == 0:
                 extra = ' (default)'
             else:
@@ -87,7 +87,7 @@ class ConsoleUI(BaseUI):
             print 'Automatically returning first search result'
             return allSeries[0]
 
-        while True: # return breaks this loop
+        while True:  # return breaks this loop
             try:
                 print "Enter choice (first number, return for default, 'all', ? for help):"
                 ans = raw_input()
@@ -96,10 +96,10 @@ class ConsoleUI(BaseUI):
             except EOFError:
                 raise tvdbv2_userabort('User aborted (EOF received)')
 
-            log().debug('Got choice of: %s' % (ans))
+            log().debug('Got choice of: %s', ans)
             try:
-                selected_id = int(ans) - 1 # The human entered 1 as first result, not zero
-            except ValueError: # Input was not number
+                selected_id = int(ans) - 1  # The human entered 1 as first result, not zero
+            except ValueError:  # Input was not number
                 if len(ans.strip()) == 0:
                     # Default option
                     log().debug('Default option, returning first series')
@@ -116,11 +116,11 @@ class ConsoleUI(BaseUI):
                     print '# q - abort tvnamer'
                     print '# Press return with no input to select first result'
                 elif ans.lower() in ['a', 'all']:
-                    self._displaySeries(allSeries, limit = None)
+                    self._displaySeries(allSeries, limit=None)
                 else:
-                    log().debug('Unknown keypress %s' % (ans))
+                    log().debug('Unknown keypress %s', ans)
             else:
-                log().debug('Trying to return ID: %d' % (selected_id))
+                log().debug('Trying to return ID: %d', selected_id)
                 try:
                     return allSeries[selected_id]
                 except IndexError:
