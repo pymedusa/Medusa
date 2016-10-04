@@ -32,9 +32,7 @@ class IndexerError(IndexerException):
 
 
 class IndexerUserAbort(IndexerException):
-    """User aborted the interactive selection (via
-    the q command, ^c etc)
-    """
+    """User aborted the interactive selection (via the q command, ^c etc)"""
 
 
 class IndexerShowNotFound(IndexerException):
@@ -50,11 +48,8 @@ class IndexerSeasonNotFound(IndexerException):
 
 
 class IndexerEpisodeNotFound(IndexerException):
-    """Episode cannot be found in the indexer
-    """
+    """Episode cannot be found in the indexer"""
 
 
 class IndexerAttributeNotFound(IndexerException):
-    """Raised if an episode does not have the requested
-    attribute (such as a episode name)
-    """
+    """Raised if an episode does not have the requested attribute (such as a episode name)"""

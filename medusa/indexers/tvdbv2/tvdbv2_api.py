@@ -27,20 +27,20 @@ import tempfile
 import time
 import warnings
 from collections import OrderedDict
-from six import iteritems as six_iteritems, next as six_next
-
 import requests
+
+from six import iteritems as six_iteritems, next as six_next
 from requests.compat import urljoin
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi)
 
 from .tvdbv2_ui import BaseUI, ConsoleUI
-from ..indexer_exceptions import (IndexerException, IndexerAttributeNotFound,
-                                  IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound,
-                                  IndexerShowIncomplete, IndexerShowNotFound)
+from ..indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerError,
+                                  IndexerException, IndexerSeasonNotFound, IndexerShowIncomplete,
+                                  IndexerShowNotFound)
 
 
 def log():
-    return logging.getLogger('tvdb_api')
+    return logging.getLogger('tvdbv2_api')
 
 
 class ShowContainer(dict):
