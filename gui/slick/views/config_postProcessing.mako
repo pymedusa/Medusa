@@ -267,10 +267,6 @@
                                             <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_key" title="Toggle Naming Legend" class="legend" class="legend" />
                                         </span>
                                     </label>
-                                    <label class="nocheck">
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc"><b>NOTE:</b> Don't forget to add quality pattern. Otherwise after post-processing the episode will have UNKNOWN quality</span>
-                                     </label>
                                 </div>
                                 <div id="naming_key" class="nocheck" style="display: none;">
                                       <table class="Key">
