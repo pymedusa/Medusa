@@ -93,5 +93,11 @@ def test_guess(monkeypatch, show_list, release_name, expected):
     expected['release_name'] = release_name
     actual['release_name'] = release_name
 
+    # mimetypes are not consistent therefore they are not compared
+    if 'mimetype' in expected:
+        del expected['mimetype']
+    if 'mimetype' in actual:
+        del actual['mimetype']
+
     if not expected.get('disabled'):
         assert expected == actual
