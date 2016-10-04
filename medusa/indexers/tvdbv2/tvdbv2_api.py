@@ -28,9 +28,9 @@ import time
 import warnings
 from collections import OrderedDict
 import requests
+from requests.compat import urljoin
 
 from six import iteritems as six_iteritems, next as six_next
-from requests.compat import urljoin
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi)
 
 from .tvdbv2_ui import BaseUI, ConsoleUI
