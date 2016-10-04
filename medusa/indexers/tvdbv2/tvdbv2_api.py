@@ -26,18 +26,17 @@ import re
 import tempfile
 import time
 import warnings
-from six import next as six_next, iteritems as six_iteritems
 from collections import OrderedDict
+from six import iteritems as six_iteritems, next as six_next
 
 import requests
 from requests.compat import urljoin
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi)
-from tvdbapiv2.rest import ApiException
 
 from .tvdbv2_ui import BaseUI, ConsoleUI
-from ..indexer_exceptions import (indexer_exception, indexer_attributenotfound,
-                                  indexer_episodenotfound, indexer_error, indexer_seasonnotfound,
-                                  indexer_showincomplete, indexer_shownotfound)
+from ..indexer_exceptions import (IndexerException, IndexerAttributenotfound,
+                                  IndexerEpisodenotfound, IndexerError, IndexerSeasonnotfound,
+                                  IndexerShowincomplete, IndexerShownotfound)
 
 
 def log():
@@ -104,16 +103,16 @@ class Show(dict):
         # Data wasn't found, raise appropriate error
         if isinstance(key, int) or key.isdigit():
             # Episode number x was not found
-            raise indexer_seasonnotfound('Could not find season %s' % (repr(key)))
+            raise IndexerSeasonnotfound('Could not find season %s' % (repr(key)))
         else:
             # If it's not numeric, it must be an attribute name, which
             # doesn't exist, so attribute error.
-            raise indexer_attributenotfound('Cannot find attribute %s' % (repr(key)))
+            raise IndexerAttributenotfound('Cannot find attribute %s' % (repr(key)))
 
     def airedOn(self, date):
         ret = self.search(str(date), 'firstaired')
         if len(ret) == 0:
-            raise indexer_episodenotfound('Could not find any episodes that aired on %s' % date)
+            raise IndexerEpisodenotfound('Could not find any episodes that aired on %s' % date)
         return ret
 
     def search(self, term=None, key=None):
@@ -155,7 +154,7 @@ class Season(dict):
 
     def __getitem__(self, episode_number):
         if episode_number not in self:
-            raise indexer_episodenotfound('Could not find episode %s' % (repr(episode_number)))
+            raise IndexerEpisodenotfound('Could not find episode %s' % (repr(episode_number)))
         else:
             return dict.__getitem__(self, episode_number)
 
@@ -204,7 +203,7 @@ class Episode(dict):
         try:
             return dict.__getitem__(self, key)
         except KeyError:
-            raise indexer_attributenotfound('Cannot find attribute %s' % (repr(key)))
+            raise IndexerAttributenotfound('Cannot find attribute %s' % (repr(key)))
 
     def search(self, term=None, key=None):
         """Search episode data for term, if it matches, return the Episode (self).
@@ -525,7 +524,7 @@ class TVDBv2(object):
         try:
             results = self.search_api.search_series_get(name=show, accept_language=request_language)
         except Exception as e:
-            raise indexer_exception('Show search failed in getting a result with error: %r', e)
+            raise IndexerException('Show search failed in getting a result with error: %r', e)
 
         if results:
             return results
@@ -608,7 +607,7 @@ class TVDBv2(object):
         allSeries = self.search(series)
         if not allSeries:
             log().debug('Series result returned zero')
-            indexer_shownotfound('Show search returned zero results (cannot find show on TVDB)')
+            IndexerShownotfound('Show search returned zero results (cannot find show on TVDB)')
 
         if not isinstance(allSeries, list):
             allSeries = [allSeries]
@@ -645,7 +644,8 @@ class TVDBv2(object):
 
         This interface will be improved in future versions.
         """
-        key_mapping = {'file_name' : 'bannerpath', 'language_id': 'language', 'key_type': 'bannertype', 'resolution': 'bannertype2', 'ratings_info': {'count': 'ratingcount', 'average': 'rating'}, 'thumbnail': 'thumbnailpath', 'sub_key': 'sub_key', 'id': 'id'}
+        key_mapping = {'file_name': 'bannerpath', 'language_id': 'language', 'key_type': 'bannertype', 'resolution': 'bannertype2',
+                       'ratings_info': {'count': 'ratingcount', 'average': 'rating'}, 'thumbnail': 'thumbnailpath', 'sub_key': 'sub_key', 'id': 'id'}
 
         search_for_image_type = self.config['image_type']
 
@@ -655,7 +655,7 @@ class TVDBv2(object):
         # Let's fget the different type of images available for this series
 
         try:
-            series_images_count = self.series_api.series_id_images_get(sid)
+            series_images_count = self.series_api.series_id_images_get(sid, accept_language=self.config['language'])
         except Exception as e:
             log().debug('Could not get image count for showid: %s, with exception: %r', sid, e)
             return False
@@ -755,7 +755,7 @@ class TVDBv2(object):
         if self.config['language'] is None:
             log().debug('Config language is none, using show language')
             if language is None:
-                raise indexer_error("config['language'] was None, this should not happen")
+                raise IndexerError("config['language'] was None, this should not happen")
             get_show_in_language = language
         else:
             log().debug(
@@ -774,7 +774,7 @@ class TVDBv2(object):
 
         if not series_info:
             log().debug('Series result returned zero')
-            raise indexer_error('Series result returned zero')
+            raise IndexerError('Series result returned zero')
 
         # get series data / add the base_url to the image urls
         for k, v in series_info['series'].items():
@@ -801,7 +801,7 @@ class TVDBv2(object):
 
             if not episode_data:
                 log().debug('Series results incomplete')
-                raise indexer_showincomplete('Show search returned incomplete results (cannot find complete show on TheTVDB)')
+                raise IndexerShowincomplete('Show search returned incomplete results (cannot find complete show on TheTVDB)')
 
             if 'episode' not in episode_data:
                 return False
