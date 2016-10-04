@@ -1,12 +1,12 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
+    import medusa as app
     import adba
-    from sickbeard import common
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from sickbeard.common import statusStrings
-    from sickrage.helper import exceptions
-    from sickbeard import scene_exceptions
+    from medusa import common
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
+    from medusa.common import statusStrings
+    from medusa.helper import exceptions
+    from medusa import scene_exceptions
 %>
 <%block name="metas">
 <meta data-var="show.is_anime" data-content="${show.is_anime}">
@@ -24,7 +24,7 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
-<div id="config" ${"class=\"summaryFanArt\"" if sickbeard.FANART_BACKGROUND else ""}>
+<div id="config" ${"class=\"summaryFanArt\"" if app.FANART_BACKGROUND else ""}>
     <div id="config-content">
         <form action="home/editShow" method="post">
         <div id="config-components">
@@ -73,7 +73,7 @@
                             <label for="indexerLangSelect">
                                 <span class="component-title">Info Language</span>
                                 <span class="component-desc">
-                                    <select name="indexerLang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-language="${show.lang}" data-available="${','.join(sickbeard.indexerApi().config['valid_languages'])}"></select>
+                                    <select name="indexerLang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-language="${show.lang}" data-available="${','.join(app.indexerApi().config['valid_languages'])}"></select>
                                     <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
                                 </span>
                             </label>
@@ -82,7 +82,7 @@
                             <label for="subtitles">
                                 <span class="component-title">Subtitles</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="subtitles" name="subtitles" ${'checked="checked"' if show.subtitles == 1 and sickbeard.USE_SUBTITLES is True else ''} ${'' if sickbeard.USE_SUBTITLES else 'disabled="disabled"'}/> search for subtitles
+                                    <input type="checkbox" id="subtitles" name="subtitles" ${'checked="checked"' if show.subtitles == 1 and app.USE_SUBTITLES is True else ''} ${'' if app.USE_SUBTITLES else 'disabled="disabled"'}/> search for subtitles
                                 </span>
                             </label>
                         </div>
@@ -134,7 +134,7 @@
                             <label for="season_folders">
                                 <span class="component-title">Season folders</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="season_folders" name="flatten_folders" ${'' if show.flatten_folders == 1 and not sickbeard.NAMING_FORCE_FOLDERS else 'checked="checked"'} ${'disabled="disabled"' if sickbeard.NAMING_FORCE_FOLDERS else ''}/> group episodes by season folder (uncheck to store in a single folder)
+                                    <input type="checkbox" id="season_folders" name="flatten_folders" ${'' if show.flatten_folders == 1 and not app.NAMING_FORCE_FOLDERS else 'checked="checked"'} ${'disabled="disabled"' if app.NAMING_FORCE_FOLDERS else ''}/> group episodes by season folder (uncheck to store in a single folder)
                                 </span>
                             </label>
                         </div>

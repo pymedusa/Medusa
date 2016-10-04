@@ -1,10 +1,10 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
-    from sickbeard import common
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from sickbeard.common import Quality, qualityPresets, qualityPresetStrings, statusStrings
-    from sickrage.helper import exceptions
+    import medusa as app
+    from medusa import common
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
+    from medusa.common import Quality, qualityPresets, qualityPresetStrings, statusStrings
+    from medusa.helper import exceptions
 %>
 <%block name="scripts">
 <%
@@ -43,7 +43,7 @@
                             <label for="edit_root_dir_0">
                                 <span class="component-title">Root Directories (<span class="separator">*</span>)</span>
                                 <span class="component-desc">
-                                    <table class="sickbeardTable" cellspacing="1" cellpadding="0" border="0">
+                                    <table class="defaultTable" cellspacing="1" cellpadding="0" border="0">
                                         <thead>
                                             <tr>
                                                 <th class="nowrap tablesorter-header">Current</th>

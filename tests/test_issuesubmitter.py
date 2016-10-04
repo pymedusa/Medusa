@@ -1,13 +1,14 @@
 # coding=utf-8
-"""Tests for sickbeard.server.web.core.error_logs.py."""
+"""Tests for medusa.server.web.core.error_logs.py."""
 
 from github.GithubException import BadCredentialsException, RateLimitExceededException
+from medusa import classes
+from medusa.classes import ErrorViewer
+from medusa.issuesubmitter import IssueSubmitter
+from medusa.logger import LogLine
 from mock.mock import Mock
 import pytest
-from sickbeard import classes
-from sickbeard.classes import ErrorViewer
-from sickbeard.issuesubmitter import IssueSubmitter
-from sickbeard.logger import LogLine
+
 
 sut = IssueSubmitter()
 
@@ -76,10 +77,10 @@ def test_submit_github_issue__basic_validations(monkeypatch, logger, version_che
     classes.ErrorViewer.clear()
     for error in p.get('errors', []):
         logger.error(error)
-    monkeypatch.setattr('sickbeard.DEBUG', p.get('debug'))
-    monkeypatch.setattr('sickbeard.GIT_USERNAME', p.get('username'))
-    monkeypatch.setattr('sickbeard.GIT_PASSWORD', p.get('password'))
-    monkeypatch.setattr('sickbeard.DEVELOPER', p.get('developer', False))
+    monkeypatch.setattr('medusa.DEBUG', p.get('debug'))
+    monkeypatch.setattr('medusa.GIT_USERNAME', p.get('username'))
+    monkeypatch.setattr('medusa.GIT_PASSWORD', p.get('password'))
+    monkeypatch.setattr('medusa.DEVELOPER', p.get('developer', False))
     monkeypatch.setattr(version_checker, 'need_update', lambda: p.get('need_update', False))
     monkeypatch.setattr(sut, 'running', p.get('running', False))
     if 'exception' in p:
@@ -138,7 +139,7 @@ def test_create_gist(logger, read_loglines, github):
     line = 'Some Log Line'
     logger.error(line)
     logline = list(read_loglines)[0]
-    filename = 'sickrage.log'
+    filename = 'application.log'
 
     # When
     actual = sut.create_gist(github, logline)

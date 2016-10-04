@@ -1,7 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    from sickbeard.helpers import anon_url
-    import sickbeard
+    from medusa.helpers import anon_url
+    import medusa as app
 %>
 <%block name="scripts">
     <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>

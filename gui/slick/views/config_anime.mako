@@ -1,7 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
-    from sickbeard.helpers import anon_url
+    import medusa as app
+    from medusa.helpers import anon_url
 %>
 <%block name="content">
 <div id="content960">
@@ -25,7 +25,7 @@
                         </div><!-- .component-group-desc //-->
                         <fieldset class="component-group-list">
                             <div class="field-pair">
-                                <input type="checkbox" class="enabler" name="use_anidb" id="use_anidb" ${'checked="checked"' if sickbeard.USE_ANIDB else ''} />
+                                <input type="checkbox" class="enabler" name="use_anidb" id="use_anidb" ${'checked="checked"' if app.USE_ANIDB else ''} />
                                 <label for="use_notifo">
                                     <span class="component-title">Enable</span>
                                     <span class="component-desc">Should Medusa use data from AniDB?</span>
@@ -35,7 +35,7 @@
                                 <div class="field-pair">
                                     <label class="nocheck">
                                         <span class="component-title">AniDB Username</span>
-                                        <input type="text" name="anidb_username" id="anidb_username" value="${sickbeard.ANIDB_USERNAME}" class="form-control input-sm input350"
+                                        <input type="text" name="anidb_username" id="anidb_username" value="${app.ANIDB_USERNAME}" class="form-control input-sm input350"
                                                autocomplete="no" />
                                     </label>
                                     <label class="nocheck">
@@ -46,7 +46,7 @@
                                 <div class="field-pair">
                                     <label class="nocheck">
                                         <span class="component-title">AniDB Password</span>
-                                        <input type="password" name="anidb_password" id="anidb_password" value="${sickbeard.ANIDB_PASSWORD}" class="form-control input-sm input350" autocomplete="no"/>
+                                        <input type="password" name="anidb_password" id="anidb_password" value="${app.ANIDB_PASSWORD}" class="form-control input-sm input350" autocomplete="no"/>
                                     </label>
                                     <label class="nocheck">
                                         <span class="component-title">&nbsp;</span>
@@ -54,7 +54,7 @@
                                     </label>
                                 </div><!-- .field-pair //-->
                                 <div class="field-pair">
-                                    <input type="checkbox" name="anidb_use_mylist" id="anidb_use_mylist" ${'checked="checked"' if sickbeard.ANIDB_USE_MYLIST else ''}/>
+                                    <input type="checkbox" name="anidb_use_mylist" id="anidb_use_mylist" ${'checked="checked"' if app.ANIDB_USE_MYLIST else ''}/>
                                     <label>
                                         <span class="component-title">AniDB MyList</span>
                                         <span class="component-desc">Do you want to add the PostProcessed Episodes to the MyList ?</span>
@@ -72,7 +72,7 @@
                        </div><!-- .component-group-desc //-->
                         <fieldset class="component-group-list">
                             <div class="field-pair">
-                                <input type="checkbox" class="enabler" name="split_home" id="split_home" ${'checked="checked"' if sickbeard.ANIME_SPLIT_HOME else ''}/>
+                                <input type="checkbox" class="enabler" name="split_home" id="split_home" ${'checked="checked"' if app.ANIME_SPLIT_HOME else ''}/>
                                 <label for="use_notifo">
                                     <span class="component-title">Split show lists</span>
                                     <span class="component-desc">Separate anime and normal shows in groups</span>

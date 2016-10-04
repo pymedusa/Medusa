@@ -1,17 +1,17 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
+    import medusa as app
     import os.path
     from datetime import datetime
     import re
     import time
-    from sickbeard import providers
-    from sickbeard.sbdatetime import sbdatetime
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED, DOWNLOADED, SUBTITLED
-    from sickbeard.common import Quality, statusStrings, Overview
-    from sickrage.show.History import History
-    from sickrage.helper.encoding import ek
-    from sickrage.providers.GenericProvider import GenericProvider
+    from medusa import providers
+    from medusa.sbdatetime import sbdatetime
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED, DOWNLOADED, SUBTITLED
+    from medusa.common import Quality, statusStrings, Overview
+    from medusa.show.History import History
+    from medusa.helper.encoding import ek
+    from medusa.providers.GenericProvider import GenericProvider
 %>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
@@ -34,14 +34,14 @@
     </select>
     <span> Layout:
         <select name="HistoryLayout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="setHistoryLayout/?layout=compact"  ${'selected="selected"' if sickbeard.HISTORY_LAYOUT == 'compact' else ''}>Compact</option>
-            <option value="setHistoryLayout/?layout=detailed" ${'selected="selected"' if sickbeard.HISTORY_LAYOUT == 'detailed' else ''}>Detailed</option>
+            <option value="setHistoryLayout/?layout=compact"  ${'selected="selected"' if app.HISTORY_LAYOUT == 'compact' else ''}>Compact</option>
+            <option value="setHistoryLayout/?layout=detailed" ${'selected="selected"' if app.HISTORY_LAYOUT == 'detailed' else ''}>Detailed</option>
         </select>
     </span>
 </div>
 <br>
-% if sickbeard.HISTORY_LAYOUT == "detailed":
-    <table id="historyTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
+% if app.HISTORY_LAYOUT == "detailed":
+    <table id="historyTable" class="defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
         <thead>
             <tr>
                 <th class="nowrap" width="15%">Time</th>
@@ -104,14 +104,14 @@
         </tbody>
     </table>
 % else:
-    <table id="historyTable" class="sickbeardTable tablesorter" cellspacing="1" border="0" cellpadding="0">
+    <table id="historyTable" class="defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
         <thead>
             <tr>
                 <th class="nowrap" width="18%">Time</th>
                 <th width="25%">Episode</th>
                 <th>Snatched</th>
                 <th>Downloaded</th>
-                % if sickbeard.USE_SUBTITLES:
+                % if app.USE_SUBTITLES:
                 <th>Subtitled</th>
                 % endif
                 <th width="14%">Quality</th>
@@ -162,7 +162,7 @@
                         % endif
                     % endfor
                 </td>
-                % if sickbeard.USE_SUBTITLES:
+                % if app.USE_SUBTITLES:
                 <td align="center">
                     % for cur_action in sorted(hItem.actions):
                         <% composite = Quality.splitCompositeStatus(int(cur_action.action)) %>
