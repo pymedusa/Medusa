@@ -1,8 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
-    from sickbeard.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from sickbeard.common import statusStrings
+    import medusa as app
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
+    from medusa.common import statusStrings
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/mass-update.js?${sbPID}"></script>
@@ -50,7 +50,7 @@
             <th width="1%">Update<br><input type="checkbox" class="bulkCheck" id="updateCheck" /></th>
             <th width="1%">Rescan<br><input type="checkbox" class="bulkCheck" id="refreshCheck" /></th>
             <th width="1%">Rename<br><input type="checkbox" class="bulkCheck" id="renameCheck" /></th>
-        % if sickbeard.USE_SUBTITLES:
+        % if app.USE_SUBTITLES:
             <th width="1%">Search Subtitle<br><input type="checkbox" class="bulkCheck" id="subtitleCheck" /></th>
         % endif
             <!-- <th>Force Metadata Regen <input type="checkbox" class="bulkCheck" id="metadataCheck" /></th>//-->
@@ -61,28 +61,28 @@
     <tfoot>
         <tr>
             <td rowspan="1" colspan="2" class="align-center alt"><input class="btn pull-left submitMassEdit" type="button" value="Edit Selected" /></td>
-            <td rowspan="1" colspan="${(14, 15)[bool(sickbeard.USE_SUBTITLES)]}" class="align-right alt"><input class="btn pull-right submitMassUpdate" type="button" value="Submit" /></td>
+            <td rowspan="1" colspan="${(14, 15)[bool(app.USE_SUBTITLES)]}" class="align-right alt"><input class="btn pull-right submitMassUpdate" type="button" value="Submit" /></td>
         </tr>
     </tfoot>
     <tbody>
 <%
-    myShowList = sickbeard.showList
+    myShowList = app.showList
     myShowList.sort(lambda x, y: cmp(x.name, y.name))
 %>
     % for curShow in myShowList:
     <%
         curEp = curShow.nextaired
-        disabled = sickbeard.showQueueScheduler.action.isBeingUpdated(curShow) or sickbeard.showQueueScheduler.action.isInUpdateQueue(curShow)
+        disabled = app.showQueueScheduler.action.isBeingUpdated(curShow) or app.showQueueScheduler.action.isInUpdateQueue(curShow)
         curUpdate = "<input type=\"checkbox\" class=\"updateCheck\" id=\"update-" + str(curShow.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = sickbeard.showQueueScheduler.action.isBeingRefreshed(curShow) or sickbeard.showQueueScheduler.action.isInRefreshQueue(curShow)
+        disabled = app.showQueueScheduler.action.isBeingRefreshed(curShow) or app.showQueueScheduler.action.isInRefreshQueue(curShow)
         curRefresh = "<input type=\"checkbox\" class=\"refreshCheck\" id=\"refresh-" + str(curShow.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = sickbeard.showQueueScheduler.action.isBeingRenamed(curShow) or sickbeard.showQueueScheduler.action.isInRenameQueue(curShow)
+        disabled = app.showQueueScheduler.action.isBeingRenamed(curShow) or app.showQueueScheduler.action.isInRenameQueue(curShow)
         curRename = "<input type=\"checkbox\" class=\"renameCheck\" id=\"rename-" + str(curShow.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = not curShow.subtitles or sickbeard.showQueueScheduler.action.isBeingSubtitled(curShow) or sickbeard.showQueueScheduler.action.isInSubtitleQueue(curShow)
+        disabled = not curShow.subtitles or app.showQueueScheduler.action.isBeingSubtitled(curShow) or app.showQueueScheduler.action.isInSubtitleQueue(curShow)
         curSubtitle = "<input type=\"checkbox\" class=\"subtitleCheck\" id=\"subtitle-" + str(curShow.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = sickbeard.showQueueScheduler.action.isBeingRenamed(curShow) or sickbeard.showQueueScheduler.action.isInRenameQueue(curShow) or sickbeard.showQueueScheduler.action.isInRefreshQueue(curShow)
+        disabled = app.showQueueScheduler.action.isBeingRenamed(curShow) or app.showQueueScheduler.action.isInRenameQueue(curShow) or app.showQueueScheduler.action.isInRefreshQueue(curShow)
         curDelete = "<input type=\"checkbox\" class=\"confirm deleteCheck\" id=\"delete-" + str(curShow.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = sickbeard.showQueueScheduler.action.isBeingRenamed(curShow) or sickbeard.showQueueScheduler.action.isInRenameQueue(curShow) or sickbeard.showQueueScheduler.action.isInRefreshQueue(curShow)
+        disabled = app.showQueueScheduler.action.isBeingRenamed(curShow) or app.showQueueScheduler.action.isInRenameQueue(curShow) or app.showQueueScheduler.action.isInRefreshQueue(curShow)
         curRemove = "<input type=\"checkbox\" class=\"removeCheck\" id=\"remove-" + str(curShow.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
     %>
     <tr>
@@ -100,7 +100,7 @@
         <td align="center">${curUpdate}</td>
         <td align="center">${curRefresh}</td>
         <td align="center">${curRename}</td>
-        % if sickbeard.USE_SUBTITLES:
+        % if app.USE_SUBTITLES:
         <td align="center">${curSubtitle}</td>
         % endif
         <td align="center">${curDelete}</td>

@@ -1,9 +1,9 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import sickbeard
-    from sickbeard import helpers
-    from sickbeard.show_queue import ShowQueueActions
-    from sickrage.helper.common import dateTimeFormat
+    import medusa as app
+    from medusa import helpers
+    from medusa.show_queue import ShowQueueActions
+    from medusa.helper.common import dateTimeFormat
 %>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -43,7 +43,7 @@
         </thead>
         <tbody>
             % for schedulerName, scheduler in schedulerList.iteritems():
-               <% service = getattr(sickbeard, scheduler) %>
+               <% service = getattr(app, scheduler) %>
            <tr>
                <td>${schedulerName}</td>
                % if service.isAlive():
@@ -52,7 +52,7 @@
                <td style="background-color:rgb(255, 0, 0);">${service.isAlive()}</td>
                % endif
                % if scheduler == 'backlogSearchScheduler':
-                   <% searchQueue = getattr(sickbeard, 'searchQueueScheduler') %>
+                   <% searchQueue = getattr(app, 'searchQueueScheduler') %>
                    <% BLSpaused = searchQueue.action.is_backlog_paused() %>
                    <% del searchQueue %>
                    % if BLSpaused:
@@ -64,7 +64,7 @@
                <td>${service.enable}</td>
                % endif
                % if scheduler == 'backlogSearchScheduler':
-                   <% searchQueue = getattr(sickbeard, 'searchQueueScheduler') %>
+                   <% searchQueue = getattr(app, 'searchQueueScheduler') %>
                    <% BLSinProgress = searchQueue.action.is_backlog_in_progress() %>
                    <% del searchQueue %>
                    % if BLSinProgress:
@@ -118,39 +118,39 @@
             </tr>
         </thead>
         <tbody>
-            % if sickbeard.showQueueScheduler.action.currentItem is not None:
+            % if app.showQueueScheduler.action.currentItem is not None:
                 <tr>
                     % try:
-                        <% showindexerid = sickbeard.showQueueScheduler.action.currentItem.show.indexerid %>
+                        <% showindexerid = app.showQueueScheduler.action.currentItem.show.indexerid %>
                         <td>${showindexerid}</td>
                     % except Exception:
                         <td></td>
                     % endtry
                     % try:
-                        <% showname = sickbeard.showQueueScheduler.action.currentItem.show.name %>
+                        <% showname = app.showQueueScheduler.action.currentItem.show.name %>
                         <td>${showname}</td>
                     % except Exception:
-                        % if sickbeard.showQueueScheduler.action.currentItem.action_id == ShowQueueActions.ADD:
-                            <td>${sickbeard.showQueueScheduler.action.currentItem.showDir}</td>
+                        % if app.showQueueScheduler.action.currentItem.action_id == ShowQueueActions.ADD:
+                            <td>${app.showQueueScheduler.action.currentItem.showDir}</td>
                         % else:
                             <td></td>
                         % endif
                     % endtry
-                    <td>${sickbeard.showQueueScheduler.action.currentItem.inProgress}</td>
-                    % if sickbeard.showQueueScheduler.action.currentItem.priority == 10:
+                    <td>${app.showQueueScheduler.action.currentItem.inProgress}</td>
+                    % if app.showQueueScheduler.action.currentItem.priority == 10:
                         <td>LOW</td>
-                    % elif sickbeard.showQueueScheduler.action.currentItem.priority == 20:
+                    % elif app.showQueueScheduler.action.currentItem.priority == 20:
                         <td>NORMAL</td>
-                    % elif sickbeard.showQueueScheduler.action.currentItem.priority == 30:
+                    % elif app.showQueueScheduler.action.currentItem.priority == 30:
                         <td>HIGH</td>
                     % else:
-                        <td>sickbeard.showQueueScheduler.action.currentItem.priority</td>
+                        <td>app.showQueueScheduler.action.currentItem.priority</td>
                     % endif
-                    <td>${sickbeard.showQueueScheduler.action.currentItem.added.strftime(dateTimeFormat)}</td>
-                    <td>${ShowQueueActions.names[sickbeard.showQueueScheduler.action.currentItem.action_id]}</td>
+                    <td>${app.showQueueScheduler.action.currentItem.added.strftime(dateTimeFormat)}</td>
+                    <td>${ShowQueueActions.names[app.showQueueScheduler.action.currentItem.action_id]}</td>
                 </tr>
             % endif
-            % for item in sickbeard.showQueueScheduler.action.queue:
+            % for item in app.showQueueScheduler.action.queue:
                 <tr>
                     % try:
                         <% showindexerid = item.show.indexerid %>
@@ -194,10 +194,10 @@
             </tr>
         </thead>
         <tbody>
-            % if sickbeard.TV_DOWNLOAD_DIR:
+            % if app.TV_DOWNLOAD_DIR:
             <tr>
                 <td>TV Download Directory</td>
-                <td>${sickbeard.TV_DOWNLOAD_DIR}</td>
+                <td>${app.TV_DOWNLOAD_DIR}</td>
                 % if tvdirFree is not False:
                 <td align="middle">${tvdirFree}</td>
                 % else:

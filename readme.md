@@ -1,6 +1,7 @@
 ![medusa-name-logo-green-snakes](https://cloud.githubusercontent.com/assets/1867464/13375559/ede197ae-dd70-11e5-8cd0-b0eb239c977e.png)
 
-[![Build Status](https://travis-ci.org/pymedusa/SickRage.svg?branch=develop)](https://travis-ci.org/pymedusa/SickRage) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/pymedusa/SickRage.svg)](http://isitmaintained.com/project/pymedusa/SickRage "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/pymedusa/SickRage.svg)](http://isitmaintained.com/project/pymedusa/SickRage "Percentage of issues still open") [![Coverage Status](https://coveralls.io/repos/pymedusa/SickRage/badge.svg?branch=develop&service=github)](https://coveralls.io/github/pymedusa/SickRage?branch=develop) [![HuBoard](https://img.shields.io/badge/Hu-Board-7965cc.svg)](https://huboard.com/pymedusa/SickRage)
+[![Build Status](https://travis-ci.org/pymedusa/SickRage.svg?branch=develop)](https://travis-ci.org/pymedusa/SickRage) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/pymedusa/SickRage.svg)](http://isitmaintained.com/project/pymedusa/SickRage "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/pymedusa/SickRage.svg)](http://isitmaintained.com/project/pymedusa/SickRage "Percentage of issues still open")  [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ade58b4469dd4b38bbbd681913d97bfc)](https://www.codacy.com/app/pymedusa/SickRage?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=pymedusa/SickRage&amp;utm_campaign=Badge_Grade)
+
 =====
 Automatic Video Library Manager for TV Shows. It watches for new episodes of your favorite shows, and when they are posted it does its magic.
 
@@ -51,10 +52,15 @@ A full list can be found here: [Link](https://github.com/PyMedusa/SickRage/wiki/
 ![image](https://rarbg.com/favicon.ico)[RARBG](https://rarbg.to)
 ![image](https://torrentproject.se/favicon.ico)[TorrentProject](https://torrentproject.se/about)
 ![image](https://thepiratebay.se/favicon.ico)[ThePirateBay](https://thepiratebay.se/)
-![image](http://kat.cr/favicon.ico)[KickAssTorrents](https://kat.cr)
 ![image](https://nzb.cat/favicon.ico)[NZB.cat](https://nzb.cat/)
 ![image](https://nzbgeek.info/favicon.ico)[NZBGeek](https://nzbgeek.info)
 ![image](https://raw.githubusercontent.com/PyMedusa/SickRage/master/gui/slick/images/providers/dognzb.png)[DOGnzb](dognzb.cr)
+
+#### Browsers support <sub><sub>made by <a href="https://godban.github.io">godban</a></sub></sub>
+
+| [<img src="https://raw.githubusercontent.com/godban/browsers-support-badges/master/src/images/edge.png" alt="IE / Edge" width="16px" height="16px" />](http://godban.github.io/browsers-support-badges/)</br>IE / Edge | [<img src="https://raw.githubusercontent.com/godban/browsers-support-badges/master/src/images/firefox.png" alt="Firefox" width="16px" height="16px" />](http://godban.github.io/browsers-support-badges/)</br>Firefox | [<img src="https://raw.githubusercontent.com/godban/browsers-support-badges/master/src/images/chrome.png" alt="Chrome" width="16px" height="16px" />](http://godban.github.io/browsers-support-badges/)</br>Chrome | [<img src="https://raw.githubusercontent.com/godban/browsers-support-badges/master/src/images/safari.png" alt="Safari" width="16px" height="16px" />](http://godban.github.io/browsers-support-badges/)</br>Safari |
+| --------- | --------- | --------- | --------- |
+| Edge| last 2 versions| last 2 versions| last 2 versions
 
 #### News and Changelog
 [news.md and CHANGES.md have moved to a separate repo, click here](https://github.com/PyMedusa/SickRage.github.io)

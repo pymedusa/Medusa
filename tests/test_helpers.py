@@ -1,8 +1,9 @@
 # coding=utf-8
-"""Tests for sickbeard.helpers.py."""
-import pytest
+"""Tests for medusa.helpers.py."""
+from collections import OrderedDict
 
-import sickbeard.helpers as sut
+import medusa.helpers as sut
+import pytest
 
 
 @pytest.mark.parametrize('p', [
@@ -126,21 +127,23 @@ def test_is_ip_private(p):
 
 @pytest.mark.parametrize('p', [
     {  # p0: simple dict
-        'input': {'a': 'one', 'b': 'two'},
+        'input': [('a', 'one'), ('b', 'two')],
         'expected': u'a:one|b:two',
     },
     {  # p1: dict with special chars
-        'input': {'a': 'one', 'b': 'π'},
+        'input': [('a', 'one'), ('b', 'π')],
         'expected': u'a:one|b:π',
     },
     {  # p2: dict with unicode chars
-        'input': {'a': 'one', 'b': u'π'},
+        'input': [('a', 'one'), ('b', u'π')],
         'expected': u'a:one|b:π',
     },
 ])
 def test_canonical_name(p):
     # Given
-    obj = p['input']
+    obj = OrderedDict()
+    for k, v in p['input']:
+        obj[k] = v
     expected = p['expected']
 
     # When

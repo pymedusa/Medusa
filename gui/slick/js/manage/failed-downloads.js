@@ -1,7 +1,7 @@
 MEDUSA.manage.failedDownloads = function() {
     $('#failedTable:has(tbody tr)').tablesorter({
         widgets: ['zebra'],
-        sortList: [[0, 0]],
+        sortList: [],
         headers: {3: {sorter: false}}
     });
     $('#limit').on('change', function() {
