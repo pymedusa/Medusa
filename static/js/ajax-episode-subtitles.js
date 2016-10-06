@@ -75,11 +75,12 @@
                             var provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
                             var flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
                             var stars =  Math.trunc((subtitle.score / subtitle.min_score) * 10)
+                            var missing_guess = subtitle.missing_guess
                             var matched = ''
                             if (stars == 10) {
                                 matched = ' <img src="images/save.png" width="16" height="16"/>';
+                                missing_guess = ''
                             }
-                            var missing_guess = subtitle.missing_guess
                             var download_button = ' <a id="pickSub" title=subtitleid-' + subtitle.subtitle_id + '><img src="images/download.png" width="16" height="16"/></a>'
                             //var stars_obj = '<span class="imdbstars" qtip-content="' + stars + '">' + stars + '</span>'
                             var row = '<tr><td>' + provider + ' ' + subtitle.provider + ' ' + flag + '</td><td>' + stars + '</td><td>' + subtitle.filename + matched + '</td><td>' + missing_guess + '</td><td>' + download_button + '</td></tr>';
