@@ -163,4 +163,32 @@
             return false;
         });
     };
+
+    $.ajaxEpRedownloadSubtitle = function() {
+        $('.epRedownloadSubtitle').on('click', function(e) {
+            e.preventDefault();
+            selectedEpisode = $(this);
+            $("#confirmSubtitleReDownloadModal").modal('show');
+        });
+ 
+        $('#confirmSubtitleReDownloadModal .btn.btn-success').on('click', function(){
+            redownloadSubtitles();
+        });
+
+        function redownloadSubtitles() {
+            changeImage(selectedEpisode, 'images/loading16.gif', downloading, downloading, 16, true);
+            var url = selectedEpisode.prop('href');
+            var downloading = 'Re-downloading subtitle'
+            var failed = 'Re-downloaded subtitle failed'
+            var downloaded = 'Re-downloaded subtitle succeeded'
+            $.getJSON(url, function(data) {
+                if (data.result.toLowerCase() === 'success' && data.new_subtitles.length > 0) {
+                    changeImage(selectedEpisode, 'images/save.png', downloaded, downloaded, 16, true);
+                } else {
+                    changeImage(selectedEpisode, 'images/no16.png', failed, failed, 16, true);
+                }
+              });
+            return false;
+        }
+    };
 })();

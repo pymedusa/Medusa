@@ -495,7 +495,12 @@
             <td class="col-subtitles" align="center">
             % for flag in (epResult["subtitles"] or '').split(','):
                 % if flag.strip() and Quality.splitCompositeStatus(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
-                    <img src="images/subtitles/flags/${flag}.png" width="16" height="11" alt="${subtitles.name_from_code(flag)}" onError="this.onerror=null;this.src='images/flags/unknown.png';" />
+                    % if flag != 'und':
+                        <a class=epRedownloadSubtitle href="home/searchEpisodeSubtitles?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}&amp;lang=${flag}">
+                        <img src="images/subtitles/flags/${flag}.png" width="16" height="11" alt="${flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';" />
+                    % else:
+                        <img src="images/subtitles/flags/${flag}.png" width="16" height="11" alt="${subtitles.name_from_code(flag)}" onError="this.onerror=null;this.src='images/flags/unknown.png';" />
+                    % endif
                 % endif
             % endfor
             </td>
@@ -556,6 +561,24 @@
             <div class="modal-body">
                 <p>Do you want to include the current episode quality in the search?</p>
                 <p class="text-warning"><small>Choosing No will ignore any releases with the same episode quality as the one currently downloaded/snatched.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+                <button type="button" class="btn btn-success" data-dismiss="modal">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="confirmSubtitleReDownloadModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Re-download subtitle</h4>
+            </div>
+            <div class="modal-body">
+                <p>Do you want to re-download the subtitle for this language?</p>
+                <p class="text-warning"><small>It will overwrite your current subtitle</small></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
