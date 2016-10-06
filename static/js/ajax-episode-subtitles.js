@@ -1,6 +1,19 @@
 (function() {
     var subtitlesTd;
     var selectedEpisode;
+    var subtitleTypeList = ['.epSubtitlesSearch', '.epSubtitlesSearchPP', '.epRedownloadSubtitle', '.epSearch', '.epRetry', '.epManualSearch'];
+    
+    function disableAllSearches() {
+        $.each(subtitleTypeList, function (index, subtitleType) {
+            $(subtitleType).css({'pointer-events' : 'none'});
+        });
+    }
+
+    function enableAllSearches() {
+        $.each(subtitleTypeList, function (index, subtitleType) {
+            $(subtitleType).css({'pointer-events' : 'auto'});
+        });
+    }
 
     function changeImage(imageTR, srcData, altData, titleData, heightData, emptyLink) {
         if (emptyLink === true) {
@@ -14,6 +27,11 @@
             height: heightData
         }));
     }
+
+    $('#manualSubtitleSearchModal').on('hidden.bs.modal', function () {
+        // If user close manual subtitle search modal, enable again all searches
+        enableAllSearches();
+    });
 
     $.ajaxEpSubtitlesSearch = function() {
         $('.epSubtitlesSearch').on('click', function(e) {
@@ -49,6 +67,10 @@
             // Append the ID param that 'pick_manual_subtitle' expect
             url += '&subtitle_id=' + subtitleID;
             $.getJSON(url, function(data) {
+                // If user click to close the window before subtitle download finishes, show again the modal
+                if (($('#manualSubtitleSearchModal').is(':visible')) === false) {
+                    $('#manualSubtitleSearchModal').modal('show');
+                }
                 if (data.result == 'success') {
                     changeImage(subtitlePicked, 'images/save.png', 'subtitle saved', 'subtitle saved', 16, true);
                 }
@@ -70,6 +92,7 @@
         });
     
         function searchSubtitles() {
+                disableAllSearches();
                 changeImage(selectedEpisode, 'images/loading16.gif', 'loading', 'loading', 16, true);
                 var url = selectedEpisode.prop('href');
                 // if manual search, replace handler
@@ -121,11 +144,13 @@
                     $('#manualSubtitleSearchModal').modal('show');
                     // Add back the CC icon as we are not searching anymore
                     changeImage(selectedEpisode, 'images/closed_captioning.png', 'Search subtitles', 'Search subtitles', 16, true);
+                    enableAllSearches();
                 });
                 return false;
         }
 
         function forcedSearch() {
+            disableAllSearches();
             changeImage(selectedEpisode, 'images/loading16.gif', 'loading', 'loading', 16, true);
             var url = selectedEpisode.prop('href');
             $.getJSON(url, function(data) {
@@ -145,6 +170,7 @@
                 }
                 // Add back the CC icon as we are not searching anymore
                 changeImage(selectedEpisode, 'images/closed_captioning.png', 'Search subtitles', 'Search subtitles', 16, true);
+                enableAllSearches();
             });
             return false;
         }
@@ -175,18 +201,20 @@
         });
 
         function redownloadSubtitles() {
+            disableAllSearches();
             changeImage(selectedEpisode, 'images/loading16.gif', downloading, downloading, 16, true);
             var url = selectedEpisode.prop('href');
-            var downloading = 'Re-downloading subtitle'
-            var failed = 'Re-downloaded subtitle failed'
-            var downloaded = 'Re-downloaded subtitle succeeded'
+            var downloading = 'Re-downloading subtitle';
+            var failed = 'Re-downloaded subtitle failed';
+            var downloaded = 'Re-downloaded subtitle succeeded';
             $.getJSON(url, function(data) {
                 if (data.result.toLowerCase() === 'success' && data.new_subtitles.length > 0) {
                     changeImage(selectedEpisode, 'images/save.png', downloaded, downloaded, 16, true);
                 } else {
                     changeImage(selectedEpisode, 'images/no16.png', failed, failed, 16, true);
                 }
-              });
+            });
+            enableAllSearches();
             return false;
         }
     };
