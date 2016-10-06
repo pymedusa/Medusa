@@ -1958,8 +1958,8 @@ class Home(WebRoot):
         })
 
     def manual_search_subtitles(self, show=None, season=None, episode=None, release_id=None, picked_id=None):
-        found_subtitles = None
-        new_manual_subtitle = None
+        mode = 'downloading' if picked_id else 'searching'
+        logger.log('Starting to manual {mode} subtitles'.format(mode=mode))
         try:
             if release_id:
                 # Release ID is sent when using postpone
@@ -1977,8 +1977,8 @@ class Home(WebRoot):
             release_name = os.path.basename(video_path)
         except (ValueError, TypeError, IndexError) as e:
             ui.notifications.message('Error', "Please check logs")
-            logger.log('Error while manual {search_type} subtitles. Error: {error_msg}'.format
-                       (search_type='downloading' if picked_id else 'searching', error_msg=e), logger.ERROR)
+            logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
+                       (mode=mode, error_msg=e), logger.ERROR)
             return json.dumps({
                 'result': 'failure',
                 'error:': str(e)
@@ -1992,41 +1992,41 @@ class Home(WebRoot):
                 'message': "Video file no longer exists. Can't search for subtitles"
             })
 
+        found_subtitles = new_manual_subtitle = None
         try:
-            if not picked_id:
+            if mode == 'searching':
                 logger.log("Manual searching subtitles for: {0}".format(release_name))
                 found_subtitles = subtitles.list_subtitles(tv_episode=ep_obj, video_path=video_path)
-            else:
+                if found_subtitles:
+                    ui.notifications.message(ep_obj.show.name, 'Found {} subtitles'.format(len(found_subtitles)))
+                else:
+                    ui.notifications.message(ep_obj.show.name, 'No subtitle found')
+                result = 'success' if found_subtitles else 'failure'
+                subtitles_result = found_subtitles
+            elif mode == 'downloading':
                 logger.log("Manual downloading subtitles for: {0}".format(release_name))
                 new_manual_subtitle = subtitles.save_subtitle(tv_episode=ep_obj, subtitle_id=picked_id, video_path=video_path)
+                if new_manual_subtitle:
+                    ui.notifications.message(ep_obj.show.name, 'Subtitle downloaded: {0}'.format(','.join(new_manual_subtitle)))
+                else:
+                    ui.notifications.message(ep_obj.show.name, 'Failed to download subtitle: {0}'.format(','.join(new_manual_subtitle)))
+                result = 'success' if new_manual_subtitle else 'failure'
+                subtitles_result = new_manual_subtitle
         except Exception as e:
-            ui.notifications.message(ep_obj.show.name, 'Failed to manual {0} subtitles'.format('download' if picked_id else 'search'))
-            logger.log('Error while manual {search_type} subtitles. Error: {error_msg}'.format
-                       (search_type='downloading' if picked_id else 'searching', error_msg=e), logger.ERROR)
+            ui.notifications.message(ep_obj.show.name, 'Failed to manual {0} subtitles'.format(mode))
+            logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
+                       (mode=mode, error_msg=e), logger.ERROR)
             return json.dumps({
                 'result': 'failure',
                 'error': str(e)
             })
 
-        if found_subtitles and not picked_id:
-            ui.notifications.message(ep_obj.show.name, 'Found {} subtitles'.format(len(found_subtitles)))
-            return json.dumps({
-                'result': 'success',
-                'release': release_name,
-                'subtitles': found_subtitles
-            })
-        elif new_manual_subtitle and picked_id:
-            ui.notifications.message(ep_obj.show.name, 'Subtitle downloaded: {0}'.format(','.join(new_manual_subtitle)))
-            return json.dumps({
-                'result': 'success',
-                'release': release_name,
-                'release_id': release_id
-            })
-        else:
-            ui.notifications.message(ep_obj.show.name, 'No subtitle {0}'.format('downloaded' if picked_id else 'found'))
-            return json.dumps({
-                'result': 'failure',
-            })
+        return json.dumps({
+            'result': result,
+            'release': release_name,
+            'subtitles': subtitles_result,
+            'release_id': release_id
+        })
 
     def setSceneNumbering(self, show, indexer, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
                           sceneEpisode=None, sceneAbsolute=None):
