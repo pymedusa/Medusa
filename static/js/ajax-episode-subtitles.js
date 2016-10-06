@@ -1,18 +1,21 @@
 (function() {
     
     // Need to create global because the modal change $(this)
-    var subtitlesTd
-    var subtitlesSearchLink
+    var subtitlesTd;
+    var subtitlesSearchLink;
 
     $.ajaxEpSubtitlesSearch = function() {
         $('.epSubtitlesSearch').on('click', function(e) {
+            // This is for the page 'displayShow.mako'
             e.preventDefault();
             subtitlesTd = $(this).parent().siblings('.col-subtitles');
             subtitlesSearchLink = $(this);
+            // Ask user if he want to manual search subs or automatic search
             $('#askmanualSubtitleSearchModal').modal('show');
         });
 
         $('.epSubtitlesSearchPP').on('click', function(e) {
+            // This is for the page 'manage_subtitleMissedPP.mako'
             e.preventDefault();
             subtitlesTd = $(this).parent().siblings('.col-search');
             subtitlesSearchLink = $(this);
@@ -22,10 +25,14 @@
 
         $(document).on("click", "#pickSub", function(event){
             var subtitle_id = $(this).attr("subtitle_id");
+            // Remove 'subtitleid-' so we know the actual ID
             subtitle_id = subtitle_id.replace('subtitleid-', '');
             url = subtitlesSearchLink.prop('href');
+            // Replace if it was clicked in 'displayShow.mako'
             url = url.replace('searchEpisodeSubtitles', 'pick_manual_subtitle');
+            // Replace if it was clicked in 'manage_subtitleMissedPP.mako'
             url = url.replace('manual_search_subtitles', 'pick_manual_subtitle');
+            // Append the ID param that 'pick_manual_subtitle' expect
             url = url + '&subtitle_id=' + subtitle_id;
             subtitle_picked = $(this);
             subtitle_picked.empty();
@@ -56,16 +63,20 @@
         });
 
         $('#askmanualSubtitleSearchModal .btn').on('click', function() {
-            var manual_subtitle = '';
-            manual_subtitle = ($(this).text().toLowerCase() === 'manual');
-            if (manual_subtitle == true) {
-                // Uses the manual subtitle search handler by changing url
-                url = subtitlesSearchLink.prop('href');
+            var url = subtitlesSearchLink.prop('href');
+            // searchEpisodeSubtitles = auto search (default)
+            // manual_search_subtitles = manual search
+            // Get modal answer
+            var manual_subtitle = ($(this).text().toLowerCase() === 'manual');
+            if (manual_subtitle === true) {
+                // If manual search, replace handler.
                 url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
+                // Call manual search
                 searchSubtitles(url);
             }
             else {
-                forcedSearch();
+                // Call auto search
+                forcedSearch(url);
             }
         });
     
@@ -78,36 +89,51 @@
                     title: 'loading'
                 }));
                 $.getJSON(url, function(data) {
+                    // Delete existing rows in the modal
                     var existing_rows = $('#subtitle_results tr').length;
                     if (existing_rows > 1) {
                         for (var x=existing_rows-1; x>0; x--) {
                             document.getElementById("subtitle_results").deleteRow(x);
                         }
                     }
+                    // Add the release to the modal title
                     $("h4#manualSubtitleSearchModalTitle.modal-title").text(data.release);
                     if (data.result == 'success') {
                         $.each(data.subtitles, function (index, subtitle) {
+                            // For each subtitle found create the row string and append to the modal
                             var provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
                             var flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
-                            var stars =  Math.trunc((subtitle.score / subtitle.min_score) * 10)
-                            var missing_guess = subtitle.missing_guess
-                            var matched = ''
+                            // Convert score in a scale of 10
+                            var stars =  Math.trunc((subtitle.score / subtitle.min_score) * 10);
+                            var missing_guess = subtitle.missing_guess;
+                            var subtitle_filename = subtitle.filename.substring(0, 99);
                             if (stars == 10) {
-                                matched = ' <img src="images/save.png" width="16" height="16"/>';
-                                missing_guess = ''
+                                // If match, don't show missing guess and add a checkmark next to subtitle filename
+                                subtitle_filename += ' <img src="images/save.png" width="16" height="16"/>';
+                                missing_guess = '';
                             }
-                            var download_button = ' <a id="pickSub" title="Download subtitle" subtitle_id=subtitleid-' + index + '><img src="images/download.png" width="16" height="16"/></a>'
-                            //var stars_obj = '<span class="imdbstars" qtip-content="' + stars + '">' + stars + '</span>'
-                            var row = '<tr><td>' + provider + ' ' + subtitle.provider + '</td><td>' + flag + '</td><td>' + stars + '</td><td title="' + subtitle.filename + '">' + subtitle.filename.substring(0, 99) + matched + '</td><td>' + missing_guess + '</td><td>' + download_button + '</td></tr>';
+                            var download_button = '<a id="pickSub" title="Download subtitle" subtitle_id=subtitleid-' + index + '>' +
+                                                  '<img src="images/download.png" width="16" height="16"/></a>';
+                            var row = '<tr>' +
+                                      '<td>' + provider + ' ' + subtitle.provider + '</td>' +
+                                      '<td>' + flag + '</td>' +
+                                      '<td>' + stars + '</td>' +
+                                      '<td title="' + subtitle.filename + '"> ' + subtitle_filename + '</td>' +
+                                      '<td>' + missing_guess + '</td>' +
+                                      '<td>' + download_button + '</td>' +
+                                      '</tr>';
                             $('#subtitle_results').append(row);
                         });
                     }
+                    // Allow the modal to be resizable
                     $('.modal-content').resizable({
                         alsoResize: ".modal-body"
                     });
+                    // Allow the modal to be draggable
                     $('.modal-dialog').draggable();
+                    // After all rows are added, show the modal with results found
                     $('#manualSubtitleSearchModal').modal('show');
-                    // Add back the CC icon
+                    // Add back the CC icon as we are not searching anymore
                     subtitlesSearchLink.empty();
                     subtitlesSearchLink.append($('<img/>').prop({
                         src: 'images/closed_captioning.png',
@@ -115,10 +141,10 @@
                     }));
                 });
                 return false;
-        };
+        }
 
-        function forcedSearch() {
-            $.getJSON(subtitlesSearchLink.prop('href'), function(data) {
+        function forcedSearch(url) {
+            $.getJSON(url, function(data) {
                 if (data.result.toLowerCase() !== 'failure' && data.result.toLowerCase() !== 'no subtitles downloaded') {
                     // clear and update the subtitles column with new informations
                     var subtitles = data.subtitles.split(',');
@@ -149,7 +175,7 @@
                 }
             });
             return false;
-        };
+        }
     };
 
     $.fn.ajaxEpMergeSubtitles = function() {
