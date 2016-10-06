@@ -7,37 +7,17 @@
     $.ajaxEpSubtitlesSearch = function() {
         $('.epSubtitlesSearch').on('click', function(e) {
             e.preventDefault();
-
             subtitlesTd = $(this).parent().siblings('.col-subtitles');
             subtitlesSearchLink = $(this);
-
-            // fill with the ajax loading gif
-            subtitlesSearchLink.empty();
-            subtitlesSearchLink.append($('<img/>').prop({
-                src: 'images/loading16.gif',
-                alt: '',
-                title: 'loading'
-            }));
-
             $("h4.modal-title").text('Subtitle search');
             $('#askmanualSubtitleSearchModal').modal('show');
         });
 
         $('.epSubtitlesSearchPP').on('click', function(e) {
             e.preventDefault();
-
             subtitlesTd = $(this).parent().siblings('.col-search');
             subtitlesSearchLink = $(this);
-
-            // fill with the ajax loading gif
-            subtitlesSearchLink.empty();
-            subtitlesSearchLink.append($('<img/>').prop({
-                src: 'images/loading16.gif',
-                alt: '',
-                title: 'loading'
-            }));
-
-            url = subtitlesSearchLink.prop('href');
+            url = subtitlesSearchLink.prop('href');            
             searchSubtitles(url);
         });
 
@@ -91,6 +71,13 @@
         });
     
         function searchSubtitles(url) {
+                // fill with the ajax loading gif
+                subtitlesSearchLink.empty();
+                subtitlesSearchLink.append($('<img/>').prop({
+                    src: 'images/loading16.gif',
+                    alt: '',
+                    title: 'loading'
+                }));
                 $.getJSON(url, function(data) {
                     var existing_rows = $('#subtitle_results tr').length;
                     if (existing_rows > 1) {
