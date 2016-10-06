@@ -26,8 +26,19 @@
             var manual_subtitle = '';
             manual_subtitle = ($(this).text().toLowerCase() === 'manual');
             if (manual_subtitle == true) {
-                // Call manual subtitle search URL
-                $('#manualSubtitleSearchModal').modal('show');
+                // Uses the manual subtitle search handler by changing url
+                url = subtitlesSearchLink.prop('href');
+                url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
+                console.log(url)
+                $.getJSON(url, function(data) {
+                    if (data.result.toLowerCase() !== 'failure') {
+                        // Don't show modal if failure or no results
+                    }
+                    else {
+                        // Populates the modal with the results
+                        $('#manualSubtitleSearchModal').modal('show');
+                    }
+                });
             }
             else {
                 forcedSearch();
@@ -35,7 +46,7 @@
         });
     
         function forcedSearch() {
-            $.getJSON(subtitlesSearchLink.attr('href'), function(data) {
+            $.getJSON(subtitlesSearchLink.prop('href'), function(data) {
                 if (data.result.toLowerCase() !== 'failure' && data.result.toLowerCase() !== 'no subtitles downloaded') {
                     // clear and update the subtitles column with new informations
                     var subtitles = data.subtitles.split(',');
