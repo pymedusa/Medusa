@@ -1950,6 +1950,53 @@ class Home(WebRoot):
             'subtitles': ','.join(ep_obj.subtitles),
         })
 
+    def manual_search_subtitles(self, show=None, season=None, episode=None, lang=None):
+        # retrieve the episode object and fail if we can't get one
+        ep_obj = getEpisode(show, season, episode)
+        if isinstance(ep_obj, str):
+            return json.dumps({
+                'result': 'failure',
+            })
+
+        try:
+            subtitles_available = ep_obj.manual_search_subtitles(lang=lang)
+        except Exception as e:
+            return json.dumps({
+                'result': 'failure',
+                'subtitles': [],
+                'error': e,
+            })
+
+        return json.dumps({
+            'result': 'success',
+            'subtitles': subtitles_available,
+            'error': '',
+        })
+
+    def pick_manual_search_subtitle(self, show=None, season=None, episode=None, subtitle_id=None):
+        # retrieve the episode object and fail if we can't get one
+        ep_obj = getEpisode(show, season, episode)
+        if isinstance(ep_obj, str):
+            return json.dumps({
+                'result': 'failure',
+            })
+
+        try:
+            new_manual_subtitle = ep_obj.download_manual_search_subtitle(subtitle_id=subtitle_id)
+        except Exception as e:
+            ui.notifications.message(ep_obj.show.name, 'Failed to downloaded subtitles')
+            return json.dumps({
+                'result': 'failure',
+                'error': e,
+            })
+
+        if new_manual_subtitle:
+            ui.notifications.message(ep_obj.show.name, 'Subtitle downloaded')
+            return json.dumps({
+                'result': 'success',
+                'error': '',
+            })
+
     def setSceneNumbering(self, show, indexer, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
                           sceneEpisode=None, sceneAbsolute=None):
 
