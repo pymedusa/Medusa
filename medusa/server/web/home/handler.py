@@ -1990,13 +1990,10 @@ class Home(WebRoot):
         try:
             if not picked_id:
                 logger.log("Manual searching subtitles for: {0}".format(release_name))
-                found_subtitles = subtitles.download_subtitles(tv_episode=ep_obj, video_path=video_path, subtitles=False,
-                                                               embedded_subtitles=False, lang='all', search_only=True)
+                found_subtitles = subtitles.list_subtitles(tv_episode=ep_obj, video_path=video_path)
             else:
                 logger.log("Manual downloading subtitles for: {0}".format(release_name))
-                new_manual_subtitle = subtitles.download_subtitles(tv_episode=ep_obj, video_path=video_path, subtitles=False,
-                                                                   embedded_subtitles=False, lang='all', search_only=False,
-                                                                   picked_id=picked_id)
+                new_manual_subtitle = subtitles.save_subtitle(tv_episode=ep_obj, subtitle_id=picked_id, video_path=video_path)
         except Exception as e:
             ui.notifications.message(ep_obj.show.name, 'Failed to manual {0} subtitles'.format('download' if picked_id else 'search'))
             logger.log('Error while manual {search_type} subtitles. Error: {error_msg}'.format

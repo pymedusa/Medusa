@@ -3,7 +3,7 @@
     var selectedEpisode;
     var searchTypesList = ['.epSubtitlesSearch', '.epSubtitlesSearchPP', '.epRedownloadSubtitle', '.epSearch', '.epRetry', '.epManualSearch'];
     var subtitlesResultModal = $('#manualSubtitleSearchModal');
-    
+
     function disableAllSearches() {
         // Disables all other searches while manual searching for subtitles
         $.each(searchTypesList, function (index, searchTypes) {
@@ -93,7 +93,7 @@
                 forcedSearch();
             }
         });
-    
+
         function searchSubtitles() {
                 disableAllSearches();
                 changeImage(selectedEpisode, 'images/loading16.gif', 'loading', 'loading', 16, true);
@@ -115,25 +115,23 @@
                             // For each subtitle found create the row string and append to the modal
                             var provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
                             var flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
-                            // Convert score in a scale of 10
-                            var subtitle_score =  Math.trunc((10*(subtitle.score-330)/22), 0);
                             var missingGuess = subtitle.missing_guess;
+                            var subtitle_score =  subtitle.score;
                             var subtitleName = subtitle.filename.substring(0, 99);
                             if (subtitle_score >= 10) {
                                 // If match, don't show missing guess and add a checkmark next to subtitle filename
                                 subtitleName += ' <img src="images/save.png" width="16" height="16"/>';
-                                missingGuess = '';
                                 subtitle_score = 10
                             }
                             if (subtitle_score < 0) {
                                 subtitle_score = 0;
                             }
-                            var pickButton = '<a href="#" id="pickSub" title="Download subtitle" subtitleID=subtitleid-' + subtitle.id + '>' +
+                            var pickButton = '<a href="#" id="pickSub" title="Download subtitle" subtitleID="subtitleid-' + subtitle.id + '">' +
                                                   '<img src="images/download.png" width="16" height="16"/></a>';
                             var row = '<tr>' +
                                       '<td>' + provider + ' ' + subtitle.provider + '</td>' +
                                       '<td>' + flag + '</td>' +
-                                      '<td title="' + subtitle.score + '/' + subtitle.min_score + '"> ' + subtitle_score + '</td>' +
+                                      '<td title="' + subtitle.sub_score + '/' + subtitle.min_score + '"> ' + subtitle_score + '</td>' +
                                       '<td title="' + subtitle.filename + '"> ' + subtitleName + '</td>' +
                                       '<td>' + missingGuess + '</td>' +
                                       '<td>' + pickButton + '</td>' +
@@ -202,7 +200,7 @@
             selectedEpisode = $(this);
             $("#confirmSubtitleReDownloadModal").modal('show');
         });
- 
+
         $('#confirmSubtitleReDownloadModal .btn.btn-success').on('click', function(){
             redownloadSubtitles();
         });
