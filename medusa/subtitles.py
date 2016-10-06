@@ -244,7 +244,7 @@ def score_subtitles(subtitles_list, video):
     """
     providers_order = {d['name']: i for i, d in enumerate(sorted_service_list())}
     result = sorted([(s, compute_score(s, video, hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED),
-                    -1 * providers_order.get(s.provider_name))
+                    -1 * providers_order.get(s.provider_name, 1000))
                      for s in subtitles_list], key=operator.itemgetter(1, 2), reverse=True)
     return [(s, score) for (s, score, provider_order) in result]
 
