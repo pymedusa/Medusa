@@ -118,12 +118,18 @@
                             var missingGuess = subtitle.missing_guess;
                             var subtitle_score =  subtitle.score;
                             var subtitleName = subtitle.filename.substring(0, 99);
-                            if (subtitle_score >= 10) {
-                                // If match, don't show missing guess and add a checkmark next to subtitle filename
-                                subtitleName += ' <img src="images/save.png" width="16" height="16"/>';
-                                subtitle_score = 10
+                            // if hash match, don't show missingGuess
+                            if (subtitle.sub_score >= subtitle.max_score){
+                                missingGuess = '';
                             }
-                            if (subtitle_score < 0) {
+                            // If perfect match, add a checkmark next to subtitle filename
+                            if (subtitle.sub_score >= subtitle.min_score) {
+                                subtitleName += ' <img src="images/save.png" width="16" height="16"/>';
+                            }
+                            // Make subtitle score always between 0 and 10
+                            if (subtitle_score > 10) {
+                                subtitle_score = 10;
+                            } else if (subtitle_score < 0) {
                                 subtitle_score = 0;
                             }
                             var pickButton = '<a href="#" id="pickSub" title="Download subtitle" subtitleID="subtitleid-' + subtitle.id + '">' +
