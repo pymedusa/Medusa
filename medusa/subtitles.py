@@ -261,7 +261,6 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
     subtitles_dir = get_subtitles_dir(video_path)
     release_name = tv_episode.release_name
 
-    logger.debug(u'Manual searching with all wanted languages')
     languages = {from_code(language) for language in wanted_languages()}
 
     video = get_video(tv_episode, video_path, subtitles_dir=subtitles_dir, subtitles=False,
@@ -322,7 +321,7 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     Checks whether subtitles are needed or not
 
     :param tv_episode: the episode to download subtitles
-    :type tv_episode: sickbeard.tv.TVEpisode
+    :type tv_episode: medusa.tv.TVEpisode
     :param video_path: the video path. If none, the episode location will be used
     :type video_path: str
     :param subtitles: True if existing external subtitles should be taken into account
