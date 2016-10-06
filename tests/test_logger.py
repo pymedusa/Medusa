@@ -21,7 +21,7 @@ class TestStandardLoggingApi(object):
             'kwargs': dict(),
             'expected': 'This is an example: hello world'
         },
-        {  # p2: regression test: https://github.com/pymedusa/SickRage/issues/876
+        {  # p2: regression test: https://github.com/pymedusa/Medusa/issues/876
             'message': "{'type': 'episode', 'season': 5}",
             'args': [],
             'kwargs': dict(),

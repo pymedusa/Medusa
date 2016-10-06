@@ -69,25 +69,29 @@ __title__ = __name__
 SRC_FOLDER = __name__
 LEGACY_SRC_FOLDERS = ('sickbeard', 'sickrage')
 LIB_FOLDER = 'lib'
-UNKNOWN_RELEASE_GROUP = 'SickRage'
+UNKNOWN_RELEASE_GROUP = 'Medusa'
+# TODO: allow restore to ready sickrage-{timestamp}.zip and medusa-{timestamp}.zip
 BACKUP_FILENAME = 'sickrage-{timestamp}.zip'
+# TODO: change db to medusa
 APPLICATION_DB = 'sickbeard.db'
 FAILED_DB = 'failed.db'
 CACHE_DB = 'cache.db'
+# TODO: change log to medusa
 LOG_FILENAME = 'sickrage.log'
 CONFIG_INI = 'config.ini'
 GIT_ORG = 'pymedusa'
-GIT_REPO = 'SickRage'
-CHANGES_URL = 'https://cdn.pymedusa.com/sickrage-news/CHANGES.md'
-APPLICATION_URL = 'https://github.com/PyMedusa/SickRage'
+GIT_REPO = 'Medusa'
+CHANGES_URL = 'https://cdn.pymedusa.com/medusa-news/CHANGES.md'
+APPLICATION_URL = 'https://github.com/PyMedusa/Medusa'
 DONATIONS_URL = '{0}/wiki/Donations'.format(APPLICATION_URL)
 WIKI_URL = '{0}/wiki'.format(APPLICATION_URL)
 GITHUB_IO_URL = 'http://github.com/PyMedusa/sickrage.github.io/'
 EXTRA_SCRIPTS_URL = '{0}/wiki/Post-Processing#extra-scripts'.format(APPLICATION_URL)
 SUBTITLES_URL = '{0}/wiki/Subtitle%20Scripts'.format(APPLICATION_URL)
+# TODO: create an app in pushover
 PUSHOVER_URL = 'https://pushover.net/apps/clone/sickrage'
-RARBG_APPID = 'sickrage2'
-SECURE_TOKEN = 'sickrage_user'
+RARBG_APPID = 'medusa'
+SECURE_TOKEN = 'medusa_user'
 
 PID = None
 CFG = None
