@@ -1976,6 +1976,13 @@ class Home(WebRoot):
         video_path = filepath or ep_obj.location
         release_name = os.path.basename(video_path)
 
+        if not ek(os.path.isfile, video_path):
+            logger.log('Video file no longer exists: {video_file}'.format(video_file=video_path), logger.DEBUG)
+            ui.notifications.message(ep_obj.show.name, "Video file no longer exists. Can't search for subtitles")
+            return json.dumps({
+                'result': 'failure',
+            })
+
         try:
             found_subtitles = subtitles.download_subtitles(tv_episode=ep_obj, video_path=video_path, subtitles=False,
                                                            embedded_subtitles=False, lang='all', search_only=True)
