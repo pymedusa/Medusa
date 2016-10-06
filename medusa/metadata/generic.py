@@ -22,7 +22,7 @@ import os
 import re
 
 import medusa as app
-from six import iterkeys, text_type
+from six import iterkeys
 from tmdb_api.tmdb_api import TMDB
 from .. import helpers, logger
 from ..helper.common import replace_extension
