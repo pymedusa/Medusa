@@ -148,7 +148,7 @@
                                 alsoResize: '.modal-body'
                             });
                             // Allow the modal to be draggable
-                            $('.modal-dialog').draggable();
+                            $('.modal-dialog').draggable({ cancel: '.text' });
                             // After all rows are added, show the modal with results found
                             subtitlesResultModal.modal('show');
                         });
