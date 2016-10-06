@@ -504,6 +504,8 @@ def get_subtitle_description(subtitle):
     """
     desc = None
     sub_id = text_type(subtitle.id)
+    if hasattr(subtitle, 'hash') and subtitle.hash:
+        desc = text_type(subtitle.hash).lower()
     if hasattr(subtitle, 'filename') and subtitle.filename:
         desc = subtitle.filename.lower()
     elif hasattr(subtitle, 'name') and subtitle.name:
@@ -513,10 +515,7 @@ def get_subtitle_description(subtitle):
     if hasattr(subtitle, 'releases') and subtitle.releases:
         desc = text_type(subtitle.releases).lower()
 
-    if not desc:
-        desc = sub_id
-
-    return sub_id + '-' + desc if desc not in sub_id else desc
+    return sub_id if not desc else desc
 
 
 def invalidate_video_cache(video_path):
