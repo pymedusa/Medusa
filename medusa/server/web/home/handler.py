@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import ast
 import json
+import operator
 import os
 import time
 from datetime import date
@@ -1959,17 +1960,30 @@ class Home(WebRoot):
             })
 
         try:
-            subtitles_available = ep_obj.manual_search_subtitles(lang=lang)
+            found_subtitles = []
+            video = subtitles.get_video(ep_obj, ep_obj.location)
+            if video:
+                pool = subtitles.get_provider_pool()
+                languages = subtitles.get_needed_languages('')
+                subtitles_list = pool.list_subtitles(video, languages)
+                min_score = subtitles.get_min_score()
+                scored_subtitles = sorted([(s, subtitles.compute_score(s, video, hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED))
+                                          for s in subtitles_list], key=operator.itemgetter(1), reverse=True)
+                for subtitle, score in scored_subtitles:
+                    found_subtitles.append({'provider': subtitle.provider_name, 'lang': subtitle.language.opensubtitles, 'score': score, 'min_score': min_score, 'filename': subtitles.get_subtitle_description(subtitle)})
+
         except Exception as e:
             return json.dumps({
                 'result': 'failure',
+                'release': os.path.basename(ep_obj.location),
                 'subtitles': [],
                 'error': e,
             })
 
         return json.dumps({
             'result': 'success',
-            'subtitles': subtitles_available,
+            'release': os.path.basename(ep_obj.location),
+            'subtitles': found_subtitles,
             'error': '',
         })
 

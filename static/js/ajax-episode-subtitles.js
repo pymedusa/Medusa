@@ -29,15 +29,19 @@
                 // Uses the manual subtitle search handler by changing url
                 url = subtitlesSearchLink.prop('href');
                 url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
-                console.log(url)
                 $.getJSON(url, function(data) {
-                    if (data.result.toLowerCase() !== 'failure') {
-                        // Don't show modal if failure or no results
-                    }
-                    else {
-                        // Populates the modal with the results
+                    console.log(data.result);
+                    console.log(data.release);
+                    console.log(data.subtitles);
+                    if (data.result == 'success') {
                         $('#manualSubtitleSearchModal').modal('show');
                     }
+                    // Add back the CC icon
+                    subtitlesSearchLink.empty();
+                    subtitlesSearchLink.append($('<img/>').prop({
+                        src: 'images/closed_captioning.png',
+                        height: '16',
+                    }));
                 });
             }
             else {
