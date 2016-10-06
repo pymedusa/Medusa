@@ -73,11 +73,17 @@
                 }
                 if (data.result == 'success') {
                     changeImage(subtitlePicked, 'images/save.png', 'subtitle saved', 'subtitle saved', 16, true);
-                    // Removes the release as we downloaded the subtitle
-                    // Need to add 1 because of the row header
-                    // Only applied to manage_subtitleMissedPP.mako
-                    var removeRow = parseInt(data.release_id) + 1
-                    $('#releasesPP tr').eq(removeRow).remove();
+                    if ( $('table#releasesPP').length > 0 ){
+                        // Removes the release as we downloaded the subtitle
+                        // Need to add 1 because of the row header
+                        // Only applied to manage_subtitleMissedPP.mako
+                        var removeRow = parseInt(data.release_id) + 1
+                        $('#releasesPP tr').eq(removeRow).remove();
+                    } else {
+                        // update the subtitles column with new informations
+                        language = data.subtitles;
+                        changeImage(subtitlesTd, 'images/subtitles/flags/' + language + '.png', language, language, 11, false);
+                    }
                 } else {
                     changeImage(subtitlePicked, 'images/no16.png', 'subtitle not saved', 'subtitle not saved', 16, true);
                 }
