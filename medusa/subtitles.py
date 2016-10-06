@@ -242,8 +242,11 @@ def score_subtitles(subtitles_list, video):
     :return:
     :rtype: tuple(subliminal.subtitle.Subtitle, int)
     """
-    return sorted([(s, compute_score(s, video, hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED))
-                   for s in subtitles_list], key=operator.itemgetter(1), reverse=True)
+    providers_order = {d['name']: i for i, d in enumerate(sorted_service_list())}
+    result = sorted([(s, compute_score(s, video, hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED),
+                    -1 * providers_order.get(s.provider_name))
+                     for s in subtitles_list], key=operator.itemgetter(1, 2), reverse=True)
+    return [(s, score) for (s, score, provider_order) in result]
 
 
 def list_subtitles(tv_episode, video_path=None, limit=40):
@@ -274,10 +277,11 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
     logger.debug("Scores computed for release: {release}".format(release=os.path.basename(video_path)))
 
     max_score = episode_scores['hash']
+    max_scores = set(episode_scores) - {'hearing_impaired', 'hash'}
     factor = max_score / 9
     return [{'id': subtitle.id,
              'provider': subtitle.provider_name,
-             'missing_guess': list(set(episode_scores) - subtitle.get_matches(video) - {'hearing_impaired', 'hash'}),
+             'missing_guess': sorted(list(max_scores - subtitle.get_matches(video))),
              'lang': subtitle.language.opensubtitles,
              'score': round(10 * (factor / (float(factor - 1 - score + max_score)))),
              'sub_score': score,
@@ -326,6 +330,8 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     :type subtitles: bool
     :param embedded_subtitles: True if embedded subtitles should be taken into account
     :type embedded_subtitles: bool
+    :param lang:
+    :type lang: str
     :return: a sorted list of the opensubtitles codes for the downloaded subtitles
     :rtype: list of str
     """
