@@ -390,6 +390,10 @@ class TVDBv2(object):
             'aired_episode_number': 'episodenumber',
             'aired_season': 'seasonnumber',
             'dvd_episode_number': 'dvd_episodenumber',
+            'airs_day_of_week': 'airs_dayofweek',
+            'last_updated': 'lastupdated',
+            'network_id': 'networkid',
+            'rating': 'contentrating',
         }
 
     def _object_to_dict(self, tvdb_response, key_mapping=None, list_separator='|'):
