@@ -19,6 +19,7 @@
                 title: 'loading'
             }));
 
+            $("h4.modal-title").text('Subtitle search');
             $('#askmanualSubtitleSearchModal').modal('show');
         });
 
@@ -111,7 +112,7 @@
                             }
                             var download_button = ' <a id="pickSub" title=subtitleid-' + index + '><img src="images/download.png" width="16" height="16"/></a>'
                             //var stars_obj = '<span class="imdbstars" qtip-content="' + stars + '">' + stars + '</span>'
-                            var row = '<tr><td>' + provider + ' ' + subtitle.provider + ' ' + flag + '</td><td>' + stars + '</td><td>' + subtitle.filename + matched + '</td><td>' + missing_guess + '</td><td>' + download_button + '</td></tr>';
+                            var row = '<tr><td>' + provider + ' ' + subtitle.provider + '</td><td>' + flag + '</td><td>' + stars + '</td><td title="' + subtitle.filename + '">' + subtitle.filename.substring(0, 99) + matched + '</td><td>' + missing_guess + '</td><td>' + download_button + '</td></tr>';
                             $('#subtitle_results').append(row);
                         });
                     }

@@ -576,6 +576,7 @@
                 <tbody>
                 <tr>
                     <th>Provider/Flag</th>
+                    <th></th>
                     <th>Score</th>
                     <th>Subtitle</th>
                     <th>Missing/wrong</th>

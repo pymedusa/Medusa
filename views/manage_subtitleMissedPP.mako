@@ -50,6 +50,7 @@
                 <tbody>
                 <tr>
                     <th>Provider/Lang</th>
+                    <th></th>
                     <th>Score</th>
                     <th>Subtitle</th>
                     <th>Missing/wrong</th>
