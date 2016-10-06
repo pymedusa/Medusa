@@ -132,7 +132,7 @@
                             // For each subtitle found create the row string and append to the modal
                             var provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
                             var flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
-                            var missingGuess = subtitle.missing_guess;
+                            var missingGuess = subtitle.missing_guess.join(', ');
                             var subtitle_score =  subtitle.score;
                             var subtitleName = subtitle.filename.substring(0, 99);
                             // if hash match, don't show missingGuess
@@ -152,7 +152,7 @@
                             var pickButton = '<a href="#" id="pickSub" title="Download subtitle" subtitleID="subtitleid-' + subtitle.id + '">' +
                                                   '<img src="images/download.png" width="16" height="16"/></a>';
                             var row = '<tr>' +
-                                      '<td>' + provider + ' ' + subtitle.provider + '</td>' +
+                                      '<td style="white-space:nowrap;">' + provider + ' ' + subtitle.provider + '</td>' +
                                       '<td>' + flag + '</td>' +
                                       '<td title="' + subtitle.sub_score + '/' + subtitle.min_score + '"> ' + subtitle_score + '</td>' +
                                       '<td title="' + subtitle.filename + '"> ' + subtitleName + '</td>' +

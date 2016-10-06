@@ -972,7 +972,7 @@ displayShow.mako
 ========================================================================== */
 
 .modal-wide .modal-dialog {
-  width: 90%;
+  width: 100%;
 }
 
 .modal-dialog{
