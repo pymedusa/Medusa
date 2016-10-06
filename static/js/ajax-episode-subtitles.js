@@ -1,8 +1,16 @@
 (function() {
+    
+    // Need to create global because the modal change $(this)
+    var subtitlesTd
+    var subtitlesSearchLink
+
     $.ajaxEpSubtitlesSearch = function() {
-        $('.epSubtitlesSearch').on('click', function() {
-            var subtitlesTd = $(this).parent().siblings('.col-subtitles');
-            var subtitlesSearchLink = $(this);
+        $('.epSubtitlesSearch').on('click', function(evt) {
+            evt.preventDefault();
+
+            subtitlesTd = $(this).parent().siblings('.col-subtitles');
+            subtitlesSearchLink = $(this);
+
             // fill with the ajax loading gif
             subtitlesSearchLink.empty();
             subtitlesSearchLink.append($('<img/>').prop({
@@ -10,7 +18,24 @@
                 alt: '',
                 title: 'loading'
             }));
-            $.getJSON($(this).attr('href'), function(data) {
+
+            $('#askmanualSubtitleSearchModal').modal('show');
+        });
+
+        $('#askmanualSubtitleSearchModal .btn').on('click', function() {
+            var manual_subtitle = '';
+            manual_subtitle = ($(this).text().toLowerCase() === 'manual');
+            if (manual_subtitle == true) {
+                // Call manual subtitle search URL
+                $('#manualSubtitleSearchModal').modal('show');
+            }
+            else {
+                forcedSearch();
+            }
+        });
+    
+        function forcedSearch() {
+            $.getJSON(subtitlesSearchLink.attr('href'), function(data) {
                 if (data.result.toLowerCase() !== 'failure' && data.result.toLowerCase() !== 'no subtitles downloaded') {
                     // clear and update the subtitles column with new informations
                     var subtitles = data.subtitles.split(',');
@@ -41,7 +66,7 @@
                 }
             });
             return false;
-        });
+        };
     };
 
     $.fn.ajaxEpMergeSubtitles = function() {

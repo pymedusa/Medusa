@@ -585,5 +585,22 @@
         </div>
     </div>
 </div>
+<div id="askmanualSubtitleSearchModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Subtitle search</h4>
+            </div>
+            <div class="modal-body">
+                <p>Do you want to manually pick subtitles or let us choose it for you?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Auto</button>
+                <button type="button" class="btn btn-success" data-dismiss="modal">Manual</button>
+            </div>
+        </div>
+    </div>
+</div>
 <!--End - Bootstrap Modal-->
 </%block>
