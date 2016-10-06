@@ -22,6 +22,12 @@
             $('#askmanualSubtitleSearchModal').modal('show');
         });
 
+        $(document).on("click", "#pickSub", function(event){
+            var filename = $(this).attr("title");
+            $('#manualSubtitleSearchModal').modal('hide');
+            alert('Picked: ' + filename);
+        });
+
         $('#askmanualSubtitleSearchModal .btn').on('click', function() {
             var manual_subtitle = '';
             manual_subtitle = ($(this).text().toLowerCase() === 'manual');
@@ -31,7 +37,7 @@
                 url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
                 $.getJSON(url, function(data) {
                     if (data.result == 'success') {
-                        console.log(data.subtitles);
+
                         $("h4.modal-title").text("Manual subtitle search for release: " + data.release);
                         $.each(data.subtitles, function (index, subtitle) {
                             var provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
@@ -41,8 +47,9 @@
                             if (stars == 10) {
                                 matched = ' <img src="images/save.png" width="16" height="16"/>';
                             }
+                            var download_button = ' <input class="btn btn-inline" type="button" id="pickSub" title=subtitle-' + subtitle.filename + ' value="pick"/> '
                             //var stars_obj = '<span class="imdbstars" qtip-content="' + stars + '">' + stars + '</span>'
-                            var row = '<tr><td>' + provider + ' ' + subtitle.provider + '</td><td>' + flag + '</td><td>' + stars + '</td><td>' + subtitle.filename + matched + '</td></tr>';
+                            var row = '<tr><td>' + provider + ' ' + subtitle.provider + '</td><td>' + flag + '</td><td>' + stars + '</td><td>' + subtitle.filename + matched + '</td><td>' + download_button + '</td></tr>';
                             $('#subtitle_results').append(row);
                         });
                         $('#manualSubtitleSearchModal').modal('show');
