@@ -151,7 +151,7 @@
                             }
                             var pickButton = '<a href="#" id="pickSub" title="Download subtitle" subtitleID="subtitleid-' + subtitle.id + '">' +
                                                   '<img src="images/download.png" width="16" height="16"/></a>';
-                            var row = '<tr>' +
+                            var row = '<tr style="font-size: 95%;">' +
                                       '<td style="white-space:nowrap;">' + provider + ' ' + subtitle.provider + '</td>' +
                                       '<td>' + flag + '</td>' +
                                       '<td title="' + subtitle.sub_score + '/' + subtitle.min_score + '"> ' + subtitle_score + '</td>' +

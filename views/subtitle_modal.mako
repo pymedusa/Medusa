@@ -8,7 +8,7 @@
             <div class="modal-body text">
                 <table id=subtitle_results style="width:100%">
                 <tbody>
-                <tr>
+                <tr style="font-size: 95%;">
                     <th>Provider</th>
                     <th>Lang</th>
                     <th>Score</th>
