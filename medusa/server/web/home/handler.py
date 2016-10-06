@@ -1967,7 +1967,7 @@ class Home(WebRoot):
                 filepath = None
             show = int(show)
             show_obj = Show.find(app.showList, show)
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, IndexError):
             return json.dumps({
                 'result': 'failure',
             })
