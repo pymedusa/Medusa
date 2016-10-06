@@ -1009,10 +1009,6 @@ new #confirmBox
     text-align: center;
 }
 
-.modal-header .close {
-    display: none;
-}
-
 .modal-footer button {
     margin-right: 15px;
     padding: 2px 15px;
