@@ -9,7 +9,6 @@
             e.preventDefault();
             subtitlesTd = $(this).parent().siblings('.col-subtitles');
             subtitlesSearchLink = $(this);
-            $("h4.modal-title").text('Subtitle search');
             $('#askmanualSubtitleSearchModal').modal('show');
         });
 
@@ -85,7 +84,7 @@
                             document.getElementById("subtitle_results").deleteRow(x);
                         }
                     }
-                    $("h4.modal-title").text(data.release);
+                    $("h4#manualSubtitleSearchModalTitle.modal-title").text(data.release);
                     if (data.result == 'success') {
                         $.each(data.subtitles, function (index, subtitle) {
                             var provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
