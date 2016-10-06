@@ -102,7 +102,7 @@
     <script type="text/javascript" src="js/manage/init.js?${sbPID}"></script>
     <script type="text/javascript" src="js/manage/mass-edit.js?${sbPID}"></script>
     <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
-
+    <script type="text/javascript" src="js/manage/subtitle-missedPP.js?${sbPID}"></script>
     <script type="text/javascript" src="js/history/index.js?${sbPID}"></script>
 
     <script type="text/javascript" src="js/errorlogs/viewlogs.js?${sbPID}"></script>

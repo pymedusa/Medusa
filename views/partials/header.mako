@@ -72,6 +72,9 @@
                     % if app.USE_SUBTITLES:
                         <li><a href="manage/subtitleMissed/"><i class="menu-icon-backlog"></i>&nbsp;Missed Subtitle Management</a></li>
                     % endif
+                    % if app.POSTPONE_IF_NO_SUBS:
+                        <li><a href="manage/subtitleMissedPP/"><i class="menu-icon-backlog"></i>&nbsp;Missed Subtitle in Post-Process folder</a></li>
+                    % endif
                     </ul>
                     <div style="clear:both;"></div>
                 </li>

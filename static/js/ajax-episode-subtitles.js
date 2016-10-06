@@ -5,8 +5,8 @@
     var subtitlesSearchLink
 
     $.ajaxEpSubtitlesSearch = function() {
-        $('.epSubtitlesSearch').on('click', function(evt) {
-            evt.preventDefault();
+        $('.epSubtitlesSearch').on('click', function(e) {
+            e.preventDefault();
 
             subtitlesTd = $(this).parent().siblings('.col-subtitles');
             subtitlesSearchLink = $(this);
@@ -20,6 +20,24 @@
             }));
 
             $('#askmanualSubtitleSearchModal').modal('show');
+        });
+
+        $('.epSubtitlesSearchPP').on('click', function(e) {
+            e.preventDefault();
+
+            subtitlesTd = $(this).parent().siblings('.col-search');
+            subtitlesSearchLink = $(this);
+
+            // fill with the ajax loading gif
+            subtitlesSearchLink.empty();
+            subtitlesSearchLink.append($('<img/>').prop({
+                src: 'images/loading16.gif',
+                alt: '',
+                title: 'loading'
+            }));
+
+            url = subtitlesSearchLink.prop('href');
+            searchSubtitles(url);
         });
 
         $(document).on("click", "#pickSub", function(event){
@@ -36,10 +54,23 @@
                 // Uses the manual subtitle search handler by changing url
                 url = subtitlesSearchLink.prop('href');
                 url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
+                searchSubtitles(url);
+            }
+            else {
+                forcedSearch();
+            }
+        });
+    
+        function searchSubtitles(url) {
                 $.getJSON(url, function(data) {
+                    var existing_rows = $('#subtitle_results tr').length;
+                    if (existing_rows > 1) {
+                        for (var x=existing_rows-1; x>0; x--) {
+                            document.getElementById("subtitle_results").deleteRow(x);
+                        }
+                    }
+                    $("h4.modal-title").text(data.release);
                     if (data.result == 'success') {
-
-                        $("h4.modal-title").text(data.release);
                         $.each(data.subtitles, function (index, subtitle) {
                             var provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
                             var flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
@@ -54,8 +85,8 @@
                             var row = '<tr><td>' + provider + ' ' + subtitle.provider + '</td><td>' + flag + '</td><td>' + stars + '</td><td>' + subtitle.filename + matched + '</td><td>' + missing_guess + '</td><td>' + download_button + '</td></tr>';
                             $('#subtitle_results').append(row);
                         });
-                        $('#manualSubtitleSearchModal').modal('show');
                     }
+                    $('#manualSubtitleSearchModal').modal('show');
                     // Add back the CC icon
                     subtitlesSearchLink.empty();
                     subtitlesSearchLink.append($('<img/>').prop({
@@ -63,12 +94,9 @@
                         height: '16',
                     }));
                 });
-            }
-            else {
-                forcedSearch();
-            }
-        });
-    
+                return false;
+        };
+
         function forcedSearch() {
             $.getJSON(subtitlesSearchLink.prop('href'), function(data) {
                 if (data.result.toLowerCase() !== 'failure' && data.result.toLowerCase() !== 'no subtitles downloaded') {

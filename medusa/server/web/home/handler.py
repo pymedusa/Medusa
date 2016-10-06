@@ -1950,13 +1950,18 @@ class Home(WebRoot):
             'subtitles': ','.join(ep_obj.subtitles),
         })
 
-    def manual_search_subtitles(self, show=None, season=None, episode=None, lang=None):
+    def manual_search_subtitles(self, show=None, season=None, episode=None, filepath=None):
         # retrieve the episode object and fail if we can't get one
-        ep_obj = getEpisode(show, season, episode)
-        if isinstance(ep_obj, str):
+        try:
+            show = int(show)
+            show_obj = Show.find(app.showList, show)
+        except (ValueError, TypeError):
             return json.dumps({
                 'result': 'failure',
             })
+
+        ep_obj = show_obj.get_episode(season, episode, filepath)
+        release_location = os.path.basename(ep_obj.location)
 
         try:
             found_subtitles = subtitles.download_subtitles(tv_episode=ep_obj, video_path=ep_obj.location, subtitles=False,
@@ -1964,16 +1969,16 @@ class Home(WebRoot):
         except Exception as e:
             return json.dumps({
                 'result': 'failure',
-                'release': os.path.basename(ep_obj.location),
+                'release': release_location,
                 'subtitles': [],
                 'error': e,
             })
 
         return json.dumps({
             'result': 'success',
-            'release': os.path.basename(ep_obj.location),
+            'release': release_location,
             'subtitles': found_subtitles,
-            'error': '',
+            'error': None,
         })
 
     def pick_manual_search_subtitle(self, show=None, season=None, episode=None, subtitle_id=None):
