@@ -971,6 +971,10 @@ home_postprocess.mako
 displayShow.mako
 ========================================================================== */
 
+.modal-wide .modal-dialog {
+  width: 90%;
+}
+
 #posterCol {
     float: left;
     margin-right: 10px;
