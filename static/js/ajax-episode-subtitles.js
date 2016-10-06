@@ -73,6 +73,11 @@
                 }
                 if (data.result == 'success') {
                     changeImage(subtitlePicked, 'images/save.png', 'subtitle saved', 'subtitle saved', 16, true);
+                    // Need to add 1 because of the row header
+                    var removeRow = parseInt(data.release_id) + 1
+                    if (document.getElementById('releasesPP') !== null) {
+                        document.getElementById('releasesPP').deleteRow(removeRow);
+                    }
                 }
                 else {
                     changeImage(subtitlePicked, 'images/no16.png', 'subtitle not saved', 'subtitle not saved', 16, true);

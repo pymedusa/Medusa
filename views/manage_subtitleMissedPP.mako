@@ -17,7 +17,7 @@
     % endif
     </div>
 <div id="container">
-    <table id="showListTable" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
+    <table id="releasesPP" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
         <thead aria-live="polite" aria-relevant="all">
             <tr>
                 <th>Show</th>

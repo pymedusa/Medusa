@@ -2031,6 +2031,7 @@ class Home(WebRoot):
             ui.notifications.message(ep_obj.show.name, 'Subtitle downloaded')
             return json.dumps({
                 'result': 'success',
+                'release_id': release_id
             })
         else:
             ui.notifications.message(ep_obj.show.name, 'No subtitle downloaded')
