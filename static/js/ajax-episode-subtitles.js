@@ -2,6 +2,19 @@
     var subtitlesTd;
     var selectedEpisode;
 
+    function changeImage(imageTR, srcData, altData, titleData, heightData, emptyLink) {
+        if (emptyLink === true) {
+            imageTR.empty();
+        }
+        imageTR.append($('<img/>').prop({
+            src: srcData,
+            alt: altData,
+            title: titleData,
+            width: 16,
+            height: heightData
+        }));
+    }
+
     $.ajaxEpSubtitlesSearch = function() {
         $('.epSubtitlesSearch').on('click', function(e) {
             // This is for the page 'displayShow.mako'
@@ -32,29 +45,14 @@
             // Append the ID param that 'pick_manual_subtitle' expect
             url = url + '&subtitle_id=' + subtitleID;
             subtitlePicked = $(this);
-            subtitlePicked.empty();
-            subtitlePicked.append($('<img/>').prop({
-                src: 'images/loading16.gif',
-                alt: '',
-                title: 'loading'
-            }));
+            changeImage(subtitlePicked, 'images/loading16.gif', 'loading', 'loading', 16, true);
             alert('Picked subtitle ID: ' + subtitleID);
             $.getJSON(url, function(data) {
                 if (data.result == 'success') {
-                    subtitlePicked.empty();
-                    subtitlePicked.append($('<img/>').prop({
-                        src: 'images/save.png',
-                        alt: '',
-                        title: 'subtitle saved'
-                    }));
+                    changeImage(subtitlePicked, 'images/save.png', 'subtitle saved', 'subtitle saved', 16, true);
                 }
                 else {
-                    subtitlePicked.empty();
-                    subtitlePicked.append($('<img/>').prop({
-                        src: 'images/no16.png',
-                        alt: '',
-                        title: 'subtitle not saved'
-                    }));
+                    changeImage(subtitlePicked, 'images/no16.png', 'subtitle not saved', 'subtitle not saved', 16, true);
                 }
             });
         });
@@ -71,13 +69,7 @@
         });
     
         function searchSubtitles() {
-                // fill with the ajax loading gif
-                selectedEpisode.empty();
-                selectedEpisode.append($('<img/>').prop({
-                    src: 'images/loading16.gif',
-                    alt: '',
-                    title: 'loading'
-                }));
+                changeImage(selectedEpisode, 'images/loading16.gif', 'loading', 'loading', 16, true);
                 var url = selectedEpisode.prop('href');
                 // if manual search, replace handler
                 url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
@@ -127,16 +119,13 @@
                     // After all rows are added, show the modal with results found
                     $('#manualSubtitleSearchModal').modal('show');
                     // Add back the CC icon as we are not searching anymore
-                    selectedEpisode.empty();
-                    selectedEpisode.append($('<img/>').prop({
-                        src: 'images/closed_captioning.png',
-                        height: '16',
-                    }));
+                    changeImage(selectedEpisode, 'images/closed_captioning.png', 'Search subtitles', 'Search subtitles', 16, true);
                 });
                 return false;
         }
 
         function forcedSearch() {
+            changeImage(selectedEpisode, 'images/loading16.gif', 'loading', 'loading', 16, true);
             var url = selectedEpisode.prop('href');
             $.getJSON(url, function(data) {
                 if (data.result.toLowerCase() !== 'failure' && data.result.toLowerCase() !== 'no subtitles downloaded') {
@@ -146,23 +135,15 @@
                     $.each(subtitles, function(index, language) {
                         if (language !== '') {
                             if (index !== subtitles.length - 1) { // eslint-disable-line no-negated-condition
-                                subtitlesTd.append($('<img/>').prop({
-                                    src: 'images/subtitles/flags/' + language + '.png',
-                                    alt: language,
-                                    width: 16,
-                                    height: 11
-                                }));
+                                changeImage(subtitlesTd, '', language, language, 11, true);
                             } else {
-                                subtitlesTd.append($('<img/>').prop({
-                                    src: 'images/subtitles/flags/' + language + '.png',
-                                    alt: language,
-                                    width: 16,
-                                    height: 11
-                                }));
+                                changeImage(subtitlesTd, 'images/subtitles/flags/' + language + '.png', language, language, 11, true);
                             }
                         }
                     });
                 }
+                // Add back the CC icon as we are not searching anymore
+                changeImage(selectedEpisode, 'images/closed_captioning.png', 'Search subtitles', 'Search subtitles', 16, true);
             });
             return false;
         }
@@ -171,13 +152,7 @@
     $.fn.ajaxEpMergeSubtitles = function() {
         $('.epMergeSubtitles').on('click', function() {
             var subtitlesMergeLink = $(this);
-            // fill with the ajax loading gif
-            subtitlesMergeLink.empty();
-            subtitlesMergeLink.append($('<img/>').prop({
-                src: 'images/loading16.gif',
-                alt: '',
-                title: 'loading'
-            }));
+            changeImage(subtitlesMergeLink, 'images/loading16.gif', 'loading', 'loading', 16, true);
             $.getJSON($(this).attr('href'), function() {
                 // don't allow other merges
                 subtitlesMergeLink.remove();
