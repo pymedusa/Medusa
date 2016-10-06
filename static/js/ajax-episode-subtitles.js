@@ -43,8 +43,36 @@
         $(document).on("click", "#pickSub", function(event){
             var subtitle_id = $(this).attr("title");
             subtitle_id = subtitle_id.replace('subtitleid-', '');
-            $('#manualSubtitleSearchModal').modal('hide');
+            url = subtitlesSearchLink.prop('href');
+            url = url.replace('searchEpisodeSubtitles', 'pick_manual_subtitle');
+            url = url.replace('manual_search_subtitles', 'pick_manual_subtitle');
+            url = url + '&subtitle_id=' + subtitle_id;
+            subtitle_picked = $(this);
+            subtitle_picked.empty();
+            subtitle_picked.append($('<img/>').prop({
+                src: 'images/loading16.gif',
+                alt: '',
+                title: 'loading'
+            }));
             alert('Picked subtitle ID: ' + subtitle_id);
+            $.getJSON(url, function(data) {
+                if (data.result == 'success') {
+                    subtitle_picked.empty();
+                    subtitle_picked.append($('<img/>').prop({
+                        src: 'images/save.png',
+                        alt: '',
+                        title: 'subtitle saved'
+                    }));
+                }
+                else {
+                    subtitle_picked.empty();
+                    subtitle_picked.append($('<img/>').prop({
+                        src: 'images/no16.png',
+                        alt: '',
+                        title: 'subtitle not saved'
+                    }));
+                }
+            });
         });
 
         $('#askmanualSubtitleSearchModal .btn').on('click', function() {

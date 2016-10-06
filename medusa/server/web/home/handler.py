@@ -1981,21 +1981,31 @@ class Home(WebRoot):
             'error': None,
         })
 
-    def pick_manual_search_subtitle(self, show=None, season=None, episode=None, subtitle_id=None):
+    def pick_manual_subtitle(self, show=None, season=None, episode=None, filepath=None, subtitle_id=None):
         # retrieve the episode object and fail if we can't get one
-        ep_obj = getEpisode(show, season, episode)
-        if isinstance(ep_obj, str):
+        try:
+            show = int(show)
+            show_obj = Show.find(app.showList, show)
+        except (ValueError, TypeError):
             return json.dumps({
                 'result': 'failure',
             })
 
+        ep_obj = show_obj.get_episode(season, episode, filepath)
+        release_location = os.path.basename(ep_obj.location)
+
         try:
-            new_manual_subtitle = ep_obj.download_manual_search_subtitle(subtitle_id=subtitle_id)
+            # new_manual_subtitle = FUNCTION(subtitle_id=subtitle_id)
+            new_manual_subtitle = None
+            logger.log("Download subtitles for: {0}".format(release_location))
+            raise Exception
         except Exception as e:
             ui.notifications.message(ep_obj.show.name, 'Failed to downloaded subtitles')
             return json.dumps({
                 'result': 'failure',
-                'error': e,
+                'release': release_location,
+                'subtitles': [],
+                'error': str(e),
             })
 
         if new_manual_subtitle:
