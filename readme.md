@@ -54,7 +54,7 @@ A full list can be found here: [Link](https://github.com/PyMedusa/SickRage/wiki/
 ![image](https://thepiratebay.se/favicon.ico)[ThePirateBay](https://thepiratebay.se/)
 ![image](https://nzb.cat/favicon.ico)[NZB.cat](https://nzb.cat/)
 ![image](https://nzbgeek.info/favicon.ico)[NZBGeek](https://nzbgeek.info)
-![image](https://raw.githubusercontent.com/PyMedusa/SickRage/master/gui/slick/images/providers/dognzb.png)[DOGnzb](dognzb.cr)
+![image](https://raw.githubusercontent.com/PyMedusa/SickRage/master/static/images/providers/dognzb.png)[DOGnzb](dognzb.cr)
 
 #### Browsers support <sub><sub>made by <a href="https://godban.github.io">godban</a></sub></sub>
 

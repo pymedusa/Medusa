@@ -21,7 +21,7 @@ var bookmarkscroll={
 		var param=window.location.search.match(/scrollto=[\w\-_,]+/i) //search for scrollto=divid
 		return (param)? param[0].split('=')[1] : null
 	},
-	
+
 	init:function(){
 		jQuery(document).ready(function($){
 			var mainobj=bookmarkscroll

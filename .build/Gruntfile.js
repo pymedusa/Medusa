@@ -5,7 +5,7 @@ module.exports = function(grunt) {
         clean: {
             dist: './dist/',
             bower_components: './bower_components',
-            fonts: '../gui/slick/css/*.ttf',
+            fonts: '../static/css/*.ttf',
             options: {
                 force: true
             }
@@ -63,7 +63,7 @@ module.exports = function(grunt) {
                     src: [
                         '*.ttf'
                     ],
-                    dest: '../gui/slick/css/'
+                    dest: '../static/css/'
                 }]
             },
             glyphicon: {
@@ -78,24 +78,14 @@ module.exports = function(grunt) {
                         '*.woff',
                         '*.woff2'
                     ],
-                    dest: '../gui/slick/fonts/'
+                    dest: '../static/fonts/'
                 }]
             }
         },
         uglify: {
             bower: {
                 files: {
-                    '../gui/slick/js/vender.min.js': ['./dist/bower.js']
-                }
-            }
-        },
-        sass: {
-            options: {
-                sourceMap: true
-            },
-            core: {
-                files: {
-                    './dist/core.css': ['../gui/slick/scss/core.scss']
+                    '../static/js/vender.min.js': ['./dist/bower.js']
                 }
             }
         },
@@ -106,12 +96,12 @@ module.exports = function(grunt) {
             },
             bower: {
                 files: {
-                    '../gui/slick/css/vender.min.css': ['./dist/bower.css']
+                    '../static/css/vender.min.css': ['./dist/bower.css']
                 }
             },
             core: {
                 files: {
-                    '../gui/slick/css/core.min.css': ['./dist/core.css']
+                    '../static/css/core.min.css': ['./dist/core.css']
                 }
             }
         },
@@ -120,10 +110,10 @@ module.exports = function(grunt) {
                 jshintrc: '../.jshintrc'
             },
             all: [
-                '../gui/slick/js/**/*.js',
-                '!../gui/slick/js/lib/**/*.js',
-                '!../gui/slick/js/ajax-notifications.js',
-                '!../gui/slick/js/**/*.min.js', // We use this because ignores doesn't seem to work :(
+                '../static/js/**/*.js',
+                '!../static/js/lib/**/*.js',
+                '!../static/js/ajax-notifications.js',
+                '!../static/js/**/*.min.js', // We use this because ignores doesn't seem to work :(
             ]
         },
         mocha: {
@@ -151,7 +141,6 @@ module.exports = function(grunt) {
         'bower_concat',
         'copy',
         'uglify',
-        'sass',
         'cssmin',
         'mocha'
     ]);

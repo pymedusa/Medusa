@@ -76,7 +76,7 @@ class GenericMedia(object):
         :return: The root folder containing the media
         """
 
-        return ek(join, app.PROG_DIR, 'gui', 'slick')
+        return ek(join, app.PROG_DIR, 'static')
 
     def get_media_type(self):
         """
