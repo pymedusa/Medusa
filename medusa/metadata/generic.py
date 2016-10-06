@@ -112,7 +112,6 @@ class GenericMetadata(object):
     @staticmethod
     def _check_exists(location):
         if location:
-            assert isinstance(location, text_type)
             result = os.path.isfile(location)
             logger.log(u"Checking if " + location + " exists: " + str(result), logger.DEBUG)
             return result
@@ -169,7 +168,6 @@ class GenericMetadata(object):
         Returns the path where the episode thumbnail should be stored.
         ep_obj: a TVEpisode instance for which to create the thumbnail
         """
-        assert isinstance(ep_obj.location, text_type)
         if os.path.isfile(ep_obj.location):
 
             tbn_filename = ep_obj.location.rpartition(".")
@@ -261,7 +259,6 @@ class GenericMetadata(object):
                 logger.DEBUG)
 
             nfo_file_path = self.get_show_file_path(show_obj)
-            assert isinstance(nfo_file_path, text_type)
 
             try:
                 with io.open(nfo_file_path, 'rb') as xmlFileObj:
@@ -396,8 +393,6 @@ class GenericMetadata(object):
             return False
 
         nfo_file_path = self.get_show_file_path(show_obj)
-        assert isinstance(nfo_file_path, text_type)
-
         nfo_file_dir = os.path.dirname(nfo_file_path)
 
         try:
@@ -442,7 +437,6 @@ class GenericMetadata(object):
             return False
 
         nfo_file_path = self.get_episode_file_path(ep_obj)
-        assert isinstance(nfo_file_path, text_type)
         nfo_file_dir = os.path.dirname(nfo_file_path)
 
         try:
@@ -681,8 +675,6 @@ class GenericMetadata(object):
         image_path: file location to save the image to
         """
 
-        assert isinstance(image_path, text_type)
-
         # don't bother overwriting it
         if os.path.isfile(image_path):
             logger.log(u"Image already exists, not downloading", logger.DEBUG)
@@ -894,8 +886,6 @@ class GenericMetadata(object):
         """
 
         empty_return = (None, None, None)
-
-        assert isinstance(folder, text_type)
 
         metadata_path = os.path.join(folder, self._show_metadata_filename)
 

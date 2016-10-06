@@ -3,6 +3,7 @@
 
 import glob
 import io
+import json
 import os
 import shutil
 import sys
@@ -38,6 +39,7 @@ def initialize():
         affected_functions = {
             glob: ['glob'],
             io: ['open'],
+            json: ['dumps'],
             os: ['access', 'chdir', 'chmod', 'chown', 'link', 'listdir', 'makedirs', 'mkdir', 'remove',
                  'rename', 'renames', 'rmdir', 'stat', 'statvfs', 'symlink', 'unlink', 'utime', 'walk'],
             os.path: ['abspath', 'basename', 'dirname', 'exists', 'getctime', 'getmtime', 'getsize',
