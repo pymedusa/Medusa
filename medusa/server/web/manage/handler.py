@@ -293,7 +293,8 @@ class Manage(Home, WebRoot):
                 if not tv_episode.show.subtitles:
                     continue
 
-                app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.show.indexerid, 'season': tv_episode.season, 'episode': tv_episode.episode})
+                app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.show.indexerid, 'show_name': tv_episode.show.name,
+                                           'season': tv_episode.season, 'episode': tv_episode.episode})
 
         return t.render(releases_in_pp=app.RELEASES_IN_PP, title='Missing Subtitles in Post-Process folder',
                         header='Missing Subtitles in Post Process folder', topmenu='manage',

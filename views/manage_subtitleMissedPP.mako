@@ -2,6 +2,7 @@
 <%!
     import medusa as app
     import os
+    from medusa.helper.common import episode_num
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
@@ -19,6 +20,8 @@
     <table id="showListTable" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
         <thead aria-live="polite" aria-relevant="all">
             <tr>
+                <th>Show</th>
+                <th>Episode</th>
                 <th>Release</th>
                 <th class="col-search">Search</th>
             </tr>
@@ -26,6 +29,12 @@
         <tbody aria-live="polite" aria-relevant="all">
         % for index, epResult in enumerate(releases_in_pp):
             <tr class="snatched" role="row">
+                <td class="tvShow" align="left">
+                        ${epResult['show_name']}
+                </td>
+                <td class="tvShow" align="center">
+                        ${episode_num(epResult['season'], epResult['episode'])}
+                </td>
                 <td class="tvShow" align="left">
                     <span class="break-word">
                         ${os.path.relpath(epResult['release'], app.TV_DOWNLOAD_DIR)}
