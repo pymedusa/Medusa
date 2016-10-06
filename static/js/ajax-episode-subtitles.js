@@ -30,10 +30,17 @@
                 url = subtitlesSearchLink.prop('href');
                 url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
                 $.getJSON(url, function(data) {
-                    console.log(data.result);
-                    console.log(data.release);
-                    console.log(data.subtitles);
                     if (data.result == 'success') {
+                        console.log(data.subtitles);
+                        $("h4.modal-title").text("Manual subtitle search for release: " + data.release);
+                        $.each(data.subtitles, function (index, subtitle) {
+                            var provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
+                            var flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
+                            var stars =  Math.trunc((subtitle.score / subtitle.min_score) * 10)
+                            //var stars_obj = '<span class="imdbstars" qtip-content="' + stars + '">' + stars + '</span>'
+                            var row = '<tr><td>' + provider + ' ' + subtitle.provider + '</td><td>' + flag + '</td><td>' + stars + '</td><td>' + subtitle.filename + '</td></tr>';
+                            $('#subtitle_results').append(row);
+                        });
                         $('#manualSubtitleSearchModal').modal('show');
                     }
                     // Add back the CC icon

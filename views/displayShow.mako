@@ -572,7 +572,8 @@
                 <h4 class="modal-title">Manual subtitle search for release: </h4>
             </div>
             <div class="modal-body">
-                <table style="width:100%">
+                <table id=subtitle_results style="width:100%">
+                <tbody>
                 <tr>
                     <th>Provider</th>
                     <th>Flag</th>
@@ -580,6 +581,7 @@
                     <th>Subtitle</th>
                     <th>Missing/wrong</th>
                 </tr>
+                </tbody>
                 </table> 
             </div>
         </div>
