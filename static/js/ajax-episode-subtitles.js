@@ -42,7 +42,7 @@
         });
 
         $(document).on("click", "#pickSub", function(event){
-            var subtitle_id = $(this).attr("title");
+            var subtitle_id = $(this).attr("subtitle_id");
             subtitle_id = subtitle_id.replace('subtitleid-', '');
             url = subtitlesSearchLink.prop('href');
             url = url.replace('searchEpisodeSubtitles', 'pick_manual_subtitle');
@@ -110,7 +110,7 @@
                                 matched = ' <img src="images/save.png" width="16" height="16"/>';
                                 missing_guess = ''
                             }
-                            var download_button = ' <a id="pickSub" title=subtitleid-' + index + '><img src="images/download.png" width="16" height="16"/></a>'
+                            var download_button = ' <a id="pickSub" title="Download subtitle" subtitle_id=subtitleid-' + index + '><img src="images/download.png" width="16" height="16"/></a>'
                             //var stars_obj = '<span class="imdbstars" qtip-content="' + stars + '">' + stars + '</span>'
                             var row = '<tr><td>' + provider + ' ' + subtitle.provider + '</td><td>' + flag + '</td><td>' + stars + '</td><td title="' + subtitle.filename + '">' + subtitle.filename.substring(0, 99) + matched + '</td><td>' + missing_guess + '</td><td>' + download_button + '</td></tr>';
                             $('#subtitle_results').append(row);
