@@ -144,7 +144,7 @@
                             if (subtitle.sub_score >= subtitle.min_score) {
                                 checkmark = '<img src="images/save.png" width="16" height="16"/>';
                             }
-                            var subtitle_link = '<a href="#" id="pickSub" title="Download subtitle" subtitleID="subtitleid-' + subtitle.id + '">' + subtitleName + checkmark + '</a>';
+                            var subtitle_link = '<a href="#" id="pickSub" title="Download subtitle: ' + subtitle.filename + '" subtitleID="subtitleid-' + subtitle.id + '">' + subtitleName + checkmark + '</a>';
                             // Make subtitle score always between 0 and 10
                             if (subtitle_score > 10) {
                                 subtitle_score = 10;
