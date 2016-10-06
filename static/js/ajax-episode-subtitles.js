@@ -81,8 +81,19 @@
                         $('#releasesPP tr').eq(removeRow).remove();
                     } else {
                         // update the subtitles column with new informations
-                        language = data.subtitles;
-                        changeImage(subtitlesTd, 'images/subtitles/flags/' + language + '.png', language, language, 11, false);
+                        var language = data.subtitles;
+                        var hasLang = false;
+                        var lang = language;
+                        subtitlesTd.children().children().each(function(){
+                            // Check if user already have this subtitle language
+                            if ($(this).attr('alt').indexOf(lang) !== -1){
+                                hasLang = true;
+                            }
+                        });
+                        // Only add language flag if user doesn't have this subtitle language
+                        if (hasLang === false) {
+                            changeImage(subtitlesTd, 'images/subtitles/flags/' + language + '.png', language, language, 11, false);
+                        }
                     }
                 } else {
                     changeImage(subtitlePicked, 'images/no16.png', 'subtitle not saved', 'subtitle not saved', 16, true);
