@@ -1992,7 +1992,6 @@ class Home(WebRoot):
                 'message': "Video file no longer exists. Can't search for subtitles"
             })
 
-        found_subtitles = new_manual_subtitle = None
         try:
             if mode == 'searching':
                 logger.log("Manual searching subtitles for: {0}".format(release_name))
@@ -2009,9 +2008,18 @@ class Home(WebRoot):
                 if new_manual_subtitle:
                     ui.notifications.message(ep_obj.show.name, 'Subtitle downloaded: {0}'.format(','.join(new_manual_subtitle)))
                 else:
-                    ui.notifications.message(ep_obj.show.name, 'Failed to download subtitle: {0}'.format(','.join(new_manual_subtitle)))
+                    ui.notifications.message(ep_obj.show.name, 'Failed to download subtitle for {0}'.format(release_name))
                 result = 'success' if new_manual_subtitle else 'failure'
                 subtitles_result = new_manual_subtitle
+            else:
+                raise ValueError
+
+            return json.dumps({
+                'result': result,
+                'release': release_name,
+                'subtitles': subtitles_result,
+                'release_id': release_id
+            })
         except Exception as e:
             ui.notifications.message(ep_obj.show.name, 'Failed to manual {0} subtitles'.format(mode))
             logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
@@ -2020,13 +2028,6 @@ class Home(WebRoot):
                 'result': 'failure',
                 'error': str(e)
             })
-
-        return json.dumps({
-            'result': result,
-            'release': release_name,
-            'subtitles': subtitles_result,
-            'release_id': release_id
-        })
 
     def setSceneNumbering(self, show, indexer, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
                           sceneEpisode=None, sceneAbsolute=None):
