@@ -19,8 +19,8 @@
         $('.epSubtitlesSearch').on('click', function(e) {
             // This is for the page 'displayShow.mako'
             e.preventDefault();
-            subtitlesTd = $(this).parent().siblings('.col-subtitles');
             selectedEpisode = $(this);
+            subtitlesTd = selectedEpisode.parent().siblings('.col-subtitles');
             // Ask user if he want to manual search subs or automatic search
             $('#askmanualSubtitleSearchModal').modal('show');
         });
@@ -28,24 +28,26 @@
         $('.epSubtitlesSearchPP').on('click', function(e) {
             // This is for the page 'manage_subtitleMissedPP.mako'
             e.preventDefault();
-            subtitlesTd = $(this).parent().siblings('.col-search');
             selectedEpisode = $(this);
+            subtitlesTd = selectedEpisode.parent().siblings('.col-search');
             searchSubtitles();
         });
 
-        $(document).on("click", "#pickSub", function(event){
-            var subtitleID = $(this).attr("subtitleID");
+        $(document).on('click', '#pickSub', function(event){
+            subtitlePicked = $(this);
+            changeImage(subtitlePicked, 'images/loading16.gif', 'loading', 'loading', 16, true);
+            var subtitleID = subtitlePicked.attr('subtitleID');
             // Remove 'subtitleid-' so we know the actual ID
             subtitleID = subtitleID.replace('subtitleid-', '');
             url = selectedEpisode.prop('href');
-            // Replace if it was clicked in 'displayShow.mako'
-            url = url.replace('searchEpisodeSubtitles', 'pick_manual_subtitle');
-            // Replace if it was clicked in 'manage_subtitleMissedPP.mako'
-            url = url.replace('manual_search_subtitles', 'pick_manual_subtitle');
+            // Replace handler if we are in 'displayShow.mako' or in 'manage_subtitleMissedPP.mako'
+            if (url.indexOf('searchEpisodeSubtitles') > -1) {
+                url = url.replace('searchEpisodeSubtitles', 'pick_manual_subtitle');
+            } else {
+                url = url.replace('manual_search_subtitles', 'pick_manual_subtitle');
+            }
             // Append the ID param that 'pick_manual_subtitle' expect
-            url = url + '&subtitle_id=' + subtitleID;
-            subtitlePicked = $(this);
-            changeImage(subtitlePicked, 'images/loading16.gif', 'loading', 'loading', 16, true);
+            url += '&subtitle_id=' + subtitleID;
             alert('Picked subtitle ID: ' + subtitleID);
             $.getJSON(url, function(data) {
                 if (data.result == 'success') {
@@ -78,11 +80,11 @@
                     var existing_rows = $('#subtitle_results tr').length;
                     if (existing_rows > 1) {
                         for (var x=existing_rows-1; x>0; x--) {
-                            document.getElementById("subtitle_results").deleteRow(x);
+                            document.getElementById('subtitle_results').deleteRow(x);
                         }
                     }
                     // Add the release to the modal title
-                    $("h4#manualSubtitleSearchModalTitle.modal-title").text(data.release);
+                    $('h4#manualSubtitleSearchModalTitle.modal-title').text(data.release);
                     if (data.result == 'success') {
                         $.each(data.subtitles, function (index, subtitle) {
                             // For each subtitle found create the row string and append to the modal
@@ -112,7 +114,7 @@
                     }
                     // Allow the modal to be resizable
                     $('.modal-content').resizable({
-                        alsoResize: ".modal-body"
+                        alsoResize: '.modal-body'
                     });
                     // Allow the modal to be draggable
                     $('.modal-dialog').draggable();
