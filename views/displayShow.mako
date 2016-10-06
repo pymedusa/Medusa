@@ -575,7 +575,7 @@
                 <p>Do you want to manually pick subtitles or let us choose it for you?</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">Auto</button>
+                <button type="button" class="btn btn-info" data-dismiss="modal">Auto</button>
                 <button type="button" class="btn btn-success" data-dismiss="modal">Manual</button>
             </div>
         </div>
