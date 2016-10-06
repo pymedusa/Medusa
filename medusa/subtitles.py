@@ -273,13 +273,11 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
 
     logger.debug("Scores computed for release: {release}".format(release=os.path.basename(video_path)))
 
-    needed_guess = {'format', 'series', 'year', 'episode', 'season', 'video_codec', 'release_group'}
-
     max_score = episode_scores['hash']
     factor = max_score / 9
     return [{'id': subtitle.id,
              'provider': subtitle.provider_name,
-             'missing_guess': list(needed_guess - subtitle.get_matches(video)),
+             'missing_guess': list(set(episode_scores) - subtitle.get_matches(video) - {'hearing_impaired', 'hash'}),
              'lang': subtitle.language.opensubtitles,
              'score': round(10 * (factor / (float(factor - 1 - score + max_score)))),
              'sub_score': score,
