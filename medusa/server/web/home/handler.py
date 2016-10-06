@@ -1974,7 +1974,7 @@ class Home(WebRoot):
             show_obj = Show.find(app.showList, show)
             ep_obj = show_obj.get_episode(season, episode)
             video_path = filepath or ep_obj.location
-            release_name = os.path.basename(video_path)
+            release_name = ep_obj.release_name or os.path.basename(video_path)
         except (ValueError, TypeError, IndexError) as e:
             ui.notifications.message('Error', "Please check logs")
             logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
