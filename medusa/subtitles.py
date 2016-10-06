@@ -227,7 +227,7 @@ def code_from_code(code):
     return from_code(code).opensubtitles
 
 
-def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_subtitles=True):
+def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_subtitles=True, lang=None, search_only=False):
     """Download missing subtitles for the given episode.
 
     Checks whether subtitles are needed or not
@@ -253,7 +253,16 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     release_name = tv_episode.release_name
     ep_num = episode_num(season, episode) or episode_num(season, episode, numbering='absolute')
     subtitles_dir = get_subtitles_dir(video_path)
-    languages = get_needed_languages(tv_episode.subtitles)
+
+    if lang:
+        if lang == 'all':
+            logger.debug(u'Manual searching with all wanted languages')
+            languages = get_needed_languages('')
+        else:
+            logger.debug(u'Force re-downloading subtitle language: %s', lang)
+            languages = {from_code(lang)}
+    else:
+        languages = get_needed_languages(tv_episode.subtitles)
 
     if not languages:
         logger.debug(u'Episode already has all needed subtitles, skipping %s %s', show_name, ep_num)
@@ -286,6 +295,16 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
         for subtitle, score in scored_subtitles:
             logger.debug(u'[{0:>13s}:{1:<5s}] score = {2:3d}/{3:3d} for {4}'.format(
                 subtitle.provider_name, subtitle.language, score, min_score, get_subtitle_description(subtitle)))
+
+        if search_only:
+            found_subtitles = []
+            for subtitle, score in scored_subtitles:
+                found_subtitles.append({'provider': subtitle.provider_name,
+                                        'lang': subtitle.language.opensubtitles,
+                                        'score': score,
+                                        'min_score': min_score,
+                                        'filename': get_subtitle_description(subtitle)})
+            return found_subtitles
 
         found_subtitles = pool.download_best_subtitles(subtitles_list, video, languages=languages,
                                                        hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED,
