@@ -20,7 +20,7 @@
 
     function changeImage(imageTR, srcData, altData, titleData, heightData, emptyLink) {
         if (emptyLink === true) {
-            imageTR.empty();
+            imageTR.find('img').remove()
         }
         imageTR.append($('<img/>').prop({
             src: srcData,
@@ -72,7 +72,7 @@
                     subtitlesResultModal.modal('show');
                 }
                 if (data.result == 'success') {
-                    changeImage(subtitlePicked, 'images/save.png', 'subtitle saved', 'subtitle saved', 16, true);
+                    changeImage(subtitlePicked, 'images/yes16.png', 'subtitle saved', 'subtitle saved', 16, true);
                     if ( $('table#releasesPP').length > 0 ){
                         // Removes the release as we downloaded the subtitle
                         // Need to add 1 because of the row header
@@ -140,24 +140,23 @@
                                 missingGuess = '';
                             }
                             // If perfect match, add a checkmark next to subtitle filename
+                            var checkmark = '';
                             if (subtitle.sub_score >= subtitle.min_score) {
-                                subtitleName += ' <img src="images/save.png" width="16" height="16"/>';
+                                checkmark = '<img src="images/save.png" width="16" height="16"/>';
                             }
+                            var subtitle_link = '<a href="#" id="pickSub" title="Download subtitle" subtitleID="subtitleid-' + subtitle.id + '">' + subtitleName + checkmark + '</a>';
                             // Make subtitle score always between 0 and 10
                             if (subtitle_score > 10) {
                                 subtitle_score = 10;
                             } else if (subtitle_score < 0) {
                                 subtitle_score = 0;
                             }
-                            var pickButton = '<a href="#" id="pickSub" title="Download subtitle" subtitleID="subtitleid-' + subtitle.id + '">' +
-                                                  '<img src="images/download.png" width="16" height="16"/></a>';
                             var row = '<tr style="font-size: 95%;">' +
                                       '<td style="white-space:nowrap;">' + provider + ' ' + subtitle.provider + '</td>' +
                                       '<td>' + flag + '</td>' +
                                       '<td title="' + subtitle.sub_score + '/' + subtitle.min_score + '"> ' + subtitle_score + '</td>' +
-                                      '<td title="' + subtitle.filename + '"> ' + subtitleName + '</td>' +
+                                      '<td class="tvShow"> ' + subtitle_link + '</td>' +
                                       '<td>' + missingGuess + '</td>' +
-                                      '<td>' + pickButton + '</td>' +
                                       '</tr>';
                             $('#subtitle_results').append(row);
                             // Allow the modal to be resizable

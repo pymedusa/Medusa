@@ -14,7 +14,6 @@
                     <th>Score</th>
                     <th>Subtitle</th>
                     <th>Missing/wrong</th>
-                    <th></th>
                 </tr>
                 </tbody>
                 </table> 
