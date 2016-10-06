@@ -227,7 +227,7 @@ def code_from_code(code):
     return from_code(code).opensubtitles
 
 
-def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_subtitles=True, lang=None, search_only=False):
+def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_subtitles=True, lang=None, search_only=False, picked_id=None):
     """Download missing subtitles for the given episode.
 
     Checks whether subtitles are needed or not
@@ -290,16 +290,17 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
             return []
 
         min_score = get_min_score()
-        scored_subtitles = sorted([(s, compute_score(s, video, hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED), s.get_matches(video), s.id)
+        # TODO: store scored_subtitles using dogpile so we can use ID picked by user to save subtitle
+        scored_subtitles = sorted([(s, compute_score(s, video, hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED), s.get_matches(video))
                                   for s in subtitles_list], key=operator.itemgetter(1), reverse=True)
         logger.debug("Scores computed for release: {release}".format(release=os.path.basename(video_path)))
-        for subtitle, score, subtitle_matches, _ in scored_subtitles:
+        for subtitle, score, subtitle_matches in scored_subtitles:
             logger.debug(u'[{0:>13s}:{1:<5s}] score = {2:3d}/{3:3d} for {4}. Matches: {5}'.format(
                 subtitle.provider_name, subtitle.language, score, min_score, get_subtitle_description(subtitle), list(subtitle_matches)))
 
         if search_only:
             found_subtitles = []
-            for subtitle, score, subtitle_matches, subtitle_id in scored_subtitles:
+            for subtitle, score, subtitle_matches in scored_subtitles:
                 needed_guess = set(['format', 'series', 'year', 'episode', 'season', 'video_codec', 'release_group'])
                 missing_guess = list(needed_guess - subtitle_matches)
                 found_subtitles.append({'provider': subtitle.provider_name,
@@ -307,7 +308,6 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
                                         'score': score,
                                         'min_score': min_score,
                                         'missing_guess': missing_guess,
-                                        'subtitle_id': subtitle_id,
                                         'filename': get_subtitle_description(subtitle)})
             return found_subtitles
 

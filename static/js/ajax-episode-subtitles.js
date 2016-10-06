@@ -109,7 +109,7 @@
                                 matched = ' <img src="images/save.png" width="16" height="16"/>';
                                 missing_guess = ''
                             }
-                            var download_button = ' <a id="pickSub" title=subtitleid-' + subtitle.subtitle_id + '><img src="images/download.png" width="16" height="16"/></a>'
+                            var download_button = ' <a id="pickSub" title=subtitleid-' + index + '><img src="images/download.png" width="16" height="16"/></a>'
                             //var stars_obj = '<span class="imdbstars" qtip-content="' + stars + '">' + stars + '</span>'
                             var row = '<tr><td>' + provider + ' ' + subtitle.provider + ' ' + flag + '</td><td>' + stars + '</td><td>' + subtitle.filename + matched + '</td><td>' + missing_guess + '</td><td>' + download_button + '</td></tr>';
                             $('#subtitle_results').append(row);
