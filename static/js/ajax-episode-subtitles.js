@@ -58,14 +58,9 @@
             // Remove 'subtitleid-' so we know the actual ID
             subtitleID = subtitleID.replace('subtitleid-', '');
             url = selectedEpisode.prop('href');
-            // Replace handler if we are in 'displayShow.mako' or in 'manage_subtitleMissedPP.mako'
-            if (url.indexOf('searchEpisodeSubtitles') > -1) {
-                url = url.replace('searchEpisodeSubtitles', 'pick_manual_subtitle');
-            } else {
-                url = url.replace('manual_search_subtitles', 'pick_manual_subtitle');
-            }
-            // Append the ID param that 'pick_manual_subtitle' expect
-            url += '&subtitle_id=' + subtitleID;
+            url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
+            // Append the ID param that 'manual_search_subtitles' expect when picking subtitles
+            url += '&picked_id=' + subtitleID;
             $.getJSON(url, function(data) {
                 // If user click to close the window before subtitle download finishes, show again the modal
                 if (($('#manualSubtitleSearchModal').is(':visible')) === false) {
@@ -141,16 +136,16 @@
                                       '<td>' + pickButton + '</td>' +
                                       '</tr>';
                             $('#subtitle_results').append(row);
+                            // Allow the modal to be resizable
+                            $('.modal-content').resizable({
+                                alsoResize: '.modal-body'
+                            });
+                            // Allow the modal to be draggable
+                            $('.modal-dialog').draggable();
+                            // After all rows are added, show the modal with results found
+                            $('#manualSubtitleSearchModal').modal('show');
                         });
                     }
-                    // Allow the modal to be resizable
-                    $('.modal-content').resizable({
-                        alsoResize: '.modal-body'
-                    });
-                    // Allow the modal to be draggable
-                    $('.modal-dialog').draggable();
-                    // After all rows are added, show the modal with results found
-                    $('#manualSubtitleSearchModal').modal('show');
                     // Add back the CC icon as we are not searching anymore
                     changeImage(selectedEpisode, 'images/closed_captioning.png', 'Search subtitles', 'Search subtitles', 16, true);
                     enableAllSearches();
