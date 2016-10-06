@@ -315,7 +315,7 @@ def save_subtitle(tv_episode, subtitle_id, video_path=None):
         return save_subs(tv_episode, video, [subtitle], video_path=video_path)
 
 
-def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_subtitles=True):
+def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_subtitles=True, lang=None):
     """Download missing subtitles for the given episode.
 
     Checks whether subtitles are needed or not
@@ -338,7 +338,12 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     release_name = tv_episode.release_name
     ep_num = episode_num(season, episode) or episode_num(season, episode, numbering='absolute')
     subtitles_dir = get_subtitles_dir(video_path)
-    languages = get_needed_languages(tv_episode.subtitles)
+
+    if lang:
+        logger.debug(u'Force re-downloading subtitle language: %s', lang)
+        languages = {from_code(lang)}
+    else:
+        languages = get_needed_languages(tv_episode.subtitles)
 
     if not languages:
         logger.debug(u'Episode already has all needed subtitles, skipping %s %s', show_name, ep_num)

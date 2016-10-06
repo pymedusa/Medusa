@@ -159,7 +159,7 @@
             changeImage(selectedEpisode, 'images/loading16.gif', 'loading', 'loading', 16, true);
             var url = selectedEpisode.prop('href');
             $.getJSON(url, function(data) {
-                if (data.result.toLowerCase() !== 'failure' && data.result.toLowerCase() !== 'no subtitles downloaded') {
+                if (data.result.toLowerCase() == 'success') {
                     // clear and update the subtitles column with new informations
                     var subtitles = data.subtitles.split(',');
                     subtitlesTd.empty();

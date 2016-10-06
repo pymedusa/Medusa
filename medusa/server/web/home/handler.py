@@ -1932,6 +1932,9 @@ class Home(WebRoot):
             })
 
         try:
+            if lang:
+                logger.log("Manual re-downloading subtitles for {show} with language {lang}".format
+                           (show=ep_obj.show.name, lang=lang))
             new_subtitles = ep_obj.download_subtitles(lang=lang)
         except Exception:
             return json.dumps({
@@ -1941,13 +1944,15 @@ class Home(WebRoot):
         if new_subtitles:
             new_languages = [subtitles.name_from_code(code) for code in new_subtitles]
             status = 'New subtitles downloaded: {languages}'.format(languages=', '.join(new_languages))
+            result = 'success'
         else:
             new_languages = []
             status = 'No subtitles downloaded'
+            result = 'failure'
 
         ui.notifications.message(ep_obj.show.name, status)
         return json.dumps({
-            'result': status,
+            'result': result,
             'subtitles': ','.join(ep_obj.subtitles),
             'new_subtitles': ','.join(new_languages),
         })
