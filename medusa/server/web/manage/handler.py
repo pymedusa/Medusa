@@ -11,8 +11,8 @@ from tornado.routes import route
 from ..core import PageTemplate, WebRoot
 from ..home import Home
 from .... import (
-    db, helpers, logger,
-    subtitles, ui,
+    db, helpers, logger, postProcessor,
+    subtitles, ui
 )
 from ....common import (
     Overview, Quality, SNATCHED,
@@ -25,7 +25,9 @@ from ....helper.exceptions import (
     CantRefreshShowException,
     CantUpdateShowException,
 )
+from ....helpers import isMediaFile
 from ....show.Show import Show
+from ....tv import TVEpisode
 
 
 @route('/manage(/?.*)')
@@ -272,6 +274,35 @@ class Manage(Home, WebRoot):
                 show.get_episode(season, episode).download_subtitles()
 
         return self.redirect('/manage/subtitleMissed/')
+
+    def subtitleMissedPP(self):
+        t = PageTemplate(rh=self, filename='manage_subtitleMissedPP.mako')
+        app.RELEASES_IN_PP = []
+        for root, _, files in os.walk(app.TV_DOWNLOAD_DIR, topdown=False):
+            for filename in sorted(files):
+                if not isMediaFile(filename):
+                    continue
+
+                video_path = os.path.join(root, filename)
+                tv_episode = TVEpisode.from_filepath(video_path)
+
+                if not tv_episode:
+                    logger.debug(u'%s cannot be parsed to an episode', filename)
+                    continue
+
+                if not tv_episode.show.subtitles:
+                    continue
+
+                related_files = postProcessor.PostProcessor(video_path).list_associated_files(video_path, base_name_only=True, subfolders=False)
+                if related_files:
+                    continue
+
+                app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.show.indexerid, 'show_name': tv_episode.show.name,
+                                           'season': tv_episode.season, 'episode': tv_episode.episode})
+
+        return t.render(releases_in_pp=app.RELEASES_IN_PP, title='Missing Subtitles in Post-Process folder',
+                        header='Missing Subtitles in Post Process folder', topmenu='manage',
+                        controller='manage', action='subtitleMissedPP')
 
     def backlogShow(self, indexer_id):
         show_obj = Show.find(app.showList, int(indexer_id))

@@ -972,11 +972,9 @@ new #confirmBox
 @TODO THIS NEEDS TO BE FIXED!
 ========================================================================== */
 .modal-dialog {
-    width: 460px;
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    margin: -130px 0 0 -230px;
+    min-width: 50%;
+    position: relative;
+    margin: 30px auto;
     border: 1px solid rgb(17, 17, 17);
     box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.175);
     border-radius: 0;
@@ -1007,10 +1005,6 @@ new #confirmBox
 
 .modal-footer {
     text-align: center;
-}
-
-.modal-header .close {
-    display: none;
 }
 
 .modal-footer button {

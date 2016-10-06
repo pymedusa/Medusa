@@ -30,6 +30,7 @@ import traceback
 
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
+from dogpile.cache.region import make_region
 import medusa as app
 from six import iteritems, string_types, text_type
 from subliminal import (ProviderPool, compute_score, provider_manager, refine, refiner_manager, region, save_subtitles,
@@ -57,7 +58,11 @@ basename = __name__.split('.')[0]
 refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
 refiner_manager.register('tvepisode = {basename}.refiners.tvepisode:refine'.format(basename=basename))
 
+subs_region = make_region()
+subs_region.configure('dogpile.cache.memory')
 region.configure('dogpile.cache.memory')
+
+subtitle_key = u'subtitle={id}'
 video_key = u'{name}:video|{{video_path}}'.format(name=__name__)
 
 episode_refiners = ('metadata', 'release', 'tvepisode', 'tvdb', 'omdb')
@@ -124,7 +129,7 @@ def wanted_languages():
     """Return the wanted language codes.
 
     :return: set of wanted subtitles (opensubtitles codes)
-    :rtype: frozenset
+    :rtype: set
     """
     return frozenset(app.SUBTITLES_LANGUAGES).intersection(subtitle_code_filter())
 
@@ -227,7 +232,92 @@ def code_from_code(code):
     return from_code(code).opensubtitles
 
 
-def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_subtitles=True):
+def score_subtitles(subtitles_list, video):
+    """Score all subtitles in the specified list for the given video.
+
+    :param subtitles_list:
+    :type subtitles_list: list of subliminal.subtitle.Subtitle
+    :param video:
+    :type video: subliminal.video.Video
+    :return:
+    :rtype: tuple(subliminal.subtitle.Subtitle, int)
+    """
+    providers_order = {d['name']: i for i, d in enumerate(sorted_service_list())}
+    result = sorted([(s, compute_score(s, video, hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED),
+                    -1 * providers_order.get(s.provider_name, 1000))
+                     for s in subtitles_list], key=operator.itemgetter(1, 2), reverse=True)
+    return [(s, score) for (s, score, provider_order) in result]
+
+
+def list_subtitles(tv_episode, video_path=None, limit=40):
+    """List subtitles for the given episode in the given path.
+
+    :param tv_episode:
+    :type tv_episode: medusa.tv.TVEpisode
+    :param video_path:
+    :type video_path: text_type
+    :param limit:
+    :type limit: int
+    :return:
+    :rtype: list of dict
+    """
+    subtitles_dir = get_subtitles_dir(video_path)
+    release_name = tv_episode.release_name
+
+    languages = {from_code(language) for language in wanted_languages()}
+
+    video = get_video(tv_episode, video_path, subtitles_dir=subtitles_dir, subtitles=False,
+                      embedded_subtitles=False, release_name=release_name)
+    pool = get_provider_pool()
+    subtitles_list = pool.list_subtitles(video, languages)
+    scored_subtitles = score_subtitles(subtitles_list, video)[:limit]
+    for subtitle, _ in scored_subtitles:
+        subs_region.set(subtitle_key.format(id=subtitle.id), subtitle)
+
+    logger.debug("Scores computed for release: {release}".format(release=os.path.basename(video_path)))
+
+    max_score = episode_scores['hash']
+    max_scores = set(episode_scores) - {'hearing_impaired', 'hash'}
+    factor = max_score / 9
+    return [{'id': subtitle.id,
+             'provider': subtitle.provider_name,
+             'missing_guess': sorted(list(max_scores - subtitle.get_matches(video))),
+             'lang': subtitle.language.opensubtitles,
+             'score': round(10 * (factor / (float(factor - 1 - score + max_score)))),
+             'sub_score': score,
+             'max_score': max_score,
+             'min_score': get_min_score(),
+             'filename': get_subtitle_description(subtitle)}
+            for subtitle, score in scored_subtitles]
+
+
+def save_subtitle(tv_episode, subtitle_id, video_path=None):
+    """Save the subtitle with the given id.
+
+    :param tv_episode:
+    :type tv_episode: medusa.tv.TVEpisode
+    :param subtitle_id:
+    :type subtitle_id: text_type
+    :param video_path:
+    :type video_path: text_type
+    :return:
+    :rtype: list of str
+    """
+    subtitle = subs_region.get(subtitle_key.format(id=subtitle_id))
+    if subtitle == NO_VALUE:
+        return
+
+    release_name = tv_episode.release_name
+    subtitles_dir = get_subtitles_dir(video_path)
+    video = get_video(tv_episode, video_path, subtitles_dir=subtitles_dir, subtitles=False,
+                      embedded_subtitles=False, release_name=release_name)
+
+    pool = get_provider_pool()
+    if pool.download_subtitle(subtitle):
+        return save_subs(tv_episode, video, [subtitle], video_path=video_path)
+
+
+def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_subtitles=True, lang=None):
     """Download missing subtitles for the given episode.
 
     Checks whether subtitles are needed or not
@@ -240,6 +330,8 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     :type subtitles: bool
     :param embedded_subtitles: True if embedded subtitles should be taken into account
     :type embedded_subtitles: bool
+    :param lang:
+    :type lang: str
     :return: a sorted list of the opensubtitles codes for the downloaded subtitles
     :rtype: list of str
     """
@@ -247,13 +339,15 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     show_name = tv_episode.show.name
     season = tv_episode.season
     episode = tv_episode.episode
-    episode_name = tv_episode.name
-    show_indexerid = tv_episode.show.indexerid
-    status = tv_episode.status
     release_name = tv_episode.release_name
     ep_num = episode_num(season, episode) or episode_num(season, episode, numbering='absolute')
     subtitles_dir = get_subtitles_dir(video_path)
-    languages = get_needed_languages(tv_episode.subtitles)
+
+    if lang:
+        logger.debug(u'Force re-downloading subtitle language: %s', lang)
+        languages = {from_code(lang)}
+    else:
+        languages = get_needed_languages(tv_episode.subtitles)
 
     if not languages:
         logger.debug(u'Episode already has all needed subtitles, skipping %s %s', show_name, ep_num)
@@ -281,8 +375,7 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
             return []
 
         min_score = get_min_score()
-        scored_subtitles = sorted([(s, compute_score(s, video, hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED))
-                                  for s in subtitles_list], key=operator.itemgetter(1), reverse=True)
+        scored_subtitles = score_subtitles(subtitles_list, video)
         for subtitle, score in scored_subtitles:
             logger.debug(u'[{0:>13s}:{1:<5s}] score = {2:3d}/{3:3d} for {4}'.format(
                 subtitle.provider_name, subtitle.language, score, min_score, get_subtitle_description(subtitle)))
@@ -296,27 +389,7 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
                         os.path.basename(video_path), min_score)
             return []
 
-        saved_subtitles = save_subtitles(video, found_subtitles, directory=_encode(subtitles_dir),
-                                         single=not app.SUBTITLES_MULTI)
-
-        for subtitle in saved_subtitles:
-            logger.info(u'Found subtitle for %s in %s provider with language %s', os.path.basename(video_path),
-                        subtitle.provider_name, subtitle.language.opensubtitles)
-            subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
-            app.helpers.chmodAsParent(subtitle_path)
-            app.helpers.fixSetGroupID(subtitle_path)
-
-            if app.SUBTITLES_EXTRA_SCRIPTS and isMediaFile(video_path):
-                subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
-                run_subs_extra_scripts(video_path=video_path, subtitle_path=subtitle_path,
-                                       subtitle_language=subtitle.language, show_name=show_name, season=season,
-                                       episode=episode, episode_name=episode_name, show_indexerid=show_indexerid)
-
-            if app.SUBTITLES_HISTORY:
-                logger.debug(u'history.logSubtitle %s, %s', subtitle.provider_name, subtitle.language.opensubtitles)
-                history.logSubtitle(show_indexerid, season, episode, status, subtitle)
-
-        return sorted({subtitle.language.opensubtitles for subtitle in saved_subtitles})
+        return save_subs(tv_episode, video, found_subtitles, video_path=video_path)
     except IOError as error:
         if 'No space left on device' in ex(error):
             logger.warning(u'Not enough space on the drive to save subtitles')
@@ -328,6 +401,55 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
         logger.error(traceback.format_exc())
 
     return []
+
+
+def save_subs(tv_episode, video, found_subtitles, video_path=None):
+    """Save subtitles.
+
+    :param tv_episode: the episode to download subtitles
+    :type tv_episode: sickbeard.tv.TVEpisode
+    :param video:
+    :type video: subliminal.Video
+    :param found_subtitles:
+    :type found_subtitles: list of subliminal.Subtitle
+    :param video_path: the video path. If none, the episode location will be used
+    :type video_path: str
+    :return: a sorted list of the opensubtitles codes for the downloaded subtitles
+    :rtype: list of str
+    """
+    video_path = video_path or tv_episode.location
+    show_name = tv_episode.show.name
+    season = tv_episode.season
+    episode = tv_episode.episode
+    episode_name = tv_episode.name
+    show_indexerid = tv_episode.show.indexerid
+    status = tv_episode.status
+    subtitles_dir = get_subtitles_dir(video_path)
+    saved_subtitles = save_subtitles(video, found_subtitles, directory=_encode(subtitles_dir),
+                                     single=not app.SUBTITLES_MULTI)
+
+    for subtitle in saved_subtitles:
+        logger.info(u'Found subtitle for %s in %s provider with language %s', os.path.basename(video_path),
+                    subtitle.provider_name, subtitle.language.opensubtitles)
+        subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
+        app.helpers.chmodAsParent(subtitle_path)
+        app.helpers.fixSetGroupID(subtitle_path)
+
+        if app.SUBTITLES_EXTRA_SCRIPTS and isMediaFile(video_path):
+            subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
+            run_subs_extra_scripts(video_path=video_path, subtitle_path=subtitle_path,
+                                   subtitle_language=subtitle.language, show_name=show_name, season=season,
+                                   episode=episode, episode_name=episode_name, show_indexerid=show_indexerid)
+
+        if app.SUBTITLES_HISTORY:
+            logger.debug(u'history.logSubtitle %s, %s', subtitle.provider_name, subtitle.language.opensubtitles)
+            history.logSubtitle(show_indexerid, season, episode, status, subtitle)
+
+    # Refresh the subtitles property
+    if tv_episode.location:
+        tv_episode.refresh_subtitles()
+
+    return sorted({subtitle.language.opensubtitles for subtitle in saved_subtitles})
 
 
 @region.cache_on_arguments(expiration_time=PROVIDER_POOL_EXPIRATION_TIME)
@@ -480,19 +602,18 @@ def get_subtitle_description(subtitle):
     """
     desc = None
     sub_id = text_type(subtitle.id)
+    if hasattr(subtitle, 'hash') and subtitle.hash:
+        desc = text_type(subtitle.hash)
     if hasattr(subtitle, 'filename') and subtitle.filename:
-        desc = subtitle.filename.lower()
+        desc = subtitle.filename
     elif hasattr(subtitle, 'name') and subtitle.name:
-        desc = subtitle.name.lower()
+        desc = subtitle.name
     if hasattr(subtitle, 'release') and subtitle.release:
-        desc = subtitle.release.lower()
+        desc = subtitle.release
     if hasattr(subtitle, 'releases') and subtitle.releases:
-        desc = text_type(subtitle.releases).lower()
+        desc = text_type(subtitle.releases)
 
-    if not desc:
-        desc = sub_id
-
-    return sub_id + '-' + desc if desc not in sub_id else desc
+    return sub_id if not desc else desc
 
 
 def invalidate_video_cache(video_path):

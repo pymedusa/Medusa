@@ -1765,11 +1765,13 @@ class TVEpisode(TVObject):
             logger.log(u'{id}: Saving subtitles changes to database'.format(id=self.show.indexerid), logger.DEBUG)
             self.save_to_db()
 
-    def download_subtitles(self, force=False):
+    def download_subtitles(self, force=False, lang=None):
         """Download subtitles.
 
         :param force:
         :type force: bool
+        :pram lang:
+        :type param: string
         """
         if not self.is_location_valid():
             logger.log(u"{id}: {show} {ep} file doesn't exist, can't download subtitles".format
@@ -1778,7 +1780,7 @@ class TVEpisode(TVObject):
                        logger.DEBUG)
             return
 
-        new_subtitles = subtitles.download_subtitles(self)
+        new_subtitles = subtitles.download_subtitles(self, lang=lang)
         if new_subtitles:
             self.subtitles = subtitles.merge_subtitles(self.subtitles, new_subtitles)
 
