@@ -132,7 +132,15 @@
                             // For each subtitle found create the row string and append to the modal
                             var provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
                             var flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
-                            var missingGuess = subtitle.missing_guess.join(', ');
+                            var missingGuess = '';
+                            for (var i = 0; i < subtitle.missing_guess.length; i++) {
+                                var value = subtitle.missing_guess[i];
+                                if (missingGuess) {
+                                    missingGuess += ', ';
+                                }
+                                value = value.charAt(0).toUpperCase() + value.slice(1);
+                                missingGuess += value.replace(/(\_[a-z])/g, function($1){return $1.toUpperCase().replace('_',' ');});
+                            }
                             var subtitle_score =  subtitle.score;
                             var subtitleName = subtitle.filename.substring(0, 99);
                             // if hash match, don't show missingGuess

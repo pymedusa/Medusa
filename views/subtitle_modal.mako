@@ -13,10 +13,10 @@
                     <th>Lang</th>
                     <th>Score</th>
                     <th>Subtitle</th>
-                    <th>Missing/wrong</th>
+                    <th>Missing Matches</th>
                 </tr>
                 </tbody>
-                </table> 
+                </table>
             </div>
         </div>
     </div>
