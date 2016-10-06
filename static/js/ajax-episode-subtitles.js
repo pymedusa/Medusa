@@ -47,9 +47,10 @@
                             if (stars == 10) {
                                 matched = ' <img src="images/save.png" width="16" height="16"/>';
                             }
+                            var missing_guess = subtitle.missing_guess
                             var download_button = ' <input class="btn btn-inline" type="button" id="pickSub" title=subtitle-' + subtitle.filename + ' value="pick"/> '
                             //var stars_obj = '<span class="imdbstars" qtip-content="' + stars + '">' + stars + '</span>'
-                            var row = '<tr><td>' + provider + ' ' + subtitle.provider + '</td><td>' + flag + '</td><td>' + stars + '</td><td>' + subtitle.filename + matched + '</td><td>' + download_button + '</td></tr>';
+                            var row = '<tr><td>' + provider + ' ' + subtitle.provider + '</td><td>' + flag + '</td><td>' + stars + '</td><td>' + subtitle.filename + matched + '</td><td>' + missing_guess + '</td></tr>';
                             $('#subtitle_results').append(row);
                         });
                         $('#manualSubtitleSearchModal').modal('show');
