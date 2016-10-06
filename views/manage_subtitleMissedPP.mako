@@ -49,7 +49,7 @@
     </table>
 <%include file="subtitle_modal.mako"/>
 </br>
-<form name="processForm" method="post" action="home/postprocess/processEpisode" align="right">
+<form name="processForm" method="post" action="home/postprocess/processEpisode" style="float: right;">
 <table>
     <input type="hidden" id="type" name="type" value="manual">
     <input type="hidden" id="process_method" name="process_method" value=${app.PROCESS_METHOD}>
