@@ -2018,24 +2018,24 @@ class Home(WebRoot):
         release_name = os.path.basename(video_path)
 
         try:
-            # new_manual_subtitle = FUNCTION(subtitle_id=subtitle_id)
-            new_manual_subtitle = None
             logger.log("Downloading subtitles for: {0}".format(release_name))
-            raise Exception
-        except Exception as e:
+            new_manual_subtitle = subtitles.download_subtitles(tv_episode=ep_obj, video_path=video_path, subtitles=False,
+                                                           embedded_subtitles=False, lang='all', search_only=False, picked_id=subtitle_id)
+        except Exception:
             ui.notifications.message(ep_obj.show.name, 'Failed to downloaded subtitles')
             return json.dumps({
                 'result': 'failure',
-                'release': release_name,
-                'subtitles': [],
-                'error': str(e),
             })
 
         if new_manual_subtitle:
             ui.notifications.message(ep_obj.show.name, 'Subtitle downloaded')
             return json.dumps({
                 'result': 'success',
-                'error': '',
+            })
+        else:
+            ui.notifications.message(ep_obj.show.name, 'No subtitle downloaded')
+            return json.dumps({
+                'result': 'failure',
             })
 
     def setSceneNumbering(self, show, indexer, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,

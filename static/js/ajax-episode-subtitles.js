@@ -48,7 +48,6 @@
             }
             // Append the ID param that 'pick_manual_subtitle' expect
             url += '&subtitle_id=' + subtitleID;
-            alert('Picked subtitle ID: ' + subtitleID);
             $.getJSON(url, function(data) {
                 if (data.result == 'success') {
                     changeImage(subtitlePicked, 'images/save.png', 'subtitle saved', 'subtitle saved', 16, true);
@@ -99,7 +98,7 @@
                                 subtitleName += ' <img src="images/save.png" width="16" height="16"/>';
                                 missingGuess = '';
                             }
-                            var pickButton = '<a id="pickSub" title="Download subtitle" subtitleID=subtitleid-' + index + '>' +
+                            var pickButton = '<a id="pickSub" title="Download subtitle" subtitleID=subtitleid-' + subtitle.id + '>' +
                                                   '<img src="images/download.png" width="16" height="16"/></a>';
                             var row = '<tr>' +
                                       '<td>' + provider + ' ' + subtitle.provider + '</td>' +

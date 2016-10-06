@@ -280,27 +280,28 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
             run_subs_pre_scripts(video_path)
 
         pool = get_provider_pool()
-        subtitles_list = pool.list_subtitles(video, languages)
-        for provider in pool.providers:
-            if provider in pool.discarded_providers:
-                logger.debug(u'Could not search in %s provider. Discarding for now', provider)
+        if not picked_id:
+            subtitles_list = pool.list_subtitles(video, languages)
+            app.SUBTITLES_LIST = subtitles_list
+            for provider in pool.providers:
+                if provider in pool.discarded_providers:
+                    logger.debug(u'Could not search in %s provider. Discarding for now', provider)
 
-        if not subtitles_list:
-            logger.info(u'No subtitles found for %s', os.path.basename(video_path))
-            return []
+            if not subtitles_list:
+                logger.info(u'No subtitles found for %s', os.path.basename(video_path))
+                return []
 
-        min_score = get_min_score()
-        # TODO: store scored_subtitles using dogpile so we can use ID picked by user to save subtitle
-        scored_subtitles = sorted([(s, compute_score(s, video, hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED), s.get_matches(video))
-                                  for s in subtitles_list], key=operator.itemgetter(1), reverse=True)
-        logger.debug("Scores computed for release: {release}".format(release=os.path.basename(video_path)))
-        for subtitle, score, subtitle_matches in scored_subtitles:
-            logger.debug(u'[{0:>13s}:{1:<5s}] score = {2:3d}/{3:3d} for {4}. Matches: {5}'.format(
-                subtitle.provider_name, subtitle.language, score, min_score, get_subtitle_description(subtitle), list(subtitle_matches)))
+            min_score = get_min_score()
+            scored_subtitles = sorted([(s, compute_score(s, video, hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED), s.get_matches(video), index)
+                                      for index, s in enumerate(subtitles_list)], key=operator.itemgetter(1), reverse=True)
+            logger.debug("Scores computed for release: {release}".format(release=os.path.basename(video_path)))
+            for subtitle, score, subtitle_matches, _ in scored_subtitles:
+                logger.debug(u'[{0:>13s}:{1:<5s}] score = {2:3d}/{3:3d} for {4}. Matches: {5}'.format(
+                    subtitle.provider_name, subtitle.language, score, min_score, get_subtitle_description(subtitle), list(subtitle_matches)))
 
         if search_only:
             found_subtitles = []
-            for subtitle, score, subtitle_matches in scored_subtitles:
+            for subtitle, score, subtitle_matches, index in scored_subtitles:
                 needed_guess = set(['format', 'series', 'year', 'episode', 'season', 'video_codec', 'release_group'])
                 missing_guess = list(needed_guess - subtitle_matches)
                 found_subtitles.append({'provider': subtitle.provider_name,
@@ -308,8 +309,13 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
                                         'score': score,
                                         'min_score': min_score,
                                         'missing_guess': missing_guess,
+                                        'id': index,
                                         'filename': get_subtitle_description(subtitle)})
             return found_subtitles
+
+        if picked_id:
+            subtitles_list = [app.SUBTITLES_LIST[int(picked_id)]]
+            min_score = 0
 
         found_subtitles = pool.download_best_subtitles(subtitles_list, video, languages=languages,
                                                        hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED,
