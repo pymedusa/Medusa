@@ -439,6 +439,9 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
             logger.debug(u'history.logSubtitle %s, %s', subtitle.provider_name, subtitle.language.opensubtitles)
             history.logSubtitle(show_indexerid, season, episode, status, subtitle)
 
+    # Refresh the subtitles property
+    tv_episode.refresh_subtitles()
+
     return sorted({subtitle.language.opensubtitles for subtitle in saved_subtitles})
 
 
