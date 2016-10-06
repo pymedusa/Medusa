@@ -3,6 +3,10 @@
     var selectedEpisode;
     var searchTypesList = ['.epSubtitlesSearch', '.epSubtitlesSearchPP', '.epRedownloadSubtitle', '.epSearch', '.epRetry', '.epManualSearch'];
     var subtitlesResultModal = $('#manualSubtitleSearchModal');
+    //var subtitlesMulti = MEDUSA.info.subtitlesMulti;
+    //var loadingSpinner = 'images/loading16' + MEDUSA.info.themeSpinner + '.gif';
+    loadingSpinner = 'images/loading16.gif'
+    subtitlesMulti = false
 
     function disableAllSearches() {
         // Disables all other searches while manual searching for subtitles
@@ -58,7 +62,7 @@
         $(document).on('click', '#pickSub', function(e){
             e.preventDefault();
             subtitlePicked = $(this);
-            changeImage(subtitlePicked, 'images/loading16.gif', 'loading', 'loading', 16, true);
+            changeImage(subtitlePicked, loadingSpinner, 'loading', 'loading', 16, true);
             var subtitleID = subtitlePicked.attr('subtitleID');
             // Remove 'subtitleid-' so we know the actual ID
             subtitleID = subtitleID.replace('subtitleid-', '');
@@ -79,18 +83,22 @@
                         selectedEpisode.parent().parent().remove();
                     } else {
                         // update the subtitles column with new informations
-                        var language = data.subtitles;
-                        var hasLang = false;
-                        var lang = language;
-                        subtitlesTd.children().children().each(function(){
-                            // Check if user already have this subtitle language
-                            if ($(this).attr('alt').indexOf(lang) !== -1){
-                                hasLang = true;
+                        if (subtitlesMulti === false) {
+                            var language = data.subtitles;
+                            var hasLang = false;
+                            var lang = language;
+                            subtitlesTd.children().children().each(function(){
+                                // Check if user already have this subtitle language
+                                if ($(this).attr('alt').indexOf(lang) !== -1){
+                                    hasLang = true;
+                                }
+                            });
+                            // Only add language flag if user doesn't have this subtitle language
+                            if (hasLang === false) {
+                                changeImage(subtitlesTd, 'images/subtitles/flags/' + language + '.png', language, language, 11, false);
                             }
-                        });
-                        // Only add language flag if user doesn't have this subtitle language
-                        if (hasLang === false) {
-                            changeImage(subtitlesTd, 'images/subtitles/flags/' + language + '.png', language, language, 11, false);
+                        } else {
+                            changeImage(subtitlesTd, 'images/subtitles/flags/unknown.png.png', language, language, 11, false);
                         }
                     }
                 } else {
@@ -111,7 +119,7 @@
 
         function searchSubtitles() {
                 disableAllSearches();
-                changeImage(selectedEpisode, 'images/loading16.gif', 'loading', 'loading', 16, true);
+                changeImage(selectedEpisode, loadingSpinner, 'loading', 'loading', 16, true);
                 var url = selectedEpisode.prop('href');
                 // if manual search, replace handler
                 url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
@@ -184,7 +192,7 @@
 
         function forcedSearch() {
             disableAllSearches();
-            changeImage(selectedEpisode, 'images/loading16.gif', 'loading', 'loading', 16, true);
+            changeImage(selectedEpisode, loadingSpinner, 'loading', 'loading', 16, true);
             var url = selectedEpisode.prop('href');
             $.getJSON(url, function(data) {
                 if (data.result.toLowerCase() == 'success') {
@@ -212,7 +220,7 @@
     $.fn.ajaxEpMergeSubtitles = function() {
         $('.epMergeSubtitles').on('click', function() {
             var subtitlesMergeLink = $(this);
-            changeImage(subtitlesMergeLink, 'images/loading16.gif', 'loading', 'loading', 16, true);
+            changeImage(subtitlesMergeLink, loadingSpinner, 'loading', 'loading', 16, true);
             $.getJSON($(this).attr('href'), function() {
                 // don't allow other merges
                 subtitlesMergeLink.remove();
@@ -235,7 +243,7 @@
 
         function redownloadSubtitles() {
             disableAllSearches();
-            changeImage(selectedEpisode, 'images/loading16.gif', downloading, downloading, 16, true);
+            changeImage(selectedEpisode, loadingSpinner, downloading, downloading, 16, true);
             var url = selectedEpisode.prop('href');
             var downloading = 'Re-downloading subtitle';
             var failed = 'Re-downloaded subtitle failed';
