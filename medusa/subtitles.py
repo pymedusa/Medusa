@@ -290,7 +290,7 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
             return []
 
         min_score = get_min_score()
-        scored_subtitles = sorted([(s, compute_score(s, video, hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED), s.get_matches(video), s.id())
+        scored_subtitles = sorted([(s, compute_score(s, video, hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED), s.get_matches(video), s.id)
                                   for s in subtitles_list], key=operator.itemgetter(1), reverse=True)
         logger.debug("Scores computed for release: {release}".format(release=os.path.basename(video_path)))
         for subtitle, score, subtitle_matches, _ in scored_subtitles:

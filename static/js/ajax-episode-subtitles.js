@@ -23,9 +23,10 @@
         });
 
         $(document).on("click", "#pickSub", function(event){
-            var filename = $(this).attr("title");
+            var subtitle_id = $(this).attr("title");
+            subtitle_id = subtitle_id.replace('subtitleid-', '');
             $('#manualSubtitleSearchModal').modal('hide');
-            alert('Picked: ' + filename);
+            alert('Picked subtitle ID: ' + subtitle_id);
         });
 
         $('#askmanualSubtitleSearchModal .btn').on('click', function() {
@@ -38,7 +39,7 @@
                 $.getJSON(url, function(data) {
                     if (data.result == 'success') {
 
-                        $("h4.modal-title").text("Manual subtitle search for release: " + data.release);
+                        $("h4.modal-title").text(data.release);
                         $.each(data.subtitles, function (index, subtitle) {
                             var provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
                             var flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
@@ -48,9 +49,9 @@
                                 matched = ' <img src="images/save.png" width="16" height="16"/>';
                             }
                             var missing_guess = subtitle.missing_guess
-                            var download_button = ' <input class="btn btn-inline" type="button" id="pickSub" title=subtitle-' + subtitle.filename + ' value="pick"/> '
+                            var download_button = ' <input class="btn btn-inline" type="button" id="pickSub" title=subtitleid-' + subtitle.subtitle_id + ' value="pick"/> '
                             //var stars_obj = '<span class="imdbstars" qtip-content="' + stars + '">' + stars + '</span>'
-                            var row = '<tr><td>' + provider + ' ' + subtitle.provider + '</td><td>' + flag + '</td><td>' + stars + '</td><td>' + subtitle.filename + matched + '</td><td>' + missing_guess + '</td></tr>';
+                            var row = '<tr><td>' + provider + ' ' + subtitle.provider + '</td><td>' + flag + '</td><td>' + stars + '</td><td>' + subtitle.filename + matched + '</td><td>' + missing_guess + '</td><td>' + download_button + '</td></tr>';
                             $('#subtitle_results').append(row);
                         });
                         $('#manualSubtitleSearchModal').modal('show');
