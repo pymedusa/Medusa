@@ -48,5 +48,19 @@
         </tbody>
     </table>
 <%include file="subtitle_modal.mako"/>
+</br>
+<form name="processForm" method="post" action="home/postprocess/processEpisode" align="right">
+<table>
+    <input type="hidden" id="type" name="type" value="manual">
+    <input type="hidden" id="process_method" name="process_method" value=${app.PROCESS_METHOD}>
+    <input type="hidden" id="episodeDir" type="text" name="proc_dir" value=${app.TV_DOWNLOAD_DIR}>
+    <input type="hidden" id="force" name="force" value="0">
+    <input type="hidden" id="is_priority" name="is_priority" value="0"> 
+    <input type="hidden" id="delete_on" name="delete_on" value=${not app.NO_DELETE}>
+    <input type="hidden" id="failed" name="failed" value="0">
+    <input type="hidden" id="ignore_subs" name="ignore_subs" value="0">
+</table>
+    <input id="submit" class="btn" type="submit" value="Run Manual Post-Process" />
+</form>
 </div>
 </%block>
