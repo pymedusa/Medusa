@@ -1970,23 +1970,24 @@ class Home(WebRoot):
                 'result': 'failure',
             })
 
-        ep_obj = show_obj.get_episode(season, episode, filepath)
-        release_location = os.path.basename(ep_obj.location)
+        ep_obj = show_obj.get_episode(season, episode)
+        video_path = filepath or ep_obj.location
+        release_name = os.path.basename(video_path)
 
         try:
-            found_subtitles = subtitles.download_subtitles(tv_episode=ep_obj, video_path=ep_obj.location, subtitles=False,
+            found_subtitles = subtitles.download_subtitles(tv_episode=ep_obj, video_path=video_path, subtitles=False,
                                                            embedded_subtitles=False, lang='all', search_only=True)
         except Exception as e:
             return json.dumps({
                 'result': 'failure',
-                'release': release_location,
+                'release': release_name,
                 'subtitles': [],
-                'error': e,
+                'error': str(e),
             })
 
         return json.dumps({
             'result': 'success',
-            'release': release_location,
+            'release': release_name,
             'subtitles': found_subtitles,
             'error': None,
         })
@@ -2010,19 +2011,20 @@ class Home(WebRoot):
                 'result': 'failure',
             })
 
-        ep_obj = show_obj.get_episode(season, episode, filepath)
-        release_location = os.path.basename(ep_obj.location)
+        ep_obj = show_obj.get_episode(season, episode)
+        video_path = filepath or ep_obj.location
+        release_name = os.path.basename(video_path)
 
         try:
             # new_manual_subtitle = FUNCTION(subtitle_id=subtitle_id)
             new_manual_subtitle = None
-            logger.log("Download subtitles for: {0}".format(release_location))
+            logger.log("Downloading subtitles for: {0}".format(release_name))
             raise Exception
         except Exception as e:
             ui.notifications.message(ep_obj.show.name, 'Failed to downloaded subtitles')
             return json.dumps({
                 'result': 'failure',
-                'release': release_location,
+                'release': release_name,
                 'subtitles': [],
                 'error': str(e),
             })
