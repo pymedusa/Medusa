@@ -11,8 +11,8 @@ from tornado.routes import route
 from ..core import PageTemplate, WebRoot
 from ..home import Home
 from .... import (
-    db, helpers, logger,
-    subtitles, ui,
+    db, helpers, logger, postProcessor,
+    subtitles, ui
 )
 from ....common import (
     Overview, Quality, SNATCHED,
@@ -291,6 +291,10 @@ class Manage(Home, WebRoot):
                     continue
 
                 if not tv_episode.show.subtitles:
+                    continue
+
+                related_files = postProcessor.PostProcessor(video_path).list_associated_files(video_path, base_name_only=True, subfolders=False)
+                if related_files:
                     continue
 
                 app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.show.indexerid, 'show_name': tv_episode.show.name,
