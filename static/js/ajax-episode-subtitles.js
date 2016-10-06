@@ -75,10 +75,8 @@
                     changeImage(subtitlePicked, 'images/yes16.png', 'subtitle saved', 'subtitle saved', 16, true);
                     if ( $('table#releasesPP').length > 0 ){
                         // Removes the release as we downloaded the subtitle
-                        // Need to add 1 because of the row header
                         // Only applied to manage_subtitleMissedPP.mako
-                        var removeRow = $('#releasesPP tr[release_id=' + data.release_id + ']').index() + 1;
-                        $('#releasesPP tr').eq(removeRow).remove();
+                        selectedEpisode.parent().parent().remove();
                     } else {
                         // update the subtitles column with new informations
                         var language = data.subtitles;

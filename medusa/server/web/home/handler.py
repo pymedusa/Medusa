@@ -2017,8 +2017,7 @@ class Home(WebRoot):
             return json.dumps({
                 'result': result,
                 'release': release_name,
-                'subtitles': subtitles_result,
-                'release_id': release_id
+                'subtitles': subtitles_result
             })
         except Exception as e:
             ui.notifications.message(ep_obj.show.name, 'Failed to manual {0} subtitles'.format(mode))
