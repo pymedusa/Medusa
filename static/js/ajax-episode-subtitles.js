@@ -113,20 +113,24 @@
                             var provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
                             var flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
                             // Convert score in a scale of 10
-                            var stars =  Math.trunc((subtitle.score / subtitle.min_score) * 10);
+                            var subtitle_score =  Math.trunc((10*(subtitle.score-330)/22), 0);
                             var missingGuess = subtitle.missing_guess;
                             var subtitleName = subtitle.filename.substring(0, 99);
-                            if (stars == 10) {
+                            if (subtitle_score >= 10) {
                                 // If match, don't show missing guess and add a checkmark next to subtitle filename
                                 subtitleName += ' <img src="images/save.png" width="16" height="16"/>';
                                 missingGuess = '';
+                                subtitle_score = 10
+                            }
+                            if (subtitle_score < 0) {
+                                subtitle_score = 0;
                             }
                             var pickButton = '<a id="pickSub" title="Download subtitle" subtitleID=subtitleid-' + subtitle.id + '>' +
                                                   '<img src="images/download.png" width="16" height="16"/></a>';
                             var row = '<tr>' +
                                       '<td>' + provider + ' ' + subtitle.provider + '</td>' +
                                       '<td>' + flag + '</td>' +
-                                      '<td>' + stars + '</td>' +
+                                      '<td title="' + subtitle.score + '/' + subtitle.min_score + '"> ' + subtitle_score + '</td>' +
                                       '<td title="' + subtitle.filename + '"> ' + subtitleName + '</td>' +
                                       '<td>' + missingGuess + '</td>' +
                                       '<td>' + pickButton + '</td>' +
