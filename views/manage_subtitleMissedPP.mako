@@ -1,4 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
+<%!
+    import medusa as app
+    import os
+%>
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
@@ -21,10 +25,10 @@
         </thead>
         <tbody aria-live="polite" aria-relevant="all">
         % for epResult in releases_in_pp:
-            <tr class="skipped" role="row">
-                <td class="tvShow">
+            <tr class="snatched" role="row">
+                <td class="tvShow" align="left">
                     <span class="break-word">
-                        ${epResult['release']}
+                        ${os.path.relpath(epResult['release'], app.TV_DOWNLOAD_DIR)}
                     </span>
                 </td>
                 <td class="col-search">
@@ -45,12 +49,11 @@
                 <table id=subtitle_results style="width:100%">
                 <tbody>
                 <tr>
-                    <th>Provider</th>
-                    <th>Flag</th>
+                    <th>Provider/Lang</th>
                     <th>Score</th>
                     <th>Subtitle</th>
                     <th>Missing/wrong</th>
-                    <th>Download</th>
+                    <th></th>
                 </tr>
                 </tbody>
                 </table> 
