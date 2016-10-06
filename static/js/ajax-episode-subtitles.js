@@ -1,15 +1,13 @@
 (function() {
-    
-    // Need to create global because the modal change $(this)
     var subtitlesTd;
-    var subtitlesSearchLink;
+    var selectedEpisode;
 
     $.ajaxEpSubtitlesSearch = function() {
         $('.epSubtitlesSearch').on('click', function(e) {
             // This is for the page 'displayShow.mako'
             e.preventDefault();
             subtitlesTd = $(this).parent().siblings('.col-subtitles');
-            subtitlesSearchLink = $(this);
+            selectedEpisode = $(this);
             // Ask user if he want to manual search subs or automatic search
             $('#askmanualSubtitleSearchModal').modal('show');
         });
@@ -18,42 +16,41 @@
             // This is for the page 'manage_subtitleMissedPP.mako'
             e.preventDefault();
             subtitlesTd = $(this).parent().siblings('.col-search');
-            subtitlesSearchLink = $(this);
-            url = subtitlesSearchLink.prop('href');            
-            searchSubtitles(url);
+            selectedEpisode = $(this);
+            searchSubtitles();
         });
 
         $(document).on("click", "#pickSub", function(event){
-            var subtitle_id = $(this).attr("subtitle_id");
+            var subtitleID = $(this).attr("subtitleID");
             // Remove 'subtitleid-' so we know the actual ID
-            subtitle_id = subtitle_id.replace('subtitleid-', '');
-            url = subtitlesSearchLink.prop('href');
+            subtitleID = subtitleID.replace('subtitleid-', '');
+            url = selectedEpisode.prop('href');
             // Replace if it was clicked in 'displayShow.mako'
             url = url.replace('searchEpisodeSubtitles', 'pick_manual_subtitle');
             // Replace if it was clicked in 'manage_subtitleMissedPP.mako'
             url = url.replace('manual_search_subtitles', 'pick_manual_subtitle');
             // Append the ID param that 'pick_manual_subtitle' expect
-            url = url + '&subtitle_id=' + subtitle_id;
-            subtitle_picked = $(this);
-            subtitle_picked.empty();
-            subtitle_picked.append($('<img/>').prop({
+            url = url + '&subtitle_id=' + subtitleID;
+            subtitlePicked = $(this);
+            subtitlePicked.empty();
+            subtitlePicked.append($('<img/>').prop({
                 src: 'images/loading16.gif',
                 alt: '',
                 title: 'loading'
             }));
-            alert('Picked subtitle ID: ' + subtitle_id);
+            alert('Picked subtitle ID: ' + subtitleID);
             $.getJSON(url, function(data) {
                 if (data.result == 'success') {
-                    subtitle_picked.empty();
-                    subtitle_picked.append($('<img/>').prop({
+                    subtitlePicked.empty();
+                    subtitlePicked.append($('<img/>').prop({
                         src: 'images/save.png',
                         alt: '',
                         title: 'subtitle saved'
                     }));
                 }
                 else {
-                    subtitle_picked.empty();
-                    subtitle_picked.append($('<img/>').prop({
+                    subtitlePicked.empty();
+                    subtitlePicked.append($('<img/>').prop({
                         src: 'images/no16.png',
                         alt: '',
                         title: 'subtitle not saved'
@@ -63,31 +60,27 @@
         });
 
         $('#askmanualSubtitleSearchModal .btn').on('click', function() {
-            var url = subtitlesSearchLink.prop('href');
-            // searchEpisodeSubtitles = auto search (default)
-            // manual_search_subtitles = manual search
-            // Get modal answer
-            var manual_subtitle = ($(this).text().toLowerCase() === 'manual');
-            if (manual_subtitle === true) {
-                // If manual search, replace handler.
-                url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
+            if ($(this).text().toLowerCase() === 'manual') {
                 // Call manual search
-                searchSubtitles(url);
+                searchSubtitles();
             }
             else {
                 // Call auto search
-                forcedSearch(url);
+                forcedSearch();
             }
         });
     
-        function searchSubtitles(url) {
+        function searchSubtitles() {
                 // fill with the ajax loading gif
-                subtitlesSearchLink.empty();
-                subtitlesSearchLink.append($('<img/>').prop({
+                selectedEpisode.empty();
+                selectedEpisode.append($('<img/>').prop({
                     src: 'images/loading16.gif',
                     alt: '',
                     title: 'loading'
                 }));
+                var url = selectedEpisode.prop('href');
+                // if manual search, replace handler
+                url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
                 $.getJSON(url, function(data) {
                     // Delete existing rows in the modal
                     var existing_rows = $('#subtitle_results tr').length;
@@ -105,22 +98,22 @@
                             var flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
                             // Convert score in a scale of 10
                             var stars =  Math.trunc((subtitle.score / subtitle.min_score) * 10);
-                            var missing_guess = subtitle.missing_guess;
-                            var subtitle_filename = subtitle.filename.substring(0, 99);
+                            var missingGuess = subtitle.missing_guess;
+                            var subtitleName = subtitle.filename.substring(0, 99);
                             if (stars == 10) {
                                 // If match, don't show missing guess and add a checkmark next to subtitle filename
-                                subtitle_filename += ' <img src="images/save.png" width="16" height="16"/>';
-                                missing_guess = '';
+                                subtitleName += ' <img src="images/save.png" width="16" height="16"/>';
+                                missingGuess = '';
                             }
-                            var download_button = '<a id="pickSub" title="Download subtitle" subtitle_id=subtitleid-' + index + '>' +
+                            var pickButton = '<a id="pickSub" title="Download subtitle" subtitleID=subtitleid-' + index + '>' +
                                                   '<img src="images/download.png" width="16" height="16"/></a>';
                             var row = '<tr>' +
                                       '<td>' + provider + ' ' + subtitle.provider + '</td>' +
                                       '<td>' + flag + '</td>' +
                                       '<td>' + stars + '</td>' +
-                                      '<td title="' + subtitle.filename + '"> ' + subtitle_filename + '</td>' +
-                                      '<td>' + missing_guess + '</td>' +
-                                      '<td>' + download_button + '</td>' +
+                                      '<td title="' + subtitle.filename + '"> ' + subtitleName + '</td>' +
+                                      '<td>' + missingGuess + '</td>' +
+                                      '<td>' + pickButton + '</td>' +
                                       '</tr>';
                             $('#subtitle_results').append(row);
                         });
@@ -134,8 +127,8 @@
                     // After all rows are added, show the modal with results found
                     $('#manualSubtitleSearchModal').modal('show');
                     // Add back the CC icon as we are not searching anymore
-                    subtitlesSearchLink.empty();
-                    subtitlesSearchLink.append($('<img/>').prop({
+                    selectedEpisode.empty();
+                    selectedEpisode.append($('<img/>').prop({
                         src: 'images/closed_captioning.png',
                         height: '16',
                     }));
@@ -143,7 +136,8 @@
                 return false;
         }
 
-        function forcedSearch(url) {
+        function forcedSearch() {
+            var url = selectedEpisode.prop('href');
             $.getJSON(url, function(data) {
                 if (data.result.toLowerCase() !== 'failure' && data.result.toLowerCase() !== 'no subtitles downloaded') {
                     // clear and update the subtitles column with new informations
@@ -168,10 +162,6 @@
                             }
                         }
                     });
-                    // don't allow other searches
-                    subtitlesSearchLink.remove();
-                } else {
-                    subtitlesSearchLink.remove();
                 }
             });
             return false;
