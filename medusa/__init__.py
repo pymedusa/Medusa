@@ -628,6 +628,8 @@ NEWZNAB_DATA = None
 
 RECENTLY_DELETED = set()
 
+RELEASES_IN_PP = []
+
 PRIVACY_LEVEL = 'normal'
 
 
@@ -684,7 +686,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             ANIME_DEFAULT, NAMING_ANIME, ANIMESUPPORT, USE_ANIDB, ANIDB_USERNAME, ANIDB_PASSWORD, ANIDB_USE_MYLIST, \
             ANIME_SPLIT_HOME, SCENE_DEFAULT, DOWNLOAD_URL, BACKLOG_DAYS, GIT_USERNAME, GIT_PASSWORD, \
             DEVELOPER, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, BROKEN_PROVIDERS, SOCKET_TIMEOUT, RECENTLY_DELETED, \
-            FANART_BACKGROUND, FANART_BACKGROUND_OPACITY, GIT_REMOTE_BRANCHES
+            FANART_BACKGROUND, FANART_BACKGROUND_OPACITY, GIT_REMOTE_BRANCHES, RELEASES_IN_PP
 
         if __INITIALIZED__:
             return False
@@ -1262,6 +1264,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         POSTER_SORTDIR = check_setting_int(CFG, 'GUI', 'poster_sortdir', 1)
         DISPLAY_ALL_SEASONS = bool(check_setting_int(CFG, 'General', 'display_all_seasons', 1))
         RECENTLY_DELETED = set()
+        RELEASES_IN_PP = []
         GIT_REMOTE_BRANCHES = []
         KODI_LIBRARY_CLEAN_PENDING = False
 

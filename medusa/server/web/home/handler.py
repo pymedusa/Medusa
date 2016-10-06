@@ -1950,9 +1950,19 @@ class Home(WebRoot):
             'subtitles': ','.join(ep_obj.subtitles),
         })
 
-    def manual_search_subtitles(self, show=None, season=None, episode=None, filepath=None):
+    def manual_search_subtitles(self, show=None, season=None, episode=None, release_id=None):
         # retrieve the episode object and fail if we can't get one
+
         try:
+            if release_id:
+                # Release ID is sent when using postpone
+                release = app.RELEASES_IN_PP[int(release_id)]
+                show = release['show']
+                season = release['season']
+                episode = release['episode']
+                filepath = release['release']
+            else:
+                filepath = None
             show = int(show)
             show_obj = Show.find(app.showList, show)
         except (ValueError, TypeError):
@@ -1981,9 +1991,18 @@ class Home(WebRoot):
             'error': None,
         })
 
-    def pick_manual_subtitle(self, show=None, season=None, episode=None, filepath=None, subtitle_id=None):
+    def pick_manual_subtitle(self, show=None, season=None, episode=None, release_id=None, subtitle_id=None):
         # retrieve the episode object and fail if we can't get one
         try:
+            if release_id:
+                # Release ID is sent when using postpone
+                release = app.RELEASES_IN_PP[int(release_id)]
+                show = release['show']
+                season = release['season']
+                episode = release['episode']
+                filepath = release['release']
+            else:
+                filepath = None
             show = int(show)
             show_obj = Show.find(app.showList, show)
         except (ValueError, TypeError):

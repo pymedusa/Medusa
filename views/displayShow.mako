@@ -575,12 +575,11 @@
                 <table id=subtitle_results style="width:100%">
                 <tbody>
                 <tr>
-                    <th>Provider</th>
-                    <th>Flag</th>
+                    <th>Provider/Flag</th>
                     <th>Score</th>
                     <th>Subtitle</th>
                     <th>Missing/wrong</th>
-                    <th>Download</th>
+                    <th></th>
                 </tr>
                 </tbody>
                 </table> 

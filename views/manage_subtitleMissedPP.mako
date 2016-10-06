@@ -24,7 +24,7 @@
             </tr>
         </thead>
         <tbody aria-live="polite" aria-relevant="all">
-        % for epResult in releases_in_pp:
+        % for index, epResult in enumerate(releases_in_pp):
             <tr class="snatched" role="row">
                 <td class="tvShow" align="left">
                     <span class="break-word">
@@ -32,7 +32,7 @@
                     </span>
                 </td>
                 <td class="col-search">
-                    <a class="epSubtitlesSearchPP" href="home/manual_search_subtitles?show=${epResult["indexer_id"]}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}&amp;filepath=${epResult["release"]}"><img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></a>
+                    <a class="epSubtitlesSearchPP" release_id=${index} href="home/manual_search_subtitles?release_id=${index}"><img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></a>
                 </td>
             </tr>
         % endfor
