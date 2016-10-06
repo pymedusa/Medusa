@@ -77,7 +77,7 @@
                         // Removes the release as we downloaded the subtitle
                         // Need to add 1 because of the row header
                         // Only applied to manage_subtitleMissedPP.mako
-                        var removeRow = parseInt(data.release_id) + 1
+                        var removeRow = $('#releasesPP tr[release_id=' + data.release_id + ']').index() + 1;
                         $('#releasesPP tr').eq(removeRow).remove();
                     } else {
                         // update the subtitles column with new informations

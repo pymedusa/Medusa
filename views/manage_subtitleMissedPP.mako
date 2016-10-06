@@ -28,7 +28,7 @@
         </thead>
         <tbody aria-live="polite" aria-relevant="all">
         % for index, epResult in enumerate(releases_in_pp):
-            <tr class="snatched" role="row">
+            <tr class="snatched" role="row" release_id=${index}>
                 <td class="tvShow" align="left">
                         ${epResult['show_name']}
                 </td>
