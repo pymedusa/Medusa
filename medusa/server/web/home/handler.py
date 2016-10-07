@@ -1975,22 +1975,20 @@ class Home(WebRoot):
             ep_obj = show_obj.get_episode(season, episode)
             video_path = filepath or ep_obj.location
             release_name = ep_obj.release_name or os.path.basename(video_path)
-        except (ValueError, TypeError, IndexError) as e:
+        except IndexError:
+            ui.notifications.message('Outdated list', 'Please refresh page and try again')
+            logger.log('Outdated list. Please refresh page and try again', logger.WARNING)
+            return json.dumps({'result': 'failure'})
+        except (ValueError, TypeError) as e:
             ui.notifications.message('Error', "Please check logs")
             logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
                        (mode=mode, error_msg=e), logger.ERROR)
-            return json.dumps({
-                'result': 'failure',
-                'error:': str(e)
-            })
+            return json.dumps({'result': 'failure'})
 
         if not ek(os.path.isfile, video_path):
             ui.notifications.message(ep_obj.show.name, "Video file no longer exists. Can't search for subtitles")
             logger.log('Video file no longer exists: {video_file}'.format(video_file=video_path), logger.DEBUG)
-            return json.dumps({
-                'result': 'failure',
-                'message': "Video file no longer exists. Can't search for subtitles"
-            })
+            return json.dumps({'result': 'failure'})
 
         try:
             if mode == 'searching':
@@ -2023,10 +2021,7 @@ class Home(WebRoot):
             ui.notifications.message(ep_obj.show.name, 'Failed to manual {0} subtitles'.format(mode))
             logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
                        (mode=mode, error_msg=e), logger.ERROR)
-            return json.dumps({
-                'result': 'failure',
-                'error': str(e)
-            })
+            return json.dumps({'result': 'failure'})
 
     def setSceneNumbering(self, show, indexer, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
                           sceneEpisode=None, sceneAbsolute=None):
