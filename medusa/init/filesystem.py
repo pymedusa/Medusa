@@ -3,7 +3,6 @@
 
 import glob
 import io
-import json
 import os
 import shutil
 import sys
@@ -27,19 +26,18 @@ def _varkwargs(**kwargs):
     return {k: _handle_arg(arg) for k, arg in kwargs.items()}
 
 
-def make_closure(f):
+def make_closure(f, handle_args):
     """Create a closure that encodes parameters to utf-8 and call original function."""
-    return lambda *args, **kwargs: f(*_varargs(*args), **_varkwargs(**kwargs))
+    return lambda *args, **kwargs: f(*_varargs(*args), **_varkwargs(**kwargs)) if handle_args else f(*args, **kwargs)
 
 
 def initialize():
     """Replace original functions if the fs encoding is not utf-8."""
     fs_encoding = sys.getfilesystemencoding()
-    if os.name != 'nt' and (not fs_encoding or fs_encoding.lower() != 'utf-8'):
+    if not fs_encoding or fs_encoding.lower() != 'utf-8':
         affected_functions = {
             glob: ['glob'],
             io: ['open'],
-            json: ['dumps'],
             os: ['access', 'chdir', 'chmod', 'chown', 'link', 'listdir', 'makedirs', 'mkdir', 'remove',
                  'rename', 'renames', 'rmdir', 'stat', 'statvfs', 'symlink', 'unlink', 'utime', 'walk'],
             os.path: ['abspath', 'basename', 'dirname', 'exists', 'getctime', 'getmtime', 'getsize',
@@ -51,4 +49,4 @@ def initialize():
 
         for k, v in affected_functions.items():
             for f in v:
-                setattr(k, f, make_closure(getattr(k, f)))
+                setattr(k, f, make_closure(getattr(k, f), os.name != 'nt'))
