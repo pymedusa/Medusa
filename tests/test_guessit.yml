@@ -3070,14 +3070,30 @@
 
 # Regression Test for release group detection
 # https://github.com/guessit-io/guessit/issues/343
-? /series/Show.Name.S10E01.1080p.HDTV.X264-DIMENSION[rarbg]/Show.Name.S10E01.1080p.HDTV.X264-DIMENSION.mkv
+? /series/Show.Name.S10E01.1080p.HDTV.X264-GROUP[rarbg]/Show.Name.S10E01.1080p.HDTV.X264-GROUP.mkv
 : title: Show Name
   season: 10
   episode: 1
   screen_size: 1080p
   format: HDTV
   video_codec: h264
-  release_group: DIMENSION
+  release_group: GROUP
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+# Regression Test for release group detection
+# https://github.com/guessit-io/guessit/issues/343 + show with year
+? /Show.Name.2014.S03E01.1080p.HDTV.X264-GROUP[rarbg]/Show.Name.2014.S03E01.1080p.HDTV.X264-GROUP.mkv
+: title: Show Name
+  alias: Show Name 2014
+  year: 2014
+  season: 3
+  episode: 1
+  screen_size: 1080p
+  format: HDTV
+  video_codec: h264
+  release_group: GROUP
   container: mkv
   mimetype: video/x-matroska
   type: episode

@@ -1306,9 +1306,10 @@ class FixReleaseGroupGuessedAsTitle(Rule):
         # In case of duplicated titles, keep only the first one
         titles = matches.named('title')
 
-        if (titles and len(titles) == 2 and matches.tagged('anime') and
+        if (titles and len(titles) > 1 and matches.tagged('anime') and
                 'equivalent' not in titles[-1].tags and 'expected' not in titles[-1].tags):
-            release_group = copy.copy(titles[-1])
+            wrong_title = matches.named('title', predicate=lambda m: m.value != titles[0].value, index=-1)
+            release_group = copy.copy(wrong_title)
             release_group.name = 'release_group'
             release_group.tags = []
 
