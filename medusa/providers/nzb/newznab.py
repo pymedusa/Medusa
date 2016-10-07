@@ -318,7 +318,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         Returns found image or the default newznab image
         """
         if ek(os.path.isfile,
-              ek(os.path.join, app.PROG_DIR, 'gui', app.GUI_NAME, 'images', 'providers',
+              ek(os.path.join, app.PROG_DIR, 'static/images/providers/',
                  self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'newznab.png'
