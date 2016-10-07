@@ -114,7 +114,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return [x for x in providers_set if x]
 
     def image_name(self):
-        if ek(os.path.isfile, ek(os.path.join, app.PROG_DIR, 'gui', app.GUI_NAME, 'images', 'providers', self.get_id() + '.png')):
+        if ek(os.path.isfile, ek(os.path.join, app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'torrentrss.png'
 
