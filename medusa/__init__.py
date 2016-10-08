@@ -67,8 +67,9 @@ ex = exceptions.ex
 # Fixed values
 __title__ = __name__
 SRC_FOLDER = __name__
-LEGACY_SRC_FOLDERS = ('sickbeard', 'sickrage')
+LEGACY_SRC_FOLDERS = ('sickbeard', 'sickrage', 'gui')
 LIB_FOLDER = 'lib'
+STATIC_FOLDER = 'static'
 UNKNOWN_RELEASE_GROUP = 'Medusa'
 BACKUP_DIR = 'backup'
 BACKUP_FILENAME_PREFIX = 'backup'
