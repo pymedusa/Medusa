@@ -83,7 +83,7 @@ CONFIG_INI = 'config.ini'
 GIT_ORG = 'pymedusa'
 GIT_REPO = 'Medusa'
 CHANGES_URL = 'https://cdn.pymedusa.com/medusa-news/CHANGES.md'
-APPLICATION_URL = 'https://github.com/PyMedusa/Medusa'
+APPLICATION_URL = 'https://github.com/{org}/{repo}'.format(org=GIT_ORG, repo=GIT_REPO)
 DONATIONS_URL = '{0}/wiki/Donations'.format(APPLICATION_URL)
 WIKI_URL = '{0}/wiki'.format(APPLICATION_URL)
 GITHUB_IO_URL = 'http://github.com/pymedusa/medusa.github.io/'
@@ -749,8 +749,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # git_remote
         GIT_REMOTE = check_setting_str(CFG, 'General', 'git_remote', 'origin')
-        GIT_REMOTE_URL = check_setting_str(CFG, 'General', 'git_remote_url',
-                                           'https://github.com/%s/%s.git' % (GIT_ORG, GIT_REPO))
+        GIT_REMOTE_URL = check_setting_str(CFG, 'General', 'git_remote_url', APPLICATION_URL)
 
         repo_url_re = re.compile(r'(?P<prefix>(?:git@github\.com:)|(?:https://github\.com/))(?P<org>\w+)/(?P<repo>\w+)\.git')
         m = repo_url_re.match(GIT_REMOTE_URL)
@@ -758,6 +757,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             groups = m.groupdict()
             if groups['org'].lower() != GIT_ORG.lower() or groups['repo'].lower() != GIT_REPO.lower():
                 GIT_REMOTE_URL = groups['prefix'] + GIT_ORG + '/' + GIT_REPO + '.git'
+        else:
+            GIT_REMOTE_URL = APPLICATION_URL
 
         # current commit hash
         CUR_COMMIT_HASH = check_setting_str(CFG, 'General', 'cur_commit_hash', '')
