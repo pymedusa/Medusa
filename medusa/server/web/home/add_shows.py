@@ -124,7 +124,8 @@ class HomeAddShows(Home):
         for root_dir in root_dirs:
             try:
                 file_list = os.listdir(root_dir)
-            except Exception:
+            except Exception as error:
+                logger.log('Unable to listdir {path}: {e!r}'.format(path=root_dir, e=error))
                 continue
 
             for cur_file in file_list:
@@ -133,7 +134,8 @@ class HomeAddShows(Home):
                     cur_path = os.path.normpath(os.path.join(root_dir, cur_file))
                     if not os.path.isdir(cur_path):
                         continue
-                except Exception:
+                except Exception as error:
+                    logger.log('Unable to get current path {path} and {file}: {e!r}'.format(path=root_dir, file=cur_file, e=error))
                     continue
 
                 cur_dir = {
