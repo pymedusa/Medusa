@@ -752,8 +752,12 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         GIT_REMOTE_URL = check_setting_str(CFG, 'General', 'git_remote_url',
                                            'https://github.com/%s/%s.git' % (GIT_ORG, GIT_REPO))
 
-        if 'com/sickrage' in GIT_REMOTE_URL.lower() or 'sickrage.git' in GIT_REMOTE_URL.lower():
-            GIT_REMOTE_URL = 'https://github.com/pymedusa/Medusa.git'
+        repo_url_re = re.compile(r'(?P<prefix>(?:git@github\.com:)|(?:https://github\.com/))(?P<org>\w+)/(?P<repo>\w+)\.git')
+        m = repo_url_re.match(GIT_REMOTE_URL)
+        if m:
+            groups = m.groupdict()
+            if groups['org'].lower() != GIT_ORG.lower() or groups['repo'].lower() != GIT_REPO.lower():
+                GIT_REMOTE_URL = groups['prefix'] + GIT_ORG + '/' + GIT_REPO + '.git'
 
         # current commit hash
         CUR_COMMIT_HASH = check_setting_str(CFG, 'General', 'cur_commit_hash', '')
