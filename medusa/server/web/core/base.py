@@ -16,7 +16,7 @@ from mako.runtime import UNDEFINED
 from mako.template import Template as MakoTemplate
 import medusa as app
 from requests.compat import urljoin
-from six import iteritems, binary_type, text_type
+from six import binary_type, iteritems, text_type
 from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
 from tornado.gen import coroutine
