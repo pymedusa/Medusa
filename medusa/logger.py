@@ -774,6 +774,19 @@ def reconfigure():
     instance.reconfigure_file_handler()
 
 
+def backwards_compatibility():
+    """Keep backwards compatibility renaming old log files."""
+    log_re = re.compile(r'\w+\.log(?P<suffix>\.\d+)?')
+    cwd = os.getcwd() if os.path.isabs(app.DATA_DIR) else ''
+    for filename in os.listdir(app.LOG_DIR):
+        # Rename log files
+        match = log_re.match(filename)
+        if match:
+            new_file = os.path.join(cwd, app.LOG_DIR, app.LOG_FILENAME + (match.group('suffix') or ''))
+            os.rename(os.path.join(cwd, app.LOG_DIR, filename), new_file)
+            continue
+
+
 # Keeps the standard logging.getLogger to be used by SylteAdapter
 standard_logger = logging.getLogger
 

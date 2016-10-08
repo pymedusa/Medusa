@@ -70,14 +70,14 @@ SRC_FOLDER = __name__
 LEGACY_SRC_FOLDERS = ('sickbeard', 'sickrage')
 LIB_FOLDER = 'lib'
 UNKNOWN_RELEASE_GROUP = 'Medusa'
-# TODO: allow restore to ready sickrage-{timestamp}.zip and medusa-{timestamp}.zip
-BACKUP_FILENAME = 'sickrage-{timestamp}.zip'
-# TODO: change db to medusa
-APPLICATION_DB = 'sickbeard.db'
+BACKUP_DIR = 'backup'
+BACKUP_FILENAME_PREFIX = 'backup'
+BACKUP_FILENAME = BACKUP_FILENAME_PREFIX + '-{timestamp}.zip'
+LEGACY_DB = 'sickbeard.db'
+APPLICATION_DB = 'main.db'
 FAILED_DB = 'failed.db'
 CACHE_DB = 'cache.db'
-# TODO: change log to medusa
-LOG_FILENAME = 'sickrage.log'
+LOG_FILENAME = 'application.log'
 CONFIG_INI = 'config.ini'
 GIT_ORG = 'pymedusa'
 GIT_REPO = 'Medusa'
@@ -734,6 +734,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             sys.exit(7)
 
         # init logging
+        logger.backwards_compatibility()
         logger.init_logging(console_logging=consoleLogging)
 
         # git reset on update

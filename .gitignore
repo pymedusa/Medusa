@@ -5,9 +5,11 @@
 /data/
 restore/
 backup*/
+backup-*.zip
 cache.db*
 config.ini*
 sickbeard.db*
+main.db.*
 failed.db*
 *.db
 autoProcessTV.cfg

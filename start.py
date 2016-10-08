@@ -51,6 +51,7 @@ import io
 import locale
 import mimetypes
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -263,6 +264,9 @@ class Application(object):
             if option in ('--noresize',):
                 app.NO_RESIZE = True
 
+        # Keep backwards compatibility
+        Application.backwards_compatibility()
+
         # The pid file is only useful in daemon mode, make sure we can write the file properly
         if self.create_pid:
             if self.run_as_daemon:
@@ -392,6 +396,25 @@ class Application(object):
         # main loop
         while True:
             time.sleep(1)
+
+    @staticmethod
+    def backwards_compatibility():
+        if os.path.isdir(app.DATA_DIR):
+            cwd = os.getcwd() if os.path.isabs(app.DATA_DIR) else ''
+            backup_re = re.compile(r'[^\d]+(?P<suffix>-\d{14}\.zip)')
+            for filename in os.listdir(app.DATA_DIR):
+                # Rename database file
+                if filename.startswith(app.LEGACY_DB):
+                    new_file = os.path.join(cwd, app.DATA_DIR, app.APPLICATION_DB + filename[len(app.LEGACY_DB):])
+                    os.rename(os.path.join(cwd, app.DATA_DIR, filename), new_file)
+                    continue
+
+                # Rename old backups
+                match = backup_re.match(filename)
+                if match:
+                    new_file = os.path.join(cwd, app.DATA_DIR, app.BACKUP_FILENAME_PREFIX + match.group('suffix'))
+                    os.rename(os.path.join(cwd, app.DATA_DIR, filename), new_file)
+                    continue
 
     def daemonize(self):
         """
