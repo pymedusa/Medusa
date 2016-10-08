@@ -18,7 +18,6 @@
     from medusa.failed_history import prepareFailedName
     from medusa.providers.GenericProvider import GenericProvider
     from medusa import providers
-    from medusa.helper.encoding import ek
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
