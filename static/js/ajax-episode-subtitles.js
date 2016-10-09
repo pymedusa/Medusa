@@ -1,12 +1,10 @@
-(function() {
+var startAjaxEpisodeSubtitles = function() {
     var subtitlesTd;
     var selectedEpisode;
     var searchTypesList = ['.epSubtitlesSearch', '.epSubtitlesSearchPP', '.epRedownloadSubtitle', '.epSearch', '.epRetry', '.epManualSearch'];
     var subtitlesResultModal = $('#manualSubtitleSearchModal');
     var subtitlesMulti = MEDUSA.info.subtitlesMulti;
     var loadingSpinner = 'images/loading16' + MEDUSA.info.themeSpinner + '.gif';
-    loadingSpinner = 'images/loading16.gif';
-    subtitlesMulti = false;
 
     function disableAllSearches() {
         // Disables all other searches while manual searching for subtitles
@@ -267,4 +265,4 @@
             return false;
         }
     };
-})();
+};
