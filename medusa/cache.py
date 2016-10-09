@@ -7,7 +7,6 @@ from datetime import timedelta
 from dogpile.cache.backends.file import AbstractFileLock
 from dogpile.cache.region import make_region
 from dogpile.util.readwrite_lock import ReadWriteMutex
-from subliminal.cache import region as subliminal_cache
 
 
 class MutexLock(AbstractFileLock):
@@ -45,6 +44,8 @@ memory_cache = make_region()
 def configure(cache_dir):
     """Configure caches."""
     # memory cache
+    from subliminal.cache import region as subliminal_cache
+
     memory_cache.configure('dogpile.cache.memory', expiration_time=timedelta(hours=1))
 
     # subliminal cache
@@ -62,6 +63,7 @@ def configure(cache_dir):
 
 
 def fallback():
+    from subliminal.cache import region as subliminal_cache
     """Memory only configuration. USed for test purposes."""
     for region in (cache, memory_cache, subliminal_cache):
         region.configure('dogpile.cache.memory')
