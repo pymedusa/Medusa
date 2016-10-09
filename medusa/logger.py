@@ -372,7 +372,7 @@ class LogLine(object):
         :return:
         :rtype: LogLine or None
         """
-        lines = line.split('\n')
+        lines = line.split(b'\n')
         match = LogLine.log_re.match(lines[0])
         if not match:
             return
