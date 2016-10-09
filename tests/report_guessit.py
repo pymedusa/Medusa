@@ -9,6 +9,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from guessit import __version__ as guessit_version
 import medusa as app
+from medusa import cache
 from medusa.name_parser.guessit_parser import guessit
 from rebulk.__version__ import __version__ as rebulk_version
 
@@ -29,6 +30,7 @@ def main(argv):
     for arg in show_list:
         app.showList.append(MockTvShow(arg))
 
+    cache.fallback()
     actual = guessit(argv[1])
     results = ['# guessit: {}  rebulk: {}'.format(guessit_version, rebulk_version)]
     if show_list:
