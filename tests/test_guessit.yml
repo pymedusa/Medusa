@@ -2194,7 +2194,7 @@
   video_codec: h264
   language: it
   audio_codec: AC3
-  format: [DSRip, HDTV]
+  format: HDTV
   release_group: DEUS TEAM
   type: episode
 
@@ -3177,4 +3177,16 @@
   subtitle_language: pt-BR
   container: srt
   mimetype: text/plain
+  type: episode
+
+
+# Regression Test: https://github.com/pymedusa/SickRage/issues/1033#issuecomment-252500576
+# Multiple formats
+? Show.Name.S01E10.HDTV.x264.WEB-DL.HI.C
+: title: Show Name
+  season: 1
+  episode: 10
+  video_codec: h264
+  format: WEB-DL
+  release_group: HI.C
   type: episode
