@@ -1306,9 +1306,10 @@ class FixReleaseGroupGuessedAsTitle(Rule):
         # In case of duplicated titles, keep only the first one
         titles = matches.named('title')
 
-        if (titles and len(titles) == 2 and matches.tagged('anime') and
+        if (titles and len(titles) > 1 and matches.tagged('anime') and
                 'equivalent' not in titles[-1].tags and 'expected' not in titles[-1].tags):
-            release_group = copy.copy(titles[-1])
+            wrong_title = matches.named('title', predicate=lambda m: m.value != titles[0].value, index=-1)
+            release_group = copy.copy(wrong_title)
             release_group.name = 'release_group'
             release_group.tags = []
 
@@ -1471,19 +1472,19 @@ class FixMultipleFormats(Rule):
             if len(formats) < 2:
                 continue
 
-            last_format = formats[-1]
-            previous = matches.previous(last_format, predicate=lambda match: match.name == 'screen_size')
-            next_range = matches.range(last_format.end, filepart.end,
-                                       lambda match: match.name in ('audio_codec', 'video_codec', 'release_group'))
-            # If we have at least 3 matches near by, then discard the other formats
-            if len(previous) + len(next_range) > 2:
-                invalid_formats = {f.value for f in formats[0:-1]}
-                to_remove = matches.named('format', predicate=lambda m: m.value in invalid_formats)
-                return to_remove
+            for candidate in reversed(formats):
+                previous = matches.previous(candidate, predicate=lambda match: match.name == 'screen_size')
+                next_range = matches.range(candidate.end, filepart.end,
+                                           lambda match: match.name in ('audio_codec', 'video_codec', 'release_group'))
+                # If we have at least 3 matches near by, then discard the other formats
+                if len(previous) + len(next_range) > 1:
+                    invalid_formats = {f.value for f in formats[0:-1]}
+                    to_remove = matches.named('format', predicate=lambda m: m.value in invalid_formats)
+                    return to_remove
 
-            if matches.conflicting(last_format):
-                to_remove = matches.named('format', predicate=lambda m: m.value in last_format.value)
-                return to_remove
+                if matches.conflicting(candidate):
+                    to_remove = matches.named('format', predicate=lambda m: m.value in candidate.value)
+                    return to_remove
 
 
 class CreateProperTags(Rule):
