@@ -6,13 +6,14 @@ import os
 
 import medusa as app
 
+from .base import BaseRequestHandler
+
 from .... import db, helpers, image_cache, network_timezones, sbdatetime
 from ....common import Quality, statusStrings
 from ....helper.common import dateFormat, try_int
 from ....helper.quality import get_quality_string
 from ....server.api.v1.core import _map_quality
 from ....show.Show import Show
-from .base import BaseRequestHandler
 
 MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 
@@ -33,6 +34,7 @@ class ShowHandler(BaseRequestHandler):
 
         arg_paused = self.get_argument('paused', default=None)
         arg_sort = self.get_argument('sort', default='name')
+        arg_sort_order = self.get_argument('sort_order', default='asc')
         arg_page = self.get_argument('page', default=1)
         arg_limit = self.get_argument('limit', default=20)
 
@@ -119,8 +121,8 @@ class ShowHandler(BaseRequestHandler):
                 main_db_con = db.DBConnection(row_type='dict')
 
                 sql_results = main_db_con.select(
-                    'SELECT name, episode, airdate, release_name, season, hasnfo, hastbn, location, absolute_number, file_size, subtitles, status FROM tv_episodes WHERE showid = ?',
-                    [show_id])
+                    'SELECT name, episode, airdate, release_name, season, hasnfo, hastbn, location, absolute_number, file_size, subtitles, status \
+                     FROM tv_episodes WHERE showid = ? ORDER BY ? ?', [show_id, arg_sort, arg_sort_order])
                 seasons = [{'episodes': [], 'seasonNumber': 0}]
                 for row in sql_results:
                     status, quality = Quality.splitCompositeStatus(int(row['status']))

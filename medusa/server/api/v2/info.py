@@ -1,12 +1,14 @@
 # coding=utf-8
 """Request handler for general information."""
 
-import medusa as app
 import os
-import sys
 import platform
-from ....versionChecker import CheckVersion
+import sys
+
+import medusa as app
+
 from .base import BaseRequestHandler
+from ....versionChecker import CheckVersion
 
 
 class InfoHandler(BaseRequestHandler):
