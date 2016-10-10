@@ -86,7 +86,7 @@ var startAjaxEpisodeSubtitles = function() {
                         selectedEpisode.parent().parent().remove();
                     } else {
                         // update the subtitles column with new informations
-                        if (subtitlesMulti === false) { // eslint-disable-line no-lonely-if
+                        if (subtitlesMulti === true) { // eslint-disable-line no-lonely-if
                             var hasLang = false;
                             var lang = language;
                             subtitlesTd.children().children().each(function() {
