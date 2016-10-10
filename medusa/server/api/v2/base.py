@@ -26,8 +26,11 @@ class BaseRequestHandler(RequestHandler):
         if (web_username != api_username and web_password != api_password) and (app.API_KEY != api_key):
             self.api_finish(status=401, error='Invalid API key')
 
-    def api_finish(self, status=None, error=None, data=None, **kwargs):
+    def api_finish(self, status=None, error=None, data=None, headers=None, **kwargs):
         """End the api request writing error or data to http response."""
+        if headers is not None:
+            for header in headers:
+                self.set_header(header, headers[header])
         if error is not None and status is not None:
             self.set_status(status)
             self.finish({

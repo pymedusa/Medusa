@@ -2,6 +2,10 @@
 """Request handler for general information."""
 
 import medusa as app
+import os
+import sys
+import platform
+from ....versionChecker import CheckVersion
 from .base import BaseRequestHandler
 
 
@@ -15,6 +19,38 @@ class InfoHandler(BaseRequestHandler):
         :type query: str
         """
         info_query = query.split('/')[0]
+
+        try:
+            import pwd
+            app_user = pwd.getpwuid(os.getuid()).pw_name
+        except ImportError:
+            try:
+                import getpass
+                app_user = getpass.getuser()
+            except StandardError:
+                app_user = 'Unknown'
+
+        try:
+            import locale
+            app_locale = locale.getdefaultlocale()
+        except StandardError:
+            app_locale = 'Unknown', 'Unknown'
+
+        try:
+            import ssl
+            ssl_version = ssl.OPENSSL_VERSION
+        except StandardError:
+            ssl_version = 'Unknown'
+
+        app_version = ''
+        if app.VERSION_NOTIFY:
+            updater = CheckVersion().updater
+            if updater:
+                app_version = updater.get_cur_version()
+
+        main_db_con = app.db.DBConnection()
+        cur_branch_major_db_version, cur_branch_minor_db_version = main_db_con.checkDBVersion()
+
         info_data = {
             'anonRedirect': app.ANON_REDIRECT,
             'anonSplitHome': app.ANIME_SPLIT_HOME,
@@ -33,6 +69,32 @@ class InfoHandler(BaseRequestHandler):
             'trimZero': app.TRIM_ZERO,
             'fanartBackground': app.FANART_BACKGROUND,
             'fanartBackgroundOpacity': app.FANART_BACKGROUND_OPACITY,
+            'branch': app.BRANCH,
+            'commitHash': app.CUR_COMMIT_HASH,
+            'release': app_version,
+            'sslVersion': ssl_version,
+            'pythonVersion': sys.version[:120],
+            'databaseVersion': {
+                'major': cur_branch_major_db_version,
+                'minor': cur_branch_minor_db_version
+            },
+            'os': platform.platform(),
+            'locale': '.'.join([str(loc) for loc in app_locale]),
+            'localUser': app_user,
+            'programDir': app.PROG_DIR,
+            'configFile': app.CONFIG_FILE,
+            'dbFilename': app.db.dbFilename(),
+            'cacheDir': app.CACHE_DIR,
+            'logDir': app.LOG_DIR,
+            'appArgs': app.MY_ARGS,
+            'webRoot': app.WEB_ROOT,
+            'githubUrl': app.GITHUB_IO_URL,
+            'wikiUrl': app.WIKI_URL,
+            'sourceUrl': app.APPLICATION_URL,
+            'displayAllSeasons': app.DISPLAY_ALL_SEASONS,
+            'displayShowSpecials': app.DISPLAY_SHOW_SPECIALS,
+            'useSubtitles': app.USE_SUBTITLES,
+            'downloadUrl': app.DOWNLOAD_URL,
             'subtitlesMulti': app.SUBTITLES_MULTI
         }
 
