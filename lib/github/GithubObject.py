@@ -7,7 +7,8 @@
 # Copyright 2013 AKFish <akfish@gmail.com>                                     #
 # Copyright 2013 Vincent Jacques <vincent@vincent-jacques.net>                 #
 #                                                                              #
-# This file is part of PyGithub. http://jacquev6.github.com/PyGithub/          #
+# This file is part of PyGithub.                                               #
+# http://pygithub.github.io/PyGithub/v1/index.html                             #
 #                                                                              #
 # PyGithub is free software: you can redistribute it and/or modify it under    #
 # the terms of the GNU Lesser General Public License as published by the Free  #
@@ -23,11 +24,14 @@
 # along with PyGithub. If not, see <http://www.gnu.org/licenses/>.             #
 #                                                                              #
 # ##############################################################################
-
+import sys
 import datetime
+from operator import itemgetter
 
 import GithubException
 import Consts
+
+atLeastPython3 = sys.hexversion >= 0x03000000
 
 
 class _NotSetType:
@@ -205,6 +209,22 @@ class GithubObject(object):
         :type: str
         '''
         return self._headers.get(Consts.RES_LAST_MODIFED)
+
+    def get__repr__(self, params):
+        """
+        Converts the object to a nicely printable string.
+        """
+        def format_params(params):
+            if atLeastPython3:
+                items = params.items()
+            else:
+                items = list(params.items())
+            for k, v in sorted(items, key=itemgetter(0), reverse=True):
+                yield '{k}="{v}"'.format(k=k, v=v) if isinstance(v, (str, unicode)) else '{k}={v}'.format(k=k, v=v)
+        return '{class_name}({params})'.format(
+            class_name=self.__class__.__name__,
+            params=", ".join(list(format_params(params)))
+        )
 
 
 class NonCompletableGithubObject(GithubObject):
