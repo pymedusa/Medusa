@@ -6,13 +6,10 @@ from __future__ import unicode_literals
 import re
 from datetime import timedelta
 
-from dogpile.cache.region import make_region
 from guessit.rules.common.date import valid_year
 from .rules import default_api
+from ..cache import memory_cache
 
-
-region = make_region()
-region.configure('dogpile.cache.memory')
 
 EXPECTED_TITLES_EXPIRATION_TIME = timedelta(days=1).total_seconds()
 
@@ -91,7 +88,7 @@ def guessit(name, options=None):
     return default_api.guessit(name, options=final_options)
 
 
-@region.cache_on_arguments(expiration_time=EXPECTED_TITLES_EXPIRATION_TIME)
+@memory_cache.cache_on_arguments(expiration_time=EXPECTED_TITLES_EXPIRATION_TIME)
 def get_expected_titles(show_list):
     """Return expected titles to be used by guessit.
 

@@ -25,6 +25,168 @@ values from a previous, backwards-incompatible version.
 """
 
 
+class RegionInvalidationStrategy(object):
+    """Region invalidation strategy interface
+
+    Implement this interface and pass implementation instance
+    to :meth:`.CacheRegion.configure` to override default region invalidation.
+
+    Example::
+
+        class CustomInvalidationStrategy(RegionInvalidationStrategy):
+
+            def __init__(self):
+                self._soft_invalidated = None
+                self._hard_invalidated = None
+
+            def invalidate(self, hard=None):
+                if hard:
+                    self._soft_invalidated = None
+                    self._hard_invalidated = time.time()
+                else:
+                    self._soft_invalidated = time.time()
+                    self._hard_invalidated = None
+
+            def is_invalidated(self, timestamp):
+                return ((self._soft_invalidated and
+                         timestamp < self._soft_invalidated) or
+                        (self._hard_invalidated and
+                         timestamp < self._hard_invalidated))
+
+            def was_hard_invalidated(self):
+                return bool(self._hard_invalidated)
+
+            def is_hard_invalidated(self, timestamp):
+                return (self._hard_invalidated and
+                        timestamp < self._hard_invalidated)
+
+            def was_soft_invalidated(self):
+                return bool(self._soft_invalidated)
+
+            def is_soft_invalidated(self, timestamp):
+                return (self._soft_invalidated and
+                        timestamp < self._soft_invalidated)
+
+    The custom implementation is injected into a :class:`.CacheRegion`
+    at configure time using the
+    :paramref:`.CacheRegion.configure.region_invalidator` parameter::
+
+        region = CacheRegion()
+
+        region = region.configure(region_invalidator=CustomInvalidationStrategy())
+
+    Invalidation strategies that wish to have access to the
+    :class:`.CacheRegion` itself should construct the invalidator given the
+    region as an argument::
+
+        class MyInvalidator(RegionInvalidationStrategy):
+            def __init__(self, region):
+                self.region = region
+                # ...
+
+            # ...
+
+        region = CacheRegion()
+        region = region.configure(region_invalidator=MyInvalidator(region))
+
+    .. versionadded:: 0.6.2
+
+    .. seealso::
+
+        :paramref:`.CacheRegion.configure.region_invalidator`
+
+    """
+
+    def invalidate(self, hard=True):
+        """Region invalidation.
+
+        :class:`.CacheRegion` propagated call.
+        The default invalidation system works by setting
+        a current timestamp (using ``time.time()``) to consider all older
+        timestamps effectively invalidated.
+
+        """
+
+        raise NotImplementedError()
+
+    def is_hard_invalidated(self, timestamp):
+        """Check timestamp to determine if it was hard invalidated.
+
+        :return: Boolean. True if ``timestamp`` is older than
+         the last region invalidation time and region is invalidated
+         in hard mode.
+
+        """
+
+        raise NotImplementedError()
+
+    def is_soft_invalidated(self, timestamp):
+        """Check timestamp to determine if it was soft invalidated.
+
+        :return: Boolean. True if ``timestamp`` is older than
+         the last region invalidation time and region is invalidated
+         in soft mode.
+
+        """
+
+        raise NotImplementedError()
+
+    def is_invalidated(self, timestamp):
+        """Check timestamp to determine if it was invalidated.
+
+        :return: Boolean. True if ``timestamp`` is older than
+         the last region invalidation time.
+
+        """
+
+        raise NotImplementedError()
+
+    def was_soft_invalidated(self):
+        """Indicate the region was invalidated in soft mode.
+
+        :return: Boolean. True if region was invalidated in soft mode.
+
+        """
+
+        raise NotImplementedError()
+
+    def was_hard_invalidated(self):
+        """Indicate the region was invalidated in hard mode.
+
+        :return: Boolean. True if region was invalidated in hard mode.
+
+        """
+
+        raise NotImplementedError()
+
+
+class DefaultInvalidationStrategy(RegionInvalidationStrategy):
+
+    def __init__(self):
+        self._is_hard_invalidated = None
+        self._invalidated = None
+
+    def invalidate(self, hard=True):
+        self._is_hard_invalidated = bool(hard)
+        self._invalidated = time.time()
+
+    def is_invalidated(self, timestamp):
+        return (self._invalidated is not None and
+                timestamp < self._invalidated)
+
+    def was_hard_invalidated(self):
+        return self._is_hard_invalidated is True
+
+    def is_hard_invalidated(self, timestamp):
+        return self.was_hard_invalidated() and self.is_invalidated(timestamp)
+
+    def was_soft_invalidated(self):
+        return self._is_hard_invalidated is False
+
+    def is_soft_invalidated(self, timestamp):
+        return self.was_soft_invalidated() and self.is_invalidated(timestamp)
+
+
 class CacheRegion(object):
     """A front end to a particular cache backend.
 
@@ -78,6 +240,13 @@ class CacheRegion(object):
         @my_region.cache_on_arguments(namespace=('x', 'y'))
         def my_function(a, b, **kw):
             return my_data()
+
+     .. seealso::
+
+        :func:`.function_key_generator` - default key generator
+
+        :func:`.kwarg_function_key_generator` - optional gen that also
+        uses keyword arguments
 
     :param function_multi_key_generator: Optional.
      Similar to ``function_key_generator`` parameter, but it's used in
@@ -170,9 +339,8 @@ class CacheRegion(object):
         self.function_key_generator = function_key_generator
         self.function_multi_key_generator = function_multi_key_generator
         self.key_mangler = self._user_defined_key_mangler = key_mangler
-        self._hard_invalidated = None
-        self._soft_invalidated = None
         self.async_creation_runner = async_creation_runner
+        self.region_invalidator = DefaultInvalidationStrategy()
 
     def configure(
             self, backend,
@@ -182,6 +350,7 @@ class CacheRegion(object):
             _config_prefix=None,
             wrap=None,
             replace_existing_backend=False,
+            region_invalidator=None
     ):
         """Configure a :class:`.CacheRegion`.
 
@@ -227,6 +396,11 @@ class CacheRegion(object):
 
          .. versionadded:: 0.5.7
 
+        :param region_invalidator: Optional. Override default invalidation
+         strategy with custom implementation of
+         :class:`.RegionInvalidationStrategy`.
+
+         .. versionadded:: 0.6.2
 
          """
 
@@ -262,6 +436,9 @@ class CacheRegion(object):
         if getattr(wrap, '__iter__', False):
             for wrapper in reversed(wrap):
                 self.wrap(wrapper)
+
+        if region_invalidator:
+            self.region_invalidator = region_invalidator
 
         return self
 
@@ -304,8 +481,8 @@ class CacheRegion(object):
     def invalidate(self, hard=True):
         """Invalidate this :class:`.CacheRegion`.
 
-        Invalidation works by setting a current timestamp
-        (using ``time.time()``)
+        The default invalidation system works by setting
+        a current timestamp (using ``time.time()``)
         representing the "minimum creation time" for
         a value.  Any retrieved value whose creation
         time is prior to this timestamp
@@ -338,12 +515,7 @@ class CacheRegion(object):
          .. versionadded:: 0.5.1
 
         """
-        if hard:
-            self._hard_invalidated = time.time()
-            self._soft_invalidated = None
-        else:
-            self._hard_invalidated = None
-            self._soft_invalidated = time.time()
+        self.region_invalidator.invalidate(hard)
 
     def configure_from_config(self, config_dict, prefix):
         """Configure from a configuration dictionary
@@ -466,16 +638,14 @@ class CacheRegion(object):
 
             current_time = time.time()
 
-            invalidated = self._hard_invalidated or self._soft_invalidated
-
             def value_fn(value):
                 if value is NO_VALUE:
                     return value
                 elif expiration_time is not None and \
                         current_time - value.metadata["ct"] > expiration_time:
                     return NO_VALUE
-                elif invalidated and \
-                        value.metadata["ct"] < invalidated:
+                elif self.region_invalidator.is_invalidated(
+                        value.metadata["ct"]):
                     return NO_VALUE
                 else:
                     return value
@@ -608,16 +778,13 @@ class CacheRegion(object):
 
         def get_value():
             value = self.backend.get(key)
-            if value is NO_VALUE or \
-                value.metadata['v'] != value_version or \
-                    (
-                        self._hard_invalidated and
-                        value.metadata["ct"] < self._hard_invalidated):
+            if (value is NO_VALUE or value.metadata['v'] != value_version or
+                    self.region_invalidator.is_hard_invalidated(
+                            value.metadata["ct"])):
                 raise NeedRegenerationException()
             ct = value.metadata["ct"]
-            if self._soft_invalidated:
-                if ct < self._soft_invalidated:
-                    ct = time.time() - expiration_time - .0001
+            if self.region_invalidator.is_soft_invalidated(ct):
+                ct = time.time() - expiration_time - .0001
 
             return value.payload, ct
 
@@ -634,7 +801,8 @@ class CacheRegion(object):
         if expiration_time is None:
             expiration_time = self.expiration_time
 
-        if expiration_time is None and self._soft_invalidated:
+        if (expiration_time is None and
+                self.region_invalidator.was_soft_invalidated()):
             raise exception.DogpileCacheException(
                 "Non-None expiration time required "
                 "for soft invalidation")
@@ -707,19 +875,17 @@ class CacheRegion(object):
         def get_value(key):
             value = values.get(key, NO_VALUE)
 
-            if value is NO_VALUE or \
-                value.metadata['v'] != value_version or \
-                    (self._hard_invalidated and
-                        value.metadata["ct"] < self._hard_invalidated):
+            if (value is NO_VALUE or value.metadata['v'] != value_version or
+                    self.region_invalidator.is_hard_invalidated(
+                            value.metadata['v'])):
                 # dogpile.core understands a 0 here as
                 # "the value is not available", e.g.
                 # _has_value() will return False.
                 return value.payload, 0
             else:
                 ct = value.metadata["ct"]
-                if self._soft_invalidated:
-                    if ct < self._soft_invalidated:
-                        ct = time.time() - expiration_time - .0001
+                if self.region_invalidator.is_soft_invalidated(ct):
+                    ct = time.time() - expiration_time - .0001
 
                 return value.payload, ct
 
@@ -732,7 +898,8 @@ class CacheRegion(object):
         if expiration_time is None:
             expiration_time = self.expiration_time
 
-        if expiration_time is None and self._soft_invalidated:
+        if (expiration_time is None and
+                self.region_invalidator.was_soft_invalidated()):
             raise exception.DogpileCacheException(
                 "Non-None expiration time required "
                 "for soft invalidation")

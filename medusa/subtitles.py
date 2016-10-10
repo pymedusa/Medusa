@@ -30,15 +30,15 @@ import traceback
 
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
-from dogpile.cache.region import make_region
 import medusa as app
 from six import iteritems, string_types, text_type
-from subliminal import (ProviderPool, compute_score, provider_manager, refine, refiner_manager, region, save_subtitles,
+from subliminal import (ProviderPool, compute_score, provider_manager, refine, refiner_manager, save_subtitles,
                         scan_video)
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
 from . import db, history, processTV
+from .cache import cache, memory_cache
 from .common import cpu_presets
 from .helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
 from .helper.exceptions import ex
@@ -57,10 +57,6 @@ provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiPr
 basename = __name__.split('.')[0]
 refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
 refiner_manager.register('tvepisode = {basename}.refiners.tvepisode:refine'.format(basename=basename))
-
-subs_region = make_region()
-subs_region.configure('dogpile.cache.memory')
-region.configure('dogpile.cache.memory')
 
 subtitle_key = u'subtitle={id}'
 video_key = u'{name}:video|{{video_path}}'.format(name=__name__)
@@ -272,7 +268,7 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
     subtitles_list = pool.list_subtitles(video, languages)
     scored_subtitles = score_subtitles(subtitles_list, video)[:limit]
     for subtitle, _ in scored_subtitles:
-        subs_region.set(subtitle_key.format(id=subtitle.id), subtitle)
+        cache.set(subtitle_key.format(id=subtitle.id).encode('utf-8'), subtitle)
 
     logger.debug("Scores computed for release: {release}".format(release=os.path.basename(video_path)))
 
@@ -303,7 +299,7 @@ def save_subtitle(tv_episode, subtitle_id, video_path=None):
     :return:
     :rtype: list of str
     """
-    subtitle = subs_region.get(subtitle_key.format(id=subtitle_id))
+    subtitle = cache.get(subtitle_key.format(id=subtitle_id).encode('utf-8'))
     if subtitle == NO_VALUE:
         return
 
@@ -452,7 +448,7 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
     return sorted({subtitle.language.opensubtitles for subtitle in saved_subtitles})
 
 
-@region.cache_on_arguments(expiration_time=PROVIDER_POOL_EXPIRATION_TIME)
+@memory_cache.cache_on_arguments(expiration_time=PROVIDER_POOL_EXPIRATION_TIME)
 def get_provider_pool():
     """Return the subliminal provider pool to be used.
 
@@ -623,7 +619,7 @@ def invalidate_video_cache(video_path):
     :type video_path: str
     """
     key = video_key.format(video_path=video_path)
-    region.delete(key)
+    memory_cache.delete(key)
     logger.debug(u'Cached video information under key %s was invalidated', key)
 
 
@@ -651,7 +647,7 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
     key = video_key.format(video_path=video_path)
     payload = {'subtitles_dir': subtitles_dir, 'subtitles': subtitles, 'embedded_subtitles': embedded_subtitles,
                'release_name': release_name}
-    cached_payload = region.get(key, expiration_time=VIDEO_EXPIRATION_TIME)
+    cached_payload = memory_cache.get(key, expiration_time=VIDEO_EXPIRATION_TIME)
     if cached_payload != NO_VALUE and {k: v for k, v in iteritems(cached_payload) if k != 'video'} == payload:
         logger.debug(u'Found cached video information under key %s', key)
         return cached_payload['video']
@@ -674,7 +670,7 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
                release_name=release_name, tv_episode=tv_episode)
 
         payload['video'] = video
-        region.set(key, payload)
+        memory_cache.set(key, payload)
         logger.debug(u'Video information cached under key %s', key)
 
         return video

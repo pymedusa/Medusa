@@ -32,7 +32,7 @@ from configobj import ConfigObj
 import requests
 import shutil_custom
 from . import (
-    app, auto_postprocessor, db, helpers, logger, metadata, naming, providers,
+    app, auto_postprocessor, cache, db, helpers, logger, metadata, naming, providers,
     scheduler, showUpdater, show_queue, subtitles, traktChecker, versionChecker
 )
 from .common import SD, SKIPPED, WANTED
@@ -773,6 +773,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # Check if we need to perform a restore of the cache folder
         restore_cache_folder(CACHE_DIR)
+        cache.configure(CACHE_DIR)
 
         FANART_BACKGROUND = bool(check_setting_int(CFG, 'GUI', 'fanart_background', 1))
         FANART_BACKGROUND_OPACITY = check_setting_float(CFG, 'GUI', 'fanart_background_opacity', 0.4)

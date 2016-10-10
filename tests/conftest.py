@@ -9,6 +9,7 @@ from github.Issue import Issue
 from github.MainClass import Github
 from github.Organization import Organization
 from github.Repository import Repository
+from medusa import cache
 from medusa.common import DOWNLOADED, Quality
 from medusa.helper.common import dateTimeFormat
 from medusa.indexers.indexer_config import INDEXER_TVDB
@@ -71,6 +72,11 @@ def _patch_object(monkeypatch, target, **kwargs):
         target.__dict__[field] = value
         monkeypatch.setattr(type(target), field, lambda this: this.field, raising=False)
     return target
+
+
+@pytest.fixture(scope="session", autouse=True)
+def execute_before_any_test():
+    cache.fallback()
 
 
 @pytest.fixture

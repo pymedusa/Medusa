@@ -88,6 +88,15 @@ if os.path.isdir(OLD_TORNADO):
     shutil.move(OLD_TORNADO, OLD_TORNADO + '_kill')
     shutil.rmtree(OLD_TORNADO + '_kill')
 
+# An issue found on synology DSM makes the dogpile module from the system to be always loaded before
+# sys.path is changed. # That causes the application to fail to start because that version is old and some submodules are not found.
+# http://stackoverflow.com/questions/2918898/prevent-python-from-caching-the-imported-modules
+try:
+    if 'dogpile' in sys.modules:
+        del sys.modules['dogpile']
+except AttributeError:
+    pass
+
 import medusa as app
 from medusa import db, failed_history, logger, name_cache, network_timezones
 from medusa.event_queue import Events
