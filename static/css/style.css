@@ -6,12 +6,6 @@ strong.warning {
 inc_top.mako
 ========================================================================== */
 
-.header {
-	display: block;
-	clear: right;
-	margin-top: 15px;
-}
-
 .navbaricon {
     margin-top: -15px;
     margin-bottom: -15px;
@@ -47,13 +41,6 @@ inc_top.mako
     background-position: -80px -224px;
 }
 
-/*
-.ui-accordion-content,
-.ui-tabs-panel {
-    background: rgb(237, 237, 237) !important;
-    background-image: none !important;
-}
-*/
 
 .ui-widget {
     font-family: inherit;
@@ -170,16 +157,6 @@ inc_top.mako
     border-radius: 0;
 }
 
-/*.ui-tabs .ui-tabs-panel {
-    background-color: rgb(247, 247, 247) !important;
-    border: 1px solid rgb(204, 204, 204) !important;
-    padding: 1em;
-}
-
-.ui-tabs .ui-tabs-nav li.ui-tabs-active {
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-}*/
 
 .ui-tabs-nav > :not(.ui-tabs-active) {
     border-top-left-radius: 5px;
@@ -188,7 +165,7 @@ inc_top.mako
 
 #content {
     width: 95%;
-    /*min-width: 875px;*/
+    min-width: 875px;
     padding: 15px;
     margin-left: auto;
     margin-right: auto;
@@ -3707,49 +3684,6 @@ viewLog.mako
 .log-filter {
     margin-top: 20px;
 }
-
-/* Some css helper classes */
-
-.top-5 {
-    margin-top: 5px;
-}
-
-.top-10 {
-	margin-top: 10px;
-}
-
-.top-15 {
-    margin-top: 15px;
-}
-
-.top-20 {
-    margin-top: 20px;
-}
-
-.top-25 {
-    margin-top: 25px;
-}
-
-.bottom-5 {
-    margin-bottom: 5px;
-}
-
-.bottom-10 {
-    margin-bottom: 10px;
-}
-
-.bottom-15 {
-    margin-bottom: 15px;
-}
-
-.bottom-20 {
-    margin-bottom: 20px;
-}
-
-.bottom-25 {
-    margin-bottom: 25px;
-}
-
 
 .ui-widget-header {
     background: rgb(255, 255, 255) url("../css/lib/images/ui-bg_flat_0_ffffff_40x100.png") 50% 50% repeat-x;
