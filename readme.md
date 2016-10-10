@@ -32,7 +32,7 @@ Automatic Video Library Manager for TV Shows. It watches for new episodes of you
 #### Dependencies
  To run Medusa from source you will need Python 2.7.10
 
-#### [![Feature Requests](https://cloud.githubusercontent.com/assets/390379/10127973/045b3a96-6560-11e5-9b20-31a2032956b2.png)](http://feathub.com/pymedusa/SickRage)
+#### [![Feature Requests](https://cloud.githubusercontent.com/assets/390379/10127973/045b3a96-6560-11e5-9b20-31a2032956b2.png)](https://github.com/pymedusa/Medusa/issues?q=is%3Aopen+is%3Aissue+label%3A%22Feature+Request%22)
 
 ##### [Medusa Issue Tracker](https://github.com/pymedusa/Medusa/issues)
 
@@ -63,4 +63,4 @@ A full list can be found here: [Link](https://github.com/pymedusa/Medusa/wiki/Me
 | Edge| last 2 versions| last 2 versions| last 2 versions
 
 #### News and Changelog
-[news.md and CHANGES.md have moved to a separate repo, click here](https://github.com/pymedusa/medusa.github.io)
+[news.md and CHANGES.md have moved to a separate repo, click here](https://cdn.pymedusa.com)
