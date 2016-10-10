@@ -7,6 +7,7 @@ import sys
 
 import medusa as app
 
+from six import text_type
 from .base import BaseRequestHandler
 from ....versionChecker import CheckVersion
 
@@ -81,7 +82,7 @@ class InfoHandler(BaseRequestHandler):
                 'minor': cur_branch_minor_db_version
             },
             'os': platform.platform(),
-            'locale': '.'.join([str(loc) for loc in app_locale]),
+            'locale': '.'.join([text_type(loc) for loc in app_locale]),
             'localUser': app_user,
             'programDir': app.PROG_DIR,
             'configFile': app.CONFIG_FILE,
