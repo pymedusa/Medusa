@@ -100,7 +100,7 @@ var startAjaxEpisodeSubtitles = function() {
                                 changeImage(subtitlesTd, 'images/subtitles/flags/' + language + '.png', language, language, 11, false);
                             }
                         } else {
-                            changeImage(subtitlesTd, 'images/subtitles/flags/unknown.png.png', language, language, 11, false);
+                            changeImage(subtitlesTd, 'images/subtitles/flags/unknown.png', language, language, 11, false);
                         }
                     }
                 } else {
