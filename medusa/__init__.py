@@ -1126,7 +1126,13 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         TRAKT_REFRESH_TOKEN = check_setting_str(CFG, 'Trakt', 'trakt_refresh_token', '', censor_log='low')
         TRAKT_REMOVE_WATCHLIST = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_watchlist', 0))
         TRAKT_REMOVE_SERIESLIST = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_serieslist', 0))
-        TRAKT_REMOVE_SHOW_FROM_APPLICATION = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_application', 0))
+
+        # Check if user has legacy setting and store value in new setting
+        if check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_sickrage') is not None:
+            TRAKT_REMOVE_SHOW_FROM_APPLICATION = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_sickrage', 0))
+        else:
+            TRAKT_REMOVE_SHOW_FROM_APPLICATION = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_application', 0))
+
         TRAKT_SYNC_WATCHLIST = bool(check_setting_int(CFG, 'Trakt', 'trakt_sync_watchlist', 0))
         TRAKT_METHOD_ADD = check_setting_int(CFG, 'Trakt', 'trakt_method_add', 0)
         TRAKT_START_PAUSED = bool(check_setting_int(CFG, 'Trakt', 'trakt_start_paused', 0))
