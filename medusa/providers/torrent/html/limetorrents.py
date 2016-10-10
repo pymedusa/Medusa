@@ -29,7 +29,7 @@ from .... import logger, tvcache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
-id_regex = re.compile(r'(?:\/)(.*)(?:-torrent-([0-9]*).html)', re.I)
+id_regex = re.compile(r'(?:\/)(.*)(?:-torrent-([0-9]*)\.html)', re.I)
 hash_regex = re.compile(r'(.*)([0-9a-f]{40})(.*)', re.I)
 
 
