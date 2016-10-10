@@ -8,6 +8,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         colorRow: true
     });
 
+    startAjaxEpisodeSubtitles();
     $.ajaxEpSubtitlesSearch();
     $.ajaxEpRedownloadSubtitle();
 
