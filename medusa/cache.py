@@ -63,7 +63,7 @@ def configure(cache_dir):
 
 
 def fallback():
+    """Memory only configuration. Used for test purposes."""
     from subliminal.cache import region as subliminal_cache
-    """Memory only configuration. USed for test purposes."""
     for region in (cache, memory_cache, subliminal_cache):
         region.configure('dogpile.cache.memory')
