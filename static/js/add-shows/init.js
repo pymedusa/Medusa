@@ -1,4 +1,5 @@
 MEDUSA.addShows.init = function() {
+    $('.ui-tabs').uiTabs();
     $('#tabs').tabs({
         collapsible: true,
         selected: (MEDUSA.info.sortArticle ? -1 : 0)

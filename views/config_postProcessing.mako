@@ -21,14 +21,13 @@
     <div id="config">
         <div id="config-content">
             <form id="configForm" action="config/postProcessing/savePostProcessing" method="post">
-                <div id="config-components">
+                <div id="config-components" class="ui-tabs">
                     <ul>
-                        ## @TODO: Fix this stupid hack
-                        <script>document.write('<li><a href="' + document.location.href + '#post-processing">Post Processing</a></li>');</script>
-                        <script>document.write('<li><a href="' + document.location.href + '#episode-naming">Episode Naming</a></li>');</script>
-                        <script>document.write('<li><a href="' + document.location.href + '#metadata">Metadata</a></li>');</script>
+	                    <li><a href="config/providers/#post-processing">Post Processing</a></li>
+	                    <li><a href="config/providers/#episode-naming">Episode Naming</a></li>
+	                    <li><a href="config/providers/#metadata">Metadata</a></li>
                     </ul>
-                    <div id="post-processing" class="component-group">
+                    <div data-tab-id="post-processing" class="component-group">
                         <div class="component-group-desc">
                             <h3>Post-Processing</h3>
                             <p>Settings that dictate how Medusa should process completed downloads.</p>
@@ -232,7 +231,7 @@
                             <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                         </fieldset>
                     </div><!-- /component-group1 //-->
-                    <div id="episode-naming" class="component-group">
+                    <div data-tab-id="episode-naming" class="component-group">
                         <div class="component-group-desc">
                             <h3>Episode Naming</h3>
                             <p>How Medusa will name and sort your episodes.</p>
@@ -1034,7 +1033,7 @@
                             <input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                         </fieldset>
                     </div><!-- /component-group2 //-->
-                    <div id="metadata" class="component-group">
+                    <div data-tab-id="metadata" class="component-group">
                         <div class="component-group-desc">
                             <h3>Metadata</h3>
                             <p>The data associated to the data. These are files associated to a TV show in the form of images and text that, when supported, will enhance the viewing experience.</p>

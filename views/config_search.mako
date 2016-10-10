@@ -12,14 +12,13 @@
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="config/search/saveSearch" method="post">
-            <div id="config-components">
+            <div id="config-components" class="ui-tabs">
                 <ul>
-                    ## @TODO: Fix this stupid hack
-                    <script>document.write('<li><a href="' + document.location.href + '#episode-search">Episode Search</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#nzb-search">NZB Search</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#torrent-search">Torrent Search</a></li>');</script>
+                    <li><a href="config/search/#episode-search">Episode Search</a></li>
+                    <li><a href="config/search/#nzb-search">NZB Search</a></li>
+                    <li><a href="config/search/#torrent-search">Torrent Search</a></li>
                 </ul>
-                <div id="episode-search">
+                <div data-tab-id="episode-search">
                         <div class="component-group-desc">
                             <h3>General Search Settings</h3>
                             <p>How to manage searching with <a href="config/providers">providers</a>.</p>
@@ -234,7 +233,7 @@
                         </fieldset>
                         </div><!-- search filters -->
                 </div><!-- /component-group1 //-->
-                <div id="nzb-search" class="component-group">
+                <div data-tab-id="nzb-search" class="component-group">
                     <div class="component-group-desc">
                         <h3>NZB Search</h3>
                         <p>How to handle NZB search results.</p>
@@ -460,7 +459,7 @@
                         </div><!-- /content_use_nzbs //-->
                     </fieldset>
                 </div><!-- /component-group2 //-->
-                <div id="torrent-search" class="component-group">
+                <div data-tab-id="torrent-search" class="component-group">
                     <div class="component-group-desc">
                         <h3>Torrent Search</h3>
                         <p>How to handle Torrent search results.</p>

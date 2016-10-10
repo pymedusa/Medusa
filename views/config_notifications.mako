@@ -15,14 +15,13 @@
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="config/notifications/saveNotifications" method="post">
-            <div id="config-components">
+            <div id="config-components" class="ui-tabs">
                 <ul>
-                    ## @TODO: Fix this stupid hack
-                    <script>document.write('<li><a href="' + document.location.href + '#home-theater-nas">Home Theater / NAS</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#devices">Devices</a></li>');</script>
-                    <script>document.write('<li><a href="' + document.location.href + '#social">Social</a></li>');</script>
+                    <li><a href="config/providers/#home-theater-nas">Home Theater</a></li>
+                    <li><a href="config/providers/#devices">Devices</a></li>
+                    <li><a href="config/providers/#social">Social</a></li>
                 </ul>
-                <div id="home-theater-nas">
+                <div data-tab-id="home-theater-nas">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-kodi" title="KODI"></span>
                         <h3><a href="${anon_url('http://kodi.tv/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">KODI</a></h3>
@@ -652,7 +651,7 @@
                         </fieldset>
                     </div><!-- /component-group //-->
                 </div><!-- #home-theater-nas //-->
-                <div id="devices">
+                <div data-tab-id="devices">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-growl" title="Growl"></span>
                         <h3><a href="${anon_url('http://growl.info/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Growl</a></h3>
@@ -1409,7 +1408,7 @@
                         </fieldset>
                     </div><!-- /telegram component-group //-->
                 </div><!-- #devices //-->
-                <div id="social">
+                <div data-tab-id="social">
                     <div class="component-group-desc">
                         <span class="icon-notifiers-twitter" title="Twitter"></span>
                         <h3><a href="${anon_url('http://www.twitter.com/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Twitter</a></h3>

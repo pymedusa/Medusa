@@ -16,10 +16,11 @@
     <h1 class="title">${title}</h1>
 % endif
 <div id="newShowPortal">
-    <div id="config-components">
-        ## @TODO: Fix this stupid hack
-        <script>document.write('<ul><li><a href="' + document.location.href + '#core-component-group1">Add New Show</a></li></ul>')</script>
-        <div id="core-component-group1" class="tab-pane active component-group">
+    <div id="config-components" class="ui-tabs">
+        <ul>
+            <li><a href="addShow/newShow/#add-new-show">Add New Show</a></li>
+        </ul>
+        <div data-tab-id="add-new-show" class="tab-pane active component-group">
             <div id="displayText"></div>
             <br>
             <form id="addShowForm" method="post" action="addShows/addNewShow" accept-charset="utf-8">
