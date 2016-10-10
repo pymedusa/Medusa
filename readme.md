@@ -6,7 +6,13 @@
 Automatic Video Library Manager for TV Shows. It watches for new episodes of your favorite shows, and when they are posted it does its magic.
 
 #### Features
+ - Manual search episodes (you choose what to snatch based on all kind of info: provider, seeds, release group)
+ - Manual search for subtitles (useful when subtitle has low score because of typo in filename or alternative title)
+ - Uses 'guessit' library to parse and enrich existing info (more precise than regexes)
+ - Improved Anime shows support
  - Kodi/XBMC library updates, poster/banner/fanart downloads, and NFO/TBN generation
+ - Sync your shows with Trakt. Keep shows/episode updated in Trakt watchlist 
+ - Option to clean Kodi library when replacing existing files
  - Configurable automatic episode renaming, sorting, and other processing
  - Easily see what episodes you're missing, are airing soon, and more
  - Automatic torrent/nzb searching, downloading, and processing at the qualities you want
@@ -23,7 +29,6 @@ Automatic Video Library Manager for TV Shows. It watches for new episodes of you
  - Improved failed download handling
  - DupeKey/DupeScore for NZBGet 12+
  - Real SSL certificate validation
- - Supports Anime shows
 
 #### Screenshots
 - [Desktop (Full-HD)](http://imgur.com/a/4fpBk)
