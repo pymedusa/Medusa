@@ -265,6 +265,7 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
     video = get_video(tv_episode, video_path, subtitles_dir=subtitles_dir, subtitles=False,
                       embedded_subtitles=False, release_name=release_name)
     pool = get_provider_pool()
+    pool.discarded_providers.clear()
     subtitles_list = pool.list_subtitles(video, languages)
     scored_subtitles = score_subtitles(subtitles_list, video)[:limit]
     for subtitle, _ in scored_subtitles:
