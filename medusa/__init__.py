@@ -1128,7 +1128,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         TRAKT_REMOVE_SERIESLIST = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_serieslist', 0))
 
         # Check if user has legacy setting and store value in new setting
-        if check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_sickrage') is not None:
+        if check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_sickrage', None) is not None:
             TRAKT_REMOVE_SHOW_FROM_APPLICATION = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_sickrage', 0))
         else:
             TRAKT_REMOVE_SHOW_FROM_APPLICATION = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_application', 0))
