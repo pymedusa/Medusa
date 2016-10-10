@@ -4,7 +4,7 @@ var startAjaxEpisodeSubtitles = function() {
     var searchTypesList = ['.epSubtitlesSearch', '.epSubtitlesSearchPP', '.epRedownloadSubtitle', '.epSearch', '.epRetry', '.epManualSearch'];
     var subtitlesResultModal = $('#manualSubtitleSearchModal');
     var subtitlesMulti = MEDUSA.info.subtitlesMulti;
-    var loadingSpinner = 'images/loading16' + MEDUSA.info.themeSpinner + '.gif';
+    var loadingSpinner = 'images/loading32' + MEDUSA.info.themeSpinner + '.gif';
 
     function disableAllSearches() {
         // Disables all other searches while manual searching for subtitles
