@@ -854,11 +854,11 @@ class Home(WebRoot):
                     anime.append(show)
                 else:
                     shows.append(show)
-            sorted_show_lists = [['Shows', sorted(shows, lambda x, y: cmp(titler(x.name), titler(y.name)))],
-                               ['Anime', sorted(anime, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+            sorted_show_lists = [['Shows', sorted(shows, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))],
+                               ['Anime', sorted(anime, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))]]
         else:
             sorted_show_lists = [
-                ['Shows', sorted(app.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+                ['Shows', sorted(app.showList, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))]]
 
         bwl = None
         if show_obj.is_anime:
