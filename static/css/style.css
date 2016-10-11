@@ -3775,9 +3775,24 @@ css helper classes
 @media screen and (min-width: 0px) and (max-width: 768px) {
   .full-width { display: none; }  /* show it on small screens */
   .mobile { display: block;}
+  .mobile .ui-icon {display: inline-block;}
+  .dropdown-menu-custom > li > a {
+      padding: 15px 36px 15px 5px;
+      border-bottom-style: solid;
+      border-bottom-width: 1px;
+  }
+  .mobile > ul > li > a {
+      padding-top: 15px;
+      padding-bottom: 15px;
+      padding-left: 8px;
+  }
+  .mobile .img-align {
+      width: 25px;
+      float: left;
+  }
 }
 
 @media screen and (min-width: 769px) {
-  .full-width { display: block; }  /* show it on small screens */
-  .mobile { display: none;}
+  .full-width {display: block; }  /* show it on small screens */
+  .mobile {display: none;}
 }

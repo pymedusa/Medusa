@@ -55,7 +55,7 @@
                           <% inner_first = False %>
                       % endfor
                   % else:
-                      <li><a href="${menuItem['path']}" class="${('', ' confirm ' + menuItem.get('class', ''))['confirm' in menuItem]}">${('', '<span class="' + icon_class + '"></span> ')[bool(icon_class)]}${menuItem['title']}</a></li>
+                      <li><a href="${menuItem['path']}" class="${('', ' confirm ' + menuItem.get('class', ''))['confirm' in menuItem]}">${('', '<div class="img-align"><span class="' + icon_class + '"></span></div>')[bool(icon_class)]}${menuItem['title']}</a></li>
                       <% first = False %>
                   % endif
             % endif
