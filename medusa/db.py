@@ -127,13 +127,16 @@ class DBConnection(object):
 
     def checkDBVersion(self):
         """
-        Fetch major database version
+        Fetch major and minor database version
 
         :return: Integer indicating current DB major version
         """
         if self.hasColumn('db_version', 'db_minor_version'):
             warnings.warn('Deprecated: Use the version property', DeprecationWarning)
-        return self.check_db_major_version(), self.check_db_minor_version()
+        db_minor_version = self.check_db_minor_version()
+        if db_minor_version is None:
+            db_minor_version = 0
+        return self.check_db_major_version(), db_minor_version
 
     def check_db_major_version(self):
         """
