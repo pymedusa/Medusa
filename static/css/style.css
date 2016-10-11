@@ -6,6 +6,12 @@ strong.warning {
 inc_top.mako
 ========================================================================== */
 
+.header {
+    display: block;
+    clear: right;
+    margin-top: 15px;
+}
+
 .navbaricon {
     margin-top: -15px;
     margin-bottom: -15px;
@@ -188,16 +194,16 @@ inc_top.mako
 }
 
 #SubMenu {
-    padding-right: 20px;
-    clear: both;
     font-size: 12px;
     float: right;
+    max-width: 1024px;
 }
 
 .upgrade-notification {
     width: 600px;
     text-align: center;
-    margin: 50px auto 0;
+    margin-top: 20px;
+    display: inline-block;
 }
 
 [class^="menu-icon-"],
@@ -207,7 +213,6 @@ inc_top.mako
     width: 16px;
     display: inline-block;
     position: relative;
-    top: 2px;
     float: left;
 }
 
@@ -2610,6 +2615,17 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     padding: 4px 36px 4px 20px;
 }
 
+.dropdown-menu-custom > li > a {
+	padding: 15px 36px 15px 5px;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-bottom-color: darkgrey;
+}
+
+.dropdown-menu-custom > li:last-child > a {
+    border-bottom-style: none;
+}
+
 .dropdown-menu {
     background-color: rgb(245, 241, 228);
     border: 1px solid rgba(0, 0, 0, 0.15);
@@ -3707,4 +3723,61 @@ viewLog.mako
 /* Because the H1 has a margin of 20px withing the column col-sm-2 of 20px we need to configure the same for the columns which are used for the filter inputs. */
 .log-filter {
     margin-top: 20px;
+}
+
+/* ========================================================================
+css helper classes
+===========================================================================*/
+/* Some css helper classes */
+
+.top-5 {
+    margin-top: 5px;
+}
+
+.top-10 {
+    margin-top: 10px;
+}
+
+.top-15 {
+    margin-top: 15px;
+}
+
+.top-20 {
+    margin-top: 20px;
+}
+
+.top-25 {
+    margin-top: 25px;
+}
+
+.bottom-5 {
+    margin-bottom: 5px;
+}
+
+.bottom-10 {
+    margin-bottom: 10px;
+}
+
+.bottom-15 {
+    margin-bottom: 15px;
+}
+
+.bottom-20 {
+    margin-bottom: 20px;
+}
+
+.bottom-25 {
+    margin-bottom: 25px;
+}
+
+/* Submenu */
+
+@media screen and (min-width: 0px) and (max-width: 768px) {
+  .full-width { display: none; }  /* show it on small screens */
+  .mobile { display: block;}
+}
+
+@media screen and (min-width: 769px) {
+  .full-width { display: block; }  /* show it on small screens */
+  .mobile { display: none;}
 }
