@@ -2431,8 +2431,11 @@ div.blackwhitelist.manual {
 bootstrap Overrides
 ========================================================================== */
 
+#vue-wrap {
+        padding-top: 60px;
+}
+
 body {
-    padding-top: 60px;
     overflow-y: scroll;
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     color: rgb(0, 0, 0);
