@@ -403,7 +403,7 @@ class GitUpdateManager(UpdateManager):
 
     def get_cur_version(self):
         if self._cur_commit_hash or self._find_installed_version():
-            self._cur_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 {}'.format(self._cur_commit_hash))[0]
+            self._cur_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 {0}'.format(self._cur_commit_hash))[0]
         return self._cur_version
 
     def get_newest_version(self):
