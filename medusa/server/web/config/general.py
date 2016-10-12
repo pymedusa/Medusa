@@ -12,7 +12,6 @@ from ..core import PageTemplate
 from .... import config, github_client, helpers, logger, ui
 from ....common import Quality, WANTED
 from ....helper.common import try_int
-from ....helper.encoding import ek
 
 
 @route('/config/general(/?.*)')
@@ -123,7 +122,7 @@ class ConfigGeneral(Config):
 
         if not config.change_LOG_DIR(log_dir):
             results += ['Unable to create directory {dir}, '
-                        'log directory not changed.'.format(dir=ek(os.path.normpath, log_dir))]
+                        'log directory not changed.'.format(dir=os.path.normpath(log_dir))]
 
         # Reconfigure the logger
         logger.reconfigure()
@@ -160,11 +159,11 @@ class ConfigGeneral(Config):
 
         if not config.change_HTTPS_CERT(https_cert):
             results += ['Unable to create directory {dir}, '
-                        'https cert directory not changed.'.format(dir=ek(os.path.normpath, https_cert))]
+                        'https cert directory not changed.'.format(dir=os.path.normpath(https_cert))]
 
         if not config.change_HTTPS_KEY(https_key):
             results += ['Unable to create directory {dir}, '
-                        'https key directory not changed.'.format(dir=ek(os.path.normpath, https_key))]
+                        'https key directory not changed.'.format(dir=os.path.normpath(https_key))]
 
         app.HANDLE_REVERSE_PROXY = config.checkbox_to_value(handle_reverse_proxy)
 
@@ -182,6 +181,6 @@ class ConfigGeneral(Config):
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:
-            ui.notifications.message('Configuration Saved', ek(os.path.join, app.CONFIG_FILE))
+            ui.notifications.message('Configuration Saved', os.path.join(app.CONFIG_FILE))
 
         return self.redirect('/config/general/')

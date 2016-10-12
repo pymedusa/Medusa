@@ -22,7 +22,6 @@ import os
 
 import medusa as app
 from .. import common, logger
-from ..helper.encoding import ek
 
 
 def diagnose():
@@ -119,7 +118,7 @@ class Notifier(object):
 
         # Can't make this a global constant because PROG_DIR isn't available
         # when the module is imported.
-        icon_path = ek(os.path.join, app.PROG_DIR, 'gui', 'slick', 'images', 'ico', 'favicon-120.png')
+        icon_path = os.path.join(app.PROG_DIR, 'gui', 'slick', 'images', 'ico', 'favicon-120.png')
 
         # If the session bus can't be acquired here a bunch of warning messages
         # will be printed but the call to show() will still return True.

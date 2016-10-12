@@ -43,7 +43,6 @@ from .config import (
 from .databases import cache_db, failed_db, main_db
 from .github_client import authenticate
 from .helper import exceptions
-from .helper.encoding import ek
 from .indexers import indexer_api
 from .indexers.indexer_exceptions import (
     indexer_attributenotfound, indexer_episodenotfound, indexer_error, indexer_exception,
@@ -719,7 +718,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         SEEDERS_LEECHERS_IN_NOTIFY = check_setting_int(CFG, 'General', 'seeders_leechers_in_notify', 1)
         ACTUAL_LOG_DIR = check_setting_str(CFG, 'General', 'log_dir', 'Logs')
-        LOG_DIR = ek(os.path.normpath, ek(os.path.join, DATA_DIR, ACTUAL_LOG_DIR))
+        LOG_DIR = os.path.normpath(os.path.join(DATA_DIR, ACTUAL_LOG_DIR))
         LOG_NR = check_setting_int(CFG, 'General', 'log_nr', 5)  # Default to 5 backup file (application.log.x)
         LOG_SIZE = check_setting_float(CFG, 'General', 'log_size', 10.0)  # Default to max 10MB per logfile
 
@@ -762,8 +761,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             ACTUAL_CACHE_DIR = 'cache'
 
         # unless they specify, put the cache dir inside the data dir
-        if not ek(os.path.isabs, ACTUAL_CACHE_DIR):
-            CACHE_DIR = ek(os.path.join, DATA_DIR, ACTUAL_CACHE_DIR)
+        if not os.path.isabs(ACTUAL_CACHE_DIR):
+            CACHE_DIR = os.path.join(DATA_DIR, ACTUAL_CACHE_DIR)
         else:
             CACHE_DIR = ACTUAL_CACHE_DIR
 
@@ -1316,7 +1315,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                 if provider.enable_cookies:
                     load_provider_setting(CFG, provider, 'string', 'cookies', '', censor_log='low')
 
-        if not ek(os.path.isfile, CONFIG_FILE):
+        if not os.path.isfile(CONFIG_FILE):
             logger.log(u"Unable to find '" + CONFIG_FILE + "', all settings will be default!", logger.DEBUG)
             save_config()
 
@@ -1446,31 +1445,31 @@ def restore_cache_folder(cache_folder):
     :param cache_folder:
     :type cache_folder: string
     """
-    restore_folder = ek(os.path.join, DATA_DIR, 'restore')
-    if not ek(os.path.exists, restore_folder) or not ek(os.path.exists, ek(os.path.join, restore_folder, 'cache')):
+    restore_folder = os.path.join(DATA_DIR, 'restore')
+    if not os.path.exists(restore_folder) or not os.path.exists(os.path.join(restore_folder, 'cache')):
         return
 
     try:
         def restore_cache(src_folder, dest_folder):
             def path_leaf(path):
-                head, tail = ek(os.path.split, path)
-                return tail or ek(os.path.basename, head)
+                head, tail = os.path.split(path)
+                return tail or os.path.basename(head)
 
             try:
-                if ek(os.path.isdir, dest_folder):
+                if os.path.isdir(dest_folder):
                     bak_filename = '{0}-{1}'.format(path_leaf(dest_folder), datetime.datetime.now().strftime('%Y%m%d_%H%M%S'))
-                    shutil.move(dest_folder, ek(os.path.join, ek(os.path.dirname, dest_folder), bak_filename))
+                    shutil.move(dest_folder, os.path.join(os.path.dirname(dest_folder), bak_filename))
 
                 shutil.move(src_folder, dest_folder)
                 logger.log(u"Restore: restoring cache successful", logger.INFO)
             except OSError as e:
                 logger.log(u"Restore: restoring cache failed: {0!r}".format(e), logger.ERROR)
 
-        restore_cache(ek(os.path.join, restore_folder, 'cache'), cache_folder)
+        restore_cache(os.path.join(restore_folder, 'cache'), cache_folder)
     finally:
         helpers.remove_folder(restore_folder)
         for name in ('mako', 'sessions', 'indexers', 'rss'):
-            folder_path = ek(os.path.join, cache_folder, name)
+            folder_path = os.path.join(cache_folder, name)
             helpers.remove_folder(folder_path)
 
 

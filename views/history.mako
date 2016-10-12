@@ -10,7 +10,6 @@
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED, DOWNLOADED, SUBTITLED
     from medusa.common import Quality, statusStrings, Overview
     from medusa.show.History import History
-    from medusa.helper.encoding import ek
     from medusa.providers.GenericProvider import GenericProvider
 %>
 <%block name="content">
@@ -70,7 +69,7 @@
                 % if composite.status == SUBTITLED:
                     <img width="16" height="11" style="vertical-align:middle;" src="images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                 % endif
-                    <span style="cursor: help; vertical-align:middle;" title="${ek(os.path.basename, hItem.resource)}">${statusStrings[composite.status]}</span>
+                    <span style="cursor: help; vertical-align:middle;" title="${os.path.basename(hItem.resource)}">${statusStrings[composite.status]}</span>
                     % if hItem.proper_tags:
                         <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem.proper_tags.replace('|', ', ')}"/>
                     % endif
@@ -140,7 +139,7 @@
                         % if composite.status in [SNATCHED, FAILED]:
                             <% provider = providers.getProviderClass(GenericProvider.make_id(cur_action.provider)) %>
                             % if provider is not None:
-                                <img src="images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" alt="${provider.name}" style="cursor: help;" title="${provider.name}: ${ek(os.path.basename, cur_action.resource)}"/>
+                                <img src="images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" alt="${provider.name}" style="cursor: help;" title="${provider.name}: ${os.path.basename(cur_action.resource)}"/>
                                 % if cur_action.proper_tags:
                                     <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${cur_action.proper_tags.replace('|', ', ')}"/>
                                 % endif
@@ -155,9 +154,9 @@
                         <% composite = Quality.splitCompositeStatus(int(cur_action.action)) %>
                         % if composite.status in [DOWNLOADED, ARCHIVED]:
                             % if cur_action.provider != "-1":
-                                <span style="cursor: help;" title="${ek(os.path.basename, cur_action.resource)}"><i>${cur_action.provider}</i></span>
+                                <span style="cursor: help;" title="${os.path.basename(cur_action.resource)}"><i>${cur_action.provider}</i></span>
                             % else:
-                                <span style="cursor: help;" title="${ek(os.path.basename, cur_action.resource)}"><i>Unknown</i></span>
+                                <span style="cursor: help;" title="${os.path.basename(cur_action.resource)}"><i>Unknown</i></span>
                             % endif
                         % endif
                     % endfor
@@ -167,7 +166,7 @@
                     % for cur_action in sorted(hItem.actions):
                         <% composite = Quality.splitCompositeStatus(int(cur_action.action)) %>
                         % if composite.status == SUBTITLED:
-                            <img src="images/subtitles/${cur_action.provider}.png" width="16" height="16" style="vertical-align:middle;" alt="${cur_action.provider}" title="${cur_action.provider.capitalize()}: ${ek(os.path.basename, cur_action.resource)}"/>
+                            <img src="images/subtitles/${cur_action.provider}.png" width="16" height="16" style="vertical-align:middle;" alt="${cur_action.provider}" title="${cur_action.provider.capitalize()}: ${os.path.basename(cur_action.resource)}"/>
                             <span style="vertical-align:middle;"> / </span>
                             <img width="16" height="11" style="vertical-align:middle;" src="images/subtitles/flags/${cur_action.resource}.png" onError="this.onerror=null;this.src='images/flags/unknown.png';" style="vertical-align: middle !important;">
                             &nbsp;

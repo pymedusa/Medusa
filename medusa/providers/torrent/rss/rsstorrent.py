@@ -26,7 +26,6 @@ from bencode import bdecode
 import medusa as app
 from ..TorrentProvider import TorrentProvider
 from .... import helpers, logger, tvcache
-from ....helper.encoding import ek
 from ....helper.exceptions import ex
 
 
@@ -114,7 +113,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return [x for x in providers_set if x]
 
     def image_name(self):
-        if ek(os.path.isfile, ek(os.path.join, app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
+        if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'torrentrss.png'
 
@@ -199,7 +198,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
     @staticmethod
     def dump_html(data):
-        dump_name = ek(os.path.join, app.CACHE_DIR, 'custom_torrent.html')
+        dump_name = os.path.join(app.CACHE_DIR, 'custom_torrent.html')
 
         try:
             file_out = io.open(dump_name, 'wb')

@@ -9,7 +9,6 @@
     from medusa import metadata
     from medusa.metadata.generic import GenericMetadata
     from medusa import naming
-    from medusa.helper.encoding import ek
 %>
 <%block name="content">
 <div id="content960">
@@ -249,7 +248,7 @@
                                                 % if cur_preset == app.NAMING_PATTERN:
                                                     <% is_custom = False %>
                                                 % endif
-                                                <option id="${cur_preset}" ${'selected="selected"' if app.NAMING_PATTERN == cur_preset else ''}>${ek(os.path.join, tmp['dir'], tmp['name'])}</option>
+                                                <option id="${cur_preset}" ${'selected="selected"' if app.NAMING_PATTERN == cur_preset else ''}>${os.path.join(tmp['dir'], tmp['name'])}</option>
                                             % endfor
                                             <option id="${app.NAMING_PATTERN}" ${'selected="selected"' if is_custom else ''}>Custom...</option>
                                         </select>
@@ -489,7 +488,7 @@
                                                     % if cur_preset == app.NAMING_ABD_PATTERN:
                                                         <% is_abd_custom = False %>
                                                     % endif
-                                                    <option id="${cur_preset}" ${'selected="selected"' if app.NAMING_ABD_PATTERN == cur_preset else ''}>${ek(os.path.join, tmp['dir'], tmp['name'])}</option>
+                                                    <option id="${cur_preset}" ${'selected="selected"' if app.NAMING_ABD_PATTERN == cur_preset else ''}>${os.path.join(tmp['dir'], tmp['name'])}</option>
                                                 % endfor
                                                 <option id="${app.NAMING_ABD_PATTERN}" ${'selected="selected"' if is_abd_custom else ''}>Custom...</option>
                                             </select>
@@ -660,7 +659,7 @@
                                                     % if cur_preset == app.NAMING_SPORTS_PATTERN:
                                                         <% is_sports_custom = False %>
                                                     % endif
-                                                    <option id="${cur_preset}" ${'selected="selected"' if app.NAMING_SPORTS_PATTERN == cur_preset else ''}>${ek(os.path.join, tmp['dir'], tmp['name'])}</option>
+                                                    <option id="${cur_preset}" ${'selected="selected"' if app.NAMING_SPORTS_PATTERN == cur_preset else ''}>${os.path.join(tmp['dir'], tmp['name'])}</option>
                                                 % endfor
                                                 <option id="${app.NAMING_SPORTS_PATTERN}" ${'selected="selected"' if is_sports_custom else ''}>Custom...</option>
                                             </select>
@@ -832,7 +831,7 @@
                                                     % if cur_preset == app.NAMING_ANIME_PATTERN:
                                                         <% is_anime_custom = False %>
                                                     % endif
-                                                    <option id="${cur_preset}" ${'selected="selected"' if cur_preset == app.NAMING_ANIME_PATTERN else ''}>${ek(os.path.join, tmp['dir'], tmp['name'])}</option>
+                                                    <option id="${cur_preset}" ${'selected="selected"' if cur_preset == app.NAMING_ANIME_PATTERN else ''}>${os.path.join(tmp['dir'], tmp['name'])}</option>
                                                 % endfor
                                                 <option id="${app.NAMING_ANIME_PATTERN}" ${'selected="selected"' if is_anime_custom else ''}>Custom...</option>
                                             </select>

@@ -43,7 +43,6 @@ from ....helper.common import (
     dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
     timeFormat, try_int,
 )
-from ....helper.encoding import ek
 from ....helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....helper.quality import get_quality_string
 from ....logger import filter_logline, read_loglines
@@ -560,7 +559,7 @@ def _get_root_dirs():
     for root_dir in root_dirs:
         valid = 1
         try:
-            ek(os.listdir, root_dir)
+            os.listdir(root_dir)
         except Exception:
             valid = 0
         default = 0
@@ -1049,8 +1048,8 @@ class CMD_History(ApiCall):
                     'indexerid': cur_item.show_id,
                     'provider': cur_item.provider,
                     'quality': get_quality_string(composite.quality),
-                    'resource': ek(os.path.basename, cur_item.resource),
-                    'resource_path': ek(os.path.dirname, cur_item.resource),
+                    'resource': os.path.basename(cur_item.resource),
+                    'resource_path': os.path.dirname(cur_item.resource),
                     'season': cur_item.season,
                     'show_name': cur_item.show_name,
                     'status': statusStrings[composite.status],
@@ -1322,7 +1321,7 @@ class CMD_AddRootDir(ApiCall):
         index = 0
 
         # disallow adding/setting an invalid dir
-        if not ek(os.path.isdir, self.location):
+        if not os.path.isdir(self.location):
             return _responds(RESULT_FAILURE, msg="Location is invalid")
 
         root_dirs = []
@@ -1934,7 +1933,7 @@ class CMD_ShowAddExisting(ApiCall):
         if show_obj:
             return _responds(RESULT_FAILURE, msg="An existing indexerid already exists in the database")
 
-        if not ek(os.path.isdir, self.location):
+        if not os.path.isdir(self.location):
             return _responds(RESULT_FAILURE, msg='Not a valid location')
 
         indexer_name = None
@@ -2039,7 +2038,7 @@ class CMD_ShowAddNew(ApiCall):
             else:
                 return _responds(RESULT_FAILURE, msg="Root directory is not set, please provide a location")
 
-        if not ek(os.path.isdir, self.location):
+        if not os.path.isdir(self.location):
             return _responds(RESULT_FAILURE, msg="'" + self.location + "' is not a valid location")
 
         # use default quality as a fail-safe
@@ -2107,7 +2106,7 @@ class CMD_ShowAddNew(ApiCall):
         indexer = indexer_result['data']['results'][0]['indexer']
 
         # moved the logic check to the end in an attempt to eliminate empty directory being created from previous errors
-        show_path = ek(os.path.join, self.location, sanitize_filename(indexer_name))
+        show_path = os.path.join(self.location, sanitize_filename(indexer_name))
 
         # don't create show dir if config says not to
         if app.ADD_SHOWS_WO_DIR:
@@ -2163,9 +2162,9 @@ class CMD_ShowCache(ApiCall):
         has_poster = 0
         has_banner = 0
 
-        if ek(os.path.isfile, cache_obj.poster_path(show_obj.indexerid)):
+        if os.path.isfile(cache_obj.poster_path(show_obj.indexerid)):
             has_poster = 1
-        if ek(os.path.isfile, cache_obj.banner_path(show_obj.indexerid)):
+        if os.path.isfile(cache_obj.banner_path(show_obj.indexerid)):
             has_banner = 1
 
         return _responds(RESULT_SUCCESS, {"poster": has_poster, "banner": has_banner})

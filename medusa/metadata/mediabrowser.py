@@ -24,7 +24,6 @@ import medusa as app
 from six import iteritems, string_types
 from .. import helpers, logger
 from ..helper.common import dateFormat, episode_num, replace_extension
-from ..helper.encoding import ek
 from ..helper.exceptions import ShowNotFoundException
 from ..metadata import generic
 
@@ -112,10 +111,10 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         ep_obj: a TVEpisode object to get the path for
         """
 
-        if ek(os.path.isfile, ep_obj.location):
-            xml_file_name = replace_extension(ek(os.path.basename, ep_obj.location), self._ep_nfo_extension)
-            metadata_dir_name = ek(os.path.join, ek(os.path.dirname, ep_obj.location), 'metadata')
-            xml_file_path = ek(os.path.join, metadata_dir_name, xml_file_name)
+        if os.path.isfile(ep_obj.location):
+            xml_file_name = replace_extension(os.path.basename(ep_obj.location), self._ep_nfo_extension)
+            metadata_dir_name = os.path.join(os.path.dirname(ep_obj.location), 'metadata')
+            xml_file_path = os.path.join(metadata_dir_name, xml_file_name)
         else:
             logger.log(u'Episode location doesn\'t exist: {path}'.format
                        (path=ep_obj.location), logger.DEBUG)
@@ -132,10 +131,10 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         ep_obj: a TVEpisode object to get the path from
         """
 
-        if ek(os.path.isfile, ep_obj.location):
-            tbn_file_name = replace_extension(ek(os.path.basename, ep_obj.location), 'jpg')
-            metadata_dir_name = ek(os.path.join, ek(os.path.dirname, ep_obj.location), 'metadata')
-            tbn_file_path = ek(os.path.join, metadata_dir_name, tbn_file_name)
+        if os.path.isfile(ep_obj.location):
+            tbn_file_name = replace_extension(os.path.basename(ep_obj.location), 'jpg')
+            metadata_dir_name = os.path.join(os.path.dirname(ep_obj.location), 'metadata')
+            tbn_file_path = os.path.join(metadata_dir_name, tbn_file_name)
         else:
             return None
 
@@ -149,8 +148,8 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         If no season folder exists, None is returned
         """
 
-        dir_list = [x for x in ek(os.listdir, show_obj.location) if
-                    ek(os.path.isdir, ek(os.path.join, show_obj.location, x))]
+        dir_list = [x for x in os.listdir(show_obj.location) if
+                    os.path.isdir(os.path.join(show_obj.location, x))]
 
         season_dir_regex = r'^Season\s+(\d+)$'
 
@@ -182,7 +181,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         logger.log(u'Using {path}/folder.jpg as season dir for season {season_num}'.format
                    (path=season_dir, season_num=season), logger.DEBUG)
 
-        return ek(os.path.join, show_obj.location, season_dir, 'folder.jpg')
+        return os.path.join(show_obj.location, season_dir, 'folder.jpg')
 
     @staticmethod
     def get_season_banner_path(show_obj, season):
@@ -192,8 +191,8 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         If no season folder exists, None is returned
         """
 
-        dir_list = [x for x in ek(os.listdir, show_obj.location) if
-                    ek(os.path.isdir, ek(os.path.join, show_obj.location, x))]
+        dir_list = [x for x in os.listdir(show_obj.location) if
+                    os.path.isdir(os.path.join(show_obj.location, x))]
 
         season_dir_regex = r'^Season\s+(\d+)$'
 
@@ -225,7 +224,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         logger.log(u'Using {path}/banner.jpg as season dir for season {season_num}'.format
                    (path=season_dir, season_num=season), logger.DEBUG)
 
-        return ek(os.path.join, show_obj.location, season_dir, 'banner.jpg')
+        return os.path.join(show_obj.location, season_dir, 'banner.jpg')
 
     def _show_data(self, show_obj):
         """

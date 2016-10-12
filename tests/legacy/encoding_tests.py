@@ -8,7 +8,7 @@ import os.path
 import unittest
 
 import medusa as app
-from medusa import ek, ex
+from medusa import ex
 from medusa.helper.common import sanitize_filename
 from six import text_type
 
@@ -34,7 +34,7 @@ class EncodingTests(unittest.TestCase):
 
         for test in strings:
             try:
-                show_dir = ek(os.path.join, root_dir, sanitize_filename(test))
+                show_dir = os.path.join(root_dir, sanitize_filename(test))
                 self.assertTrue(isinstance(show_dir, text_type))
             except Exception as error:  # pylint: disable=broad-except
                 ex(error)

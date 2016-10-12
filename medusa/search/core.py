@@ -29,7 +29,6 @@ import requests
 from .. import clients, common, db, failed_history, helpers, history, logger, notifiers, nzbSplitter, nzbget, sab, show_name_helpers, ui
 from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 from ..helper.common import enabled_providers, episode_num
-from ..helper.encoding import ek
 from ..helper.exceptions import AuthException, ex
 from ..providers.GenericProvider import GenericProvider
 
@@ -53,7 +52,7 @@ def _downloadResult(result):
     elif result.resultType == "nzbdata":
 
         # get the final file path to the nzb
-        fileName = ek(os.path.join, app.NZB_DIR, result.name + ".nzb")
+        fileName = os.path.join(app.NZB_DIR, result.name + ".nzb")
 
         logger.log(u"Saving NZB to " + fileName)
 
@@ -61,7 +60,7 @@ def _downloadResult(result):
 
         # save the data to disk
         try:
-            with ek(open, fileName, 'w') as fileOut:
+            with open(fileName, 'w') as fileOut:
                 fileOut.write(result.extraInfo[0])
 
             helpers.chmodAsParent(fileName)

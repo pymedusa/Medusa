@@ -16,7 +16,7 @@ from mako.runtime import UNDEFINED
 from mako.template import Template as MakoTemplate
 import medusa as app
 from requests.compat import urljoin
-from six import iteritems
+from six import binary_type, iteritems, text_type
 from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
 from tornado.gen import coroutine
@@ -28,7 +28,6 @@ from ...api.v1.core import function_mapper
 from .... import (
     classes, db, helpers, logger, network_timezones, ui
 )
-from ....helper.encoding import ek
 from ....media.ShowBanner import ShowBanner
 from ....media.ShowFanArt import ShowFanArt
 from ....media.ShowNetworkLogo import ShowNetworkLogo
@@ -47,9 +46,9 @@ def get_lookup():
     global mako_path  # pylint: disable=global-statement
 
     if mako_path is None:
-        mako_path = ek(os.path.join, app.PROG_DIR, 'views/')
+        mako_path = os.path.join(app.PROG_DIR, 'views/')
     if mako_cache is None:
-        mako_cache = ek(os.path.join, app.CACHE_DIR, 'mako')
+        mako_cache = os.path.join(app.CACHE_DIR, 'mako')
     if mako_lookup is None:
         use_strict = app.BRANCH and app.BRANCH != 'master'
         mako_lookup = TemplateLookup(directories=[mako_path],
@@ -266,6 +265,8 @@ class WebHandler(BaseHandler):
             for arg, value in iteritems(kwargs):
                 if len(value) == 1:
                     kwargs[arg] = value[0]
+                if isinstance(kwargs[arg], binary_type):
+                    kwargs[arg] = text_type(kwargs[arg], 'utf-8')
 
             result = function(**kwargs)
             return result

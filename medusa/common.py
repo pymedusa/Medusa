@@ -31,7 +31,6 @@ from hachoir_metadata import extractMetadata
 from hachoir_parser import createParser
 from six import PY3
 from six.moves import reduce
-from .helper.encoding import ek
 from .numdict import NumDict
 from .recompiled import tags
 from .tagger.episode import EpisodeTags
@@ -51,14 +50,7 @@ INSTANCE_ID = str(uuid.uuid1())
 USER_AGENT = u'Medusa-Rage/{version}({system}; {release}; {instance})'.format(
     version=u'0.0.1', system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
-UA_SETTINGS.DB = ek(
-    path.abspath, ek(
-        path.join, ek(
-            path.dirname, __file__
-        ),
-        '../lib/fake_useragent/ua.json'
-    )
-)
+UA_SETTINGS.DB = path.abspath(path.join(path.dirname(__file__), '../lib/fake_useragent/ua.json'))
 UA_POOL = UserAgent()
 if SPOOF_USER_AGENT:
     USER_AGENT = UA_POOL.random
@@ -323,7 +315,7 @@ class Quality(object):
         if not name:
             return Quality.UNKNOWN
         else:
-            name = ek(path.basename, name)
+            name = path.basename(name)
 
         result = None
         ep = EpisodeTags(name)
@@ -459,7 +451,7 @@ class Quality(object):
         if not height:
             return Quality.UNKNOWN
 
-        base_filename = ek(path.basename, filename)
+        base_filename = path.basename(filename)
         bluray = re.search(r"blue?-?ray|hddvd|b[rd](rip|mux)", base_filename, re.I) is not None
         webdl = re.search(r"web.?dl|web(rip|mux|hd)", base_filename, re.I) is not None
 

@@ -25,7 +25,6 @@ import medusa as app
 from six import string_types
 from .. import helpers, logger
 from ..helper.common import dateFormat, episode_num, replace_extension
-from ..helper.encoding import ek
 from ..helper.exceptions import ShowNotFoundException, ex
 from ..metadata import mediabrowser
 
@@ -378,13 +377,13 @@ class Mede8erMetadata(mediabrowser.MediaBrowserMetadata):
             return False
 
         nfo_file_path = self.get_show_file_path(show_obj)
-        nfo_file_dir = ek(os.path.dirname, nfo_file_path)
+        nfo_file_dir = os.path.dirname(nfo_file_path)
 
         try:
-            if not ek(os.path.isdir, nfo_file_dir):
+            if not os.path.isdir(nfo_file_dir):
                 logger.log(u'Metadata directory did not exist, creating it at {path}'.format
                            (path=nfo_file_dir), logger.DEBUG)
-                ek(os.makedirs, nfo_file_dir)
+                os.makedirs(nfo_file_dir)
                 helpers.chmodAsParent(nfo_file_dir)
 
             logger.log(u'Writing show nfo file to {path}'.format
@@ -427,13 +426,13 @@ class Mede8erMetadata(mediabrowser.MediaBrowserMetadata):
             return False
 
         nfo_file_path = self.get_episode_file_path(ep_obj)
-        nfo_file_dir = ek(os.path.dirname, nfo_file_path)
+        nfo_file_dir = os.path.dirname(nfo_file_path)
 
         try:
-            if not ek(os.path.isdir, nfo_file_dir):
+            if not os.path.isdir(nfo_file_dir):
                 logger.log(u'Metadata directory did not exist, creating it at {path}'.format
                            (path=nfo_file_dir), logger.DEBUG)
-                ek(os.makedirs, nfo_file_dir)
+                os.makedirs(nfo_file_dir)
                 helpers.chmodAsParent(nfo_file_dir)
 
             logger.log(u'Writing episode nfo file to {path}'.format

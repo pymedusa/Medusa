@@ -22,7 +22,6 @@ import subprocess
 
 import medusa as app
 from .. import common, logger
-from ..helper.encoding import ek
 from ..helper.exceptions import ex
 
 
@@ -54,7 +53,7 @@ class Notifier(object):
     def _send_synologyNotifier(self, message, title):
         synodsmnotify_cmd = ["/usr/syno/bin/synodsmnotify", "@administrators", title, message]
         logger.log(u"Executing command " + str(synodsmnotify_cmd))
-        logger.log(u"Absolute path to command: " + ek(os.path.abspath, synodsmnotify_cmd[0]), logger.DEBUG)
+        logger.log(u"Absolute path to command: " + os.path.abspath(synodsmnotify_cmd[0]), logger.DEBUG)
         try:
             p = subprocess.Popen(synodsmnotify_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                  cwd=app.PROG_DIR)

@@ -23,7 +23,6 @@ import os
 import medusa as app
 from . import common, logger, tv
 from .common import DOWNLOADED, Quality
-from .helper.encoding import ek
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 
 name_presets = (
@@ -194,7 +193,7 @@ def validate_name(pattern, multi=None, anime_type=None,  # pylint: disable=too-m
     new_name = ep.formatted_filename(pattern, multi, anime_type) + '.ext'
     new_path = ep.formatted_dir(pattern, multi)
     if not file_only:
-        new_name = ek(os.path.join, new_path, new_name)
+        new_name = os.path.join(new_path, new_name)
 
     if not new_name:
         logger.log(u"Unable to create a name out of " + pattern, logger.DEBUG)

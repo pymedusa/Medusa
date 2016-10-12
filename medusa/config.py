@@ -27,7 +27,6 @@ from six import iteritems
 from six.moves.urllib.parse import urlunsplit, uses_netloc
 from . import db, helpers, logger, naming
 from .helper.common import try_int
-from .helper.encoding import ek
 
 # Address poor support for scgi over unix domain sockets
 # this is not nicely handled by python currently
@@ -66,9 +65,9 @@ def change_HTTPS_CERT(https_cert):
         app.HTTPS_CERT = ''
         return True
 
-    if ek(os.path.normpath, app.HTTPS_CERT) != ek(os.path.normpath, https_cert):
-        if helpers.makeDir(ek(os.path.dirname, ek(os.path.abspath, https_cert))):
-            app.HTTPS_CERT = ek(os.path.normpath, https_cert)
+    if os.path.normpath(app.HTTPS_CERT) != os.path.normpath(https_cert):
+        if helpers.makeDir(os.path.dirname(os.path.abspath(https_cert))):
+            app.HTTPS_CERT = os.path.normpath(https_cert)
             logger.log(u"Changed https cert path to " + https_cert)
         else:
             return False
@@ -87,9 +86,9 @@ def change_HTTPS_KEY(https_key):
         app.HTTPS_KEY = ''
         return True
 
-    if ek(os.path.normpath, app.HTTPS_KEY) != ek(os.path.normpath, https_key):
-        if helpers.makeDir(ek(os.path.dirname, ek(os.path.abspath, https_key))):
-            app.HTTPS_KEY = ek(os.path.normpath, https_key)
+    if os.path.normpath(app.HTTPS_KEY) != os.path.normpath(https_key):
+        if helpers.makeDir(os.path.dirname(os.path.abspath(https_key))):
+            app.HTTPS_KEY = os.path.normpath(https_key)
             logger.log(u"Changed https key path to " + https_key)
         else:
             return False
@@ -104,13 +103,13 @@ def change_LOG_DIR(log_dir):
     :param log_dir: Path to new logging directory
     :return: True on success, False on failure
     """
-    abs_log_dir = ek(os.path.normpath, ek(os.path.join, app.DATA_DIR, log_dir))
+    abs_log_dir = os.path.normpath(os.path.join(app.DATA_DIR, log_dir))
 
-    if ek(os.path.normpath, app.LOG_DIR) != abs_log_dir:
+    if os.path.normpath(app.LOG_DIR) != abs_log_dir:
         if not helpers.makeDir(abs_log_dir):
             return False
 
-        app.ACTUAL_LOG_DIR = ek(os.path.normpath, log_dir)
+        app.ACTUAL_LOG_DIR = os.path.normpath(log_dir)
         app.LOG_DIR = abs_log_dir
 
     return True
@@ -127,9 +126,9 @@ def change_NZB_DIR(nzb_dir):
         app.NZB_DIR = ''
         return True
 
-    if ek(os.path.normpath, app.NZB_DIR) != ek(os.path.normpath, nzb_dir):
+    if os.path.normpath(app.NZB_DIR) != os.path.normpath(nzb_dir):
         if helpers.makeDir(nzb_dir):
-            app.NZB_DIR = ek(os.path.normpath, nzb_dir)
+            app.NZB_DIR = os.path.normpath(nzb_dir)
             logger.log(u"Changed NZB folder to " + nzb_dir)
         else:
             return False
@@ -148,9 +147,9 @@ def change_TORRENT_DIR(torrent_dir):
         app.TORRENT_DIR = ''
         return True
 
-    if ek(os.path.normpath, app.TORRENT_DIR) != ek(os.path.normpath, torrent_dir):
+    if os.path.normpath(app.TORRENT_DIR) != os.path.normpath(torrent_dir):
         if helpers.makeDir(torrent_dir):
-            app.TORRENT_DIR = ek(os.path.normpath, torrent_dir)
+            app.TORRENT_DIR = os.path.normpath(torrent_dir)
             logger.log(u"Changed torrent folder to " + torrent_dir)
         else:
             return False
@@ -169,9 +168,9 @@ def change_TV_DOWNLOAD_DIR(tv_download_dir):
         app.TV_DOWNLOAD_DIR = ''
         return True
 
-    if ek(os.path.normpath, app.TV_DOWNLOAD_DIR) != ek(os.path.normpath, tv_download_dir):
+    if os.path.normpath(app.TV_DOWNLOAD_DIR) != os.path.normpath(tv_download_dir):
         if helpers.makeDir(tv_download_dir):
-            app.TV_DOWNLOAD_DIR = ek(os.path.normpath, tv_download_dir)
+            app.TV_DOWNLOAD_DIR = os.path.normpath(tv_download_dir)
             logger.log(u"Changed TV download folder to " + tv_download_dir)
         else:
             return False

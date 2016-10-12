@@ -25,7 +25,6 @@ import medusa as app
 from six import iteritems
 from .. import common, db, helpers, logger, subtitles
 from ..helper.common import dateTimeFormat, episode_num
-from ..helper.encoding import ek
 from ..name_parser.parser import NameParser
 
 MIN_DB_VERSION = 40  # oldest db version we support migrating from
@@ -93,7 +92,7 @@ class MainSanityCheck(db.DBSanityCheck):
 
         for archivedEp in sql_results:
             fixedStatus = common.Quality.compositeStatus(common.ARCHIVED, common.Quality.UNKNOWN)
-            existing = archivedEp['location'] and ek(os.path.exists, archivedEp['location'])
+            existing = archivedEp['location'] and os.path.exists(archivedEp['location'])
             if existing:
                 quality = common.Quality.assumeQuality(archivedEp['location'])
                 fixedStatus = common.Quality.compositeStatus(common.ARCHIVED, quality)
