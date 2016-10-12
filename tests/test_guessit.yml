@@ -3179,7 +3179,6 @@
   mimetype: text/plain
   type: episode
 
-
 # Regression Test: https://github.com/pymedusa/SickRage/issues/1033#issuecomment-252500576
 # Multiple formats
 ? Show.Name.S01E10.HDTV.x264.WEB-DL.HI.C
@@ -3189,4 +3188,16 @@
   video_codec: h264
   format: WEB-DL
   release_group: HI.C
+  type: episode
+
+# Regression Test:
+# Same Title in different file parts
+? Show Name\Season 03\Show Name.S03E03.SDTV-[gRoUp].mp4
+: title: Show Name
+  season: 3
+  episode: 3
+  format: TV
+  release_group: gRoUp
+  container: mp4
+  mimetype: video/mp4
   type: episode
