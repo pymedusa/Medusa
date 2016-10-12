@@ -2828,7 +2828,7 @@
   episode: 7
   type: episode
 
-# Regression test for https://github.com/pymedusa/SickRage/pull/812#issuecomment-235824102
+# Regression test for https://github.com/pymedusa/Medusa/pull/812#issuecomment-235824102
 # Case: Expected title + 2 file parts and the second one starts with a word separator (dot)
 ? 11.22.63./.11.22.63.[S01].(2016).HDTVRip.|.Group
 : title: 11.22.63
@@ -2978,7 +2978,7 @@
   release_group: Group
   type: episode
 
-# FixMultipleFormats: regression test for https://github.com/pymedusa/SickRage/issues/876
+# FixMultipleFormats: regression test for https://github.com/pymedusa/Medusa/issues/876
 ? "/volume1/video/Series/Show Name/Season 02/Show.Name.S02E01.eps2.0_title-pt1.tc.1080p.WEB-DL.DD5.1.H.264.mkv"
 : title: Show Name
   season: 2

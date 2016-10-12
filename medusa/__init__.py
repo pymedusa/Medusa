@@ -67,27 +67,32 @@ ex = exceptions.ex
 # Fixed values
 __title__ = __name__
 SRC_FOLDER = __name__
-LEGACY_SRC_FOLDERS = ('sickbeard', 'sickrage')
+LEGACY_SRC_FOLDERS = ('sickbeard', 'sickrage', 'gui')
 LIB_FOLDER = 'lib'
-UNKNOWN_RELEASE_GROUP = 'SickRage'
-BACKUP_FILENAME = 'sickrage-{timestamp}.zip'
-APPLICATION_DB = 'sickbeard.db'
+STATIC_FOLDER = 'static'
+UNKNOWN_RELEASE_GROUP = 'Medusa'
+BACKUP_DIR = 'backup'
+BACKUP_FILENAME_PREFIX = 'backup'
+BACKUP_FILENAME = BACKUP_FILENAME_PREFIX + '-{timestamp}.zip'
+LEGACY_DB = 'sickbeard.db'
+APPLICATION_DB = 'main.db'
 FAILED_DB = 'failed.db'
 CACHE_DB = 'cache.db'
-LOG_FILENAME = 'sickrage.log'
+LOG_FILENAME = 'application.log'
 CONFIG_INI = 'config.ini'
 GIT_ORG = 'pymedusa'
-GIT_REPO = 'SickRage'
-CHANGES_URL = 'https://cdn.pymedusa.com/sickrage-news/CHANGES.md'
-APPLICATION_URL = 'https://github.com/PyMedusa/SickRage'
+GIT_REPO = 'Medusa'
+CHANGES_URL = 'https://cdn.pymedusa.com/news/CHANGES.md'
+APPLICATION_URL = 'https://github.com/{org}/{repo}'.format(org=GIT_ORG, repo=GIT_REPO)
 DONATIONS_URL = '{0}/wiki/Donations'.format(APPLICATION_URL)
 WIKI_URL = '{0}/wiki'.format(APPLICATION_URL)
-GITHUB_IO_URL = 'http://github.com/PyMedusa/sickrage.github.io/'
+GITHUB_IO_URL = 'http://github.com/pymedusa/medusa.github.io/'
 EXTRA_SCRIPTS_URL = '{0}/wiki/Post-Processing#extra-scripts'.format(APPLICATION_URL)
 SUBTITLES_URL = '{0}/wiki/Subtitle%20Scripts'.format(APPLICATION_URL)
+# TODO: create an app in pushover
 PUSHOVER_URL = 'https://pushover.net/apps/clone/sickrage'
-RARBG_APPID = 'sickrage2'
-SECURE_TOKEN = 'sickrage_user'
+RARBG_APPID = 'medusa'
+SECURE_TOKEN = 'medusa_user'
 
 PID = None
 CFG = None
@@ -156,7 +161,7 @@ GIT_PASSWORD = None
 GIT_PATH = None
 DEVELOPER = False
 
-NEWS_URL = 'https://cdn.pymedusa.com/sickrage-news/news.md'
+NEWS_URL = 'https://cdn.pymedusa.com/news/news.md'
 LOGO_URL = 'https://cdn.pymedusa.com/images/ico/favicon-64.png'
 
 NEWS_LAST_READ = None
@@ -730,6 +735,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             sys.exit(7)
 
         # init logging
+        logger.backwards_compatibility()
         logger.init_logging(console_logging=consoleLogging)
 
         # git reset on update
@@ -743,11 +749,16 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # git_remote
         GIT_REMOTE = check_setting_str(CFG, 'General', 'git_remote', 'origin')
-        GIT_REMOTE_URL = check_setting_str(CFG, 'General', 'git_remote_url',
-                                           'https://github.com/%s/%s.git' % (GIT_ORG, GIT_REPO))
+        GIT_REMOTE_URL = check_setting_str(CFG, 'General', 'git_remote_url', APPLICATION_URL)
 
-        if 'com/sickrage' in GIT_REMOTE_URL.lower():
-            GIT_REMOTE_URL = 'https://github.com/PyMedusa/SickRage.git'
+        repo_url_re = re.compile(r'(?P<prefix>(?:git@github\.com:)|(?:https://github\.com/))(?P<org>\w+)/(?P<repo>\w+)\.git')
+        m = repo_url_re.match(GIT_REMOTE_URL)
+        if m:
+            groups = m.groupdict()
+            if groups['org'].lower() != GIT_ORG.lower() or groups['repo'].lower() != GIT_REPO.lower():
+                GIT_REMOTE_URL = groups['prefix'] + GIT_ORG + '/' + GIT_REPO + '.git'
+        else:
+            GIT_REMOTE_URL = APPLICATION_URL
 
         # current commit hash
         CUR_COMMIT_HASH = check_setting_str(CFG, 'General', 'cur_commit_hash', '')
@@ -1115,7 +1126,13 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         TRAKT_REFRESH_TOKEN = check_setting_str(CFG, 'Trakt', 'trakt_refresh_token', '', censor_log='low')
         TRAKT_REMOVE_WATCHLIST = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_watchlist', 0))
         TRAKT_REMOVE_SERIESLIST = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_serieslist', 0))
-        TRAKT_REMOVE_SHOW_FROM_APPLICATION = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_sickrage', 0))
+
+        # Check if user has legacy setting and store value in new setting
+        if check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_sickrage', None) is not None:
+            TRAKT_REMOVE_SHOW_FROM_APPLICATION = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_sickrage', 0))
+        else:
+            TRAKT_REMOVE_SHOW_FROM_APPLICATION = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_application', 0))
+
         TRAKT_SYNC_WATCHLIST = bool(check_setting_int(CFG, 'Trakt', 'trakt_sync_watchlist', 0))
         TRAKT_METHOD_ADD = check_setting_int(CFG, 'Trakt', 'trakt_method_add', 0)
         TRAKT_START_PAUSED = bool(check_setting_int(CFG, 'Trakt', 'trakt_start_paused', 0))
@@ -1987,7 +2004,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['Trakt']['trakt_refresh_token'] = TRAKT_REFRESH_TOKEN
     new_config['Trakt']['trakt_remove_watchlist'] = int(TRAKT_REMOVE_WATCHLIST)
     new_config['Trakt']['trakt_remove_serieslist'] = int(TRAKT_REMOVE_SERIESLIST)
-    new_config['Trakt']['trakt_remove_show_from_sickrage'] = int(TRAKT_REMOVE_SHOW_FROM_APPLICATION)
+    new_config['Trakt']['trakt_remove_show_from_application'] = int(TRAKT_REMOVE_SHOW_FROM_APPLICATION)
     new_config['Trakt']['trakt_sync_watchlist'] = int(TRAKT_SYNC_WATCHLIST)
     new_config['Trakt']['trakt_method_add'] = int(TRAKT_METHOD_ADD)
     new_config['Trakt']['trakt_start_paused'] = int(TRAKT_START_PAUSED)

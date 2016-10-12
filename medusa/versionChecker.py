@@ -90,7 +90,7 @@ class CheckVersion(object):
         logger.log(u"Config backup in progress...")
         ui.notifications.message('Backup', 'Config backup in progress...')
         try:
-            backupDir = os.path.join(app.DATA_DIR, 'backup')
+            backupDir = os.path.join(app.DATA_DIR, app.BACKUP_DIR)
             if not os.path.isdir(backupDir):
                 os.mkdir(backupDir)
 
@@ -715,7 +715,7 @@ class GitUpdateManager(UpdateManager):
         :return:
         :rtype: int
         """
-        folders = (app.LIB_FOLDER, app.SRC_FOLDER) + app.LEGACY_SRC_FOLDERS
+        folders = (app.LIB_FOLDER, app.SRC_FOLDER, app.STATIC_FOLDER) + app.LEGACY_SRC_FOLDERS
         _, _, exit_status = self._run_git(self._git_path, 'clean -d -f -x {0}'.format(' '.join(folders)))
 
         return exit_status

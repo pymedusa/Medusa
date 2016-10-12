@@ -1372,7 +1372,7 @@ class FixMultipleTitles(Rule):
         titles = matches.named('title')
 
         if titles and len(titles) > 1:
-            # Safety: https://github.com/pymedusa/SickRage/pull/812#issuecomment-235824102
+            # Safety: https://github.com/pymedusa/Medusa/pull/812#issuecomment-235824102
             # Only remove matches that are different from the first match
             to_remove = matches.named('title', predicate=lambda match: match.span != titles[0].span)
             return to_remove
