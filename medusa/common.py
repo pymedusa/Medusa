@@ -292,7 +292,7 @@ class Quality(object):
         :return: Quality prefix
         """
 
-        # Try Scene names first
+        # Try scene names first
         quality = Quality.scene_quality(name, anime)
         if quality != Quality.UNKNOWN:
             return quality
