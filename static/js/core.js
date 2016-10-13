@@ -66,7 +66,7 @@ $.ajaxSetup({
     }
 });
 
-if (document.location.pathname === '/login/') {
+if (document.location.pathname.endsWith('/login/')) {
     $('[v-cloak]').removeAttr('v-cloak');
 } else {
     $.ajax({
