@@ -66,23 +66,27 @@ $.ajaxSetup({
     }
 });
 
-$.ajax({
-    url: apiRoot + 'info?api_key=' + apiKey,
-    type: 'GET',
-    dataType: 'json'
-}).success(function(data) {
-    MEDUSA.info = data;
-    MEDUSA.info.themeSpinner = MEDUSA.info.themeName === 'dark' ? '-dark' : '';
-    MEDUSA.info.loading = '<img src="images/loading16' + MEDUSA.info.themeSpinner + '.gif" height="16" width="16" />';
-    if (typeof startVue === 'undefined') { // eslint-disable-line no-undef
-        $('[v-cloak]').removeAttr('v-cloak');
-    } else {
-        startVue(); // eslint-disable-line no-undef
-    }
+if (document.location.pathname === '/login/') {
+    $('[v-cloak]').removeAttr('v-cloak');
+} else {
+    $.ajax({
+        url: apiRoot + 'info?api_key=' + apiKey,
+        type: 'GET',
+        dataType: 'json'
+    }).success(function(data) {
+        MEDUSA.info = data;
+        MEDUSA.info.themeSpinner = MEDUSA.info.themeName === 'dark' ? '-dark' : '';
+        MEDUSA.info.loading = '<img src="images/loading16' + MEDUSA.info.themeSpinner + '.gif" height="16" width="16" />';
+        if (typeof startVue === 'undefined') { // eslint-disable-line no-undef
+            $('[v-cloak]').removeAttr('v-cloak');
+        } else {
+            startVue(); // eslint-disable-line no-undef
+        }
 
-    if (navigator.userAgent.indexOf('PhantomJS') === -1) {
-        $(document).ready(UTIL.init);
-    }
-}).fail(function() {
-    alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
-});
+        if (navigator.userAgent.indexOf('PhantomJS') === -1) {
+            $(document).ready(UTIL.init);
+        }
+    }).fail(function() {
+        alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
+    });
+}
