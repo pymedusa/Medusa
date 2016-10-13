@@ -22,6 +22,12 @@ EPISODE_MAPPING = {
     'title': 'name',
 }
 
+ADDITIONAL_MAPPING = {
+    'season': 'season',
+    'episode': 'episode',
+    'release_group': 'release_group',
+}
+
 series_re = re.compile(r'^(?P<series>.*?)(?: \((?:(?P<year>\d{4})|(?P<country>[A-Z]{2}))\))?$')
 
 
@@ -54,7 +60,7 @@ def refine(video, tv_episode=None, **kwargs):
 
     logger.debug('Refining using TVEpisode information.')
     enrich(EPISODE_MAPPING, video, tv_episode)
-    enrich({'release_group': tv_episode.release_group}, video, overwrite=False)
+    enrich(ADDITIONAL_MAPPING, video, tv_episode, overwrite=False)
     guess = Quality.to_guessit(tv_episode.status)
     enrich({'resolution': guess.get('screen_size'), 'format': guess.get('format')}, video, overwrite=False)
 
@@ -71,7 +77,7 @@ def enrich(attributes, target, source=None, overwrite=True):
     """
     for key, value in attributes.items():
         old_value = getattr(target, key)
-        if old_value and not overwrite:
+        if old_value and old_value != '' and not overwrite:
             continue
 
         new_value = getattr(source, value) if source else value
