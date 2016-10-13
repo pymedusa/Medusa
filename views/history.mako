@@ -131,7 +131,7 @@
                 </td>
                 <td class="tvShow">
                     <% proper_tags = [action.proper_tags for action in hItem.actions if action.proper_tags] %>
-                    <span><a href="home/displayShow?show=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${'<span class="quality Proper">Proper</span>' if proper_tags else ''}</a></span>
+                    <span><a href="home/displayShow?show=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${'<img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>' if hItem.index.scene else ''} ${'<span class="quality Proper">Proper</span>' if proper_tags else ''}</a></span>
                 </td>
                 <td align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
                     % for cur_action in sorted(hItem.actions):

@@ -145,16 +145,19 @@ class History(object):
             """
             Create a look-up index for the item
             """
+            scene_numbering = False
             if self.scene:
                 season, episode = get_scene_numbering(self.show_id, self.indexer, self.season, self.episode)
             else:
                 season = self.season
                 episode = self.episode
+            if season != self.season or episode != self.episode:
+                scene_numbering = True
 
             return History.Index(
                 self.show_id,
                 self.indexer,
-                self.scene,
+                scene_numbering,
                 season,
                 episode,
                 self.quality,
