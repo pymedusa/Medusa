@@ -786,52 +786,40 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         :param ep_obj: The TVEpisode object related to the file we are post processing
         :return: A quality value found in common.Quality
         """
-
         ep_quality = common.Quality.UNKNOWN
 
-        # if there is a quality available in the status then we don't need to bother guessing from the filename
+        # Try getting quality from the episode (snatched) status first
         if ep_obj.status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
-            _, ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)  # @UnusedVariable
+            _, ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)
             if ep_quality != common.Quality.UNKNOWN:
-                self._log(u'The old status had a quality in it, using that: {0}'.format
+                self._log(u'The snatched status has a quality in it, using that: {0}'.format
                           (common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
                 return ep_quality
 
-        # nzb name is the most reliable if it exists, followed by folder name and lastly file name
-        name_list = [self.nzb_name, self.folder_name, self.file_name]
+        # NZB name is the most reliable if it exists, followed by file name and lastly folder name
+        name_list = [self.nzb_name, self.file_name, self.folder_name]
 
-        # search all possible names for our new quality, in case the file or dir doesn't have it
         for cur_name in name_list:
 
-            # some stuff might be None at this point still
+            # Skip names that are falsey
             if not cur_name:
                 continue
 
-            ep_quality = common.Quality.nameQuality(cur_name, ep_obj.show.is_anime)
-            self._log(u'Looking up quality for name {0}, got {1}'.format
+            ep_quality = common.Quality.nameQuality(cur_name, ep_obj.show.is_anime, extend=False)
+            self._log(u"Looking up quality for '{0}', got {1}".format
                       (cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
-
-            # if we find a good one then use it
             if ep_quality != common.Quality.UNKNOWN:
-                logger.log(u'{0} looks like it has quality {1}, using that'.format
-                           (cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
+                self._log(u"Looks like '{0}' has quality {1}, using that".format
+                          (cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
                 return ep_quality
 
-        # Try getting quality from the episode (snatched) status
-        if ep_obj.status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
-            _, ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)  # @UnusedVariable
-            if ep_quality != common.Quality.UNKNOWN:
-                self._log(u'The old status had a quality in it, using that: {0}'.format
-                          (common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
-                return ep_quality
-
-        # Try guessing quality from the file name
-        ep_quality = common.Quality.assumeQuality(self.file_path)
-        self._log(u'Guessing quality for name {0}, got {1}'.format
+        # Try using other methods to get the file quality
+        ep_quality = common.Quality.nameQuality(self.file_path, ep_obj.show.is_anime)
+        self._log(u"Trying other methods to get quality for '{0}', got {1}".format
                   (self.file_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
         if ep_quality != common.Quality.UNKNOWN:
-            logger.log(u'{0} looks like it has quality {1}, using that'.format
-                       (self.file_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
+            self._log(u"Looks like '{0}' has quality {1}, using that".format
+                      (self.file_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
             return ep_quality
 
         return ep_quality

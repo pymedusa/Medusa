@@ -281,31 +281,32 @@ class Quality(object):
         return sorted(allowed_qualities), sorted(preferred_qualities)
 
     @staticmethod
-    def nameQuality(name, anime=False):
+    def nameQuality(name, anime=False, extend=True):
         """
         Return The quality from an episode File renamed by the application
         If no quality is achieved it will try scene_quality regex
 
         :param name: to parse
         :param anime: Boolean to indicate if the show we're resolving is Anime
+        :param extend: boolean to extend methods to try
         :return: Quality prefix
         """
 
-        # Try Scene names first
+        # Try scene names first
         quality = Quality.scene_quality(name, anime)
         if quality != Quality.UNKNOWN:
             return quality
 
-        quality = Quality.assumeQuality(name)
-        if quality != Quality.UNKNOWN:
-            return quality
+        # Additional methods to get quality should be added here
+        if extend:
+            return Quality._extend_quality(name)
 
         return Quality.UNKNOWN
 
     @staticmethod
-    def scene_quality(name, anime=False):  # pylint: disable=too-many-branches, too-many-statements
+    def scene_quality(name, anime=False):
         """
-        Return The quality from the scene episode File
+        Return The quality from the scene episode File.
 
         :param name: Episode filename to analyse
         :param anime: Boolean to indicate if the show we're resolving is Anime
@@ -390,31 +391,30 @@ class Quality(object):
         return Quality.UNKNOWN if result is None else result
 
     @staticmethod
-    def assumeQuality(name):
+    def _extend_quality(file_path):
         """
-        Assume a quality from file extension if we cannot resolve it otherwise
 
-        :param name: File name of episode to analyse
+        :param file_path: File path of episode to analyse
         :return: Quality prefix
         """
-        quality = Quality.qualityFromFileMeta(name)
+        quality = Quality.qualityFromFileMeta(file_path)
         if quality != Quality.UNKNOWN:
             return quality
 
-        if name.lower().endswith(".ts"):
+        # This assumes that any .ts file is RAWHDTV (probably wrong)
+        if file_path.lower().endswith('.ts'):
             return Quality.RAWHDTV
-        else:
-            return Quality.UNKNOWN
+
+        return Quality.UNKNOWN
 
     @staticmethod
-    def qualityFromFileMeta(filename):  # pylint: disable=too-many-branches
+    def qualityFromFileMeta(filename):
         """
-        Get quality file file metadata
+        Get quality file file metadata.
 
         :param filename: Filename to analyse
         :return: Quality prefix
         """
-
         hachoir_log.use_print = False
 
         try:
@@ -559,18 +559,15 @@ class Quality(object):
             return ""
 
     @staticmethod
-    def statusFromName(name, assume=True, anime=False):
+    def statusFromName(name, anime=False):
         """
         Get a status object from filename
 
         :param name: Filename to check
-        :param assume: boolean to assume quality by extension if we can't figure it out
         :param anime: boolean to enable anime parsing
         :return: Composite status/quality object
         """
         quality = Quality.nameQuality(name, anime)
-        if assume and quality == Quality.UNKNOWN:
-            quality = Quality.assumeQuality(name)
         return Quality.compositeStatus(DOWNLOADED, quality)
 
     guessit_map = {

@@ -71,9 +71,9 @@ class NameParser(object):
             return result
 
         # get quality
-        result.quality = common.Quality.nameQuality(name, result.show.is_anime)
+        result.quality = common.Quality.from_guessit(guess)
         if result.quality == common.Quality.UNKNOWN:
-            result.quality = common.Quality.from_guessit(guess)
+            result.quality = common.Quality.nameQuality(name, result.show.is_anime, extend=False)
 
         new_episode_numbers = []
         new_season_numbers = []
