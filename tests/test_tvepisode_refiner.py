@@ -86,6 +86,7 @@ def test_refine__with_tvepisode(data):
     video = data['video']
     tvepisode = data['tvepisode']
     expected = dict(data['tvshow_properties'], **data['tvepisode_properties'])
+    expected.update({'season': video.season, 'episode': video.episode})
 
     # When
     sut.refine(video, tv_episode=tvepisode)
@@ -117,7 +118,8 @@ def test_refine__with_tvepisode_not_overwriting_resolution_format_and_release_gr
     video.release_group = 'AnotherGroup'
     tvepisode = data['tvepisode']
     expected = dict(data['tvshow_properties'], **data['tvepisode_properties'])
-    expected = dict(expected, resolution=video.resolution, format=video.format, release_group=video.release_group)
+    expected = dict(expected, resolution=video.resolution, format=video.format, release_group=video.release_group,
+                    season=video.season, episode=video.episode)
 
     # When
     sut.refine(video, tv_episode=tvepisode)
