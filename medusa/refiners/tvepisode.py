@@ -18,8 +18,6 @@ SHOW_MAPPING = {
 
 EPISODE_MAPPING = {
     'tvdb_id': 'tvdb_id',
-    'episode': 'episode',
-    'season': 'season',
     'size': 'file_size',
     'title': 'name',
 }
