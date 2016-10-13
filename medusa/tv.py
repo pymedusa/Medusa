@@ -2484,7 +2484,15 @@ class TVEpisode(TVObject):
         elif self.show.air_by_date:
             return self._format_pattern('%SN - %AD - %EN')
 
-        return self._format_pattern('%SN - S%0SE%0E - %EN')
+        default_pattern = '%SN - S%0SE%0E - %EN'
+        if self.show.scene:
+            # Change pattern to use scene number if there is one set
+            if self.scene_season:
+                default_pattern = default_pattern.replace('S%0S', 'S%0XS')
+            if self.scene_episode:
+                default_pattern = default_pattern.replace('%0E', '%0XE')
+
+        return self._format_pattern(default_pattern)
 
     def __ep_name(self):
         """Return the name of the episode to use during renaming.

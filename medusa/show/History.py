@@ -22,6 +22,7 @@ from six import text_type
 from ..common import Quality
 from ..db import DBConnection
 from ..helper.common import try_int
+from ..scene_numbering import get_scene_numbering
 
 
 class History(object):
@@ -56,7 +57,7 @@ class History(object):
         actions = History._get_actions(action)
         limit = max(try_int(limit), 0)
 
-        common_sql = 'SELECT show_name, showid, season, episode, h.quality, ' \
+        common_sql = 'SELECT show_name, showid, s.indexer, s.scene, season, episode, h.quality, ' \
                      'action, provider, resource, date, h.proper_tags ' \
                      'FROM history h, tv_shows s ' \
                      'WHERE h.showid = s.indexer_id '
@@ -117,7 +118,7 @@ class History(object):
     Action = namedtuple('Action', action_fields)
     Action.width = len(action_fields)
 
-    index_fields = ('show_id', 'season', 'episode', 'quality')
+    index_fields = ('show_id', 'indexer', 'scene', 'season', 'episode', 'quality')
     # An index for an item or compact item from history
     Index = namedtuple('Index', index_fields)
     Index.width = len(index_fields)
@@ -144,10 +145,21 @@ class History(object):
             """
             Create a look-up index for the item
             """
+            scene_numbering = False
+            if self.scene:
+                season, episode = get_scene_numbering(self.show_id, self.indexer, self.season, self.episode)
+            else:
+                season = self.season
+                episode = self.episode
+            if season != self.season or episode != self.episode:
+                scene_numbering = True
+
             return History.Index(
                 self.show_id,
-                self.season,
-                self.episode,
+                self.indexer,
+                scene_numbering,
+                season,
+                episode,
                 self.quality,
             )
 
