@@ -64,8 +64,12 @@ class ComingEpisodes(object):
 
         db = DBConnection()
         fields_to_select = ', '.join(
-            ['airdate', 'airs', 'e.description as description', 'episode', 'imdb_id', 'e.indexer', 'indexer_id', 'name', 'network',
-             'paused', 'quality', 'runtime', 'season', 'show_name', 'showid', 's.status']
+            ['airdate', 'airs', 'e.description as description',
+             "CASE WHEN scene_episode is not null and s.scene = 1 THEN scene_episode else episode END as 'episode'",
+             'imdb_id', 'e.indexer', 'indexer_id', 'name', 'network',
+             'paused', 'quality', 'runtime',
+             "CASE WHEN scene_season is not null and s.scene = 1 THEN scene_season else season END as 'season'",
+             'show_name', 'showid', 's.status']
         )
         results = db.select(
             'SELECT %s ' % fields_to_select +
