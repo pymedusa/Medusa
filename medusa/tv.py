@@ -2486,11 +2486,11 @@ class TVEpisode(TVObject):
 
         default_pattern = '%SN - S%0SE%0E - %EN'
         if self.show.scene:
-            # Change pattern to use scene number if xem map exists
+            # Change pattern to use scene number if there is one set
             if self.scene_season:
-                default_pattern = default_pattern.replace('S%0S','S%0XS')
+                default_pattern = default_pattern.replace('S%0S', 'S%0XS')
             if self.scene_episode:
-                default_pattern = default_pattern.replace('%0E','%0XE')
+                default_pattern = default_pattern.replace('%0E', '%0XE')
 
         return self._format_pattern(default_pattern)
 
