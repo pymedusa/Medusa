@@ -408,17 +408,17 @@ class Quality(object):
         return Quality.UNKNOWN
 
     @staticmethod
-    def qualityFromFileMeta(filename):
+    def qualityFromFileMeta(file_path):
         """
         Get quality file file metadata.
 
-        :param filename: Filename to analyse
+        :param filename: File path to analyse
         :return: Quality prefix
         """
         hachoir_log.use_print = False
 
         try:
-            parser = createParser(filename)
+            parser = createParser(file_path)
         except Exception:  # pylint: disable=broad-except
             parser = None
 
@@ -451,7 +451,7 @@ class Quality(object):
         if not height:
             return Quality.UNKNOWN
 
-        base_filename = path.basename(filename)
+        base_filename = path.basename(file_path)
         bluray = re.search(r"blue?-?ray|hddvd|b[rd](rip|mux)", base_filename, re.I) is not None
         webdl = re.search(r"web.?dl|web(rip|mux|hd)", base_filename, re.I) is not None
 
