@@ -292,7 +292,7 @@ class Quality(object):
         :return: Quality prefix
         """
 
-        # Try scene names first
+        # Try Scene names first
         quality = Quality.scene_quality(name, anime)
         if quality != Quality.UNKNOWN:
             return quality
@@ -306,7 +306,7 @@ class Quality(object):
     @staticmethod
     def scene_quality(name, anime=False):
         """
-        Return The quality from the scene episode File.
+        Return The quality from the Scene episode File.
 
         :param name: Episode filename to analyse
         :param anime: Boolean to indicate if the show we're resolving is Anime
@@ -502,11 +502,11 @@ class Quality(object):
     @staticmethod
     def sceneQualityFromName(name, quality):  # pylint: disable=too-many-branches
         """
-        Get scene naming parameters from filename and quality
+        Get Scene naming parameters from filename and quality
 
         :param name: Filename to check
         :param quality: int of quality to make sure we get the right rip type
-        :return: encoder type for scene quality naming
+        :return: encoder type for Scene quality naming
         """
         codec_list = ['xvid', 'divx']
         x264_list = ['x264', 'x 264', 'x.264']
