@@ -1,21 +1,20 @@
 {
-  "name": "medusa",
-  "version": "4.0.72",
+  "name": "Medusa",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PyMedusa/SickRage.git"
+    "url": "git+https://github.com/PyMedusa/Medusa.git"
   },
   "bugs": {
-    "url": "https://github.com/PyMedusa/SickRage/issues"
+    "url": "https://github.com/PyMedusa/Medusa/issues"
   },
-  "homepage": "https://github.com/PyMedusa/SickRage#readme",
+  "homepage": "https://github.com/PyMedusa/Medusa#readme",
   "scripts": {
     "test": "xo static/js/*.js",
-    "security": "snyk test"
+    "security": "snyk test",
+    "build": "./node_modules/grunt-cli/bin/grunt"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
     "grunt": "^0.4.5",
     "grunt-bower-concat": "^1.0.0",
     "grunt-bower-task": "^0.4.0",
@@ -23,14 +22,8 @@
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-copy": "^0.8.2",
     "grunt-contrib-cssmin": "^0.14.0",
-    "grunt-contrib-jshint": "^1.0.0",
-    "grunt-contrib-sass": "^0.9.2",
     "grunt-contrib-uglify": "^0.11.1",
-    "grunt-contrib-watch": "^0.6.1",
-    "grunt-mocha": "^0.4.15",
-    "grunt-sass": "^1.1.0",
     "load-grunt-tasks": "^3.3.0",
-    "mocha": "^2.4.5",
     "snyk": "^1.9.1",
     "stylelint": "^7.2.0",
     "xo": "^0.16.0"

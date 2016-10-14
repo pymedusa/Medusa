@@ -154,15 +154,14 @@
                     $.ajax({
                         url: options.autocompleteURL,
                         data: request,
-                        dataType: 'json',
-                        success: function (data) {
-                            // implement a startsWith filter for the results
-                            var matcher = new RegExp('^' + query, 'i');
-                            var a = $.grep(data, function (item) {
-                                return matcher.test(item);
-                            });
-                            response(a);
-                        }
+                        dataType: 'json'
+                    }).done(function(data) {
+                        // implement a startsWith filter for the results
+                        var matcher = new RegExp('^' + query, 'i');
+                        var a = $.grep(data, function (item) {
+                            return matcher.test(item);
+                        });
+                        response(a);
                     });
                 },
                 open: function () {

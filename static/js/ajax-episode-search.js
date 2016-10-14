@@ -95,7 +95,7 @@ function checkManualSearches() {
     var url = showId === undefined ? searchStatusUrl : searchStatusUrl + '?show=' + showId;
     $.ajax({
         url: url,
-        success: function (data) {
+        done: function (data) {
             if (data.episodes) {
                 pollInterval = 5000;
             } else {
