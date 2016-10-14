@@ -94,7 +94,7 @@ class MainSanityCheck(db.DBSanityCheck):
             fixedStatus = common.Quality.compositeStatus(common.ARCHIVED, common.Quality.UNKNOWN)
             existing = archivedEp['location'] and os.path.exists(archivedEp['location'])
             if existing:
-                quality = common.Quality.nameQuality(archivedEp['location'], archivedEp['anime'])
+                quality = common.Quality.nameQuality(archivedEp['location'], archivedEp['anime'], extend=False)
                 fixedStatus = common.Quality.compositeStatus(common.ARCHIVED, quality)
 
             logger.log(u'Changing status from {old_status} to {new_status} for {id}: {ep} at {location} (File {result})'.format
