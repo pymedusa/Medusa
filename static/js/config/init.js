@@ -39,7 +39,7 @@ MEDUSA.config.init = function() {
         beforeSubmit: function() {
             $('.config_submitter .config_submitter_refresh').each(function() {
                 $(this).prop('disabled', 'disabled');
-                $(this).after('<span><img src="images/loading16' + MEDUSA.info.themeSpinner + '.gif"> Saving...</span>');
+                $(this).after('<span><img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif"> Saving...</span>');
                 $(this).hide();
             });
         },

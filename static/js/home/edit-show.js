@@ -1,6 +1,6 @@
 MEDUSA.home.editShow = function() {
-    if (MEDUSA.info.fanartBackground) {
+    if (MEDUSA.config.fanartBackground) {
         $.backstretch('showPoster/?show=' + $('#show').attr('value') + '&which=fanart');
-        $('.backstretch').css('opacity', MEDUSA.info.fanartBackgroundOpacity).fadeIn(500);
+        $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
     }
 };

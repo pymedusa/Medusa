@@ -5,7 +5,7 @@ MEDUSA.schedule.index = function() {
             show: 2,
             network: 5
         };
-        var sort = MEDUSA.info.comingEpsSort;
+        var sort = MEDUSA.config.comingEpsSort;
         var sortList = (sort in sortCodes) ? [[sortCodes[sort], 0]] : [[0, 0]];
 
         $('#showListTable:has(tbody tr)').tablesorter({
@@ -39,7 +39,7 @@ MEDUSA.schedule.index = function() {
     if ($.isMeta('comingEpsLayout', ['banner', 'poster'])) {
         $.ajaxEpSearch({
             size: 16,
-            loadingImage: 'loading16' + MEDUSA.info.themeSpinner + '.gif'
+            loadingImage: 'loading16' + MEDUSA.config.themeSpinner + '.gif'
         });
         $('.ep_summary').hide();
         $('.ep_summaryTrigger').on('click', function() {

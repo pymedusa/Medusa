@@ -88,7 +88,7 @@ MEDUSA.common.init = function() {
         });
     }
 
-    if (MEDUSA.info.fuzzyDating) {
+    if (MEDUSA.config.fuzzyDating) {
         $.timeago.settings.allowFuture = true;
         $.timeago.settings.strings = {
             prefixAgo: null,

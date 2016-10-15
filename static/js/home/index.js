@@ -182,8 +182,8 @@ MEDUSA.home.index = function() {
         $('.loading-spinner').hide();
         $('.show-grid').show().isotope({
             itemSelector: '.show-container',
-            sortBy: MEDUSA.info.posterSortby,
-            sortAscending: MEDUSA.info.posterSortdir,
+            sortBy: MEDUSA.config.posterSortby,
+            sortAscending: MEDUSA.config.posterSortdir,
             layoutMode: 'masonry',
             masonry: {
                 isFitWidth: true
@@ -191,7 +191,7 @@ MEDUSA.home.index = function() {
             getSortData: {
                 name: function(itemElem) {
                     var name = $(itemElem).attr('data-name') || '';
-                    return (MEDUSA.info.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
+                    return (MEDUSA.config.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
                 },
                 network: '[data-network]',
                 date: function(itemElem) {
@@ -289,7 +289,7 @@ MEDUSA.home.index = function() {
     }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
         // call this function to copy the column selection code into the popover
         $.tablesorter.columnSelector.attachTo($('#showListTableShows'), '#popover-target');
-        if (MEDUSA.info.animeSplitHome) {
+        if (MEDUSA.config.animeSplitHome) {
             $.tablesorter.columnSelector.attachTo($('#showListTableAnime'), '#popover-target');
         }
     });

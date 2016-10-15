@@ -76,7 +76,7 @@ MEDUSA.addShows.newShow = function() {
         }
 
         var searchingFor = $('#nameToSearch').val().trim() + ' on ' + $('#providedIndexer option:selected').text() + ' in ' + $('#indexerLangSelect').val();
-        $('#searchResults').empty().html('<img id="searchingAnim" src="images/loading32' + MEDUSA.info.themeSpinner + '.gif" height="32" width="32" /> searching ' + searchingFor + '...');
+        $('#searchResults').empty().html('<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="32" width="32" /> searching ' + searchingFor + '...');
 
         searchRequestXhr = $.ajax({
             url: 'addShows/searchIndexersForShowName',
@@ -110,9 +110,9 @@ MEDUSA.addShows.newShow = function() {
 
                         resultStr += '<input type="radio" id="whichSeries" name="whichSeries" value="' + whichSeries.replace(/"/g, '') + '"' + checked + ' /> ';
                         if (data.langid && data.langid !== '') {
-                            resultStr += '<a href="' + MEDUSA.info.anonRedirect + obj[2] + obj[3] + '&lid=' + data.langid + '" onclick="window.open(this.href, \'_blank\'); return false;" ><b>' + obj[4] + '</b></a>';
+                            resultStr += '<a href="' + MEDUSA.config.anonRedirect + obj[2] + obj[3] + '&lid=' + data.langid + '" onclick="window.open(this.href, \'_blank\'); return false;" ><b>' + obj[4] + '</b></a>';
                         } else {
-                            resultStr += '<a href="' + MEDUSA.info.anonRedirect + obj[2] + obj[3] + '" onclick="window.open(this.href, \'_blank\'); return false;" ><b>' + obj[4] + '</b></a>';
+                            resultStr += '<a href="' + MEDUSA.config.anonRedirect + obj[2] + obj[3] + '" onclick="window.open(this.href, \'_blank\'); return false;" ><b>' + obj[4] + '</b></a>';
                         }
 
                         if (obj[5] !== null) {
