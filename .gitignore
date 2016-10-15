@@ -68,6 +68,7 @@ lib/unrar2/UnRAR.exe
 .build/bower_components
 .build/node_modules
 .build/dist
+.build/package.json
 
 # Unit test/Coverage #
 ######################

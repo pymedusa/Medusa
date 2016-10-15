@@ -1,10 +1,10 @@
-module.exports = function(grunt) {
+module.exports = function(grunt) { // eslint-disable-line xo/filename-case
     require('load-grunt-tasks')(grunt);
 
     grunt.initConfig({
         clean: {
             dist: './dist/',
-            bower_components: './bower_components',
+            bower_components: './bower_components', // eslint-disable-line camelcase
             fonts: '../static/css/*.ttf',
             options: {
                 force: true
@@ -17,7 +17,7 @@ module.exports = function(grunt) {
                 }
             }
         },
-        bower_concat: {
+        bower_concat: { // eslint-disable-line camelcase
             all: {
                 dest: {
                     js: './dist/bower.js',
@@ -42,11 +42,11 @@ module.exports = function(grunt) {
                         'dist/js/bootstrap-formhelpers.min.js'
                     ],
                     'isotope': [
-                        "dist/isotope.pkgd.min.js"
+                        'dist/isotope.pkgd.min.js'
                     ],
-                    "outlayer": [
-                        "item.js",
-                        "outlayer.js"
+                    'outlayer': [
+                        'item.js',
+                        'outlayer.js'
                     ]
                 },
                 bowerOptions: {
@@ -80,12 +80,26 @@ module.exports = function(grunt) {
                     ],
                     dest: '../static/fonts/'
                 }]
+            },
+            vender: {
+                files: [{
+                    expand: true,
+                    dot: true,
+                    cwd: 'dist',
+                    src: [
+                        'bower.js'
+                    ],
+                    dest: '../static/js/',
+                    rename: function(dest, src) {
+                        return dest + src.replace('bower.js', 'vender.js');
+                    }
+                }]
             }
         },
         uglify: {
             bower: {
                 files: {
-                    '../static/js/vender.min.js': ['./dist/bower.js']
+                    '../static/js/vender.min.js': './dist/bower.js'
                 }
             }
         },
@@ -96,32 +110,8 @@ module.exports = function(grunt) {
             },
             bower: {
                 files: {
-                    '../static/css/vender.min.css': ['./dist/bower.css']
+                    '../static/css/vender.min.css': './dist/bower.css'
                 }
-            },
-            core: {
-                files: {
-                    '../static/css/core.min.css': ['./dist/core.css']
-                }
-            }
-        },
-        jshint: {
-            options: {
-                jshintrc: '../.jshintrc'
-            },
-            all: [
-                '../static/js/**/*.js',
-                '!../static/js/lib/**/*.js',
-                '!../static/js/ajax-notifications.js',
-                '!../static/js/**/*.min.js', // We use this because ignores doesn't seem to work :(
-            ]
-        },
-        mocha: {
-            all: {
-                src: ['tests/testrunner.html'],
-            },
-            options: {
-                run: true
             }
         }
     });
@@ -132,8 +122,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-mocha');
 
     grunt.registerTask('default', [
         'clean',
@@ -141,10 +129,6 @@ module.exports = function(grunt) {
         'bower_concat',
         'copy',
         'uglify',
-        'cssmin',
-        'mocha'
-    ]);
-    grunt.registerTask('travis', [
-        'mocha'
+        'cssmin'
     ]);
 };
