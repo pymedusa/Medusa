@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Request handler for general information."""
+"""Request handler for configuration."""
 
 import os
 import platform
@@ -12,16 +12,16 @@ from .base import BaseRequestHandler
 from ....versionChecker import CheckVersion
 
 
-class InfoHandler(BaseRequestHandler):
-    """Info request handler."""
+class ConfigHandler(BaseRequestHandler):
+    """Config request handler."""
 
     def get(self, query=''):
-        """Query general information.
+        """Query general configuration.
 
         :param query:
         :type query: str
         """
-        info_query = query.split('/')[0]
+        query = query.split('/')[0]
 
         try:
             import pwd
@@ -54,7 +54,7 @@ class InfoHandler(BaseRequestHandler):
         main_db_con = app.db.DBConnection()
         cur_branch_major_db_version, cur_branch_minor_db_version = main_db_con.checkDBVersion()
 
-        info_data = {
+        config_data = {
             'anonRedirect': app.ANON_REDIRECT,
             'anonSplitHome': app.ANIME_SPLIT_HOME,
             'comingEpsLayout': app.COMING_EPS_LAYOUT,
@@ -98,11 +98,25 @@ class InfoHandler(BaseRequestHandler):
             'displayShowSpecials': app.DISPLAY_SHOW_SPECIALS,
             'useSubtitles': app.USE_SUBTITLES,
             'downloadUrl': app.DOWNLOAD_URL,
-            'subtitlesMulti': app.SUBTITLES_MULTI
+            'subtitlesMulti': app.SUBTITLES_MULTI,
+            'kodi': {
+                'enabled': bool(app.USE_KODI and app.KODI_UPDATE_LIBRARY)
+            },
+            'plex': {
+                'enabled': bool(app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY)
+            },
+            'emby': {
+                'enabled': bool(app.USE_EMBY)
+            },
+            'torrents': {
+                'enabled': bool(app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and
+                                (app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'https' or not
+                                 app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'http:'))
+            }
         }
 
-        if info_query:
-            if info_query not in info_data:
-                return self.api_finish(status=404, error='{key} not found'.format(key=info_query))
+        if query:
+            if query not in config_data:
+                return self.api_finish(status=404, error='{key} not found'.format(key=query))
 
-        self.api_finish(data=info_data[info_query] if info_query else info_data)
+        self.api_finish(data=config_data[query] if query else config_data)

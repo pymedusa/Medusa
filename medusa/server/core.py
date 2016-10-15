@@ -11,7 +11,7 @@ from tornado.ioloop import IOLoop
 from tornado.routes import route
 from tornado.web import Application, RedirectHandler, StaticFileHandler
 from .api.v1.core import ApiHandler
-from .api.v2.info import InfoHandler
+from .api.v2.config import ConfigHandler
 from .api.v2.log import LogHandler
 from .api.v2.show import ShowHandler
 from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
@@ -110,9 +110,8 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
         # API v2 handlers
         self.app.add_handlers('.*$', [
-            # Shows handler
             (r'{base}/show/?([0-9]*)/?'.format(base=self.options['api_v2_root']), ShowHandler),
-            (r'{base}/info/?([A-Za-z0-9_-]*)/?'.format(base=self.options['api_v2_root']), InfoHandler),
+            (r'{base}/config/?([A-Za-z0-9_-]*)/?'.format(base=self.options['api_v2_root']), ConfigHandler),
             (r'{base}/log/?(?P<log_level>[0-9]*)/?'.format(base=self.options['api_v2_root']), LogHandler)
         ])
 
