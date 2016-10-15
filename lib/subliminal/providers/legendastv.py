@@ -357,16 +357,21 @@ class LegendasTVProvider(Provider):
         for title_id, t in titles.items():
             # discard mismatches on title
             if sanitize(t['title']) != sanitize(title):
+                logger.debug('Title id: %s sanitize did not matched: %s and %s', title_id, sanitize(t['title']), sanitize(title))
                 continue
 
             # episode
             if season and episode:
                 # discard mismatches on type
                 if t['type'] != 'episode':
+                    logger.debug('Title id: %s not an episode, discarding title', title_id)
                     continue
 
                 # discard mismatches on season
                 if 'season' not in t or t['season'] != season:
+                    if 'season' not in t:
+                        t['season'] = None
+                    logger.debug('Title id: %s season did not matched: %s and %s, discarding title', title_id, t['season'], season)
                     continue
             # movie
             else:
@@ -392,6 +397,7 @@ class LegendasTVProvider(Provider):
                 if season and episode:
                     # discard mismatches on episode in non-pack archives
                     if not a.pack and 'episode' in guess and guess['episode'] != episode:
+                        logger.debug('Episode in pack did not matched: %s and %s, discarding title', guess['episode'], episode)
                         continue
 
                 # compute an expiration time based on the archive timestamp
