@@ -183,7 +183,7 @@ def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
     :return:
     :rtype: collections.Iterable of str
     """
-    new_line = b'\n'
+    new_line = '\n'
     with io.open(filename, 'rb') as fh:
         segment = None
         offset = 0
@@ -193,6 +193,7 @@ def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
             offset = min(file_size, offset + buf_size)
             fh.seek(file_size - offset)
             buf = fh.read(min(remaining_size, buf_size))
+            buf = text_type(buf.decode(sys.getfilesystemencoding()) if os.name == 'nt' else buf)
             remaining_size -= buf_size
             lines = buf.split(new_line)
             # the first line of the buffer is probably not a complete line so
@@ -371,7 +372,7 @@ class LogLine(object):
         :return:
         :rtype: LogLine or None
         """
-        lines = line.split(b'\n')
+        lines = line.split('\n')
         match = LogLine.log_re.match(lines[0])
         if not match:
             return
