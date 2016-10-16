@@ -158,22 +158,22 @@ class Home(WebRoot):
         )
 
     @staticmethod
-    # Replace with /api/v2/config/kodi, check if enabled === true
+    # @TODO: Replace with /api/v2/config/kodi, check if enabled === true
     def haveKODI():
         return app.USE_KODI and app.KODI_UPDATE_LIBRARY
 
     @staticmethod
-    # Replace with /api/v2/config/plex, check if enabled === true
+    # @TODO: Replace with /api/v2/config/plex, check if enabled === true
     def havePLEX():
         return app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY
 
     @staticmethod
-    # Replace with /api/v2/config/emby, check if enabled === true
+    # @TODO: Replace with /api/v2/config/emby, check if enabled === true
     def haveEMBY():
         return app.USE_EMBY
 
     @staticmethod
-    # Replace with /api/v2/config/torrents, check if enabled === true
+    # @TODO: Replace with /api/v2/config/torrents, check if enabled === true
     def haveTORRENT():
         return bool(app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and
                     (app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'https' or not
@@ -641,7 +641,7 @@ class Home(WebRoot):
 
     @staticmethod
     def getDBcompare():
-        checkversion = CheckVersion()  # TODO: replace with settings var
+        checkversion = CheckVersion()  # @TODO: replace with settings var
         db_status = checkversion.getDBcompare()
 
         if db_status == 'upgrade':
@@ -684,7 +684,7 @@ class Home(WebRoot):
         })
 
     def displayShow(self, show=None):
-        # TODO: add more comprehensive show validation
+        # @TODO: add more comprehensive show validation
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
             show_obj = Show.find(app.showList, show)
@@ -890,7 +890,7 @@ class Home(WebRoot):
         """
 
         # Try to retrieve the cached result from the providers cache table.
-        # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
+        # @TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
 
         try:
             main_db_con = db.DBConnection('cache.db')
@@ -1034,7 +1034,8 @@ class Home(WebRoot):
                         perform_search=0, down_cur_quality=0, show_all_results=0):
         """ The view with results for the manual selected show/episode """
 
-        # TODO: add more comprehensive show validation
+        indexer_tvdb = 1
+        # @TODO: add more comprehensive show validation
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
             show_obj = Show.find(app.showList, show)
@@ -1197,6 +1198,7 @@ class Home(WebRoot):
 
     @staticmethod
     def plotDetails(show, season, episode):
+        # @TODO: Replace with plot from GET /api/v2/show/{id}
         main_db_con = db.DBConnection()
         result = main_db_con.selectOne(
             b'SELECT description '
@@ -1208,6 +1210,7 @@ class Home(WebRoot):
 
     @staticmethod
     def sceneExceptions(show):
+        # @TODO: Replace with plot from GET /api/v2/show/{id}
         exceptions_list = get_all_scene_exceptions(show)
         if not exceptions_list:
             return 'No scene exceptions'
@@ -1225,6 +1228,7 @@ class Home(WebRoot):
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
                  defaultEpStatus=None, quality_preset=None):
+        # @TODO: Replace with PUT /api/v2/show/{id}
         anyQualities = anyQualities or []
         bestQualities = bestQualities or []
         exceptions_list = exceptions_list or []
@@ -1461,7 +1465,7 @@ class Home(WebRoot):
                        (show=show_obj.name), logger.DEBUG)
 
     def togglePause(self, show=None):
-        # Replace with PUT to update the state var /api/v2/show/{id}
+        # @TODO: Replace with PUT to update the state var /api/v2/show/{id}
         error, show_obj = Show.pause(show)
 
         if error is not None:
@@ -1473,7 +1477,7 @@ class Home(WebRoot):
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
     def deleteShow(self, show=None, full=0):
-        # Replace with DELETE to delete the show resource /api/v2/show/{id}
+        # @TODO: Replace with DELETE to delete the show resource /api/v2/show/{id}
         if show:
             error, show_obj = Show.delete(show, full)
 
@@ -1495,6 +1499,7 @@ class Home(WebRoot):
         return self.redirect('/home/')
 
     def refreshShow(self, show=None):
+        # @TODO: Replace with status=refresh from PUT /api/v2/show/{id}
         error, show_obj = Show.refresh(show)
 
         # This is a show validation error
@@ -1510,6 +1515,7 @@ class Home(WebRoot):
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
     def updateShow(self, show=None):
+        # @TODO: Replace with status=update or status=updating from PUT /api/v2/show/{id}
         if show is None:
             return self._genericMessage('Error', 'Invalid show ID')
 
@@ -1595,6 +1601,7 @@ class Home(WebRoot):
             return self.redirect('/home/')
 
     def setStatus(self, show=None, eps=None, status=None, direct=False):
+        # @TODO: Merge this with the other PUT commands for /api/v2/show/{id}
         if not all([show, eps, status]):
             error_message = 'You must specify a show and at least one episode'
             if direct:
