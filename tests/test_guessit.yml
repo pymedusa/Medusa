@@ -3201,3 +3201,17 @@
   container: mp4
   mimetype: video/mp4
   type: episode
+
+
+# Regression test for https://github.com/pymedusa/Medusa/issues/1232
+# Anime was not outputing absolute episode
+? /Finish/[Group] Anime Super Episode 61 [VOSTFR][720p].mp4
+: release_group: Group
+  title: Anime Super
+  absolute_episode: 61
+  episode: 61
+  subtitle_language: fr
+  screen_size: 720p
+  container: mp4
+  mimetype: video/mp4
+  type: episode

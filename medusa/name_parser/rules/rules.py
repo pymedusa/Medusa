@@ -1036,7 +1036,7 @@ class AbsoluteEpisodeNumbers(Rule):
                     if previous.name != 'episode':
                         if hole and self.non_words_re.sub('', hole.value).lower() in self.episode_words:
                             # if version is present, then it's an anime
-                            if not matches.named('version'):
+                            if not matches.named('version') and not matches.tagged('anime'):
                                 # Some.Show.E07.1080p.HDTV.x265-GROUP
                                 # Some.Show.Episode.10.Some.Title.720p
                                 # not absolute episode
