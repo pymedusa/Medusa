@@ -70,11 +70,6 @@ class NameParser(object):
         if not result.show or self.naming_pattern:
             return result
 
-        # get quality
-        result.quality = common.Quality.from_guessit(guess)
-        if result.quality == common.Quality.UNKNOWN:
-            result.quality = common.Quality.nameQuality(name, result.show.is_anime, extend=False)
-
         new_episode_numbers = []
         new_season_numbers = []
         new_absolute_numbers = []
@@ -186,8 +181,8 @@ class NameParser(object):
             raise InvalidNameException('Scene numbering results episodes from seasons {seasons}, (i.e. more than one) '
                                        'and Medusa does not support this. Sorry.'.format(seasons=new_season_numbers))
 
-        # I guess it's possible that we'd have duplicate episodes too, so lets
-        # eliminate them
+        # If guess it's possible that we'd have duplicate episodes too,
+        # so lets eliminate them
         new_episode_numbers = list(set(new_episode_numbers))
         new_episode_numbers.sort()
 
@@ -288,7 +283,7 @@ class ParseResult(object):
     """Represent the release information for a given name."""
 
     def __init__(self, guess, series_name=None, season_number=None, episode_numbers=None, ab_episode_numbers=None,
-                 air_date=None, release_group=None, proper_tags=None, version=None, original_name=None):
+                 air_date=None, quality=None, release_group=None, proper_tags=None, version=None, original_name=None):
         """The ParseResult constructor.
 
         :param guess:
@@ -303,6 +298,8 @@ class ParseResult(object):
         :type ab_episode_numbers: list of int
         :param air_date:
         :type air_date: date
+        :param quality:
+        :type quality: Quality
         :param release_group:
         :type release_group: str
         :param proper_tags:
@@ -317,7 +314,7 @@ class ParseResult(object):
         self.season_number = season_number
         self.episode_numbers = episode_numbers if episode_numbers else []
         self.ab_episode_numbers = ab_episode_numbers if ab_episode_numbers else []
-        self.quality = common.Quality.UNKNOWN
+        self.quality = self.get_quality(guess)
         self.release_group = release_group
         self.air_date = air_date
         self.show = None
@@ -358,6 +355,17 @@ class ParseResult(object):
                                              absolute_episode=self.ab_episode_numbers,
                                              quality=common.Quality.qualityStrings[self.quality]))
         return helpers.canonical_name(obj, fmt='{key}: {value}', separator=', ')
+
+    def get_quality(self, guess, extend=False):
+        """Return video quality from guess or name.
+
+        :return:
+        :rtype: Quality
+        """
+        quality = common.Quality.from_guessit(guess)
+        if quality != common.Quality.UNKNOWN:
+            return quality
+        return common.Quality.nameQuality(self.original_name, self.is_anime, extend)
 
     @property
     def is_air_by_date(self):
