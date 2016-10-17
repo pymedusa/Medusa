@@ -1228,7 +1228,7 @@ class Home(WebRoot):
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
                  defaultEpStatus=None, quality_preset=None):
-        # @TODO: Replace with PUT /api/v2/show/{id}
+        # @TODO: Replace with PATCH /api/v2/show/{id}
         anyQualities = anyQualities or []
         bestQualities = bestQualities or []
         exceptions_list = exceptions_list or []
@@ -1499,7 +1499,7 @@ class Home(WebRoot):
         return self.redirect('/home/')
 
     def refreshShow(self, show=None):
-        # @TODO: Replace with status=refresh from PUT /api/v2/show/{id}
+        # @TODO: Replace with status=refresh from PATCH /api/v2/show/{id}
         error, show_obj = Show.refresh(show)
 
         # This is a show validation error
@@ -1515,7 +1515,7 @@ class Home(WebRoot):
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
     def updateShow(self, show=None):
-        # @TODO: Replace with status=update or status=updating from PUT /api/v2/show/{id}
+        # @TODO: Replace with status=update or status=updating from PATCH /api/v2/show/{id}
         if show is None:
             return self._genericMessage('Error', 'Invalid show ID')
 
