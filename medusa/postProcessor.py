@@ -769,7 +769,7 @@ class PostProcessor(object):
 
     def get_snatched_name(self, show_id, season, episodes, quality):
         """
-        Return the snatched name from history and set as in history if found.
+        Return the last snatched name from history and set as in_history if quality is matched.
 
         :return:
         :rtype: str
@@ -777,19 +777,20 @@ class PostProcessor(object):
         main_db_con = db.DBConnection()
         for episode in episodes:
             sql_results = main_db_con.select(
-                'SELECT resource '
+                'SELECT resource, quality '
                 'FROM history '
                 'WHERE showid = ? '
                 'AND season = ? '
                 'AND episode = ? '
-                'AND quality = ? '
                 "AND (action LIKE '%02' "
                 "OR action LIKE '%09' "
                 "OR action LIKE '%12')",
-                [show_id, season, episode, quality])
+                [show_id, season, episode])
 
             if sql_results:
-                self.in_history = True
+                if sql_results[0]['quality'] == quality:
+                    self.in_history = True
+
                 snatched_name = sql_results[0]['resource']
                 logger.log(u'Found snatched name in history for {0}: {1}'.format
                            (self.file_name, snatched_name), logger.DEBUG)
@@ -876,7 +877,7 @@ class PostProcessor(object):
                 common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
             # if the episode is still in a snatched status, then we can assume we want this
             if self.in_history:
-                self._log(u"Medusa snatched this episode and it wasn't processed yet, processing now", logger.DEBUG)
+                self._log(u"This episode was snatched last and isn't processed yet, processing now", logger.DEBUG)
                 return True
 
             # if it's in history, we only want it if the new quality is higher or
