@@ -26,8 +26,8 @@ from collections import OrderedDict
 
 import guessit
 import medusa as app
-from ..helper.common import episode_num
 from .. import common, db, helpers, scene_exceptions, scene_numbering
+from ..helper.common import episode_num
 
 
 logger = logging.getLogger(__name__)
