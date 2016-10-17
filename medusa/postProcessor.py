@@ -502,7 +502,7 @@ class PostProcessor(object):
                 return snatched_name
 
         logger.log(u"Couldn't find snatched name in history for {0}".format
-                   (self.file_name, logger.DEBUG))
+                   (self.file_name), logger.DEBUG)
         return
 
     def _finalize(self, parse_result):
@@ -731,7 +731,7 @@ class PostProcessor(object):
         root_ep = None
         for cur_episode in episodes:
             self._log(u'Retrieving episode object for {0} {1}'.format
-                      (show.name, episode_num(season, cur_episode), logger.DEBUG))
+                      (show.name, episode_num(season, cur_episode)), logger.DEBUG)
 
             # now that we've figured out which episode this file is just load it manually
             try:
