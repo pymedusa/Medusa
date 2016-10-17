@@ -6,6 +6,8 @@ import medusa.logger as sut
 from medusa.logger import DEBUG, INFO, LogLine, WARNING
 import pytest
 
+from six import text_type
+
 
 class TestStandardLoggingApi(object):
     @pytest.mark.parametrize('p', [
@@ -86,6 +88,9 @@ def test_reverse_readlines(create_file, line_pattern):
     no_lines = 10000
     filename = create_file(filename='samplefile.log', lines=[line_pattern.format(n=i) for i in range(0, no_lines)])
     expected = [line_pattern.format(n=no_lines - i - 1) for i in range(0, no_lines)]
+    for i, v in enumerate(expected):
+        if not isinstance(v, text_type):
+            expected[i] = text_type(v, errors='replace')
 
     # When
     actual = list(sut.reverse_readlines(filename, buf_size=1024))
