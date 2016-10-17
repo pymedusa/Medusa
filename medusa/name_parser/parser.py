@@ -283,7 +283,7 @@ class ParseResult(object):
     """Represent the release information for a given name."""
 
     def __init__(self, guess, series_name=None, season_number=None, episode_numbers=None, ab_episode_numbers=None,
-                 air_date=None, quality=None, release_group=None, proper_tags=None, version=None, original_name=None):
+                 air_date=None, release_group=None, proper_tags=None, version=None, original_name=None):
         """The ParseResult constructor.
 
         :param guess:
@@ -298,8 +298,6 @@ class ParseResult(object):
         :type ab_episode_numbers: list of int
         :param air_date:
         :type air_date: date
-        :param quality:
-        :type quality: Quality
         :param release_group:
         :type release_group: str
         :param proper_tags:
