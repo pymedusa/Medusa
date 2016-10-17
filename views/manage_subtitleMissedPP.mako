@@ -23,6 +23,7 @@
                 <th>Show</th>
                 <th>Episode</th>
                 <th>Release</th>
+                <th>Age</th>
                 <th class="col-search">Search</th>
             </tr>
         </thead>
@@ -40,7 +41,10 @@
                         ${os.path.relpath(epResult['release'], app.TV_DOWNLOAD_DIR)}
                     </span>
                 </td>
-                <td class="col-search">
+                <td class="tvShow" align="center">
+                        ${epResult['age']}d
+                </td>
+                <td class="col-search" align="center">
                     <a class="epSubtitlesSearchPP" release_id=${index} href="home/manual_search_subtitles?release_id=${index}"><img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></a>
                 </td>
             </tr>
