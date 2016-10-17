@@ -226,10 +226,10 @@ class BaseHandler(RequestHandler):
                                             utf8(url)))
 
     def get_current_user(self):
-        if not isinstance(self, UI) and app.WEB_USERNAME and app.WEB_PASSWORD:
-            return self.get_secure_cookie(app.SECURE_TOKEN)
-        else:
-            return True
+        user_cookie = self.get_secure_cookie(app.SECURE_TOKEN)
+        if user_cookie:
+            return json.dumps(user_cookie)
+        return None
 
 
 class WebHandler(BaseHandler):
