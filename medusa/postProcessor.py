@@ -798,7 +798,6 @@ class PostProcessor(object):
 
         logger.log(u"Couldn't find snatched name in history for {0}".format
                    (self.file_name), logger.DEBUG)
-        return
 
     def _run_extra_scripts(self, ep_obj):
         """
