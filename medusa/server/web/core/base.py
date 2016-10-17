@@ -349,7 +349,7 @@ class WebRoot(WebHandler):
         return None
 
     def setHomeLayout(self, layout):
-
+        # @TODO: Replace this with home={poster, small, banner, simple, coverflow} PUT /api/v2/config/layout
         if layout not in ('poster', 'small', 'banner', 'simple', 'coverflow'):
             layout = 'poster'
 
@@ -359,6 +359,7 @@ class WebRoot(WebHandler):
 
     @staticmethod
     def setPosterSortBy(sort):
+        # @TODO: Replace this with poster.sort.field={name, date, network, progress} PUT /api/v2/config/layout
         if sort not in ('name', 'date', 'network', 'progress'):
             sort = 'name'
 
@@ -367,12 +368,12 @@ class WebRoot(WebHandler):
 
     @staticmethod
     def setPosterSortDir(direction):
-
+        # @TODO: Replace this with poster.sort.dir={asc, desc} PUT /api/v2/config/layout
         app.POSTER_SORTDIR = int(direction)
         app.save_config()
 
     def setHistoryLayout(self, layout):
-
+        # @TODO: Replace this with history={compact, detailed} PUT /api/v2/config/layout
         if layout not in ('compact', 'detailed'):
             layout = 'detailed'
 
@@ -381,12 +382,12 @@ class WebRoot(WebHandler):
         return self.redirect('/history/')
 
     def toggleDisplayShowSpecials(self, show):
-
         app.DISPLAY_SHOW_SPECIALS = not app.DISPLAY_SHOW_SPECIALS
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
     def setScheduleLayout(self, layout):
+        # @TODO: Replace this with schedule={poster, banner, list, calandar} PUT /api/v2/config/layout
         if layout not in ('poster', 'banner', 'list', 'calendar'):
             layout = 'banner'
 
@@ -398,7 +399,6 @@ class WebRoot(WebHandler):
         return self.redirect('/schedule/')
 
     def toggleScheduleDisplayPaused(self):
-
         app.COMING_EPS_DISPLAY_PAUSED = not app.COMING_EPS_DISPLAY_PAUSED
 
         return self.redirect('/schedule/')
