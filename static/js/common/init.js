@@ -5,7 +5,7 @@ MEDUSA.common.init = function() {
         dialogClass: 'modal-dialog',
         post: false,
         confirm: function(e) {
-            location.href = e.context.href;
+            location.href = e[0].href;
         }
     };
 
@@ -23,7 +23,7 @@ MEDUSA.common.init = function() {
         title: 'Remove Show',
         text: 'Are you sure you want to remove <span class="footerhighlight">' + $('#showtitle').data('showname') + '</span> from the database?<br><br><input type="checkbox" id="deleteFiles"> <span class="red-text">Check to delete files as well. IRREVERSIBLE</span></input>',
         confirm: function(e) {
-            location.href = e.context.href + ($('#deleteFiles')[0].checked ? '&full=1' : '');
+            location.href = e[0].href + (deleteFiles.checked ? '&full=1' : '');
         }
     });
 
