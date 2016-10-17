@@ -875,8 +875,8 @@ class PostProcessor(object):
         if self.in_history or ep_obj.status in common.Quality.SNATCHED + \
                 common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
             # if the episode is still in a snatched status, then we can assume we want this
-            if not self.in_history:
-                self._log(u"Medusa snatched this episode and it wasn't processed yet", logger.DEBUG)
+            if self.in_history:
+                self._log(u"Medusa snatched this episode and it wasn't processed yet, processing now", logger.DEBUG)
                 return True
 
             # if it's in history, we only want it if the new quality is higher or
