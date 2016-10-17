@@ -473,104 +473,6 @@ class PostProcessor(object):
         self._combined_file_operation(file_path, new_path, new_base_name, associated_files,
                                       action=_int_move_and_sym_link, subtitles=subtitles)
 
-    def get_snatched_name(self, show_id, season, episodes, quality):
-        """
-        Return the snatched name from history an set as in history if found.
-
-        :return:
-        :rtype: str
-        """
-        main_db_con = db.DBConnection()
-        for episode in episodes:
-            sql_results = main_db_con.select(
-                'SELECT resource '
-                'FROM history '
-                'WHERE showid = ? '
-                'AND season = ? '
-                'AND episode = ? '
-                'AND quality = ? '
-                "AND (action LIKE '%02' "
-                "OR action LIKE '%09' "
-                "OR action LIKE '%12')",
-                [show_id, season, episode, quality])
-
-            if sql_results:
-                self.in_history = True
-                snatched_name = sql_results[0]['resource']
-                logger.log(u'Found snatched name in history for {0}: {1}'.format
-                           (self.file_name, snatched_name), logger.DEBUG)
-                return snatched_name
-
-        logger.log(u"Couldn't find snatched name in history for {0}".format
-                   (self.file_name), logger.DEBUG)
-        return
-
-    def _finalize(self, parse_result):
-        """
-        Store parse result if it is complete and final.
-
-        :param parse_result: Result of parsers
-        """
-        self.release_group = parse_result.release_group
-
-        # remember whether it's a proper
-        self.is_proper = bool(parse_result.proper_tags)
-
-        # if the result is complete then remember that for later
-        # if the result is complete then set release name
-        if parse_result.series_name and ((parse_result.season_number is not None and parse_result.episode_numbers) or
-                                         parse_result.air_date) and parse_result.release_group:
-
-            if not self.release_name:
-                self.release_name = remove_extension(os.path.basename(parse_result.original_name))
-
-        else:
-            logger.log(u"Parse result not sufficient (all following have to be set). Won't save release name",
-                       logger.DEBUG)
-            logger.log(u'Parse result (series_name): {0}'.format(parse_result.series_name), logger.DEBUG)
-            logger.log(u'Parse result (season_number): {0}'.format(parse_result.season_number), logger.DEBUG)
-            logger.log(u'Parse result (episode_numbers): {0}'.format(parse_result.episode_numbers), logger.DEBUG)
-            logger.log(u'Parse result (ab_episode_numbers): {0}'.format(parse_result.ab_episode_numbers), logger.DEBUG)
-            logger.log(u'Parse result (air_date): {0}'.format(parse_result.air_date), logger.DEBUG)
-            logger.log(u'Parse result (release_group): {0}'.format(parse_result.release_group), logger.DEBUG)
-
-    def _analyze_name(self, name):
-        """
-        Take a name and tries to figure out a show, season, and episode from it.
-
-        :param name: A string which we want to analyze to determine show info from (unicode)
-        :return: A (indexer_id, season, [episodes]) tuple. The first two may be None and episodes may be []
-        if none were found.
-        """
-        to_return = (None, None, [], None, None)
-
-        if not name:
-            return to_return
-
-        logger.log(u'Analyzing name: {0}'.format(name), logger.DEBUG)
-
-        # parse the name to break it into show name, season, and episode
-        try:
-            parse_result = NameParser().parse(name)
-        except (InvalidNameException, InvalidShowException) as error:
-            logger.log(u'{0}'.format(error), logger.DEBUG)
-            return to_return
-
-        # show object
-        show = parse_result.show
-
-        if parse_result.is_air_by_date:
-            season = -1
-            episodes = [parse_result.air_date]
-        else:
-            season = parse_result.season_number
-            episodes = parse_result.episode_numbers
-
-        to_return = (show, season, episodes, parse_result.quality, parse_result.version)
-
-        self._finalize(parse_result)
-        return to_return
-
     @staticmethod
     def _build_anidb_episode(connection, file_path):
         """
@@ -718,6 +620,72 @@ class PostProcessor(object):
 
         return show, season, episodes, quality, version
 
+    def _analyze_name(self, name):
+        """
+        Take a name and try to figure out a show, season, and episode from it.
+
+        :param name: A string which we want to analyze to determine show info from (unicode)
+        :return: A (indexer_id, season, [episodes]) tuple. The first two may be None and episodes may be []
+        if none were found.
+        """
+        to_return = (None, None, [], None, None)
+
+        if not name:
+            return to_return
+
+        logger.log(u'Analyzing name: {0}'.format(name), logger.DEBUG)
+
+        # parse the name to break it into show name, season, and episode
+        try:
+            parse_result = NameParser().parse(name)
+        except (InvalidNameException, InvalidShowException) as error:
+            logger.log(u'{0}'.format(error), logger.DEBUG)
+            return to_return
+
+        # show object
+        show = parse_result.show
+
+        if parse_result.is_air_by_date:
+            season = -1
+            episodes = [parse_result.air_date]
+        else:
+            season = parse_result.season_number
+            episodes = parse_result.episode_numbers
+
+        to_return = (show, season, episodes, parse_result.quality, parse_result.version)
+
+        self._finalize(parse_result)
+        return to_return
+
+    def _finalize(self, parse_result):
+        """
+        Store parse result if it is complete and final.
+
+        :param parse_result: Result of parsers
+        """
+        self.release_group = parse_result.release_group
+
+        # remember whether it's a proper
+        self.is_proper = bool(parse_result.proper_tags)
+
+        # if the result is complete then remember that for later
+        # if the result is complete then set release name
+        if parse_result.series_name and ((parse_result.season_number is not None and parse_result.episode_numbers) or
+                                         parse_result.air_date) and parse_result.release_group:
+
+            if not self.release_name:
+                self.release_name = remove_extension(os.path.basename(parse_result.original_name))
+
+        else:
+            logger.log(u"Parse result not sufficient (all following have to be set). Won't save release name",
+                       logger.DEBUG)
+            logger.log(u'Parse result (series_name): {0}'.format(parse_result.series_name), logger.DEBUG)
+            logger.log(u'Parse result (season_number): {0}'.format(parse_result.season_number), logger.DEBUG)
+            logger.log(u'Parse result (episode_numbers): {0}'.format(parse_result.episode_numbers), logger.DEBUG)
+            logger.log(u'Parse result (ab_episode_numbers): {0}'.format(parse_result.ab_episode_numbers), logger.DEBUG)
+            logger.log(u'Parse result (air_date): {0}'.format(parse_result.air_date), logger.DEBUG)
+            logger.log(u'Parse result (release_group): {0}'.format(parse_result.release_group), logger.DEBUG)
+
     def _get_ep_obj(self, show, season, episodes):
         """
         Retrieve the TVEpisode object requested.
@@ -798,6 +766,38 @@ class PostProcessor(object):
             return ep_quality
 
         return ep_quality
+
+    def get_snatched_name(self, show_id, season, episodes, quality):
+        """
+        Return the snatched name from history and set as in history if found.
+
+        :return:
+        :rtype: str
+        """
+        main_db_con = db.DBConnection()
+        for episode in episodes:
+            sql_results = main_db_con.select(
+                'SELECT resource '
+                'FROM history '
+                'WHERE showid = ? '
+                'AND season = ? '
+                'AND episode = ? '
+                'AND quality = ? '
+                "AND (action LIKE '%02' "
+                "OR action LIKE '%09' "
+                "OR action LIKE '%12')",
+                [show_id, season, episode, quality])
+
+            if sql_results:
+                self.in_history = True
+                snatched_name = sql_results[0]['resource']
+                logger.log(u'Found snatched name in history for {0}: {1}'.format
+                           (self.file_name, snatched_name), logger.DEBUG)
+                return snatched_name
+
+        logger.log(u"Couldn't find snatched name in history for {0}".format
+                   (self.file_name), logger.DEBUG)
+        return
 
     def _run_extra_scripts(self, ep_obj):
         """
