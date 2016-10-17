@@ -37,8 +37,8 @@
                         ${episode_num(epResult['season'], epResult['episode'])}
                 </td>
                 <td class="tvShow" align="left">
-                    <span class="break-word">
-                        ${os.path.relpath(epResult['release'], app.TV_DOWNLOAD_DIR)}
+                    <span class="break-word" title=${os.path.relpath(epResult['release'], app.TV_DOWNLOAD_DIR)}>
+                        ${os.path.basename(epResult['release'])}
                     </span>
                 </td>
                 <td class="tvShow" align="center">
