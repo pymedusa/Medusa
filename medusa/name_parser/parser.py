@@ -169,7 +169,7 @@ class NameParser(object):
                     if a:
                         new_absolute_numbers.append(a)
                         logger.debug('Scene anime show {name} using indexer with absolute {absolute}: {ep}',
-                                     name=result.show.name, absolute=a, ep=episode_num(s, e))
+                                     name=result.show.name, absolute=a, ep=episode_num(s, e, 'absolute'))
 
                 new_episode_numbers.append(e)
                 new_season_numbers.append(s)
