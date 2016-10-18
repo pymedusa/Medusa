@@ -2273,7 +2273,7 @@ class TVEpisode(TVObject):
         :rtype: unicode
         """
         result = u''
-        result += u'%r - S%02rE%02r - %r\n' % (self.show.name, self.season, self.episode, self.name)
+        result += u'%r - %r - %r\n' % (self.show.name, episode_num(self.season, self.episode), self.name)
         result += u'location: %r\n' % self.location
         result += u'description: %r\n' % self.description
         result += u'subtitles: %r\n' % u','.join(self.subtitles)
