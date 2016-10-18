@@ -300,8 +300,21 @@ class Manage(Home, WebRoot):
                 if related_files:
                     continue
 
+                age_hours = divmod(video_age.seconds, 3600)[0]
+                age_minutes = divmod(video_age.seconds, 60)[0]
+                if video_age.days > 0:
+                    age_unit = 'd'
+                    age_value = video_age.days
+                elif age_hours > 0:
+                    age_unit = 'h'
+                    age_value = age_hours
+                else:
+                    age_unit = 'm'
+                    age_value = age_minutes
+
                 app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.show.indexerid, 'show_name': tv_episode.show.name,
-                                           'season': tv_episode.season, 'episode': tv_episode.episode, 'age': video_age.days, 'age_raw': video_age})
+                                           'season': tv_episode.season, 'episode': tv_episode.episode,
+                                           'age': age_value, 'age_unit': age_unit, 'age_raw': video_age})
         app.RELEASES_IN_PP = sorted(app.RELEASES_IN_PP, key=lambda k: k['age_raw'], reverse=True)
 
         return t.render(releases_in_pp=app.RELEASES_IN_PP, title='Missing Subtitles in Post-Process folder',
