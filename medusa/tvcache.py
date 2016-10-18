@@ -395,6 +395,19 @@ class TVCache(object):
 
             logger.log('Added RSS item: [{0}] to cache: [{1}]'.format(name, self.provider_id), logger.DEBUG)
 
+            if not all([isinstance(name, str), isinstance(season, int), isinstance(episodes, str),
+                        isinstance(indexer_id, int), isinstance(url, str), isinstance(time, int),
+                        isinstance(quality, int), isinstance(release_group, str), isinstance(seeders, int),
+                        isinstance(leechers, int), isinstance(size, int), isinstance(pubdate, int),
+                        isinstance(torrent_hash, int), isinstance(proper_tags, str)]):
+                logger.log("Wrong instance. Discarding result. name: '{0}', season: '{1}', episodes: '{2}', "
+                           "indexer_id: '{3}', url: '{4}', time: '{5}', quality: '{6}', "
+                           "release_group: '{7}', seeders: '{8}', leechers: '{9}', size: '{10}', "
+                           "pubdate: '{11}', hash: '{12}', proper_tags: '{13}'".format
+                           (name, season, episodeText, parse_result.show.indexerid, url, cur_timestamp,
+                            quality, release_group, version, seeders, leechers, size, pubdate, torrent_hash, proper_tags), logger.WARNING)
+                return None
+
             return [
                 b'INSERT OR REPLACE INTO [{provider_id}] (name, season, episodes, indexerid, url, time, quality, release_group, version, seeders, '
                 b'leechers, size, pubdate, hash, proper_tags) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(provider_id=self.provider_id),
