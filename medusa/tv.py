@@ -19,6 +19,7 @@
 
 import datetime
 import glob
+import json
 import os.path
 import re
 import shutil
@@ -40,7 +41,7 @@ from .common import (
     UNAIRED, UNKNOWN, WANTED, statusStrings
 )
 from .helper.common import (
-    dateTimeFormat, episode_num, remove_extension, replace_extension, sanitize_filename, try_int
+    dateTimeFormat, episode_num, obj_to_dict, remove_extension, replace_extension, sanitize_filename, try_int
 )
 from .helper.exceptions import (
     EpisodeDeletedException, EpisodeNotFoundException, MultipleEpisodesInDatabaseException,
@@ -1500,6 +1501,10 @@ class TVShow(TVObject):
         to_return += 'anime: ' + str(self.is_anime) + '\n'
         return to_return
 
+    def to_json(self):
+        """JSON representation."""
+        return json.dumps(obj_to_dict(self))
+
     def __unicode__(self):
         """Unicode representation.
 
@@ -2284,6 +2289,10 @@ class TVEpisode(TVObject):
         result += u'hastbn: %r\n' % self.hastbn
         result += u'status: %r\n' % self.status
         return result
+
+    def to_json(self):
+        """JSON representation."""
+        return json.dumps(obj_to_dict(self))
 
     def create_meta_files(self):
         """Create episode metadata files."""
