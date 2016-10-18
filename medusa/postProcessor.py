@@ -789,10 +789,11 @@ class PostProcessor(object):
                 [show_id, season, episode])
 
             if sql_results:
-                if sql_results[0]['quality'] == quality:
+                snatched_name = sql_results[0]['resource']
+                norm_name = remove_extension(snatched_name)
+                if self.release_name == norm_name and sql_results[0]['quality'] == quality:
                     self.in_history = True
 
-                snatched_name = sql_results[0]['resource']
                 logger.log(u'Found snatched name in history for {0}: {1}'.format
                            (self.file_name, snatched_name), logger.DEBUG)
                 return snatched_name
