@@ -784,7 +784,8 @@ class PostProcessor(object):
                 'AND episode = ? '
                 "AND (action LIKE '%02' "
                 "OR action LIKE '%09' "
-                "OR action LIKE '%12')",
+                "OR action LIKE '%12') "
+                'ORDER BY date DESC',
                 [show_id, season, episode])
 
             if sql_results:
@@ -965,8 +966,7 @@ class PostProcessor(object):
                    (common.Quality.qualityStrings[new_ep_quality]), logger.DEBUG)
 
         # check snatched history to see if we should set download as priority
-        if common.Quality.qualityStrings[new_ep_quality] != 'Unknown':
-            self.get_snatched_name(show.indexerid, season, episodes, new_ep_quality)
+        self.get_snatched_name(show.indexerid, season, episodes, new_ep_quality)
 
         # see if this is a priority download (is it snatched, in history, PROPER, or BEST)
         priority_download = self._is_priority(ep_obj, new_ep_quality)
