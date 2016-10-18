@@ -23,11 +23,12 @@ import stat
 from babelfish import Language
 import medusa as app
 import shutil_custom
-from subliminal import (refine, scan_video)
+from subliminal import refine, scan_video
 from unrar2 import RarFile
-from unrar2.rar_exceptions import ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive, InvalidRARArchiveUsage
+from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
+                                   InvalidRARArchiveUsage)
 from . import common, db, failedProcessor, helpers, logger, notifiers, postProcessor
-from .helper.common import is_sync_file, is_torrent_or_nzb_file, subtitle_extensions
+from .helper.common import is_sync_file, is_torrent_or_nzb_file, remove_extension, subtitle_extensions
 from .helper.encoding import ss
 from .helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
@@ -45,13 +46,12 @@ class ProcessResult(object):  # pylint: disable=too-few-public-methods
 
 def delete_folder(folder, check_empty=True):
     """
-    Removes a folder from the filesystem
+    Remove a folder from the filesystem.
 
     :param folder: Path to folder to remove
     :param check_empty: Boolean, check if the folder is empty before removing it, defaults to True
     :return: True on success, False on failure
     """
-
     # check if it's a folder
     if not os.path.isdir(folder):
         return False
@@ -88,16 +88,15 @@ def delete_folder(folder, check_empty=True):
 
 def delete_files(processPath, notwantedFiles, result, force=False):
     """
-    Remove files from filesystem
+    Remove files from filesystem.
 
     :param processPath: path to process
     :param notwantedFiles: files we do not want
     :param result: Processor results
     :param force: Boolean, force deletion, defaults to false
     """
-
     if not result.result and force:
-        result.output += logHelper(u"Forcing deletion of files, even though last result was not success", logger.DEBUG)
+        result.output += logHelper(u"Forcing deletion of files, even though last result was not successful", logger.DEBUG)
     elif not result.result:
         return
 
@@ -151,9 +150,10 @@ def logHelper(logMessage, logLevel=logger.INFO):
 
 # pylint: disable=too-many-arguments,too-many-branches,too-many-statements,too-many-locals
 #@OneRunPP()
-def processDir(dirName, nzbName=None, process_method=None, force=False, is_priority=None, delete_on=False, failed=False, proc_type="auto", ignore_subs=False):
+def processDir(dirName, nzbName=None, process_method=None, force=False, is_priority=None,
+               delete_on=False, failed=False, proc_type="auto", ignore_subs=False):
     """
-    Scans through the files in dirName and processes whatever media files it finds
+    Scan through the files in dirName and process whatever media files are found.
 
     :param dirName: The folder name to look in
     :param nzbName: The NZB name which resulted in this folder being downloaded
@@ -196,7 +196,7 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
 
     # Warn user if 'postpone if no subs' is enabled. Will debug possible user issues with PP
     if app.POSTPONE_IF_NO_SUBS:
-        result.output += logHelper(u"Feature 'postpone postprocessing if no subtitle available' is enabled", logger.INFO)
+        result.output += logHelper(u"Feature 'postpone post-processing if no subtitle available' is enabled", logger.INFO)
 
     if not postpone:
         result.output += logHelper(u"PostProcessing Path: %s" % path, logger.INFO)
@@ -317,16 +317,16 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
             for missedfile in result.missedfiles:
                 result.output += logHelper(u"[%s]" % missedfile)
     else:
-        result.output += logHelper(u"Problem(s) during processing, failed the following files/folders:  ", logger.WARNING)
+        result.output += logHelper(u"Problem(s) during processing, failed the following files/folders: ", logger.WARNING)
         for missedfile in result.missedfiles:
             result.output += logHelper(u"[%s]" % missedfile, logger.WARNING)
 
     return result.output
 
 
-def validateDir(path, dirName, nzbNameOriginal, failed, result):  # pylint: disable=too-many-locals,too-many-branches,too-many-return-statements
+def validateDir(path, dirName, nzbNameOriginal, failed, result):
     """
-    Check if directory is valid for processing
+    Check if directory is valid for processing.
 
     :param path: Path to use
     :param dirName: Directory to check
@@ -335,7 +335,6 @@ def validateDir(path, dirName, nzbNameOriginal, failed, result):  # pylint: disa
     :param result: Previous results
     :return: True if dir is valid for processing, False if not
     """
-
     dirName = ss(dirName)
 
     IGNORED_FOLDERS = [u'.AppleDouble', u'.@__thumb', u'@eaDir']
@@ -415,13 +414,13 @@ def validateDir(path, dirName, nzbNameOriginal, failed, result):  # pylint: disa
             except (InvalidNameException, InvalidShowException) as error:
                 result.output += logHelper(u"{}".format(error), logger.DEBUG)
 
-    result.output += logHelper(u"%s : No processable items found in folder" % dirName, logger.DEBUG)
+    result.output += logHelper(u"%s : No processable items found in the folder" % dirName, logger.DEBUG)
     return False
 
 
-def unRAR(path, rarFiles, force, result):  # pylint: disable=too-many-branches,too-many-statements
+def unRAR(path, rarFiles, force, result):
     """
-    Extracts RAR files
+    Extract RAR files.
 
     :param path: Path to look for files in
     :param rarFiles: Names of RAR files
@@ -429,12 +428,11 @@ def unRAR(path, rarFiles, force, result):  # pylint: disable=too-many-branches,t
     :param result: Previous results
     :return: List of unpacked file names
     """
-
     unpacked_files = []
 
     if app.UNPACK and rarFiles:
 
-        result.output += logHelper(u"Packed Releases detected: %s" % rarFiles, logger.DEBUG)
+        result.output += logHelper(u"Packed releases detected: %s" % rarFiles, logger.DEBUG)
 
         for archive in rarFiles:
 
@@ -489,9 +487,9 @@ def unRAR(path, rarFiles, force, result):  # pylint: disable=too-many-branches,t
     return unpacked_files
 
 
-def already_postprocessed(dirName, videofile, force, result):  # pylint: disable=unused-argument
+def already_postprocessed(dirName, videofile, force, result):
     """
-    Check if we already post processed a file
+    Check if we already post processed a file.
 
     :param dirName: Directory a file resides in
     :param videofile: File name
@@ -502,41 +500,46 @@ def already_postprocessed(dirName, videofile, force, result):  # pylint: disable
     if force:
         return False
 
-    # Avoid processing the same dir again if we use a process method <> move
+    file_path = os.path.join(dirName, videofile)
+    file_size = os.path.getsize(file_path)
+
     main_db_con = db.DBConnection()
-    sql_result = main_db_con.select("SELECT release_name FROM tv_episodes WHERE release_name IN (?, ?) LIMIT 1", [dirName, videofile.rpartition('.')[0]])
-    if sql_result:
-        # result.output += logHelper(u"You're trying to post process a dir that's already been processed, skipping", logger.DEBUG)
+    # Try the simple way first, without using NameParser
+    sql_result = main_db_con.select('SELECT file_size '
+                                    'FROM tv_episodes '
+                                    "WHERE release_name LIKE ? LIMIT 1",
+                                    [remove_extension(videofile)])
+
+    if sql_result and sql_result[0]['file_size'] == file_size:
+        result.output += logHelper(u'File has same name and size, skipping it', logger.DEBUG)
         return True
 
-    # Needed if we have downloaded the same episode @ different quality
-    # But we need to make sure we check the history of the episode we're going to PP, and not others
-    try:  # if it fails to find any info (because we're doing an unparsable folder (like the TV root dir) it will throw an exception, which we want to ignore
-        parse_result = NameParser(try_indexers=True).parse(dirName)
-    except (InvalidNameException, InvalidShowException):  # ignore the exception, because we kind of expected it, but create parse_result anyway so we can perform a check on it.
-        parse_result = False
+    try:
+        parsed = NameParser().parse(file_path)
+    except (InvalidNameException, InvalidShowException):
+        return False
 
-    search_sql = "SELECT tv_episodes.indexerid, history.resource FROM tv_episodes INNER JOIN history ON history.showid=tv_episodes.showid"  # This part is always the same
-    search_sql += " WHERE history.season=tv_episodes.season AND history.episode=tv_episodes.episode"
+    sql_result = main_db_con.select('SELECT status, file_size '
+                                    'FROM tv_episodes '
+                                    'WHERE showid = ? '
+                                    'AND season = ? '
+                                    'AND episode = ? '
+                                    "AND status LIKE '%04'",
+                                    [parsed.show.indexerid, parsed.season_number,
+                                     parsed.episode_numbers[0]])
 
-    # If we find a showid, a season number, and one or more episode numbers then we need to use those in the query
-    if parse_result and parse_result.show.indexerid and parse_result.episode_numbers and parse_result.season_number:
-        search_sql += " AND tv_episodes.showid=%s AND tv_episodes.season=%s AND tv_episodes.episode=%s" % \
-            (parse_result.show.indexerid, parse_result.season_number, parse_result.episode_numbers[0])
-
-    search_sql += " AND tv_episodes.status IN (" + ",".join([str(x) for x in common.Quality.DOWNLOADED]) + ")"
-    search_sql += " AND history.resource LIKE ? LIMIT 1"
-    sql_result = main_db_con.select(search_sql, ['%' + videofile])
     if sql_result:
-        # result.output += logHelper(u"You're trying to post process a video that's already been processed, skipping", logger.DEBUG)
-        return True
+        _, quality = common.Quality.splitCompositeStatus(sql_result[0]['status'])
+        if quality == parsed.quality and sql_result[0]['file_size'] == file_size:
+            result.output += logHelper(u'File has same quality and size, skipping it', logger.DEBUG)
+            return True
 
     return False
 
 
-def process_media(processPath, videoFiles, nzbName, process_method, force, is_priority, ignore_subs, result):  # pylint: disable=too-many-arguments
+def process_media(processPath, videoFiles, nzbName, process_method, force, is_priority, ignore_subs, result):
     """
-    Postprocess mediafiles
+    Postprocess mediafiles.
 
     :param processPath: Path to postprocess in
     :param videoFiles: Filenames to look for and postprocess
@@ -547,13 +550,13 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
     :param result: Previous results
     :param ignore_subs: True to ignore setting 'postpone if no subs'
     """
-
     processor = None
     for cur_video_file in videoFiles:
         cur_video_file_path = os.path.join(processPath, cur_video_file)
 
         if already_postprocessed(processPath, cur_video_file, force, result):
             result.output += logHelper(u"Skipping already processed file: %s" % cur_video_file, logger.DEBUG)
+            result.output += logHelper(u"Skipping already processed dir: %s" % processPath, logger.DEBUG)
             continue
 
         try:
@@ -566,22 +569,22 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
                         # If user don't want to ignore embedded subtitles and video has at least one, don't post pone PP
                         if has_matching_unknown_subtitles(cur_video_file_path):
                             result.output += logHelper(u"Found embedded unknown subtitles and we don't want to ignore them. "
-                                                    u"Continuing the post-process of this file: %s" % cur_video_file)
+                                                       u"Continuing the post-process of this file: %s" % cur_video_file)
                         else:
                             associated_files = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
                             if not [f for f in associated_files if f[-3:] in subtitle_extensions]:
                                 result.output += logHelper(u"No subtitles associated. Postponing the post-process of this file:"
-                                                        u" %s" % cur_video_file, logger.DEBUG)
+                                                           u" %s" % cur_video_file, logger.DEBUG)
                                 continue
                             else:
                                 result.output += logHelper(u"Found subtitles associated. "
-                                                        u"Continuing the post-process of this file: %s" % cur_video_file)
+                                                           u"Continuing the post-process of this file: %s" % cur_video_file)
                     else:
                         result.output += logHelper(u"Subtitles disabled for this show. "
-                                                u"Continuing the post-process of this file: %s" % cur_video_file)
+                                                   u"Continuing the post-process of this file: %s" % cur_video_file)
                 else:
                     result.output += logHelper(u"Subtitles check was disabled for this episode in Manual PP. "
-                                            u"Continuing the post-process of this file: %s" % cur_video_file)
+                                               u"Continuing the post-process of this file: %s" % cur_video_file)
 
             result.result = processor.process()
             process_fail_message = u""
@@ -630,8 +633,7 @@ def get_path_dir_files(dirName, nzbName, proc_type):
 
 
 def process_failed(dirName, nzbName, result):
-    """Process a download that did not complete correctly"""
-
+    """Process a download that did not complete correctly."""
     if app.USE_FAILED_DOWNLOADS:
         processor = None
 
@@ -656,8 +658,10 @@ def process_failed(dirName, nzbName, result):
             result.output += logHelper(u"Failed Download Processing failed: (%s, %s): %s" %
                                        (nzbName, dirName, process_fail_message), logger.WARNING)
 
+
 def subtitles_enabled(*args):
     """Try to parse names to a show and check whether the show has subtitles enabled.
+
     :param args:
     :return:
     :rtype: bool
@@ -677,6 +681,7 @@ def subtitles_enabled(*args):
                        u'or improve naming for: {name}'.format(name=name), logger.WARNING)
     return False
 
+
 def has_matching_unknown_subtitles(video_path):
     """Whether or not there's a valid unknown embedded subtitle for the specified video.
 
@@ -686,7 +691,7 @@ def has_matching_unknown_subtitles(video_path):
     :rtype: bool
     """
     return not app.EMBEDDED_SUBTITLES_ALL and app.EMBEDDED_SUBTITLES_UNKNOWN_LANG and \
-           Language('und') in get_embedded_subtitles(video_path)
+        Language('und') in get_embedded_subtitles(video_path)
 
 
 def get_embedded_subtitles(video_path):
