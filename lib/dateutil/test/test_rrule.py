@@ -4382,6 +4382,12 @@ class RRuleTest(WarningTestMixin, unittest.TestCase):
                               byminute=(1,),
                               dtstart=datetime(2010, 3, 22, 12, 1)))
 
+    def testToStrWithWkSt(self):
+        self._rrulestr_reverse_test(rrule(WEEKLY,
+                              count=3,
+                              wkst=SU,
+                              dtstart=datetime(1997, 9, 2, 9, 0)))
+
     def testToStrLongIntegers(self):
         if not PY3:  # There is no longs in python3
             self._rrulestr_reverse_test(rrule(MINUTELY,
@@ -4399,6 +4405,25 @@ class RRuleTest(WarningTestMixin, unittest.TestCase):
                                   bymonthday=long(5),
                                   byweekno=long(2),
                                   dtstart=datetime(1997, 9, 2, 9, 0)))
+
+    def testReplaceIfSet(self):
+        rr = rrule(YEARLY,
+                   count=1,
+                   bymonthday=5,
+                   dtstart=datetime(1997, 1, 1))
+        newrr = rr.replace(bymonthday=6)
+        self.assertEqual(list(rr), [datetime(1997, 1, 5)])
+        self.assertEqual(list(newrr),
+                             [datetime(1997, 1, 6)])
+
+    def testReplaceIfNotSet(self):
+        rr = rrule(YEARLY,
+           count=1,
+           dtstart=datetime(1997, 1, 1))
+        newrr = rr.replace(bymonthday=6)
+        self.assertEqual(list(rr), [datetime(1997, 1, 1)])
+        self.assertEqual(list(newrr),
+                             [datetime(1997, 1, 6)])
 
 
 class RRuleSetTest(unittest.TestCase):
