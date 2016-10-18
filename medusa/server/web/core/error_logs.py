@@ -58,6 +58,7 @@ log_periods = {
 @route('/errorlogs(/?.*)')
 class ErrorLogs(WebRoot):
     """Route to errorlogs web page."""
+
     # @TODO: Move this route to /log(/?)
 
     # GitHub Issue submitter
