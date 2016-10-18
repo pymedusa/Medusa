@@ -487,7 +487,7 @@ def unRAR(path, rarFiles, force, result):
     return unpacked_files
 
 
-def already_postprocessed(dirName, videofile, force, result):
+def already_postprocessed(dir_name, video_file, force, result):
     """
     Check if we already post processed a file.
 
@@ -500,15 +500,15 @@ def already_postprocessed(dirName, videofile, force, result):
     if force:
         return False
 
-    file_path = os.path.join(dirName, videofile)
+    file_path = os.path.join(dir_name, video_file)
     file_size = os.path.getsize(file_path)
 
     main_db_con = db.DBConnection()
     # Try the simple way first, without using NameParser
     sql_result = main_db_con.select('SELECT file_size '
                                     'FROM tv_episodes '
-                                    "WHERE release_name LIKE ? LIMIT 1",
-                                    [remove_extension(videofile)])
+                                    "WHERE release_name LIKE ?",
+                                    [remove_extension(video_file)])
 
     if sql_result and sql_result[0]['file_size'] == file_size:
         result.output += logHelper(u'File has same name and size, skipping it', logger.DEBUG)
