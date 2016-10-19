@@ -99,7 +99,6 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
-                    
                     if self.ranked:
                         logger.log('Searching only ranked torrents', logger.DEBUG)
 
