@@ -282,6 +282,21 @@ class TVShow(TVObject):
                 self.episodes[cur_season][cur_ep] = None
                 del my_ep
 
+    def get_all_seasons(self, last_airdate=False):
+        """Retrieve a dictionary of seasons with the number of episodes, using the episodes table
+        :param last_airdate: Option to pass the airdate of the last aired episode for the season in stead of the number of episodes
+        :type last_airdate: bool
+        :return:
+        :rtype: dictionary of seasons (int) and count(episodes) (int)
+        """
+
+        sql_selection = b"select season, {summarize} as number_of_episodes from tv_episodes where showid = ? group by season". \
+                        format(summarize=b'count(*)' if not last_airdate else b'max(airdate)')
+        main_db_con = db.DBConnection()
+        results = main_db_con.select(sql_selection, [self.indexerid])
+
+        return {int(x['season']): int(x['number_of_episodes']) for x in results}
+
     def get_all_episodes(self, season=None, has_location=False):
         """Retrieve all episodes for this show given the specified filter.
 
@@ -708,9 +723,10 @@ class TVShow(TVObject):
 
         return scanned_eps
 
-    def load_episodes_from_indexer(self):
+    def load_episodes_from_indexer(self, seasons=None):
         """Load episodes from indexer.
-
+        :param 'seasons': Only load episodes for these seasons (only if supported by the indexer)
+        :type: list of integers or integer
         :return:
         :rtype: dict(int -> dict(int -> bool))
         """
@@ -726,7 +742,7 @@ class TVShow(TVObject):
 
         try:
             t = app.indexerApi(self.indexer).indexer(**indexer_api_params)
-            show_obj = t[self.indexerid]
+            show_obj = t.get_episodes_for_season(self.indexerid, specials=False, aired_season=seasons)
         except app.IndexerError:
             logger.log(u'{id}: {indexer} timed out, unable to update episodes'.format
                        (id=self.indexerid, indexer=app.indexerApi(self.indexer).name), logger.WARNING)
@@ -1038,31 +1054,31 @@ class TVShow(TVObject):
 
             t = app.indexerApi(self.indexer).indexer(**indexer_api_params)
 
-        my_ep = t[self.indexerid]
+        indexed_show = t[self.indexerid]
 
         try:
-            self.name = my_ep['seriesname'].strip()
+            self.name = indexed_show['seriesname'].strip()
         except AttributeError:
-            raise app.indexer_attributenotfound(
+            raise app.IndexerAttributeNotFound(
                 "Found {id}, but attribute 'seriesname' was empty.".format(id=self.indexerid))
 
-        self.classification = getattr(my_ep, 'classification', 'Scripted')
-        self.genre = getattr(my_ep, 'genre', '')
-        self.network = getattr(my_ep, 'network', '')
-        self.runtime = getattr(my_ep, 'runtime', '')
+        self.classification = getattr(indexed_show, 'classification', 'Scripted')
+        self.genre = getattr(indexed_show, 'genre', '')
+        self.network = getattr(indexed_show, 'network', '')
+        self.runtime = getattr(indexed_show, 'runtime', '')
 
-        self.imdbid = getattr(my_ep, 'imdb_id', '')
+        self.imdbid = getattr(indexed_show, 'imdb_id', '')
 
-        if getattr(my_ep, 'airs_dayofweek', None) is not None and getattr(my_ep, 'airs_time', None) is not None:
-            self.airs = my_ep['airs_dayofweek'] + ' ' + my_ep['airs_time']
+        if getattr(indexed_show, 'airs_dayofweek', None) is not None and getattr(indexed_show, 'airs_time', None) is not None:
+            self.airs = indexed_show['airs_dayofweek'] + ' ' + indexed_show['airs_time']
 
         if self.airs is None:
             self.airs = ''
 
-        if getattr(my_ep, 'firstaired', None) is not None:
-            self.startyear = int(str(my_ep['firstaired']).split('-')[0])
+        if getattr(indexed_show, 'firstaired', None) is not None:
+            self.startyear = int(str(indexed_show['firstaired']).split('-')[0])
 
-        self.status = getattr(my_ep, 'status', 'Unknown')
+        self.status = getattr(indexed_show, 'status', 'Unknown')
 
     def load_imdb_info(self):
         """Load all required show information from IMDb with IMDbPY."""
