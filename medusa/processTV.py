@@ -491,8 +491,8 @@ def already_postprocessed(dir_name, video_file, force, result):
     """
     Check if we already post processed a file.
 
-    :param dirName: Directory a file resides in
-    :param videofile: File name
+    :param dir_name: Directory a file resides in
+    :param video_file: File name
     :param force: Force checking when already checking (currently unused)
     :param result: True if file is already postprocessed, False if not
     :return:
@@ -505,12 +505,13 @@ def already_postprocessed(dir_name, video_file, force, result):
 
     main_db_con = db.DBConnection()
     # Try the simple way first, without using NameParser
-    sql_result = main_db_con.select('SELECT file_size '
-                                    'FROM tv_episodes '
-                                    'WHERE release_name LIKE ?',
-                                    [remove_extension(video_file)])
+    size_result = main_db_con.select(
+        'SELECT file_size '
+        'FROM tv_episodes '
+        'WHERE release_name = ?',
+        [remove_extension(video_file)])
 
-    if sql_result and sql_result[0]['file_size'] == file_size:
+    if size_result and size_result[0]['file_size'] == file_size:
         result.output += logHelper(u'File has same name and size, skipping it', logger.DEBUG)
         return True
 
@@ -519,20 +520,21 @@ def already_postprocessed(dir_name, video_file, force, result):
     except (InvalidNameException, InvalidShowException):
         return False
 
-    sql_result = main_db_con.select('SELECT status, file_size '
-                                    'FROM tv_episodes '
-                                    'WHERE showid = ? '
-                                    'AND season = ? '
-                                    'AND episode = ? '
-                                    "AND status LIKE '%04'",
-                                    [parsed.show.indexerid, parsed.season_number,
-                                     parsed.episode_numbers[0]])
+    for episode in parsed.episode_numbers:
+        tv_episodes_result = main_db_con.select(
+            'SELECT status, file_size '
+            'FROM tv_episodes '
+            'WHERE showid = ? '
+            'AND season = ? '
+            'AND episode = ? '
+            "AND status LIKE '%04'",
+            [parsed.show.indexerid, parsed.season_number, episode])
 
-    if sql_result:
-        _, quality = common.Quality.splitCompositeStatus(sql_result[0]['status'])
-        if quality == parsed.quality and sql_result[0]['file_size'] == file_size:
-            result.output += logHelper(u'File has same quality and size, skipping it', logger.DEBUG)
-            return True
+        if tv_episodes_result:
+            _, quality = common.Quality.splitCompositeStatus(tv_episodes_result[0]['status'])
+            if quality == parsed.quality and tv_episodes_result[0]['file_size'] == file_size:
+                result.output += logHelper(u'File has same quality and size, skipping it', logger.DEBUG)
+                return True
 
     return False
 

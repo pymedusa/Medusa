@@ -768,12 +768,7 @@ class PostProcessor(object):
         return ep_quality
 
     def _priority_from_history(self, show_id, season, episodes, quality):
-        """
-        Return the last snatched name from history and set as in_history if quality is matched.
-
-        :return:
-        :rtype: str
-        """
+        """Evaluate if the file should be marked as priority."""
         main_db_con = db.DBConnection()
         for episode in episodes:
             # First: check if the episode status is snatched
