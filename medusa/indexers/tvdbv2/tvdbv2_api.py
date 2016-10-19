@@ -494,13 +494,23 @@ class TVDBv2(BaseIndexer):
         return str(self.shows)
 
     """Public methods, usable without needing to through the __getitem__"""
-    def get_last_updated_series(self, from_time, until_time=None):
+    def get_last_updated_series(self, from_time, weeks=1):
         """Retrieve a list with updated shows
 
         @param from_time: epoch timestamp, with the start date/time
         @param until_time: epoch timestamp, with the end date/time (not mandatory)"""
+        total_updates = []
+        updates = True
 
-        return self.updates_api.updated_query_get(from_time)
+        count = 0
+        while updates and count < weeks:
+            updates = self.updates_api.updated_query_get(from_time).data
+            last_update_ts = max(x.last_updated for x in updates)
+            from_time = last_update_ts
+            total_updates += updates
+            count += 1
+
+        return total_updates
 
     def get_episodes_for_season(self, show_id, *args, **kwargs):
         self._get_episodes(show_id, *args, **kwargs)

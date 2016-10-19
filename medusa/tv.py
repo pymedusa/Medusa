@@ -25,6 +25,7 @@ import shutil
 import stat
 import threading
 import traceback
+import time
 
 from imdb import imdb
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
@@ -428,6 +429,34 @@ class TVShow(TVObject):
             self.episodes[season][episode] = ep
 
         return ep
+
+    def create_next_season_update(self, for_season=None):
+        """Update the cache indexer_update table"""
+
+        seasons = self.get_all_seasons(last_airdate=True)
+        for season in seasons:
+            if for_season and for_season != season:
+                continue
+
+            # Get last airdate for this season and calculate the next_update
+            if seasons[season] < 719163:
+                if season < max(seasons):
+                    # Before epoch and not last season
+                    next_update = time.time() + 3153600
+                else:
+                    # This is the last season, we don't know if this is an old show, or airdate not yet known
+                    next_update = time.time() + 3600
+            else:
+                last_airdate = int(time.mktime(datetime.date.fromordinal(seasons[season]).timetuple()))
+                if last_airdate > time.time():
+                    next_update = time.time() + 3600
+                else:
+                    next_update = int(time.time() + ((time.time() - last_airdate) / 200))
+
+            cache_db = db.DBConnection('cache.db')
+            cache_db.upsert('indexer_update',
+                            {'next_update': next_update},
+                            {'indexer': self.indexer, 'indexer_id': self.indexerid, 'season': season})
 
     def should_update(self, update_date=datetime.date.today()):
         """Whether the show information should be updated.
@@ -1075,7 +1104,7 @@ class TVShow(TVObject):
         if self.airs is None:
             self.airs = ''
 
-        if getattr(indexed_show, 'firstaired', None) is not None:
+        if getattr(indexed_show, 'firstaired', None):
             self.startyear = int(str(indexed_show['firstaired']).split('-')[0])
 
         self.status = getattr(indexed_show, 'status', 'Unknown')

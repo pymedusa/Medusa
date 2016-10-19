@@ -113,7 +113,7 @@ class ShowQueue(generic_queue.GenericQueue):
 
     loadingShowList = property(_getLoadingShowList)
 
-    def updateShow(self, show):
+    def updateShow(self, show, season=None):
 
         if self.isBeingAdded(show):
             raise CantUpdateShowException(
@@ -127,7 +127,7 @@ class ShowQueue(generic_queue.GenericQueue):
             raise CantUpdateShowException(
                 str(show.name) + u" is in process of being updated by Post-processor or manually started, can't update again until it's done.")
 
-        queueItemObj = QueueItemUpdate(show)
+        queueItemObj = QueueItemUpdate(show) if not season else QueueItemUpdate(show, season)
 
         self.add_item(queueItemObj)
 
@@ -409,7 +409,7 @@ class QueueItemAdd(ShowQueueItem):
 
         try:
             newShow = TVShow(self.indexer, self.indexer_id, self.lang)
-            newShow.load_from_indexer()
+            newShow.load_from_indexer(t)
 
             self.show = newShow
 
@@ -512,6 +512,7 @@ class QueueItemAdd(ShowQueueItem):
         self.show.write_metadata()
         self.show.update_metadata()
         self.show.populate_cache()
+        self.show.create_next_season_update()
 
         self.show.flush_episodes()
 
@@ -637,13 +638,15 @@ class QueueItemUpdate(ShowQueueItem):
     def __init__(self, show=None, season=None):
         ShowQueueItem.__init__(self, ShowQueueActions.UPDATE, show)
         self.priority = generic_queue.QueuePriorities.HIGH
+        self.season = [season] if season and not isinstance(season, list) else season
 
     def run(self):
 
         ShowQueueItem.run(self)
 
-        logger.log(u'{id}: Beginning update of {show}'.format
-                   (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
+        logger.log(u'{id}: Beginning update of {show}{season}'.format
+                   (id=self.show.indexerid, show=self.show.name,
+                    season=' with season' + self.season if self.season else ''), logger.DEBUG)
 
         logger.log(u'{id}: Retrieving show info from {indexer}'.format
                    (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name),
@@ -685,7 +688,7 @@ class QueueItemUpdate(ShowQueueItem):
 
         # get episode list from the indexer
         try:
-            IndexerEpList = self.show.load_episodes_from_indexer()
+            IndexerEpList = self.show.load_episodes_from_indexer(self.season)
         except app.IndexerException as e:
             logger.log(u'{id}: Unable to get info from {indexer}. The show info will not be refreshed. '
                        u'Error: {error_msg}'.format
@@ -704,7 +707,7 @@ class QueueItemUpdate(ShowQueueItem):
                     if cur_season in DBEpList and cur_episode in DBEpList[cur_season]:
                         del DBEpList[cur_season][cur_episode]
                     else:
-                        # Create the episode objectes for episodes that are not going to be deleted
+                        # Create the episode objects for episodes that are not going to be deleted
                         curEp = self.show.get_episode(cur_season, cur_episode)
 
             # remaining episodes in the DB list are not on the indexer, just delete them from the DB
@@ -719,6 +722,10 @@ class QueueItemUpdate(ShowQueueItem):
                         curEp.delete_episode()
                     except EpisodeDeletedException:
                         pass
+
+            # If this is a season limited update, let's update the cache season next_update
+            for season in self.season:
+                self.show.create_next_season_update(season)
 
         # Save only after all changes were applied
         try:

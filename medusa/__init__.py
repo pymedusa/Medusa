@@ -1388,7 +1388,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         showUpdateScheduler = scheduler.Scheduler(showUpdater.ShowUpdater(),
                                                   cycleTime=datetime.timedelta(hours=1),
-                                                  threadName="SHOWUPDATER")
+                                                  threadName="SHOWUPDATER",
+                                                  start_time=datetime.time(hour=SHOWUPDATE_HOUR, minute=random.randint(0, 59)))
 
         # snatcher used for manual search, manual picked results
         manualSnatchScheduler = scheduler.Scheduler(SnatchQueue(),

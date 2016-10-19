@@ -26,6 +26,7 @@ import medusa as app
 from . import db, failed_history, helpers, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from .indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
+from .show.Show import Show
 
 logger = logging.getLogger(__name__)
 
@@ -35,94 +36,77 @@ class ShowUpdater(object):
         self.lock = threading.Lock()
         self.amActive = False
         self.session = helpers.make_session()
+        self.last_update = ShowUpdate()
 
     def run(self, force=False):
 
         self.amActive = True
+        refresh_shows = []  # A list of shows, that need to be refreshed
+        season_updates = []
+        update_max_weeks = 12
 
-        bad_indexer = [INDEXER_TVRAGE]
-        update_datetime = datetime.datetime.now()
-        update_date = update_datetime.date()
+        # Get a list of seasons that have reached their update timer
+        expired_seasons = self.last_update.expired_seasons()
 
-        # update_timestamp = calendar.timegm(update_datetime.timetuple())
-        update_timestamp = time.mktime(update_datetime.timetuple())
-        cache_db_con = db.DBConnection('cache.db')
-        result = cache_db_con.select("SELECT `time` FROM lastUpdate WHERE provider = 'theTVDB'")
-        if result:
-            last_update = int(result[0]['time'])
-        else:
-            last_update = update_timestamp - 86400
-            cache_db_con.action("INSERT INTO lastUpdate (provider,`time`) VALUES (?, ?)", ['theTVDB', last_update])
+        for indexer in expired_seasons:
+            refresh = False
+            # Query the indexer for changed shows, since last update
+            # refresh network timezones
+            network_timezones.update_network_dict()
 
-        # refresh network timezones
-        network_timezones.update_network_dict()
+            # TODO: is not working for tvdbapiv2
+            last_update = self.last_update.get_last_indexer_update(app.indexerApi(indexer).name)
 
-        # sure, why not?
-        if app.USE_FAILED_DOWNLOADS:
-            failed_history.trimHistory()
+            if not last_update or indexer == 1 or last_update < time.time() - 86400 * update_max_weeks:
+                # no entry in lastUpdate, or last update was too long ago, let's refresh the show for this indexer
+                refresh = True
+            else:
+                indexer_api_params = app.indexerApi(indexer).api_params.copy()
+                t = app.indexerApi(indexer).indexer(**indexer_api_params)
+                updated_shows = t.get_last_updated_series(last_update, update_max_weeks)
 
-        update_delta = update_timestamp - last_update
+            for show_id in expired_seasons[indexer]:
+                # Loop through the shows
+                show = Show.find_by_id(app.showList, indexer, show_id)
+                if refresh:
+                    # Marked as a refresh, we don't need to check on season
+                    refresh_shows.append(show)
+                else:
+                    # We know there is a season
+                    if updated_shows and show_id in [_.id for _ in updated_shows]:
+                        # Refresh this season, because it was expired AND it's in the indexer updated shows list. Meaning
+                        # A change to a episode occurred. Altough we don't update all seasons. But only the expired one.
+                        for season in expired_seasons[indexer][show_id]:
+                            season_updates.append((show, season))
 
-        if update_delta >= 691200:      # 8 days ( 7 days + 1 day of buffer time)
-            update_file = 'updates_month.xml'
-        elif update_delta >= 90000:     # 25 hours ( 1 day + 1 hour of buffer time)
-            update_file = 'updates_week.xml'
-        else:
-            update_file = 'updates_day.xml'
-
-        # url = 'http://thetvdb.com/api/Updates.php?type=series&time=%s' % last_update
-        url = 'http://thetvdb.com/api/{0}/updates/{1}'.format(app.indexerApi(INDEXER_TVDB).api_params['apikey'], update_file)
-        data = helpers.getURL(url, session=self.session, returns='text')
-        if not data:
-            logger.info(u'Could not get the recently updated show data from {indexer}. Retrying later. Url was: {logurl}', indexer=app.indexerApi(INDEXER_TVDB).name, logurl=url)
-            self.amActive = False
-            return
-
-        updated_shows = []
-        try:
-            tree = ET.fromstring(data)
-            for show in tree.findall("Series"):
-                updated_shows.append(int(show.find('id').text))
-        except SyntaxError:
-            pass
-
-        logger.info(u'Doing full update on all shows')
+            # update the lastUpdate for this indexer
+            self.last_update.set_last_indexer_update(app.indexerApi(indexer).name)
 
         pi_list = []
-        for cur_show in app.showList:
 
-            if cur_show.indexer in bad_indexer:
-                logger.warning(u'Indexer is no longer available for show [ {show} ] ', show=cur_show.name)
-            else:
-                indexer_name = app.indexerApi(cur_show.indexer).name
-
-            try:
-                if indexer_name == 'theTVDB':
-                    if cur_show.indexerid in updated_shows:
-                        # If the cur_show is not 'paused' then add to the showQueueSchedular
-                        if not cur_show.paused:
-                            pi_list.append(app.showQueueScheduler.action.updateShow(cur_show))
-                        else:
-                            logger.info(u'Show update skipped, show: {show} is paused.', show=cur_show.name)
+        try:
+            # Full refreshes
+            for show in refresh_shows:
+                # If the cur_show is not 'paused' then add to the showQueueSchedular
+                if not show.paused:
+                    pi_list.append(app.showQueueScheduler.action.updateShow(show))
                 else:
-                    cur_show.next_episode()
+                    logger.info(u'Show update skipped, show: {show} is paused.', show=show.name)
 
-                    if cur_show.should_update(update_date=update_date):
-                        try:
-                            pi_list.append(app.showQueueScheduler.action.updateShow(cur_show))
-                        except CantUpdateShowException as e:
-                            logger.debug(u'Unable to update show: {error}', error=e)
-                    else:
-                        logger.debug(
-                            u'Not updating episodes for show {show} because the last or next episode is not within the grace period.', show = cur_show.name)
-            except (CantUpdateShowException, CantRefreshShowException) as e:
-                logger.warning(u'Automatic update failed. Error: {error}', error=e)
-            except Exception as e:
-                logger.error(u'Automatic update failed: Error: {error}', error=e)
+            # Only update expired season
+            for show in season_updates:
+                # If the cur_show is not 'paused' then add to the showQueueSchedular
+                if not show[0].paused:
+                    logger.info(u'Updating season {season} for show: {show}.', season=show[0], show=show[0].name)
+                    pi_list.append(app.showQueueScheduler.action.updateShow(show[0], season=show[1]))
+                else:
+                    logger.info(u'Show update skipped, show: {show} is paused.', show=show[0].name)
+        except (CantUpdateShowException, CantRefreshShowException) as e:
+            logger.warning(u'Automatic update failed. Error: {error}', error=e)
+        except Exception as e:
+            logger.error(u'Automatic update failed: Error: {error}', error=e)
 
         ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator("Daily Update", pi_list))
-
-        cache_db_con.action("UPDATE lastUpdate SET `time` = ? WHERE provider=?", [update_timestamp, 'theTVDB'])
 
         logger.info(u'Completed full update on all shows')
 
@@ -130,3 +114,57 @@ class ShowUpdater(object):
 
     def __del__(self):
         pass
+
+
+class ShowUpdate(db.DBConnection):
+    def __init__(self):
+        db.DBConnection.__init__(self, 'cache.db')
+
+    def get_next_season_update(self, indexer, indexer_id, season):
+        """Get the next season update for a show, the date a season should be refreshed from indexer"""
+        next_refresh = self.select('SELECT next_update FROM indexer_update WHERE indexer = ? AND indexer_id = ?'
+                                   ' AND season = ?',
+                                   [indexer, indexer_id, season])
+
+        return next_refresh[0]['next_refresh'] if next_refresh else 0
+
+    def set_next_season_update(self, indexer, indexer_id, season):
+        """Set the last update to now, for a show (indexer_id) and it's indexer"""
+        return self.upsert('indexer_update',
+                           {'next_update': int(time.time())},
+                           {'indexer': indexer, 'indexer_id': indexer_id, 'season': season})
+
+    def expired_seasons(self):
+        """Get the next season update for a show, the date a season should be refreshed from indexer"""
+        show_seasons = self.select('SELECT * FROM indexer_update where next_update < ? ', [int(time.time())])
+
+        seasons_dict = {}
+        for season in show_seasons:
+            if season['indexer'] not in seasons_dict:
+                seasons_dict[season['indexer']] = {}
+            if season['indexer_id'] not in seasons_dict[season['indexer']]:
+                seasons_dict[season['indexer']][season['indexer_id']] = {}
+            seasons_dict[season['indexer']][season['indexer_id']][season['season']] = season['next_update']
+
+        return seasons_dict
+
+    def get_last_indexer_update(self, indexer):
+        """Get the last update timestamp from the lastUpdate table.
+        :param indexer:
+        :type indexer: string, name respresentation, like 'theTVDB'. Check the indexer_config's name attribute.
+        :return: epoch timestamp
+        :rtype: int
+        """
+        last_update_indexer = self.select("SELECT `time` FROM lastUpdate WHERE provider = ?", [indexer])
+        return last_update_indexer[0]['time'] if last_update_indexer else None
+
+    def set_last_indexer_update(self, indexer):
+        """Set the last update timestamp from the lastUpdate table.
+        :param indexer:
+        :type indexer: string, name respresentation, like 'theTVDB'. Check the indexer_config's name attribute.
+        :return: epoch timestamp
+        :rtype: int
+        """
+        return self.upsert('lastUpdate',
+                           {'time': int(time.time())},
+                           {'provider': indexer})
