@@ -362,16 +362,17 @@ def obj_to_dict(obj, classkey=None):
     if isinstance(obj, dict):
         data = {}
         for (k, v) in obj.items():
-            data[k] = obj_to_dict(v, classkey)
+            if not k == 'lock':
+                data[k] = obj_to_dict(v, classkey)
         return data
     elif hasattr(obj, '_ast'):
         return obj_to_dict(obj._ast())
     elif hasattr(obj, '_iter__'):
-        return [obj_to_dict(v, classkey) for v in obj]
+        return [obj_to_dict(v, classkey) for v in obj if v != 'lock']
     elif hasattr(obj, '__dict__'):
         data = dict([(key, obj_to_dict(value, classkey))
                      for key, value in obj.__dict__.items()
-                     if not callable(value) and not key.startswith('_')])
+                     if (not callable(value) and not key.startswith('_')) or not key == 'lock'])
         if classkey is not None and hasattr(obj, '__class__'):
             data[classkey] = obj.__class__.__name__
         return data
