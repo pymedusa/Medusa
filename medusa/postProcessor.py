@@ -823,11 +823,12 @@ class PostProcessor(object):
                         # that was previously processed, we want this file
                         if self.file_name != download_name:
                             self.in_history = True
+                            return
                     else:
                         # There aren't any other files processed before for this
                         # episode and quality, we can safely say we want this file
                         self.in_history = True
-                    break
+                        return
 
     def _run_extra_scripts(self, ep_obj):
         """
