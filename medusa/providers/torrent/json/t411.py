@@ -86,6 +86,8 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
+                    if self.confirmed:
+                        logger.log('Searching only confirmed torrents', logger.DEBUG)
 
                 search_urls = ([self.urls['search'] % (search_string, u) for u in self.subcategories], [self.urls['rss']])[mode == 'RSS']
                 for search_url in search_urls:
@@ -120,7 +122,8 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         torrent_rows = data.get('torrents') if mode != 'RSS' else data
 
         if not torrent_rows or not isinstance(torrent_rows, dict):
-            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+            logger.log('Data returned from provider does not contain any {0}torrents'.format(
+                       'confirmed ' if self.confirmed else ''), logger.DEBUG)
             return items
 
         for row in torrent_rows:

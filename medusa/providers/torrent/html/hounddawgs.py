@@ -99,6 +99,8 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
+                    if self.ranked:
+                        logger.log('Searching only ranked torrents', logger.DEBUG)
 
                 search_params['searchstr'] = search_string
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
@@ -133,7 +135,8 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
             # Continue only if at least one release is found
             if not torrent_table:
-                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                logger.log('Data returned from provider does not contain any {0}torrents'.format(
+                           'ranked ' if self.ranked else ''), logger.DEBUG)
                 return items
 
             torrent_body = torrent_table.find('tbody')

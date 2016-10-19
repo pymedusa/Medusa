@@ -85,6 +85,8 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                 if mode != 'RSS':
                     search_url = search_url.format(string=search_string)
                     logger.log('Search string: {search}'.format(search=search_string), logger.DEBUG)
+                    if self.confirmed:
+                        logger.log('Searching only confirmed torrents', logger.DEBUG)
 
                 response = self.get_url(search_url, returns='response')
                 if not response or not response.text:
@@ -123,7 +125,8 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
             # Continue only if at least one release is found
             if len(torrent_rows) < 2:
-                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                logger.log('Data returned from provider does not contain any {0}torrents'.format(
+                           'confirmed ' if self.confirmed else ''), logger.DEBUG)
                 return items
 
             labels = [process_column_header(label) for label in torrent_rows[0]('th')]
