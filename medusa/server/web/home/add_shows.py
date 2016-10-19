@@ -461,7 +461,7 @@ class HomeAddShows(Home):
         show_dir = None
 
         # add the show
-        app.showQueueScheduler.action.addShow(1, int(indexer_id), show_dir, int(default_status), quality, flatten_folders,
+        app.showQueueScheduler.action.addShow(4, int(indexer_id), show_dir, int(default_status), quality, flatten_folders,
                                               indexer_lang, subtitles, anime, scene, None, blacklist, whitelist,
                                               int(default_status_after), root_dir=location)
 

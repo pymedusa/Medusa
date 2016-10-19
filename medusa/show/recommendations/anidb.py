@@ -57,7 +57,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         rec_show = RecommendedShow(self,
                                    show_obj.aid,
                                    show_obj.title,
-                                   1,
+                                   4,
                                    tvdb_id,
                                    **{'rating': show_obj.rating_permanent,
                                       'votes': show_obj.count_permanent,
