@@ -767,7 +767,7 @@ class PostProcessor(object):
 
         return ep_quality
 
-    def get_snatched_name(self, show_id, season, episodes, quality):
+    def _priority_from_history(self, show_id, season, episodes, quality):
         """
         Return the last snatched name from history and set as in_history if quality is matched.
 
@@ -776,30 +776,58 @@ class PostProcessor(object):
         """
         main_db_con = db.DBConnection()
         for episode in episodes:
-            sql_results = main_db_con.select(
-                'SELECT resource, quality '
-                'FROM history '
+            # First: check if the episode status is snatched
+            tv_episodes_result = main_db_con.select(
+                'SELECT status '
+                'FROM tv_episodes '
                 'WHERE showid = ? '
                 'AND season = ? '
                 'AND episode = ? '
-                "AND (action LIKE '%02' "
-                "OR action LIKE '%09' "
-                "OR action LIKE '%12') "
-                'ORDER BY date DESC',
+                "AND (status LIKE '%02' "
+                "OR status LIKE '%09' "
+                "OR status LIKE '%12')",
                 [show_id, season, episode])
 
-            if sql_results:
-                snatched_name = sql_results[0]['resource']
-                norm_name = remove_extension(snatched_name)
-                if self.release_name == norm_name and sql_results[0]['quality'] == quality:
-                    self.in_history = True
+            if tv_episodes_result:
+                # Second: get the quality of the last snatched epsiode
+                # and compare it to the quality we are post-processing
+                history_result = main_db_con.select(
+                    'SELECT quality '
+                    'FROM history '
+                    'WHERE showid = ? '
+                    'AND season = ? '
+                    'AND episode = ? '
+                    "AND (action LIKE '%02' "
+                    "OR action LIKE '%09' "
+                    "OR action LIKE '%12') "
+                    'ORDER BY date DESC',
+                    [show_id, season, episode])
 
-                logger.log(u'Found snatched name in history for {0}: {1}'.format
-                           (self.file_name, snatched_name), logger.DEBUG)
-                return snatched_name
+                if history_result and history_result[0]['quality'] == quality:
+                    # Third: make sure the file we are post-processing hasn't been
+                    # previously processed, as we wouldn't want it in that case
+                    download_result = main_db_con.select(
+                        'SELECT resource '
+                        'FROM history '
+                        'WHERE showid = ? '
+                        'AND season = ? '
+                        'AND episode = ? '
+                        'AND quality = ? '
+                        "AND action LIKE '%04' "
+                        'ORDER BY date DESC',
+                        [show_id, season, episode, quality])
 
-        logger.log(u"Couldn't find snatched name in history for {0}".format
-                   (self.file_name), logger.DEBUG)
+                    if download_result:
+                        download_name = os.path.basename(download_result[0]['resource'])
+                        # If the file name we are processing differs from the file
+                        # that was previously processed, we want this file
+                        if self.file_name != download_name:
+                            self.in_history = True
+                    else:
+                        # There aren't any other files processed before for this
+                        # episode and quality, we can safely say we want this file
+                        self.in_history = True
+                    break
 
     def _run_extra_scripts(self, ep_obj):
         """
@@ -967,7 +995,7 @@ class PostProcessor(object):
                    (common.Quality.qualityStrings[new_ep_quality]), logger.DEBUG)
 
         # check snatched history to see if we should set download as priority
-        self.get_snatched_name(show.indexerid, season, episodes, new_ep_quality)
+        self._priority_from_history(show.indexerid, season, episodes, new_ep_quality)
 
         # see if this is a priority download (is it snatched, in history, PROPER, or BEST)
         priority_download = self._is_priority(ep_obj, new_ep_quality)

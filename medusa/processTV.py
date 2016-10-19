@@ -507,7 +507,7 @@ def already_postprocessed(dir_name, video_file, force, result):
     # Try the simple way first, without using NameParser
     sql_result = main_db_con.select('SELECT file_size '
                                     'FROM tv_episodes '
-                                    "WHERE release_name LIKE ?",
+                                    'WHERE release_name LIKE ?',
                                     [remove_extension(video_file)])
 
     if sql_result and sql_result[0]['file_size'] == file_size:
