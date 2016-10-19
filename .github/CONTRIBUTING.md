@@ -43,7 +43,7 @@ If the above steps fail and you are sure its a bug, issues are tracked in the [M
 
 ### Code
 
-**ALWAYS follow Medusa [Coding Standards](https://github.com/pymedusa/medusa.github.io/wiki/Medusa-Coding-Standards)**
+**ALWAYS follow Medusa [Coding Standards](https://github.com/pymedusa/Medusa/wiki/Medusa-Coding-Standards)**
 
 Review regularly as they are subject to change and submissions will not be accepted until they meet our guidelines.
 
@@ -138,4 +138,4 @@ Please follow this process; it's the best way to get your work included in the p
 
 ## Code guidelines
 
-Read and follow the [Medusa Coding Standards](https://github.com/pymedusa/medusa.github.io/wiki/Medusa-Coding-Standards).  Review these regularly as they are subject to change and code will not be accepted if it does not adhere to the standards.
+Read and follow the [Medusa Coding Standards](https://github.com/pymedusa/Medusa/wiki/Medusa-Coding-Standards).  Review these regularly as they are subject to change and code will not be accepted if it does not adhere to the standards.
