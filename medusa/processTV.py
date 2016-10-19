@@ -504,37 +504,31 @@ def already_postprocessed(dir_name, video_file, force, result):
     file_size = os.path.getsize(file_path)
 
     main_db_con = db.DBConnection()
-    # Try the simple way first, without using NameParser
-    size_result = main_db_con.select(
+    # Try generic method first
+    episodes_result = main_db_con.select(
         'SELECT file_size '
         'FROM tv_episodes '
-        'WHERE release_name = ?',
+        'WHERE release_name LIKE ?',
         [remove_extension(video_file)])
 
-    if size_result and size_result[0]['file_size'] == file_size:
-        result.output += logHelper(u'File has same name and size, skipping it', logger.DEBUG)
+    if episodes_result and episodes_result[0]['file_size'] == file_size:
+        result.output += logHelper(u'New file has the same name and size, skipping it', logger.DEBUG)
         return True
 
-    try:
-        parsed = NameParser().parse(file_path)
-    except (InvalidNameException, InvalidShowException):
-        return False
+    history_result = main_db_con.select(
+        'SELECT file_size '
+        'FROM tv_episodes e '
+        'INNER JOIN history h '
+        'ON h.showid = e.showid '
+        'WHERE h.season = e.season '
+        'AND h.episode = e.episode '
+        "AND e.status LIKE '%04' "
+        'AND h.resource LIKE ?',
+        ['%' + video_file])
 
-    for episode in parsed.episode_numbers:
-        tv_episodes_result = main_db_con.select(
-            'SELECT status, file_size '
-            'FROM tv_episodes '
-            'WHERE showid = ? '
-            'AND season = ? '
-            'AND episode = ? '
-            "AND status LIKE '%04'",
-            [parsed.show.indexerid, parsed.season_number, episode])
-
-        if tv_episodes_result:
-            _, quality = common.Quality.splitCompositeStatus(tv_episodes_result[0]['status'])
-            if quality == parsed.quality and tv_episodes_result[0]['file_size'] == file_size:
-                result.output += logHelper(u'File has same quality and size, skipping it', logger.DEBUG)
-                return True
+    if history_result and history_result[0]['file_size'] == file_size:
+        result.output += logHelper(u'New file has the same size, skipping it', logger.DEBUG)
+        return True
 
     return False
 
