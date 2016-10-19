@@ -86,6 +86,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                (search=search_string), logger.DEBUG)
                     if self.confirmed:
                         logger.log('Searching only confirmed torrents', logger.DEBUG)
+
                     search_url = self.urls['search'].format(query=search_string)
                 else:
                     search_url = self.urls['rss'].format(page=1)
