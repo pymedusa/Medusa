@@ -36,14 +36,14 @@ Bugs in old versions of Medusa may have already been fixed. In order to avoid re
 
 ### Reporting the issue
 
-If the above steps fail and you are sure its a bug, issues are tracked in the [Medusa issue tracker](https://github.com/PyMedusa/sickrage).
+If the above steps fail and you are sure its a bug, issues are tracked in the [Medusa issue tracker](https://github.com/pymedusa/Medusa).
 
 ## Tips For Submitting Code
 
 
 ### Code
 
-**ALWAYS follow Medusa [Coding Standards](https://github.com/PyMedusa/SickRage.github.io/wiki/SickRage-Coding-Standards)**
+**ALWAYS follow Medusa [Coding Standards](https://github.com/pymedusa/medusa.github.io/wiki/Medusa-Coding-Standards)**
 
 Review regularly as they are subject to change and submissions will not be accepted until they meet our guidelines.
 
@@ -58,14 +58,10 @@ Please follow these guidelines before reporting a bug:
 
 1. **Update to the latest version** &mdash; Check if you can reproduce the issue with the latest version from the `develop` branch.
 
-2. **Use the search on SickRage issues** &mdash; check if the issue has already been reported. If it has been, please comment on the existing issue.
+2. **Use the search on Medusa issues** &mdash; check if the issue has already been reported. If it has been, please comment on the existing issue.
 
 3. **Provide a means to reproduce the problem** &mdash; Please provide as much details as possible, e.g. Medusa log files (obfuscate apikey/passwords), browser and operating system versions, how you started Medusa, and of course the steps to reproduce the problem.
 
-
-### Feature requests
-Please follow the bug guidelines above for feature requests, i.e. update to the latest version and search for existing requests on [FeatHub](http://feathub.com/PyMedusa/SickRage) before posting a new request..
-[![Feature Requests](https://cloud.githubusercontent.com/assets/390379/10127973/045b3a96-6560-11e5-9b20-31a2032956b2.png)](http://feathub.com/PyMedusa/SickRage)
 
 ### Pull requests
 
@@ -92,11 +88,11 @@ Please follow this process; it's the best way to get your work included in the p
 
 ```bash
    # clone your fork of the repo into the current directory in terminal
-   git clone git@github.com:<your username>/SickRage.git
+   git clone git@github.com:<your username>/Medusa.git
    # navigate to the newly cloned directory
-   cd SickRage
+   cd Medusa
    # assign the original repo to a remote called "upstream"
-   git remote add upstream https://github.com/PyMedusa/SickRage.git
+   git remote add upstream https://github.com/pymedusa/Medusa.git
    ```
 
 - If you cloned a while ago, get the latest changes from upstream:
@@ -142,4 +138,4 @@ Please follow this process; it's the best way to get your work included in the p
 
 ## Code guidelines
 
-Read and follow the [Medusa Coding Standards](https://github.com/PyMedusa/SickRage.github.io/wiki/SickRage-Coding-Standards).  Review these regularly as they are subject to change and code will not be accepted if it does not adhere to the standards.
+Read and follow the [Medusa Coding Standards](https://github.com/pymedusa/medusa.github.io/wiki/Medusa-Coding-Standards).  Review these regularly as they are subject to change and code will not be accepted if it does not adhere to the standards.
