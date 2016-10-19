@@ -634,7 +634,7 @@ class QueueItemSubtitle(ShowQueueItem):
 
 
 class QueueItemUpdate(ShowQueueItem):
-    def __init__(self, show=None):
+    def __init__(self, show=None, season=None):
         ShowQueueItem.__init__(self, ShowQueueActions.UPDATE, show)
         self.priority = generic_queue.QueuePriorities.HIGH
 
@@ -655,7 +655,7 @@ class QueueItemUpdate(ShowQueueItem):
                        (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name,
                         error_msg=ex(e)), logger.WARNING)
             return
-        except app.IndexerAttributenotfound as e:
+        except app.IndexerAttributeNotFound as e:
             logger.log(u'{id}: Data retrieved from {indexer} was incomplete. Aborting: {error_msg}'.format
                        (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name,
                         error_msg=ex(e)), logger.WARNING)
@@ -683,7 +683,7 @@ class QueueItemUpdate(ShowQueueItem):
         # get episode list from DB
         DBEpList = self.show.load_episodes_from_db()
 
-        # get episode list from TVDB
+        # get episode list from the indexer
         try:
             IndexerEpList = self.show.load_episodes_from_indexer()
         except app.IndexerException as e:
