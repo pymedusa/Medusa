@@ -1,20 +1,20 @@
 # coding=utf-8
 # Author: p0psicles
 #
-# This file is part of SickRage.
+# This file is part of Medusa.
 #
-# SickRage is free software: you can redistribute it and/or modify
+# Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# SickRage is distributed in the hope that it will be useful,
+# Medusa is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with SickRage. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
@@ -469,31 +469,7 @@ class TVDBv2(BaseIndexer):
 
         return True
 
-    def __getitem__(self, key):
-        """Handles tvdbv2_instance['seriesname'] calls.
-        The dict index should be the show id
-        """
-        if isinstance(key, (int, long)):
-            # Item is integer, treat as show id
-            if key not in self.shows:
-                self._get_show_data(key, self.config['language'], True)
-            return self.shows[key]
-
-        key = str(key).lower()
-        self.config['searchterm'] = key
-        selected_series = self._get_series(key)
-        if isinstance(selected_series, dict):
-            selected_series = [selected_series]
-
-        for show in selected_series:
-            for k, v in show.items():
-                self._set_show_data(show['id'], k, v)
-        return selected_series
-
-    def __repr__(self):
-        return str(self.shows)
-
-    """Public methods, usable without needing to through the __getitem__"""
+    # Public methods, usable separate from the default api's interface api['show_id']
     def get_last_updated_series(self, from_time, weeks=1):
         """Retrieve a list with updated shows
 
