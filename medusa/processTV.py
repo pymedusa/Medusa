@@ -501,34 +501,31 @@ def already_postprocessed(dir_name, video_file, force, result):
         return False
 
     file_path = os.path.join(dir_name, video_file)
-    file_size = os.path.getsize(file_path)
+
+    try:
+        # Need to parse filename to check history faster
+        # Checking full history without filtering by season, episode and showid will make it slower
+        parsed = NameParser().parse(file_path)
+    except (InvalidNameException, InvalidShowException):
+        return False
 
     main_db_con = db.DBConnection()
-    # Try generic method first
-    episodes_result = main_db_con.select(
-        'SELECT file_size '
-        'FROM tv_episodes '
-        'WHERE release_name LIKE ?',
-        [remove_extension(video_file)])
+    for episode in parsed.episode_numbers:
+        history_results = main_db_con.select(
+            'SELECT resource '
+            'FROM history '
+            'WHERE showid = ? '
+            'AND season = ? '
+            'AND episode = ? '
+            "AND action LIKE '%04'",
+            [parsed.show.indexerid, parsed.season_number, episode])
 
-    if episodes_result and episodes_result[0]['file_size'] == file_size:
-        result.output += logHelper(u'New file has the same name and size, skipping it', logger.DEBUG)
-        return True
-
-    history_result = main_db_con.select(
-        'SELECT file_size '
-        'FROM tv_episodes e '
-        'INNER JOIN history h '
-        'ON h.showid = e.showid '
-        'WHERE h.season = e.season '
-        'AND h.episode = e.episode '
-        "AND e.status LIKE '%04' "
-        'AND h.resource LIKE ?',
-        ['%' + video_file])
-
-    if history_result and history_result[0]['file_size'] == file_size:
-        result.output += logHelper(u'New file has the same size, skipping it', logger.DEBUG)
-        return True
+        for history_result in history_results:
+            # When status is 'DOWNLOADED', in resource we have the filename with the extension.
+            if os.basename(history_result['resource']).lower() == video_file.lower():
+                result.output += logHelper(u"You're trying to post process a video that's already "
+                                           u"been processed, skipping: {0}".format(video_file), logger.DEBUG)
+                return True
 
     return False
 
