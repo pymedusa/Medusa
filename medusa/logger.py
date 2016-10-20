@@ -193,8 +193,10 @@ def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
             offset = min(file_size, offset + buf_size)
             fh.seek(file_size - offset)
             buf = fh.read(min(remaining_size, buf_size))
+            if os.name == 'nt':
+                buf = buf.decode(sys.getfilesystemencoding())
             if not isinstance(buf, text_type):
-                buf = text_type(buf.decode(sys.getfilesystemencoding()) if os.name == 'nt' else buf, errors='replace')
+                buf = text_type(buf, errors='replace')
             remaining_size -= buf_size
             lines = buf.split(new_line)
             # the first line of the buffer is probably not a complete line so
