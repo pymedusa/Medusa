@@ -28,7 +28,7 @@ from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
 from . import common, db, failedProcessor, helpers, logger, notifiers, postProcessor
-from .helper.common import is_sync_file, is_torrent_or_nzb_file, remove_extension, subtitle_extensions
+from .helper.common import is_sync_file, is_torrent_or_nzb_file, subtitle_extensions
 from .helper.encoding import ss
 from .helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
