@@ -231,7 +231,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             cur_proper.episode = parse_result.episode_numbers[0]
             cur_proper.release_group = parse_result.release_group
             cur_proper.version = parse_result.version
-            cur_proper.quality = Quality.nameQuality(cur_proper.name, parse_result.is_anime)
+            cur_proper.quality = parse_result.quality
             cur_proper.content = None
             cur_proper.proper_tags = parse_result.proper_tags
 

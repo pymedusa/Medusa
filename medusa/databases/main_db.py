@@ -83,8 +83,8 @@ class MainSanityCheck(db.DBSanityCheck):
     def convert_archived_to_compound(self):
         logger.log(u'Checking for archived episodes not qualified', logger.DEBUG)
 
-        query = "SELECT episode_id, showid, status, location, season, episode " + \
-                "FROM tv_episodes WHERE status = %s" % common.ARCHIVED
+        query = "SELECT episode_id, showid, e.status, e.location, season, episode, anime " + \
+                "FROM tv_episodes e, tv_shows s WHERE e.status = %s AND e.showid = s.indexer_id" % common.ARCHIVED
 
         sql_results = self.connection.select(query)
         if sql_results:
@@ -94,7 +94,7 @@ class MainSanityCheck(db.DBSanityCheck):
             fixedStatus = common.Quality.compositeStatus(common.ARCHIVED, common.Quality.UNKNOWN)
             existing = archivedEp['location'] and os.path.exists(archivedEp['location'])
             if existing:
-                quality = common.Quality.assumeQuality(archivedEp['location'])
+                quality = common.Quality.nameQuality(archivedEp['location'], archivedEp['anime'], extend=False)
                 fixedStatus = common.Quality.compositeStatus(common.ARCHIVED, quality)
 
             logger.log(u'Changing status from {old_status} to {new_status} for {id}: {ep} at {location} (File {result})'.format

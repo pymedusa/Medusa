@@ -891,9 +891,6 @@ class TVShow(TVObject):
                     cur_ep.status not in Quality.DOWNLOADED + Quality.ARCHIVED + [IGNORED]):
                 old_status, old_quality = Quality.splitCompositeStatus(cur_ep.status)
                 new_quality = Quality.nameQuality(filepath, self.is_anime)
-                if new_quality == Quality.UNKNOWN:
-                    new_quality = Quality.assumeQuality(filepath)
-
                 new_status = None
 
                 # if it was snatched and now exists then set the status correctly
@@ -917,11 +914,11 @@ class TVShow(TVObject):
 
                 if new_status is not None:
                     with cur_ep.lock:
+                        old_ep_status = cur_ep.status
+                        cur_ep.status = Quality.compositeStatus(new_status, new_quality)
                         logger.log(u'{0}: We have an associated file, '
                                    u'so setting the status from {1} to DOWNLOADED/{2}'.format
-                                   (self.indexerid, cur_ep.status,
-                                    Quality.statusFromName(filepath, anime=self.is_anime)), logger.DEBUG)
-                        cur_ep.status = Quality.compositeStatus(new_status, new_quality)
+                                   (self.indexerid, old_ep_status, cur_ep.status, logger.DEBUG))
 
             with cur_ep.lock:
                 sql_l.append(cur_ep.get_sql())
@@ -2118,10 +2115,12 @@ class TVEpisode(TVObject):
         elif app.helpers.isMediaFile(self.location):
             # leave propers alone, you have to either post-process them or manually change them back
             if self.status not in Quality.SNATCHED_PROPER + Quality.DOWNLOADED + Quality.SNATCHED + Quality.ARCHIVED:
-                logger.log(u"{id}: {show} {ep} status changed from '{old_status}' to '{new_status}'".format
-                           (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode), old_status=self.status.upper(),
-                            new_status=Quality.statusFromName(self.location, anime=self.show.is_anime).upper()), logger.DEBUG)
+                old_status = self.status.upper()
                 self.status = Quality.statusFromName(self.location, anime=self.show.is_anime).upper()
+                logger.log(u"{id}: {show} {ep} status changed from '{old_status}' to '{new_status}'".format
+                           (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
+                            old_status=old_status, new_status=self.status), logger.DEBUG)
+
             else:
                 logger.log(u"{id}: {show} {ep} status untouched: '{status}'".format
                            (id=self.show.indexerid, show=self.show.name,
@@ -2149,10 +2148,10 @@ class TVEpisode(TVObject):
         if self.location != '':
 
             if self.status == UNKNOWN and app.helpers.isMediaFile(self.location):
+                self.status = Quality.statusFromName(self.location, anime=self.show.is_anime)
                 logger.log(u"{id}: {show} {ep} status changed from 'UNKNOWN' to '{new_status}'".format
                            (id=self.show.indexerid, show=self.show.name, ep=episode_num(self.season, self.episode),
-                            new_status=Quality.statusFromName(self.location, anime=self.show.is_anime)), logger.DEBUG)
-                self.status = Quality.statusFromName(self.location, anime=self.show.is_anime)
+                            new_status=self.status), logger.DEBUG)
 
             nfo_file = replace_extension(self.location, 'nfo')
             logger.log(u'{id}: Using NFO name {nfo}'.format(id=self.show.indexerid, nfo=nfo_file), logger.DEBUG)
