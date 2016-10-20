@@ -526,7 +526,7 @@ class PostProcessor(object):
         ]
 
         # Try every possible method to get our info
-        for attempt in attempt_list:
+        for att_num, attempt in enumerate(attempt_list):
 
             try:
                 cur_show, cur_season, cur_episodes, cur_quality, cur_version = attempt()
@@ -536,11 +536,12 @@ class PostProcessor(object):
 
             if not cur_show:
                 continue
-            else:
-                show = cur_show
+            show = cur_show
 
-            if cur_quality:
-                quality = cur_quality
+            if att_num < (len(attempt_list) - 1):
+                if common.Quality.qualityStrings[cur_quality] == 'Unknown':
+                    continue
+            quality = cur_quality
 
             # we only get current version from anime
             if cur_version is not None:
