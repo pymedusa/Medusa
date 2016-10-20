@@ -806,7 +806,7 @@ class TVShow(TVObject):
                                    (id=self.indexerid, ep=episode_num(season, episode)), logger.DEBUG)
                         continue
 
-                with ep.lock:
+                with ep.lock: 
                     sql_l.append(ep.get_sql())
 
                 scanned_eps[season][episode] = True

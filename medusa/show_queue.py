@@ -646,7 +646,7 @@ class QueueItemUpdate(ShowQueueItem):
 
         logger.log(u'{id}: Beginning update of {show}{season}'.format
                    (id=self.show.indexerid, show=self.show.name,
-                    season=' with season' + self.season if self.season else ''), logger.DEBUG)
+                    season=u' with season(s)' + u','.join(self.season) if self.season else u''), logger.DEBUG)
 
         logger.log(u'{id}: Retrieving show info from {indexer}'.format
                    (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name),
