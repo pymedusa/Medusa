@@ -1382,7 +1382,11 @@ def verify_freespace(src, dest, oldfile=None):
         logger.warning(u"Unable to determine free space, so I will assume there is enough.")
         return True
 
-    neededspace = os.path.getsize(src)
+    try:
+        neededspace = os.path.getsize(src)
+    except (OSError, IOError) as e:
+        logger.warning(u"Unable to determine needed space. Aborting. Error: {error_msg}".format(error_msg=e))
+        return False
 
     if oldfile:
         for f in oldfile:
