@@ -22,9 +22,12 @@ from __future__ import unicode_literals
 import getpass
 import logging
 import os
+import cgi
+import re
 import tempfile
 import time
 import warnings
+from six import iteritems
 
 import requests
 
@@ -152,6 +155,71 @@ class BaseIndexer(object):
         """
         return None
 
+    def _set_show_data(self, sid, key, value):
+        """Sets self.shows[sid] to a new Show instance, or sets the data
+        """
+        if sid not in self.shows:
+            self.shows[sid] = Show()
+        self.shows[sid].data[key] = value
+
+    def __repr__(self):
+        return str(self.shows)
+
+    def _clean_data(self, data):  # pylint: disable=no-self-use
+        """Cleans up strings
+
+        Issues corrected:
+        - Replaces &amp; with &
+        - Trailing whitespace
+        """
+
+        if isinstance(data, basestring):
+            data = data.replace('&amp;', '&')
+            data = data.strip()
+
+            tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
+            # Remove well-formed tags
+            no_tags = tag_re.sub('', data)
+            # Clean up anything else by escaping
+            data = cgi.escape(no_tags)
+
+        return data
+
+    def _set_item(self, sid, seas, ep, attrib, value):  # pylint: disable=too-many-arguments
+        """Creates a new episode, creating Show(), Season() and
+        Episode()s as required. Called by _get_show_data to populate show
+
+        Since the nice-to-use tvdb[1][24]['name] interface
+        makes it impossible to do tvdb[1][24]['name] = "name"
+        and still be capable of checking if an episode exists
+        so we can raise tvdb_shownotfound, we have a slightly
+        less pretty method of setting items.. but since the API
+        is supposed to be read-only, this is the best way to
+        do it!
+        The problem is that calling tvdb[1][24]['episodename'] = "name"
+        calls __getitem__ on tvdb[1], there is no way to check if
+        tvdb.__dict__ should have a key "1" before we auto-create it
+        """
+        if sid not in self.shows:
+            self.shows[sid] = Show()
+        if seas not in self.shows[sid]:
+            self.shows[sid][seas] = Season(show=self.shows[sid])
+        if ep not in self.shows[sid][seas]:
+            self.shows[sid][seas][ep] = Episode(season=self.shows[sid][seas])
+        self.shows[sid][seas][ep][attrib] = value
+
+    def _save_images(self, sid, images):
+        """Saves the highest rated image (banner, poster, fanart) as show data.
+        """
+
+        for image_type in images:
+            # get series data / add the base_url to the image urls
+            if image_type in ['banner', 'fanart', 'poster']:
+                # For each image type, where going to save one image based on the highest rating
+                merged_image_list = [y[1] for y in [next(iteritems(v)) for _, v in iteritems(images[image_type])]]
+                highest_rated = sorted(merged_image_list, key=lambda k: k['rating'], reverse=True)[0]
+                self._set_show_data(sid, image_type, highest_rated['_bannerpath'])
+
     def __getitem__(self, key):
         """Handles tvdbv2_instance['seriesname'] calls.
         The dict index should be the show id
@@ -172,16 +240,6 @@ class BaseIndexer(object):
             for k, v in show.items():
                 self._set_show_data(show['id'], k, v)
         return selected_series
-
-    def _set_show_data(self, sid, key, value):
-        """Sets self.shows[sid] to a new Show instance, or sets the data
-        """
-        if sid not in self.shows:
-            self.shows[sid] = Show()
-        self.shows[sid].data[key] = value
-
-    def __repr__(self):
-        return str(self.shows)
 
     def get_last_updated_series(self, from_time, weeks=1):
         """Retrieve a list with updated shows"""
