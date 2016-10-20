@@ -508,6 +508,8 @@ def already_postprocessed(dir_name, video_file, force, result):
         ['%' + video_file])
 
     if history_result:
+        result.output += logHelper(u"You're trying to post-process a file that has already "
+                                   u"been processed, skipping: {0}".format(video_file), logger.DEBUG)
         return True
 
     return False
