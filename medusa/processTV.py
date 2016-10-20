@@ -500,9 +500,6 @@ def already_postprocessed(dir_name, video_file, force, result):
     if force:
         return False
 
-    file_path = os.path.join(dir_name, video_file)
-    file_size = os.path.getsize(file_path)
-
     main_db_con = db.DBConnection()
     # Try generic method first
     episodes_result = main_db_con.select(
@@ -511,8 +508,7 @@ def already_postprocessed(dir_name, video_file, force, result):
         'WHERE release_name LIKE ?',
         [remove_extension(video_file)])
 
-    if episodes_result and episodes_result[0]['file_size'] == file_size:
-        result.output += logHelper(u'New file has the same name and size, skipping it', logger.DEBUG)
+    if episodes_result and episodes_result[0]['file_size'] > 0:
         return True
 
     history_result = main_db_con.select(
@@ -523,11 +519,11 @@ def already_postprocessed(dir_name, video_file, force, result):
         'WHERE h.season = e.season '
         'AND h.episode = e.episode '
         "AND e.status LIKE '%04' "
+        "AND h.action LIKE '%04' "
         'AND h.resource LIKE ?',
         ['%' + video_file])
 
-    if history_result and history_result[0]['file_size'] == file_size:
-        result.output += logHelper(u'New file has the same size, skipping it', logger.DEBUG)
+    if history_result and history_result[0]['file_size'] > 0:
         return True
 
     return False
