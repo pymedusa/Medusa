@@ -501,29 +501,13 @@ def already_postprocessed(dir_name, video_file, force, result):
         return False
 
     main_db_con = db.DBConnection()
-    # Try generic method first
-    episodes_result = main_db_con.select(
-        'SELECT file_size '
-        'FROM tv_episodes '
-        'WHERE release_name LIKE ?',
-        [remove_extension(video_file)])
-
-    if episodes_result and episodes_result[0]['file_size'] > 0:
-        return True
-
     history_result = main_db_con.select(
-        'SELECT file_size '
-        'FROM tv_episodes e '
-        'INNER JOIN history h '
-        'ON h.showid = e.showid '
-        'WHERE h.season = e.season '
-        'AND h.episode = e.episode '
-        "AND e.status LIKE '%04' "
-        "AND h.action LIKE '%04' "
-        'AND h.resource LIKE ?',
+        'SELECT * FROM history '
+        "WHERE action LIKE '%04' "
+        'AND resource LIKE ?',
         ['%' + video_file])
 
-    if history_result and history_result[0]['file_size'] > 0:
+    if history_result:
         return True
 
     return False
