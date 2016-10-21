@@ -227,8 +227,6 @@ class TVCache(object):
 
         except AuthException as e:
             logger.log('Authentication error: {0!r}'.format(e), logger.ERROR)
-        except Exception as e:
-            logger.log('Error while searching {0}, skipping: {1!r}'.format(self.provider.name, e), logger.DEBUG)
 
     def update_cache_manual_search(self, manual_data=None):
         # clear cache
