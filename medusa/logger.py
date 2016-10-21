@@ -787,7 +787,8 @@ def backwards_compatibility():
         match = log_re.match(filename)
         if match:
             new_file = os.path.join(cwd, app.LOG_DIR, app.LOG_FILENAME + (match.group('suffix') or ''))
-            os.rename(os.path.join(cwd, app.LOG_DIR, filename), new_file)
+            if not any(f.startswith(os.path.basename(filename)) for f in os.listdir(app.LOG_DIR)):
+                os.rename(os.path.join(cwd, app.LOG_DIR, filename), new_file)
             continue
 
 

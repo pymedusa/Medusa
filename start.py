@@ -404,7 +404,7 @@ class Application(object):
             backup_re = re.compile(r'[^\d]+(?P<suffix>-\d{14}\.zip)')
             for filename in os.listdir(app.DATA_DIR):
                 # Rename database file
-                if filename.startswith(app.LEGACY_DB):
+                if filename.startswith(app.LEGACY_DB) and not any(f.startswith(app.APPLICATION_DB) for f in os.listdir(app.DATA_DIR)):
                     new_file = os.path.join(cwd, app.DATA_DIR, app.APPLICATION_DB + filename[len(app.LEGACY_DB):])
                     os.rename(os.path.join(cwd, app.DATA_DIR, filename), new_file)
                     continue
