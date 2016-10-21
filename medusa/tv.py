@@ -1565,7 +1565,6 @@ class TVShow(TVObject):
             # ('episodes', self.episodes),
         ])
 
-
     @staticmethod
     def __qualities_to_string(qualities=None):
         return ', '.join([Quality.qualityStrings[quality] for quality in qualities or []
