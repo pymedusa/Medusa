@@ -19,7 +19,6 @@
 
 import datetime
 import glob
-import json
 import os.path
 import re
 import shutil
@@ -42,7 +41,7 @@ from .common import (
     UNAIRED, UNKNOWN, WANTED, statusStrings
 )
 from .helper.common import (
-    dateTimeFormat, episode_num, obj_to_dict, remove_extension, replace_extension, sanitize_filename, try_int
+    dateTimeFormat, episode_num, remove_extension, replace_extension, sanitize_filename, try_int
 )
 from .helper.exceptions import (
     EpisodeDeletedException, EpisodeNotFoundException, MultipleEpisodesInDatabaseException,
