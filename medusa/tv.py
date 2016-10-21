@@ -27,6 +27,7 @@ import stat
 import threading
 import time
 import traceback
+from collections import OrderedDict
 
 from imdb import imdb
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
@@ -1501,10 +1502,6 @@ class TVShow(TVObject):
         to_return += 'anime: ' + str(self.is_anime) + '\n'
         return to_return
 
-    def to_json(self):
-        """JSON representation."""
-        return json.dumps(obj_to_dict(self))
-
     def __unicode__(self):
         """Unicode representation.
 
@@ -1531,6 +1528,44 @@ class TVShow(TVObject):
         to_return += u'sports: {0}\n'.format(self.is_sports)
         to_return += u'anime: {0}\n'.format(self.is_anime)
         return to_return
+
+    def to_json(self):
+        """Return JSON representation."""
+        # TODO: not finished
+        return OrderedDict([
+            ('name', self.name),
+            ('indexer', self.indexer),
+            ('indexerId', self.indexerid),
+            ('network', self.network),
+            ('genres', [v for v in self.genre.split('|') if v]),
+            ('classification', self.classification),
+            ('runtime', self.runtime),
+            ('imdbId', self.imdbid),
+            ('imdbInfo', self.imdb_info),
+            ('quality', self.quality),  # TODO: handle quality
+            ('flattenFolders', bool(self.flatten_folders)),
+            ('status', self.status),  # TODO: handle status
+            ('airs', self.airs),
+            ('startYear', self.startyear),
+            ('paused', bool(self.paused)),
+            ('airByDate', bool(self.air_by_date)),
+            ('subtitlesEnabled', bool(self.subtitles)),
+            ('dvdOrder', self.dvdorder),
+            ('lang', self.lang),
+            ('lastUpdateIndexer', self.last_update_indexer),
+            ('sports', self.is_sports),
+            ('anime', self.is_anime),
+            ('scene', self.is_scene),
+            ('nextAired', self.nextaired),
+            ('location', self.raw_location),
+            ('releaseGroups', self.release_groups),  # is this a list?
+            ('defaultEpisodeStatus', self.default_ep_status),
+            ('releaseIgnoredWords', [v for v in self.rls_ignore_words.split('|') if v]),
+            ('releaseRequiredWords', [v for v in self.rls_require_words.split('|') if v]),
+            ('exceptions', self.exceptions),
+            # ('episodes', self.episodes),
+        ])
+
 
     @staticmethod
     def __qualities_to_string(qualities=None):
@@ -2291,8 +2326,40 @@ class TVEpisode(TVObject):
         return result
 
     def to_json(self):
-        """JSON representation."""
-        return json.dumps(obj_to_dict(self))
+        """Return the json representation."""
+        return OrderedDict([
+            ('name', self.name),
+            ('indexer', self.indexer),
+            ('indexerId', self.indexerid),
+            ('show', OrderedDict([
+                ('name', self.show.name),
+                ('indexer', self.show.indexer),
+                ('indexerId', self.show.indexerid),
+            ])),
+            ('season', self.season),
+            ('episode', self.episode),
+            ('absoluteNumber', self.absolute_number),
+            ('description', self.description),
+            ('subtitles', self.subtitles),
+            ('subtitlesSearchCount', self.subtitles_searchcount),
+            ('subtitlesLastSearched', self.subtitles_lastsearch),
+            ('airDate', self.airdate),
+            ('hasNfo', self.hasnfo),
+            ('hasTbn', self.hastbn),
+            ('status', self.status),
+            ('fileSize', self.file_size),
+            ('releaseName', self.release_name),
+            ('isProper', self.is_proper),
+            ('version', self.version),
+            ('releaseGroup', self.release_group),
+            ('location', self.location),
+            ('sceneSeason', self.scene_season),
+            ('sceneEpisode', self.scene_episode),
+            ('sceneAbsoluteNumber', self.scene_absolute_number),
+            ('relatedEpisodes', [ep.to_json() for ep in self.related_episodes]),
+            ('location', self.location),
+            ('wantedQuality', self.wanted_quality),
+        ])
 
     def create_meta_files(self):
         """Create episode metadata files."""
