@@ -111,7 +111,7 @@ class NameParser(object):
                     logger.debug('Indexer info for show {name}: {ep}',
                                  name=result.show.name, ep=episode_num(season_number, episode_numbers))
                 except app.indexer_episodenotfound:
-                    logger.warn('Unable to find episode with date {date} for show {name} skipping',
+                    logger.warn("Unable to find episode with date {date} for show '{name}'. Skipping",
                                 date=result.air_date, name=result.show.name)
                     episode_numbers = []
                 except app.indexer_error as e:
@@ -127,13 +127,13 @@ class NameParser(object):
                                                                    result.show.indexer,
                                                                    season_number,
                                                                    episode_number)
-                    logger.debug('Scene numbering enabled show {name}, using indexer numbering: {ep}',
+                    logger.debug("Scene numbering enabled show '{name}', using indexer numbering: {ep}",
                                  name=result.show.name, ep=episode_num(s, e))
                 new_episode_numbers.append(e)
                 new_season_numbers.append(s)
 
         elif result.show.is_anime and result.is_anime:
-            logger.debug('Scene numbering enabled show {name} is anime', name=result.show.name)
+            logger.debug("Scene numbering enabled show '{name}' is anime", name=result.show.name)
             scene_season = scene_exceptions.get_scene_exception_by_name(result.series_name)[1]
             for absolute_episode in result.ab_episode_numbers:
                 a = absolute_episode
@@ -144,7 +144,7 @@ class NameParser(object):
                                                                        True, scene_season)
 
                 (s, e) = helpers.get_all_episodes_from_absolute_number(result.show, [a])
-                logger.debug('Scene numbering enabled show {name} using indexer for absolute {absolute}: {ep}',
+                logger.debug("Scene numbering enabled show '{name}' using indexer for absolute {absolute}: {ep}",
                              name=result.show.name, absolute=a, ep=episode_num(s, e, 'absolute'))
 
                 new_absolute_numbers.append(a)
@@ -161,14 +161,14 @@ class NameParser(object):
                                                                    result.show.indexer,
                                                                    result.season_number,
                                                                    episode_number)
-                    logger.debug('Scene numbering enabled show {name} using indexer numbering: {ep}',
+                    logger.debug("Scene numbering enabled show '{name}' using indexer numbering: {ep}",
                                  name=result.show.name, ep=episode_num(s, e))
 
                 if result.show.is_anime:
                     a = helpers.get_absolute_number_from_season_and_episode(result.show, s, e)
                     if a:
                         new_absolute_numbers.append(a)
-                        logger.debug('Scene numbering enabled anime show {name} using indexer with absolute {absolute}: {ep}',
+                        logger.debug("Scene numbering enabled anime show '{name}' using indexer with absolute {absolute}: {ep}",
                                      name=result.show.name, absolute=a, ep=episode_num(s, e, 'absolute'))
 
                 new_episode_numbers.append(e)
@@ -232,7 +232,7 @@ class NameParser(object):
         if cache_result:
             name_parser_cache.add(name, result)
 
-        logger.debug('Parsed {name} into {result}', name=name, result=result)
+        logger.debug("Parsed '{name}' into {result}", name=name, result=result)
         return result
 
     @staticmethod
@@ -269,7 +269,7 @@ class NameParser(object):
         """
         season_numbers = helpers.ensure_list(guess.get('season'))
         if len(season_numbers) > 1 and not self.allow_multi_season:
-            raise InvalidNameException('Discarding result. Multi-season detected for {name}: {guess}'.format(name=name, guess=guess))
+            raise InvalidNameException("Discarding result. Multi-season detected for '{name}': {guess}".format(name=name, guess=guess))
 
         return ParseResult(guess, original_name=name, series_name=guess.get('alias') or guess.get('title'),
                            season_number=helpers.single_or_list(season_numbers, self.allow_multi_season),
@@ -430,7 +430,7 @@ class NameParserCache(object):
         :rtype: ParseResult
         """
         if name in self._previous_parsed:
-            logger.debug('Using cached parse result for {name}', name=name)
+            logger.debug("Using cached parse result for '{name}'", name=name)
             return self._previous_parsed[name]
 
 
