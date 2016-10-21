@@ -127,13 +127,13 @@ class NameParser(object):
                                                                    result.show.indexer,
                                                                    season_number,
                                                                    episode_number)
-                    logger.debug('Scene show {name}, using indexer numbering: {ep}',
+                    logger.debug('Scene numbering enabled show {name}, using indexer numbering: {ep}',
                                  name=result.show.name, ep=episode_num(s, e))
                 new_episode_numbers.append(e)
                 new_season_numbers.append(s)
 
         elif result.show.is_anime and result.is_anime:
-            logger.debug('Scene show {name} is anime', name=result.show.name)
+            logger.debug('Scene numbering enabled show {name} is anime', name=result.show.name)
             scene_season = scene_exceptions.get_scene_exception_by_name(result.series_name)[1]
             for absolute_episode in result.ab_episode_numbers:
                 a = absolute_episode
@@ -144,7 +144,7 @@ class NameParser(object):
                                                                        True, scene_season)
 
                 (s, e) = helpers.get_all_episodes_from_absolute_number(result.show, [a])
-                logger.debug('Scene show {name} using indexer for absolute {absolute}: {ep}',
+                logger.debug('Scene numbering enabled show {name} using indexer for absolute {absolute}: {ep}',
                              name=result.show.name, absolute=a, ep=episode_num(s, e, 'absolute'))
 
                 new_absolute_numbers.append(a)
@@ -161,14 +161,14 @@ class NameParser(object):
                                                                    result.show.indexer,
                                                                    result.season_number,
                                                                    episode_number)
-                    logger.debug('Scene show {name} using indexer numbering: {ep}',
+                    logger.debug('Scene numbering enabled show {name} using indexer numbering: {ep}',
                                  name=result.show.name, ep=episode_num(s, e))
 
                 if result.show.is_anime:
                     a = helpers.get_absolute_number_from_season_and_episode(result.show, s, e)
                     if a:
                         new_absolute_numbers.append(a)
-                        logger.debug('Scene anime show {name} using indexer with absolute {absolute}: {ep}',
+                        logger.debug('Scene numbering enabled anime show {name} using indexer with absolute {absolute}: {ep}',
                                      name=result.show.name, absolute=a, ep=episode_num(s, e, 'absolute'))
 
                 new_episode_numbers.append(e)
