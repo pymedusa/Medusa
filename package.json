@@ -10,7 +10,7 @@
   },
   "homepage": "https://github.com/PyMedusa/Medusa#readme",
   "scripts": {
-    "test": "xo static/js/*.js",
+    "test": "xo",
     "security": "snyk test",
     "build": "./node_modules/grunt-cli/bin/grunt"
   },
@@ -40,6 +40,11 @@
     "globals": [
       "MEDUSA",
       "PNotify"
+    ],
+    "ignores": [
+      "static/js/lib/**",
+      "static/js/*.min.js",
+      "static/js/vender.js"
     ]
   },
   "stylelint": {

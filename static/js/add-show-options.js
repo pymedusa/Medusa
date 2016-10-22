@@ -2,10 +2,10 @@ $(document).ready(function() {
     $('#saveDefaultsButton').on('click', function() {
         var anyQualArray = [];
         var bestQualArray = [];
-        $('#anyQualities option:selected').each(function (i, d) {
+        $('#anyQualities option:selected').each(function(i, d) {
             anyQualArray.push($(d).val());
         });
-        $('#bestQualities option:selected').each(function (i, d) {
+        $('#bestQualities option:selected').each(function(i, d) {
             bestQualArray.push($(d).val());
         });
 
