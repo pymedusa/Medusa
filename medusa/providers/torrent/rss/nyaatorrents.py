@@ -112,7 +112,7 @@ class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
 
         items = []
 
-        for result in data:
+        for result in data['entries']:
             try:
                 title = result['title']
                 download_url = result['link']
