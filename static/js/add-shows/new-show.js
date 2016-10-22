@@ -5,9 +5,9 @@ MEDUSA.addShows.newShow = function() {
         var showName;
         var sepChar;
         // if they've picked a radio button then use that
-        if ($('input:radio[name=whichSeries]:checked').length > 0) {
+        if ($('input:radio[name=whichSeries]:checked').length !== 0) {
             showName = $('input:radio[name=whichSeries]:checked').val().split('|')[4];
-        } else if ($('input:hidden[name=whichSeries]').length > 0 && $('input:hidden[name=whichSeries]').val().length > 0) { // if we provided a show in the hidden field, use that
+        } else if ($('input:hidden[name=whichSeries]').length !== 0 && $('input:hidden[name=whichSeries]').val().length !== 0) { // if we provided a show in the hidden field, use that
             showName = $('#providedName').val();
         } else {
             showName = '';
@@ -16,7 +16,7 @@ MEDUSA.addShows.newShow = function() {
         var sampleText = 'Adding show <b>' + showName + '</b> into <b>';
 
         // if we have a root dir selected, figure out the path
-        if ($('#rootDirs option:selected').length > 0) {
+        if ($('#rootDirs option:selected').length !== 0) {
             var rootDirectoryText = $('#rootDirs option:selected').val();
             if (rootDirectoryText.indexOf('/') >= 0) {
                 sepChar = '/';
@@ -32,7 +32,7 @@ MEDUSA.addShows.newShow = function() {
             rootDirectoryText += '<i>||</i>' + sepChar;
 
             sampleText += rootDirectoryText;
-        } else if ($('#fullShowPath').length > 0 && $('#fullShowPath').val().length > 0) {
+        } else if ($('#fullShowPath').length !== 0 && $('#fullShowPath').val().length !== 0) {
             sampleText += $('#fullShowPath').val();
         } else {
             sampleText += 'unknown dir.';
@@ -145,7 +145,7 @@ MEDUSA.addShows.newShow = function() {
         searchIndexers();
     });
 
-    if ($('#nameToSearch').length > 0 && $('#nameToSearch').val().length > 0) {
+    if ($('#nameToSearch').length !== 0 && $('#nameToSearch').val().length !== 0) {
         $('#searchName').click();
     }
 
@@ -188,7 +188,7 @@ MEDUSA.addShows.newShow = function() {
         revealfx: ['slide', 500],
         oninit: function() {
             updateSampleText();
-            if ($('input:hidden[name=whichSeries]').length > 0 && $('#fullShowPath').length > 0) {
+            if ($('input:hidden[name=whichSeries]').length !== 0 && $('#fullShowPath').length !== 0) {
                 goToStep(3);
             }
         }

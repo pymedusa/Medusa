@@ -56,7 +56,7 @@ $(document).ready(function() {
     }
 
     function refreshRootDirs() {
-        if (!$('#rootDirs').length !== 0) {
+        if ($('#rootDirs').length === 0) {
             return;
         }
 
@@ -66,7 +66,7 @@ $(document).ready(function() {
         syncOptionIDs();
 
         // if nothing's selected then select the default
-        if (!$('#rootDirs option:selected').length !== 0 && $('#whichDefaultRootDir').val().length !== 0) {
+        if ($('#rootDirs option:selected').length === 0 && $('#whichDefaultRootDir').val().length !== 0) {
             $('#' + $('#whichDefaultRootDir').val()).prop('selected', true);
         }
 

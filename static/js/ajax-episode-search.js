@@ -216,7 +216,7 @@ $(document).ready(function() {
 
             selectedEpisode = $(this);
 
-            if ($(this).parent().parent().children('.col-status').children('.quality').length > 0) {
+            if ($(this).parent().parent().children('.col-status').children('.quality').length !== 0) {
                 $('#forcedSearchModalQuality').modal('show');
             } else {
                 forcedSearch();

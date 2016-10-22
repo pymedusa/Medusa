@@ -577,7 +577,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
 
     $('#provider_order_list').disableSelection();
 
-    if ($('#editANewznabProvider').length > 0) {
+    if ($('#editANewznabProvider').length !== 0) {
         $(this).populateNewznabSection();
     }
 });
