@@ -2136,7 +2136,10 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['ANIME'] = {}
     new_config['ANIME']['anime_split_home'] = int(ANIME_SPLIT_HOME)
 
-    new_config.write()
+    try:
+        new_config.write()
+    except IOError:
+        logger.log(u"Unable to save config file, most likely out of disk space!", logger.WARNING)
 
 
 def launchBrowser(protocol='http', startPort=None, web_root='/'):
