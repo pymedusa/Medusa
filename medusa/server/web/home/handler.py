@@ -1281,6 +1281,8 @@ class Home(WebRoot):
             t = PageTemplate(rh=self, filename='editShow.mako')
 
             if show_obj.is_anime:
+                if not show_obj.release_groups:
+                    show_obj.release_groups = BlackAndWhiteList(show_obj.indexerid)
                 whitelist = show_obj.release_groups.whitelist
                 blacklist = show_obj.release_groups.blacklist
 
