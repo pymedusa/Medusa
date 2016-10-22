@@ -1,6 +1,5 @@
 # coding=utf-8
-
-# URL: https://pymedusa.com
+# Author: p0psicles
 #
 # This file is part of Medusa.
 #
