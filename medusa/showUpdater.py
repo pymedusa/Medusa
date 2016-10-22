@@ -25,7 +25,6 @@ import xml.etree.ElementTree as ET
 import medusa as app
 from . import db, failed_history, helpers, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
-from .indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
 from .show.Show import Show
 
 logger = logging.getLogger(__name__)

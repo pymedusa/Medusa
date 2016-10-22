@@ -22,6 +22,7 @@ from ....blackandwhitelist import short_group_names
 from ....common import Quality
 from ....helper.common import sanitize_filename, try_int
 from ....helpers import get_showname_from_indexer
+from ....indexers.indexer_config import INDEXER_TVDBV2
 from ....indexers.indexer_exceptions import IndexerException
 from ....show.Show import Show
 from ....show.recommendations.anidb import AnidbPopular
@@ -461,7 +462,7 @@ class HomeAddShows(Home):
         show_dir = None
 
         # add the show
-        app.showQueueScheduler.action.addShow(4, int(indexer_id), show_dir, int(default_status), quality, flatten_folders,
+        app.showQueueScheduler.action.addShow(INDEXER_TVDBV2, int(indexer_id), show_dir, int(default_status), quality, flatten_folders,
                                               indexer_lang, subtitles, anime, scene, None, blacklist, whitelist,
                                               int(default_status_after), root_dir=location)
 

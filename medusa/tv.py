@@ -47,7 +47,7 @@ from .helper.exceptions import (
     MultipleShowObjectsException, MultipleShowsInDatabaseException, NoNFOException, ShowDirectoryNotFoundException,
     ShowNotFoundException, ex
 )
-from .indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
+from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .scene_numbering import get_scene_absolute_numbering, get_scene_numbering, xem_refresh
 from .show.Show import Show
@@ -117,7 +117,7 @@ class TVObject(object):
         :return:
         :rtype: int
         """
-        return self.indexerid if self.indexerid and self.indexer == INDEXER_TVDB else None
+        return self.indexerid if self.indexerid and self.indexer == INDEXER_TVDBV2 else None
 
     def __getstate__(self):
         """Get threading lock state.

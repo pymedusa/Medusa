@@ -27,6 +27,7 @@ from ....scene_numbering import (
     get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
     set_scene_numbering, xem_refresh
 )
+from ....indexers.indexer_config import INDEXER_TVDBV2
 from ....search.manual import (
     SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING, collectEpisodesFromSearchThread,
     getEpisode, get_provider_cache_results, update_finished_search_queue_item
@@ -1057,7 +1058,6 @@ class Home(WebRoot):
                         perform_search=0, down_cur_quality=0, show_all_results=0):
         """ The view with results for the manual selected show/episode """
 
-        indexer_tvdb = 1
         # TODO: add more comprehensive show validation
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
@@ -1071,7 +1071,7 @@ class Home(WebRoot):
         # Retrieve cache results from providers
         search_show = {'show': show, 'season': season, 'episode': episode, 'manual_search_type': manual_search_type}
 
-        provider_results = get_provider_cache_results(indexer_tvdb, perform_search=perform_search,
+        provider_results = get_provider_cache_results(INDEXER_TVDBV2, perform_search=perform_search,
                                                       show_all_results=show_all_results, **search_show)
 
         t = PageTemplate(rh=self, filename='snatchSelection.mako')
