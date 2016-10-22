@@ -28,7 +28,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#statusSelect, #qualityPreset, #flatten_folders, #anyQualities, #bestQualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', function () {
+    $('#statusSelect, #qualityPreset, #flatten_folders, #anyQualities, #bestQualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', function() {
         $('#saveDefaultsButton').prop('disabled', false);
     });
 

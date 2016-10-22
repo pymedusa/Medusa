@@ -31,7 +31,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
      * @param {Array} selectedProvider
      * @return no return data. Function updateNewznabCaps() is run at callback
      */
-    $.fn.getCategories = function (isDefault, selectedProvider) {
+    $.fn.getCategories = function(isDefault, selectedProvider) {
         var name = selectedProvider[0];
         var url = selectedProvider[1];
         var key = selectedProvider[2];
@@ -99,7 +99,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         $(this).makeTorrentRssProviderString();
     };
 
-    $.fn.updateProvider = function (id, url, key, cat) {
+    $.fn.updateProvider = function(id, url, key, cat) {
         newznabProviders[id][1][1] = url;
         newznabProviders[id][1][2] = key;
         newznabProviders[id][1][3] = cat;
@@ -109,7 +109,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         $(this).makeNewznabProviderString();
     };
 
-    $.fn.deleteProvider = function (id) {
+    $.fn.deleteProvider = function(id) {
         $('#editANewznabProvider').removeOption(id);
         delete newznabProviders[id];
         $(this).populateNewznabSection();
@@ -117,7 +117,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         $(this).makeNewznabProviderString();
     };
 
-    $.fn.updateTorrentRssProvider = function (id, url, cookies, titleTAG) {
+    $.fn.updateTorrentRssProvider = function(id, url, cookies, titleTAG) {
         torrentRssProviders[id][1] = url;
         torrentRssProviders[id][2] = cookies;
         torrentRssProviders[id][3] = titleTAG;
@@ -125,7 +125,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         $(this).makeTorrentRssProviderString();
     };
 
-    $.fn.deleteTorrentRssProvider = function (id) {
+    $.fn.deleteTorrentRssProvider = function(id) {
         $('#editATorrentRssProvider').removeOption(id);
         delete torrentRssProviders[id];
         $(this).populateTorrentRssSection();
@@ -183,7 +183,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         // Update the category select box (on the right)
         var newCatOptions = [];
         if (rrcat) {
-            rrcat.forEach(function (cat) {
+            rrcat.forEach(function(cat) {
                 if (cat !== '') {
                     newCatOptions.push({
                         text: cat,
@@ -570,14 +570,14 @@ $(document).ready(function() { // eslint-disable-line max-lines
 
     $('#provider_order_list').sortable({
         placeholder: 'ui-state-highlight',
-        update: function () {
+        update: function() {
             $(this).refreshProviderList();
         }
     });
 
     $('#provider_order_list').disableSelection();
 
-    if ($('#editANewznabProvider').length) {
+    if ($('#editANewznabProvider').length > 0) {
         $(this).populateNewznabSection();
     }
 });

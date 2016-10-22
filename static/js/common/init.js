@@ -23,7 +23,7 @@ MEDUSA.common.init = function() {
         title: 'Remove Show',
         text: 'Are you sure you want to remove <span class="footerhighlight">' + $('#showtitle').data('showname') + '</span> from the database?<br><br><input type="checkbox" id="deleteFiles"> <span class="red-text">Check to delete files as well. IRREVERSIBLE</span></input>',
         confirm: function(e) {
-            location.href = e[0].href + (deleteFiles.checked ? '&full=1' : '');
+            location.href = e[0].href + (document.getElementById('deleteFiles').checked ? '&full=1' : '');
         }
     });
 
@@ -43,7 +43,7 @@ MEDUSA.common.init = function() {
     });
 
     $('#config-components').tabs({
-        activate: function (event, ui) {
+        activate: function(event, ui) {
             var lastOpenedPanel = $(this).data('lastOpenedPanel');
 
             if (!lastOpenedPanel) {
@@ -67,7 +67,7 @@ MEDUSA.common.init = function() {
                     .toggleClass('ui-tabs-hide')
                     .css('position', 'absolute')
                     .css('top', $(this).data('topPositionTab') + 'px')
-                    .fadeOut(0, function () {
+                    .fadeOut(0, function() {
                         $(this).css('position', '');
                     });
             }

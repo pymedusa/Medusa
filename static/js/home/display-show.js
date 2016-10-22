@@ -8,7 +8,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         colorRow: true
     });
 
-    startAjaxEpisodeSubtitles();
+    startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
     $.ajaxEpSubtitlesSearch();
     $.ajaxEpRedownloadSubtitle();
 
@@ -36,7 +36,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     $('#changeStatus').on('click', function() {
         var epArr = [];
 
-        $('.epCheck').each(function () {
+        $('.epCheck').each(function() {
             if (this.checked === true) {
                 epArr.push($(this).attr('id'));
             }
@@ -54,7 +54,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         var seasNo = $(seasCheck).attr('id');
 
         $('#collapseSeason-' + seasNo).collapse('show');
-        $('.epCheck:visible').each(function () {
+        $('.epCheck:visible').each(function() {
             var epParts = $(this).attr('id').split('x');
             if (epParts[0] === seasNo) {
                 this.checked = seasCheck.checked;
@@ -63,7 +63,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     });
 
     var lastCheck = null;
-    $('.epCheck').on('click', function (event) {
+    $('.epCheck').on('click', function(event) {
         if (!lastCheck || !event.shiftKey) {
             lastCheck = this;
             return;
@@ -88,27 +88,27 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     });
 
     // selects all visible episode checkboxes.
-    $('.seriesCheck').on('click', function () {
-        $('.epCheck:visible').each(function () {
+    $('.seriesCheck').on('click', function() {
+        $('.epCheck:visible').each(function() {
             this.checked = true;
         });
-        $('.seasonCheck:visible').each(function () {
+        $('.seasonCheck:visible').each(function() {
             this.checked = true;
         });
     });
 
     // clears all visible episode checkboxes and the season selectors
-    $('.clearAll').on('click', function () {
-        $('.epCheck:visible').each(function () {
+    $('.clearAll').on('click', function() {
+        $('.epCheck:visible').each(function() {
             this.checked = false;
         });
-        $('.seasonCheck:visible').each(function () {
+        $('.seasonCheck:visible').each(function() {
             this.checked = false;
         });
     });
 
     // handle the show selection dropbox
-    $('#pickShow').on('change', function () {
+    $('#pickShow').on('change', function() {
         var val = $(this).val();
         if (val === 0) {
             return;
@@ -117,7 +117,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     });
 
     // show/hide different types of rows when the checkboxes are changed
-    $('#checkboxControls input').on('change', function () {
+    $('#checkboxControls input').on('change', function() {
         var whichClass = $(this).attr('id');
         $(this).showHideRows(whichClass);
     });
@@ -145,10 +145,10 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         });
 
         // hide season headers with no episodes under them
-        $('tr.seasonheader').each(function () {
+        $('tr.seasonheader').each(function() {
             var numRows = 0;
             var seasonNo = $(this).attr('id');
-            $('tr.' + seasonNo + ' :visible').each(function () {
+            $('tr.' + seasonNo + ' :visible').each(function() {
                 numRows++;
             });
             if (numRows === 0) {
@@ -231,14 +231,14 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         if (valid) {
             $(el).css({
                 'background-color': '#90EE90', // green
-                'color': '#FFF',
+                'color': '#FFF', // eslint-disable-line quote-props
                 'font-weight': 'bold'
             });
             return true;
         }
         $(el).css({
             'background-color': '#FF0000', // red
-            'color': '#FFF!important',
+            'color': '#FFF!important', // eslint-disable-line quote-props
             'font-weight': 'bold'
         });
         return false;
@@ -293,8 +293,11 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute);
     });
 
-    $('.addQTip').each(function () {
-        $(this).css({'cursor': 'help', 'text-shadow': '0px 0px 0.5px #666'});
+    $('.addQTip').each(function() {
+        $(this).css({
+            'cursor': 'help', // eslint-disable-line quote-props
+            'text-shadow': '0px 0px 0.5px #666'
+        });
         $(this).qtip({
             show: {solo: true},
             position: {viewport: $(window), my: 'left center', adjust: {y: -10, x: 2}},
@@ -324,19 +327,19 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         placement: 'bottom',
         html: true, // required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function () { // bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
         $.tablesorter.columnSelector.attachTo($('#showTable, #animeTable'), '#popover-target');
     });
 
     // Moved and rewritten this from displayShow. This changes the button when clicked for collapsing/expanding the
     // Season to Show Episodes or Hide Episodes.
     $(function() {
-        $('.collapse.toggle').on('hide.bs.collapse', function () {
+        $('.collapse.toggle').on('hide.bs.collapse', function() {
             var reg = /collapseSeason-([0-9]+)/g;
             var result = reg.exec(this.id);
             $('#showseason-' + result[1]).text('Show Episodes');
         });
-        $('.collapse.toggle').on('show.bs.collapse', function () {
+        $('.collapse.toggle').on('show.bs.collapse', function() {
             var reg = /collapseSeason-([0-9]+)/g;
             var result = reg.exec(this.id);
             $('#showseason-' + result[1]).text('Hide Episodes');

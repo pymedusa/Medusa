@@ -31,7 +31,7 @@
   "xo": {
     "space": 4,
     "rules": {
-      "space-before-function-paren": 0
+      "space-before-function-paren": ["error", "never"]
     },
     "envs": [
       "browser",

@@ -5,9 +5,9 @@ MEDUSA.addShows.newShow = function() {
         var showName;
         var sepChar;
         // if they've picked a radio button then use that
-        if ($('input:radio[name=whichSeries]:checked').length) {
+        if ($('input:radio[name=whichSeries]:checked').length > 0) {
             showName = $('input:radio[name=whichSeries]:checked').val().split('|')[4];
-        } else if ($('input:hidden[name=whichSeries]').length && $('input:hidden[name=whichSeries]').val().length) { // if we provided a show in the hidden field, use that
+        } else if ($('input:hidden[name=whichSeries]').length > 0 && $('input:hidden[name=whichSeries]').val().length > 0) { // if we provided a show in the hidden field, use that
             showName = $('#providedName').val();
         } else {
             showName = '';
@@ -16,7 +16,7 @@ MEDUSA.addShows.newShow = function() {
         var sampleText = 'Adding show <b>' + showName + '</b> into <b>';
 
         // if we have a root dir selected, figure out the path
-        if ($('#rootDirs option:selected').length) {
+        if ($('#rootDirs option:selected').length > 0) {
             var rootDirectoryText = $('#rootDirs option:selected').val();
             if (rootDirectoryText.indexOf('/') >= 0) {
                 sepChar = '/';
@@ -32,7 +32,7 @@ MEDUSA.addShows.newShow = function() {
             rootDirectoryText += '<i>||</i>' + sepChar;
 
             sampleText += rootDirectoryText;
-        } else if ($('#fullShowPath').length && $('#fullShowPath').val().length) {
+        } else if ($('#fullShowPath').length > 0 && $('#fullShowPath').val().length > 0) {
             sampleText += $('#fullShowPath').val();
         } else {
             sampleText += 'unknown dir.';
@@ -41,8 +41,10 @@ MEDUSA.addShows.newShow = function() {
         sampleText += '</b>';
 
         // if we have a show name then sanitize and use it for the dir name
-        if (showName.length) {
-            $.get('addShows/sanitizeFileName', {name: showName}, function (data) {
+        if (showName.length > 0) {
+            $.get('addShows/sanitizeFileName', {
+                name: showName
+            }, function(data) {
                 $('#displayText').html(sampleText.replace('||', data));
             });
         // if not then it's unknown
@@ -51,7 +53,12 @@ MEDUSA.addShows.newShow = function() {
         }
 
         // also toggle the add show button
-        if (($('#rootDirs option:selected').length || ($('#fullShowPath').length && $('#fullShowPath').val().length)) && ($('input:radio[name=whichSeries]:checked').length) || ($('input:hidden[name=whichSeries]').length && $('input:hidden[name=whichSeries]').val().length)) {  // eslint-disable-line no-mixed-operators
+        if (
+            ($('#rootDirs option:selected').length !== 0 ||
+            ($('#fullShowPath').length !== 0 && $('#fullShowPath').val().length !== 0)) && // eslint-disable-line no-mixed-operators
+            ($('input:radio[name=whichSeries]:checked').length !== 0) || // eslint-disable-line no-mixed-operators
+            ($('input:hidden[name=whichSeries]').length !== 0 && $('input:hidden[name=whichSeries]').val().length !== 0)
+        ) {
             $('#addShowButton').prop('disabled', false);
         } else {
             $('#addShowButton').prop('disabled', true);
@@ -60,7 +67,7 @@ MEDUSA.addShows.newShow = function() {
 
     var searchRequestXhr = null;
     function searchIndexers() {
-        if (!$('#nameToSearch').val().length) {
+        if ($('#nameToSearch').val().length !== 0) {
             return;
         }
 
@@ -80,10 +87,10 @@ MEDUSA.addShows.newShow = function() {
             },
             timeout: parseInt($('#indexer_timeout').val(), 10) * 1000,
             dataType: 'json',
-            error: function () {
+            error: function() {
                 $('#searchResults').empty().html('search timed out, try again or try another indexer');
             },
-            success: function (data) {
+            success: function(data) {
                 var firstResult = true;
                 var resultStr = '<fieldset>\n<legend class="legendStep">Search Results:</legend>\n';
                 var checked = '';
@@ -134,17 +141,17 @@ MEDUSA.addShows.newShow = function() {
         });
     }
 
-    $('#searchName').on('click', function () {
+    $('#searchName').on('click', function() {
         searchIndexers();
     });
 
-    if ($('#nameToSearch').length && $('#nameToSearch').val().length) {
+    if ($('#nameToSearch').length > 0 && $('#nameToSearch').val().length > 0) {
         $('#searchName').click();
     }
 
-    $('#addShowButton').click(function () {
+    $('#addShowButton').click(function() {
         // if they haven't picked a show don't let them submit
-        if (!$('input:radio[name="whichSeries"]:checked').val() && !$('input:hidden[name="whichSeries"]').val().length) {
+        if (!$('input:radio[name="whichSeries"]:checked').val() && $('input:hidden[name="whichSeries"]').val().length !== 0) {
             alert('You must choose a show to continue'); // eslint-disable-line no-alert
             return false;
         }
@@ -152,23 +159,21 @@ MEDUSA.addShows.newShow = function() {
         $('#addShowForm').submit();
     });
 
-    $('#skipShowButton').click(function () {
+    $('#skipShowButton').click(function() {
         $('#skipShow').val('1');
         $('#addShowForm').submit();
     });
 
-    $('#qualityPreset').on('change', function () {
+    $('#qualityPreset').on('change', function() {
         myform.loadsection(2); // eslint-disable-line no-use-before-define
     });
 
-    /** *********************************************
-    * jQuery Form to Form Wizard- (c) Dynamic Drive (www.dynamicdrive.com)
-    * This notice MUST stay intact for legal use
-    * Visit http://www.dynamicdrive.com/ for this script and 100s more.
-    ***********************************************/
+    /* jQuery Form to Form Wizard- (c) Dynamic Drive (www.dynamicdrive.com)
+    *  This notice MUST stay intact for legal use
+    *  Visit http://www.dynamicdrive.com/ for this script and 100s more. */
 
     function goToStep(num) {
-        $('.step').each(function () {
+        $('.step').each(function() {
             if ($.data(this, 'section') + 1 === num) {
                 $(this).click();
             }
@@ -178,12 +183,12 @@ MEDUSA.addShows.newShow = function() {
     $('#nameToSearch').focus();
 
     // @TODO we need to move to real forms instead of this
-    var myform = new formtowizard({ // eslint-disable-line babel/new-cap, no-undef
+    var myform = new formtowizard({ // eslint-disable-line new-cap, no-undef
         formid: 'addShowForm',
         revealfx: ['slide', 500],
-        oninit: function () {
+        oninit: function() {
             updateSampleText();
-            if ($('input:hidden[name=whichSeries]').length && $('#fullShowPath').length) {
+            if ($('input:hidden[name=whichSeries]').length > 0 && $('#fullShowPath').length > 0) {
                 goToStep(3);
             }
         }

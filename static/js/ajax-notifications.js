@@ -28,13 +28,13 @@ function displayPNotify(type, title, message) {
 
 function checkNotifications() {
     if (document.visibilityState === 'visible') {
-        $.getJSON(messageUrl, function (data) {
-            $.each(data, function (name, data) {
+        $.getJSON(messageUrl, function(data) {
+            $.each(data, function(name, data) {
                 displayPNotify(data.type, data.title, data.message);
             });
         });
     }
-    setTimeout(function () {
+    setTimeout(function() {
         'use strict';
         checkNotifications();
     }, 3000);

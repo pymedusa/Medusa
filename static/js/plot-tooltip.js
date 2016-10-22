@@ -1,5 +1,5 @@
-$(function () {
-    $('.plotInfo').each(function () {
+$(function() {
+    $('.plotInfo').each(function() {
         var match = $(this).attr('id').match(/^plot_info_(\d+)_(\d+)_(\d+)$/);
         $(this).qtip({
             content: {
@@ -12,7 +12,7 @@ $(function () {
                         episode: match[3],
                         season: match[2]
                     },
-                    success: function (data) {
+                    success: function(data) {
                         this.set('content.text', data);
                     }
                 }

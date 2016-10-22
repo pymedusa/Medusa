@@ -5,7 +5,7 @@ MEDUSA.config.backupRestore = function() {
         var backupDir = $('#backupDir').val();
         $.get('config/backuprestore/backup', {
             backupDir: backupDir
-        }).done(function (data) {
+        }).done(function(data) {
             $('#Backup-result').html(data);
             $('#Backup').prop('disabled', false);
         });
@@ -16,7 +16,7 @@ MEDUSA.config.backupRestore = function() {
         var backupFile = $('#backupFile').val();
         $.get('config/backuprestore/restore', {
             backupFile: backupFile
-        }).done(function (data) {
+        }).done(function(data) {
             $('#Restore-result').html(data);
             $('#Restore').prop('disabled', false);
         });

@@ -14,7 +14,7 @@ MEDUSA.config.search = function() {
         var testNZBgetResult = '#testNZBgetResult';
         var nzbgetSettings = '#nzbget_settings';
 
-        $('#nzb_method_icon').removeClass(function (index, css) {
+        $('#nzb_method_icon').removeClass(function(index, css) {
             return (css.match(/(^|\s)add-client-icon-\S+/g) || []).join(' ');
         });
         $('#nzb_method_icon').addClass('add-client-icon-' + selectedProvider.replace('_', '-'));
@@ -52,7 +52,7 @@ MEDUSA.config.search = function() {
         var optionPanel = '#options_torrent_blackhole';
         var rpcurl = ' RPC URL';
 
-        $('#torrent_method_icon').removeClass(function (index, css) {
+        $('#torrent_method_icon').removeClass(function(index, css) {
             return (css.match(/(^|\s)add-client-icon-\S+/g) || []).join(' ');
         });
         $('#torrent_method_icon').addClass('add-client-icon-' + selectedProvider.replace('_', '-'));
@@ -200,13 +200,13 @@ MEDUSA.config.search = function() {
         nzbget.host = $('#nzbget_host').val();
         nzbget.username = $('#nzbget_username').val();
         nzbget.password = $('#nzbget_password').val();
-        nzbget.use_https = $('#nzbget_use_https').val();
+        nzbget.useHttps = $('#nzbget_use_https').val();
 
         $.get('home/testNZBget', {
             host: nzbget.host,
             username: nzbget.username,
             password: nzbget.password,
-            use_https: nzbget.use_https
+            use_https: nzbget.useHttps // eslint-disable-line camelcase
         }, function(data) {
             $('#testNZBget_result').html(data);
         });
