@@ -55,7 +55,7 @@ class ShowUpdater(object):
             # TODO: is not working for tvdbapiv2
             last_update = self.last_update.get_last_indexer_update(app.indexerApi(indexer).name)
 
-            if not last_update or indexer == 1 or last_update < time.time() - 86400 * update_max_weeks:
+            if not last_update or last_update < time.time() - 86400 * update_max_weeks:
                 # no entry in lastUpdate, or last update was too long ago, let's refresh the show for this indexer
                 refresh = True
             else:
