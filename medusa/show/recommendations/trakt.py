@@ -25,6 +25,7 @@ from .recommended import RecommendedShow
 from ... import logger
 from ...helper.common import try_int
 from ...helper.exceptions import MultipleShowObjectsException, ex
+from ...indexers.indexer_config import INDEXER_TVDBV2
 
 
 def get_tvdbv2_api():
@@ -63,7 +64,7 @@ class TraktPopular(object):
         """Create the RecommendedShow object from the returned showobj."""
         rec_show = RecommendedShow(self,
                                    show_obj['show']['ids'], show_obj['show']['title'],
-                                   4,  # indexer
+                                   INDEXER_TVDBV2,  # indexer
                                    show_obj['show']['ids']['tvdb'],
                                    **{'rating': show_obj['show']['rating'],
                                       'votes': try_int(show_obj['show']['votes'], '0'),

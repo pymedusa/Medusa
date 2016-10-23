@@ -24,6 +24,7 @@ from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
 from .recommended import (MissingTvdbMapping, RecommendedShow)
 from ... import helpers
+from ...indexers.indexer_config import INDEXER_TVDBV2
 
 
 logger = logging.getLogger(__name__)
@@ -57,7 +58,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         rec_show = RecommendedShow(self,
                                    show_obj.aid,
                                    show_obj.title,
-                                   4,
+                                   INDEXER_TVDBV2,
                                    tvdb_id,
                                    **{'rating': show_obj.rating_permanent,
                                       'votes': show_obj.count_permanent,

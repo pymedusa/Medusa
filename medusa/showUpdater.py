@@ -43,6 +43,8 @@ class ShowUpdater(object):
         season_updates = []
         update_max_weeks = 12
 
+        network_timezones.update_network_dict()
+
         # Initialize the indexer_update table. Add seasons with next_update, if they don't already exist.
         self.last_update.initialize_indexer_update(app.showList)
 
@@ -53,7 +55,7 @@ class ShowUpdater(object):
             refresh = False
             # Query the indexer for changed shows, since last update
             # refresh network timezones
-            network_timezones.update_network_dict()
+            # network_timezones.update_network_dict()
 
             # TODO: is not working for tvdbapiv2
             last_update = self.last_update.get_last_indexer_update(app.indexerApi(indexer).name)
