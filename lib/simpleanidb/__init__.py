@@ -33,16 +33,7 @@ REQUEST_HOT = 'hotanime'
 
 class Anidb(object):
     def __init__(self, session=None, cache_dir=None, auto_download=True, lang=None):  # pylint: disable=too-many-arguments
-        if not cache_dir:
-            self._cache_dir = user_cache_dir('simpleanidb', appauthor='simpleanidb')  # appauthor is requered on windows
-            if not os.path.isdir(self._cache_dir):
-                os.makedirs(self._cache_dir)
-        else:
-            self._cache_dir = cache_dir
-        if not os.path.isdir(self._cache_dir):
-            raise ValueError('{0} does not exist'.format(self._cache_dir))
-        elif not os.access(self._cache_dir, os.W_OK):
-            raise IOError('{0} is not writable'.format(self._cache_dir))
+        self._init_cache(cache_dir)
 
         self.session = session or requests.Session()
         self.session.headers.setdefault('user-agent', 'simpleanidb/{0}.{1}.{2}'.format(*__version__))
@@ -58,7 +49,8 @@ class Anidb(object):
         if not lang:
             self.lang = 'en'
 
-    def _get_temp_dir(self):
+    @staticmethod
+    def _get_temp_dir():
         """Returns the system temp dir"""
         if hasattr(os, 'getuid'):
             uid = 'u{0}'.format(os.getuid())
@@ -77,18 +69,41 @@ class Anidb(object):
 
         return path
 
-    def _load_xml(self, url):
+    def _load_xml(self, url, force=False):
         local_file = os.path.join(self._cache_dir, url.split('/')[-1])
         xml = None
-        try:
-            xml = self._read_file(local_file)
-        except IOError:
-            if self.auto_download:
-                self.download_anime_list(local_file, url)
+
+        if not force:
+            try:
                 xml = self._read_file(local_file)
-            else:
-                raise
+            except IOError:
+                if self.auto_download:
+                    self.download_anime_list(local_file, url)
+                    xml = self._read_file(local_file)
+                else:
+                    raise
+        else:
+            self.download_anime_list(local_file, url)
+            xml = self._read_file(local_file)
+
         return xml
+
+    def _init_cache(self, cache_dir, refresh=False):
+        if not cache_dir:
+            self._cache_dir = user_cache_dir('simpleanidb', appauthor='simpleanidb')  # appauthor is requered on windows
+            if not os.path.isdir(self._cache_dir):
+                os.makedirs(self._cache_dir)
+        else:
+            self._cache_dir = cache_dir
+        if not os.path.isdir(self._cache_dir):
+            raise ValueError('{0} does not exist'.format(self._cache_dir))
+        elif not os.access(self._cache_dir, os.W_OK):
+            raise IOError('{0} is not writable'.format(self._cache_dir))
+
+    def refresh(self):
+        """Refresh the xml_lists."""
+        self._xml_list = self._load_xml(ANIME_LIST_URL, force=True)
+        self._xml_titles = self._load_xml(ANIME_TITLES_URL, force=True)
 
     def search(self, term=None, autoload=False, aid=None, tvdbid=None):
         anime_ids = []
@@ -121,7 +136,6 @@ class Anidb(object):
         :param aid: The aid in int or string
         :return: One tvdbid as string, or None.
         """
-
         if not self._xml_list:
             self._xml_list = self._load_xml(ANIME_LIST_URL)
 
