@@ -1530,39 +1530,59 @@ class TVShow(TVObject):
 
     def to_json(self):
         """Return JSON representation."""
-        # TODO: not finished
+        # @TODO: Should we also return the season list with all episodes?
+        genres = list(set([v for v in self.genre.split('|') if v] + [v for v in self.imdb_info['genres'].replace('Sci-Fi', 'Science-Fiction').split('|') if v]))
+        indexers = {
+            1: 'thetvdb',
+            2: 'tvrage',
+            3: 'tvmaze'
+        }
+        akas = {}
+        for x in [v for v in self.imdb_info['akas'].split('|') if v]:
+            val, key = x.split('::')
+            akas[key] = val
+        print(self.episodes)
         return OrderedDict([
-            ('name', self.name),
-            ('indexer', self.indexer),
-            ('indexerId', self.indexerid),
+            ('title', self.name),
+            ('akas', akas),
+            ('id', OrderedDict([
+                ('thetvdb', str(self.indexerid)),  # @TODO: Change this since self.indexerid will be replaced
+                ('imdb', str(self.imdbid))
+            ])),
+            ('rating', OrderedDict([
+                ('imdb', self.imdb_info['rating'])
+            ])),
+            ('indexer', indexers[self.indexer]),
             ('network', self.network),
-            ('genres', [v for v in self.genre.split('|') if v]),
-            ('classification', self.classification),
+            ('genres', genres),
+            ('type', self.classification),  # e.g. Scripted
+            ('classification', self.imdb_info['certificates']),
             ('runtime', self.runtime),
-            ('imdbId', self.imdbid),
-            ('imdbInfo', self.imdb_info),
-            ('quality', self.quality),  # TODO: handle quality
+            # ('imdbInfo', self.imdb_info),
+            ('quality', self.quality),  # @TODO: handle quality
             ('flattenFolders', bool(self.flatten_folders)),
-            ('status', self.status),  # TODO: handle status
+            ('status', self.status),  # @TODO: handle status
             ('airs', self.airs),
-            ('startYear', self.startyear),
+            ('year', OrderedDict([
+                ('start', self.startyear),
+                ('end', self.startyear)  # @TODO: Replace with year of last episode
+            ])),
             ('paused', bool(self.paused)),
             ('airByDate', bool(self.air_by_date)),
             ('subtitlesEnabled', bool(self.subtitles)),
-            ('dvdOrder', self.dvdorder),
-            ('lang', self.lang),
-            ('lastUpdateIndexer', self.last_update_indexer),
+            ('dvdOrder', bool(self.dvdorder)),
+            ('language', self.lang),
             ('sports', self.is_sports),
             ('anime', self.is_anime),
             ('scene', self.is_scene),
             ('nextAired', self.nextaired),
             ('location', self.raw_location),
-            ('releaseGroups', self.release_groups),  # is this a list?
+            ('releaseGroups', []),  # @TODO: Replace with self.release_groups as a list
             ('defaultEpisodeStatus', self.default_ep_status),
             ('releaseIgnoredWords', [v for v in self.rls_ignore_words.split('|') if v]),
             ('releaseRequiredWords', [v for v in self.rls_require_words.split('|') if v]),
             ('exceptions', self.exceptions),
-            # ('episodes', self.episodes),
+            # ('episodes', self.episodes),  # @TODO Should this be included?
         ])
 
     @staticmethod
