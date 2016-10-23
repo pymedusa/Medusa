@@ -26,9 +26,7 @@ from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi, Updat
 
 from .tvdbv2_ui import BaseUI, ConsoleUI
 from ..indexer_base import (BaseIndexer, Actors, Actor)
-from ..indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerError,
-                                  IndexerException, IndexerSeasonNotFound, IndexerShowIncomplete,
-                                  IndexerShowNotFound)
+from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete, IndexerShowNotFound)
 
 
 def log():
@@ -114,13 +112,13 @@ class TVDBv2(BaseIndexer):
                                 # Let's map the children, i'm only going 1 deep, because usecases that I need it for, I don't need to go any further
                                 for k, v in value.iteritems():
                                     if key_mapping.get(attribute)[k]:
-                                        return_dict[key_mapping[attribute][k]] = str(v)
+                                        return_dict[key_mapping[attribute][k]] = v
 
                             else:
                                 if key_mapping.get(attribute):
-                                    return_dict[key_mapping[attribute]] = str(value)
+                                    return_dict[key_mapping[attribute]] = value
                         else:
-                            return_dict[attribute] = str(value)
+                            return_dict[attribute] = value
 
                     except Exception as e:
                         log().warning('Exception trying to parse attribute: %s, with exception: %r', attribute, e)
