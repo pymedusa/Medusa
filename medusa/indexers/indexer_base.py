@@ -21,23 +21,23 @@ from __future__ import unicode_literals
 
 import getpass
 import logging
-import os
 import cgi
+import os
 import re
 import tempfile
 import time
 import warnings
-from six import iteritems
-
 import requests
+from six import iteritems
 
 from .indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound,
                                  IndexerSeasonNotFound, IndexerSeasonUpdatesNotSupported)
 
 
 class BaseIndexer(object):
-    """As base class for indexer api's."""
-    def __init__(self,  # pylint: disable=too-many-locals,too-many-arguments
+    """Base class for indexer api's."""
+
+    def __init__(self,
                  interactive=False,
                  select_first=False,
                  debug=False,
@@ -53,8 +53,7 @@ class BaseIndexer(object):
                  dvdorder=False,
                  proxy=None,
                  session=None,
-                 image_type=None):
-
+                 image_type=None):  # pylint: disable=too-many-locals,too-many-arguments
         self.shows = ShowContainer()  # Holds all Show classes
         self.corrections = {}  # Holds show-name to show_id mapping
 
@@ -127,7 +126,7 @@ class BaseIndexer(object):
                 self.config['language'] = language
 
     def _get_temp_dir(self):  # pylint: disable=no-self-use
-        """Returns the [system temp dir]/tvdb_api-u501 (or tvdb_api-myuser)"""
+        """Return the [system temp dir]/tvdb_api-u501 (or tvdb_api-myuser)."""
         if hasattr(os, 'getuid'):
             uid = 'u{0}'.format(os.getuid())  # pylint: disable=no-member
         else:
@@ -140,11 +139,12 @@ class BaseIndexer(object):
         return os.path.join(tempfile.gettempdir(), 'tvdbv2_api-{0}'.format(uid))
 
     def _get_show_data(self, sid, language, get_ep_info=False):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-        """Dummy _get_show_data method"""
+        """Dummy _get_show_data method."""
         return None
 
     def _get_series(self, series):
-        """This searches thetvdb.com for the series name,
+        """This searches thetvdb.com for the series name.
+
         If a custom_ui UI is configured, it uses this to select the correct
         series. If not, and interactive == True, ConsoleUI is used, if not
         BaseUI is used to select the first result.
@@ -155,17 +155,17 @@ class BaseIndexer(object):
         return None
 
     def _set_show_data(self, sid, key, value):
-        """Sets self.shows[sid] to a new Show instance, or sets the data
-        """
+        """Sets self.shows[sid] to a new Show instance, or sets the data."""
         if sid not in self.shows:
             self.shows[sid] = Show()
         self.shows[sid].data[key] = value
 
     def __repr__(self):
+        """Indexer representation, returning representation of all shows indexed."""
         return str(self.shows)
 
     def _clean_data(self, data):  # pylint: disable=no-self-use
-        """Cleans up strings
+        """Clean up strings.
 
         Issues corrected:
         - Replaces &amp; with &
@@ -185,8 +185,8 @@ class BaseIndexer(object):
         return data
 
     def _set_item(self, sid, seas, ep, attrib, value):  # pylint: disable=too-many-arguments
-        """Creates a new episode, creating Show(), Season() and
-        Episode()s as required. Called by _get_show_data to populate show
+        """Create a new episode, creating Show(), Season() and
+        Episode()s as required. Called by _get_show_data to populate show.
 
         Since the nice-to-use tvdb[1][24]['name] interface
         makes it impossible to do tvdb[1][24]['name] = "name"
@@ -208,8 +208,7 @@ class BaseIndexer(object):
         self.shows[sid][seas][ep][attrib] = value
 
     def _save_images(self, sid, images):
-        """Saves the highest rated image (banner, poster, fanart) as show data.
-        """
+        """Save the highest rated image (banner, poster, fanart) as show data."""
 
         for image_type in images:
             # get series data / add the base_url to the image urls
@@ -220,9 +219,7 @@ class BaseIndexer(object):
                 self._set_show_data(sid, image_type, highest_rated['_bannerpath'])
 
     def __getitem__(self, key):
-        """Handles tvdbv2_instance['seriesname'] calls.
-        The dict index should be the show id
-        """
+        """Handle tvdbv2_instance['seriesname'] calls. The dict index should be the show id."""
         if isinstance(key, (int, long)):
             # Item is integer, treat as show id
             if key not in self.shows:
@@ -241,13 +238,12 @@ class BaseIndexer(object):
         return selected_series
 
     def get_last_updated_series(self, from_time, weeks=1):
-        """Retrieve a list with updated shows"""
+        """Retrieve a list with updated shows."""
         raise IndexerSeasonUpdatesNotSupported("Method get_last_updated_series not implemented by this indexer")
 
 
 class ShowContainer(dict):
-    """Simple dict that holds a series of Show instances
-    """
+    """Simple dict that holds a series of Show instances."""
 
     def __init__(self):
         dict.__init__(self)
@@ -270,8 +266,7 @@ class ShowContainer(dict):
 
 
 class Show(dict):
-    """Holds a dict of seasons, and show data.
-    """
+    """Hold a dict of seasons, and show data."""
 
     def __init__(self):
         dict.__init__(self)
@@ -312,18 +307,18 @@ class Show(dict):
             # doesn't exist, so attribute error.
             raise IndexerAttributeNotFound('Cannot find attribute %s' % (repr(key)))
 
-    def airedOn(self, date):
-        """Helper menthod for searching """
+    def aired_on(self, date):
+        """Helper menthod for searching and returning a list of episodes with the airdates."""
         ret = self.search(str(date), 'firstaired')
         if len(ret) == 0:
             raise IndexerEpisodeNotFound('Could not find any episodes that aired on %s' % date)
         return ret
 
     def search(self, term=None, key=None):
-        """
-        Search all episodes in show. Can search all data, or a specific key (for
-        example, episodename)
+        """Search all episodes in show.
 
+        Can search all data, or a specific key (for
+        example, episodename).
         Always returns an array (can be empty). First index contains the first
         match, and so on.
 
@@ -342,11 +337,11 @@ class Show(dict):
 
 class Season(dict):
     def __init__(self, show=None):  # pylint: disable=super-init-not-called
-        """The show attribute points to the parent show
-        """
+        """Show attribute points to the parent show."""
         self.show = show
 
     def __repr__(self):
+        """Representation of a season object."""
         return '<Season instance (containing %s episodes)>' % (
             len(self.keys())
         )
@@ -385,11 +380,11 @@ class Season(dict):
 
 class Episode(dict):
     def __init__(self, season=None):  # pylint: disable=super-init-not-called
-        """The season attribute points to the parent season
-        """
+        """The season attribute points to the parent season."""
         self.season = season
 
     def __repr__(self):
+        """Representation of an episode object."""
         seasno = int(self.get(u'seasonnumber', 0))
         epno = int(self.get(u'episodenumber', 0))
         epname = self.get(u'episodename')
@@ -411,6 +406,7 @@ class Episode(dict):
 
     def search(self, term=None, key=None):
         """Search episode data for term, if it matches, return the Episode (self).
+
         The key parameter can be used to limit the search to a specific element,
         for example, episodename.
 
@@ -445,14 +441,14 @@ class Episode(dict):
 
 
 class Actors(list):
-    """Holds all Actor instances for a show
-    """
+    """Hold all Actor instances for a show."""
     pass
 
 
 class Actor(dict):
-    """Represents a single actor. Should contain..
+    """Represent a single actor.
 
+    Should contain:
     id,
     image,
     name,
