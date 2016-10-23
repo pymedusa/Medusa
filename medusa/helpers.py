@@ -1042,7 +1042,11 @@ def backupConfigZip(fileList, archive, arcname=None):
     try:
         a = zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, allowZip64=True)
         for f in fileList:
-            a.write(f, os.path.relpath(f, arcname))
+            try:
+                a.write(f, os.path.relpath(f, arcname))
+            except IOError
+                logger.log(u"Unable to create backup, most likely out of disk space!", logger.WARNING)
+                break
         a.close()
         return True
     except Exception as e:
