@@ -638,7 +638,7 @@ class QueueItemUpdate(ShowQueueItem):
     def __init__(self, show=None, season=None):
         ShowQueueItem.__init__(self, ShowQueueActions.UPDATE, show)
         self.priority = generic_queue.QueuePriorities.HIGH
-        self.season = [season] if season and not isinstance(season, list) else season
+        self.seasons = [season] if season and not isinstance(season, list) else season
 
     def run(self):
 
@@ -646,7 +646,7 @@ class QueueItemUpdate(ShowQueueItem):
 
         logger.log(u'{id}: Beginning update of {show}{season}'.format
                    (id=self.show.indexerid, show=self.show.name,
-                    season=u' with season(s)' + u','.join(self.season) if self.season else u''), logger.DEBUG)
+                    season=u' with season(s)' + u','.join(self.seasons) if self.seasons else u''), logger.DEBUG)
 
         logger.log(u'{id}: Retrieving show info from {indexer}'.format
                    (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name),
@@ -688,7 +688,7 @@ class QueueItemUpdate(ShowQueueItem):
 
         # get episode list from the indexer
         try:
-            IndexerEpList = self.show.load_episodes_from_indexer(self.season)
+            IndexerEpList = self.show.load_episodes_from_indexer(self.seasons)
         except app.IndexerException as e:
             logger.log(u'{id}: Unable to get info from {indexer}. The show info will not be refreshed. '
                        u'Error: {error_msg}'.format
@@ -724,8 +724,12 @@ class QueueItemUpdate(ShowQueueItem):
                         pass
 
             # If this is a season limited update, let's update the cache season next_update
-            for season in self.season:
-                self.show.create_next_season_update(season)
+            if self.seasons:
+                for season in self.seasons:
+                    self.show.create_next_season_update(season)
+            else:
+                # We did a show refresh, let's updated each next season update
+                self.show.create_next_season_update()
 
         # Save only after all changes were applied
         try:
