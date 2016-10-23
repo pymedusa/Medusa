@@ -43,6 +43,9 @@ class ShowUpdater(object):
         season_updates = []
         update_max_weeks = 12
 
+        # Initialize the indexer_update table. Add seasons with next_update, if they don't already exist.
+        self.last_update.initialize_indexer_update(app.showList)
+
         # Get a list of seasons that have reached their update timer
         expired_seasons = self.last_update.expired_seasons()
 
@@ -118,13 +121,19 @@ class ShowUpdate(db.DBConnection):
     def __init__(self):
         db.DBConnection.__init__(self, 'cache.db')
 
+    def initialize_indexer_update(self, show_list):
+        for show in show_list:
+            for season in show.get_all_seasons(True):
+                if not self.get_next_season_update(show.indexer, show.indexerid, season):
+                    show.create_next_season_update(season)
+
     def get_next_season_update(self, indexer, indexer_id, season):
         """Get the next season update for a show, the date a season should be refreshed from indexer."""
         next_refresh = self.select('SELECT next_update FROM indexer_update WHERE indexer = ? AND indexer_id = ?'
                                    ' AND season = ?',
                                    [indexer, indexer_id, season])
 
-        return next_refresh[0]['next_refresh'] if next_refresh else 0
+        return next_refresh[0]['next_update'] if next_refresh else 0
 
     def set_next_season_update(self, indexer, indexer_id, season):
         """Set the last update to now, for a show (indexer_id) and it's indexer."""
