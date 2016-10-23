@@ -39,10 +39,10 @@ class OmgwtfnzbsProvider(NZBProvider):
         self.api_key = None
 
         # URLs
-        self.url = 'https://omgwtfnzbs.org/'
+        self.url = 'https://omgwtfnzbs.me/'
         self.urls = {
-            'rss': 'https://rss.omgwtfnzbs.org/rss-download.php',
-            'api': 'https://api.omgwtfnzbs.org/json/',
+            'rss': 'https://rss.omgwtfnzbs.me/rss-download.php',
+            'api': 'https://api.omgwtfnzbs.me/json/',
         }
 
         # Proper Strings
