@@ -1044,7 +1044,7 @@ def backupConfigZip(fileList, archive, arcname=None):
         for f in fileList:
             try:
                 a.write(f, os.path.relpath(f, arcname))
-            except IOError
+            except IOError:
                 logger.log(u"Unable to create backup, most likely out of disk space!", logger.WARNING)
                 break
         a.close()
