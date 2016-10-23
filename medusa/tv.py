@@ -24,8 +24,8 @@ import re
 import shutil
 import stat
 import threading
-import traceback
 import time
+import traceback
 
 from imdb import imdb
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
@@ -284,13 +284,13 @@ class TVShow(TVObject):
                 del my_ep
 
     def get_all_seasons(self, last_airdate=False):
-        """Retrieve a dictionary of seasons with the number of episodes, using the episodes table
+        """Retrieve a dictionary of seasons with the number of episodes, using the episodes table.
+
         :param last_airdate: Option to pass the airdate of the last aired episode for the season in stead of the number of episodes
         :type last_airdate: bool
         :return:
         :rtype: dictionary of seasons (int) and count(episodes) (int)
         """
-
         sql_selection = b"select season, {summarize} as number_of_episodes from tv_episodes where showid = ? group by season". \
                         format(summarize=b'count(*)' if not last_airdate else b'max(airdate)')
         main_db_con = db.DBConnection()
@@ -431,8 +431,11 @@ class TVShow(TVObject):
         return ep
 
     def create_next_season_update(self, for_season=None):
-        """Update the cache indexer_update table"""
+        """Update the cache indexer_update table.
 
+        :param for_season: Optional limit to only update the next update date for this season.
+        :type for_season: int
+        """
         seasons = self.get_all_seasons(last_airdate=True)
         for season in seasons:
             if for_season and for_season != season:
@@ -754,6 +757,7 @@ class TVShow(TVObject):
 
     def load_episodes_from_indexer(self, seasons=None):
         """Load episodes from indexer.
+
         :param 'seasons': Only load episodes for these seasons (only if supported by the indexer)
         :type: list of integers or integer
         :return:
@@ -806,7 +810,7 @@ class TVShow(TVObject):
                                    (id=self.indexerid, ep=episode_num(season, episode)), logger.DEBUG)
                         continue
 
-                with ep.lock: 
+                with ep.lock:
                     sql_l.append(ep.get_sql())
 
                 scanned_eps[season][episode] = True

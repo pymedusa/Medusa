@@ -132,5 +132,4 @@ class AddIndexerUpdateSchema(ConvertSceneNamesToIndexerScheme):  # pylint:disabl
     def execute(self):
         self.connection.action(
             "CREATE TABLE indexer_update (indexer_update_id INTEGER PRIMARY KEY AUTOINCREMENT,"
-            " indexer INTEGER, indexer_id INTEGER, season INTEGER, next_update INTEGER);"
-            )
+            " indexer INTEGER, indexer_id INTEGER, season INTEGER, next_update INTEGER);")

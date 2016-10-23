@@ -36,6 +36,7 @@ from .indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFoun
 
 
 class BaseIndexer(object):
+    """As base class for indexer api's."""
     def __init__(self,  # pylint: disable=too-many-locals,too-many-arguments
                  interactive=False,
                  select_first=False,
@@ -126,9 +127,7 @@ class BaseIndexer(object):
                 self.config['language'] = language
 
     def _get_temp_dir(self):  # pylint: disable=no-self-use
-        """Returns the [system temp dir]/tvdb_api-u501 (or
-        tvdb_api-myuser)
-        """
+        """Returns the [system temp dir]/tvdb_api-u501 (or tvdb_api-myuser)"""
         if hasattr(os, 'getuid'):
             uid = 'u{0}'.format(os.getuid())  # pylint: disable=no-member
         else:
@@ -314,6 +313,7 @@ class Show(dict):
             raise IndexerAttributeNotFound('Cannot find attribute %s' % (repr(key)))
 
     def airedOn(self, date):
+        """Helper menthod for searching """
         ret = self.search(str(date), 'firstaired')
         if len(ret) == 0:
             raise IndexerEpisodeNotFound('Could not find any episodes that aired on %s' % date)

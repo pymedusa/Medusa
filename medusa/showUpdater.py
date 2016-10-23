@@ -16,14 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
 import logging
 import threading
 import time
-import xml.etree.ElementTree as ET
+
 
 import medusa as app
-from . import db, failed_history, helpers, network_timezones, ui
+from . import db, helpers, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from .show.Show import Show
 
@@ -120,7 +119,7 @@ class ShowUpdate(db.DBConnection):
         db.DBConnection.__init__(self, 'cache.db')
 
     def get_next_season_update(self, indexer, indexer_id, season):
-        """Get the next season update for a show, the date a season should be refreshed from indexer"""
+        """Get the next season update for a show, the date a season should be refreshed from indexer."""
         next_refresh = self.select('SELECT next_update FROM indexer_update WHERE indexer = ? AND indexer_id = ?'
                                    ' AND season = ?',
                                    [indexer, indexer_id, season])
@@ -128,13 +127,13 @@ class ShowUpdate(db.DBConnection):
         return next_refresh[0]['next_refresh'] if next_refresh else 0
 
     def set_next_season_update(self, indexer, indexer_id, season):
-        """Set the last update to now, for a show (indexer_id) and it's indexer"""
+        """Set the last update to now, for a show (indexer_id) and it's indexer."""
         return self.upsert('indexer_update',
                            {'next_update': int(time.time())},
                            {'indexer': indexer, 'indexer_id': indexer_id, 'season': season})
 
     def expired_seasons(self):
-        """Get the next season update for a show, the date a season should be refreshed from indexer"""
+        """Get the next season update for a show, the date a season should be refreshed from indexer."""
         show_seasons = self.select('SELECT * FROM indexer_update where next_update < ? ', [int(time.time())])
 
         seasons_dict = {}
@@ -149,6 +148,7 @@ class ShowUpdate(db.DBConnection):
 
     def get_last_indexer_update(self, indexer):
         """Get the last update timestamp from the lastUpdate table.
+
         :param indexer:
         :type indexer: string, name respresentation, like 'theTVDB'. Check the indexer_config's name attribute.
         :return: epoch timestamp
@@ -159,6 +159,7 @@ class ShowUpdate(db.DBConnection):
 
     def set_last_indexer_update(self, indexer):
         """Set the last update timestamp from the lastUpdate table.
+
         :param indexer:
         :type indexer: string, name respresentation, like 'theTVDB'. Check the indexer_config's name attribute.
         :return: epoch timestamp
