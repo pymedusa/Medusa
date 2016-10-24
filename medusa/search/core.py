@@ -156,16 +156,28 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
             else:
                 curEpObj.status = Quality.compositeStatus(endStatus, result.quality)
             # Reset all others fields to a "snatch" status
+
+            # New snatch by default doesn't have nfo/tbn. Only downloaded status
             curEpObj.hasnfo = False
             curEpObj.hastbn = False
-            curEpObj.location = ''
+
+            # We can't reset location because we need to know we are replacing
+            # curEpObj.location = ''
+
+            # Size and release name are fetched in PP (only for downloaded status, not snatched)
             curEpObj.file_size = 0
             curEpObj.release_name = ''
+
+            # Need to reset subtitle settings because is different file
             curEpObj.subtitles = list()
             curEpObj.subtitles_searchcount = 0
             curEpObj.subtitles_lastsearch = '0001-01-01 00:00:00'
+
+            # Need to store the correct is_proper. Not use old one
             curEpObj.is_proper = True if result.proper_tags else False
             curEpObj.version = 0
+
+            # Release group is parsed in PP only
             curEpObj.release_group = ''
 
             sql_l.append(curEpObj.get_sql())
