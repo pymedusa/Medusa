@@ -290,7 +290,7 @@ class Manage(Home, WebRoot):
                 tv_episode = TVEpisode.from_filepath(video_path)
 
                 if not tv_episode:
-                    logger.debug(u'%s cannot be parsed to an episode', filename)
+                    logger.log(u"Filename '{0}' cannot be parsed to an episode".format(filename), logger.DEBUG)
                     continue
 
                 if not tv_episode.show.subtitles:
