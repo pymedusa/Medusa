@@ -25,6 +25,7 @@ import validators
 from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
 from ....bs4_parser import BS4Parser
+from ....common import USER_AGENT
 from ....helper.common import convert_size, try_int
 
 
@@ -45,6 +46,7 @@ class TorrentProjectProvider(TorrentProvider):
         # Proper Strings
 
         # Miscellaneous Options
+        self.headers.update({'User-Agent': USER_AGENT})
 
         # Torrent Stats
         self.minseed = None
