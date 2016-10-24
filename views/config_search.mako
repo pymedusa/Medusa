@@ -87,6 +87,16 @@
                                 </label>
                             </div><!-- daily search frequency -->
                             <div class="field-pair">
+                                <label for="remove_from_client">
+                                    <span class="component-title">Remove from client</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="remove_from_client" id="remove_from_client" class="enabler" ${'checked="checked"' if app.REMOVE_FROM_CLIENT else ''}/>
+                                        <p>Remove old snatch from client and delete old snatched releases from post-processor folder when snatches a new release</p>
+                                        <p><b>Note:</b> For now only Transmission is supported</p>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
                                 <label>
                                     <span class="component-title">Usenet retention</span>
                                     <span class="component-desc">

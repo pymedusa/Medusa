@@ -20,6 +20,7 @@
 import datetime
 import errno
 import os
+import shutil
 import threading
 import traceback
 from socket import timeout as SocketTimeout
@@ -28,7 +29,7 @@ import medusa as app
 import requests
 from .. import clients, common, db, failed_history, helpers, history, logger, notifiers, nzbSplitter, nzbget, sab, show_name_helpers, ui
 from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
-from ..helper.common import enabled_providers, episode_num
+from ..helper.common import enabled_providers, episode_num, media_extensions
 from ..helper.exceptions import AuthException, ex
 from ..providers.GenericProvider import GenericProvider
 
@@ -75,6 +76,60 @@ def _downloadResult(result):
         newResult = False
 
     return newResult
+
+
+def _remove_from_client(result):
+    """Delete old snatches from PP folder after new snatch and remove from client.
+
+    :param result:
+    :type result: search result object
+    """
+    if not result:
+        return
+
+    main_db_con = db.DBConnection()
+    for curEpObj in result.episodes:
+        old_snatches = main_db_con.select("SELECT resource, torrent_hash FROM history WHERE action LIKE '%2' AND showid=? AND season=? AND episode=?",
+                                          [curEpObj.show.indexerid, curEpObj.season, curEpObj.episode])
+        for old_snatch in old_snatches:
+
+            torrent_hash = str(old_snatch['torrent_hash'])
+            resource = str(old_snatch['resource'])
+
+            # We can't process without torrent hash and resource
+            if not torrent_hash and not resource:
+                continue
+
+            # Don't remove if is the same torrent hash
+            if all([result.hash, torrent_hash == result.hash]):
+                continue
+
+            # Only some clients are supported
+            if app.TORRENT_METHOD in ('transmission', 'utorrent', 'qbittorrent', 'deluge', 'deluged'):
+                logger.log('Removing an old snatch torrent from client (if exists): {0}'.format(resource))
+                client = clients.get_client_class(app.TORRENT_METHOD)()
+                remove_torrent = client.remove_torrent(torrent_hash)
+                if remove_torrent:
+                    logger.log('Removed old snatch torrent from client or it not in client anymore: {0}'.format(resource))
+                else:
+                    logger.log('Couldnt remove old snatch torrent from client: {0}'.format(resource))
+
+            logger.log('Found an old snatch in post-processor folder: {0}'.format(resource))
+            resource = os.path.join(app.TV_DOWNLOAD_DIR, resource)
+            try:
+                if os.path.isdir(resource):
+                    shutil.rmtree(resource)
+                    logger.log('Deleted the old snatch from the post-processor folder: {0}'.format(resource))
+                else:
+                    for media_extension in media_extensions:
+                        # Resource column doesnt store extension
+                        resource_file = resource + '.' + media_extension
+                        if os.path.isfile(resource_file):
+                            os.remove(resource_file)
+                            logger.log('Deleted the old snatch from the post-processor folder: {0}'.format(resource_file))
+                            break
+            except OSError as e:
+                logger.log(u'Unable to delete old snatch from the post-processor folder: {resource}. Error: {error}', resource=resource, error=e)
 
 
 def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statements
@@ -143,6 +198,9 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
         failed_history.logSnatch(result)
 
     ui.notifications.message('Episode snatched', result.name)
+
+    if result.resultType == "torrent" and app.REMOVE_FROM_CLIENT:
+        _remove_from_client(result)
 
     history.logSnatch(result)
 

@@ -31,7 +31,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 2
+CURRENT_MINOR_DB_VERSION = 3
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -508,3 +508,21 @@ class AddProperTags(TestIncreaseMajorVersion):
         self.inc_minor_version()
 
         logger.log(u'Updated to: %d.%d' % self.connection.version)
+
+
+class AddTorrentHash(AddProperTags):
+    """Adds column torrent_hash to history table."""
+
+    def test(self):
+        """
+        Test if the version is at least 44.3
+        """
+        return self.connection.version >= (44, 3)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        logger.log(u"Adding column torrent_hash in history")
+        if not self.hasColumn("history", "torrent_hash"):
+            self.addColumn("history", "torrent_hash", 'TEXT', None)
+        self.inc_minor_version()

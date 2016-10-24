@@ -164,6 +164,20 @@ class DelugeAPI(GenericClient):
 
         return self.response.json()['result']
 
+    def _remove_torrent(self, torrent_hash):
+
+        post_data = json.dumps({
+            'method': 'core.remove_torrent',
+            'params': [
+                torrent_hash,
+                True,
+            ],
+            'id': 5,
+        })
+
+        self._request(method='post', data=post_data)
+        return not self.response.json()['error']
+
     def _set_torrent_label(self, result):
 
         label = app.TORRENT_LABEL.lower()
