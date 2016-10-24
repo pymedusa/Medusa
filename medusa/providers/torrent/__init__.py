@@ -29,6 +29,7 @@ from .html import (
     tokyotoshokan,
     torrentbytes,
     torrentleech,
+    torrentproject,
     torrentshack,
     transmitthenet,
     tvchaosuk,
@@ -46,7 +47,6 @@ from .json import (
     rarbg,
     t411,
     torrentday,
-    torrentproject,
 )
 
 from .rss import (
