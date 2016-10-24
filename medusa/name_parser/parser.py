@@ -256,6 +256,10 @@ class NameParser(object):
             raise InvalidNameException('Discarding {result.original_name}. Season special is not supported yet. '
                                        'Parser result: {result}'.format(result=result))
 
+        if result.is_episode_special:
+            raise InvalidNameException('Discarding {result.original_name}. Special episode is not supported yet. '
+                                       'Parser result: {result}'.format(result=result))
+
     def to_parse_result(self, name, guess):
         """Guess the episode information from a given release name.
 
