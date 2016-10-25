@@ -35,6 +35,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         self.session = helpers.make_session()
         self.recommender = "Anidb Popular"
         self.base_url = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
+        self.default_img_src = 'poster.png'
         self.anidb = Anidb(cache_dir=app.CACHE_DIR)
 
     def _create_recommended_show(self, show_obj):
@@ -64,7 +65,8 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
                                    )
 
         # Check cache or get and save image
-        rec_show.cache_image(show_obj.picture.url)
+        use_default = self.default_img_src if not show_obj.picture.url else None
+        rec_show.cache_image(show_obj.picture.url, default=use_default)
 
         # By default pre-configure the show option anime = True
         rec_show.is_anime = True
