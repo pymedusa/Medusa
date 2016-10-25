@@ -33,7 +33,7 @@ from six import iteritems
 from .configuration import Configuration
 
 try:
-    import urllib3
+    from requests.packages import urllib3
 except ImportError:
     raise ImportError('Swagger python client requires urllib3.')
 

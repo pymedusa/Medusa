@@ -21,7 +21,7 @@ Copyright 2015 SmartBear Software
 from __future__ import absolute_import, unicode_literals
 
 import base64
-import urllib3
+from requests.packages import urllib3
 
 try:
     import httplib
