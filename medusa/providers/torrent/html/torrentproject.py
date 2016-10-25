@@ -125,12 +125,11 @@ class TorrentProjectProvider(TorrentProvider):
                 anchor = row.find('a')
 
                 try:
-                    title = anchor.get('title')
+                    title = anchor.get('title')[:-8]
                     download_url = anchor.get('href')
                     if not all([title, download_url]):
                         continue
 
-                    title = title.rstrip(' torrent')
                     torrent_hash = download_url.split('/')[1]
                     download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}'.format(
                         hash=torrent_hash, title=title, trackers=self._custom_trackers)

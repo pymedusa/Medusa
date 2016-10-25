@@ -103,9 +103,6 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
 
         :return: A list of items found
         """
-        # Units
-        units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -135,8 +132,8 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
                         peers = cells[5].find('div')
                         if peers and peers.get('title'):
                             peers = peers['title'].replace(',', '').split(' | ', 1)
-                            seeders = try_int(peers[0].lstrip('Seeders: '))
-                            leechers = try_int(peers[1].lstrip('Leechers: '))
+                            seeders = try_int(peers[0][9:], 1)
+                            leechers = try_int(peers[1][10:])
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -147,7 +144,7 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
                         continue
 
                     torrent_size = cells[3].get_text(strip=True)
-                    size = convert_size(torrent_size, units=units) or -1
+                    size = convert_size(torrent_size) or -1
 
                     item = {
                         'title': title,
