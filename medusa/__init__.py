@@ -275,6 +275,7 @@ TORRENT_METHOD = None
 TORRENT_DIR = None
 DOWNLOAD_PROPERS = False
 CHECK_PROPERS_INTERVAL = None
+PROPERS_SEARCH_DAYS = 2
 ALLOW_HIGH_PRIORITY = False
 SAB_FORCED = False
 RANDOMIZE_PROVIDERS = False
@@ -689,7 +690,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             ANIME_DEFAULT, NAMING_ANIME, ANIMESUPPORT, USE_ANIDB, ANIDB_USERNAME, ANIDB_PASSWORD, ANIDB_USE_MYLIST, \
             ANIME_SPLIT_HOME, SCENE_DEFAULT, DOWNLOAD_URL, BACKLOG_DAYS, GIT_USERNAME, GIT_PASSWORD, \
             DEVELOPER, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, BROKEN_PROVIDERS, SOCKET_TIMEOUT, RECENTLY_DELETED, \
-            FANART_BACKGROUND, FANART_BACKGROUND_OPACITY, GIT_REMOTE_BRANCHES, RELEASES_IN_PP
+            FANART_BACKGROUND, FANART_BACKGROUND_OPACITY, GIT_REMOTE_BRANCHES, RELEASES_IN_PP, PROPERS_SEARCH_DAYS
 
         if __INITIALIZED__:
             return False
@@ -896,6 +897,9 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             TORRENT_METHOD = 'blackhole'
 
         DOWNLOAD_PROPERS = bool(check_setting_int(CFG, 'General', 'download_propers', 1))
+        PROPERS_SEARCH_DAYS = check_setting_int(CFG, 'General', 'propers_search_days', 2)
+        if PROPERS_SEARCH_DAYS not in range(2, 8):
+            PROPERS_SEARCH_DAYS = 2
         CHECK_PROPERS_INTERVAL = check_setting_str(CFG, 'General', 'check_propers_interval', '')
         if CHECK_PROPERS_INTERVAL not in ('15m', '45m', '90m', '4h', 'daily'):
             CHECK_PROPERS_INTERVAL = 'daily'
@@ -1697,6 +1701,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['update_frequency'] = int(UPDATE_FREQUENCY)
     new_config['General']['showupdate_hour'] = int(SHOWUPDATE_HOUR)
     new_config['General']['download_propers'] = int(DOWNLOAD_PROPERS)
+    new_config['General']['propers_search_days'] = int(PROPERS_SEARCH_DAYS)
     new_config['General']['randomize_providers'] = int(RANDOMIZE_PROVIDERS)
     new_config['General']['check_propers_interval'] = CHECK_PROPERS_INTERVAL
     new_config['General']['allow_high_priority'] = int(ALLOW_HIGH_PRIORITY)
