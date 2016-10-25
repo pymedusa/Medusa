@@ -19,8 +19,8 @@ from __future__ import unicode_literals
 import medusa as app
 import requests
 from simpleanidb import Anidb
-from tvdbapiv2 import (ApiClient, AuthenticationApi, SeriesApi)
 from traktor import (TokenExpiredException, TraktApi, TraktException)
+from tvdbapiv2 import (ApiClient, AuthenticationApi, SeriesApi)
 from .recommended import RecommendedShow
 from ... import logger
 from ...helper.common import try_int
@@ -28,21 +28,21 @@ from ...helper.exceptions import MultipleShowObjectsException, ex
 
 
 def get_tvdbv2_api():
-    # Initiate the tvdb api v2
-        api_base_url = 'https://api.thetvdb.com'
+    """Initiate the tvdb api v2."""
+    api_base_url = 'https://api.thetvdb.com'
 
-        # client_id = 'username'  # (optional! Only required for the /user routes)
-        # client_secret = 'pass'  # (optional! Only required for the /user routes)
-        apikey = '0629B785CE550C8D'
+    # client_id = 'username'  # (optional! Only required for the /user routes)
+    # client_secret = 'pass'  # (optional! Only required for the /user routes)
+    apikey = '0629B785CE550C8D'
 
-        authentication_string = {'apikey': apikey, 'username': '', 'userpass': ''}
-        unauthenticated_client = ApiClient(api_base_url)
-        auth_api = AuthenticationApi(unauthenticated_client)
-        access_token = auth_api.login_post(authentication_string)
-        auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
-        series_api = SeriesApi(auth_client)
+    authentication_string = {'apikey': apikey, 'username': '', 'userpass': ''}
+    unauthenticated_client = ApiClient(api_base_url)
+    auth_api = AuthenticationApi(unauthenticated_client)
+    access_token = auth_api.login_post(authentication_string)
+    auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
+    series_api = SeriesApi(auth_client)
 
-        return series_api
+    return series_api
 
 
 class TraktPopular(object):

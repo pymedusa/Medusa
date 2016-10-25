@@ -71,7 +71,6 @@ class RecommendedShow(object):
 
         :param image_url: Source URL
         """
-
         if default:
             self.image_src = posixpath.join('images', default)
             return
