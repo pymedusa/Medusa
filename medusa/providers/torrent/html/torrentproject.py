@@ -125,6 +125,7 @@ class TorrentProjectProvider(TorrentProvider):
                 anchor = row.find('a')
 
                 try:
+                    # Removes ' torrent' in the end
                     title = anchor.get('title')[:-8]
                     download_url = anchor.get('href')
                     if not all([title, download_url]):
