@@ -614,6 +614,15 @@
                                 </span>
                             </label>
                         </div>
+                        <div class="field-pair"${' hidden' if not app.DEVELOPER else ''}>
+                            <label for="dbdebug">
+                                <span class="component-title">Enable DB debug</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="dbdebug" id="dbdebug" ${'checked="checked"' if app.DBDEBUG else ''}/>
+                                    <p>Enable DB debug logs<p>
+                                </span>
+                            </label>
+                        </div>
                         <div class="field-pair">
                             <label for="subliminal_log">
                                 <span class="component-title">Subliminal logs</span>

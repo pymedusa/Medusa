@@ -66,7 +66,7 @@ class ConfigGeneral(Config):
                     fuzzy_dating=None, trim_zero=None, date_preset=None, date_preset_na=None, time_preset=None,
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
                     git_reset=None, git_reset_branches=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None,
-                    privacy_level='normal', fanart_background=None, fanart_background_opacity=None):
+                    privacy_level='normal', fanart_background=None, fanart_background_opacity=None, dbdebug=None):
         results = []
 
         # Misc
@@ -117,6 +117,7 @@ class ConfigGeneral(Config):
         app.WEB_PASSWORD = web_password
 
         app.DEBUG = config.checkbox_to_value(debug)
+        app.DBDEBUG = config.checkbox_to_value(dbdebug)
         app.WEB_LOG = config.checkbox_to_value(web_log)
         app.SUBLIMINAL_LOG = config.checkbox_to_value(subliminal_log)
 
