@@ -66,6 +66,14 @@ class TorrentProjectProvider(TorrentProvider):
         """
         results = []
 
+        if self.custom_url:
+            if not validators.url(self.custom_url):
+                logger.log('Invalid custom url: {0}'.format(self.custom_url), logger.WARNING)
+                return results
+            search_url = self.custom_url
+        else:
+            search_url = self.url
+
         search_params = {
             'hl': 'en',
             'num': 40,
@@ -84,14 +92,6 @@ class TorrentProjectProvider(TorrentProvider):
                     search_params['s'] = search_string
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
-
-                if self.custom_url:
-                    if not validators.url(self.custom_url):
-                        logger.log('Invalid custom url set, please check your settings', logger.WARNING)
-                        return results
-                    search_url = self.custom_url
-                else:
-                    search_url = self.url
 
                 response = self.get_url(search_url, params=search_params, returns='response')
                 if not response or not response.text:

@@ -68,7 +68,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         if self.custom_url:
             if not validators.url(self.custom_url):
-                logger.log('Invalid custom url set, please check your settings', logger.WARNING)
+                logger.log('Invalid custom url: {0}'.format(self.custom_url), logger.WARNING)
                 return results
             self.url = self.custom_url
 

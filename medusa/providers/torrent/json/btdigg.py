@@ -21,6 +21,8 @@ from __future__ import unicode_literals
 
 import traceback
 
+from requests.compat import urljoin
+
 from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
 from ....helper.common import convert_size
@@ -69,6 +71,14 @@ class BTDiggProvider(TorrentProvider):
         """
         results = []
 
+        if self.custom_url:
+            # if not validators.url(self.custom_url):
+            # logger.log('Invalid custom url set, please check your settings', logger.WARNING)
+            # return results
+            search_url = urljoin(self.custom_url, 'api/private-341ada3245790954/s02')
+        else:
+            search_url = self.urls['api']
+
         # Search Params
         search_params = {
             'p': 0,
@@ -84,14 +94,6 @@ class BTDiggProvider(TorrentProvider):
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
                     search_params['order'] = 0
-
-                if self.custom_url:
-                    # if not validators.url(self.custom_url):
-                        # logger.log('Invalid custom url set, please check your settings', logger.WARNING)
-                        # return results
-                    search_url = self.custom_url + 'api/private-341ada3245790954/s02'
-                else:
-                    search_url = self.urls['api']
 
                 response = self.get_url(search_url, params=search_params, returns='response')
                 if not response or not response.content:
