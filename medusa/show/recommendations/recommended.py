@@ -66,11 +66,15 @@ class RecommendedShow(object):
         self.show_in_list = self.indexer_id in {show.indexerid for show in app.showList if show.indexerid}
         self.session = helpers.make_session()
 
-    def cache_image(self, image_url):
+    def cache_image(self, image_url, default=None):
         """Store cache of image in cache dir
 
         :param image_url: Source URL
         """
+        if default:
+            self.image_src = posixpath.join('images', default)
+            return
+
         if not self.cache_subfolder:
             return
 
@@ -81,11 +85,10 @@ class RecommendedShow(object):
 
         full_path = os.path.join(path, os.path.basename(image_url))
 
-        self.image_src = posixpath.join('images', self.cache_subfolder, os.path.basename(image_url))
+        self.image_src = posixpath.join('cache', 'images', self.cache_subfolder, os.path.basename(image_url))
 
         if not os.path.isfile(full_path):
-            if not helpers.download_file(image_url, full_path, session=self.session):
-                self.image_src = posixpath.join('images', self.cache_subfolder, os.path.basename(self.default_img_src))
+            helpers.download_file(image_url, full_path, session=self.session)
 
     def check_if_anime(self, anidb, tvdbid):
         """Use the simpleanidb lib, to check the anime-lists.xml for an anime show mapping with this tvdbid.

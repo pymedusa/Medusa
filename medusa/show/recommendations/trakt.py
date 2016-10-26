@@ -20,10 +20,29 @@ import medusa as app
 import requests
 from simpleanidb import Anidb
 from traktor import (TokenExpiredException, TraktApi, TraktException)
+from tvdbapiv2 import (ApiClient, AuthenticationApi, SeriesApi)
 from .recommended import RecommendedShow
 from ... import logger
 from ...helper.common import try_int
 from ...helper.exceptions import MultipleShowObjectsException, ex
+
+
+def get_tvdbv2_api():
+    """Initiate the tvdb api v2."""
+    api_base_url = 'https://api.thetvdb.com'
+
+    # client_id = 'username'  # (optional! Only required for the /user routes)
+    # client_secret = 'pass'  # (optional! Only required for the /user routes)
+    apikey = '0629B785CE550C8D'
+
+    authentication_string = {'apikey': apikey, 'username': '', 'userpass': ''}
+    unauthenticated_client = ApiClient(api_base_url)
+    auth_api = AuthenticationApi(unauthenticated_client)
+    access_token = auth_api.login_post(authentication_string)
+    auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
+    series_api = SeriesApi(auth_client)
+
+    return series_api
 
 
 class TraktPopular(object):
@@ -37,7 +56,7 @@ class TraktPopular(object):
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
         self.session = requests.Session()
         self.recommender = "Trakt Popular"
-        self.default_img_src = 'http://www.trakt.tv/assets/placeholders/thumb/poster-2d5709c1b640929ca1ab60137044b152.png'
+        self.default_img_src = 'trakt-default.png'
         self.anidb = Anidb(cache_dir=app.CACHE_DIR)
 
     def _create_recommended_show(self, show_obj):
@@ -55,8 +74,15 @@ class TraktPopular(object):
                                       }
                                    )
 
-        rec_show.cache_image(show_obj['show']['images']['poster']['thumb'] or self.default_img_src)
+        use_default = None
+        image = None
+        try:
+            image = tvdb_api_v2.series_id_images_query_get(show_obj['show']['ids']['tvdb'], key_type='poster').data[0].file_name
+        except Exception:
+            use_default = self.default_img_src
+            logger.log('Missing poster on TheTVDB for show %s' % (show_obj['show']['title']), logger.DEBUG)
 
+        rec_show.cache_image('http://thetvdb.com/banners/{0}'.format(image), default=use_default)
         # As the method below requires allot of resources, i've only enabled it when
         # the shows language or country is 'jp' (japanese). Looks a litle bit akward,
         # but alternative is allot of resource used
@@ -140,3 +166,5 @@ class TraktPopular(object):
             raise
 
         return blacklist, trending_shows, removed_from_medusa
+
+tvdb_api_v2 = get_tvdbv2_api()

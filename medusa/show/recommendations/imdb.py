@@ -22,7 +22,7 @@ class ImdbPopular(object):
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
         self.session = helpers.make_session()
         self.recommender = 'IMDB Popular'
-        self.default_img_src = ''
+        self.default_img_src = 'poster.png'
         self.anidb = Anidb(cache_dir=app.CACHE_DIR)
 
         # Use akas.imdb.com, just like the imdb lib.
