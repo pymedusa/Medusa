@@ -24,6 +24,10 @@ import medusa as app
 from ... import helpers
 
 
+class MissingTvdbMapping(Exception):
+    """Exception used when a show can't be mapped to a tvdb indexer id."""
+
+
 class RecommendedShow(object):
     """Base class for show recommendations"""
     def __init__(self, rec_show_prov, show_id, title, indexer, indexer_id, **show_attr):
@@ -48,7 +52,10 @@ class RecommendedShow(object):
         self.show_id = show_id
         self.title = title
         self.indexer = int(indexer)
-        self.indexer_id = int(indexer_id)
+        try:
+            self.indexer_id = int(indexer_id)
+        except ValueError:
+            raise MissingTvdbMapping('Could not parse the indexer_id [%s]' % (indexer_id))
 
         self.rating = show_attr.get('rating') or 0
 
