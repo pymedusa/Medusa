@@ -231,8 +231,7 @@ class BaseHandler(RequestHandler):
                 return self.get_secure_cookie(app.SECURE_TOKEN)
             else:
                 return True
-        else:
-            return None
+        return None
 
 
 class WebHandler(BaseHandler):
