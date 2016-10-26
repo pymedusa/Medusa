@@ -197,6 +197,17 @@ class Application(object):
             sys.exit('Sorry, you MUST add the Medusa folder to the PYTHONPATH environment variable\n'
                      'or find another way to force Python to use %s for string encoding.' % app.SYS_ENCODING)
 
+        # Need at least 10mb to run Medusa (mako, cache, indexers, dogpile and config creation)
+        try:
+            f = open('size_test', "wb")
+            f.seek(10485760 - 1)
+            f.write("\0")
+            f.close()
+            os.remove('size_test')
+        except OSError as e:
+            if e.errno == 12:
+                sys.exit('Sorry, you MUST have at least free 10mb to run Medusa')
+
         # Need console logging for SickBeard.py and SickBeard-console.exe
         self.console_logging = (not hasattr(sys, 'frozen')) or (app.MY_NAME.lower().find('-console') > 0)
 
