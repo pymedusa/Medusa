@@ -21,6 +21,8 @@ import traceback
 
 from requests.compat import urljoin
 
+import validators
+
 from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
 from ....bs4_parser import BS4Parser
@@ -39,10 +41,6 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         # URLs
         self.url = 'http://extratorrent.cc'
-        self.urls = {
-            'search': urljoin(self.url, 'search/'),
-            'rss': urljoin(self.url, 'view/today/TV.html'),
-        }
         self.custom_url = None
 
         # Proper Strings
@@ -68,6 +66,17 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         """
         results = []
 
+        if self.custom_url:
+            if not validators.url(self.custom_url):
+                logger.log('Invalid custom url set, please check your settings', logger.WARNING)
+                return results
+            self.url = self.custom_url
+
+        self.urls = {
+            'search': urljoin(self.url, 'search/'),
+            'rss': urljoin(self.url, 'view/today/TV.html'),
+        }
+
         # Search Params
         search_params = {
             'search': '',
@@ -89,9 +98,6 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                 else:
                     search_params = None
                     search_url = self.urls['rss']
-
-                search_url = search_url if not self.custom_url else \
-                    search_url.replace(self.url, self.custom_url.rstrip('/'))
 
                 response = self.get_url(search_url, params=search_params, returns='response')
                 if not response or not response.text:
