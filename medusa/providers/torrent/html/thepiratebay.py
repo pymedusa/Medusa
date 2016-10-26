@@ -41,10 +41,6 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         # URLs
         self.url = 'https://thepiratebay.org'
-        self.urls = {
-            'rss': urljoin(self.url, 'tv/latest'),
-            'search': urljoin(self.url, 'search/{string}/0/3/200'),
-        }
         self.custom_url = None
 
         # Proper Strings
@@ -70,17 +66,23 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         """
         results = []
 
+        if self.custom_url:
+            if not validators.url(self.custom_url):
+                logger.log('Invalid custom url: {0}'.format(self.custom_url), logger.WARNING)
+                return results
+            self.url = self.custom_url
+
+        self.urls = {
+            'rss': urljoin(self.url, 'tv/latest'),
+            'search': urljoin(self.url, 'search/{string}/0/3/200'),
+        }
+
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 search_url = self.urls['search'] if mode != 'RSS' else self.urls['rss']
-                if self.custom_url:
-                    if not validators.url(self.custom_url):
-                        logger.log('Invalid custom url: {0}'.format(self.custom_url), logger.WARNING)
-                        return results
-                    search_url = urljoin(self.custom_url, search_url.split(self.url)[1])
 
                 if mode != 'RSS':
                     search_url = search_url.format(string=search_string)

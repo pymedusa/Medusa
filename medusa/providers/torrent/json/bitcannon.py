@@ -63,9 +63,10 @@ class BitCannonProvider(TorrentProvider):
         """
         results = []
         url = 'http://localhost:3000/'
+
         if self.custom_url:
             if not validators.url(self.custom_url):
-                logger.log('Invalid custom url set, please check your settings', logger.WARNING)
+                logger.log('Invalid custom url: {0}'.format(self.custom_url), logger.WARNING)
                 return results
             url = self.custom_url
 
