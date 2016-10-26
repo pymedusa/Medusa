@@ -358,7 +358,7 @@ class Tvdb:
                  search_all_languages=False,
                  apikey=None,
                  force_connect=False,
-                 useZip=False,
+                 use_zip=False,
                  dvdorder=False,
                  proxy=None,
                  session=None,
@@ -430,7 +430,7 @@ class Tvdb:
             trying again, and any requests within that one minute window will
             return an exception immediately.
 
-        useZip (bool):
+        use_zip (bool):
             Download the zip archive where possibale, instead of the xml.
             This is only used when all episodes are pulled.
             And only the main language xml is used, the actor and banner xml are lost.
@@ -456,7 +456,7 @@ class Tvdb:
 
         self.config['search_all_languages'] = search_all_languages
 
-        self.config['useZip'] = useZip
+        self.config['use_zip'] = use_zip
 
         self.config['dvdorder'] = dvdorder
 
@@ -869,7 +869,7 @@ class Tvdb:
 
             # Parse episode data
             log().debug('Getting all episodes of %s' % (sid))
-            if self.config['useZip']:
+            if self.config['use_zip']:
                 url = self.config['url_epInfo_zip'] % (sid, language)
             else:
                 url = self.config['url_epInfo'] % (sid, language)

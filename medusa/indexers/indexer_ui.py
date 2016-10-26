@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-"""Contains included user interface for TVmaze show selection"""
+"""Contains included user interface for TVmaze show selection."""
 
 import logging
 import warnings
@@ -28,12 +28,12 @@ __version__ = '1.0'
 
 
 def log():
+    """Get logging object."""
     return logging.getLogger(__name__)
 
 
 class BaseUI(object):
-    """Default non-interactive UI, which auto-selects first results
-    """
+    """Default non-interactive UI, which auto-selects first results."""
     def __init__(self, config, enable_logging=None):
         self.config = config
         if enable_logging is not None:
@@ -47,9 +47,7 @@ class BaseUI(object):
 
 
 class ConsoleUI(BaseUI):
-    """Interactively allows the user to select a show from a console based UI
-    """
-
+    """Interactively allows the user to select a show from a console based UI."""
     def _displaySeries(self, allSeries, limit=6):
         """Helper function, lists series with corresponding ID
         """
@@ -78,6 +76,7 @@ class ConsoleUI(BaseUI):
             )
 
     def selectSeries(self, allSeries):
+        """Select and return shows, based on users input."""
         self._displaySeries(allSeries)
 
         if len(allSeries) == 1:

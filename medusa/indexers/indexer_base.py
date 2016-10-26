@@ -20,8 +20,8 @@
 from __future__ import unicode_literals
 
 import getpass
-import logging
 import cgi
+import logging
 import os
 import re
 import tempfile
@@ -32,6 +32,8 @@ from six import iteritems
 
 from .indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound,
                                  IndexerSeasonNotFound, IndexerSeasonUpdatesNotSupported)
+
+"""Base class for indexer api's"""
 
 
 class BaseIndexer(object):
@@ -49,11 +51,12 @@ class BaseIndexer(object):
                  search_all_languages=False,
                  apikey=None,
                  force_connect=False,
-                 useZip=False,
+                 use_zip=False,
                  dvdorder=False,
                  proxy=None,
                  session=None,
                  image_type=None):  # pylint: disable=too-many-locals,too-many-arguments
+        """Pass these arguments on as args from the subclass"""
         self.shows = ShowContainer()  # Holds all Show classes
         self.corrections = {}  # Holds show-name to show_id mapping
 
@@ -69,7 +72,7 @@ class BaseIndexer(object):
 
         self.config['search_all_languages'] = search_all_languages
 
-        self.config['useZip'] = useZip
+        self.config['use_zip'] = use_zip
 
         self.config['dvdorder'] = dvdorder
 
@@ -155,7 +158,7 @@ class BaseIndexer(object):
         return None
 
     def _set_show_data(self, sid, key, value):
-        """Sets self.shows[sid] to a new Show instance, or sets the data."""
+        """Set self.shows[sid] to a new Show instance, or sets the data."""
         if sid not in self.shows:
             self.shows[sid] = Show()
         self.shows[sid].data[key] = value
@@ -171,7 +174,6 @@ class BaseIndexer(object):
         - Replaces &amp; with &
         - Trailing whitespace
         """
-
         if isinstance(data, basestring):
             data = data.replace('&amp;', '&')
             data = data.strip()
@@ -185,9 +187,9 @@ class BaseIndexer(object):
         return data
 
     def _set_item(self, sid, seas, ep, attrib, value):  # pylint: disable=too-many-arguments
-        """Create a new episode, creating Show(), Season() and
-        Episode()s as required. Called by _get_show_data to populate show.
+        """Create a new episode, creating Show(), Season() and Episode()s as required.
 
+        Called by _get_show_data to populate show.
         Since the nice-to-use tvdb[1][24]['name] interface
         makes it impossible to do tvdb[1][24]['name] = "name"
         and still be capable of checking if an episode exists
@@ -209,7 +211,6 @@ class BaseIndexer(object):
 
     def _save_images(self, sid, images):
         """Save the highest rated image (banner, poster, fanart) as show data."""
-
         for image_type in images:
             # get series data / add the base_url to the image urls
             if image_type in ['banner', 'fanart', 'poster']:
@@ -244,13 +245,14 @@ class BaseIndexer(object):
 
 class ShowContainer(dict):
     """Simple dict that holds a series of Show instances."""
-
     def __init__(self):
+        """Init for ShowContainer"""
         dict.__init__(self)
         self._stack = []
         self._lastgc = time.time()
 
     def __setitem__(self, key, value):
+        """Set ShowContainer attribut"""
         self._stack.append(key)
 
         # keep only the 100th latest results
@@ -267,18 +269,19 @@ class ShowContainer(dict):
 
 class Show(dict):
     """Hold a dict of seasons, and show data."""
-
     def __init__(self):
         dict.__init__(self)
         self.data = {}
 
     def __repr__(self):
+        """Represent a Show object."""
         return '<Show %s (containing %s seasons)>' % (
             self.data.get(u'seriesname', 'instance'),
             len(self)
         )
 
     def __getattr__(self, key):
+        """Return Episode or Show-data."""
         if key in self:
             # Key is an episode, return it
             return self[key]
@@ -290,6 +293,7 @@ class Show(dict):
         raise AttributeError
 
     def __getitem__(self, key):
+        """Return Episode or Show-data."""
         if key in self:
             # Key is an episode, return it
             return dict.__getitem__(self, key)
@@ -347,11 +351,13 @@ class Season(dict):
         )
 
     def __getattr__(self, episode_number):
+        """Get an attribute by passing it as episode number."""
         if episode_number in self:
             return self[episode_number]
         raise AttributeError
 
     def __getitem__(self, episode_number):
+        """Get the episode dict by passing it as a dict key."""
         if episode_number not in self:
             raise IndexerEpisodeNotFound('Could not find episode %s' % (repr(episode_number)))
         else:
@@ -394,11 +400,13 @@ class Episode(dict):
             return '<Episode %02dx%02d>' % (seasno, epno)
 
     def __getattr__(self, key):
+        """Get an attribute."""
         if key in self:
             return self[key]
         raise AttributeError
 
     def __getitem__(self, key):
+        """Get an attribute, by passing it as a key."""
         try:
             return dict.__getitem__(self, key)
         except KeyError:

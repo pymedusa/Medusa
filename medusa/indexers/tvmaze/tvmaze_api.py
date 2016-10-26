@@ -270,7 +270,7 @@ class TVmaze(object):
                  search_all_languages=False,
                  apikey=None,
                  force_connect=False,
-                 useZip=False,
+                 use_zip=False,
                  dvdorder=False,
                  proxy=None,
                  session=None):
@@ -290,7 +290,7 @@ class TVmaze(object):
 
         self.config['search_all_languages'] = search_all_languages
 
-        self.config['useZip'] = useZip
+        self.config['use_zip'] = use_zip
 
         self.config['dvdorder'] = dvdorder
 

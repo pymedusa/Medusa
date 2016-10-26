@@ -44,7 +44,7 @@ indexerConfig = {
         'module': TVDBv2,
         'api_params': {
             'language': 'en',
-            'useZip': True,
+            'use_zip': True,
             'session': helpers.make_session(cache_etags=False),
         },
         'trakt_id': 'tvdb_id',
