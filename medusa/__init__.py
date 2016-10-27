@@ -2138,8 +2138,11 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
 
     try:
         new_config.write()
-    except IOError:
-        logger.log(u"Unable to save config file, most likely out of disk space!", logger.WARNING)
+    except IOError as e:
+        if e.errno == 28:
+            logger.log(u'Unable to save config file. Out of disk space!', logger.WARNING)
+        else:
+            logger.log(u'Unable to save config file. Error: {0}'.format(e), logger.WARNING)
 
 
 def launchBrowser(protocol='http', startPort=None, web_root='/'):
