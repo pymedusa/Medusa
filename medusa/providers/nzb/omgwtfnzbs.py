@@ -86,11 +86,10 @@ class OmgwtfnzbsProvider(NZBProvider):
 
                 for item in response:
                     try:
-                        if not self._get_title_and_url(item):
+                        if not all(self._get_title_and_url(item)):
                             continue
-                        title = item.get('title')
-                        if title:
-                            logger.log('Found result: {0}'.format(title), logger.DEBUG)
+
+                        logger.log('Found result: {0}'.format(item.get('title')), logger.DEBUG)
                         items.append(item)
                     except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                             logger.log('Failed parsing provider. Traceback: {0!r}'.format
