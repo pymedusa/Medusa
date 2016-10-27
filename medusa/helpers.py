@@ -42,7 +42,8 @@ import zipfile
 from itertools import cycle, izip
 
 import adba
-from cachecontrol import CacheControl
+from cachecontrol import CacheControlAdapter
+from cachecontrol.cache import DictCache
 import certifi
 import cfscrape
 from contextlib2 import closing, suppress
@@ -58,6 +59,7 @@ from .common import USER_AGENT
 from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from .helper.exceptions import ex
 from .show.Show import Show
+
 
 logger = logging.getLogger(__name__)
 
@@ -993,7 +995,7 @@ def validateShow(show, season=None, episode=None):
             return t
 
         return t[show.indexerid][season][episode]
-    except (app.indexer_episodenotfound, app.indexer_seasonnotfound):
+    except (app.IndexerEpisodeNotFound, app.IndexerSeasonNotFound):
         pass
 
 
@@ -1147,12 +1149,24 @@ def touchFile(fname, atime=None):
     return False
 
 
-def make_session():
+def make_session(cache_etags=True, serializer=None, heuristic=None):
     session = requests.Session()
+
+    adapter = CacheControlAdapter(
+        DictCache(),
+        cache_etags=cache_etags,
+        serializer=serializer,
+        heuristic=heuristic,
+    )
+
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+
+    session.cache_controller = adapter.controller
 
     session.headers.update({'User-Agent': USER_AGENT, 'Accept-Encoding': 'gzip,deflate'})
 
-    return CacheControl(sess=session, cache_etags=True)
+    return session
 
 
 def request_defaults(kwargs):

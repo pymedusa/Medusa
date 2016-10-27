@@ -24,6 +24,7 @@ import re
 import shutil
 import stat
 import threading
+import time
 import traceback
 
 from imdb import imdb
@@ -46,7 +47,7 @@ from .helper.exceptions import (
     MultipleShowObjectsException, MultipleShowsInDatabaseException, NoNFOException, ShowDirectoryNotFoundException,
     ShowNotFoundException, ex
 )
-from .indexers.indexer_config import INDEXER_TVDB, INDEXER_TVRAGE
+from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .scene_numbering import get_scene_absolute_numbering, get_scene_numbering, xem_refresh
 from .show.Show import Show
@@ -116,7 +117,7 @@ class TVObject(object):
         :return:
         :rtype: int
         """
-        return self.indexerid if self.indexerid and self.indexer == INDEXER_TVDB else None
+        return self.indexerid if self.indexerid and self.indexer == INDEXER_TVDBV2 else None
 
     def __getstate__(self):
         """Get threading lock state.
@@ -282,6 +283,21 @@ class TVShow(TVObject):
                 self.episodes[cur_season][cur_ep] = None
                 del my_ep
 
+    def get_all_seasons(self, last_airdate=False):
+        """Retrieve a dictionary of seasons with the number of episodes, using the episodes table.
+
+        :param last_airdate: Option to pass the airdate of the last aired episode for the season in stead of the number of episodes
+        :type last_airdate: bool
+        :return:
+        :rtype: dictionary of seasons (int) and count(episodes) (int)
+        """
+        sql_selection = b"select season, {summarize} as number_of_episodes from tv_episodes where showid = ? group by season". \
+                        format(summarize=b'count(*)' if not last_airdate else b'max(airdate)')
+        main_db_con = db.DBConnection()
+        results = main_db_con.select(sql_selection, [self.indexerid])
+
+        return {int(x['season']): int(x['number_of_episodes']) for x in results}
+
     def get_all_episodes(self, season=None, has_location=False):
         """Retrieve all episodes for this show given the specified filter.
 
@@ -413,6 +429,37 @@ class TVShow(TVObject):
             self.episodes[season][episode] = ep
 
         return ep
+
+    def create_next_season_update(self, for_season=None):
+        """Update the cache indexer_update table.
+
+        :param for_season: Optional limit to only update the next update date for this season.
+        :type for_season: int
+        """
+        seasons = self.get_all_seasons(last_airdate=True)
+        for season in seasons:
+            if for_season and for_season != season:
+                continue
+
+            # Get last airdate for this season and calculate the next_update
+            if seasons[season] < 719163:
+                if season < max(seasons):
+                    # Before epoch and not last season
+                    next_update = time.time() + 3153600
+                else:
+                    # This is the last season, we don't know if this is an old show, or airdate not yet known
+                    next_update = time.time() + 3600
+            else:
+                last_airdate = int(time.mktime(datetime.date.fromordinal(seasons[season]).timetuple()))
+                if last_airdate > time.time():
+                    next_update = time.time() + 3600
+                else:
+                    next_update = int(time.time() + ((time.time() - last_airdate) / 200))
+
+            cache_db = db.DBConnection('cache.db')
+            cache_db.upsert('indexer_update',
+                            {'next_update': next_update},
+                            {'indexer': self.indexer, 'indexer_id': self.indexerid, 'season': season})
 
     def should_update(self, update_date=datetime.date.today()):
         """Whether the show information should be updated.
@@ -676,7 +723,7 @@ class TVShow(TVObject):
             if cur_season not in cached_seasons:
                 try:
                     cached_seasons[cur_season] = cached_show[cur_season]
-                except app.indexer_seasonnotfound as error:
+                except app.IndexerSeasonNotFound as error:
                     logger.log(u'{id}: {error_msg} (unaired/deleted) in the indexer {indexer} for {show}. '
                                u'Removing existing records from database'.format
                                (id=cur_show_id, error_msg=error.message, indexer=app.indexerApi(self.indexer).name,
@@ -708,9 +755,11 @@ class TVShow(TVObject):
 
         return scanned_eps
 
-    def load_episodes_from_indexer(self):
+    def load_episodes_from_indexer(self, seasons=None):
         """Load episodes from indexer.
 
+        :param 'seasons': Only load episodes for these seasons (only if supported by the indexer)
+        :type: list of integers or integer
         :return:
         :rtype: dict(int -> dict(int -> bool))
         """
@@ -726,8 +775,8 @@ class TVShow(TVObject):
 
         try:
             t = app.indexerApi(self.indexer).indexer(**indexer_api_params)
-            show_obj = t[self.indexerid]
-        except app.indexer_error:
+            show_obj = t.get_episodes_for_season(self.indexerid, specials=False, aired_season=seasons)
+        except app.IndexerError:
             logger.log(u'{id}: {indexer} timed out, unable to update episodes'.format
                        (id=self.indexerid, indexer=app.indexerApi(self.indexer).name), logger.WARNING)
             return None
@@ -1038,31 +1087,31 @@ class TVShow(TVObject):
 
             t = app.indexerApi(self.indexer).indexer(**indexer_api_params)
 
-        my_ep = t[self.indexerid]
+        indexed_show = t[self.indexerid]
 
         try:
-            self.name = my_ep['seriesname'].strip()
+            self.name = indexed_show['seriesname'].strip()
         except AttributeError:
-            raise app.indexer_attributenotfound(
+            raise app.IndexerAttributeNotFound(
                 "Found {id}, but attribute 'seriesname' was empty.".format(id=self.indexerid))
 
-        self.classification = getattr(my_ep, 'classification', 'Scripted')
-        self.genre = getattr(my_ep, 'genre', '')
-        self.network = getattr(my_ep, 'network', '')
-        self.runtime = getattr(my_ep, 'runtime', '')
+        self.classification = getattr(indexed_show, 'classification', 'Scripted')
+        self.genre = getattr(indexed_show, 'genre', '')
+        self.network = getattr(indexed_show, 'network', '')
+        self.runtime = getattr(indexed_show, 'runtime', '')
 
-        self.imdbid = getattr(my_ep, 'imdb_id', '')
+        self.imdbid = getattr(indexed_show, 'imdb_id', '')
 
-        if getattr(my_ep, 'airs_dayofweek', None) is not None and getattr(my_ep, 'airs_time', None) is not None:
-            self.airs = my_ep['airs_dayofweek'] + ' ' + my_ep['airs_time']
+        if getattr(indexed_show, 'airs_dayofweek', None) is not None and getattr(indexed_show, 'airs_time', None) is not None:
+            self.airs = indexed_show['airs_dayofweek'] + ' ' + indexed_show['airs_time']
 
         if self.airs is None:
             self.airs = ''
 
-        if getattr(my_ep, 'firstaired', None) is not None:
-            self.startyear = int(str(my_ep['firstaired']).split('-')[0])
+        if getattr(indexed_show, 'firstaired', None):
+            self.startyear = int(str(indexed_show['firstaired']).split('-')[0])
 
-        self.status = getattr(my_ep, 'status', 'Unknown')
+        self.status = getattr(indexed_show, 'status', 'Unknown')
 
     def load_imdb_info(self):
         """Load all required show information from IMDb with IMDbPY."""
@@ -1994,7 +2043,7 @@ class TVEpisode(TVObject):
                     t = app.indexerApi(self.indexer).indexer(**indexer_api_params)
                 my_ep = t[self.show.indexerid][season][episode]
 
-        except (app.indexer_error, IOError) as e:
+        except (app.IndexerError, IOError) as e:
             logger.log(u'{id}: {indexer} threw up an error: {error_msg}'.format
                        (id=self.show.indexerid, indexer=app.indexerApi(self.indexer).name, error_msg=ex(e)), logger.WARNING)
             # if the episode is already valid just log it, if not throw it up
@@ -2006,7 +2055,7 @@ class TVEpisode(TVObject):
                 logger.log(u'{id}: {indexer} timed out, unable to create the episode'.format
                            (id=self.show.indexerid, indexer=app.indexerApi(self.indexer).name), logger.WARNING)
                 return False
-        except (app.indexer_episodenotfound, app.indexer_seasonnotfound):
+        except (app.IndexerEpisodeNotFound, app.IndexerSeasonNotFound):
             logger.log(u'{id}: Unable to find the episode on {indexer}. Deleting it from db'.format
                        (id=self.show.indexerid, indexer=app.indexerApi(self.indexer).name), logger.DEBUG)
             # if I'm no longer on the Indexers but I once was then delete myself from the DB

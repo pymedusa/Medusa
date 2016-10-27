@@ -26,7 +26,7 @@ import medusa as app
 from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
 from ....helper.common import convert_size, try_int
-from ....indexers.indexer_config import INDEXER_TVDB
+from ....indexers.indexer_config import INDEXER_TVDBV2
 
 
 class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
@@ -105,7 +105,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
             else:
                 search_params['sort'] = self.sorting if self.sorting else 'seeders'
                 search_params['mode'] = 'search'
-                search_params['search_tvdb'] = ep_indexerid if ep_indexer == INDEXER_TVDB and ep_indexerid else None
+                search_params['search_tvdb'] = ep_indexerid if ep_indexer == INDEXER_TVDBV2 and ep_indexerid else None
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':

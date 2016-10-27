@@ -22,7 +22,8 @@ from ....blackandwhitelist import short_group_names
 from ....common import Quality
 from ....helper.common import sanitize_filename, try_int
 from ....helpers import get_showname_from_indexer
-from ....indexers.indexer_exceptions import indexer_exception
+from ....indexers.indexer_config import INDEXER_TVDBV2
+from ....indexers.indexer_exceptions import IndexerException
 from ....show.Show import Show
 from ....show.recommendations.anidb import AnidbPopular
 from ....show.recommendations.imdb import ImdbPopular
@@ -85,12 +86,12 @@ class HomeAddShows(Home):
                     indexer_results = t[searchTerm]
                     # add search results
                     results.setdefault(indexer, []).extend(indexer_results)
-                except indexer_exception as msg:
+                except IndexerException as msg:
                     logger.log(u'Error searching for show: {error}'.format(error=msg))
 
         for i, shows in iteritems(results):
             final_results.extend({(app.indexerApi(i).name, i, app.indexerApi(i).config['show_url'], int(show['id']),
-                                   show['seriesname'], show['firstaired']) for show in shows})
+                                   show['seriesname'].encode('utf-8'), show['firstaired']) for show in shows})
 
         lang_id = app.indexerApi().config['langabbv_to_id'][lang]
         return json.dumps({'results': final_results, 'langid': lang_id})
@@ -461,7 +462,7 @@ class HomeAddShows(Home):
         show_dir = None
 
         # add the show
-        app.showQueueScheduler.action.addShow(1, int(indexer_id), show_dir, int(default_status), quality, flatten_folders,
+        app.showQueueScheduler.action.addShow(INDEXER_TVDBV2, int(indexer_id), show_dir, int(default_status), quality, flatten_folders,
                                               indexer_lang, subtitles, anime, scene, None, blacklist, whitelist,
                                               int(default_status_after), root_dir=location)
 

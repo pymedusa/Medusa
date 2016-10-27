@@ -77,6 +77,28 @@ class Show(object):
         raise MultipleShowObjectsException()
 
     @staticmethod
+    def find_by_id(shows, indexer, show_id):
+        """
+        Find a show by its indexer id in the provided list of shows
+        :param shows: The list of shows to search in
+        :param show_id: The indexers show id of the desired show
+        :return: The desired show if found, ``None`` if not found
+        :throw: ``MultipleShowObjectsException`` if multiple shows match the provided ``indexer_id``
+        """
+
+        if show_id is None or shows is None or len(shows) == 0:
+            return None
+
+        # indexer_ids = [show_id] if not isinstance(show_id, list) else show_id
+        results = [show for show in shows if show.indexer == int(indexer) and show.indexerid == int(show_id)]
+
+        if not results:
+            return None
+
+        if len(results) == 1:
+            return results[0]
+
+    @staticmethod
     def overall_stats():
         db = DBConnection()
         shows = app.showList

@@ -12,7 +12,7 @@ from github.Repository import Repository
 from medusa import cache
 from medusa.common import DOWNLOADED, Quality
 from medusa.helper.common import dateTimeFormat
-from medusa.indexers.indexer_config import INDEXER_TVDB
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance
 from medusa.logger import read_loglines as logger_read_loglines
 from medusa.tv import TVEpisode, TVShow
@@ -81,7 +81,7 @@ def execute_before_any_test():
 
 @pytest.fixture
 def tvshow(create_tvshow):
-    return create_tvshow(indexer=INDEXER_TVDB, indexerid=12, name='Show Name', imdbid='tt0000000')
+    return create_tvshow(indexer=INDEXER_TVDBV2, indexerid=12, name='Show Name', imdbid='tt0000000')
 
 
 @pytest.fixture
@@ -107,7 +107,7 @@ def create_sub(monkeypatch):
 
 @pytest.fixture
 def create_tvshow(monkeypatch):
-    def create(indexer=INDEXER_TVDB, indexerid=0, lang='', quality=Quality.UNKNOWN, flatten_folders=0,
+    def create(indexer=INDEXER_TVDBV2, indexerid=0, lang='', quality=Quality.UNKNOWN, flatten_folders=0,
                enabled_subtitles=0, **kwargs):
         monkeypatch.setattr('medusa.tv.TVShow._load_from_db', lambda method: None)
         target = TVShow(indexer=indexer, indexerid=indexerid, lang=lang, quality=quality,
