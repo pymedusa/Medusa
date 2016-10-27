@@ -1,5 +1,5 @@
 MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
-    $('#testGrowl').on('click', function () {
+    $('#testGrowl').on('click', function() {
         var growl = {};
         growl.host = $.trim($('#growl_host').val());
         growl.password = $.trim($('#growl_password').val());
@@ -14,13 +14,13 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $.get('home/testGrowl', {
             host: growl.host,
             password: growl.password
-        }).done(function (data) {
+        }).done(function(data) {
             $('#testGrowl-result').html(data);
             $('#testGrowl').prop('disabled', false);
         });
     });
 
-    $('#testProwl').on('click', function () {
+    $('#testProwl').on('click', function() {
         var prowl = {};
         prowl.api = $.trim($('#prowl_api').val());
         prowl.priority = $('#prowl_priority').val();
@@ -35,13 +35,13 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $.get('home/testProwl', {
             prowl_api: prowl.api, // eslint-disable-line camelcase
             prowl_priority: prowl.priority // eslint-disable-line camelcase
-        }).done(function (data) {
+        }).done(function(data) {
             $('#testProwl-result').html(data);
             $('#testProwl').prop('disabled', false);
         });
     });
 
-    $('#testKODI').on('click', function () {
+    $('#testKODI').on('click', function() {
         var kodi = {};
         kodi.host = $.trim($('#kodi_host').val());
         kodi.username = $.trim($('#kodi_username').val());
@@ -58,13 +58,13 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
             host: kodi.host,
             username: kodi.username,
             password: kodi.password
-        }).done(function (data) {
+        }).done(function(data) {
             $('#testKODI-result').html(data);
             $('#testKODI').prop('disabled', false);
         });
     });
 
-    $('#testPHT').on('click', function () {
+    $('#testPHT').on('click', function() {
         var plex = {};
         plex.client = {};
         plex.client.host = $.trim($('#plex_client_host').val());
@@ -82,13 +82,13 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
             host: plex.client.host,
             username: plex.client.username,
             password: plex.client.password
-        }).done(function (data) {
+        }).done(function(data) {
             $('#testPHT-result').html(data);
             $('#testPHT').prop('disabled', false);
         });
     });
 
-    $('#testPMS').on('click', function () {
+    $('#testPMS').on('click', function() {
         var plex = {};
         plex.server = {};
         plex.server.host = $.trim($('#plex_server_host').val());
@@ -108,13 +108,13 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
             username: plex.server.username,
             password: plex.server.password,
             plex_server_token: plex.server.token // eslint-disable-line camelcase
-        }).done(function (data) {
+        }).done(function(data) {
             $('#testPMS-result').html(data);
             $('#testPMS').prop('disabled', false);
         });
     });
 
-    $('#testEMBY').on('click', function () {
+    $('#testEMBY').on('click', function() {
         var emby = {};
         emby.host = $('#emby_host').val();
         emby.apikey = $('#emby_apikey').val();
@@ -130,13 +130,13 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $.get('home/testEMBY', {
             host: emby.host,
             emby_apikey: emby.apikey // eslint-disable-line camelcase
-        }).done(function (data) {
+        }).done(function(data) {
             $('#testEMBY-result').html(data);
             $('#testEMBY').prop('disabled', false);
         });
     });
 
-    $('#testBoxcar2').on('click', function () {
+    $('#testBoxcar2').on('click', function() {
         var boxcar2 = {};
         boxcar2.accesstoken = $.trim($('#boxcar2_accesstoken').val());
         if (!boxcar2.accesstoken) {
@@ -149,13 +149,13 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $('#testBoxcar2-result').html(MEDUSA.info.loading);
         $.get('home/testBoxcar2', {
             accesstoken: boxcar2.accesstoken
-        }).done(function (data) {
+        }).done(function(data) {
             $('#testBoxcar2-result').html(data);
             $('#testBoxcar2').prop('disabled', false);
         });
     });
 
-    $('#testPushover').on('click', function () {
+    $('#testPushover').on('click', function() {
         var pushover = {};
         pushover.userkey = $('#pushover_userkey').val();
         pushover.apikey = $('#pushover_apikey').val();
@@ -171,7 +171,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $.get('home/testPushover', {
             userKey: pushover.userkey,
             apiKey: pushover.apikey
-        }).done(function (data) {
+        }).done(function(data) {
             $('#testPushover-result').html(data);
             $('#testPushover').prop('disabled', false);
         });
@@ -179,21 +179,21 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
 
     $('#testLibnotify').on('click', function() {
         $('#testLibnotify-result').html(MEDUSA.info.loading);
-        $.get('home/testLibnotify', function (data) {
+        $.get('home/testLibnotify', function(data) {
             $('#testLibnotify-result').html(data);
         });
     });
 
     $('#twitterStep1').on('click', function() {
         $('#testTwitter-result').html(MEDUSA.info.loading);
-        $.get('home/twitterStep1', function (data) {
+        $.get('home/twitterStep1', function(data) {
             window.open(data);
         }).done(function() {
             $('#testTwitter-result').html('<b>Step1:</b> Confirm Authorization');
         });
     });
 
-    $('#twitterStep2').on('click', function () {
+    $('#twitterStep2').on('click', function() {
         var twitter = {};
         twitter.key = $.trim($('#twitter_key').val());
         $('#twitter_key').addRemoveWarningClass(twitter.key);
@@ -222,7 +222,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
 
             $.get('home/settingsNMJ', {
                 host: nmj.host
-            }, function (data) {
+            }, function(data) {
                 if (data === null) {
                     $('#nmj_database').removeAttr('readonly');
                     $('#nmj_mount').removeAttr('readonly');
@@ -248,7 +248,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $('#nmj_host').focus();
     });
 
-    $('#testNMJ').on('click', function () {
+    $('#testNMJ').on('click', function() {
         var nmj = {};
         nmj.host = $.trim($('#nmj_host').val());
         nmj.database = $('#nmj_database').val();
@@ -261,7 +261,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
                 host: nmj.host,
                 database: nmj.database,
                 mount: nmj.mount
-            }).done(function (data) {
+            }).done(function(data) {
                 $('#testNMJ-result').html(data);
                 $('#testNMJ').prop('disabled', false);
             });
@@ -289,7 +289,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
                 host: nmjv2.host,
                 dbloc: nmjv2.dbloc,
                 instance: nmjv2.dbinstance
-            }, function (data) {
+            }, function(data) {
                 if (data === null) {
                     $('#nmjv2_database').removeAttr('readonly');
                 }
@@ -308,7 +308,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $('#nmjv2_host').focus();
     });
 
-    $('#testNMJv2').on('click', function () {
+    $('#testNMJv2').on('click', function() {
         var nmjv2 = {};
         nmjv2.host = $.trim($('#nmjv2_host').val());
         if (nmjv2.host) {
@@ -317,7 +317,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
             $('#testNMJv2-result').html(MEDUSA.info.loading);
             $.get('home/testNMJv2', {
                 host: nmjv2.host
-            }).done(function (data) {
+            }).done(function(data) {
                 $('#testNMJv2-result').html(data);
                 $('#testNMJv2').prop('disabled', false);
             });
@@ -326,7 +326,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $('#nmjv2_host').addClass('warning');
     });
 
-    $('#testFreeMobile').on('click', function () {
+    $('#testFreeMobile').on('click', function() {
         var freemobile = {};
         freemobile.id = $.trim($('#freemobile_id').val());
         freemobile.apikey = $.trim($('#freemobile_apikey').val());
@@ -350,13 +350,13 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $.get('home/testFreeMobile', {
             freemobile_id: freemobile.id, // eslint-disable-line camelcase
             freemobile_apikey: freemobile.apikey // eslint-disable-line camelcase
-        }).done(function (data) {
+        }).done(function(data) {
             $('#testFreeMobile-result').html(data);
             $('#testFreeMobile').prop('disabled', false);
         });
     });
 
-    $('#testTelegram').on('click', function () {
+    $('#testTelegram').on('click', function() {
         var telegram = {};
         telegram.id = $.trim($('#telegram_id').val());
         telegram.apikey = $.trim($('#telegram_apikey').val());
@@ -372,13 +372,13 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $.get('home/testTelegram', {
             telegram_id: telegram.id, // eslint-disable-line camelcase
             telegram_apikey: telegram.apikey // eslint-disable-line camelcase
-        }).done(function (data) {
+        }).done(function(data) {
             $('#testTelegram-result').html(data);
             $('#testTelegram').prop('disabled', false);
         });
     });
 
-    $('#TraktGetPin').on('click', function () {
+    $('#TraktGetPin').on('click', function() {
         window.open($('#trakt_pin_url').val(), 'popUp', 'toolbar=no, scrollbars=no, resizable=no, top=200, left=200, width=650, height=550');
         $('#trakt_pin').prop('disabled', false);
     });
@@ -399,7 +399,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         if (trakt.pin.length !== 0) {
             $.get('home/getTraktToken', {
                 trakt_pin: trakt.pin // eslint-disable-line camelcase
-            }).done(function (data) {
+            }).done(function(data) {
                 $('#testTrakt-result').html(data);
                 $('#authTrakt').addClass('hide');
                 $('#trakt_pin').prop('disabled', true);
@@ -409,7 +409,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         }
     });
 
-    $('#testTrakt').on('click', function () {
+    $('#testTrakt').on('click', function() {
         var trakt = {};
         trakt.username = $.trim($('#trakt_username').val());
         trakt.trendingBlacklist = $.trim($('#trakt_blacklist_name').val());
@@ -431,20 +431,20 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $.get('home/testTrakt', {
             username: trakt.username,
             blacklist_name: trakt.trendingBlacklist // eslint-disable-line camelcase
-        }).done(function (data) {
+        }).done(function(data) {
             $('#testTrakt-result').html(data);
             $('#testTrakt').prop('disabled', false);
         });
     });
 
-    $('#forceSync').on('click', function () {
+    $('#forceSync').on('click', function() {
         $('#testTrakt-result').html(MEDUSA.info.loading);
         $.getJSON('home/forceTraktSync', function(data) {
             $('#testTrakt-result').html(data.result);
         });
     });
 
-    $('#testEmail').on('click', function () {
+    $('#testEmail').on('click', function() {
         var status;
         var host;
         var port;
@@ -490,14 +490,14 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
                     user: user,
                     pwd: pwd,
                     to: to
-                }, function (msg) {
+                }, function(msg) {
                     $('#testEmail-result').html(msg);
                 });
             }
         }
     });
 
-    $('#testNMA').on('click', function () {
+    $('#testNMA').on('click', function() {
         var nma = {};
         nma.api = $.trim($('#nma_api').val());
         nma.priority = $('#nma_priority').val();
@@ -512,13 +512,13 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $.get('home/testNMA', {
             nma_api: nma.api, // eslint-disable-line camelcase
             nma_priority: nma.priority // eslint-disable-line camelcase
-        }).done(function (data) {
+        }).done(function(data) {
             $('#testNMA-result').html(data);
             $('#testNMA').prop('disabled', false);
         });
     });
 
-    $('#testPushalot').on('click', function () {
+    $('#testPushalot').on('click', function() {
         var pushalot = {};
         pushalot.authToken = $.trim($('#pushalot_authorizationtoken').val());
         if (!pushalot.authToken) {
@@ -531,13 +531,13 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $('#testPushalot-result').html(MEDUSA.info.loading);
         $.get('home/testPushalot', {
             authorizationToken: pushalot.authToken
-        }).done(function (data) {
+        }).done(function(data) {
             $('#testPushalot-result').html(data);
             $('#testPushalot').prop('disabled', false);
         });
     });
 
-    $('#testPushbullet').on('click', function () {
+    $('#testPushbullet').on('click', function() {
         var pushbullet = {};
         pushbullet.api = $.trim($('#pushbullet_api').val());
         if (!pushbullet.api) {
@@ -550,7 +550,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $('#testPushbullet-result').html(MEDUSA.info.loading);
         $.get('home/testPushbullet', {
             api: pushbullet.api
-        }).done(function (data) {
+        }).done(function(data) {
             $('#testPushbullet-result').html(data);
             $('#testPushbullet').prop('disabled', false);
         });
@@ -572,7 +572,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
 
         $.get('home/getPushbulletDevices', {
             api: pushbullet.api
-        }, function (data) {
+        }, function(data) {
             pushbullet.devices = $.parseJSON(data).devices;
             pushbullet.currentDevice = $('#pushbullet_device').val();
             $('#pushbullet_device_list').html('');

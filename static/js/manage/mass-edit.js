@@ -1,3 +1,5 @@
 MEDUSA.manage.massEdit = function() {
-    $('#location').fileBrowser({title: 'Select Show Location'});
+    $('#location').fileBrowser({
+        title: 'Select Show Location'
+    });
 };

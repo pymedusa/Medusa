@@ -104,10 +104,10 @@ MEDUSA.addShows.init = function() {
 
             var anyQualArray = [];
             var bestQualArray = [];
-            $('#anyQualities option:selected').each(function (i, d) {
+            $('#anyQualities option:selected').each(function(i, d) {
                 anyQualArray.push($(d).val());
             });
-            $('#bestQualities option:selected').each(function (i, d) {
+            $('#bestQualities option:selected').each(function(i, d) {
                 bestQualArray.push($(d).val());
             });
 
@@ -136,10 +136,10 @@ MEDUSA.addShows.init = function() {
         $('#saveDefaultsButton').on('click', function() {
             var anyQualArray = [];
             var bestQualArray = [];
-            $('#anyQualities option:selected').each(function (i, d) {
+            $('#anyQualities option:selected').each(function(i, d) {
                 anyQualArray.push($(d).val());
             });
-            $('#bestQualities option:selected').each(function (i, d) {
+            $('#bestQualities option:selected').each(function(i, d) {
                 bestQualArray.push($(d).val());
             });
 
@@ -162,7 +162,7 @@ MEDUSA.addShows.init = function() {
             });
         });
 
-        $('#statusSelect, #qualityPreset, #flatten_folders, #anyQualities, #bestQualities, #subtitles, #scene, #anime, #statusSelectAfter').change(function () {
+        $('#statusSelect, #qualityPreset, #flatten_folders, #anyQualities, #bestQualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', function() {
             $('#saveDefaultsButton').prop('disabled', false);
         });
 
@@ -172,7 +172,7 @@ MEDUSA.addShows.init = function() {
             $('span.next').click();
         });
     };
-    $.updateBlackWhiteList = function (showName) {
+    $.updateBlackWhiteList = function(showName) {
         $('#white').children().remove();
         $('#black').children().remove();
         $('#pool').children().remove();
@@ -182,7 +182,7 @@ MEDUSA.addShows.init = function() {
             if (showName) {
                 $.getJSON('home/fetch_releasegroups', {
                     show_name: showName // eslint-disable-line camelcase
-                }, function (data) {
+                }, function(data) {
                     if (data.result === 'success') {
                         $.each(data.groups, function(i, group) {
                             var option = $('<option>');

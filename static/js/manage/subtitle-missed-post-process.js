@@ -1,4 +1,4 @@
 MEDUSA.manage.subtitleMissedPP = function() {
-    startAjaxEpisodeSubtitles();
+    startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
     $.ajaxEpSubtitlesSearch();
 };

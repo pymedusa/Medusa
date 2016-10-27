@@ -1,4 +1,4 @@
-var startAjaxEpisodeSubtitles = function() {
+var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-vars
     var subtitlesTd;
     var selectedEpisode;
     var searchTypesList = ['.epSubtitlesSearch', '.epSubtitlesSearchPP', '.epRedownloadSubtitle', '.epSearch', '.epRetry', '.epManualSearch'];
@@ -8,7 +8,7 @@ var startAjaxEpisodeSubtitles = function() {
 
     function disableAllSearches() {
         // Disables all other searches while manual searching for subtitles
-        $.each(searchTypesList, function (index, searchTypes) {
+        $.each(searchTypesList, function(index, searchTypes) {
             $(searchTypes).css({
                 'pointer-events': 'none'
             });
@@ -17,7 +17,7 @@ var startAjaxEpisodeSubtitles = function() {
 
     function enableAllSearches() {
         // Enabled all other searches while manual searching for subtitles
-        $.each(searchTypesList, function (index, searchTypes) {
+        $.each(searchTypesList, function(index, searchTypes) {
             $(searchTypes).css({
                 'pointer-events': 'auto'
             });
@@ -37,7 +37,7 @@ var startAjaxEpisodeSubtitles = function() {
         }));
     }
 
-    subtitlesResultModal.on('hidden.bs.modal', function () {
+    subtitlesResultModal.on('hidden.bs.modal', function() {
         // If user close manual subtitle search modal, enable again all searches
         enableAllSearches();
     });
@@ -136,7 +136,7 @@ var startAjaxEpisodeSubtitles = function() {
                 // Add the release to the modal title
                 $('h4#manualSubtitleSearchModalTitle.modal-title').text(data.release);
                 if (data.result === 'success') {
-                    $.each(data.subtitles, function (index, subtitle) {
+                    $.each(data.subtitles, function(index, subtitle) {
                         // For each subtitle found create the row string and append to the modal
                         var provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
                         var flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';

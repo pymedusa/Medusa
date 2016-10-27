@@ -37,7 +37,7 @@ MEDUSA.home.snatchSelection = function() {
         event.preventDefault();
         var link = this;
         $(link).children('img').prop('src', 'images/loading16.gif');
-        $.getJSON(this.href, function (data) {
+        $.getJSON(this.href, function(data) {
             if (data.result === 'success') {
                 $(link).children('img').prop('src', 'images/save.png');
             } else {
@@ -102,7 +102,7 @@ MEDUSA.home.snatchSelection = function() {
             type: 'GET',
             data: data,
             contentType: 'application/json',
-            success: function (data) {
+            success: function(data) {
                 if (data.result === 'refresh') {
                     self.refreshResults();
                     updateSpinner(spinner, 'Refreshed results...', true);
@@ -137,12 +137,12 @@ MEDUSA.home.snatchSelection = function() {
                     initTableSorter('#showTable');
                 }
             },
-            error: function () {
+            error: function() {
                 // repeat = false;
                 console.log('Error occurred!!');
                 $('.manualSearchButton').removeAttr('disabled');
             },
-            complete: function () {
+            complete: function() {
                 if (repeat) {
                     setTimeout(checkCacheUpdates, pollInterval);
                 }
@@ -187,7 +187,7 @@ MEDUSA.home.snatchSelection = function() {
         placement: 'bottom',
         html: true, // required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function () { // bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
         $.tablesorter.columnSelector.attachTo($('#showTable'), '#popover-target');
     });
 
@@ -199,11 +199,11 @@ MEDUSA.home.snatchSelection = function() {
     });
 
     $(function() {
-        $('body').on('hide.bs.collapse', '.collapse.toggle', function () {
+        $('body').on('hide.bs.collapse', '.collapse.toggle', function() {
             $('#showhistory').text('Show History');
             $('#wrapper').prop('data-history-toggle', 'hide');
         });
-        $('body').on('show.bs.collapse', '.collapse.toggle', function () {
+        $('body').on('show.bs.collapse', '.collapse.toggle', function() {
             $('#showhistory').text('Hide History');
             $('#wrapper').prop('data-history-toggle', 'show');
         });

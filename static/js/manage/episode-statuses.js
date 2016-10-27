@@ -23,7 +23,7 @@ MEDUSA.manage.episodeStatuses = function() {
             $.getJSON('manage/showEpisodeStatuses', {
                 indexer_id: curIndexerId, // eslint-disable-line camelcase
                 whichStatus: $('#oldStatus').val()
-            }, function (data) {
+            }, function(data) {
                 $.each(data, function(season, eps) {
                     $.each(eps, function(episode, name) {
                         lastRow.after($.makeEpisodeRow(curIndexerId, season, episode, name, checked));

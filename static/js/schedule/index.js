@@ -12,9 +12,9 @@ MEDUSA.schedule.index = function() {
             widgets: ['stickyHeaders', 'filter', 'columnSelector', 'saveSort'],
             sortList: sortList,
             textExtraction: {
-                0: function(node) { return $(node).find('time').attr('datetime'); },
-                1: function(node) { return $(node).find('time').attr('datetime'); },
-                7: function(node) { return $(node).find('span').text().toLowerCase(); }
+                0: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
+                1: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
+                7: function(node) { return $(node).find('span').text().toLowerCase(); } // eslint-disable-line brace-style
             },
             headers: {
                 0: {sorter: 'realISODate'},
@@ -55,7 +55,7 @@ MEDUSA.schedule.index = function() {
         placement: 'bottom',
         html: true, // required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function () { // bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
         // call this function to copy the column selection code into the popover
         $.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
     });
