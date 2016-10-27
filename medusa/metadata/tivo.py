@@ -25,7 +25,6 @@ import os
 import medusa as app
 from .. import helpers, logger
 from ..helper.common import episode_num
-from ..helper.encoding import ek
 from ..helper.exceptions import ShowNotFoundException, ex
 from ..metadata import generic
 
@@ -136,13 +135,13 @@ class TIVOMetadata(generic.GenericMetadata):
 
         ep_obj: a TVEpisode object to get the path for
         """
-        if ek(os.path.isfile, ep_obj.location):
+        if os.path.isfile(ep_obj.location):
             metadata_file_name = '{file}.{extension}'.format(
-                file=ek(os.path.basename, ep_obj.location),
+                file=os.path.basename(ep_obj.location),
                 extension=self._ep_nfo_extension
             )
-            metadata_dir_name = ek(os.path.join, ek(os.path.dirname, ep_obj.location), '.meta')
-            metadata_file_path = ek(os.path.join, metadata_dir_name, metadata_file_name)
+            metadata_dir_name = os.path.join(os.path.dirname(ep_obj.location), '.meta')
+            metadata_file_path = os.path.join(metadata_dir_name, metadata_file_name)
         else:
             logger.log(u'Episode location does not exist: {path}'.format
                        (path=ep_obj.location), logger.DEBUG)
@@ -317,13 +316,13 @@ class TIVOMetadata(generic.GenericMetadata):
             return False
 
         nfo_file_path = self.get_episode_file_path(ep_obj)
-        nfo_file_dir = ek(os.path.dirname, nfo_file_path)
+        nfo_file_dir = os.path.dirname(nfo_file_path)
 
         try:
-            if not ek(os.path.isdir, nfo_file_dir):
+            if not os.path.isdir(nfo_file_dir):
                 logger.log(u'Metadata directory did not exist, creating it at {path}'.format
                            (path=nfo_file_dir), logger.DEBUG)
-                ek(os.makedirs, nfo_file_dir)
+                os.makedirs(nfo_file_dir)
                 helpers.chmodAsParent(nfo_file_dir)
 
             logger.log(u'Writing episode nfo file to {path}'.format

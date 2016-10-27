@@ -16,7 +16,6 @@ from .... import (
     config, logger, ui,
 )
 from ....helper.common import try_int
-from ....helper.encoding import ek
 
 
 @route('/config/search(/?.*)')
@@ -59,10 +58,10 @@ class ConfigSearch(Config):
         results = []
 
         if not config.change_NZB_DIR(nzb_dir):
-            results += ['Unable to create directory {dir}, dir not changed.'.format(dir=ek(os.path.normpath, nzb_dir))]
+            results += ['Unable to create directory {dir}, dir not changed.'.format(dir=os.path.normpath(nzb_dir))]
 
         if not config.change_TORRENT_DIR(torrent_dir):
-            results += ['Unable to create directory {dir}, dir not changed.'.format(dir=ek(os.path.normpath, torrent_dir))]
+            results += ['Unable to create directory {dir}, dir not changed.'.format(dir=os.path.normpath(torrent_dir))]
 
         config.change_DAILYSEARCH_FREQUENCY(dailysearch_frequency)
 
@@ -139,6 +138,6 @@ class ConfigSearch(Config):
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:
-            ui.notifications.message('Configuration Saved', ek(os.path.join, app.CONFIG_FILE))
+            ui.notifications.message('Configuration Saved', os.path.join(app.CONFIG_FILE))
 
         return self.redirect('/config/search/')

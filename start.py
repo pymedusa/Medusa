@@ -51,6 +51,7 @@ import io
 import locale
 import mimetypes
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -88,11 +89,19 @@ if os.path.isdir(OLD_TORNADO):
     shutil.move(OLD_TORNADO, OLD_TORNADO + '_kill')
     shutil.rmtree(OLD_TORNADO + '_kill')
 
+# An issue found on synology DSM makes the dogpile module from the system to be always loaded before
+# sys.path is changed. # That causes the application to fail to start because that version is old and some submodules are not found.
+# http://stackoverflow.com/questions/2918898/prevent-python-from-caching-the-imported-modules
+try:
+    if 'dogpile' in sys.modules:
+        del sys.modules['dogpile']
+except AttributeError:
+    pass
+
 import medusa as app
 from medusa import db, failed_history, logger, name_cache, network_timezones
 from medusa.event_queue import Events
-from medusa.helper.encoding import ek
-from medusa.server.core import SRWebServer
+from medusa.server.core import AppWebServer
 from medusa.tv import TVShow
 
 import shutil_custom  # pylint: disable=import-error
@@ -138,7 +147,7 @@ class Application(object):
         Remove the Mako cache directory
         """
         try:
-            cache_folder = ek(os.path.join, app.CACHE_DIR, 'mako')
+            cache_folder = os.path.join(app.CACHE_DIR, 'mako')
             if os.path.isdir(cache_folder):
                 shutil.rmtree(cache_folder)
         except Exception:  # pylint: disable=broad-except
@@ -160,9 +169,9 @@ class Application(object):
         Start Application
         """
         # do some preliminary stuff
-        app.MY_FULLNAME = ek(os.path.normpath, ek(os.path.abspath, __file__))
-        app.MY_NAME = ek(os.path.basename, app.MY_FULLNAME)
-        app.PROG_DIR = ek(os.path.dirname, app.MY_FULLNAME)
+        app.MY_FULLNAME = os.path.normpath(os.path.abspath(__file__))
+        app.MY_NAME = os.path.basename(app.MY_FULLNAME)
+        app.PROG_DIR = os.path.dirname(app.MY_FULLNAME)
         app.DATA_DIR = app.PROG_DIR
         app.MY_ARGS = args
 
@@ -240,28 +249,31 @@ class Application(object):
                 self.pid_file = str(value)
 
                 # If the pid file already exists, Medusa may still be running, so exit
-                if ek(os.path.exists, self.pid_file):
+                if os.path.exists(self.pid_file):
                     sys.exit('PID file: %s already exists. Exiting.' % self.pid_file)
 
             # Specify folder to load the config file from
             if option in ('--config',):
-                app.CONFIG_FILE = ek(os.path.abspath, value)
+                app.CONFIG_FILE = os.path.abspath(value)
 
             # Specify folder to use as the data directory
             if option in ('--datadir',):
-                app.DATA_DIR = ek(os.path.abspath, value)
+                app.DATA_DIR = os.path.abspath(value)
 
             # Prevent resizing of the banner/posters even if PIL is installed
             if option in ('--noresize',):
                 app.NO_RESIZE = True
 
+        # Keep backwards compatibility
+        Application.backwards_compatibility()
+
         # The pid file is only useful in daemon mode, make sure we can write the file properly
         if self.create_pid:
             if self.run_as_daemon:
-                pid_dir = ek(os.path.dirname, self.pid_file)
-                if not ek(os.access, pid_dir, os.F_OK):
+                pid_dir = os.path.dirname(self.pid_file)
+                if not os.access(pid_dir, os.F_OK):
                     sys.exit('PID dir: %s doesn\'t exist. Exiting.' % pid_dir)
-                if not ek(os.access, pid_dir, os.W_OK):
+                if not os.access(pid_dir, os.W_OK):
                     sys.exit('PID dir: %s must be writable (write permissions). Exiting.' % pid_dir)
 
             else:
@@ -272,37 +284,37 @@ class Application(object):
 
         # If they don't specify a config file then put it in the data dir
         if not app.CONFIG_FILE:
-            app.CONFIG_FILE = ek(os.path.join, app.DATA_DIR, 'config.ini')
+            app.CONFIG_FILE = os.path.join(app.DATA_DIR, 'config.ini')
 
         # Make sure that we can create the data dir
-        if not ek(os.access, app.DATA_DIR, os.F_OK):
+        if not os.access(app.DATA_DIR, os.F_OK):
             try:
-                ek(os.makedirs, app.DATA_DIR, 0o744)
+                os.makedirs(app.DATA_DIR, 0o744)
             except os.error:
                 raise SystemExit('Unable to create data directory: %s' % app.DATA_DIR)
 
         # Make sure we can write to the data dir
-        if not ek(os.access, app.DATA_DIR, os.W_OK):
+        if not os.access(app.DATA_DIR, os.W_OK):
             raise SystemExit('Data directory must be writeable: %s' % app.DATA_DIR)
 
         # Make sure we can write to the config file
-        if not ek(os.access, app.CONFIG_FILE, os.W_OK):
-            if ek(os.path.isfile, app.CONFIG_FILE):
+        if not os.access(app.CONFIG_FILE, os.W_OK):
+            if os.path.isfile(app.CONFIG_FILE):
                 raise SystemExit('Config file must be writeable: %s' % app.CONFIG_FILE)
-            elif not ek(os.access, ek(os.path.dirname, app.CONFIG_FILE), os.W_OK):
-                raise SystemExit('Config file root dir must be writeable: %s' % ek(os.path.dirname, app.CONFIG_FILE))
+            elif not os.access(os.path.dirname(app.CONFIG_FILE), os.W_OK):
+                raise SystemExit('Config file root dir must be writeable: %s' % os.path.dirname(app.CONFIG_FILE))
 
-        ek(os.chdir, app.DATA_DIR)
+        os.chdir(app.DATA_DIR)
 
         # Check if we need to perform a restore first
-        restore_dir = ek(os.path.join, app.DATA_DIR, 'restore')
-        if ek(os.path.exists, restore_dir):
+        restore_dir = os.path.join(app.DATA_DIR, 'restore')
+        if os.path.exists(restore_dir):
             success = self.restore_db(restore_dir, app.DATA_DIR)
             if self.console_logging:
                 sys.stdout.write('Restore: restoring DB and config.ini %s!\n' % ('FAILED', 'SUCCESSFUL')[success])
 
         # Load the config and publish it to the application package
-        if self.console_logging and not ek(os.path.isfile, app.CONFIG_FILE):
+        if self.console_logging and not os.path.isfile(app.CONFIG_FILE):
             sys.stdout.write('Unable to find %s, all settings will be default!\n' % app.CONFIG_FILE)
 
         app.CFG = ConfigObj(app.CONFIG_FILE)
@@ -346,19 +358,19 @@ class Application(object):
         self.web_options = {
             'port': int(self.start_port),
             'host': self.web_host,
-            'data_root': ek(os.path.join, app.PROG_DIR, 'gui', app.GUI_NAME),
+            'data_root': os.path.join(app.PROG_DIR, 'static'),
             'web_root': app.WEB_ROOT,
             'log_dir': self.log_dir,
             'username': app.WEB_USERNAME,
             'password': app.WEB_PASSWORD,
             'enable_https': app.ENABLE_HTTPS,
             'handle_reverse_proxy': app.HANDLE_REVERSE_PROXY,
-            'https_cert': ek(os.path.join, app.PROG_DIR, app.HTTPS_CERT),
-            'https_key': ek(os.path.join, app.PROG_DIR, app.HTTPS_KEY),
+            'https_cert': os.path.join(app.PROG_DIR, app.HTTPS_CERT),
+            'https_key': os.path.join(app.PROG_DIR, app.HTTPS_KEY),
         }
 
         # start web server
-        self.web_server = SRWebServer(self.web_options)
+        self.web_server = AppWebServer(self.web_options)
         self.web_server.start()
 
         # Fire up all our threads
@@ -384,6 +396,25 @@ class Application(object):
         # main loop
         while True:
             time.sleep(1)
+
+    @staticmethod
+    def backwards_compatibility():
+        if os.path.isdir(app.DATA_DIR):
+            cwd = os.getcwd() if os.path.isabs(app.DATA_DIR) else ''
+            backup_re = re.compile(r'[^\d]+(?P<suffix>-\d{14}\.zip)')
+            for filename in os.listdir(app.DATA_DIR):
+                # Rename database file
+                if filename.startswith(app.LEGACY_DB) and not any(f.startswith(app.APPLICATION_DB) for f in os.listdir(app.DATA_DIR)):
+                    new_file = os.path.join(cwd, app.DATA_DIR, app.APPLICATION_DB + filename[len(app.LEGACY_DB):])
+                    os.rename(os.path.join(cwd, app.DATA_DIR, filename), new_file)
+                    continue
+
+                # Rename old backups
+                match = backup_re.match(filename)
+                if match:
+                    new_file = os.path.join(cwd, app.DATA_DIR, app.BACKUP_FILENAME_PREFIX + match.group('suffix'))
+                    os.rename(os.path.join(cwd, app.DATA_DIR, filename), new_file)
+                    continue
 
     def daemonize(self):
         """
@@ -455,8 +486,8 @@ class Application(object):
         :return:
         """
         try:
-            if ek(os.path.exists, pid_file):
-                ek(os.remove, pid_file)
+            if os.path.exists(pid_file):
+                os.remove(pid_file)
         except EnvironmentError:
             return False
 
@@ -496,10 +527,10 @@ class Application(object):
             files_list = [app.APPLICATION_DB, app.CONFIG_INI, app.FAILED_DB, app.CACHE_DB]
 
             for filename in files_list:
-                src_file = ek(os.path.join, src_dir, filename)
-                dst_file = ek(os.path.join, dst_dir, filename)
-                bak_file = ek(os.path.join, dst_dir, '%s.bak-%s' % (filename, datetime.datetime.now().strftime('%Y%m%d_%H%M%S')))
-                if ek(os.path.isfile, dst_file):
+                src_file = os.path.join(src_dir, filename)
+                dst_file = os.path.join(dst_dir, filename)
+                bak_file = os.path.join(dst_dir, '%s.bak-%s' % (filename, datetime.datetime.now().strftime('%Y%m%d_%H%M%S')))
+                if os.path.isfile(dst_file):
                     shutil.move(dst_file, bak_file)
                 shutil.move(src_file, dst_file)
             return True

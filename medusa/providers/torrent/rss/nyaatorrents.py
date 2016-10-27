@@ -83,11 +83,17 @@ class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
+                    if self.confirmed:
+                        logger.log('Searching only confirmed torrents', logger.DEBUG)
 
                     search_params['term'] = search_string
-                data = self.cache.getRSSFeed(self.url, params=search_params)['entries']
+                data = self.cache.getRSSFeed(self.url, params=search_params)
                 if not data:
                     logger.log('No data returned from provider', logger.DEBUG)
+                    continue
+                if not data['entries']:
+                    logger.log('Data returned from provider does not contain any {0}torrents'.format(
+                               'confirmed ' if self.confirmed else ''), logger.DEBUG)
                     continue
 
                 results += self.parse(data, mode)
@@ -106,7 +112,7 @@ class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
 
         items = []
 
-        for result in data:
+        for result in data['entries']:
             try:
                 title = result['title']
                 download_url = result['link']

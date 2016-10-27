@@ -19,7 +19,6 @@
 from os.path import join
 
 from .GenericMedia import GenericMedia
-from ..helper.encoding import ek
 
 
 class ShowNetworkLogo(GenericMedia):
@@ -34,6 +33,6 @@ class ShowNetworkLogo(GenericMedia):
         show = self.get_show()
 
         if show:
-            return ek(join, self.get_media_root(), 'images', 'network', show.network_logo_name + '.png')
+            return join(self.get_media_root(), 'images', 'network', show.network_logo_name + '.png')
 
         return ''

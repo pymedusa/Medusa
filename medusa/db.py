@@ -27,7 +27,6 @@ import warnings
 import medusa as app
 from six import text_type
 from . import logger
-from .helper.encoding import ek
 from .helper.exceptions import ex
 
 db_cons = {}
@@ -45,7 +44,7 @@ def dbFilename(filename=None, suffix=None):
     filename = filename or app.APPLICATION_DB
     if suffix:
         filename = "%s.%s" % (filename, suffix)
-    return ek(os.path.join, app.DATA_DIR, filename)
+    return os.path.join(app.DATA_DIR, filename)
 
 
 class DBConnection(object):
@@ -127,13 +126,16 @@ class DBConnection(object):
 
     def checkDBVersion(self):
         """
-        Fetch major database version
+        Fetch major and minor database version
 
         :return: Integer indicating current DB major version
         """
         if self.hasColumn('db_version', 'db_minor_version'):
             warnings.warn('Deprecated: Use the version property', DeprecationWarning)
-        return self.check_db_major_version(), self.check_db_minor_version()
+        db_minor_version = self.check_db_minor_version()
+        if db_minor_version is None:
+            db_minor_version = 0
+        return self.check_db_major_version(), db_minor_version
 
     def check_db_major_version(self):
         """

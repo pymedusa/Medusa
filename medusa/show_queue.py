@@ -21,12 +21,12 @@ import traceback
 
 from imdb import _exceptions as imdb_exceptions
 import medusa as app
+from six import binary_type, text_type
 from traktor import TraktApi, TraktException
 from . import generic_queue, logger, name_cache, notifiers, scene_numbering, ui
 from .blackandwhitelist import BlackAndWhiteList
 from .common import WANTED
 from .helper.common import episode_num, sanitize_filename
-from .helper.encoding import ek
 from .helper.exceptions import (
     CantRefreshShowException, CantRemoveShowException, CantUpdateShowException,
     EpisodeDeletedException, MultipleShowObjectsException, ShowDirectoryNotFoundException, ex
@@ -267,8 +267,8 @@ class QueueItemAdd(ShowQueueItem):
     def __init__(self, indexer, indexer_id, showDir, default_status, quality, flatten_folders, lang, subtitles, anime,
                  scene, paused, blacklist, whitelist, default_status_after, root_dir):
 
-        if isinstance(showDir, str):
-            self.showDir = showDir.decode('utf-8')
+        if isinstance(showDir, binary_type):
+            self.showDir = text_type(showDir, 'utf-8')
         else:
             self.showDir = showDir
 
@@ -339,7 +339,7 @@ class QueueItemAdd(ShowQueueItem):
             if not self.showDir and self.root_dir:
                 show_name = get_showname_from_indexer(self.indexer, self.indexer_id, self.lang)
                 if show_name:
-                    self.showDir = ek(os.path.join, self.root_dir, sanitize_filename(show_name))
+                    self.showDir = os.path.join(self.root_dir, sanitize_filename(show_name))
                     dir_exists = makeDir(self.showDir)
                     if not dir_exists:
                         logger.log(u"Unable to create the folder {0}, can't add the show".format(self.showDir))

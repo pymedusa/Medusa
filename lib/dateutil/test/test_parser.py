@@ -7,7 +7,9 @@ from datetime import datetime, timedelta, date
 from dateutil.tz import tzoffset
 from dateutil.parser import *
 
+import six
 from six import assertRaisesRegex, PY3
+from six.moves import StringIO
 
 class ParserTest(unittest.TestCase):
 
@@ -29,6 +31,74 @@ class ParserTest(unittest.TestCase):
     def testEmptyString(self):
         with self.assertRaises(ValueError):
             parse('')
+
+    def testNone(self):
+        with self.assertRaises(TypeError):
+            parse(None)
+
+    def testInvalidType(self):
+        with self.assertRaises(TypeError):
+            parse(13)
+
+    def testDuckTyping(self):
+        # We want to support arbitrary classes that implement the stream
+        # interface.
+
+        class StringPassThrough(object):
+            def __init__(self, stream):
+                self.stream = stream
+
+            def read(self, *args, **kwargs):
+                return self.stream.read(*args, **kwargs)
+
+
+        dstr = StringPassThrough(StringIO('2014 January 19'))
+
+        self.assertEqual(parse(dstr), datetime(2014, 1, 19))
+
+    def testParseStream(self):
+        dstr = StringIO('2014 January 19')
+
+        self.assertEqual(parse(dstr), datetime(2014, 1, 19))
+
+    def testParseStr(self):
+        self.assertEqual(parse(self.str_str),
+                         parse(self.uni_str))
+
+    def testParserParseStr(self):
+        from dateutil.parser import parser
+
+        self.assertEqual(parser().parse(self.str_str),
+                         parser().parse(self.uni_str))
+
+    def testParseUnicodeWords(self):
+
+        class rus_parserinfo(parserinfo):
+            MONTHS = [("янв", "Январь"),
+                      ("фев", "Февраль"),
+                      ("мар", "Март"),
+                      ("апр", "Апрель"),
+                      ("май", "Май"),
+                      ("июн", "Июнь"),
+                      ("июл", "Июль"),
+                      ("авг", "Август"),
+                      ("сен", "Сентябрь"),
+                      ("окт", "Октябрь"),
+                      ("ноя", "Ноябрь"),
+                      ("дек", "Декабрь")]
+
+        self.assertEqual(parse('10 Сентябрь 2015 10:20',
+                               parserinfo=rus_parserinfo()),
+                         datetime(2015, 9, 10, 10, 20))
+
+    def testParseWithNulls(self):
+        # This relies on the from __future__ import unicode_literals, because
+        # explicitly specifying a unicode literal is a syntax error in Py 3.2
+        # May want to switch to u'...' if we ever drop Python 3.2 support.
+        pstring = '\x00\x00August 29, 1924'
+
+        self.assertEqual(parse(pstring),
+                         datetime(1924, 8, 29))
 
     def testDateCommandFormat(self):
         self.assertEqual(parse("Thu Sep 25 10:36:28 BRST 2003",
@@ -738,42 +808,54 @@ class ParserTest(unittest.TestCase):
         dt = myparser.parse("01/Foo/2007")
         self.assertEqual(dt, datetime(2007, 1, 1))
 
-    def testParseStr(self):
-        self.assertEqual(parse(self.str_str),
-                         parse(self.uni_str))
+    def testNoYearFirstNoDayFirst(self):
+        dtstr = '090107'
 
-    def testParserParseStr(self):
-        from dateutil.parser import parser
+        # Should be MMDDYY
+        self.assertEqual(parse(dtstr),
+                         datetime(2007, 9, 1))
 
-        self.assertEqual(parser().parse(self.str_str),
-                         parser().parse(self.uni_str))
+        self.assertEqual(parse(dtstr, yearfirst=False, dayfirst=False),
+                         datetime(2007, 9, 1))
 
-    def testParseUnicodeWords(self):
+    def testYearFirst(self):
+        dtstr = '090107'
 
-        class rus_parserinfo(parserinfo):
-            MONTHS = [("янв", "Январь"),
-                      ("фев", "Февраль"),
-                      ("мар", "Март"),
-                      ("апр", "Апрель"),
-                      ("май", "Май"),
-                      ("июн", "Июнь"),
-                      ("июл", "Июль"),
-                      ("авг", "Август"),
-                      ("сен", "Сентябрь"),
-                      ("окт", "Октябрь"),
-                      ("ноя", "Ноябрь"),
-                      ("дек", "Декабрь")]
+        # Should be MMDDYY
+        self.assertEqual(parse(dtstr, yearfirst=True),
+                         datetime(2009, 1, 7))
 
-        self.assertEqual(parse('10 Сентябрь 2015 10:20',
-                               parserinfo=rus_parserinfo()),
-                         datetime(2015, 9, 10, 10, 20))
+        self.assertEqual(parse(dtstr, yearfirst=True, dayfirst=False),
+                         datetime(2009, 1, 7))
 
-    def testParseWithNulls(self):
-        # This relies on the from __future__ import unicode_literals, because
-        # explicitly specifying a unicode literal is a syntax error in Py 3.2
-        # May want to switch to u'...' if we ever drop Python 3.2 support.
-        pstring = '\x00\x00August 29, 1924'
+    def testDayFirst(self):
+        dtstr = '090107'
 
-        self.assertEqual(parse(pstring),
-                         datetime(1924, 8, 29))
+        # Should be DDMMYY
+        self.assertEqual(parse(dtstr, dayfirst=True),
+                         datetime(2007, 1, 9))
+
+        self.assertEqual(parse(dtstr, yearfirst=False, dayfirst=True),
+                         datetime(2007, 1, 9))
+
+    def testDayFirstYearFirst(self):
+        dtstr = '090107'
+        # Should be YYDDMM
+        self.assertEqual(parse(dtstr, yearfirst=True, dayfirst=True),
+                         datetime(2009, 7, 1))
+
+    def testUnambiguousYearFirst(self):
+        dtstr = '2015 09 25'
+        self.assertEqual(parse(dtstr, yearfirst=True),
+                         datetime(2015, 9, 25))
+
+    def testUnambiguousDayFirst(self):
+        dtstr = '2015 09 25'
+        self.assertEqual(parse(dtstr, dayfirst=True), 
+                         datetime(2015, 9, 25))
+
+    def testUnambiguousDayFirstYearFirst(self):
+        dtstr = '2015 09 25'
+        self.assertEqual(parse(dtstr, dayfirst=True, yearfirst=True),
+                         datetime(2015, 9, 25))
 

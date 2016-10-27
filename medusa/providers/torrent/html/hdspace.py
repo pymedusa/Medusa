@@ -25,17 +25,18 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..TorrentProvider import TorrentProvider
 from .... import logger, tvcache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """HDSpace Torrent provider"""
-    def __init__(self):
+class HDSpaceProvider(TorrentProvider):
+    """HDSpace Torrent provider."""
 
-        # Provider Init
+    def __init__(self):
+        """Provider Init."""
         TorrentProvider.__init__(self, 'HDSpace')
 
         # Credentials
@@ -60,9 +61,9 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # Cache
         self.cache = tvcache.TVCache(self, min_time=10)  # only poll HDSpace every 10 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -119,7 +120,6 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -139,14 +139,15 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     continue
 
                 try:
-                    dl_href = row.find('a', attrs={'href': re.compile(r'download.php.*')})['href']
-                    title = re.search('f=(.*).torrent', dl_href).group(1).replace('+', '.')
+                    title = row.find('td', class_='lista', attrs={'align': 'left'}).find('a').get_text()
+                    dl_href = row.find('td', class_='lista', attrs={'width': '20',
+                                       'style': 'text-align: center;'}).find('a').get('href')
                     download_url = urljoin(self.url, dl_href)
-                    if not all([title, download_url]):
+                    if not all([title, dl_href]):
                         continue
 
-                    seeders = try_int(row.find('span', attrs={'class': 'seedy'}).find('a').text, 1)
-                    leechers = try_int(row.find('span', attrs={'class': 'leechy'}).find('a').text, 0)
+                    seeders = try_int(row.find('span', class_='seedy').find('a').get_text(), 1)
+                    leechers = try_int(row.find('span', class_='leechy').find('a').get_text())
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -156,7 +157,7 @@ class HDSpaceProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = re.match(r'.*?([0-9]+,?\.?[0-9]* [KkMmGg]+[Bb]+).*', str(row), re.DOTALL).group(1)
+                    torrent_size = row.find('td', class_='lista222', attrs={'width': '100%'}).get_text()
                     size = convert_size(torrent_size) or -1
 
                     item = {

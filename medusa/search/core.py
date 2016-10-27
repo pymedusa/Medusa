@@ -29,7 +29,6 @@ import requests
 from .. import clients, common, db, failed_history, helpers, history, logger, notifiers, nzbSplitter, nzbget, sab, show_name_helpers, ui
 from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 from ..helper.common import enabled_providers, episode_num
-from ..helper.encoding import ek
 from ..helper.exceptions import AuthException, ex
 from ..providers.GenericProvider import GenericProvider
 
@@ -53,7 +52,7 @@ def _downloadResult(result):
     elif result.resultType == "nzbdata":
 
         # get the final file path to the nzb
-        fileName = ek(os.path.join, app.NZB_DIR, result.name + ".nzb")
+        fileName = os.path.join(app.NZB_DIR, result.name + ".nzb")
 
         logger.log(u"Saving NZB to " + fileName)
 
@@ -61,7 +60,7 @@ def _downloadResult(result):
 
         # save the data to disk
         try:
-            with ek(open, fileName, 'w') as fileOut:
+            with open(fileName, 'w') as fileOut:
                 fileOut.write(result.extraInfo[0])
 
             helpers.chmodAsParent(fileName)
@@ -156,17 +155,28 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
                 curEpObj.status = Quality.compositeStatus(SNATCHED_BEST, result.quality)
             else:
                 curEpObj.status = Quality.compositeStatus(endStatus, result.quality)
-            # Reset all others fields to a "snatch" status
+            # Reset all others fields to the "snatched" status
+            # New snatch by default doesn't have nfo/tbn
             curEpObj.hasnfo = False
             curEpObj.hastbn = False
-            curEpObj.location = ''
+
+            # We can't reset location because we need to know what we are replacing
+            # curEpObj.location = ''
+
+            # Size and release name are fetched in PP (only for downloaded status, not snatched)
             curEpObj.file_size = 0
             curEpObj.release_name = ''
+
+            # Need to reset subtitle settings because it's a different file
             curEpObj.subtitles = list()
             curEpObj.subtitles_searchcount = 0
             curEpObj.subtitles_lastsearch = '0001-01-01 00:00:00'
+
+            # Need to store the correct is_proper. Not use the old one
             curEpObj.is_proper = True if result.proper_tags else False
             curEpObj.version = 0
+
+            # Release group is parsed in PP
             curEpObj.release_group = ''
 
             sql_l.append(curEpObj.get_sql())

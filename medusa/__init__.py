@@ -32,7 +32,7 @@ from configobj import ConfigObj
 import requests
 import shutil_custom
 from . import (
-    app, auto_postprocessor, db, helpers, logger, metadata, naming, providers,
+    app, auto_postprocessor, cache, db, helpers, logger, metadata, naming, providers,
     scheduler, showUpdater, show_queue, subtitles, traktChecker, versionChecker
 )
 from .common import SD, SKIPPED, WANTED
@@ -43,7 +43,6 @@ from .config import (
 from .databases import cache_db, failed_db, main_db
 from .github_client import authenticate
 from .helper import exceptions
-from .helper.encoding import ek
 from .indexers import indexer_api
 from .indexers.indexer_exceptions import (
     indexer_attributenotfound, indexer_episodenotfound, indexer_error, indexer_exception,
@@ -68,27 +67,32 @@ ex = exceptions.ex
 # Fixed values
 __title__ = __name__
 SRC_FOLDER = __name__
-LEGACY_SRC_FOLDERS = ('sickbeard', 'sickrage')
+LEGACY_SRC_FOLDERS = ('sickbeard', 'sickrage', 'gui')
 LIB_FOLDER = 'lib'
-UNKNOWN_RELEASE_GROUP = 'SickRage'
-BACKUP_FILENAME = 'sickrage-{timestamp}.zip'
-APPLICATION_DB = 'sickbeard.db'
+STATIC_FOLDER = 'static'
+UNKNOWN_RELEASE_GROUP = 'Medusa'
+BACKUP_DIR = 'backup'
+BACKUP_FILENAME_PREFIX = 'backup'
+BACKUP_FILENAME = BACKUP_FILENAME_PREFIX + '-{timestamp}.zip'
+LEGACY_DB = 'sickbeard.db'
+APPLICATION_DB = 'main.db'
 FAILED_DB = 'failed.db'
 CACHE_DB = 'cache.db'
-LOG_FILENAME = 'sickrage.log'
+LOG_FILENAME = 'application.log'
 CONFIG_INI = 'config.ini'
 GIT_ORG = 'pymedusa'
-GIT_REPO = 'SickRage'
-CHANGES_URL = 'https://cdn.pymedusa.com/sickrage-news/CHANGES.md'
-APPLICATION_URL = 'https://github.com/PyMedusa/SickRage'
+GIT_REPO = 'Medusa'
+CHANGES_URL = 'https://cdn.pymedusa.com/news/CHANGES.md'
+APPLICATION_URL = 'https://github.com/{org}/{repo}'.format(org=GIT_ORG, repo=GIT_REPO)
 DONATIONS_URL = '{0}/wiki/Donations'.format(APPLICATION_URL)
 WIKI_URL = '{0}/wiki'.format(APPLICATION_URL)
-GITHUB_IO_URL = 'http://github.com/PyMedusa/sickrage.github.io/'
+GITHUB_IO_URL = 'http://github.com/pymedusa/medusa.github.io/'
 EXTRA_SCRIPTS_URL = '{0}/wiki/Post-Processing#extra-scripts'.format(APPLICATION_URL)
 SUBTITLES_URL = '{0}/wiki/Subtitle%20Scripts'.format(APPLICATION_URL)
+# TODO: create an app in pushover
 PUSHOVER_URL = 'https://pushover.net/apps/clone/sickrage'
-RARBG_APPID = 'sickrage2'
-SECURE_TOKEN = 'sickrage_user'
+RARBG_APPID = 'medusa'
+SECURE_TOKEN = 'medusa_user'
 
 PID = None
 CFG = None
@@ -157,7 +161,7 @@ GIT_PASSWORD = None
 GIT_PATH = None
 DEVELOPER = False
 
-NEWS_URL = 'https://cdn.pymedusa.com/sickrage-news/news.md'
+NEWS_URL = 'https://cdn.pymedusa.com/news/news.md'
 LOGO_URL = 'https://cdn.pymedusa.com/images/ico/favicon-64.png'
 
 NEWS_LAST_READ = None
@@ -534,7 +538,6 @@ EMAIL_FROM = None
 EMAIL_LIST = None
 EMAIL_SUBJECT = None
 
-GUI_NAME = None
 HOME_LAYOUT = None
 HISTORY_LAYOUT = None
 HISTORY_LIMIT = 0
@@ -628,6 +631,8 @@ NEWZNAB_DATA = None
 
 RECENTLY_DELETED = set()
 
+RELEASES_IN_PP = []
+
 PRIVACY_LEVEL = 'normal'
 
 
@@ -674,7 +679,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             USE_EMAIL, EMAIL_HOST, EMAIL_PORT, EMAIL_TLS, EMAIL_USER, EMAIL_PASSWORD, EMAIL_FROM, EMAIL_NOTIFY_ONSNATCH, EMAIL_NOTIFY_ONDOWNLOAD, EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD, EMAIL_LIST, EMAIL_SUBJECT, \
             USE_LISTVIEW, METADATA_KODI, METADATA_KODI_12PLUS, METADATA_MEDIABROWSER, METADATA_PS3, metadata_provider_dict, \
             NEWZBIN, NEWZBIN_USERNAME, NEWZBIN_PASSWORD, GIT_PATH, MOVE_ASSOCIATED_FILES, SYNC_FILES, POSTPONE_IF_SYNC_FILES, POSTPONE_IF_NO_SUBS, dailySearchScheduler, NFO_RENAME, \
-            GUI_NAME, HOME_LAYOUT, HISTORY_LAYOUT, DISPLAY_SHOW_SPECIALS, COMING_EPS_LAYOUT, COMING_EPS_SORT, COMING_EPS_DISPLAY_PAUSED, COMING_EPS_MISSED_RANGE, FUZZY_DATING, TRIM_ZERO, DATE_PRESET, TIME_PRESET, TIME_PRESET_W_SECONDS, THEME_NAME, \
+            HOME_LAYOUT, HISTORY_LAYOUT, DISPLAY_SHOW_SPECIALS, COMING_EPS_LAYOUT, COMING_EPS_SORT, COMING_EPS_DISPLAY_PAUSED, COMING_EPS_MISSED_RANGE, FUZZY_DATING, TRIM_ZERO, DATE_PRESET, TIME_PRESET, TIME_PRESET_W_SECONDS, THEME_NAME, \
             POSTER_SORTBY, POSTER_SORTDIR, HISTORY_LIMIT, CREATE_MISSING_SHOW_DIRS, ADD_SHOWS_WO_DIR, \
             METADATA_WDTV, METADATA_TIVO, METADATA_MEDE8ER, IGNORE_WORDS, PREFERRED_WORDS, UNDESIRED_WORDS, TRACKERS_LIST, IGNORED_SUBS_LIST, REQUIRE_WORDS, CALENDAR_UNPROTECTED, CALENDAR_ICONS, NO_RESTART, IGNORE_UND_SUBS, \
             USE_SUBTITLES, SUBTITLES_LANGUAGES, SUBTITLES_DIR, SUBTITLES_SERVICES_LIST, SUBTITLES_SERVICES_ENABLED, SUBTITLES_HISTORY, SUBTITLES_FINDER_FREQUENCY, SUBTITLES_MULTI, SUBTITLES_KEEP_ONLY_WANTED, EMBEDDED_SUBTITLES_ALL, SUBTITLES_EXTRA_SCRIPTS, SUBTITLES_PRE_SCRIPTS, SUBTITLES_PERFECT_MATCH, subtitlesFinderScheduler, EMBEDDED_SUBTITLES_UNKNOWN_LANG, SUBTITLES_STOP_AT_FIRST, \
@@ -684,7 +689,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             ANIME_DEFAULT, NAMING_ANIME, ANIMESUPPORT, USE_ANIDB, ANIDB_USERNAME, ANIDB_PASSWORD, ANIDB_USE_MYLIST, \
             ANIME_SPLIT_HOME, SCENE_DEFAULT, DOWNLOAD_URL, BACKLOG_DAYS, GIT_USERNAME, GIT_PASSWORD, \
             DEVELOPER, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, BROKEN_PROVIDERS, SOCKET_TIMEOUT, RECENTLY_DELETED, \
-            FANART_BACKGROUND, FANART_BACKGROUND_OPACITY, GIT_REMOTE_BRANCHES
+            FANART_BACKGROUND, FANART_BACKGROUND_OPACITY, GIT_REMOTE_BRANCHES, RELEASES_IN_PP
 
         if __INITIALIZED__:
             return False
@@ -718,7 +723,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         SEEDERS_LEECHERS_IN_NOTIFY = check_setting_int(CFG, 'General', 'seeders_leechers_in_notify', 1)
         ACTUAL_LOG_DIR = check_setting_str(CFG, 'General', 'log_dir', 'Logs')
-        LOG_DIR = ek(os.path.normpath, ek(os.path.join, DATA_DIR, ACTUAL_LOG_DIR))
+        LOG_DIR = os.path.normpath(os.path.join(DATA_DIR, ACTUAL_LOG_DIR))
         LOG_NR = check_setting_int(CFG, 'General', 'log_nr', 5)  # Default to 5 backup file (application.log.x)
         LOG_SIZE = check_setting_float(CFG, 'General', 'log_size', 10.0)  # Default to max 10MB per logfile
 
@@ -730,6 +735,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             sys.exit(7)
 
         # init logging
+        logger.backwards_compatibility()
         logger.init_logging(console_logging=consoleLogging)
 
         # git reset on update
@@ -743,11 +749,16 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # git_remote
         GIT_REMOTE = check_setting_str(CFG, 'General', 'git_remote', 'origin')
-        GIT_REMOTE_URL = check_setting_str(CFG, 'General', 'git_remote_url',
-                                           'https://github.com/%s/%s.git' % (GIT_ORG, GIT_REPO))
+        GIT_REMOTE_URL = check_setting_str(CFG, 'General', 'git_remote_url', APPLICATION_URL)
 
-        if 'com/sickrage' in GIT_REMOTE_URL.lower():
-            GIT_REMOTE_URL = 'https://github.com/PyMedusa/SickRage.git'
+        repo_url_re = re.compile(r'(?P<prefix>(?:git@github\.com:)|(?:https://github\.com/))(?P<org>\w+)/(?P<repo>\w+)\.git')
+        m = repo_url_re.match(GIT_REMOTE_URL)
+        if m:
+            groups = m.groupdict()
+            if groups['org'].lower() != GIT_ORG.lower() or groups['repo'].lower() != GIT_REPO.lower():
+                GIT_REMOTE_URL = groups['prefix'] + GIT_ORG + '/' + GIT_REPO + '.git'
+        else:
+            GIT_REMOTE_URL = APPLICATION_URL
 
         # current commit hash
         CUR_COMMIT_HASH = check_setting_str(CFG, 'General', 'cur_commit_hash', '')
@@ -761,8 +772,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             ACTUAL_CACHE_DIR = 'cache'
 
         # unless they specify, put the cache dir inside the data dir
-        if not ek(os.path.isabs, ACTUAL_CACHE_DIR):
-            CACHE_DIR = ek(os.path.join, DATA_DIR, ACTUAL_CACHE_DIR)
+        if not os.path.isabs(ACTUAL_CACHE_DIR):
+            CACHE_DIR = os.path.join(DATA_DIR, ACTUAL_CACHE_DIR)
         else:
             CACHE_DIR = ACTUAL_CACHE_DIR
 
@@ -772,11 +783,10 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # Check if we need to perform a restore of the cache folder
         restore_cache_folder(CACHE_DIR)
+        cache.configure(CACHE_DIR)
 
         FANART_BACKGROUND = bool(check_setting_int(CFG, 'GUI', 'fanart_background', 1))
         FANART_BACKGROUND_OPACITY = check_setting_float(CFG, 'GUI', 'fanart_background_opacity', 0.4)
-
-        GUI_NAME = check_setting_str(CFG, 'GUI', 'gui_name', 'slick')
 
         THEME_NAME = check_setting_str(CFG, 'GUI', 'theme_name', 'dark')
 
@@ -1116,7 +1126,13 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         TRAKT_REFRESH_TOKEN = check_setting_str(CFG, 'Trakt', 'trakt_refresh_token', '', censor_log='low')
         TRAKT_REMOVE_WATCHLIST = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_watchlist', 0))
         TRAKT_REMOVE_SERIESLIST = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_serieslist', 0))
-        TRAKT_REMOVE_SHOW_FROM_APPLICATION = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_sickrage', 0))
+
+        # Check if user has legacy setting and store value in new setting
+        if check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_sickrage', None) is not None:
+            TRAKT_REMOVE_SHOW_FROM_APPLICATION = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_sickrage', 0))
+        else:
+            TRAKT_REMOVE_SHOW_FROM_APPLICATION = bool(check_setting_int(CFG, 'Trakt', 'trakt_remove_show_from_application', 0))
+
         TRAKT_SYNC_WATCHLIST = bool(check_setting_int(CFG, 'Trakt', 'trakt_sync_watchlist', 0))
         TRAKT_METHOD_ADD = check_setting_int(CFG, 'Trakt', 'trakt_method_add', 0)
         TRAKT_START_PAUSED = bool(check_setting_int(CFG, 'Trakt', 'trakt_start_paused', 0))
@@ -1262,6 +1278,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         POSTER_SORTDIR = check_setting_int(CFG, 'GUI', 'poster_sortdir', 1)
         DISPLAY_ALL_SEASONS = bool(check_setting_int(CFG, 'General', 'display_all_seasons', 1))
         RECENTLY_DELETED = set()
+        RELEASES_IN_PP = []
         GIT_REMOTE_BRANCHES = []
         KODI_LIBRARY_CLEAN_PENDING = False
 
@@ -1315,7 +1332,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                 if provider.enable_cookies:
                     load_provider_setting(CFG, provider, 'string', 'cookies', '', censor_log='low')
 
-        if not ek(os.path.isfile, CONFIG_FILE):
+        if not os.path.isfile(CONFIG_FILE):
             logger.log(u"Unable to find '" + CONFIG_FILE + "', all settings will be default!", logger.DEBUG)
             save_config()
 
@@ -1445,31 +1462,31 @@ def restore_cache_folder(cache_folder):
     :param cache_folder:
     :type cache_folder: string
     """
-    restore_folder = ek(os.path.join, DATA_DIR, 'restore')
-    if not ek(os.path.exists, restore_folder) or not ek(os.path.exists, ek(os.path.join, restore_folder, 'cache')):
+    restore_folder = os.path.join(DATA_DIR, 'restore')
+    if not os.path.exists(restore_folder) or not os.path.exists(os.path.join(restore_folder, 'cache')):
         return
 
     try:
         def restore_cache(src_folder, dest_folder):
             def path_leaf(path):
-                head, tail = ek(os.path.split, path)
-                return tail or ek(os.path.basename, head)
+                head, tail = os.path.split(path)
+                return tail or os.path.basename(head)
 
             try:
-                if ek(os.path.isdir, dest_folder):
+                if os.path.isdir(dest_folder):
                     bak_filename = '{0}-{1}'.format(path_leaf(dest_folder), datetime.datetime.now().strftime('%Y%m%d_%H%M%S'))
-                    shutil.move(dest_folder, ek(os.path.join, ek(os.path.dirname, dest_folder), bak_filename))
+                    shutil.move(dest_folder, os.path.join(os.path.dirname(dest_folder), bak_filename))
 
                 shutil.move(src_folder, dest_folder)
                 logger.log(u"Restore: restoring cache successful", logger.INFO)
             except OSError as e:
                 logger.log(u"Restore: restoring cache failed: {0!r}".format(e), logger.ERROR)
 
-        restore_cache(ek(os.path.join, restore_folder, 'cache'), cache_folder)
+        restore_cache(os.path.join(restore_folder, 'cache'), cache_folder)
     finally:
         helpers.remove_folder(restore_folder)
         for name in ('mako', 'sessions', 'indexers', 'rss'):
-            folder_path = ek(os.path.join, cache_folder, name)
+            folder_path = os.path.join(cache_folder, name)
             helpers.remove_folder(folder_path)
 
 
@@ -1987,7 +2004,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['Trakt']['trakt_refresh_token'] = TRAKT_REFRESH_TOKEN
     new_config['Trakt']['trakt_remove_watchlist'] = int(TRAKT_REMOVE_WATCHLIST)
     new_config['Trakt']['trakt_remove_serieslist'] = int(TRAKT_REMOVE_SERIESLIST)
-    new_config['Trakt']['trakt_remove_show_from_sickrage'] = int(TRAKT_REMOVE_SHOW_FROM_APPLICATION)
+    new_config['Trakt']['trakt_remove_show_from_application'] = int(TRAKT_REMOVE_SHOW_FROM_APPLICATION)
     new_config['Trakt']['trakt_sync_watchlist'] = int(TRAKT_SYNC_WATCHLIST)
     new_config['Trakt']['trakt_method_add'] = int(TRAKT_METHOD_ADD)
     new_config['Trakt']['trakt_start_paused'] = int(TRAKT_START_PAUSED)
@@ -2052,7 +2069,6 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['TorrentRss']['torrentrss_data'] = '!!!'.join([x.config_string() for x in torrentRssProviderList])
 
     new_config['GUI'] = {}
-    new_config['GUI']['gui_name'] = GUI_NAME
     new_config['GUI']['theme_name'] = THEME_NAME
     new_config['GUI']['fanart_background'] = FANART_BACKGROUND
     new_config['GUI']['fanart_background_opacity'] = FANART_BACKGROUND_OPACITY

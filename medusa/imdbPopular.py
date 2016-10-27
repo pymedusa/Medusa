@@ -7,7 +7,6 @@ from datetime import date
 from bs4 import BeautifulSoup
 import medusa as app
 from . import helpers
-from .helper.encoding import ek
 
 
 class ImdbPopular(object):
@@ -47,8 +46,7 @@ class ImdbPopular(object):
             if image_div:
                 image = image_div.find('img')
                 show['image_url_large'] = self.change_size(image['loadlate'])
-                show['image_path'] = ek(posixpath.join, 'images', 'imdb_popular', ek(os.path.basename,
-                                                                                     show['image_url_large']))
+                show['image_path'] = posixpath.join('images', 'imdb_popular', os.path.basename(show['image_url_large']))
                 self.cache_image(show['image_url_large'])
 
             content_div = row.find('div', class_='lister-item-content')
@@ -104,14 +102,14 @@ class ImdbPopular(object):
 
         :param image_url: Image source URL
         """
-        path = ek(os.path.abspath, ek(os.path.join, app.CACHE_DIR, 'images', 'imdb_popular'))
+        path = os.path.abspath(os.path.join(app.CACHE_DIR, 'images', 'imdb_popular'))
 
-        if not ek(os.path.exists, path):
-            ek(os.makedirs, path)
+        if not os.path.exists(path):
+            os.makedirs(path)
 
-        full_path = ek(os.path.join, path, ek(os.path.basename, image_url))
+        full_path = os.path.join(path, os.path.basename(image_url))
 
-        if not ek(os.path.isfile, full_path):
+        if not os.path.isfile(full_path):
             helpers.download_file(image_url, full_path, session=self.session)
 
 

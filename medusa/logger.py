@@ -39,7 +39,6 @@ from tornado.log import access_log, app_log, gen_log
 import traktor
 from . import classes
 from .helper.common import dateTimeFormat
-from .helper.encoding import ek
 
 
 # log levels
@@ -128,10 +127,10 @@ def read_loglines(log_file=None, modification_time=None, max_lines=None, max_tra
     traceback_lines = []
     counter = 0
     for f in log_files:
-        if not f or not ek(os.path.isfile, f):
+        if not f or not os.path.isfile(f):
             continue
         if modification_time:
-            log_mtime = ek(os.path.getmtime, f)
+            log_mtime = os.path.getmtime(f)
             if log_mtime and datetime.datetime.fromtimestamp(log_mtime) < modification_time:
                 continue
 
@@ -184,7 +183,7 @@ def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
     :return:
     :rtype: collections.Iterable of str
     """
-    new_line = b'\n'
+    new_line = '\n'
     with io.open(filename, 'rb') as fh:
         segment = None
         offset = 0
@@ -194,6 +193,10 @@ def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
             offset = min(file_size, offset + buf_size)
             fh.seek(file_size - offset)
             buf = fh.read(min(remaining_size, buf_size))
+            if os.name == 'nt':
+                buf = buf.decode(sys.getfilesystemencoding())
+            if not isinstance(buf, text_type):
+                buf = text_type(buf, errors='replace')
             remaining_size -= buf_size
             lines = buf.split(new_line)
             # the first line of the buffer is probably not a complete line so
@@ -578,7 +581,7 @@ class Logger(object):
 
     def reconfigure_file_handler(self):
         """Reconfigure rotating file handler."""
-        target_file = ek(os.path.join, app.LOG_DIR, app.LOG_FILENAME)
+        target_file = os.path.join(app.LOG_DIR, app.LOG_FILENAME)
         target_size = int(app.LOG_SIZE * 1024 * 1024)
         target_number = int(app.LOG_NR)
         if not self.file_handler or self.log_file != target_file or self.file_handler.backupCount != target_number or self.file_handler.maxBytes != target_size:
@@ -773,6 +776,20 @@ def reconfigure():
     """Shortcut to reconfigure logging."""
     instance.reconfigure_levels()
     instance.reconfigure_file_handler()
+
+
+def backwards_compatibility():
+    """Keep backwards compatibility renaming old log files."""
+    log_re = re.compile(r'\w+\.log(?P<suffix>\.\d+)?')
+    cwd = os.getcwd() if os.path.isabs(app.DATA_DIR) else ''
+    for filename in os.listdir(app.LOG_DIR):
+        # Rename log files
+        match = log_re.match(filename)
+        if match:
+            new_file = os.path.join(cwd, app.LOG_DIR, app.LOG_FILENAME + (match.group('suffix') or ''))
+            if not any(f.startswith(os.path.basename(filename)) for f in os.listdir(app.LOG_DIR)):
+                os.rename(os.path.join(cwd, app.LOG_DIR, filename), new_file)
+            continue
 
 
 # Keeps the standard logging.getLogger to be used by SylteAdapter

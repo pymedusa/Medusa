@@ -1,4 +1,3 @@
-# coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
 
 #
@@ -17,35 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-from os import name
-
 from chardet import detect
 import medusa as app
 from six import text_type
-
-
-def ek(function, *args, **kwargs):
-    """
-    Encoding Kludge: Call function with arguments and unicode-encode output
-
-    :param function:  Function to call
-    :param args:  Arguments for function
-    :param kwargs:  Arguments for function
-    :return: Unicode-converted function output (string, list or tuple, depends on input)
-    """
-
-    if name == 'nt':
-        result = function(*args, **kwargs)
-    else:
-        result = function(*[ss(x) if isinstance(x, (str, text_type)) else x for x in args], **kwargs)
-
-    if isinstance(result, (list, tuple)):
-        return _fix_list_encoding(result)
-
-    if isinstance(result, str):
-        return _to_unicode(result)
-
-    return result
 
 
 def ss(var):

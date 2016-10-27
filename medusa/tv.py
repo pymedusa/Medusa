@@ -41,7 +41,6 @@ from .common import (
 from .helper.common import (
     dateTimeFormat, episode_num, remove_extension, replace_extension, sanitize_filename, try_int
 )
-from .helper.encoding import ek
 from .helper.exceptions import (
     EpisodeDeletedException, EpisodeNotFoundException, MultipleEpisodesInDatabaseException,
     MultipleShowObjectsException, MultipleShowsInDatabaseException, NoNFOException, ShowDirectoryNotFoundException,
@@ -273,7 +272,7 @@ class TVShow(TVObject):
         :return:
         :rtype: bool
         """
-        return ek(os.path.isdir, location or self._location)
+        return os.path.isdir(location or self._location)
 
     def flush_episodes(self):
         """Delete references to anything that's not in the internal lists."""
@@ -578,7 +577,7 @@ class TVShow(TVObject):
             logger.log(u"{id}: Creating episode from: {location}".format
                        (id=self.indexerid, location=media_file), logger.DEBUG)
             try:
-                cur_episode = self.make_ep_from_file(ek(os.path.join, self.location, media_file))
+                cur_episode = self.make_ep_from_file(os.path.join(self.location, media_file))
             except (ShowNotFoundException, EpisodeNotFoundException) as e:
                 logger.log(u"{id}: Episode {location} returned an exception {error_msg}".format
                            (id=self.indexerid, location=media_file, error_msg=ex(e)), logger.WARNING)
@@ -591,8 +590,8 @@ class TVShow(TVObject):
                 continue
 
             # see if we should save the release name in the db
-            ep_file_name = ek(os.path.basename, cur_episode.location)
-            ep_file_name = ek(os.path.splitext, ep_file_name)[0]
+            ep_file_name = os.path.basename(cur_episode.location)
+            ep_file_name = os.path.splitext(ep_file_name)[0]
 
             try:
                 parse_result = NameParser(show=self, try_indexers=True).parse(ep_file_name)
@@ -804,7 +803,7 @@ class TVShow(TVObject):
         :return:
         :rtype: TVEpisode
         """
-        if not ek(os.path.isfile, filepath):
+        if not os.path.isfile(filepath):
             logger.log(u"{0}: That isn't even a real file dude... {1}".format
                        (self.indexerid, filepath))
             return None
@@ -851,7 +850,7 @@ class TVShow(TVObject):
 
             else:
                 # if there is a new file associated with this ep then re-check the quality
-                if not cur_ep.location or ek(os.path.normpath, cur_ep.location) != ek(os.path.normpath, filepath):
+                if not cur_ep.location or os.path.normpath(cur_ep.location) != os.path.normpath(filepath):
                     logger.log(
                         u'{0}: The old episode had a different file associated with it, '
                         u're-checking the quality using the new filename {1}'.format(self.indexerid, filepath),
@@ -892,9 +891,6 @@ class TVShow(TVObject):
                     cur_ep.status not in Quality.DOWNLOADED + Quality.ARCHIVED + [IGNORED]):
                 old_status, old_quality = Quality.splitCompositeStatus(cur_ep.status)
                 new_quality = Quality.nameQuality(filepath, self.is_anime)
-                if new_quality == Quality.UNKNOWN:
-                    new_quality = Quality.assumeQuality(filepath)
-
                 new_status = None
 
                 # if it was snatched and now exists then set the status correctly
@@ -918,11 +914,11 @@ class TVShow(TVObject):
 
                 if new_status is not None:
                     with cur_ep.lock:
+                        old_ep_status = cur_ep.status
+                        cur_ep.status = Quality.compositeStatus(new_status, new_quality)
                         logger.log(u'{0}: We have an associated file, '
                                    u'so setting the status from {1} to DOWNLOADED/{2}'.format
-                                   (self.indexerid, cur_ep.status,
-                                    Quality.statusFromName(filepath, anime=self.is_anime)), logger.DEBUG)
-                        cur_ep.status = Quality.compositeStatus(new_status, new_quality)
+                                   (self.indexerid, old_ep_status, cur_ep.status, logger.DEBUG))
 
             with cur_ep.lock:
                 sql_l.append(cur_ep.get_sql())
@@ -1192,15 +1188,15 @@ class TVShow(TVObject):
         app.showList = [x for x in app.showList if int(x.indexerid) != self.indexerid]
 
         # clear the cache
-        image_cache_dir = ek(os.path.join, app.CACHE_DIR, 'images')
-        for cache_file in ek(glob.glob, ek(os.path.join, image_cache_dir, str(self.indexerid) + '.*')):
+        image_cache_dir = os.path.join(app.CACHE_DIR, 'images')
+        for cache_file in glob.glob(os.path.join(image_cache_dir, str(self.indexerid) + '.*')):
             logger.log(u'{id}: Attempt to {action} cache file {cache_file}'.format
                        (id=self.indexerid, action=action, cache_file=cache_file))
             try:
                 if app.TRASH_REMOVE_SHOW:
                     send2trash(cache_file)
                 else:
-                    ek(os.remove, cache_file)
+                    os.remove(cache_file)
 
             except OSError as e:
                 logger.log(u'{id}: Unable to {action} {cache_file}: {error_msg}'.format
@@ -1212,13 +1208,13 @@ class TVShow(TVObject):
                 logger.log(u'{id}: Attempt to {action} show folder {location}'.format
                            (id=self.indexerid, action=action, location=self.location))
                 # check first the read-only attribute
-                file_attribute = ek(os.stat, self.location)[0]
+                file_attribute = os.stat(self.location)[0]
                 if not file_attribute & stat.S_IWRITE:
                     # File is read-only, so make it writeable
                     logger.log(u'{id}: Attempting to make writeable the read only folder {location}'.format
                                (id=self.indexerid, location=self.location), logger.DEBUG)
                     try:
-                        ek(os.chmod, self.location, stat.S_IWRITE)
+                        os.chmod(self.location, stat.S_IWRITE)
                     except Exception:
                         logger.log(u'{id}: Unable to change permissions of {location}'.format
                                    (id=self.indexerid, location=self.location), logger.WARNING)
@@ -1226,7 +1222,7 @@ class TVShow(TVObject):
                 if app.TRASH_REMOVE_SHOW:
                     send2trash(self.location)
                 else:
-                    ek(shutil.rmtree, self.location)
+                    shutil.rmtree(self.location)
 
                 logger.log(u'{id}: {action} show folder {location}'.format
                            (id=self.indexerid, action=action, location=self.raw_location))
@@ -1281,7 +1277,7 @@ class TVShow(TVObject):
 
         sql_l = []
         for ep in sql_results:
-            cur_loc = ek(os.path.normpath, ep[b'location'])
+            cur_loc = os.path.normpath(ep[b'location'])
             season = int(ep[b'season'])
             episode = int(ep[b'episode'])
 
@@ -1296,8 +1292,8 @@ class TVShow(TVObject):
                 continue
 
             # if the path doesn't exist or if it's not in our show dir
-            if not ek(os.path.isfile, cur_loc) or not ek(os.path.normpath, cur_loc).startswith(
-                    ek(os.path.normpath, self.location)):
+            if not os.path.isfile(cur_loc) or not os.path.normpath(cur_loc).startswith(
+                    os.path.normpath(self.location)):
 
                 # check if downloaded files still exist, update our data if this has changed
                 if not app.SKIP_REMOVED_FILES:
@@ -1338,15 +1334,15 @@ class TVShow(TVObject):
                                    logger.WARNING)
                         for related_file in related_files:
                             try:
-                                ek(os.remove, related_file)
+                                os.remove(related_file)
                             except Exception as e:
                                 logger.log(u'{id}: Could not delete associated file: {related_file}. Error: {error_msg}'.format
                                            (id=self.indexerid, related_file=related_file, error_msg=e), logger.WARNING)
 
         # clean up any empty season folders after deletion of associated files
-        if ek(os.path.isdir, self.location):
-            for sub_dir in ek(os.listdir, self.location):
-                    helpers.delete_empty_folders(ek(os.path.join, self.location, sub_dir), self.location)
+        if os.path.isdir(self.location):
+            for sub_dir in os.listdir(self.location):
+                    helpers.delete_empty_folders(os.path.join(self.location, sub_dir), self.location)
 
         if sql_l:
             main_db_con = db.DBConnection()
@@ -1738,7 +1734,7 @@ class TVEpisode(TVObject):
         logger.log(u'{id}: Setter sets location to {location}'.format
                    (id=self.show.indexerid, location=value), logger.DEBUG)
         self._location = value
-        self.file_size = ek(os.path.getsize, value) if value and self.is_location_valid(value) else 0
+        self.file_size = os.path.getsize(value) if value and self.is_location_valid(value) else 0
 
     def is_location_valid(self, location=None):
         """Whether the location is a valid file.
@@ -1748,7 +1744,7 @@ class TVEpisode(TVObject):
         :return:
         :rtype: bool
         """
-        return ek(os.path.isfile, location or self._location)
+        return os.path.isfile(location or self._location)
 
     def refresh_subtitles(self):
         """Look for subtitles files and refresh the subtitles property."""
@@ -1765,11 +1761,13 @@ class TVEpisode(TVObject):
             logger.log(u'{id}: Saving subtitles changes to database'.format(id=self.show.indexerid), logger.DEBUG)
             self.save_to_db()
 
-    def download_subtitles(self, force=False):
+    def download_subtitles(self, force=False, lang=None):
         """Download subtitles.
 
         :param force:
         :type force: bool
+        :pram lang:
+        :type param: string
         """
         if not self.is_location_valid():
             logger.log(u"{id}: {show} {ep} file doesn't exist, can't download subtitles".format
@@ -1778,7 +1776,7 @@ class TVEpisode(TVObject):
                        logger.DEBUG)
             return
 
-        new_subtitles = subtitles.download_subtitles(self)
+        new_subtitles = subtitles.download_subtitles(self, lang=lang)
         if new_subtitles:
             self.subtitles = subtitles.merge_subtitles(self.subtitles, new_subtitles)
 
@@ -1912,7 +1910,7 @@ class TVEpisode(TVObject):
 
             # don't overwrite my location
             if sql_results[0][b'location']:
-                self.location = ek(os.path.normpath, sql_results[0][b'location'])
+                self.location = os.path.normpath(sql_results[0][b'location'])
             if sql_results[0][b'file_size']:
                 self.file_size = int(sql_results[0][b'file_size'])
             else:
@@ -2089,7 +2087,7 @@ class TVEpisode(TVObject):
                        (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
                         status=statusStrings[self.status].upper(), location=self.location), logger.DEBUG)
 
-        if not ek(os.path.isfile, self.location):
+        if not os.path.isfile(self.location):
             if (self.airdate >= datetime.date.today() or self.airdate == datetime.date.fromordinal(1)) and \
                     self.status in (UNAIRED, UNKNOWN, WANTED):
                 # Need to check if is UNAIRED otherwise code will step into second 'IF'
@@ -2117,10 +2115,12 @@ class TVEpisode(TVObject):
         elif app.helpers.isMediaFile(self.location):
             # leave propers alone, you have to either post-process them or manually change them back
             if self.status not in Quality.SNATCHED_PROPER + Quality.DOWNLOADED + Quality.SNATCHED + Quality.ARCHIVED:
-                logger.log(u"{id}: {show} {ep} status changed from '{old_status}' to '{new_status}'".format
-                           (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode), old_status=self.status.upper(),
-                            new_status=Quality.statusFromName(self.location, anime=self.show.is_anime).upper()), logger.DEBUG)
+                old_status = self.status.upper()
                 self.status = Quality.statusFromName(self.location, anime=self.show.is_anime).upper()
+                logger.log(u"{id}: {show} {ep} status changed from '{old_status}' to '{new_status}'".format
+                           (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
+                            old_status=old_status, new_status=self.status), logger.DEBUG)
+
             else:
                 logger.log(u"{id}: {show} {ep} status untouched: '{status}'".format
                            (id=self.show.indexerid, show=self.show.name,
@@ -2148,22 +2148,22 @@ class TVEpisode(TVObject):
         if self.location != '':
 
             if self.status == UNKNOWN and app.helpers.isMediaFile(self.location):
+                self.status = Quality.statusFromName(self.location, anime=self.show.is_anime)
                 logger.log(u"{id}: {show} {ep} status changed from 'UNKNOWN' to '{new_status}'".format
                            (id=self.show.indexerid, show=self.show.name, ep=episode_num(self.season, self.episode),
-                            new_status=Quality.statusFromName(self.location, anime=self.show.is_anime)), logger.DEBUG)
-                self.status = Quality.statusFromName(self.location, anime=self.show.is_anime)
+                            new_status=self.status), logger.DEBUG)
 
             nfo_file = replace_extension(self.location, 'nfo')
             logger.log(u'{id}: Using NFO name {nfo}'.format(id=self.show.indexerid, nfo=nfo_file), logger.DEBUG)
 
-            if ek(os.path.isfile, nfo_file):
+            if os.path.isfile(nfo_file):
                 try:
                     show_xml = ETree.ElementTree(file=nfo_file)
                 except (SyntaxError, ValueError) as e:
                     logger.log(u'{id}: Error loading the NFO, backing up the NFO and skipping for now: '.format
                                (id=self.show.indexerid, error_msg=ex(e)), logger.ERROR)
                     try:
-                        ek(os.rename, nfo_file, nfo_file + '.old')
+                        os.rename(nfo_file, nfo_file + '.old')
                     except Exception as e:
                         logger.log(u"{id}: Failed to rename your episode's NFO file. "
                                    u'You need to delete it or fix it: {error_msg}'.format
@@ -2215,7 +2215,7 @@ class TVEpisode(TVObject):
             else:
                 self.hasnfo = False
 
-            self.hastbn = bool(ek(os.path.isfile, replace_extension(nfo_file, 'tbn')))
+            self.hastbn = bool(os.path.isfile(replace_extension(nfo_file, 'tbn')))
 
     def __str__(self):
         """String representation.
@@ -2468,7 +2468,7 @@ class TVEpisode(TVObject):
         if self.location is None or self.location == '':
             return None
         else:
-            return ek(os.path.join, self.show.location, self.location)
+            return os.path.join(self.show.location, self.location)
 
     def pretty_name(self):
         """Return the name of this episode in a "pretty" human-readable format.
@@ -2849,7 +2849,7 @@ class TVEpisode(TVObject):
 
         # if not we append the folder on and use that
         else:
-            result = ek(os.path.join, self.formatted_dir(), result)
+            result = os.path.join(self.formatted_dir(), result)
 
         return result
 
@@ -2918,8 +2918,8 @@ class TVEpisode(TVObject):
             return
 
         proper_path = self.proper_path()
-        absolute_proper_path = ek(os.path.join, self.show.location, proper_path)
-        absolute_current_path_no_ext, file_ext = ek(os.path.splitext, self.location)
+        absolute_proper_path = os.path.join(self.show.location, proper_path)
+        absolute_current_path_no_ext, file_ext = os.path.splitext(self.location)
         absolute_current_path_no_ext_length = len(absolute_current_path_no_ext)
 
         related_subs = []
@@ -2956,11 +2956,11 @@ class TVEpisode(TVObject):
         for cur_related_file in related_files:
             # We need to fix something here because related files can be in subfolders
             # and the original code doesn't handle this (at all)
-            cur_related_dir = ek(os.path.dirname, ek(os.path.abspath, cur_related_file))
-            subfolder = cur_related_dir.replace(ek(os.path.dirname, ek(os.path.abspath, self.location)), '')
+            cur_related_dir = os.path.dirname(os.path.abspath(cur_related_file))
+            subfolder = cur_related_dir.replace(os.path.dirname(os.path.abspath(self.location)), '')
             # We now have a subfolder. We need to add that to the absolute_proper_path.
             # First get the absolute proper-path dir
-            proper_related_dir = ek(os.path.dirname, ek(os.path.abspath, absolute_proper_path + file_ext))
+            proper_related_dir = os.path.dirname(os.path.abspath(absolute_proper_path + file_ext))
             proper_related_path = absolute_proper_path.replace(proper_related_dir, proper_related_dir + subfolder)
 
             cur_result = helpers.rename_ep_file(cur_related_file, proper_related_path,
@@ -2970,7 +2970,7 @@ class TVEpisode(TVObject):
                            (id=self.indexerid, cur_file=cur_related_file), logger.WARNING)
 
         for cur_related_sub in related_subs:
-            absolute_proper_subs_path = ek(os.path.join, app.SUBTITLES_DIR, self.formatted_filename())
+            absolute_proper_subs_path = os.path.join(app.SUBTITLES_DIR, self.formatted_filename())
             cur_result = helpers.rename_ep_file(cur_related_sub, absolute_proper_subs_path,
                                                 absolute_current_path_no_ext_length)
             if not cur_result:
@@ -3018,7 +3018,7 @@ class TVEpisode(TVObject):
                 airdatetime = airdatetime.astimezone(network_timezones.app_timezone)
 
             filemtime = datetime.datetime.fromtimestamp(
-                ek(os.path.getmtime, self.location)).replace(tzinfo=network_timezones.app_timezone)
+                os.path.getmtime(self.location)).replace(tzinfo=network_timezones.app_timezone)
 
             if filemtime != airdatetime:
                 import time
@@ -3030,16 +3030,16 @@ class TVEpisode(TVObject):
                 try:
                     if helpers.touchFile(self.location, time.mktime(airdatetime)):
                         logger.log(u"{id}: Changed modify date of '{location}' to show air date {air_date}".format
-                                   (id=self.show.indexerid, location=ek(os.path.basename, self.location),
+                                   (id=self.show.indexerid, location=os.path.basename(self.location),
                                     air_date=time.strftime('%b %d,%Y (%H:%M)', airdatetime)))
                     else:
                         logger.log(u"{id}: Unable to modify date of '{location}' to show air date {air_date}".format
-                                   (id=self.show.indexerid, location=ek(os.path.basename, self.location),
+                                   (id=self.show.indexerid, location=os.path.basename(self.location),
                                     air_date=time.strftime('%b %d,%Y (%H:%M)', airdatetime)), logger.WARNING)
                 except Exception:
                     logger.log(u"{id}: Failed to modify date of '{location}' to show air date {air_date}".format
-                               (id=self.show.indexerid, location=ek(os.path.basename, self.location),
+                               (id=self.show.indexerid, location=os.path.basename(self.location),
                                 air_date=time.strftime('%b %d,%Y (%H:%M)', airdatetime)), logger.WARNING)
         except Exception:
             logger.log(u"{id}: Failed to modify date of '{location}'".format
-                       (id=self.show.indexerid, location=ek(os.path.basename, self.location)), logger.WARNING)
+                       (id=self.show.indexerid, location=os.path.basename(self.location)), logger.WARNING)

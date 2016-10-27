@@ -17,7 +17,6 @@ from .... import (
     config, logger,
     naming, ui,
 )
-from ....helper.encoding import ek
 from ....helper.exceptions import ex
 
 
@@ -62,7 +61,7 @@ class ConfigPostProcessing(Config):
 
         if not config.change_TV_DOWNLOAD_DIR(tv_download_dir):
             results += ['Unable to create directory {dir}, '
-                        'dir not changed.'.format(dir=ek(os.path.normpath, tv_download_dir))]
+                        'dir not changed.'.format(dir=os.path.normpath(tv_download_dir))]
 
         config.change_AUTOPOSTPROCESSOR_FREQUENCY(autopostprocessor_frequency)
         config.change_PROCESS_AUTOMATICALLY(process_automatically)
@@ -159,7 +158,7 @@ class ConfigPostProcessing(Config):
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:
-            ui.notifications.message('Configuration Saved', ek(os.path.join, app.CONFIG_FILE))
+            ui.notifications.message('Configuration Saved', os.path.join(app.CONFIG_FILE))
 
         return self.redirect('/config/postProcessing/')
 
@@ -177,7 +176,7 @@ class ConfigPostProcessing(Config):
 
         result = naming.test_name(pattern, multi, abd, sports, anime_type)
 
-        result = ek(os.path.join, result['dir'], result['name'])
+        result = os.path.join(result['dir'], result['name'])
 
         return result
 
@@ -227,7 +226,7 @@ class ConfigPostProcessing(Config):
         """
 
         try:
-            rar_path = ek(os.path.join, app.PROG_DIR, 'lib', 'unrar2', 'test.rar')
+            rar_path = os.path.join(app.PROG_DIR, 'lib', 'unrar2', 'test.rar')
             testing = RarFile(rar_path).read_files('*test.txt')
             if testing[0][1] == 'This is only a test.':
                 return 'supported'

@@ -31,7 +31,6 @@ from hachoir_metadata import extractMetadata
 from hachoir_parser import createParser
 from six import PY3
 from six.moves import reduce
-from .helper.encoding import ek
 from .numdict import NumDict
 from .recompiled import tags
 from .tagger.episode import EpisodeTags
@@ -51,14 +50,7 @@ INSTANCE_ID = str(uuid.uuid1())
 USER_AGENT = u'Medusa-Rage/{version}({system}; {release}; {instance})'.format(
     version=u'0.0.1', system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
-UA_SETTINGS.DB = ek(
-    path.abspath, ek(
-        path.join, ek(
-            path.dirname, __file__
-        ),
-        '../lib/fake_useragent/ua.json'
-    )
-)
+UA_SETTINGS.DB = path.abspath(path.join(path.dirname(__file__), '../lib/fake_useragent/ua.json'))
 UA_POOL = UserAgent()
 if SPOOF_USER_AGENT:
     USER_AGENT = UA_POOL.random
@@ -289,13 +281,14 @@ class Quality(object):
         return sorted(allowed_qualities), sorted(preferred_qualities)
 
     @staticmethod
-    def nameQuality(name, anime=False):
+    def nameQuality(name, anime=False, extend=True):
         """
         Return The quality from an episode File renamed by the application
         If no quality is achieved it will try scene_quality regex
 
         :param name: to parse
         :param anime: Boolean to indicate if the show we're resolving is Anime
+        :param extend: boolean to extend methods to try
         :return: Quality prefix
         """
 
@@ -304,16 +297,16 @@ class Quality(object):
         if quality != Quality.UNKNOWN:
             return quality
 
-        quality = Quality.assumeQuality(name)
-        if quality != Quality.UNKNOWN:
-            return quality
+        # Additional methods to get quality should be added here
+        if extend:
+            return Quality._extend_quality(name)
 
         return Quality.UNKNOWN
 
     @staticmethod
-    def scene_quality(name, anime=False):  # pylint: disable=too-many-branches, too-many-statements
+    def scene_quality(name, anime=False):
         """
-        Return The quality from the scene episode File
+        Return The quality from the Scene episode File.
 
         :param name: Episode filename to analyse
         :param anime: Boolean to indicate if the show we're resolving is Anime
@@ -323,7 +316,7 @@ class Quality(object):
         if not name:
             return Quality.UNKNOWN
         else:
-            name = ek(path.basename, name)
+            name = path.basename(name)
 
         result = None
         ep = EpisodeTags(name)
@@ -398,35 +391,34 @@ class Quality(object):
         return Quality.UNKNOWN if result is None else result
 
     @staticmethod
-    def assumeQuality(name):
+    def _extend_quality(file_path):
         """
-        Assume a quality from file extension if we cannot resolve it otherwise
 
-        :param name: File name of episode to analyse
+        :param file_path: File path of episode to analyse
         :return: Quality prefix
         """
-        quality = Quality.qualityFromFileMeta(name)
+        quality = Quality.qualityFromFileMeta(file_path)
         if quality != Quality.UNKNOWN:
             return quality
 
-        if name.lower().endswith(".ts"):
+        # This assumes that any .ts file is RAWHDTV (probably wrong)
+        if file_path.lower().endswith('.ts'):
             return Quality.RAWHDTV
-        else:
-            return Quality.UNKNOWN
+
+        return Quality.UNKNOWN
 
     @staticmethod
-    def qualityFromFileMeta(filename):  # pylint: disable=too-many-branches
+    def qualityFromFileMeta(file_path):
         """
-        Get quality file file metadata
+        Get quality file file metadata.
 
-        :param filename: Filename to analyse
+        :param filename: File path to analyse
         :return: Quality prefix
         """
-
         hachoir_log.use_print = False
 
         try:
-            parser = createParser(filename)
+            parser = createParser(file_path)
         except Exception:  # pylint: disable=broad-except
             parser = None
 
@@ -459,7 +451,7 @@ class Quality(object):
         if not height:
             return Quality.UNKNOWN
 
-        base_filename = ek(path.basename, filename)
+        base_filename = path.basename(file_path)
         bluray = re.search(r"blue?-?ray|hddvd|b[rd](rip|mux)", base_filename, re.I) is not None
         webdl = re.search(r"web.?dl|web(rip|mux|hd)", base_filename, re.I) is not None
 
@@ -510,11 +502,11 @@ class Quality(object):
     @staticmethod
     def sceneQualityFromName(name, quality):  # pylint: disable=too-many-branches
         """
-        Get scene naming parameters from filename and quality
+        Get Scene naming parameters from filename and quality
 
         :param name: Filename to check
         :param quality: int of quality to make sure we get the right rip type
-        :return: encoder type for scene quality naming
+        :return: encoder type for Scene quality naming
         """
         codec_list = ['xvid', 'divx']
         x264_list = ['x264', 'x 264', 'x.264']
@@ -567,18 +559,15 @@ class Quality(object):
             return ""
 
     @staticmethod
-    def statusFromName(name, assume=True, anime=False):
+    def statusFromName(name, anime=False):
         """
         Get a status object from filename
 
         :param name: Filename to check
-        :param assume: boolean to assume quality by extension if we can't figure it out
         :param anime: boolean to enable anime parsing
         :return: Composite status/quality object
         """
         quality = Quality.nameQuality(name, anime)
-        if assume and quality == Quality.UNKNOWN:
-            quality = Quality.assumeQuality(name)
         return Quality.compositeStatus(DOWNLOADED, quality)
 
     guessit_map = {

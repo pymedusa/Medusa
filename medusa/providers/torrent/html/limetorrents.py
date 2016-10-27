@@ -29,7 +29,7 @@ from .... import logger, tvcache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
-id_regex = re.compile(r'(?:\/)(.*)(?:-torrent-([0-9]*).html)', re.I)
+id_regex = re.compile(r'(?:\/)(.*)(?:-torrent-([0-9]*)\.html)', re.I)
 hash_regex = re.compile(r'(.*)([0-9a-f]{40})(.*)', re.I)
 
 
@@ -84,6 +84,9 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
+                    if self.confirmed:
+                        logger.log('Searching only confirmed torrents', logger.DEBUG)
+
                     search_url = self.urls['search'].format(query=search_string)
                 else:
                     search_url = self.urls['rss'].format(page=1)
@@ -112,7 +115,8 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             torrent_table = html('table', class_='table2')
 
             if mode != 'RSS' and torrent_table and len(torrent_table) < 2:
-                logger.log(u'Data returned from provider does not contain any torrents', logger.DEBUG)
+                logger.log('Data returned from provider does not contain any {0}torrents'.format(
+                           'confirmed ' if self.confirmed else ''), logger.DEBUG)
                 return items
 
             torrent_table = torrent_table[0 if mode == 'RSS' else 1]

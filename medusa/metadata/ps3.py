@@ -19,7 +19,6 @@
 
 import os
 
-from ..helper.encoding import ek
 from ..metadata import generic
 
 
@@ -117,7 +116,7 @@ class PS3Metadata(generic.GenericMetadata):
 
         ep_obj: a TVEpisode instance for which to create the thumbnail
         """
-        if ek(os.path.isfile, ep_obj.location):
+        if os.path.isfile(ep_obj.location):
             tbn_filename = ep_obj.location + ".cover.jpg"
         else:
             return None

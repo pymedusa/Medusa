@@ -12,7 +12,6 @@ from ..core import PageTemplate
 from .... import config, github_client, helpers, logger, ui
 from ....common import Quality, WANTED
 from ....helper.common import try_int
-from ....helper.encoding import ek
 
 
 @route('/config/general(/?.*)')
@@ -67,7 +66,7 @@ class ConfigGeneral(Config):
                     fuzzy_dating=None, trim_zero=None, date_preset=None, date_preset_na=None, time_preset=None,
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
                     git_reset=None, git_reset_branches=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None,
-                    privacy_level='normal', fanart_background=None, fanart_background_opacity=None):
+                    privacy_level='normal', fanart_background=None, fanart_background_opacity=None, dbdebug=None):
         results = []
 
         # Misc
@@ -118,12 +117,13 @@ class ConfigGeneral(Config):
         app.WEB_PASSWORD = web_password
 
         app.DEBUG = config.checkbox_to_value(debug)
+        app.DBDEBUG = config.checkbox_to_value(dbdebug)
         app.WEB_LOG = config.checkbox_to_value(web_log)
         app.SUBLIMINAL_LOG = config.checkbox_to_value(subliminal_log)
 
         if not config.change_LOG_DIR(log_dir):
             results += ['Unable to create directory {dir}, '
-                        'log directory not changed.'.format(dir=ek(os.path.normpath, log_dir))]
+                        'log directory not changed.'.format(dir=os.path.normpath(log_dir))]
 
         # Reconfigure the logger
         logger.reconfigure()
@@ -160,11 +160,11 @@ class ConfigGeneral(Config):
 
         if not config.change_HTTPS_CERT(https_cert):
             results += ['Unable to create directory {dir}, '
-                        'https cert directory not changed.'.format(dir=ek(os.path.normpath, https_cert))]
+                        'https cert directory not changed.'.format(dir=os.path.normpath(https_cert))]
 
         if not config.change_HTTPS_KEY(https_key):
             results += ['Unable to create directory {dir}, '
-                        'https key directory not changed.'.format(dir=ek(os.path.normpath, https_key))]
+                        'https key directory not changed.'.format(dir=os.path.normpath(https_key))]
 
         app.HANDLE_REVERSE_PROXY = config.checkbox_to_value(handle_reverse_proxy)
 
@@ -182,6 +182,6 @@ class ConfigGeneral(Config):
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:
-            ui.notifications.message('Configuration Saved', ek(os.path.join, app.CONFIG_FILE))
+            ui.notifications.message('Configuration Saved', os.path.join(app.CONFIG_FILE))
 
         return self.redirect('/config/general/')

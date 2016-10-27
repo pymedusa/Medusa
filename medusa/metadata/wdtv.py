@@ -23,7 +23,6 @@ import re
 import medusa as app
 from .. import helpers, logger
 from ..helper.common import dateFormat, episode_num as ep_num, replace_extension
-from ..helper.encoding import ek
 from ..helper.exceptions import ShowNotFoundException
 from ..metadata import generic
 
@@ -125,7 +124,7 @@ class WDTVMetadata(generic.GenericMetadata):
 
         ep_obj: a TVEpisode instance for which to create the thumbnail
         """
-        if ek(os.path.isfile, ep_obj.location):
+        if os.path.isfile(ep_obj.location):
             tbn_filename = replace_extension(ep_obj.location, 'metathumb')
         else:
             return None
@@ -140,8 +139,8 @@ class WDTVMetadata(generic.GenericMetadata):
         If no season folder exists, None is returned
         """
 
-        dir_list = [x for x in ek(os.listdir, show_obj.location) if
-                    ek(os.path.isdir, ek(os.path.join, show_obj.location, x))]
+        dir_list = [x for x in os.listdir(show_obj.location) if
+                    os.path.isdir(os.path.join(show_obj.location, x))]
 
         season_dir_regex = r'^Season\s+(\d+)$'
 
@@ -170,7 +169,7 @@ class WDTVMetadata(generic.GenericMetadata):
         logger.log(u'Using {path}/folder.jpg as season dir for season {season_num}'.format
                    (path=season_dir, season_num=season), logger.DEBUG)
 
-        return ek(os.path.join, show_obj.location, season_dir, 'folder.jpg')
+        return os.path.join(show_obj.location, season_dir, 'folder.jpg')
 
     def _ep_data(self, ep_obj):
         """

@@ -2194,7 +2194,7 @@
   video_codec: h264
   language: it
   audio_codec: AC3
-  format: [DSRip, HDTV]
+  format: HDTV
   release_group: DEUS TEAM
   type: episode
 
@@ -2828,7 +2828,7 @@
   episode: 7
   type: episode
 
-# Regression test for https://github.com/pymedusa/SickRage/pull/812#issuecomment-235824102
+# Regression test for https://github.com/pymedusa/Medusa/pull/812#issuecomment-235824102
 # Case: Expected title + 2 file parts and the second one starts with a word separator (dot)
 ? 11.22.63./.11.22.63.[S01].(2016).HDTVRip.|.Group
 : title: 11.22.63
@@ -2978,7 +2978,7 @@
   release_group: Group
   type: episode
 
-# FixMultipleFormats: regression test for https://github.com/pymedusa/SickRage/issues/876
+# FixMultipleFormats: regression test for https://github.com/pymedusa/Medusa/issues/876
 ? "/volume1/video/Series/Show Name/Season 02/Show.Name.S02E01.eps2.0_title-pt1.tc.1080p.WEB-DL.DD5.1.H.264.mkv"
 : title: Show Name
   season: 2
@@ -3070,14 +3070,30 @@
 
 # Regression Test for release group detection
 # https://github.com/guessit-io/guessit/issues/343
-? /series/Show.Name.S10E01.1080p.HDTV.X264-DIMENSION[rarbg]/Show.Name.S10E01.1080p.HDTV.X264-DIMENSION.mkv
+? /series/Show.Name.S10E01.1080p.HDTV.X264-GROUP[rarbg]/Show.Name.S10E01.1080p.HDTV.X264-GROUP.mkv
 : title: Show Name
   season: 10
   episode: 1
   screen_size: 1080p
   format: HDTV
   video_codec: h264
-  release_group: DIMENSION
+  release_group: GROUP
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+# Regression Test for release group detection
+# https://github.com/guessit-io/guessit/issues/343 + show with year
+? /Show.Name.2014.S03E01.1080p.HDTV.X264-GROUP[rarbg]/Show.Name.2014.S03E01.1080p.HDTV.X264-GROUP.mkv
+: title: Show Name
+  alias: Show Name 2014
+  year: 2014
+  season: 3
+  episode: 1
+  screen_size: 1080p
+  format: HDTV
+  video_codec: h264
+  release_group: GROUP
   container: mkv
   mimetype: video/x-matroska
   type: episode
@@ -3161,4 +3177,41 @@
   subtitle_language: pt-BR
   container: srt
   mimetype: text/plain
+  type: episode
+
+# Regression Test: https://github.com/pymedusa/SickRage/issues/1033#issuecomment-252500576
+# Multiple formats
+? Show.Name.S01E10.HDTV.x264.WEB-DL.HI.C
+: title: Show Name
+  season: 1
+  episode: 10
+  video_codec: h264
+  format: WEB-DL
+  release_group: HI.C
+  type: episode
+
+# Regression Test:
+# Same Title in different file parts
+? Show Name\Season 03\Show Name.S03E03.SDTV-[gRoUp].mp4
+: title: Show Name
+  season: 3
+  episode: 3
+  format: TV
+  release_group: gRoUp
+  container: mp4
+  mimetype: video/mp4
+  type: episode
+
+
+# Regression test for https://github.com/pymedusa/Medusa/issues/1232
+# Anime was not outputing absolute episode
+? /Finish/[Group] Anime Super Episode 61 [VOSTFR][720p].mp4
+: release_group: Group
+  title: Anime Super
+  absolute_episode: 61
+  episode: 61
+  subtitle_language: fr
+  screen_size: 720p
+  container: mp4
+  mimetype: video/mp4
   type: episode

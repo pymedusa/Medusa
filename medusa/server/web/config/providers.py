@@ -17,7 +17,6 @@ from .... import (
     config, logger, ui,
 )
 from ....helper.common import try_int
-from ....helper.encoding import ek
 from ....providers import NewznabProvider, TorrentRssProvider
 from ....providers.GenericProvider import GenericProvider
 
@@ -561,6 +560,6 @@ class ConfigProviders(Config):
             ui.notifications.error('Error(s) Saving Configuration',
                                    '<br>\n'.join(results))
         else:
-            ui.notifications.message('Configuration Saved', ek(os.path.join, app.CONFIG_FILE))
+            ui.notifications.message('Configuration Saved', os.path.join(app.CONFIG_FILE))
 
         return self.redirect('/config/providers/')

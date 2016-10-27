@@ -41,10 +41,6 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         # URLs
         self.url = 'https://thepiratebay.org'
-        self.urls = {
-            'rss': urljoin(self.url, 'tv/latest'),
-            'search': urljoin(self.url, 'search/{string}/0/3/200'),
-        }
         self.custom_url = None
 
         # Proper Strings
@@ -70,21 +66,29 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         """
         results = []
 
+        if self.custom_url:
+            if not validators.url(self.custom_url):
+                logger.log('Invalid custom url: {0}'.format(self.custom_url), logger.WARNING)
+                return results
+            self.url = self.custom_url
+
+        self.urls = {
+            'rss': urljoin(self.url, 'tv/latest'),
+            'search': urljoin(self.url, 'search/{string}/0/3/200'),
+        }
+
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
 
                 search_url = self.urls['search'] if mode != 'RSS' else self.urls['rss']
-                if self.custom_url:
-                    if not validators.url(self.custom_url):
-                        logger.log('Invalid custom url: {0}'.format(self.custom_url), logger.WARNING)
-                        return results
-                    search_url = urljoin(self.custom_url, search_url.split(self.url)[1])
 
                 if mode != 'RSS':
                     search_url = search_url.format(string=search_string)
                     logger.log('Search string: {search}'.format(search=search_string), logger.DEBUG)
+                    if self.confirmed:
+                        logger.log('Searching only confirmed torrents', logger.DEBUG)
 
                 response = self.get_url(search_url, returns='response')
                 if not response or not response.text:
@@ -123,7 +127,8 @@ class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
             # Continue only if at least one release is found
             if len(torrent_rows) < 2:
-                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                logger.log('Data returned from provider does not contain any {0}torrents'.format(
+                           'confirmed ' if self.confirmed else ''), logger.DEBUG)
                 return items
 
             labels = [process_column_header(label) for label in torrent_rows[0]('th')]

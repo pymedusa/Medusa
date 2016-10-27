@@ -19,7 +19,6 @@ from .... import clients, config, db, helpers, logger, notifiers, nzbget, sab, s
 from ....blackandwhitelist import BlackAndWhiteList, short_group_names
 from ....common import FAILED, IGNORED, Overview, Quality, SKIPPED, UNAIRED, WANTED, cpu_presets, statusStrings
 from ....helper.common import enabled_providers, try_int
-from ....helper.encoding import ek
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
 from ....scene_numbering import (
@@ -854,11 +853,11 @@ class Home(WebRoot):
                     anime.append(show)
                 else:
                     shows.append(show)
-            sorted_show_lists = [['Shows', sorted(shows, lambda x, y: cmp(titler(x.name), titler(y.name)))],
-                               ['Anime', sorted(anime, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+            sorted_show_lists = [['Shows', sorted(shows, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))],
+                               ['Anime', sorted(anime, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))]]
         else:
             sorted_show_lists = [
-                ['Shows', sorted(app.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))]]
+                ['Shows', sorted(app.showList, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))]]
 
         bwl = None
         if show_obj.is_anime:
@@ -1282,6 +1281,8 @@ class Home(WebRoot):
             t = PageTemplate(rh=self, filename='editShow.mako')
 
             if show_obj.is_anime:
+                if not show_obj.release_groups:
+                    show_obj.release_groups = BlackAndWhiteList(show_obj.indexerid)
                 whitelist = show_obj.release_groups.whitelist
                 blacklist = show_obj.release_groups.blacklist
 
@@ -1393,11 +1394,11 @@ class Home(WebRoot):
                 show_obj.rls_require_words = rls_require_words.strip()
 
             # if we change location clear the db of episodes, change it, write to db, and rescan
-            old_location = ek(os.path.normpath, show_obj._location)
-            new_location = ek(os.path.normpath, location)
+            old_location = os.path.normpath(show_obj._location)
+            new_location = os.path.normpath(location)
             if old_location != new_location:
                 logger.log('{old} != {new}'.format(old=old_location, new=new_location), logger.DEBUG)  # pylint: disable=protected-access
-                if not ek(os.path.isdir, location) and not app.CREATE_MISSING_SHOW_DIRS:
+                if not os.path.isdir(location) and not app.CREATE_MISSING_SHOW_DIRS:
                     errors.append('New location <tt>{location}</tt> does not exist'.format(location=location))
 
                 # don't bother if we're going to update anyway
@@ -1695,7 +1696,7 @@ class Home(WebRoot):
                     snatched_qualities = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
                     if all([int(status) in Quality.DOWNLOADED,
                             ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + [IGNORED],
-                            not ek(os.path.isfile, ep_obj.location)]):
+                            not os.path.isfile(ep_obj.location)]):
                         logger.log(u'Refusing to change status of {episode} to DOWNLOADED '
                                    u'because it\'s not SNATCHED/DOWNLOADED'.format
                                    (episode=curEp), logger.WARNING)
@@ -1923,7 +1924,7 @@ class Home(WebRoot):
             'episodes': episodes,
         })
 
-    def searchEpisodeSubtitles(self, show=None, season=None, episode=None):
+    def searchEpisodeSubtitles(self, show=None, season=None, episode=None, lang=None):
         # retrieve the episode object and fail if we can't get one
         ep_obj = getEpisode(show, season, episode)
         if isinstance(ep_obj, str):
@@ -1932,7 +1933,10 @@ class Home(WebRoot):
             })
 
         try:
-            new_subtitles = ep_obj.download_subtitles()
+            if lang:
+                logger.log("Manual re-downloading subtitles for {show} with language {lang}".format
+                           (show=ep_obj.show.name, lang=lang))
+            new_subtitles = ep_obj.download_subtitles(lang=lang)
         except Exception:
             return json.dumps({
                 'result': 'failure',
@@ -1941,14 +1945,84 @@ class Home(WebRoot):
         if new_subtitles:
             new_languages = [subtitles.name_from_code(code) for code in new_subtitles]
             status = 'New subtitles downloaded: {languages}'.format(languages=', '.join(new_languages))
+            result = 'success'
         else:
+            new_languages = []
             status = 'No subtitles downloaded'
+            result = 'failure'
 
         ui.notifications.message(ep_obj.show.name, status)
         return json.dumps({
-            'result': status,
+            'result': result,
             'subtitles': ','.join(ep_obj.subtitles),
+            'new_subtitles': ','.join(new_languages),
         })
+
+    def manual_search_subtitles(self, show=None, season=None, episode=None, release_id=None, picked_id=None):
+        mode = 'downloading' if picked_id else 'searching'
+        logger.log('Starting to manual {mode} subtitles'.format(mode=mode))
+        try:
+            if release_id:
+                # Release ID is sent when using postpone
+                release = app.RELEASES_IN_PP[int(release_id)]
+                show = release['show']
+                season = release['season']
+                episode = release['episode']
+                filepath = release['release']
+            else:
+                filepath = None
+            show = int(show)
+            show_obj = Show.find(app.showList, show)
+            ep_obj = show_obj.get_episode(season, episode)
+            video_path = filepath or ep_obj.location
+            release_name = ep_obj.release_name or os.path.basename(video_path)
+        except IndexError:
+            ui.notifications.message('Outdated list', 'Please refresh page and try again')
+            logger.log('Outdated list. Please refresh page and try again', logger.WARNING)
+            return json.dumps({'result': 'failure'})
+        except (ValueError, TypeError) as e:
+            ui.notifications.message('Error', "Please check logs")
+            logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
+                       (mode=mode, error_msg=e), logger.ERROR)
+            return json.dumps({'result': 'failure'})
+
+        if not os.path.isfile(video_path):
+            ui.notifications.message(ep_obj.show.name, "Video file no longer exists. Can't search for subtitles")
+            logger.log('Video file no longer exists: {video_file}'.format(video_file=video_path), logger.DEBUG)
+            return json.dumps({'result': 'failure'})
+
+        try:
+            if mode == 'searching':
+                logger.log("Manual searching subtitles for: {0}".format(release_name))
+                found_subtitles = subtitles.list_subtitles(tv_episode=ep_obj, video_path=video_path)
+                if found_subtitles:
+                    ui.notifications.message(ep_obj.show.name, 'Found {} subtitles'.format(len(found_subtitles)))
+                else:
+                    ui.notifications.message(ep_obj.show.name, 'No subtitle found')
+                result = 'success' if found_subtitles else 'failure'
+                subtitles_result = found_subtitles
+            elif mode == 'downloading':
+                logger.log("Manual downloading subtitles for: {0}".format(release_name))
+                new_manual_subtitle = subtitles.save_subtitle(tv_episode=ep_obj, subtitle_id=picked_id, video_path=video_path)
+                if new_manual_subtitle:
+                    ui.notifications.message(ep_obj.show.name, 'Subtitle downloaded: {0}'.format(','.join(new_manual_subtitle)))
+                else:
+                    ui.notifications.message(ep_obj.show.name, 'Failed to download subtitle for {0}'.format(release_name))
+                result = 'success' if new_manual_subtitle else 'failure'
+                subtitles_result = new_manual_subtitle
+            else:
+                raise ValueError
+
+            return json.dumps({
+                'result': result,
+                'release': release_name,
+                'subtitles': subtitles_result
+            })
+        except Exception as e:
+            ui.notifications.message(ep_obj.show.name, 'Failed to manual {0} subtitles'.format(mode))
+            logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
+                       (mode=mode, error_msg=e), logger.ERROR)
+            return json.dumps({'result': 'failure'})
 
     def setSceneNumbering(self, show, indexer, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
                           sceneEpisode=None, sceneAbsolute=None):

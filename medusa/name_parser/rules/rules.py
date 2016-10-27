@@ -1036,7 +1036,7 @@ class AbsoluteEpisodeNumbers(Rule):
                     if previous.name != 'episode':
                         if hole and self.non_words_re.sub('', hole.value).lower() in self.episode_words:
                             # if version is present, then it's an anime
-                            if not matches.named('version'):
+                            if not matches.named('version') and not matches.tagged('anime'):
                                 # Some.Show.E07.1080p.HDTV.x265-GROUP
                                 # Some.Show.Episode.10.Some.Title.720p
                                 # not absolute episode
@@ -1306,14 +1306,16 @@ class FixReleaseGroupGuessedAsTitle(Rule):
         # In case of duplicated titles, keep only the first one
         titles = matches.named('title')
 
-        if (titles and len(titles) == 2 and matches.tagged('anime') and
+        if (titles and len(titles) > 1 and matches.tagged('anime') and
                 'equivalent' not in titles[-1].tags and 'expected' not in titles[-1].tags):
-            release_group = copy.copy(titles[-1])
-            release_group.name = 'release_group'
-            release_group.tags = []
+            wrong_title = matches.named('title', predicate=lambda m: m.value != titles[0].value, index=-1)
+            if wrong_title:
+                release_group = copy.copy(wrong_title)
+                release_group.name = 'release_group'
+                release_group.tags = []
 
-            to_remove = matches.named('release_group', predicate=lambda match: match.span != release_group.span)
-            return to_remove, release_group
+                to_remove = matches.named('release_group', predicate=lambda match: match.span != release_group.span)
+                return to_remove, release_group
 
 
 class FixMultipleTitles(Rule):
@@ -1370,7 +1372,7 @@ class FixMultipleTitles(Rule):
         titles = matches.named('title')
 
         if titles and len(titles) > 1:
-            # Safety: https://github.com/pymedusa/SickRage/pull/812#issuecomment-235824102
+            # Safety: https://github.com/pymedusa/Medusa/pull/812#issuecomment-235824102
             # Only remove matches that are different from the first match
             to_remove = matches.named('title', predicate=lambda match: match.span != titles[0].span)
             return to_remove
@@ -1471,19 +1473,19 @@ class FixMultipleFormats(Rule):
             if len(formats) < 2:
                 continue
 
-            last_format = formats[-1]
-            previous = matches.previous(last_format, predicate=lambda match: match.name == 'screen_size')
-            next_range = matches.range(last_format.end, filepart.end,
-                                       lambda match: match.name in ('audio_codec', 'video_codec', 'release_group'))
-            # If we have at least 3 matches near by, then discard the other formats
-            if len(previous) + len(next_range) > 2:
-                invalid_formats = {f.value for f in formats[0:-1]}
-                to_remove = matches.named('format', predicate=lambda m: m.value in invalid_formats)
-                return to_remove
+            for candidate in reversed(formats):
+                previous = matches.previous(candidate, predicate=lambda match: match.name == 'screen_size')
+                next_range = matches.range(candidate.end, filepart.end,
+                                           lambda match: match.name in ('audio_codec', 'video_codec', 'release_group'))
+                # If we have at least 3 matches near by, then discard the other formats
+                if len(previous) + len(next_range) > 1:
+                    invalid_formats = {f.value for f in formats[0:-1]}
+                    to_remove = matches.named('format', predicate=lambda m: m.value in invalid_formats)
+                    return to_remove
 
-            if matches.conflicting(last_format):
-                to_remove = matches.named('format', predicate=lambda m: m.value in last_format.value)
-                return to_remove
+                if matches.conflicting(candidate):
+                    to_remove = matches.named('format', predicate=lambda m: m.value in candidate.value)
+                    return to_remove
 
 
 class CreateProperTags(Rule):

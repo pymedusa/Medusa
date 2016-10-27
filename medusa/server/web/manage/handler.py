@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import datetime
 import json
 import os
 import re
@@ -11,8 +12,8 @@ from tornado.routes import route
 from ..core import PageTemplate, WebRoot
 from ..home import Home
 from .... import (
-    db, helpers, logger,
-    subtitles, ui,
+    db, helpers, logger, postProcessor,
+    subtitles, ui
 )
 from ....common import (
     Overview, Quality, SNATCHED,
@@ -20,12 +21,13 @@ from ....common import (
 from ....helper.common import (
     episode_num, try_int,
 )
-from ....helper.encoding import ek
 from ....helper.exceptions import (
     CantRefreshShowException,
     CantUpdateShowException,
 )
+from ....helpers import isMediaFile
 from ....show.Show import Show
+from ....tv import TVEpisode
 
 
 @route('/manage(/?.*)')
@@ -273,6 +275,52 @@ class Manage(Home, WebRoot):
 
         return self.redirect('/manage/subtitleMissed/')
 
+    def subtitleMissedPP(self):
+        t = PageTemplate(rh=self, filename='manage_subtitleMissedPP.mako')
+        app.RELEASES_IN_PP = []
+        for root, _, files in os.walk(app.TV_DOWNLOAD_DIR, topdown=False):
+            for filename in sorted(files):
+                if not isMediaFile(filename):
+                    continue
+
+                video_path = os.path.join(root, filename)
+                video_date = datetime.datetime.fromtimestamp(os.stat(video_path).st_ctime)
+                video_age = datetime.datetime.today() - video_date
+
+                tv_episode = TVEpisode.from_filepath(video_path)
+
+                if not tv_episode:
+                    logger.log(u"Filename '{0}' cannot be parsed to an episode".format(filename), logger.DEBUG)
+                    continue
+
+                if not tv_episode.show.subtitles:
+                    continue
+
+                related_files = postProcessor.PostProcessor(video_path).list_associated_files(video_path, base_name_only=True, subfolders=False)
+                if related_files:
+                    continue
+
+                age_hours = divmod(video_age.seconds, 3600)[0]
+                age_minutes = divmod(video_age.seconds, 60)[0]
+                if video_age.days > 0:
+                    age_unit = 'd'
+                    age_value = video_age.days
+                elif age_hours > 0:
+                    age_unit = 'h'
+                    age_value = age_hours
+                else:
+                    age_unit = 'm'
+                    age_value = age_minutes
+
+                app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.show.indexerid, 'show_name': tv_episode.show.name,
+                                           'season': tv_episode.season, 'episode': tv_episode.episode,
+                                           'age': age_value, 'age_unit': age_unit, 'age_raw': video_age})
+        app.RELEASES_IN_PP = sorted(app.RELEASES_IN_PP, key=lambda k: k['age_raw'], reverse=True)
+
+        return t.render(releases_in_pp=app.RELEASES_IN_PP, title='Missing Subtitles in Post-Process folder',
+                        header='Missing Subtitles in Post Process folder', topmenu='manage',
+                        controller='manage', action='subtitleMissedPP')
+
     def backlogShow(self, indexer_id):
         show_obj = Show.find(app.showList, int(indexer_id))
 
@@ -380,7 +428,7 @@ class Manage(Home, WebRoot):
 
         for cur_show in show_list:
 
-            cur_root_dir = ek(os.path.dirname, cur_show._location)  # pylint: disable=protected-access
+            cur_root_dir = os.path.dirname(cur_show._location)  # pylint: disable=protected-access
             if cur_root_dir not in root_dir_list:
                 root_dir_list.append(cur_root_dir)
 
@@ -482,10 +530,10 @@ class Manage(Home, WebRoot):
             if not show_obj:
                 continue
 
-            cur_root_dir = ek(os.path.dirname, show_obj._location)  # pylint: disable=protected-access
-            cur_show_dir = ek(os.path.basename, show_obj._location)  # pylint: disable=protected-access
+            cur_root_dir = os.path.dirname(show_obj._location)  # pylint: disable=protected-access
+            cur_show_dir = os.path.basename(show_obj._location)  # pylint: disable=protected-access
             if cur_root_dir in dir_map and cur_root_dir != dir_map[cur_root_dir]:
-                new_show_dir = ek(os.path.join, dir_map[cur_root_dir], cur_show_dir)
+                new_show_dir = os.path.join(dir_map[cur_root_dir], cur_show_dir)
                 logger.log(u'For show {show.name} changing dir from {show.location} to {location}'.format
                            (show=show_obj, location=new_show_dir))  # pylint: disable=protected-access
             else:

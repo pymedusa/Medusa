@@ -32,7 +32,8 @@ class InfoHandler(BaseRequestHandler):
             'timePreset': app.TIME_PRESET,
             'trimZero': app.TRIM_ZERO,
             'fanartBackground': app.FANART_BACKGROUND,
-            'fanartBackgroundOpacity': app.FANART_BACKGROUND_OPACITY
+            'fanartBackgroundOpacity': app.FANART_BACKGROUND_OPACITY,
+            'subtitlesMulti': app.SUBTITLES_MULTI
         }
 
         if info_query:

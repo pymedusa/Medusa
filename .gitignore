@@ -5,9 +5,11 @@
 /data/
 restore/
 backup*/
+backup-*.zip
 cache.db*
 config.ini*
 sickbeard.db*
+main.db.*
 failed.db*
 *.db
 autoProcessTV.cfg
@@ -66,6 +68,7 @@ lib/unrar2/UnRAR.exe
 .build/bower_components
 .build/node_modules
 .build/dist
+.build/package.json
 
 # Unit test/Coverage #
 ######################
