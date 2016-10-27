@@ -40,24 +40,24 @@ class BaseUI(object):
                           "The self.log attribute will be removed in the next version")
             self.log = logging.getLogger(__name__)
 
-    def selectSeries(self, allSeries):
-        return allSeries[0]
+    def select_series(self, all_series):
+        return all_series[0]
 
 
 class ConsoleUI(BaseUI):
     """Interactively allows the user to select a show from a console based UI"""
-    def _displaySeries(self, allSeries, limit=6):
+    def _display_series(self, all_series, limit=6):
         """Helper function, lists series with corresponding ID
         """
         if limit is not None:
-            toshow = allSeries[:limit]
+            toshow = all_series[:limit]
         else:
-            toshow = allSeries
+            toshow = all_series
 
         print 'TVDB Search Results:'
         for i, cshow in enumerate(toshow):
             i_show = i + 1  # Start at more human readable number 1 (not 0)
-            log().debug('Showing allSeries[%s], series %s)', i_show, allSeries[i]['seriesname'])
+            log().debug('Showing all_series[%s], series %s)', i_show, all_series[i]['seriesname'])
             if i == 0:
                 extra = ' (default)'
             else:
@@ -72,17 +72,17 @@ class ConsoleUI(BaseUI):
                 extra
             )
 
-    def selectSeries(self, allSeries):
-        self._displaySeries(allSeries)
+    def select_series(self, all_series):
+        self._display_series(all_series)
 
-        if len(allSeries) == 1:
+        if len(all_series) == 1:
             # Single result, return it!
             print 'Automatically selecting only result'
-            return allSeries[0]
+            return all_series[0]
 
         if self.config['select_first'] is True:
             print 'Automatically returning first search result'
-            return allSeries[0]
+            return all_series[0]
 
         while True:  # return breaks this loop
             try:
@@ -100,7 +100,7 @@ class ConsoleUI(BaseUI):
                 if len(ans.strip()) == 0:
                     # Default option
                     log().debug('Default option, returning first series')
-                    return allSeries[0]
+                    return all_series[0]
                 if ans == 'q':
                     log().debug('Got quit command (q)')
                     raise tvmaze_userabort("User aborted ('q' quit command)")
@@ -113,14 +113,14 @@ class ConsoleUI(BaseUI):
                     print '# q - abort tvnamer'
                     print '# Press return with no input to select first result'
                 elif ans.lower() in ['a', 'all']:
-                    self._displaySeries(allSeries, limit=None)
+                    self._display_series(all_series, limit=None)
                 else:
                     log().debug('Unknown keypress %s', ans)
             else:
                 log().debug('Trying to return ID: %d', selected_id)
                 try:
-                    return allSeries[selected_id]
+                    return all_series[selected_id]
                 except IndexError:
                     log().debug('Invalid show number entered!')
                     print 'Invalid number (%s) selected!'
-                    self._displaySeries(allSeries)
+                    self._display_series(all_series)

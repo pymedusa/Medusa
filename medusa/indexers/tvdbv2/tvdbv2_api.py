@@ -18,29 +18,32 @@
 
 from __future__ import unicode_literals
 
-from collections import OrderedDict
 import logging
+from collections import OrderedDict
 from requests.compat import urljoin
 
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi, UpdatesApi)
 
 from .tvdbv2_ui import BaseUI, ConsoleUI
-from ..indexer_base import (BaseIndexer, Actors, Actor)
+from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete, IndexerShowNotFound)
 
 
 def log():
+    """Return log."""
     return logging.getLogger('tvdbv2_api')
 
 
 class TVDBv2(BaseIndexer):
-    """Create easy-to-use interface to name of season/episode name
+    """Create easy-to-use interface to name of season/episode name.
+
     >>> t = tvdbv2()
     >>> t['Scrubs'][1][24]['episodename']
     u'My Last Day'
     """
 
     def __init__(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-arguments
+        """Init object."""
         super(TVDBv2, self).__init__(*args, **kwargs)
 
         self.config['base_url'] = 'http://thetvdb.com'
@@ -129,8 +132,8 @@ class TVDBv2(BaseIndexer):
         return parsed_response if len(parsed_response) != 1 else parsed_response[0]
 
     def _show_search(self, show, request_language='en'):
-        """
-        Uses the pytvdbv2 API to search for a show
+        """Use the pytvdbv2 API to search for a show.
+
         @param show: The show name that's searched for as a string
         @return: A list of Show objects.
         """
@@ -146,7 +149,7 @@ class TVDBv2(BaseIndexer):
 
     # Tvdb implementation
     def search(self, series):
-        """This searches tvdbv2.com for the series name
+        """Search tvdbv2.com for the series name.
 
         :param series: the query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
@@ -164,13 +167,11 @@ class TVDBv2(BaseIndexer):
         return OrderedDict({'series': mapped_results})['series']
 
     def _get_show_by_id(self, tvdbv2_id, request_language='en'):  # pylint: disable=unused-argument
-        """
-        Retrieve tvdbv2 show information by tvdbv2 id, or if no tvdbv2 id provided by passed external id.
+        """Retrieve tvdbv2 show information by tvdbv2 id, or if no tvdbv2 id provided by passed external id.
 
         :param tvdbv2_id: The shows tvdbv2 id
         :return: An ordered dict with the show searched for.
         """
-
         if tvdbv2_id:
             log().debug('Getting all show data for %s', [tvdbv2_id])
             results = self.series_api.series_id_get(tvdbv2_id, accept_language=request_language)
@@ -183,8 +184,7 @@ class TVDBv2(BaseIndexer):
         return OrderedDict({'series': mapped_results})
 
     def _get_episodes(self, tvdb_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
-        """
-        Get all the episodes for a show by tvdbv2 id
+        """Get all the episodes for a show by tvdbv2 id.
 
         :param tvdb_id: Series tvdbv2 id.
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
@@ -262,27 +262,27 @@ class TVDBv2(BaseIndexer):
                 self._set_item(tvdb_id, seas_no, ep_no, k, v)
 
     def _get_series(self, series):
-        """This searches thetvdb.com for the series name,
+        """Search thetvdb.com for the series name.
+
         If a custom_ui UI is configured, it uses this to select the correct
         series. If not, and interactive == True, ConsoleUI is used, if not
         BaseUI is used to select the first result.
 
         :param series: the query for the series name
-        :return: A list of series mapped to a UI (for example: a BaseUi or CustomUI).
+        :return: A list of series mapped to a UI (for example: a BaseUi or custom_ui).
         """
-
-        allSeries = self.search(series)
-        if not allSeries:
+        all_series = self.search(series)
+        if not all_series:
             log().debug('Series result returned zero')
             IndexerShowNotFound('Show search returned zero results (cannot find show on TVDB)')
 
-        if not isinstance(allSeries, list):
-            allSeries = [allSeries]
+        if not isinstance(all_series, list):
+            all_series = [all_series]
 
         if self.config['custom_ui'] is not None:
             log().debug('Using custom UI %s', [repr(self.config['custom_ui'])])
-            CustomUI = self.config['custom_ui']
-            ui = CustomUI(config=self.config)
+            custom_ui = self.config['custom_ui']
+            ui = custom_ui(config=self.config)
         else:
             if not self.config['interactive']:
                 log().debug('Auto-selecting first search result using BaseUI')
@@ -291,12 +291,12 @@ class TVDBv2(BaseIndexer):
                 log().debug('Interactively selecting show using ConsoleUI')
                 ui = ConsoleUI(config=self.config)  # pylint: disable=redefined-variable-type
 
-        return ui.selectSeries(allSeries)
+        return ui.select_series(all_series)
 
     def _parse_images(self, sid):
-        """Parses images XML, from
-        http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/banners.xml
+        """Parse images XML.
 
+        From http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/banners.xml
         images are retrieved using t['show name]['_banners'], for example:
 
         >>> t = Tvdb(images = True)
@@ -372,9 +372,9 @@ class TVDBv2(BaseIndexer):
         self._set_show_data(sid, '_banners', _images)
 
     def _parse_actors(self, sid):
-        """Parsers actors XML, from
-        http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
+        """Parser actors XML.
 
+        From http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
         Actors are retrieved using t['show name]['_actors'], for example:
 
         >>> t = Tvdb(actors = True)
@@ -415,7 +415,9 @@ class TVDBv2(BaseIndexer):
         self._set_show_data(sid, '_actors', cur_actors)
 
     def _get_show_data(self, sid, language, get_ep_info=False):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-        """Takes a series ID, gets the epInfo URL and parses the TheTVDB json response
+        """Parse TheTVDB json response.
+
+        Takes a series ID, gets the epInfo URL and parses the TheTVDB json response
         into the shows dict in layout:
         shows[series_id][season_number][episode_number]
         """
@@ -469,10 +471,11 @@ class TVDBv2(BaseIndexer):
 
     # Public methods, usable separate from the default api's interface api['show_id']
     def get_last_updated_series(self, from_time, weeks=1):
-        """Retrieve a list with updated shows
+        """Retrieve a list with updated shows.
 
         @param from_time: epoch timestamp, with the start date/time
-        @param until_time: epoch timestamp, with the end date/time (not mandatory)"""
+        @param until_time: epoch timestamp, with the end date/time (not mandatory)
+        """
         total_updates = []
         updates = True
 
@@ -487,5 +490,6 @@ class TVDBv2(BaseIndexer):
         return total_updates
 
     def get_episodes_for_season(self, show_id, *args, **kwargs):
+        """Return all episodes of given season."""
         self._get_episodes(show_id, *args, **kwargs)
         return self.shows[show_id]

@@ -592,21 +592,21 @@ class TVmaze(object):
         BaseUI is used to select the first result.
 
         :param series: the query for the series name
-        :return: A list of series mapped to a UI (for example: a BaseUi or CustomUI).
+        :return: A list of series mapped to a UI (for example: a BaseUi or custom_ui).
         """
 
-        allSeries = self.search(series)
-        if not allSeries:
+        all_series = self.search(series)
+        if not all_series:
             log().debug('Series result returned zero')
             raise tvmaze_shownotfound('Show search returned zero results (cannot find show on TVDB)')
 
-        if not isinstance(allSeries, list):
-            allSeries = [allSeries]
+        if not isinstance(all_series, list):
+            all_series = [all_series]
 
         if self.config['custom_ui'] is not None:
             log().debug('Using custom UI %s', [repr(self.config['custom_ui'])])
-            CustomUI = self.config['custom_ui']
-            ui = CustomUI(config=self.config)
+            custom_ui = self.config['custom_ui']
+            ui = custom_ui(config=self.config)
         else:
             if not self.config['interactive']:
                 log().debug('Auto-selecting first search result using BaseUI')
@@ -615,7 +615,7 @@ class TVmaze(object):
                 log().debug('Interactively selecting show using ConsoleUI')
                 ui = ConsoleUI(config=self.config)  # pylint: disable=redefined-variable-type
 
-        return ui.selectSeries(allSeries)
+        return ui.select_series(all_series)
 
     def _parseBanners(self, sid):
         """Parses banners XML, from

@@ -151,7 +151,7 @@ class BaseIndexer(object):
         BaseUI is used to select the first result.
 
         :param series: the query for the series name
-        :return: A list of series mapped to a UI (for example: a BaseUi or CustomUI).
+        :return: A list of series mapped to a UI (for example: a BaseUi or custom_ui).
         """
         return None
 
