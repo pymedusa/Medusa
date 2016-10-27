@@ -26,7 +26,7 @@ from tornado.routes import route
 from tornado.web import HTTPError, RequestHandler, authenticated
 from ...api.v1.core import function_mapper
 from .... import (
-    classes, db, helpers, logger, network_timezones, ui
+    classes, db, ehandler, helpers, logger, network_timezones, ui
 )
 from ....media.ShowBanner import ShowBanner
 from ....media.ShowFanArt import ShowFanArt
@@ -272,9 +272,8 @@ class WebHandler(BaseHandler):
 
             result = function(**kwargs)
             return result
-        except Exception:
-            logger.log(u'Failed doing web ui callback: {error}'.format(error=traceback.format_exc()), logger.ERROR)
-            raise
+        except Exception as e:
+            ehandler.handle('HTTP REQUEST', e)
 
     # post uses get method
     post = get

@@ -20,10 +20,8 @@
 import datetime
 import threading
 import time
-import traceback
 
-from . import logger
-from .helper.exceptions import ex
+from . import ehandler, logger
 
 
 class Scheduler(threading.Thread):
@@ -111,5 +109,5 @@ class Scheduler(threading.Thread):
             # exiting thread
             self.stop.clear()
         except Exception as e:
-            logger.log(u"Exception generated in thread " + self.name + ": " + ex(e), logger.ERROR)
-            logger.log(repr(traceback.format_exc()), logger.DEBUG)
+            ehandler.handle(self.name, e)
+

@@ -99,7 +99,7 @@ except AttributeError:
     pass
 
 import medusa as app
-from medusa import db, failed_history, logger, name_cache, network_timezones
+from medusa import db, ehandler, failed_history, logger, name_cache, network_timezones
 from medusa.event_queue import Events
 from medusa.server.core import AppWebServer
 from medusa.tv import TVShow
@@ -164,10 +164,16 @@ class Application(object):
 
         return help_msg
 
-    def start(self, args):  # pylint: disable=too-many-branches,too-many-statements
+    def start(self, args):
         """
         Start Application
         """
+        try:
+            self._do_start(args)
+        except Exception as e:
+            ehandler.handle('MAIN', e)
+
+    def _do_start(self, args):
         # do some preliminary stuff
         app.MY_FULLNAME = os.path.normpath(os.path.abspath(__file__))
         app.MY_NAME = os.path.basename(app.MY_FULLNAME)
