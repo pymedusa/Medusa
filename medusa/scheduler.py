@@ -110,4 +110,3 @@ class Scheduler(threading.Thread):
             self.stop.clear()
         except Exception as e:
             ehandler.handle(self.name, e)
-
