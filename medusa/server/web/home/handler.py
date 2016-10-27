@@ -1034,7 +1034,6 @@ class Home(WebRoot):
                         perform_search=0, down_cur_quality=0, show_all_results=0):
         """ The view with results for the manual selected show/episode """
 
-        indexer_tvdb = 1
         # @TODO: add more comprehensive show validation
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
