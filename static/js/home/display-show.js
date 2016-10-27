@@ -1,7 +1,7 @@
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
-    if (MEDUSA.info.fanartBackground) {
+    if (MEDUSA.config.fanartBackground) {
         $.backstretch('showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
-        $('.backstretch').css('opacity', MEDUSA.info.fanartBackgroundOpacity).fadeIn(500);
+        $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
     }
 
     $.ajaxEpSearch({

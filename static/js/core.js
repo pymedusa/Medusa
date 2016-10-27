@@ -45,7 +45,7 @@ $.extend({
                 return m[1].toUpperCase();
             });
         }
-        return (reg).test(MEDUSA.info[pyVar]);
+        return (reg).test(MEDUSA.config[pyVar]);
     }
 });
 
@@ -70,13 +70,13 @@ if (document.location.pathname.endsWith('/login/')) {
     $('[v-cloak]').removeAttr('v-cloak');
 } else {
     $.ajax({
-        url: apiRoot + 'info?api_key=' + apiKey,
+        url: apiRoot + 'config?api_key=' + apiKey,
         type: 'GET',
         dataType: 'json'
     }).done(function(data) {
-        MEDUSA.info = data;
-        MEDUSA.info.themeSpinner = MEDUSA.info.themeName === 'dark' ? '-dark' : '';
-        MEDUSA.info.loading = '<img src="images/loading16' + MEDUSA.info.themeSpinner + '.gif" height="16" width="16" />';
+        MEDUSA.config = data;
+        MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
+        MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />';
         if (typeof startVue === 'undefined') { // eslint-disable-line no-undef
             $('[v-cloak]').removeAttr('v-cloak');
         } else {

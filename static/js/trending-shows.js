@@ -12,7 +12,7 @@ $(document).ready(function() {
             getSortData: {
                 name: function(itemElem) {
                     var name = $(itemElem).attr('data-name') || '';
-                    return (MEDUSA.info.sortArticle ? name : name.replace(/^(The|A|An)\s/i, '')).toLowerCase(); // eslint-disable-line no-undef
+                    return (MEDUSA.config.sortArticle ? name : name.replace(/^(The|A|An)\s/i, '')).toLowerCase(); // eslint-disable-line no-undef
                 },
                 rating: '[data-rating] parseInt',
                 votes: '[data-votes] parseInt'

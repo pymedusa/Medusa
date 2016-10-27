@@ -178,7 +178,7 @@ MEDUSA.config.search = function() {
 
     $('#testSABnzbd').on('click', function() {
         var sab = {};
-        $('#testSABnzbd_result').html(MEDUSA.info.loading);
+        $('#testSABnzbd_result').html(MEDUSA.config.loading);
         sab.host = $('#sab_host').val();
         sab.username = $('#sab_username').val();
         sab.password = $('#sab_password').val();
@@ -196,7 +196,7 @@ MEDUSA.config.search = function() {
 
     $('#testNZBget').on('click', function() {
         var nzbget = {};
-        $('#testNZBget_result').html(MEDUSA.info.loading);
+        $('#testNZBget_result').html(MEDUSA.config.loading);
         nzbget.host = $('#nzbget_host').val();
         nzbget.username = $('#nzbget_username').val();
         nzbget.password = $('#nzbget_password').val();
@@ -218,7 +218,7 @@ MEDUSA.config.search = function() {
 
     $('#test_torrent').on('click', function() {
         var torrent = {};
-        $('#test_torrent_result').html(MEDUSA.info.loading);
+        $('#test_torrent_result').html(MEDUSA.config.loading);
         torrent.method = $('#torrent_method :selected').val();
         torrent.host = $('#torrent_host').val();
         torrent.username = $('#torrent_username').val();

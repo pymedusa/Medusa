@@ -15,8 +15,6 @@ from ....issuesubmitter import IssueSubmitter
 from ....logger import filter_logline, read_loglines
 from ....versionChecker import CheckVersion
 
-
-# log name filters
 log_name_filters = {
     None: html_escape('<No Filter>'),
     'DAILYSEARCHER': 'Daily Searcher',
@@ -60,6 +58,8 @@ log_periods = {
 @route('/errorlogs(/?.*)')
 class ErrorLogs(WebRoot):
     """Route to errorlogs web page."""
+
+    # @TODO: Move this route to /log(/?)
 
     # GitHub Issue submitter
     issue_submitter = IssueSubmitter()
@@ -113,6 +113,7 @@ class ErrorLogs(WebRoot):
 
     def clearerrors(self, level=logger.ERROR):
         """Clear the errors or warnings."""
+        # @TODO: Replace this with DELETE /api/v2/log/{logLevel} or /api/v2/log/
         if int(level) == logger.WARNING:
             WarningViewer.clear()
         else:
@@ -122,6 +123,7 @@ class ErrorLogs(WebRoot):
 
     def viewlog(self, min_level=logger.INFO, log_filter=None, log_search=None, max_lines=1000, log_period='one_day', **kwargs):
         """View the log given the specified filters."""
+        # @TODO: Replace index with this or merge it so ?search=true or ?query={queryString} enables this "view"
         min_level = int(min_level)
         log_filter = log_filter if log_filter in log_name_filters else None
 

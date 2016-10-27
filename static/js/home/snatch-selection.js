@@ -1,12 +1,12 @@
 MEDUSA.home.snatchSelection = function() {
-    if (MEDUSA.info.fanartBackground) {
+    if (MEDUSA.config.fanartBackground) {
         $.backstretch('showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
-        $('.backstretch').css('opacity', MEDUSA.info.fanartBackgroundOpacity).fadeIn(500);
+        $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
     }
     var spinner = $('#searchNotification');
     var updateSpinner = function(spinner, message, showSpinner) {
         if (showSpinner) {
-            $(spinner).html('<img id="searchingAnim" src="images/loading32' + MEDUSA.info.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message);
+            $(spinner).html('<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message);
         } else {
             $(spinner).empty().html(message);
         }

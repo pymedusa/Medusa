@@ -1,7 +1,7 @@
 MEDUSA.addShows.init = function() {
     $('#tabs').tabs({
         collapsible: true,
-        selected: (MEDUSA.info.sortArticle ? -1 : 0)
+        selected: (MEDUSA.config.sortArticle ? -1 : 0)
     });
 
     $.initRemoteShowGrid = function() {
@@ -49,7 +49,7 @@ MEDUSA.addShows.init = function() {
             getSortData: {
                 name: function(itemElem) {
                     var name = $(itemElem).attr('data-name') || '';
-                    return (MEDUSA.info.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
+                    return (MEDUSA.config.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
                 },
                 rating: '[data-rating] parseInt',
                 votes: '[data-votes] parseInt'
@@ -58,7 +58,7 @@ MEDUSA.addShows.init = function() {
     };
 
     $.fn.loadRemoteShows = function(path, loadingTxt, errorTxt) {
-        $(this).html('<img id="searchingAnim" src="images/loading32' + MEDUSA.info.themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
+        $(this).html('<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
         $(this).load(path + ' #container', function(response, status) {
             if (status === 'error') {
                 $(this).empty().html(errorTxt);
