@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Base class for indexer api's"""
 
 from __future__ import unicode_literals
 
@@ -32,8 +32,6 @@ from six import iteritems
 
 from .indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound,
                                  IndexerSeasonNotFound, IndexerSeasonUpdatesNotSupported)
-
-"""Base class for indexer api's"""
 
 
 class BaseIndexer(object):
