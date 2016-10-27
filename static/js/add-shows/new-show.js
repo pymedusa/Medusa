@@ -67,7 +67,7 @@ MEDUSA.addShows.newShow = function() {
 
     var searchRequestXhr = null;
     function searchIndexers() {
-        if ($('#nameToSearch').val().length !== 0) {
+        if ($('#nameToSearch').val().length == 0) {
             return;
         }
 
