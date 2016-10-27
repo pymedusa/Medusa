@@ -86,7 +86,7 @@ class OmgwtfnzbsProvider(NZBProvider):
 
                 for item in response:
                     try:
-                        if not self._get_title_and_url(item):
+                        if not all(self._get_title_and_url(item)):
                             continue
 
                         logger.log('Found result: {0}'.format(item.get('title')), logger.DEBUG)
