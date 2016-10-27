@@ -20,6 +20,7 @@ from ....blackandwhitelist import BlackAndWhiteList, short_group_names
 from ....common import FAILED, IGNORED, Overview, Quality, SKIPPED, UNAIRED, WANTED, cpu_presets, statusStrings
 from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
+from ....indexers.indexer_config import INDEXER_TVDBV2
 from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
 from ....scene_numbering import (
     get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
@@ -27,7 +28,6 @@ from ....scene_numbering import (
     get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
     set_scene_numbering, xem_refresh
 )
-from ....indexers.indexer_config import INDEXER_TVDBV2
 from ....search.manual import (
     SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING, collectEpisodesFromSearchThread,
     getEpisode, get_provider_cache_results, update_finished_search_queue_item
