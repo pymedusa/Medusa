@@ -17,6 +17,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from .tvdbv2.tvdbv2_api import TVDBv2
+from .tmdb.tmdb import Tmdb
 from .. import helpers
 
 initConfig = {
@@ -35,6 +36,7 @@ initConfig = {
 INDEXER_TVDBV2 = 1
 INDEXER_TVRAGE = 2  # Must keep
 # INDEXER_TVMAZE = 3
+INDEXER_TMDB = 4
 
 mapping = {
     'tvdb': INDEXER_TVDBV2
@@ -59,5 +61,24 @@ indexerConfig = {
         'base_url': 'https://api.thetvdb.com',
         'show_url': 'http://thetvdb.com/?tab=series&id=',
         'mapped_to': 'tvdbid'  # The attribute to which other indexers can map there thetvdb id to
+    },
+    INDEXER_TMDB: {
+        'enabled': True,
+        'id': INDEXER_TMDB,
+        'name': 'TMDB',
+        'module': Tmdb,
+        'api_params': {
+            'language': 'en',
+            'use_zip': True,
+            'session': helpers.make_session(cache_etags=False),
+        },
+        'trakt_id': 'tvdb_id',
+        'xem_origin': 'tvdb',
+        'icon': 'thetvdb16.png',
+        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
+        'base_url': 'https://api.thetvdb.com',
+        'show_url': 'http://thetvdb.com/?tab=series&id=',
+        'mapped_to': 'tvdbid'  # The attribute to which other indexers can map there thetvdb id to
     }
+
 }
