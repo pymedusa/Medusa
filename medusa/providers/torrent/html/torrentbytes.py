@@ -144,7 +144,7 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     if freeleech:
                         title = title[:-5] # Remove trailing "[F L]"                   
                         if self.freeleech and freeleech.get_text(strip=True) != '[F\xa0L]':
-                                continue
+                            continue
 
                     seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
                     leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
