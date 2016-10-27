@@ -141,7 +141,8 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                         # Free leech torrents are marked with green [F L] in the title (i.e. <font color=green>[F&nbsp;L]</font>)
                         freeleech = cells[labels.index('Name')].find('font', color='green')
                         if freeleech:
-                            title = title[:-5] # Remove trailing "[F L]"                      
+                            title = title[:-5] # Remove trailing "[F L]"                     
+                        if self.freeleech:
                         # Free leech torrents are marked with green [F L] in the title (i.e. <font color=green>[F&nbsp;L]</font>)
                         freeleech = cells[labels.index('Name')].find('font', color='green')
                         if not freeleech or freeleech.get_text(strip=True) != '[F\xa0L]':
