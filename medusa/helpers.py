@@ -23,6 +23,7 @@ import ctypes
 import datetime
 import errno
 import hashlib
+import imghdr
 import io
 import logging
 import os
@@ -33,6 +34,7 @@ import shutil
 import socket
 import ssl
 import stat
+import struct
 import time
 import traceback
 import uuid
@@ -1557,6 +1559,36 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
         return s.data.get('seriesname')
 
     return None
+
+
+# http://stackoverflow.com/a/20380514
+def get_image_size(image_path):
+    """Determine the image type of image_path and return its size.."""
+    with open(image_path, 'rb') as f:
+        head = f.read(24)
+        if len(head) != 24:
+            return
+        if imghdr.what(image_path) == 'png':
+            check = struct.unpack('>i', head[4:8])[0]
+            if check != 0x0d0a1a0a:
+                return
+            return struct.unpack('>ii', head[16:24])
+        elif imghdr.what(image_path) == 'gif':
+            return struct.unpack('<HH', head[6:10])
+        elif imghdr.what(image_path) == 'jpeg':
+            f.seek(0)  # Read 0xff next
+            size = 2
+            ftype = 0
+            while not 0xc0 <= ftype <= 0xcf:
+                f.seek(size, 1)
+                byte = f.read(1)
+                while ord(byte) == 0xff:
+                    byte = f.read(1)
+                ftype = ord(byte)
+                size = struct.unpack('>H', f.read(2))[0] - 2
+            # We are at a SOFn block
+            f.seek(1, 1)  # Skip `precision' byte.
+            return struct.unpack('>HH', f.read(4))
 
 
 def remove_folder(folder_path, level=logging.WARNING):
