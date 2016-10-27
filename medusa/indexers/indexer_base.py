@@ -15,12 +15,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-"""Base class for indexer api's"""
+"""Base class for indexer api's."""
 
 from __future__ import unicode_literals
 
-import getpass
 import cgi
+import getpass
 import logging
 import os
 import re
@@ -54,7 +54,7 @@ class BaseIndexer(object):
                  proxy=None,
                  session=None,
                  image_type=None):  # pylint: disable=too-many-locals,too-many-arguments
-        """Pass these arguments on as args from the subclass"""
+        """Pass these arguments on as args from the subclass."""
         self.shows = ShowContainer()  # Holds all Show classes
         self.corrections = {}  # Holds show-name to show_id mapping
 
@@ -144,7 +144,7 @@ class BaseIndexer(object):
         return None
 
     def _get_series(self, series):
-        """This searches thetvdb.com for the series name.
+        """Search thetvdb.com for the series name.
 
         If a custom_ui UI is configured, it uses this to select the correct
         series. If not, and interactive == True, ConsoleUI is used, if not
@@ -243,14 +243,15 @@ class BaseIndexer(object):
 
 class ShowContainer(dict):
     """Simple dict that holds a series of Show instances."""
+
     def __init__(self):
-        """Init for ShowContainer"""
+        """Init for ShowContainer."""
         dict.__init__(self)
         self._stack = []
         self._lastgc = time.time()
 
     def __setitem__(self, key, value):
-        """Set ShowContainer attribut"""
+        """Set ShowContainer attribut."""
         self._stack.append(key)
 
         # keep only the 100th latest results
@@ -267,7 +268,9 @@ class ShowContainer(dict):
 
 class Show(dict):
     """Hold a dict of seasons, and show data."""
+
     def __init__(self):
+        """Init method of show dict."""
         dict.__init__(self)
         self.data = {}
 
@@ -338,6 +341,8 @@ class Show(dict):
 
 
 class Season(dict):
+    """Hold all Seasons instances for a show."""
+
     def __init__(self, show=None):  # pylint: disable=super-init-not-called
         """Show attribute points to the parent show."""
         self.show = show
@@ -362,8 +367,7 @@ class Season(dict):
             return dict.__getitem__(self, episode_number)
 
     def search(self, term=None, key=None):
-        """Search all episodes in season, returns a list of matching Episode
-        instances.
+        """Search all episodes in season, returns a list of matching Episode instances.
 
         >>> t = Tvdb()
         >>> t['scrubs'][1].search('first day')
@@ -371,6 +375,7 @@ class Season(dict):
         >>>
 
         See Show.search documentation for further information on search
+
         """
         results = []
         for ep in self.values():
@@ -383,6 +388,8 @@ class Season(dict):
 
 
 class Episode(dict):
+    """Hold all episodes instances of a show."""
+
     def __init__(self, season=None):  # pylint: disable=super-init-not-called
         """The season attribute points to the parent season."""
         self.season = season
@@ -448,6 +455,7 @@ class Episode(dict):
 
 class Actors(list):
     """Hold all Actor instances for a show."""
+
     pass
 
 
@@ -463,4 +471,5 @@ class Actor(dict):
     """
 
     def __repr__(self):
+        """Representation of actor name."""
         return '<Actor "%s">' % (self.get('name'))
