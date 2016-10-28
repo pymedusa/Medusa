@@ -21,7 +21,7 @@ import datetime
 import threading
 import time
 
-from . import ehandler, logger
+from . import exception_handler, logger
 
 
 class Scheduler(threading.Thread):
@@ -109,4 +109,4 @@ class Scheduler(threading.Thread):
             # exiting thread
             self.stop.clear()
         except Exception as e:
-            ehandler.handle(self.name, e)
+            exception_handler.handle(self.name, e)
