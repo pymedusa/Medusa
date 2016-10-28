@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+import os
 
+import bencode
+from bencode.BTL import BTFailure
 from feedparser.util import FeedParserDict
-from hachoir_parser import createParser
 import medusa as app
 from ..GenericProvider import GenericProvider
 from ... import logger
@@ -103,22 +105,14 @@ class TorrentProvider(GenericProvider):
         return title, download_url
 
     def _verify_download(self, file_name=None):
+        if not file_name or not os.path.isfile(file_name):
+            return False
+
         try:
-            parser = createParser(file_name)
-
-            if parser:
-                # pylint: disable=protected-access
-                # Access to a protected member of a client class
-                mime_type = parser._getMimeType()
-
-                try:
-                    parser.stream._input.close()
-                except Exception:
-                    pass
-
-                if mime_type == 'application/x-bittorrent':
-                    return True
-        except Exception as e:
+            with open(file_name, 'rb') as f:
+                meta_info = bencode.bdecode(f.read())
+            return 'info' in meta_info and meta_info['info']
+        except BTFailure as e:
             logger.log(u'Failed to validate torrent file: %s' % ex(e), logger.DEBUG)
 
         logger.log(u'Result is not a valid torrent file', logger.DEBUG)

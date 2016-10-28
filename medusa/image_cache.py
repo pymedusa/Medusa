@@ -19,16 +19,12 @@
 
 import os.path
 
-from hachoir_core.log import log
-from hachoir_metadata import extractMetadata
-from hachoir_parser import createParser
 import medusa as app
+from medusa.helpers import get_image_size
 from . import helpers, logger
 from .helper.common import try_int
 from .helper.exceptions import ShowDirectoryNotFoundException
 from .metadata.generic import GenericMetadata
-
-log.use_print = False
 
 
 class ImageCache(object):
@@ -167,18 +163,15 @@ class ImageCache(object):
                            (image_path=image_path, error_msg=e), logger.WARNING)
             return
 
-        # use hachoir to parse the image for us
-        img_parser = createParser(image_path)
-        img_metadata = extractMetadata(img_parser)
+        image_dimension = get_image_size(image_path)
 
-        if not img_metadata:
+        if not image_dimension:
             logger.log(u"Unable to get metadata from {image_path}, not using your existing image".format
                        (image_path=image_path), logger.DEBUG)
             return None
 
-        img_ratio = float(img_metadata.get('width')) / float(img_metadata.get('height'))
-
-        img_parser.stream._input.close()
+        width, height = image_dimension
+        img_ratio = float(width) / float(height)
 
         # most posters are around 0.68 width/height ratio (eg. 680/1000)
         if 0.55 < img_ratio < 0.8:
