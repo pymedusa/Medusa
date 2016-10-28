@@ -22,7 +22,7 @@ import logging
 import os.path
 
 import medusa as app
-from . import processTV
+from . import process_tv
 
 
 logger = logging.getLogger(__name__)
@@ -54,6 +54,6 @@ class PostProcessor(object):
                              folder=app.TV_DOWNLOAD_DIR)
                 return
 
-            processTV.processDir(app.TV_DOWNLOAD_DIR, force=force)
+            process_tv.processDir(app.TV_DOWNLOAD_DIR, force=force)
         finally:
             self.amActive = False
