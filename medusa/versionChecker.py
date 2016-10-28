@@ -504,10 +504,13 @@ class GitUpdateManager(UpdateManager):
             exit_status = 0
 
         elif exit_status == 1:
-            if 'stash' in output:
-                logger.log(u"Please enable 'git reset' in settings or stash your changes in local files", logger.WARNING)
+            if output:
+                if 'stash' in output:
+                    logger.log(u"Please enable 'git reset' in settings or stash your changes in local files", logger.WARNING)
+                else:
+                    logger.log(cmd + u" returned : " + str(output), logger.WARNING)
             else:
-                logger.log(cmd + u" returned : " + str(output), logger.WARNING)
+                    logger.log(cmd + u" returned no data", logger.WARNING)
             exit_status = 1
 
         elif exit_status == 128 or 'fatal:' in output or err:
