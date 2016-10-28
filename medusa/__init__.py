@@ -33,7 +33,7 @@ import requests
 import shutil_custom
 from . import (
     app, auto_postprocessor, cache, db, helpers, logger, metadata, naming, providers,
-    scheduler, showUpdater, show_queue, subtitles, traktChecker, versionChecker
+    scheduler, showUpdater, show_queue, subtitles, traktChecker, version_checker
 )
 from .common import SD, SKIPPED, WANTED
 from .config import (
@@ -1322,7 +1322,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             pass
 
         if VERSION_NOTIFY:
-            updater = versionChecker.CheckVersion().updater
+            updater = version_checker.CheckVersion().updater
             if updater:
                 APP_VERSION = updater.get_cur_version()
 
@@ -1420,7 +1420,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # initialize schedulers
         # updaters
-        versionCheckScheduler = scheduler.Scheduler(versionChecker.CheckVersion(),
+        versionCheckScheduler = scheduler.Scheduler(version_checker.CheckVersion(),
                                                     cycleTime=datetime.timedelta(hours=UPDATE_FREQUENCY),
                                                     threadName="CHECKVERSION",
                                                     silent=False)

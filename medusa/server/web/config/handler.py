@@ -12,7 +12,7 @@ import medusa as app
 from tornado.routes import route
 from ..core import PageTemplate, WebRoot
 from .... import db
-from ....versionChecker import CheckVersion
+from ....version_checker import CheckVersion
 
 
 @route('/config(/?.*)')

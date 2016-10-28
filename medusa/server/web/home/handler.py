@@ -38,7 +38,7 @@ from ....search.queue import (
 from ....show.Show import Show
 from ....system.Restart import Restart
 from ....system.Shutdown import Shutdown
-from ....versionChecker import CheckVersion
+from ....version_checker import CheckVersion
 
 
 @route('/home(/?.*)')
