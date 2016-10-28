@@ -33,7 +33,7 @@ import requests
 import shutil_custom
 from . import (
     app, auto_postprocessor, cache, db, helpers, logger, metadata, naming, providers,
-    scheduler, showUpdater, show_queue, subtitles, trakt_checker, version_checker
+    scheduler, show_queue, show_updater, subtitles, trakt_checker, version_checker
 )
 from .common import SD, SKIPPED, WANTED
 from .config import (
@@ -1429,7 +1429,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                  cycleTime=datetime.timedelta(seconds=3),
                                                  threadName="SHOWQUEUE")
 
-        showUpdateScheduler = scheduler.Scheduler(showUpdater.ShowUpdater(),
+        showUpdateScheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
                                                   cycleTime=datetime.timedelta(hours=1),
                                                   threadName="SHOWUPDATER",
                                                   start_time=datetime.time(hour=SHOWUPDATE_HOUR, minute=random.randint(0, 59)))
