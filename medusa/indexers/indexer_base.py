@@ -90,7 +90,7 @@ class BaseIndexer(object):
         self.config['session'] = session if session else requests.Session()
 
         self.config['banners_enabled'] = banners
-        self.config['image_type'] = None
+        self.config['image_type'] = image_type
         self.config['actors_enabled'] = actors
 
         if self.config['debug_enabled']:
