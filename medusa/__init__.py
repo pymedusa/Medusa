@@ -33,7 +33,7 @@ import requests
 import shutil_custom
 from . import (
     app, auto_postprocessor, cache, db, helpers, logger, metadata, naming, providers,
-    scheduler, showUpdater, show_queue, subtitles, traktChecker, version_checker
+    scheduler, showUpdater, show_queue, subtitles, trakt_checker, version_checker
 )
 from .common import SD, SKIPPED, WANTED
 from .config import (
@@ -1482,7 +1482,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                          silent=not PROCESS_AUTOMATICALLY,
                                                          run_delay=update_interval)
         update_interval = datetime.timedelta(minutes=5)
-        traktCheckerScheduler = scheduler.Scheduler(traktChecker.TraktChecker(),
+        traktCheckerScheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                     cycleTime=datetime.timedelta(hours=1),
                                                     threadName="TRAKTCHECKER",
                                                     run_delay=update_interval,
