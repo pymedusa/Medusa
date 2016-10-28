@@ -12,7 +12,7 @@ from tornado.routes import route
 from ..core import PageTemplate, WebRoot
 from ..home import Home
 from .... import (
-    db, helpers, logger, postProcessor,
+    db, helpers, logger, post_processor,
     subtitles, ui
 )
 from ....common import (
@@ -296,7 +296,7 @@ class Manage(Home, WebRoot):
                 if not tv_episode.show.subtitles:
                     continue
 
-                related_files = postProcessor.PostProcessor(video_path).list_associated_files(video_path, base_name_only=True, subfolders=False)
+                related_files = post_processor.PostProcessor(video_path).list_associated_files(video_path, base_name_only=True, subfolders=False)
                 if related_files:
                     continue
 
