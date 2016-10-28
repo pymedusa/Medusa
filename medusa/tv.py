@@ -1531,6 +1531,7 @@ class TVShow(TVObject):
     def to_json(self):
         """Return JSON representation."""
         # @TODO: Should we also return the season list with all episodes?
+        # work in progress
         genres = list(set([v for v in self.genre.split('|') if v] + [v for v in self.imdb_info['genres'].replace('Sci-Fi', 'Science-Fiction').split('|') if v]))
         indexers = {
             1: 'thetvdb',
@@ -1541,7 +1542,6 @@ class TVShow(TVObject):
         for x in [v for v in self.imdb_info['akas'].split('|') if v]:
             val, key = x.split('::')
             akas[key] = val
-        print(self.episodes)
         return OrderedDict([
             ('title', self.name),
             ('akas', akas),
@@ -1582,7 +1582,7 @@ class TVShow(TVObject):
             ('releaseIgnoredWords', [v for v in self.rls_ignore_words.split('|') if v]),
             ('releaseRequiredWords', [v for v in self.rls_require_words.split('|') if v]),
             ('exceptions', self.exceptions),
-            # ('episodes', self.episodes),  # @TODO Should this be included?
+            # ('episodes', [e.to_json() for e in self.episodes]),  # @TODO Should this be included?
         ])
 
     @staticmethod
