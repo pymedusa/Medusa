@@ -34,7 +34,7 @@ import medusa as app
 import shutil_custom
 from six import text_type
 from . import db, helpers, image_cache, logger, network_timezones, notifiers, post_processor, subtitles
-from .blackandwhitelist import BlackAndWhiteList
+from .black_and_white_list import BlackAndWhiteList
 from .common import (
     ARCHIVED, DOWNLOADED, IGNORED, NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND,
     NAMING_LIMITED_EXTEND_E_PREFIXED, NAMING_SEPARATED_REPEAT, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER,
