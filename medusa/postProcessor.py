@@ -952,8 +952,7 @@ class PostProcessor(object):
             return False
 
         if not os.path.exists(self.file_path):
-            self._log(u"File {0} doesn't exist, did unrar fail?".format(self.file_path))
-            return False
+            raise EpisodePostProcessingFailedException(u"File {0} doesn't exist, did unrar fail?".format(self.file_path))
 
         for ignore_file in self.IGNORED_FILESTRINGS:
             if ignore_file in self.file_path:
