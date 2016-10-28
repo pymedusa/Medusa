@@ -37,7 +37,7 @@ from ..helpers import download_file, getURL, make_session, remove_file_failed
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from ..show.Show import Show
 from ..show_name_helpers import allPossibleShowNames
-from ..tvcache import TVCache
+from ..tv_cache import TVCache
 
 # Keep a list of per provider of recent provider search results
 recent_results = {}

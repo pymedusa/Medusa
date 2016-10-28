@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from requests.compat import urljoin
 from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from .... import logger, tv_cache
 from ....helper.exceptions import AuthException
 
 
@@ -69,7 +69,7 @@ class ShazbatProvider(TorrentProvider):
         return True
 
 
-class ShazbatCache(tvcache.TVCache):
+class ShazbatCache(tv_cache.TVCache):
     def _getRSSData(self):
         params = {
             'passkey': self.provider.passkey,

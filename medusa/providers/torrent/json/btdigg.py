@@ -24,7 +24,7 @@ import traceback
 from requests.compat import urljoin
 
 from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from .... import logger, tv_cache
 from ....helper.common import convert_size
 
 
@@ -58,7 +58,7 @@ class BTDiggProvider(TorrentProvider):
         # Use this hacky way for RSS search since most results will use this codecs
         cache_params = {'RSS': ['x264', 'x264.HDTV', '720.HDTV.x264']}
         # Only poll BTDigg every 30 minutes max, since BTDigg takes some time to crawl
-        self.cache = tvcache.TVCache(self, min_time=30, search_params=cache_params)
+        self.cache = tv_cache.TVCache(self, min_time=30, search_params=cache_params)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """

@@ -22,7 +22,7 @@ import traceback
 
 from requests.compat import urljoin
 from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from .... import logger, tv_cache
 from ....helper.common import convert_size
 
 
@@ -53,7 +53,7 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=10)  # Only poll HD4Free every 10 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll HD4Free every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """

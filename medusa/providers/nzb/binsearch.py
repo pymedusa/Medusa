@@ -22,7 +22,7 @@ import re
 
 from requests.compat import urljoin
 from .NZBProvider import NZBProvider
-from ... import logger, tvcache
+from ... import logger, tv_cache
 
 
 class BinSearchProvider(NZBProvider):
@@ -50,12 +50,12 @@ class BinSearchProvider(NZBProvider):
         self.cache = BinSearchCache(self, min_time=30)  # only poll Binsearch every 30 minutes max
 
 
-class BinSearchCache(tvcache.TVCache):
+class BinSearchCache(tv_cache.TVCache):
 
     def __init__(self, provider_obj, **kwargs):
         kwargs.pop('search_params', None)  # does not use _getRSSData so strip param from kwargs...
         search_params = None  # ...and pass None instead
-        tvcache.TVCache.__init__(self, provider_obj, search_params=search_params, **kwargs)
+        tv_cache.TVCache.__init__(self, provider_obj, search_params=search_params, **kwargs)
 
         # compile and save our regular expressions
 

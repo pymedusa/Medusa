@@ -25,7 +25,7 @@ from contextlib2 import suppress
 import requests
 from requests.compat import urljoin
 from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
@@ -63,7 +63,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=10)
+        self.cache = tv_cache.TVCache(self, min_time=10)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """

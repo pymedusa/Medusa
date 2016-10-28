@@ -24,7 +24,7 @@ import traceback
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
@@ -57,7 +57,7 @@ class TorrentShackProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.minleech = 0
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=20)  # Only poll TorrentShack every 20 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=20)  # Only poll TorrentShack every 20 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """

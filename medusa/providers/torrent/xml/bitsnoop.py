@@ -23,7 +23,7 @@ import traceback
 import medusa as app
 from requests.compat import urljoin
 from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
@@ -56,7 +56,7 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, search_params={'RSS': ['rss']})
+        self.cache = tv_cache.TVCache(self, search_params={'RSS': ['rss']})
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches,too-many-locals
         """

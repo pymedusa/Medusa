@@ -25,7 +25,7 @@ import re
 from bencode import bdecode
 import medusa as app
 from ..TorrentProvider import TorrentProvider
-from .... import helpers, logger, tvcache
+from .... import helpers, logger, tv_cache
 from ....helper.exceptions import ex
 
 
@@ -213,7 +213,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return True
 
 
-class TorrentRssCache(tvcache.TVCache):
+class TorrentRssCache(tv_cache.TVCache):
     def _getRSSData(self):
         self.provider.add_cookies_from_ui()
         return self.getRSSFeed(self.provider.url)

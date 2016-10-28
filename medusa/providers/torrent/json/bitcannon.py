@@ -23,7 +23,7 @@ import traceback
 from requests.compat import urljoin
 import validators
 from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from .... import logger, tv_cache
 from ....helper.common import convert_size, try_int
 
 
@@ -50,7 +50,7 @@ class BitCannonProvider(TorrentProvider):
 
         # Cache
         cache_params = {'RSS': ['tv', 'anime']}
-        self.cache = tvcache.TVCache(self, search_params=cache_params)
+        self.cache = tv_cache.TVCache(self, search_params=cache_params)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals
         """

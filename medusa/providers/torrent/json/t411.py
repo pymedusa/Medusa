@@ -25,7 +25,7 @@ from operator import itemgetter
 from requests.auth import AuthBase
 from requests.compat import urljoin
 from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from .... import logger, tv_cache
 from ....common import USER_AGENT
 from ....helper.common import convert_size, try_int
 
@@ -65,7 +65,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         self.minleech = 0
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=10)  # Only poll T411 every 10 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll T411 every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """Search a provider and parse the results.

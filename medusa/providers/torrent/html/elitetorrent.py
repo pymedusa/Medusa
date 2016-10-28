@@ -23,7 +23,7 @@ import traceback
 
 from requests.compat import urljoin
 from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import try_int
 
@@ -54,7 +54,7 @@ class elitetorrentProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self)  # Only poll EliteTorrent every 20 minutes max
+        self.cache = tv_cache.TVCache(self)  # Only poll EliteTorrent every 20 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
