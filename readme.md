@@ -69,3 +69,9 @@ A full list can be found here: [Link](https://github.com/pymedusa/Medusa/wiki/Me
 
 #### News and Changelog
 [news.md and CHANGES.md have moved to a separate repo, click here](https://cdn.pymedusa.com)
+
+#### External dependencies
+This product uses [MediaInfo](http://mediaarea.net/MediaInfo) library, Copyright (c) 2002-2016 [MediaArea.net SARL](mailto:Info@MediaArea.net)
+
+Binaries for Windows and MacOS are included. Linux distributions need to manually install MediaInfo.
+MediaInfo is optional, but highly recommended since it increases the number of supported formats for video metadata extraction. Basic MKV metadata is supported when MediaInfo is not installed.
