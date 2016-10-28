@@ -708,8 +708,7 @@ class PostProcessor(object):
                 if not cur_ep:
                     raise EpisodeNotFoundException()
             except EpisodeNotFoundException as e:
-                self._log(u'Unable to create episode: {0!r}'.format(e), logger.DEBUG)
-                raise EpisodePostProcessingFailedException()
+                raise EpisodePostProcessingFailedException(u'Unable to create episode: {0!r}'.format(e))
 
             # associate all the episodes together under a single root episode
             if root_ep is None:
@@ -970,11 +969,10 @@ class PostProcessor(object):
         # try to find the file info
         (show, season, episodes, quality, version) = self._find_info()
         if not show:
-            self._log(u"This show isn't in your list, you need to add it to Medusa before post-processing an episode")
-            raise EpisodePostProcessingFailedException()
+            raise EpisodePostProcessingFailedException(u"This show isn't in your list, you need to add it "
+                                                       u"before post-processing an episode")
         elif season is None or not episodes:
-            self._log(u'Not enough information to determine what episode this is. Quitting post-processing')
-            return False
+            raise EpisodePostProcessingFailedException(u'Not enough information to determine what episode this is')
 
         # retrieve/create the corresponding TVEpisode objects
         ep_obj = self._get_ep_obj(show, season, episodes)
