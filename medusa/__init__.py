@@ -94,6 +94,14 @@ PUSHOVER_URL = 'https://pushover.net/apps/clone/sickrage'
 RARBG_APPID = 'medusa'
 SECURE_TOKEN = 'medusa_user'
 
+# static configuration
+LOCALE = None
+OS_USER = None
+OPENSSL_VERSION = None
+APP_VERSION = None
+MAJOR_DB_VERSION = None
+MINOR_DB_VERSION = None
+
 PID = None
 CFG = None
 CONFIG_FILE = None
@@ -690,7 +698,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             ANIME_DEFAULT, NAMING_ANIME, ANIMESUPPORT, USE_ANIDB, ANIDB_USERNAME, ANIDB_PASSWORD, ANIDB_USE_MYLIST, \
             ANIME_SPLIT_HOME, SCENE_DEFAULT, DOWNLOAD_URL, BACKLOG_DAYS, GIT_USERNAME, GIT_PASSWORD, \
             DEVELOPER, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, BROKEN_PROVIDERS, SOCKET_TIMEOUT, RECENTLY_DELETED, \
-            FANART_BACKGROUND, FANART_BACKGROUND_OPACITY, GIT_REMOTE_BRANCHES, RELEASES_IN_PP, PROPERS_SEARCH_DAYS
+            FANART_BACKGROUND, FANART_BACKGROUND_OPACITY, GIT_REMOTE_BRANCHES, RELEASES_IN_PP, PROPERS_SEARCH_DAYS, \
+            LOCALE, OS_USER, OPENSSL_VERSION, APP_VERSION, MAJOR_DB_VERSION, MINOR_DB_VERSION
 
         if __INITIALIZED__:
             return False
@@ -1288,6 +1297,36 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # reconfigure the logger
         logger.reconfigure()
+
+        # initialize static configuration
+        try:
+            import pwd
+            OS_USER = pwd.getpwuid(os.getuid()).pw_name
+        except ImportError:
+            try:
+                import getpass
+                OS_USER = getpass.getuser()
+            except StandardError:
+                pass
+
+        try:
+            import locale
+            LOCALE = locale.getdefaultlocale()
+        except StandardError:
+            LOCALE = None, None
+
+        try:
+            import ssl
+            OPENSSL_VERSION = ssl.OPENSSL_VERSION
+        except StandardError:
+            pass
+
+        if VERSION_NOTIFY:
+            updater = versionChecker.CheckVersion().updater
+            if updater:
+                APP_VERSION = updater.get_cur_version()
+
+        MAJOR_DB_VERSION, MINOR_DB_VERSION = db.DBConnection().checkDBVersion()
 
         # initialize NZB and TORRENT providers
         providerList = providers.makeProviderList()
