@@ -26,7 +26,7 @@ from socket import timeout as SocketTimeout
 
 import medusa as app
 import requests
-from .. import clients, common, db, failed_history, helpers, history, logger, notifiers, nzbSplitter, nzbget, sab, show_name_helpers, ui
+from .. import clients, common, db, failed_history, helpers, history, logger, notifiers, nzb_splitter, nzbget, sab, show_name_helpers, ui
 from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 from ..helper.common import enabled_providers, episode_num
 from ..helper.exceptions import AuthException, ex
@@ -712,7 +712,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
                     logger.log(u"Breaking apart the NZB and adding the individual ones to our results", logger.DEBUG)
 
                     # if not, break it apart and add them as the lowest priority results
-                    individualResults = nzbSplitter.split_result(bestSeasonResult)
+                    individualResults = nzb_splitter.split_result(bestSeasonResult)
                     for curResult in individualResults:
                         if len(curResult.episodes) == 1:
                             epNum = curResult.episodes[0].episode
