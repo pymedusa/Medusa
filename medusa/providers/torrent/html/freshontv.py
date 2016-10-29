@@ -25,7 +25,7 @@ import traceback
 from requests.compat import urljoin
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
 from six import text_type
-from ..TorrentProvider import TorrentProvider
+from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
