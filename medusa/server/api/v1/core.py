@@ -47,7 +47,7 @@ from ....helper.exceptions import CantUpdateShowException, ShowDirectoryNotFound
 from ....helper.quality import get_quality_string
 from ....logger import filter_logline, read_loglines
 from ....media.ShowBanner import ShowBanner
-from ....media.ShowFanArt import ShowFanArt
+from ....media.fan_art import ShowFanArt
 from ....media.network_logo import ShowNetworkLogo
 from ....media.poster import ShowPoster
 from ....search.queue import BacklogQueueItem, ForcedSearchQueueItem
