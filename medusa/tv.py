@@ -26,6 +26,7 @@ import stat
 import threading
 import time
 import traceback
+from collections import OrderedDict
 
 from imdb import imdb
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
@@ -1527,6 +1528,63 @@ class TVShow(TVObject):
         to_return += u'anime: {0}\n'.format(self.is_anime)
         return to_return
 
+    def to_json(self):
+        """Return JSON representation."""
+        # @TODO: Should we also return the season list with all episodes?
+        # work in progress
+        genres = list(set([v for v in self.genre.split('|') if v] + [v for v in self.imdb_info['genres'].replace('Sci-Fi', 'Science-Fiction').split('|') if v]))
+        indexers = {
+            1: 'thetvdb',
+            2: 'tvrage',
+            3: 'tvmaze'
+        }
+        akas = {}
+        for x in [v for v in self.imdb_info['akas'].split('|') if v]:
+            val, key = x.split('::')
+            akas[key] = val
+        return OrderedDict([
+            ('title', self.name),
+            ('akas', akas),
+            ('id', OrderedDict([
+                ('thetvdb', str(self.indexerid)),  # @TODO: Change this since self.indexerid will be replaced
+                ('imdb', str(self.imdbid))
+            ])),
+            ('rating', OrderedDict([
+                ('imdb', self.imdb_info['rating'])
+            ])),
+            ('indexer', indexers[self.indexer]),
+            ('network', self.network),
+            ('genres', genres),
+            ('type', self.classification),  # e.g. Scripted
+            ('classification', self.imdb_info['certificates']),
+            ('runtime', self.runtime),
+            # ('imdbInfo', self.imdb_info),
+            ('quality', self.quality),  # @TODO: handle quality
+            ('flattenFolders', bool(self.flatten_folders)),
+            ('status', self.status),  # @TODO: handle status
+            ('airs', self.airs),
+            ('year', OrderedDict([
+                ('start', self.startyear),
+                ('end', self.startyear)  # @TODO: Replace with year of last episode
+            ])),
+            ('paused', bool(self.paused)),
+            ('airByDate', bool(self.air_by_date)),
+            ('subtitlesEnabled', bool(self.subtitles)),
+            ('dvdOrder', bool(self.dvdorder)),
+            ('language', self.lang),
+            ('sports', self.is_sports),
+            ('anime', self.is_anime),
+            ('scene', self.is_scene),
+            ('nextAired', self.nextaired),
+            ('location', self.raw_location),
+            ('releaseGroups', []),  # @TODO: Replace with self.release_groups as a list
+            ('defaultEpisodeStatus', self.default_ep_status),
+            ('releaseIgnoredWords', [v for v in self.rls_ignore_words.split('|') if v]),
+            ('releaseRequiredWords', [v for v in self.rls_require_words.split('|') if v]),
+            ('exceptions', self.exceptions),
+            # ('episodes', [e.to_json() for e in self.episodes]),  # @TODO Should this be included?
+        ])
+
     @staticmethod
     def __qualities_to_string(qualities=None):
         return ', '.join([Quality.qualityStrings[quality] for quality in qualities or []
@@ -2273,7 +2331,7 @@ class TVEpisode(TVObject):
         :rtype: unicode
         """
         result = u''
-        result += u'%r - S%02rE%02r - %r\n' % (self.show.name, self.season, self.episode, self.name)
+        result += u'%r - %r - %r\n' % (self.show.name, episode_num(self.season, self.episode), self.name)
         result += u'location: %r\n' % self.location
         result += u'description: %r\n' % self.description
         result += u'subtitles: %r\n' % u','.join(self.subtitles)
@@ -2284,6 +2342,42 @@ class TVEpisode(TVObject):
         result += u'hastbn: %r\n' % self.hastbn
         result += u'status: %r\n' % self.status
         return result
+
+    def to_json(self):
+        """Return the json representation."""
+        return OrderedDict([
+            ('name', self.name),
+            ('indexer', self.indexer),
+            ('indexerId', self.indexerid),
+            ('show', OrderedDict([
+                ('name', self.show.name),
+                ('indexer', self.show.indexer),
+                ('indexerId', self.show.indexerid),
+            ])),
+            ('season', self.season),
+            ('episode', self.episode),
+            ('absoluteNumber', self.absolute_number),
+            ('description', self.description),
+            ('subtitles', self.subtitles),
+            ('subtitlesSearchCount', self.subtitles_searchcount),
+            ('subtitlesLastSearched', self.subtitles_lastsearch),
+            ('airDate', self.airdate),
+            ('hasNfo', self.hasnfo),
+            ('hasTbn', self.hastbn),
+            ('status', self.status),
+            ('fileSize', self.file_size),
+            ('releaseName', self.release_name),
+            ('isProper', self.is_proper),
+            ('version', self.version),
+            ('releaseGroup', self.release_group),
+            ('location', self.location),
+            ('sceneSeason', self.scene_season),
+            ('sceneEpisode', self.scene_episode),
+            ('sceneAbsoluteNumber', self.scene_absolute_number),
+            ('relatedEpisodes', [ep.to_json() for ep in self.related_episodes]),
+            ('location', self.location),
+            ('wantedQuality', self.wanted_quality),
+        ])
 
     def create_meta_files(self):
         """Create episode metadata files."""
