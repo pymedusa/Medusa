@@ -121,12 +121,15 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
 
         torrent_rows = data.get('torrents') if mode != 'RSS' else data
 
-        if not torrent_rows or not isinstance(torrent_rows, dict):
+        if not torrent_rows or not isinstance(torrent_rows, list):
             logger.log('Data returned from provider does not contain any {0}torrents'.format(
                        'confirmed ' if self.confirmed else ''), logger.DEBUG)
             return items
 
         for row in torrent_rows:
+            if not isinstance(row, dict):
+                continue
+
             if mode == 'RSS' and 'category' in row and try_int(row['category'], 0) not in self.subcategories:
                 continue
 
