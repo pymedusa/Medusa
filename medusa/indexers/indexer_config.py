@@ -36,6 +36,10 @@ INDEXER_TVDBV2 = 1
 INDEXER_TVRAGE = 2  # Must keep
 # INDEXER_TVMAZE = 3
 
+mapping = {
+    'tvdb': INDEXER_TVDBV2
+}
+
 indexerConfig = {
     INDEXER_TVDBV2: {
         'enabled': True,

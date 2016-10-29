@@ -2,8 +2,13 @@
 """Base module for request handlers."""
 
 import base64
+import json
+
+from datetime import datetime
+from babelfish.language import Language
 
 import medusa as app
+from six import text_type
 
 from tornado.web import RequestHandler
 
@@ -39,4 +44,37 @@ class BaseRequestHandler(RequestHandler):
             })
         else:
             self.set_status(200)
-            self.finish(data if data is not None else kwargs)
+            self.finish(StringEncoder().encode(data) if data is not None else kwargs)
+
+    @staticmethod
+    def _parse(value, function=int):
+        """Parse value using the specified function.
+
+        :param value:
+        :param function:
+        :type function: callable
+        :return:
+        """
+        if value is not None:
+            return function(value)
+
+    @staticmethod
+    def _parse_date(value, fmt='%Y-%m-%d'):
+        """Parse a date value using the specified format.
+
+        :param value:
+        :param fmt:
+        :return:
+        """
+        return BaseRequestHandler._parse(value, lambda d: datetime.strptime(d, fmt))
+
+
+class StringEncoder(json.JSONEncoder):
+    """String json encoder."""
+
+    def default(self, o):
+        """Convert properties to string."""
+        if isinstance(o, Language):
+            return getattr(o, 'name')
+
+        return text_type(o)

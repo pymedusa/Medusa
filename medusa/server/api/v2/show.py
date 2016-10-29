@@ -5,13 +5,14 @@ import datetime
 import os
 
 import medusa as app
+from six import text_type
 
 from .base import BaseRequestHandler
-
 from .... import db, helpers, image_cache, network_timezones, sbdatetime
 from ....common import Quality, statusStrings
 from ....helper.common import dateFormat, try_int
 from ....helper.quality import get_quality_string
+from ....indexers import indexer_config
 from ....server.api.v1.core import _map_quality
 from ....show.show import Show
 
@@ -21,14 +22,15 @@ MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 class ShowHandler(BaseRequestHandler):
     """Shows request handler."""
 
-    def get(self, show_id):
+    def get(self, show_indexer, show_id):
         """Query show information.
 
         :param show_id:
         :type show_id: str
         """
         # @TODO: This should be completely replaced with show_id
-        indexerid = show_id
+        show_indexer = indexer_config.mapping[show_indexer]
+        indexerid = self._parse(show_id)
 
         # @TODO: https://github.com/SiCKRAGETV/SiCKRAGE/pull/2558
 
@@ -39,7 +41,7 @@ class ShowHandler(BaseRequestHandler):
         arg_limit = self.get_argument('limit', default=20)
 
         shows = []
-        show_list = app.showList if not show_id else [Show.find(app.showList, int(indexerid))]
+        show_list = app.showList if not show_id else [Show.find(app.showList, indexerid, show_indexer)]
         for show in show_list:
             if show_id and show is None:
                 return self.api_finish(status=404, error='Show not found')
@@ -122,7 +124,7 @@ class ShowHandler(BaseRequestHandler):
 
                 sql_results = main_db_con.select(
                     'SELECT name, episode, airdate, release_name, season, hasnfo, hastbn, location, absolute_number, file_size, subtitles, status \
-                     FROM tv_episodes WHERE showid = ? ORDER BY ? ?', [show_id, arg_sort, arg_sort_order])
+                     FROM tv_episodes WHERE showid = ? ORDER BY ? {order}'.format(order=arg_sort_order), [show_id, arg_sort])
                 seasons = [{'episodes': [], 'seasonNumber': 0}]
                 for row in sql_results:
                     status, quality = Quality.splitCompositeStatus(int(row['status']))
@@ -151,7 +153,7 @@ class ShowHandler(BaseRequestHandler):
 
                 ratings = {}
                 if show.imdb_info:
-                    ratings.imdb = {
+                    ratings['imdb'] = {
                         'stars': show.imdb_info['rating'],
                         'votes': show.imdb_info['votes']
                     }
@@ -161,7 +163,7 @@ class ShowHandler(BaseRequestHandler):
                     'qualityDetails': {'initial': any_qualities, 'archive': best_qualities},
                     'location': show.raw_location,
                     'flattenFolders': bool(show.flatten_folders),
-                    'airs': str(show.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' '),
+                    'airs': text_type(show.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' '),
                     'dvdOrder': bool(show.dvdorder),
                     'rlsRequireWords': [w.strip() for w in show.rls_require_words.split(',')] if show.rls_require_words else [],
                     'rlsIgnoreWords': [w.strip() for w in show.rls_ignore_words.split(',')] if show.rls_ignore_words else [],

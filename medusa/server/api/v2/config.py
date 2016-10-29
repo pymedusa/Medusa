@@ -19,8 +19,6 @@ class ConfigHandler(BaseRequestHandler):
         :param query:
         :type query: str
         """
-        query = query.split('/')[0]
-
         config_data = {
             'anonRedirect': app.ANON_REDIRECT,
             'anonSplitHome': app.ANIME_SPLIT_HOME,
@@ -82,8 +80,7 @@ class ConfigHandler(BaseRequestHandler):
             }
         }
 
-        if query:
-            if query not in config_data:
-                return self.api_finish(status=404, error='{key} not found'.format(key=query))
+        if query and query not in config_data:
+            return self.api_finish(status=404, error='{key} not found'.format(key=query))
 
         self.api_finish(data=config_data[query] if query else config_data)

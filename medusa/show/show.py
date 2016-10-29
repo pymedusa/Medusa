@@ -53,11 +53,12 @@ class Show(object):
         return None, show
 
     @staticmethod
-    def find(shows, indexer_id):
+    def find(shows, indexer_id, indexer=None):
         """
         Find a show by its indexer id in the provided list of shows
         :param shows: The list of shows to search in
         :param indexer_id: The indexer id of the desired show
+        :param indexer: The indexer to be used
         :return: The desired show if found, ``None`` if not found
         :throw: ``MultipleShowObjectsException`` if multiple shows match the provided ``indexer_id``
         """
@@ -66,7 +67,7 @@ class Show(object):
             return None
 
         indexer_ids = [indexer_id] if not isinstance(indexer_id, list) else indexer_id
-        results = [show for show in shows if show.indexerid in indexer_ids]
+        results = [show for show in shows if (indexer is None or show.indexer == indexer) and show.indexerid in indexer_ids]
 
         if not results:
             return None

@@ -369,7 +369,7 @@ class TVShow(TVObject):
         return ep_list
 
     def get_episode(self, season=None, episode=None, filepath=None, no_create=False, absolute_number=None,
-                    should_cache=True):
+                    air_date=None, should_cache=True):
         """Return TVEpisode given the specified filter.
 
         :param season:
@@ -382,6 +382,8 @@ class TVShow(TVObject):
         :type no_create: bool
         :param absolute_number:
         :type absolute_number: int
+        :param air_date:
+        :type air_date: datetime.datetime
         :param should_cache:
         :type should_cache: bool
         :return:
@@ -392,25 +394,35 @@ class TVShow(TVObject):
         absolute_number = try_int(absolute_number, None)
 
         # if we get an anime get the real season and episode
-        if self.is_anime and absolute_number and not season and not episode:
+        if not season and not episode:
             main_db_con = db.DBConnection()
-            sql = b'SELECT season, episode FROM tv_episodes WHERE showid = ? AND absolute_number = ? AND season != 0'
-            sql_results = main_db_con.select(sql, [self.indexerid, absolute_number])
+            sql = None
+            sql_args = None
+            if self.is_anime and absolute_number:
+                sql = b'SELECT season, episode FROM tv_episodes WHERE showid = ? AND absolute_number = ? AND season != 0'
+                sql_args = [self.indexerid, absolute_number]
+                logger.log(u'{id}: Season and episode lookup for {show} using absolute number {absolute}'.
+                           format(id=self.indexerid, absolute=absolute_number, show=self.name), logger.DEBUG)
+            elif air_date:
+                sql = b'SELECT season, episode FROM tv_episodes WHERE showid = ? AND airdate = ?'
+                sql_args = [self.indexerid, air_date.toordinal()]
+                logger.log(u'{id}: Season and episode lookup for {show} using air date {air_date}'.
+                           format(id=self.indexerid, air_date=air_date, show=self.name), logger.DEBUG)
 
+            sql_results = main_db_con.select(sql, sql_args) if sql else []
             if len(sql_results) == 1:
                 episode = int(sql_results[0][b'episode'])
                 season = int(sql_results[0][b'season'])
-                logger.log(u'{id}: Found episode by absolute number {absolute} which is {show} {ep}'.format
-                           (id=self.indexerid, absolute=absolute_number, show=self.name,
-                            ep=episode_num(season, episode)), logger.DEBUG)
+                logger.log(u'{id}: Found season and episode which is {show} {ep}'.format
+                           (id=self.indexerid, show=self.name, ep=episode_num(season, episode)), logger.DEBUG)
             elif len(sql_results) > 1:
-                logger.log(u'{id}: Multiple entries for absolute number: {absolute} in show: {show} found '.format
-                           (id=self.indexerid, absolute=absolute_number, show=self.name), logger.ERROR)
+                logger.log(u'{id}: Multiple entries found in show: {show} '.format
+                           (id=self.indexerid, show=self.name), logger.ERROR)
 
                 return None
             else:
-                logger.log(u'{id}: No entries for absolute number {absolute_number} in show: {show}'.format
-                           (id=self.indexerid, absolute_number=absolute_number, show=self.name), logger.DEBUG)
+                logger.log(u'{id}: No entries found in show: {show}'.format
+                           (id=self.indexerid, show=self.name), logger.DEBUG)
                 return None
 
         if season not in self.episodes:
