@@ -22,7 +22,7 @@ import datetime
 import db
 from .common import FAILED, Quality, SNATCHED, SUBTITLED
 from .helper.encoding import ss
-from .show.History import History
+from .show.history import History
 
 
 def _logHistoryItem(action, showid, season, episode, quality, resource, provider, version=-1, proper_tags=''):
