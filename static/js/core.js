@@ -74,7 +74,7 @@ if (document.location.pathname.endsWith('/login/')) {
         type: 'GET',
         dataType: 'json'
     }).done(function(data) {
-        MEDUSA.config = data;
+        $.extend(MEDUSA.config, data);
         MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
         MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />';
         if (typeof startVue === 'undefined') { // eslint-disable-line no-undef
