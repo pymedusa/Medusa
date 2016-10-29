@@ -59,6 +59,7 @@ class TraktPopular(object):
         self.recommender = "Trakt Popular"
         self.default_img_src = 'trakt-default.png'
         self.anidb = Anidb(cache_dir=app.CACHE_DIR)
+        self.tvdb_api_v2 = get_tvdbv2_api()
 
     def _create_recommended_show(self, show_obj):
         """Create the RecommendedShow object from the returned showobj."""
@@ -78,7 +79,7 @@ class TraktPopular(object):
         use_default = None
         image = None
         try:
-            image = tvdb_api_v2.series_id_images_query_get(show_obj['show']['ids']['tvdb'], key_type='poster').data[0].file_name
+            image = self.tvdb_api_v2.series_id_images_query_get(show_obj['show']['ids']['tvdb'], key_type='poster').data[0].file_name
         except Exception:
             use_default = self.default_img_src
             logger.log('Missing poster on TheTVDB for show %s' % (show_obj['show']['title']), logger.DEBUG)
@@ -167,5 +168,3 @@ class TraktPopular(object):
             raise
 
         return blacklist, trending_shows, removed_from_medusa
-
-tvdb_api_v2 = get_tvdbv2_api()
