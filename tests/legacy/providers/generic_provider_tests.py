@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import unittest
 
-from medusa.providers.GenericProvider import GenericProvider
+from medusa.providers.generic_provider import GenericProvider
 from mock import MagicMock, patch
 from six import iteritems
 
@@ -293,8 +293,8 @@ class GenericProviderTests(unittest.TestCase):
         """Test _verify_download."""
         self.assertTrue(GenericProvider('Test Provider')._verify_download())
 
-    @patch('medusa.providers.GenericProvider.download_file')
-    @patch('medusa.providers.GenericProvider.remove_file_failed')
+    @patch('medusa.providers.generic_provider.download_file')
+    @patch('medusa.providers.generic_provider.remove_file_failed')
     def test_download_file(self, remove_file_mock, df_mock):
         domain = 'domain'
         filename = 'TestFilename.nzb'

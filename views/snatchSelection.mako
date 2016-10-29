@@ -16,7 +16,7 @@
     from medusa.sbdatetime import sbdatetime
     from medusa.show.history import History
     from medusa.failed_history import prepareFailedName
-    from medusa.providers.GenericProvider import GenericProvider
+    from medusa.providers.generic_provider import GenericProvider
     from medusa import providers
 %>
 <%block name="scripts">

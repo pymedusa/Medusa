@@ -49,7 +49,7 @@ from .indexers.indexer_exceptions import (
     IndexerSeasonNotFound, IndexerShowIncomplete, IndexerShowNotFound, IndexerUserAbort
 )
 from .providers import NewznabProvider, TorrentRssProvider
-from .providers.GenericProvider import GenericProvider
+from .providers.generic_provider import GenericProvider
 from .search import backlog, daily, proper
 from .search.backlog import BacklogSearchScheduler, BacklogSearcher
 from .search.daily import DailySearcher

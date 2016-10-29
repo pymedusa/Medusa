@@ -24,7 +24,7 @@ import unittest
 
 import medusa as app
 import medusa.common as common
-from medusa.providers.GenericProvider import GenericProvider
+from medusa.providers.generic_provider import GenericProvider
 from medusa.tv import TVEpisode, TVShow
 from . import test_lib as test
 

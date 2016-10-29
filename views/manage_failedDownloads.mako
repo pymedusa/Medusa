@@ -7,7 +7,7 @@
     from medusa import providers
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, qualityPresetStrings, statusStrings, Overview
-    from medusa.providers.GenericProvider import GenericProvider
+    from medusa.providers.generic_provider import GenericProvider
     from medusa.helper.common import pretty_file_size
 %>
 <%block name="content">
