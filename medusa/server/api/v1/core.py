@@ -51,7 +51,7 @@ from ....media.ShowFanArt import ShowFanArt
 from ....media.ShowNetworkLogo import ShowNetworkLogo
 from ....media.ShowPoster import ShowPoster
 from ....search.queue import BacklogQueueItem, ForcedSearchQueueItem
-from ....show.ComingEpisodes import ComingEpisodes
+from ....show.coming_episodes import ComingEpisodes
 from ....show.history import History
 from ....show.show import Show
 from ....system.restart import Restart
