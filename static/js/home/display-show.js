@@ -299,9 +299,23 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             'text-shadow': '0px 0px 0.5px #666'
         });
         $(this).qtip({
-            show: {solo: true},
-            position: {viewport: $(window), my: 'left center', adjust: {y: -10, x: 2}},
-            style: {tip: {corner: true, method: 'polygon'}, classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'}
+            show: {
+                solo: true
+            },
+            position: {
+                my: 'left center',
+                adjust: {
+                    y: -10,
+                    x: 2
+                }
+            },
+            style: {
+                tip: {
+                    corner: true,
+                    method: 'polygon'
+                },
+                classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
+            }
         });
     });
 
