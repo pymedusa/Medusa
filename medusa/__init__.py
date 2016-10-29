@@ -1407,7 +1407,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         metadata_provider_dict = metadata.get_metadata_generator_dict()
         for cur_metadata_tuple in [(METADATA_KODI, metadata.kodi),
                                    (METADATA_KODI_12PLUS, metadata.kodi_12plus),
-                                   (METADATA_MEDIABROWSER, metadata.mediabrowser),
+                                   (METADATA_MEDIABROWSER, metadata.media_browser),
                                    (METADATA_PS3, metadata.ps3),
                                    (METADATA_WDTV, metadata.wdtv),
                                    (METADATA_TIVO, metadata.tivo),

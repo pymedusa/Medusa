@@ -26,7 +26,7 @@ from six import string_types
 from .. import helpers, logger
 from ..helper.common import dateFormat, episode_num, replace_extension
 from ..helper.exceptions import ShowNotFoundException, ex
-from ..metadata import mediabrowser
+from ..metadata import media_browser
 
 try:
     import xml.etree.cElementTree as etree
@@ -34,7 +34,7 @@ except ImportError:
     import xml.etree.ElementTree as etree
 
 
-class Mede8erMetadata(mediabrowser.MediaBrowserMetadata):
+class Mede8erMetadata(media_browser.MediaBrowserMetadata):
     """
     Metadata generation class for Mede8er based on the MediaBrowser.
 
@@ -61,7 +61,7 @@ class Mede8erMetadata(mediabrowser.MediaBrowserMetadata):
                  season_all_poster=False,
                  season_all_banner=False):
 
-        mediabrowser.MediaBrowserMetadata.__init__(
+        media_browser.MediaBrowserMetadata.__init__(
             self, show_metadata, episode_metadata, fanart,
             poster, banner, episode_thumbnails, season_posters,
             season_banners, season_all_poster, season_all_banner
