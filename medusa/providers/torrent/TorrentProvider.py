@@ -21,7 +21,7 @@ import bencode
 from bencode.BTL import BTFailure
 from feedparser.util import FeedParserDict
 import medusa as app
-from ..GenericProvider import GenericProvider
+from ..generic_provider import GenericProvider
 from ... import logger
 from ...classes import TorrentSearchResult
 from ...helper.common import try_int

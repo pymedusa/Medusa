@@ -16,7 +16,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import medusa as app
-from ..GenericProvider import GenericProvider
+from ..generic_provider import GenericProvider
 from ...classes import NZBSearchResult
 from ...helper.common import try_int
 

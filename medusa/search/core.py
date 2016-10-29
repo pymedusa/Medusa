@@ -30,7 +30,7 @@ from .. import clients, common, db, failed_history, helpers, history, logger, no
 from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 from ..helper.common import enabled_providers, episode_num
 from ..helper.exceptions import AuthException, ex
-from ..providers.GenericProvider import GenericProvider
+from ..providers.generic_provider import GenericProvider
 
 
 def _downloadResult(result):

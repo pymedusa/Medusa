@@ -2,7 +2,7 @@
 <%!
     import medusa as app
     from medusa.helpers import anon_url
-    from medusa.providers.GenericProvider import GenericProvider
+    from medusa.providers.generic_provider import GenericProvider
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/config-providers.js"></script>

@@ -18,7 +18,7 @@ from .... import (
 )
 from ....helper.common import try_int
 from ....providers import NewznabProvider, TorrentRssProvider
-from ....providers.GenericProvider import GenericProvider
+from ....providers.generic_provider import GenericProvider
 
 
 @route('/config/providers(/?.*)')
