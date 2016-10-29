@@ -10,7 +10,6 @@ $(function() {
             solo: true
         },
         position: {
-            viewport: $(window),
             my: 'right center',
             at: 'center left',
             adjust: {

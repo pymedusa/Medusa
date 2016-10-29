@@ -21,7 +21,6 @@ $(function() {
                 solo: true
             },
             position: {
-                viewport: $(window),
                 my: 'left center',
                 adjust: {
                     y: -10,
