@@ -22,7 +22,7 @@ import unittest
 
 import medusa as app
 from medusa.event_queue import Events
-from medusa.system.Restart import Restart
+from medusa.system.restart import Restart
 from six import iteritems
 
 
