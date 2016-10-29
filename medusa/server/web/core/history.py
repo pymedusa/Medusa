@@ -7,7 +7,7 @@ from tornado.routes import route
 from .base import PageTemplate, WebRoot
 from .... import ui
 from ....helper.common import try_int
-from ....show.History import History as HistoryTool
+from ....show.history import History as HistoryTool
 
 
 @route('/history(/?.*)')

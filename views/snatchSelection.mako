@@ -14,7 +14,7 @@
     from medusa.show_name_helpers import containsAtLeastOneWord, filterBadReleases
     from medusa.helper.common import pretty_file_size, episode_num
     from medusa.sbdatetime import sbdatetime
-    from medusa.show.History import History
+    from medusa.show.history import History
     from medusa.failed_history import prepareFailedName
     from medusa.providers.GenericProvider import GenericProvider
     from medusa import providers
