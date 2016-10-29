@@ -1506,7 +1506,7 @@ def getTVDBFromID(indexer_id, indexer):
 
         with suppress(SyntaxError):
             tree = ET.fromstring(data)
-            for show in tree.getiterator("Series"):
+            for show in tree.iter("Series"):
                 tvdb_id = show.findtext("seriesid")
 
         if tvdb_id:
@@ -1520,7 +1520,7 @@ def getTVDBFromID(indexer_id, indexer):
 
         with suppress(SyntaxError):
             tree = ET.fromstring(data)
-            for show in tree.getiterator("Series"):
+            for show in tree.iter("Series"):
                 tvdb_id = show.findtext("seriesid")
 
         return tvdb_id
