@@ -49,7 +49,7 @@ from ....logger import filter_logline, read_loglines
 from ....media.ShowBanner import ShowBanner
 from ....media.ShowFanArt import ShowFanArt
 from ....media.ShowNetworkLogo import ShowNetworkLogo
-from ....media.ShowPoster import ShowPoster
+from ....media.poster import ShowPoster
 from ....search.queue import BacklogQueueItem, ForcedSearchQueueItem
 from ....show.coming_episodes import ComingEpisodes
 from ....show.history import History
