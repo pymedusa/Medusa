@@ -232,7 +232,7 @@ class BaseHandler(RequestHandler):
             else:
                 return True
         elif isinstance(self, UI):
-		    return True				
+            return True
         return None
 
 
