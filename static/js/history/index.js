@@ -25,6 +25,7 @@ MEDUSA.history.index = function() {
             }
             return {
                 0: {sorter: 'realISODate'},
+                4: {sorter: 'title'},
                 5: {sorter: 'quality'}
             };
         })()
