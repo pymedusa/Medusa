@@ -32,7 +32,7 @@ from ....media.ShowBanner import ShowBanner
 from ....media.ShowFanArt import ShowFanArt
 from ....media.ShowNetworkLogo import ShowNetworkLogo
 from ....media.ShowPoster import ShowPoster
-from ....show.ComingEpisodes import ComingEpisodes
+from ....show.coming_episodes import ComingEpisodes
 
 
 mako_lookup = None
