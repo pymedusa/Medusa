@@ -56,7 +56,7 @@ provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiPr
 
 basename = __name__.split('.')[0]
 refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
-refiner_manager.register('tvepisode = {basename}.refiners.tvepisode:refine'.format(basename=basename))
+refiner_manager.register('tvepisode = {basename}.refiners.tv_episode:refine'.format(basename=basename))
 
 subtitle_key = u'subtitle={id}'
 video_key = u'{name}:video|{{video_path}}'.format(name=__name__)
