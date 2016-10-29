@@ -24,7 +24,7 @@ from ....helper.common import sanitize_filename, try_int
 from ....helpers import get_showname_from_indexer
 from ....indexers.indexer_config import INDEXER_TVDBV2
 from ....indexers.indexer_exceptions import IndexerException
-from ....show.Show import Show
+from ....show.show import Show
 from ....show.recommendations.anidb import AnidbPopular
 from ....show.recommendations.imdb import ImdbPopular
 from ....show.recommendations.trakt import TraktPopular

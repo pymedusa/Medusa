@@ -51,7 +51,7 @@ from .helper.exceptions import (
 from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .scene_numbering import get_scene_absolute_numbering, get_scene_numbering, xem_refresh
-from .show.Show import Show
+from .show.show import Show
 
 try:
     import xml.etree.cElementTree as ETree

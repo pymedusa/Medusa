@@ -30,7 +30,7 @@ from .helper.common import episode_num
 from .helper.exceptions import AuthException
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .rss_feeds import getFeed
-from .show.Show import Show
+from .show.show import Show
 
 
 class CacheDBConnection(db.DBConnection):

@@ -27,7 +27,7 @@ from .queue import ForcedSearchQueueItem
 from .. import db, logger
 from ..common import Overview, Quality, cpu_presets, statusStrings
 from ..helper.common import enabled_providers
-from ..show.Show import Show
+from ..show.show import Show
 
 SEARCH_STATUS_FINISHED = "finished"
 SEARCH_STATUS_QUEUED = "queued"

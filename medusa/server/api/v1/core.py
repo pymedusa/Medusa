@@ -53,7 +53,7 @@ from ....media.ShowPoster import ShowPoster
 from ....search.queue import BacklogQueueItem, ForcedSearchQueueItem
 from ....show.ComingEpisodes import ComingEpisodes
 from ....show.History import History
-from ....show.Show import Show
+from ....show.show import Show
 from ....system.restart import Restart
 from ....system.shutdown import Shutdown
 from ....version_checker import CheckVersion

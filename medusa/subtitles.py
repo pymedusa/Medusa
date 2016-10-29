@@ -43,7 +43,7 @@ from .common import cpu_presets
 from .helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
 from .helper.exceptions import ex
 from .helpers import isMediaFile, isRarFile
-from .show.Show import Show
+from .show.show import Show
 
 
 logger = logging.getLogger(__name__)

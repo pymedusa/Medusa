@@ -30,7 +30,7 @@ import medusa as app
 from . import db, logger
 from .helper.exceptions import ex
 from .scene_exceptions import xem_session
-from .show.Show import Show
+from .show.show import Show
 
 
 def get_scene_numbering(indexer_id, indexer, season, episode, fallback_to_xem=True):

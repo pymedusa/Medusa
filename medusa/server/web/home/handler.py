@@ -35,7 +35,7 @@ from ....search.manual import (
 from ....search.queue import (
     BacklogQueueItem, FailedQueueItem, ForcedSearchQueueItem, ManualSnatchQueueItem
 )
-from ....show.Show import Show
+from ....show.show import Show
 from ....system.restart import Restart
 from ....system.shutdown import Shutdown
 from ....version_checker import CheckVersion

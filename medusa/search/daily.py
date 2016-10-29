@@ -29,7 +29,7 @@ from ..db import DBConnection
 from ..helper.common import try_int
 from ..helper.exceptions import MultipleShowObjectsException
 from ..network_timezones import app_timezone, network_dict, parse_date_time, update_network_dict
-from ..show.Show import Show
+from ..show.show import Show
 
 
 class DailySearcher(object):  # pylint:disable=too-few-public-methods
