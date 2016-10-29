@@ -55,7 +55,7 @@ from .search.backlog import BacklogSearchScheduler, BacklogSearcher
 from .search.daily import DailySearcher
 from .search.proper import ProperFinder
 from .search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
-from .system.Shutdown import Shutdown
+from .system.shutdown import Shutdown
 
 shutil.copyfile = shutil_custom.copyfile_custom
 requests.packages.urllib3.disable_warnings()
