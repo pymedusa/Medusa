@@ -141,7 +141,7 @@ $('#config-components').tabs();
                             <label for="${curNewznabProvider.get_id()}_hash">
                                 <span class="component-title">API key:</span>
                                 <span class="component-desc">
-                                    <input type="text" id="${curNewznabProvider.get_id()}_hash" value="${curNewznabProvider.key}" newznab_name="${curNewznabProvider.get_id()}_hash" class="newznab_key form-control input-sm input350"/>
+                                    <input type="password" id="${curNewznabProvider.get_id()}_hash" value="${curNewznabProvider.key}" newznab_name="${curNewznabProvider.get_id()}_hash" class="newznab_key form-control input-sm input350"/>
                                 </span>
                             </label>
                         </div>
