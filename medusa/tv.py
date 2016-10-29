@@ -1103,13 +1103,14 @@ class TVShow(TVObject):
 
         self.imdbid = getattr(indexed_show, 'imdb_id', '')
 
-        if getattr(indexed_show, 'airs_dayofweek', None) is not None and getattr(indexed_show, 'airs_time', None) is not None:
-            self.airs = indexed_show['airs_dayofweek'] + ' ' + indexed_show['airs_time']
+        if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
+            self.airs = '{airs_day_of_week} {airs_time}'.format(airs_day_of_week=indexed_show['airs_dayofweek'],
+                                                                airs_time=indexed_show['airs_time'])
 
-        if self.airs is None:
+        if self.airs is '':
             self.airs = ''
 
-        if getattr(indexed_show, 'firstaired', None):
+        if getattr(indexed_show, 'firstaired', ''):
             self.startyear = int(str(indexed_show['firstaired']).split('-')[0])
 
         self.status = getattr(indexed_show, 'status', 'Unknown')
