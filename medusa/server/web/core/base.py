@@ -231,6 +231,8 @@ class BaseHandler(RequestHandler):
                 return self.get_secure_cookie(app.SECURE_TOKEN)
             else:
                 return True
+        elif isinstance(self, UI):
+		    return True				
         return None
 
 

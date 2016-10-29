@@ -1493,7 +1493,7 @@ class CMD_GetMessages(ApiCall):
         for cur_notification in ui.notifications.get_notifications(self.rh.request.remote_ip):
             messages.append({"title": cur_notification.title,
                              "message": cur_notification.message,
-                             "type": cur_notification.type})
+                             "type": cur_notification.notification_type})
         return _responds(RESULT_SUCCESS, messages)
 
 
