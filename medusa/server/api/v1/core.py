@@ -55,7 +55,7 @@ from ....show.ComingEpisodes import ComingEpisodes
 from ....show.History import History
 from ....show.Show import Show
 from ....system.Restart import Restart
-from ....system.Shutdown import Shutdown
+from ....system.shutdown import Shutdown
 from ....version_checker import CheckVersion
 
 indexer_ids = ["indexerid", "tvdbid"]
