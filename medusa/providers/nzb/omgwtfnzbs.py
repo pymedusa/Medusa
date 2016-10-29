@@ -22,7 +22,7 @@ import re
 import traceback
 
 import medusa as app
-from .NZBProvider import NZBProvider
+from .nzb_provider import NZBProvider
 from ... import logger, tv_cache
 from ...helper.common import convert_size, try_int
 
