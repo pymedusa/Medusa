@@ -29,7 +29,7 @@ from .... import (
     classes, db, exception_handler, helpers, logger, network_timezones, ui
 )
 from ....media.ShowBanner import ShowBanner
-from ....media.ShowFanArt import ShowFanArt
+from ....media.fan_art import ShowFanArt
 from ....media.network_logo import ShowNetworkLogo
 from ....media.poster import ShowPoster
 from ....show.coming_episodes import ComingEpisodes
