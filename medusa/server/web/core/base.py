@@ -31,7 +31,7 @@ from .... import (
 from ....media.ShowBanner import ShowBanner
 from ....media.ShowFanArt import ShowFanArt
 from ....media.ShowNetworkLogo import ShowNetworkLogo
-from ....media.ShowPoster import ShowPoster
+from ....media.poster import ShowPoster
 from ....show.coming_episodes import ComingEpisodes
 
 
