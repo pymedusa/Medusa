@@ -229,9 +229,7 @@ class BaseHandler(RequestHandler):
         if not isinstance(self, UI):
             if app.WEB_USERNAME and app.WEB_PASSWORD:
                 return self.get_secure_cookie(app.SECURE_TOKEN)
-            else:
-                return True
-        return None
+        return True
 
 
 class WebHandler(BaseHandler):

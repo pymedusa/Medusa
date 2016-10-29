@@ -19,7 +19,6 @@ $(function() {
                 solo: true
             },
             position: {
-                viewport: $(window),
                 my: 'bottom center',
                 at: 'top center',
                 adjust: {

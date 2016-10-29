@@ -62,11 +62,13 @@
             <%include file="/partials/footer.mako" />
         </div>
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
+		<script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>		
         <script type="text/javascript" src="js/lib/jquery.cookiejar.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/jquery.form.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/jquery.json-2.2.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/jquery.selectboxes.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/timeago.js?${sbPID}"></script>
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
         <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
         <script type="text/javascript" src="js/core.js?${sbPID}"></script>

@@ -476,7 +476,6 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     $(this).refreshMetadataConfig(true);
     $('img[title]').qtip({
         position: {
-            viewport: $(window),
             at: 'bottom center',
             my: 'top right'
         },
@@ -490,7 +489,6 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     });
     $('i[title]').qtip({
         position: {
-            viewport: $(window),
             at: 'top center',
             my: 'bottom center'
         },
@@ -510,7 +508,6 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         },
         hide: false,
         position: {
-            viewport: $(window),
             at: 'center left',
             my: 'center right'
         },
