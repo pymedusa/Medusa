@@ -22,7 +22,7 @@ import traceback
 
 import validators
 
-from ..TorrentProvider import TorrentProvider
+from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....common import USER_AGENT
