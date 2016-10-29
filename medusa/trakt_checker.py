@@ -28,7 +28,7 @@ from .common import Quality, SKIPPED, UNKNOWN, WANTED
 from .helper.common import episode_num
 from .helper.exceptions import ex
 from .search.queue import BacklogQueueItem
-from .show.Show import Show
+from .show.show import Show
 
 
 def setEpisodeToWanted(show, s, e):

@@ -35,7 +35,7 @@ from ..helper.common import replace_extension, sanitize_filename
 from ..helper.exceptions import ex
 from ..helpers import download_file, getURL, make_session, remove_file_failed
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from ..show.Show import Show
+from ..show.show import Show
 from ..show_name_helpers import allPossibleShowNames
 from ..tv_cache import TVCache
 

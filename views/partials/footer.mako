@@ -10,7 +10,7 @@
         BRANCH, DATE_PRESET, TIME_PRESET
     )
     from medusa.helper.common import pretty_file_size
-    from medusa.show.Show import Show
+    from medusa.show.show import Show
 
     mem_usage = None
     with suppress(ImportError):

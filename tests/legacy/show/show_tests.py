@@ -23,7 +23,7 @@ import unittest
 import medusa as app
 from medusa.common import Quality
 from medusa.helper.exceptions import MultipleShowObjectsException
-from medusa.show.Show import Show
+from medusa.show.show import Show
 from medusa.tv import TVShow
 from six import iteritems
 

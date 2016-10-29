@@ -26,7 +26,7 @@ from ....helper.exceptions import (
     CantUpdateShowException,
 )
 from ....helpers import isMediaFile
-from ....show.Show import Show
+from ....show.show import Show
 from ....tv import TVEpisode
 
 

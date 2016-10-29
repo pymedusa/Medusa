@@ -24,7 +24,7 @@ import time
 import medusa as app
 from . import db, helpers, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
-from .show.Show import Show
+from .show.show import Show
 
 logger = logging.getLogger(__name__)
 
