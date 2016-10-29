@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import logging
 from collections import OrderedDict
+
 from requests.compat import urljoin
 
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi, UpdatesApi)
@@ -112,7 +113,8 @@ class TVDBv2(BaseIndexer):
 
                         if key_mapping and key_mapping.get(attribute):
                             if isinstance(value, dict) and isinstance(key_mapping[attribute], dict):
-                                # Let's map the children, i'm only going 1 deep, because usecases that I need it for, I don't need to go any further
+                                # Let's map the children, i'm only going 1 deep, because usecases that I need it for,
+                                # I don't need to go any further
                                 for k, v in value.iteritems():
                                     if key_mapping.get(attribute)[k]:
                                         return_dict[key_mapping[attribute][k]] = v
@@ -211,7 +213,8 @@ class TVDBv2(BaseIndexer):
                     page += 1
         else:
             while page <= last:
-                paged_episodes = self.series_api.series_id_episodes_query_get(tvdb_id, page=page, accept_language=self.config['language'])
+                paged_episodes = self.series_api.series_id_episodes_query_get(tvdb_id, page=page,
+                                                                              accept_language=self.config['language'])
                 results += paged_episodes.data
                 last = paged_episodes.links.last
                 page += 1
@@ -233,7 +236,7 @@ class TVDBv2(BaseIndexer):
         for cur_ep in episodes:
             if self.config['dvdorder']:
                 log().debug('Using DVD ordering.')
-                use_dvd = cur_ep['dvd_season'] != None and cur_ep['dvd_episodenumber'] != None
+                use_dvd = cur_ep['dvd_season'] is not None and cur_ep['dvd_episodenumber'] is not None
             else:
                 use_dvd = False
 
@@ -329,9 +332,9 @@ class TVDBv2(BaseIndexer):
 
         for image_type, image_count in self._object_to_dict(series_images_count).iteritems():
             try:
-
                 if search_for_image_type and search_for_image_type != image_type:
-                    continue
+                    if image_type == 'poster' and search_for_image_type != 'poster_thumb':
+                        continue
 
                 if not image_count:
                     continue
@@ -354,7 +357,7 @@ class TVDBv2(BaseIndexer):
                         if k is None or v is None:
                             continue
 
-                        k, v = k.lower(), v.lower()
+                        # k, v = k.lower(), v.lower()
                         _images[image_type][image.resolution][bid][k] = v
 
                     for k, v in _images[image_type][image.resolution][bid].items():
@@ -414,7 +417,7 @@ class TVDBv2(BaseIndexer):
             cur_actors.append(new_actor)
         self._set_show_data(sid, '_actors', cur_actors)
 
-    def _get_show_data(self, sid, language, get_ep_info=False):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
+    def _get_show_data(self, sid, language, get_ep_info=False):
         """Parse TheTVDB json response.
 
         Takes a series ID, gets the epInfo URL and parses the TheTVDB json response
