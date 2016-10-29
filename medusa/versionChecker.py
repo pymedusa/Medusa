@@ -67,15 +67,15 @@ class CheckVersion(object):
 
             if self.check_for_new_version(force):
                 if app.AUTO_UPDATE:
-                    logger.log(u"New update found, starting auto-updater ...")
+                    logger.log(u'New update found, starting auto-updater ...')
                     ui.notifications.message('New update found, starting auto-updater')
                     if self.run_backup_if_safe():
                         if app.versionCheckScheduler.action.update():
-                            logger.log(u"Update was successful!")
+                            logger.log(u'Update was successful!')
                             ui.notifications.message('Update was successful')
                             app.events.put(app.events.SystemEvent.RESTART)
                         else:
-                            logger.log(u"Update failed!")
+                            logger.log(u'Update failed!')
                             ui.notifications.message('Update failed!')
 
             self.check_for_new_news(force)
@@ -87,7 +87,7 @@ class CheckVersion(object):
 
     def _runbackup(self):
         # Do a system backup before update
-        logger.log(u"Config backup in progress...")
+        logger.log(u'Config backup in progress...')
         ui.notifications.message('Backup', 'Config backup in progress...')
         try:
             backupDir = os.path.join(app.DATA_DIR, app.BACKUP_DIR)
@@ -95,11 +95,11 @@ class CheckVersion(object):
                 os.mkdir(backupDir)
 
             if self._keeplatestbackup(backupDir) and self._backup(backupDir):
-                logger.log(u"Config backup successful, updating...")
+                logger.log(u'Config backup successful, updating...')
                 ui.notifications.message('Backup', 'Config backup successful, updating...')
                 return True
             else:
-                logger.log(u"Config backup failed, aborting update", logger.WARNING)
+                logger.log(u'Config backup failed, aborting update', logger.WARNING)
                 ui.notifications.message('Backup', 'Config backup failed, aborting update')
                 return False
         except Exception as e:
@@ -158,7 +158,7 @@ class CheckVersion(object):
             message = {
                 'equal': {
                     'type': logger.DEBUG,
-                    'text': u"We can proceed with the update. New update has same DB version"},
+                    'text': u'We can proceed with the update. New update has same DB version'},
                 'upgrade': {
                     'type': logger.WARNING,
                     'text': u"We can't proceed with the update. New update has a new DB version. Please manually update"},
@@ -179,7 +179,7 @@ class CheckVersion(object):
 
         def postprocessor_safe():
             if not app.autoPostProcessorScheduler.action.amActive:
-                logger.log(u"We can proceed with the update. Post-Processor is not running", logger.DEBUG)
+                logger.log(u'We can proceed with the update. Post-Processor is not running', logger.DEBUG)
                 return True
             else:
                 logger.log(u"We can't proceed with the update. Post-Processor is running", logger.DEBUG)
@@ -187,7 +187,7 @@ class CheckVersion(object):
 
         def showupdate_safe():
             if not app.showUpdateScheduler.action.amActive:
-                logger.log(u"We can proceed with the update. Shows are not being updated", logger.DEBUG)
+                logger.log(u'We can proceed with the update. Shows are not being updated', logger.DEBUG)
                 return True
             else:
                 logger.log(u"We can't proceed with the update. Shows are being updated", logger.DEBUG)
@@ -198,10 +198,10 @@ class CheckVersion(object):
         showupdate_safe = showupdate_safe()
 
         if db_safe and postprocessor_safe and showupdate_safe:
-            logger.log(u"Proceeding with auto update", logger.DEBUG)
+            logger.log(u'Proceeding with auto update', logger.DEBUG)
             return True
         else:
-            logger.log(u"Auto update aborted", logger.DEBUG)
+            logger.log(u'Auto update aborted', logger.DEBUG)
             return False
 
     def getDBcompare(self):
@@ -282,19 +282,19 @@ class CheckVersion(object):
         """
 
         if not self.updater or (not app.VERSION_NOTIFY and not app.AUTO_UPDATE and not force):
-            logger.log(u"Version checking is disabled, not checking for the newest version")
+            logger.log(u'Version checking is disabled, not checking for the newest version')
             return False
 
         # checking for updates
         if not app.AUTO_UPDATE:
-            logger.log(u"Checking for updates using " + self.install_type.upper())
+            logger.log(u'Checking for updates using {0}'.format(self.install_type.upper()))
 
         if not self.updater.need_update():
             app.NEWEST_VERSION_STRING = None
 
             if force:
                 ui.notifications.message('No update needed')
-                logger.log(u"No update needed")
+                logger.log(u'No update needed')
 
             # no updates needed
             return False
@@ -432,14 +432,14 @@ class GitUpdateManager(UpdateManager):
         else:
             main_git = 'git'
 
-        logger.log(u"Checking if we can use git commands: " + main_git + ' ' + test_cmd, logger.DEBUG)
+        logger.log(u'Checking if we can use git commands: {0} {1}'.format(main_git, test_cmd), logger.DEBUG)
         _, _, exit_status = self._run_git(main_git, test_cmd)
 
         if exit_status == 0:
-            logger.log(u"Using: " + main_git, logger.DEBUG)
+            logger.log(u'Using: {0}'.format(main_git), logger.DEBUG)
             return main_git
         else:
-            logger.log(u"Not using: " + main_git, logger.DEBUG)
+            logger.log(u'Not using: {0}'.format(main_git), logger.DEBUG)
 
         # trying alternatives
 
@@ -454,17 +454,17 @@ class GitUpdateManager(UpdateManager):
                 alternative_git.append(main_git.lower())
 
         if alternative_git:
-            logger.log(u"Trying known alternative git locations", logger.DEBUG)
+            logger.log(u'Trying known alternative git locations', logger.DEBUG)
 
             for cur_git in alternative_git:
-                logger.log(u"Checking if we can use git commands: " + cur_git + ' ' + test_cmd, logger.DEBUG)
+                logger.log(u'Checking if we can use git commands: {0} {1}'.format(cur_git, test_cmd), logger.DEBUG)
                 _, _, exit_status = self._run_git(cur_git, test_cmd)
 
                 if exit_status == 0:
-                    logger.log(u"Using: " + cur_git, logger.DEBUG)
+                    logger.log(u'Using: {0}'.format(cur_git), logger.DEBUG)
                     return cur_git
                 else:
-                    logger.log(u"Not using: " + cur_git, logger.DEBUG)
+                    logger.log(u'Not using: {0}'.format(cur_git), logger.DEBUG)
 
         # Still haven't found a working git
         error_message = ('Unable to find your git executable - Shutdown the application and EITHER set git_path '
@@ -486,7 +486,7 @@ class GitUpdateManager(UpdateManager):
         cmd = git_path + ' ' + args
 
         try:
-            logger.log(u"Executing " + cmd + " with your shell in " + app.PROG_DIR, logger.DEBUG)
+            logger.log(u'Executing {cmd} with your shell in {dir}'.format(cmd=cmd, dir=app.PROG_DIR), logger.DEBUG)
             p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                  shell=True, cwd=app.PROG_DIR)
             output, err = p.communicate()
@@ -496,26 +496,30 @@ class GitUpdateManager(UpdateManager):
                 output = output.strip()
 
         except OSError:
-            logger.log(u"Command " + cmd + " didn't work")
+            logger.log(u"Command {cmd} didn't work".format(cmd=cmd))
             exit_status = 1
 
         if exit_status == 0:
-            logger.log(cmd + u" : returned successful", logger.DEBUG)
+            logger.log(u'{cmd} : returned successful'.format(cmd=cmd), logger.DEBUG)
             exit_status = 0
 
         elif exit_status == 1:
-            if 'stash' in output:
-                logger.log(u"Please enable 'git reset' in settings or stash your changes in local files", logger.WARNING)
+            if output:
+                if 'stash' in output:
+                    logger.log(u"Enable 'git reset' in settings or stash your changes in local files", logger.WARNING)
+                else:
+                    logger.log(u'{cmd} returned : {output}'.format(cmd=cmd, output=output), logger.WARNING)
             else:
-                logger.log(cmd + u" returned : " + str(output), logger.WARNING)
+                    logger.log(u'{cmd} returned no data', logger.WARNING)
             exit_status = 1
 
         elif exit_status == 128 or 'fatal:' in output or err:
-            logger.log(cmd + u" returned : " + str(output), logger.WARNING)
+            logger.log(u'{cmd} returned : {output}'.format(cmd=cmd, output=output), logger.WARNING)
             exit_status = 128
 
         else:
-            logger.log(cmd + u" returned : " + str(output) + u", treat as error for now", logger.WARNING)
+            logger.log(u'{cmd} returned : {output}. Treat as error for now'.format
+                       (cmd=cmd, output=output), logger.WARNING)
             exit_status = 1
 
         return output, err, exit_status
@@ -596,7 +600,7 @@ class GitUpdateManager(UpdateManager):
                 logger.log(u"git didn't return numbers for behind and ahead, not using it", logger.DEBUG)
                 return
 
-        logger.log(u"cur_commit = %s, newest_commit = %s, num_commits_behind = %s, num_commits_ahead = %s" %
+        logger.log(u'cur_commit = %s, newest_commit = %s, num_commits_behind = %s, num_commits_ahead = %s' %
                    (self._cur_commit_hash, self._newest_commit_hash, self._num_commits_behind, self._num_commits_ahead), logger.DEBUG)
 
     def set_newest_text(self):
@@ -623,8 +627,8 @@ class GitUpdateManager(UpdateManager):
             newest_text += ')' + "&mdash; <a href=\"" + self.get_update_url() + "\">Update Now</a>"
 
         elif self._num_commits_ahead > 0:
-            logger.log(u"Local branch is ahead of " + self.branch + ". Automatic update not possible.", logger.WARNING)
-            newest_text = "Local branch is ahead of " + self.branch + ". Automatic update not possible."
+            newest_text = u'Local branch is ahead of {0}. Automatic update not possible'.format(self.branch)
+            logger.log(newest_text, logger.WARNING)
 
         else:
             return
@@ -634,7 +638,7 @@ class GitUpdateManager(UpdateManager):
     def need_update(self):
 
         if self.branch != self._find_installed_branch():
-            logger.log(u"Branch checkout: " + self._find_installed_branch() + "->" + self.branch, logger.DEBUG)
+            logger.log(u'Branch checkout: {0}->{1}'.format(self._find_installed_branch(), self.branch), logger.DEBUG)
             return True
 
         self._find_installed_version()
@@ -644,7 +648,7 @@ class GitUpdateManager(UpdateManager):
             try:
                 self._check_github_for_update()
             except Exception as e:
-                logger.log(u"Unable to contact github, can't check for update: " + repr(e), logger.WARNING)
+                logger.log(u"Unable to contact github, can't check for update: {0}".format(repr(e)), logger.WARNING)
                 return False
 
             if self._num_commits_behind > 0 or self._num_commits_ahead > 0:
@@ -690,7 +694,7 @@ class GitUpdateManager(UpdateManager):
                 try:
                     notifiers.notify_git_update(app.CUR_COMMIT_HASH or "")
                 except Exception:
-                    logger.log(u"Unable to send update notification. Continuing the update process", logger.DEBUG)
+                    logger.log(u'Unable to send update notification. Continuing the update process', logger.DEBUG)
             return True
 
         else:
@@ -795,11 +799,11 @@ class SourceUpdateManager(UpdateManager):
         try:
             self._check_github_for_update()
         except Exception as e:
-            logger.log(u"Unable to contact github, can't check for update: " + repr(e), logger.WARNING)
+            logger.log(u"Unable to contact github, can't check for update: {0}".format(repr(e)), logger.WARNING)
             return False
 
         if self.branch != self._find_installed_branch():
-            logger.log(u"Branch checkout: " + self._find_installed_branch() + "->" + self.branch, logger.DEBUG)
+            logger.log(u'Branch checkout: {0}->{1}'.format(self._find_installed_branch(), self.branch), logger.DEBUG)
             return True
 
         if not self._cur_commit_hash or self._num_commits_behind > 0 or self._num_commits_ahead > 0:
@@ -855,8 +859,8 @@ class SourceUpdateManager(UpdateManager):
                 # when _cur_commit_hash doesn't match anything _num_commits_behind == 100
                 self._num_commits_behind += 1
 
-        logger.log(u"cur_commit = " + str(self._cur_commit_hash) + u", newest_commit = " + str(self._newest_commit_hash) +
-                   u", num_commits_behind = " + str(self._num_commits_behind), logger.DEBUG)
+        logger.log(u'cur_commit = {0}, newest_commit = {1}, num_commits_behind = {2}'.format
+                   (self._cur_commit_hash, self._newest_commit_hash, self._num_commits_behind), logger.DEBUG)
 
     def set_newest_text(self):
 
@@ -866,7 +870,8 @@ class SourceUpdateManager(UpdateManager):
         if not self._cur_commit_hash:
             logger.log(u"Unknown current version number, don't know if we should update or not", logger.DEBUG)
 
-            newest_text = "Unknown current version number: If you've never used the application upgrade system before then current version is not set."
+            newest_text = "Unknown current version number: If you've never used the application " \
+                          "upgrade system before then current version is not set."
             newest_text += "&mdash; <a href=\"" + self.get_update_url() + "\">Update Now</a>"
 
         elif self._num_commits_behind > 0:
@@ -898,45 +903,46 @@ class SourceUpdateManager(UpdateManager):
             app_update_dir = os.path.join(app.PROG_DIR, u'sr-update')
 
             if os.path.isdir(app_update_dir):
-                logger.log(u"Clearing out update folder " + app_update_dir + " before extracting")
+                logger.log(u'Clearing out update folder {0} before extracting'.format(app_update_dir))
                 shutil.rmtree(app_update_dir)
 
-            logger.log(u"Creating update folder " + app_update_dir + " before extracting")
+            logger.log(u'Clearing update folder {0} before extracting'.format(app_update_dir))
             os.makedirs(app_update_dir)
 
             # retrieve file
-            logger.log(u"Downloading update from " + repr(tar_download_url))
+            logger.log(u'Downloading update from {0}'.format(repr(tar_download_url)))
             tar_download_path = os.path.join(app_update_dir, u'sr-update.tar')
             helpers.download_file(tar_download_url, tar_download_path, session=self.session)
 
             if not os.path.isfile(tar_download_path):
-                logger.log(u"Unable to retrieve new version from " + tar_download_url + ", can't update", logger.WARNING)
+                logger.log(u"Unable to retrieve new version from {0}, can't update".format
+                           (tar_download_url), logger.WARNING)
                 return False
 
             if not tarfile.is_tarfile(tar_download_path):
-                logger.log(u"Retrieved version from " + tar_download_url + " is corrupt, can't update", logger.WARNING)
+                logger.log(u"Retrieved version from {0} is corrupt, can't update".format(tar_download_url), logger.WARNING)
                 return False
 
             # extract to sr-update dir
-            logger.log(u"Extracting file " + tar_download_path)
+            logger.log(u'Extracting file {0}'.format(tar_download_path))
             tar = tarfile.open(tar_download_path)
             tar.extractall(app_update_dir)
             tar.close()
 
             # delete .tar.gz
-            logger.log(u"Deleting file " + tar_download_path)
+            logger.log(u'Deleting file {0}'.format(tar_download_path))
             os.remove(tar_download_path)
 
             # find update dir name
             update_dir_contents = [x for x in os.listdir(app_update_dir) if
                                    os.path.isdir(os.path.join(app_update_dir, x))]
             if len(update_dir_contents) != 1:
-                logger.log(u"Invalid update data, update failed: " + str(update_dir_contents), logger.WARNING)
+                logger.log(u'Invalid update data, update failed: {0}'.format(update_dir_contents), logger.WARNING)
                 return False
             content_dir = os.path.join(app_update_dir, update_dir_contents[0])
 
             # walk temp folder and move files to main folder
-            logger.log(u"Moving files from " + content_dir + " to " + app.PROG_DIR)
+            logger.log(u'Moving files from {0} to {1}'.format(content_dir, app.PROG_DIR))
             for dirname, _, filenames in os.walk(content_dir):  # @UnusedVariable
                 dirname = dirname[len(content_dir) + 1:]
                 for curfile in filenames:
@@ -952,7 +958,7 @@ class SourceUpdateManager(UpdateManager):
                             os.remove(new_path)
                             os.renames(old_path, new_path)
                         except Exception as e:
-                            logger.log(u"Unable to update " + new_path + ': ' + ex(e), logger.DEBUG)
+                            logger.log(u'Unable to update {0}: {1}'.format(new_path, ex(e)), logger.DEBUG)
                             os.remove(old_path)  # Trash the updated file without moving in new path
                         continue
 
@@ -964,15 +970,15 @@ class SourceUpdateManager(UpdateManager):
             app.CUR_COMMIT_BRANCH = self.branch
 
         except Exception as e:
-            logger.log(u"Error while trying to update: " + ex(e), logger.ERROR)
-            logger.log(u"Traceback: " + traceback.format_exc(), logger.DEBUG)
+            logger.log(u'Traceback: {0}'.format(traceback.format_exc()), logger.DEBUG)
+            logger.log(u'Error while trying to update: {0}'.format(ex(e)), logger.ERROR)
             return False
 
         # Notify update successful
         try:
             notifiers.notify_git_update(app.CUR_COMMIT_HASH or "")
         except Exception:
-            logger.log(u"Unable to send update notification. Continuing the update process", logger.DEBUG)
+            logger.log(u'Unable to send update notification. Continuing the update process', logger.DEBUG)
         return True
 
     @staticmethod
