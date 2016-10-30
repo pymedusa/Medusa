@@ -4,7 +4,7 @@ import medusa as app
 
 from .base import BaseRequestHandler
 from ....indexers import indexer_config
-from ....show.Show import Show
+from ....show.show import Show
 
 
 class EpisodeHandler(BaseRequestHandler):
