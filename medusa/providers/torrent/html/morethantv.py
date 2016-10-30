@@ -92,7 +92,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 search_strings[mode].append(re.sub(r'(.*)S0?', r'\1Season ', search_strings[mode]))
                 
             for search_string in search_strings[mode]:
-                  
+
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
