@@ -6,7 +6,7 @@ from six import string_types
 from tornado.routes import route
 from .handler import Home
 from ..core import PageTemplate
-from .... import processTV
+from .... import process_tv
 from ....helper.encoding import ss
 
 
@@ -44,7 +44,7 @@ class HomePostProcess(Home):
         else:
             nzb_name = ss(nzb_name) if nzb_name else nzb_name
 
-            result = processTV.processDir(
+            result = process_tv.processDir(
                 ss(proc_dir), nzb_name, process_method=process_method, force=argToBool(force),
                 is_priority=argToBool(is_priority), delete_on=argToBool(delete_on), failed=argToBool(failed), proc_type=type, ignore_subs=argToBool(ignore_subs)
             )

@@ -35,7 +35,7 @@ from six import iteritems, text_type
 from tornado.web import RequestHandler
 from .... import (
     classes, db, helpers, image_cache, logger, network_timezones,
-    processTV, sbdatetime, ui,
+    process_tv, sbdatetime, ui,
 )
 from ....common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, UNAIRED, UNKNOWN, WANTED, \
     statusStrings
@@ -1268,9 +1268,9 @@ class CMD_PostProcess(ApiCall):
         if not self.type:
             self.type = "manual"
 
-        data = processTV.processDir(self.path, process_method=self.process_method, force=self.force_replace,
-                                    is_priority=self.is_priority, delete_on=self.delete_files, failed=self.failed,
-                                    proc_type=self.type)
+        data = process_tv.processDir(self.path, process_method=self.process_method, force=self.force_replace,
+                                     is_priority=self.is_priority, delete_on=self.delete_files, failed=self.failed,
+                                     proc_type=self.type)
 
         if not self.return_data:
             data = ""
