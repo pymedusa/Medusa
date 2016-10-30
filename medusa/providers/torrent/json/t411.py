@@ -15,12 +15,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for T411."""
 from __future__ import unicode_literals
 
 import time
 import traceback
 
+from operator import itemgetter
 from requests.auth import AuthBase
 from requests.compat import urljoin
 from ..TorrentProvider import TorrentProvider
@@ -30,10 +31,10 @@ from ....helper.common import convert_size, try_int
 
 
 class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """T411 Torrent provider"""
-    def __init__(self):
+    """T411 Torrent provider."""
 
-        # Provider Init
+    def __init__(self):
+        """Provider Init."""
         TorrentProvider.__init__(self, "T411")
 
         # Credentials
@@ -67,8 +68,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         self.cache = tvcache.TVCache(self, min_time=10)  # Only poll T411 every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
-        """
-        Search a provider and parse the results
+        """Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -108,25 +108,28 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         return results
 
     def parse(self, data, mode):
-        """
-        Parse search results for items.
+        """Parse search results for items.
 
         :param data: The raw response from a search
         :param mode: The current mode used to search, e.g. RSS
 
         :return: A list of items found
         """
-
         items = []
 
-        torrent_rows = data.get('torrents') if mode != 'RSS' else data
+        unsorted_torrent_rows = data.get('torrents') if mode != 'RSS' else data
+        torrent_rows = sorted(unsorted_torrent_rows, key=itemgetter('added'), reverse=True)
 
-        if not torrent_rows or not isinstance(torrent_rows, dict):
+        if not torrent_rows or not isinstance(torrent_rows, list):
             logger.log('Data returned from provider does not contain any {0}torrents'.format(
                        'confirmed ' if self.confirmed else ''), logger.DEBUG)
             return items
 
         for row in torrent_rows:
+            if not isinstance(row, dict):
+                logger.log('Invalid data returned from provider', logger.WARNING)
+                continue
+
             if mode == 'RSS' and 'category' in row and try_int(row['category'], 0) not in self.subcategories:
                 continue
 
@@ -178,6 +181,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         return items
 
     def login(self):
+        """Log into provider."""
         if self.token is not None:
             if time.time() < (self.tokenLastUpdate + 30 * 60):
                 return True
@@ -204,11 +208,14 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
 
 
 class T411Auth(AuthBase):  # pylint: disable=too-few-public-methods
-    """Attaches HTTP Authentication to the given Request object."""
+    """Attach HTTP Authentication to the given Request object."""
+
     def __init__(self, token):
+        """Init object."""
         self.token = token
 
     def __call__(self, r):
+        """Add token to request header."""
         r.headers['Authorization'] = self.token
         return r
 
