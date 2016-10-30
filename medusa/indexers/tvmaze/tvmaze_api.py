@@ -753,7 +753,7 @@ class TVmaze(object):
             for cur_ep in episodes:
                 if self.config['dvdorder']:
                     log().debug('Using DVD ordering.')
-                    use_dvd = cur_ep['dvd_season'] != None and cur_ep['dvd_episodenumber'] != None
+                    use_dvd = cur_ep['dvd_season'] is not None and cur_ep['dvd_episodenumber'] is not None
                 else:
                     use_dvd = False
 
