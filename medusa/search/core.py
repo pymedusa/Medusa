@@ -502,6 +502,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
     :param forced_search: Boolean, is this a forced search?
     :param downCurQuality: Boolean, should we re-download currently available quality file
     :param manual_search: Boolean, should we choose what to download?
+    :param manual_search_type: Episode or Season search
     :return: results for search
     """
     foundResults = {}

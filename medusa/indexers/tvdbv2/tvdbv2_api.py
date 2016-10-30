@@ -477,7 +477,7 @@ class TVDBv2(BaseIndexer):
         """Retrieve a list with updated shows.
 
         @param from_time: epoch timestamp, with the start date/time
-        @param until_time: epoch timestamp, with the end date/time (not mandatory)
+        @param weeks: default last update week check
         """
         total_updates = []
         updates = True

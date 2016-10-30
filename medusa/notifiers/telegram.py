@@ -39,7 +39,7 @@ class Notifier(object):
     def test_notify(self, user_id=None, api_key=None):
         """
         Send a test notification
-        :param id: The Telegram user/group id to send the message to
+        :param user_id: The Telegram user/group id to send the message to
         :param api_key: Your Telegram bot API token
         :returns: the notification
         """
@@ -96,7 +96,7 @@ class Notifier(object):
         Sends a Telegram notification when an episode is snatched
 
         :param ep_name: The name of the episode snatched
-        :param title: The title of the notification to send
+        :param is_proper: Boolean. If snatch is proper or not
         """
         title=notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
         if app.TELEGRAM_NOTIFY_ONSNATCH:

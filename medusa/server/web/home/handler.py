@@ -885,6 +885,7 @@ class Home(WebRoot):
 
         @param provider: The provider id, passed as usenet_crawler and not the provider name (Usenet-Crawler)
         @param rowid: The provider's cache table's rowid. (currently the implicit sqlites rowid is used, needs to be replaced in future)
+        @param manual_search_type: Episode or Season search
 
         @return: A json with a {'success': true} or false.
         """

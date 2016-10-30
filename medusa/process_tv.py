@@ -157,7 +157,10 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
 
     :param dirName: The folder name to look in
     :param nzbName: The NZB name which resulted in this folder being downloaded
+    :param process_method: Process methodo: hardlink, move, softlink, etc.
     :param force: True to postprocess already postprocessed files
+    :param is_priority: Boolean for whether or not is a priority download
+    :param delete_on: Boolean for whether or not it should delete files
     :param failed: Boolean for whether or not the download failed
     :param proc_type: Type of postprocessing auto or manual
     :param ignore_subs: True to ignore setting 'postpone if no subs'

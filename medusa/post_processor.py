@@ -144,6 +144,8 @@ class PostProcessor(object):
 
         :param file_path: The file to check for associated files
         :param base_name_only: False add extra '.' (conservative search) to file_path minus extension
+        :param subtitles_only: list only subtitles
+        :param subfolders: check subfolders while listing files
         :return: A list containing all files which are associated to the given file
         """
         def recursive_glob(treeroot, pattern):

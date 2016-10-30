@@ -150,8 +150,8 @@ def isRarFile(filename):
 def remove_file_failed(failed_file):
     """Remove file from filesystem.
 
-    :param file: File to remove
-    :type file: str
+    :param failed_file: File to remove
+    :type failed_file: str
     """
     try:
         os.remove(failed_file)
@@ -678,6 +678,7 @@ def get_all_episodes_from_absolute_number(show, absolute_numbers, indexer_id=Non
 def sanitizeSceneName(name, anime=False):
     """Take a show name and returns the "scenified" version of it.
 
+    :param name: Show name to be sanitized.
     :param anime: Some show have a ' in their name(Kuroko's Basketball) and is needed for search.
     :return: A string containing the scene version of the show name given.
     """
@@ -1448,7 +1449,7 @@ def isFileLocked(check_file, write_lock_check=False):
         3. If the readLockCheck parameter is True, attempts to rename the file. If this fails the
             file is open by some other process for reading. The file can be read, but not written to
             or deleted.
-    :param file: the file being checked
+    :param check_file: the file being checked
     :param write_lock_check: when true will check if the file is locked for writing (prevents move operations)
     """
     check_file = os.path.abspath(check_file)

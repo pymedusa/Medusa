@@ -400,7 +400,7 @@ class DBConnection(object):
 
         :param table: Table to add column too
         :param column: Column name to add
-        :param type: Column type to add
+        :param column_type: Column type to add
         :param default: Default value for column
         """
         self.action("ALTER TABLE [%s] ADD %s %s" % (table, column, column_type))

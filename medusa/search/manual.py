@@ -53,7 +53,7 @@ def getEpisode(show, season=None, episode=None, absolute=None):
 
     :param show: Season number
     :param season: Season number
-    :param season: Season number
+    :param episode: Episode number
     :param absolute: Optional if the episode number is a scene absolute number
     :return: episode object
     """

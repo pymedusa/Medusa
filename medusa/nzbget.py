@@ -65,7 +65,7 @@ def testNZB(host, username, password, use_https):
     :param host: nzb host to connect
     :param username: nzb username
     :param password: nzb password
-    :param use_http: If we should use https or not
+    :param use_https: If we should use https or not
 
     :return  True if connected. Else False
     """

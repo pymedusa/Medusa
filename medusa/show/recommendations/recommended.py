@@ -77,6 +77,7 @@ class RecommendedShow(object):
         """Store cache of image in cache dir
 
         :param image_url: Source URL
+        :param default: default folder
         """
         if default:
             self.image_src = posixpath.join('images', default)
