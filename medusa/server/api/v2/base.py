@@ -46,7 +46,7 @@ class BaseRequestHandler(RequestHandler):
         else:
             self.set_status(status or 200)
             if data is not None:
-                self.finish(StringEncoder().encode(data))
+                self.finish(json.JSONEncoder(default=json_string_encoder).encode(data))
             elif kwargs:
                 self.finish(kwargs)
 
@@ -92,12 +92,9 @@ class BaseRequestHandler(RequestHandler):
         return BaseRequestHandler._parse(value, lambda d: datetime.strptime(d, fmt))
 
 
-class StringEncoder(json.JSONEncoder):
-    """String json encoder."""
+def json_string_encoder(o):
+    """Convert properties to string."""
+    if isinstance(o, Language):
+        return getattr(o, 'name')
 
-    def default(self, o):
-        """Convert properties to string."""
-        if isinstance(o, Language):
-            return getattr(o, 'name')
-
-        return text_type(o)
+    return text_type(o)
