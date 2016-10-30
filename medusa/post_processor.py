@@ -1019,7 +1019,6 @@ class PostProcessor(object):
                     if new_ep_quality not in preferred_qualities:
                         raise EpisodePostProcessingFailedException(u'File exists and new file quality is not in a preferred quality list, '
                                                                    u'marking it unsafe to replace')
-                        return False
                     else:
                         self._log(u'File exists and new file quality is in a preferred quality list, '
                                   u'marking it safe to replace')
