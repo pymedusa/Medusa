@@ -136,7 +136,7 @@ class ShowQueue(generic_queue.GenericQueue):
             if self._isInQueue(show, (action, )):
                 return action, message
 
-        return ShowQueueActions.REFRESH, self.queue_mappings.get(ShowQueueActions.REFRESH)
+        return None, None
 
     loadingShowList = property(_getLoadingShowList)
 
