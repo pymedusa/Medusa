@@ -11,7 +11,7 @@ from tornado.routes import route
 from .base import PageTemplate, WebRoot
 from .... import logger, ui
 from ....classes import ErrorViewer, WarningViewer
-from ....issuesubmitter import IssueSubmitter
+from ....issue_submitter import IssueSubmitter
 from ....logger import filter_logline, read_loglines
 from ....version_checker import CheckVersion
 

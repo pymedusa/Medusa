@@ -99,7 +99,7 @@ except AttributeError:
     pass
 
 import medusa as app
-from medusa import db, ehandler, failed_history, logger, name_cache, network_timezones
+from medusa import db, exception_handler, failed_history, logger, name_cache, network_timezones
 from medusa.event_queue import Events
 from medusa.server.core import AppWebServer
 from medusa.tv import TVShow
@@ -171,7 +171,7 @@ class Application(object):
         try:
             self._do_start(args)
         except Exception as e:
-            ehandler.handle('MAIN', e)
+            exception_handler.handle('MAIN', e)
 
     def _do_start(self, args):
         # do some preliminary stuff

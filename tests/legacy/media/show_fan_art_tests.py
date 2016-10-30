@@ -18,7 +18,7 @@
 
 from __future__ import print_function
 
-from medusa.media.ShowFanArt import ShowFanArt
+from medusa.media.fan_art import ShowFanArt
 from .generic_media_tests import GenericMediaTests
 
 

@@ -23,7 +23,7 @@ import time
 import traceback
 
 import medusa as app
-from ..TorrentProvider import TorrentProvider
+from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....helper.common import convert_size, try_int
 from ....indexers.indexer_config import INDEXER_TVDBV2

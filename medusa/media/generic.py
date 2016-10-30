@@ -23,7 +23,7 @@ from os.path import isfile, join, normpath
 import medusa as app
 from ..helper.common import try_int
 from ..helper.exceptions import MultipleShowObjectsException
-from ..show.Show import Show
+from ..show.show import Show
 
 
 class GenericMedia(object):

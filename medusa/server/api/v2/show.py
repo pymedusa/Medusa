@@ -13,7 +13,7 @@ from ....common import Quality, statusStrings
 from ....helper.common import dateFormat, try_int
 from ....helper.quality import get_quality_string
 from ....server.api.v1.core import _map_quality
-from ....show.Show import Show
+from ....show.show import Show
 
 MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 

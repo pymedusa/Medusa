@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import unittest
 
-from medusa.show.ComingEpisodes import ComingEpisodes
+from medusa.show.coming_episodes import ComingEpisodes
 from six import iteritems
 
 

@@ -24,7 +24,7 @@ import medusa as app
 from six import binary_type, text_type
 from traktor import TraktApi, TraktException
 from . import generic_queue, logger, name_cache, notifiers, scene_numbering, ui
-from .blackandwhitelist import BlackAndWhiteList
+from .black_and_white_list import BlackAndWhiteList
 from .common import WANTED
 from .helper.common import episode_num, sanitize_filename
 from .helper.exceptions import (

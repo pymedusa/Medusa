@@ -33,8 +33,8 @@ from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 import medusa as app
 import shutil_custom
 from six import text_type
-from . import db, helpers, image_cache, logger, network_timezones, notifiers, postProcessor, subtitles
-from .blackandwhitelist import BlackAndWhiteList
+from . import db, helpers, image_cache, logger, network_timezones, notifiers, post_processor, subtitles
+from .black_and_white_list import BlackAndWhiteList
 from .common import (
     ARCHIVED, DOWNLOADED, IGNORED, NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND,
     NAMING_LIMITED_EXTEND_E_PREFIXED, NAMING_SEPARATED_REPEAT, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER,
@@ -51,7 +51,7 @@ from .helper.exceptions import (
 from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .scene_numbering import get_scene_absolute_numbering, get_scene_numbering, xem_refresh
-from .show.Show import Show
+from .show.show import Show
 
 try:
     import xml.etree.cElementTree as ETree
@@ -1373,7 +1373,7 @@ class TVShow(TVObject):
 
                     logger.log('{id}: Looking for hanging associated files for: {show} {ep} in: {location}'.format
                                (id=self.indexerid, show=self.name, ep=episode_num(season, episode), location=cur_loc))
-                    related_files = postProcessor.PostProcessor(cur_loc).list_associated_files(
+                    related_files = post_processor.PostProcessor(cur_loc).list_associated_files(
                         cur_loc, base_name_only=False, subfolders=True)
 
                     if related_files:
@@ -3079,12 +3079,12 @@ class TVEpisode(TVObject):
                        (id=self.indexerid, location=self.location), logger.DEBUG)
             return
 
-        related_files = postProcessor.PostProcessor(self.location).list_associated_files(
+        related_files = post_processor.PostProcessor(self.location).list_associated_files(
             self.location, base_name_only=True, subfolders=True)
 
         # This is wrong. Cause of pp not moving subs.
         if self.show.subtitles and app.SUBTITLES_DIR != '':
-            related_subs = postProcessor.PostProcessor(
+            related_subs = post_processor.PostProcessor(
                 self.location).list_associated_files(app.SUBTITLES_DIR, subtitles_only=True, subfolders=True)
 
         logger.log(u'{id} Files associated to {location}: {related_files}'.format
@@ -3142,7 +3142,7 @@ class TVEpisode(TVObject):
     def airdate_modify_stamp(self):
         """Make the modify date and time of a file reflect the show air date and time.
 
-        Note: Also called from postProcessor
+        Note: Also called from post_processor
         """
         if not all([app.AIRDATE_EPISODES, self.airdate, self.location,
                     self.show, self.show.airs, self.show.network]):

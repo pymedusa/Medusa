@@ -1222,7 +1222,7 @@ class PostProcessor(object):
         # log it to history
         history.logDownload(ep_obj, self.file_path, new_ep_quality, self.release_group, new_ep_version)
 
-        # If any notification fails, don't stop postProcessor
+        # If any notification fails, don't stop post_processor
         try:
             # send notifications
             notifiers.notify_download(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))

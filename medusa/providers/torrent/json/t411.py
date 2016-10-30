@@ -24,7 +24,7 @@ import traceback
 from operator import itemgetter
 from requests.auth import AuthBase
 from requests.compat import urljoin
-from ..TorrentProvider import TorrentProvider
+from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....common import USER_AGENT
 from ....helper.common import convert_size, try_int

@@ -32,7 +32,7 @@ from configobj import ConfigObj
 import requests
 import shutil_custom
 from . import (
-    app, auto_postprocessor, cache, db, helpers, logger, metadata, naming, providers,
+    app, auto_post_processor, cache, db, helpers, logger, metadata, naming, providers,
     scheduler, show_queue, show_updater, subtitles, trakt_checker, version_checker
 )
 from .common import SD, SKIPPED, WANTED
@@ -49,13 +49,13 @@ from .indexers.indexer_exceptions import (
     IndexerSeasonNotFound, IndexerShowIncomplete, IndexerShowNotFound, IndexerUserAbort
 )
 from .providers import NewznabProvider, TorrentRssProvider
-from .providers.GenericProvider import GenericProvider
+from .providers.generic_provider import GenericProvider
 from .search import backlog, daily, proper
 from .search.backlog import BacklogSearchScheduler, BacklogSearcher
 from .search.daily import DailySearcher
 from .search.proper import ProperFinder
 from .search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
-from .system.Shutdown import Shutdown
+from .system.shutdown import Shutdown
 
 shutil.copyfile = shutil_custom.copyfile_custom
 requests.packages.urllib3.disable_warnings()
@@ -1407,7 +1407,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         metadata_provider_dict = metadata.get_metadata_generator_dict()
         for cur_metadata_tuple in [(METADATA_KODI, metadata.kodi),
                                    (METADATA_KODI_12PLUS, metadata.kodi_12plus),
-                                   (METADATA_MEDIABROWSER, metadata.mediabrowser),
+                                   (METADATA_MEDIABROWSER, metadata.media_browser),
                                    (METADATA_PS3, metadata.ps3),
                                    (METADATA_WDTV, metadata.wdtv),
                                    (METADATA_TIVO, metadata.tivo),
@@ -1476,7 +1476,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # processors
         update_interval = datetime.timedelta(minutes=AUTOPOSTPROCESSOR_FREQUENCY)
-        autoPostProcessorScheduler = scheduler.Scheduler(auto_postprocessor.PostProcessor(),
+        autoPostProcessorScheduler = scheduler.Scheduler(auto_post_processor.PostProcessor(),
                                                          cycleTime=update_interval,
                                                          threadName="POSTPROCESSOR",
                                                          silent=not PROCESS_AUTOMATICALLY,

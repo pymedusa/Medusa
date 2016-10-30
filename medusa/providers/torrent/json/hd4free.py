@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import traceback
 
 from requests.compat import urljoin
-from ..TorrentProvider import TorrentProvider
+from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....helper.common import convert_size
 

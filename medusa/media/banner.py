@@ -16,24 +16,24 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-from .GenericMedia import GenericMedia
+from .generic import GenericMedia
 from ..image_cache import ImageCache
 
 
-class ShowPoster(GenericMedia):
+class ShowBanner(GenericMedia):
     """
-    Get the poster of a show
+    Get the banner of a show
     """
 
     def get_default_media_name(self):
-        return 'poster.png'
+        return 'banner.png'
 
     def get_media_path(self):
         if self.get_show():
             if self.media_format == 'normal':
-                return ImageCache().poster_path(self.indexer_id)
+                return ImageCache().banner_path(self.indexer_id)
 
             if self.media_format == 'thumb':
-                return ImageCache().poster_thumb_path(self.indexer_id)
+                return ImageCache().banner_thumb_path(self.indexer_id)
 
         return ''
