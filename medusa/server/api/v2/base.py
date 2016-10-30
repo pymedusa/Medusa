@@ -3,6 +3,7 @@
 
 import base64
 import json
+import operator
 
 from datetime import datetime
 from babelfish.language import Language
@@ -43,8 +44,30 @@ class BaseRequestHandler(RequestHandler):
                 'error': error
             })
         else:
-            self.set_status(200)
-            self.finish(StringEncoder().encode(data) if data is not None else kwargs)
+            self.set_status(status or 200)
+            if data is not None:
+                self.finish(StringEncoder().encode(data))
+            elif kwargs:
+                self.finish(kwargs)
+
+    def _get_sort(self, default):
+        return self.get_argument('sort', default=default)
+
+    def _get_sort_order(self, default='asc'):
+        return self.get_argument('sort_order', default=default).lower()
+
+    def _get_page(self):
+        return max(1, int(self.get_argument('page', default=1)))
+
+    def _get_limit(self, default=20, maximum=1000):
+        return min(max(1, int(self.get_argument('limit', default=default))), maximum)
+
+    @staticmethod
+    def _paginate(data, arg_sort, arg_sort_order, arg_page, arg_limit):
+        results = sorted(data, key=operator.itemgetter(arg_sort), reverse=arg_sort_order == 'desc')
+        start = (arg_page - 1) * arg_limit
+        end = start + arg_limit
+        return results[start:end]
 
     @staticmethod
     def _parse(value, function=int):

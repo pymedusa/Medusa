@@ -39,6 +39,7 @@ INDEXER_TVRAGE = 2  # Must keep
 mapping = {
     'tvdb': INDEXER_TVDBV2
 }
+reverse_mapping = {v: k for k, v in mapping.items()}
 
 indexerConfig = {
     INDEXER_TVDBV2: {

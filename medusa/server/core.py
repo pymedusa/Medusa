@@ -111,17 +111,17 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
         base = self.options['api_v2_root']
         show_id = r'(?P<show_indexer>[a-z]+)(?P<show_id>\d+)'
-        ep_id = r'(?:(?:s(?P<season>\d+)e(?P<episode>\d+))|(?:e(?P<absolute_episode>\d+))|(?P<air_date>\d{4}\-\d{2}\-\d{2}))'
+        ep_id = r'(?:(?:s(?P<season>\d{1,2})(?:e(?P<episode>\d{1,2}))?)|(?:e(?P<absolute_episode>\d{1,3}))|(?P<air_date>\d{4}\-\d{2}\-\d{2}))'
         query = r'(?P<query>[\w]+)'
-        log_level = r'(?P<log_level>\d+)'
+        log_level = r'(?P<log_level>[a-zA-Z]+)'
 
         # API v2 handlers
         self.app.add_handlers('.*$', [
-            (r'{base}/show(?:/{show_id}/?)?'.format(base=base, show_id=show_id), ShowHandler),
-            (r'{base}/show/{show_id}/episode/{ep_id}(?:/{query})?/?'.
+            (r'{base}/show(?:/{show_id})?(?:/{query})?/?'.format(base=base, show_id=show_id, query=query), ShowHandler),
+            (r'{base}/show/{show_id}/episode(?:/{ep_id}(?:/{query})?)?/?'.
              format(base=base, show_id=show_id, ep_id=ep_id, query=query), EpisodeHandler),
-            (r'{base}/config(?:/{query}/?)?'.format(base=base, query=query), ConfigHandler),
-            (r'{base}/log(?:/{log_level}/?)?'.format(base=base, log_level=log_level), LogHandler),
+            (r'{base}/config(?:/{query})?/?'.format(base=base, query=query), ConfigHandler),
+            (r'{base}/log(?:/{log_level})?/?'.format(base=base, log_level=log_level), LogHandler),
         ])
 
         # Static File Handlers
