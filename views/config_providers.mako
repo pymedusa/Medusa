@@ -12,12 +12,12 @@ $(document).ready(function(){
     % if app.USE_NZBS:
         var show_nzb_providers = ${("false", "true")[bool(app.USE_NZBS)]};
         % for curNewznabProvider in app.newznabProviderList:
-        $(this).addProvider('${curNewznabProvider.get_id()}', '${curNewznabProvider.name}', '${curNewznabProvider.url}', '${curNewznabProvider.key}', '${curNewznabProvider.catIDs}', ${int(curNewznabProvider.default)}, show_nzb_providers);
+        $(this).addProvider('${curNewznabProvider.get_id()}', '${curNewznabProvider.name}', '${curNewznabProvider.url}', '${curNewznabProvider.key}', '${curNewznabProvider.cat_ids}', ${int(curNewznabProvider.default)}, show_nzb_providers);
         % endfor
     % endif
     % if app.USE_TORRENTS:
         % for curTorrentRssProvider in app.torrentRssProviderList:
-        $(this).addTorrentRssProvider('${curTorrentRssProvider.get_id()}', '${curTorrentRssProvider.name}', '${curTorrentRssProvider.url}', '${curTorrentRssProvider.cookies}', '${curTorrentRssProvider.titleTAG}');
+        $(this).addTorrentRssProvider('${curTorrentRssProvider.get_id()}', '${curTorrentRssProvider.name}', '${curTorrentRssProvider.url}', '${curTorrentRssProvider.cookies}', '${curTorrentRssProvider.title_tag}');
         % endfor
     % endif
 });
@@ -723,9 +723,9 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         <div class="field-pair">
-                            <label for="torrentrss_titleTAG">
+                            <label for="torrentrss_title_tag">
                                 <span class="component-title">Search element:</span>
-                                <input type="text" id="torrentrss_titleTAG" class="form-control input-sm input200" value="title"/>
+                                <input type="text" id="torrentrss_title_tag" class="form-control input-sm input200" value="title"/>
                             </label>
                             <label>
                                 <span class="component-title">&nbsp;</span>

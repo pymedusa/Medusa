@@ -84,7 +84,7 @@
                 % else:
                     % if hItem.provider > 0:
                         % if composite.status in [SNATCHED, FAILED]:
-                            <% provider = providers.getProviderClass(GenericProvider.make_id(hItem.provider)) %>
+                            <% provider = providers.get_provider_class(GenericProvider.make_id(hItem.provider)) %>
                             % if provider is not None:
                                 <img src="images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" /> <span style="vertical-align:middle;">${provider.name}</span>
                             % else:
@@ -137,7 +137,7 @@
                     % for cur_action in sorted(hItem.actions):
                         <% composite = Quality.splitCompositeStatus(int(cur_action.action)) %>
                         % if composite.status in [SNATCHED, FAILED]:
-                            <% provider = providers.getProviderClass(GenericProvider.make_id(cur_action.provider)) %>
+                            <% provider = providers.get_provider_class(GenericProvider.make_id(cur_action.provider)) %>
                             % if provider is not None:
                                 <img src="images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" alt="${provider.name}" style="cursor: help;" title="${provider.name}: ${os.path.basename(cur_action.resource)}"/>
                                 % if cur_action.proper_tags:

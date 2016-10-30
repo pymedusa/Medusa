@@ -1440,7 +1440,7 @@ class Home(WebRoot):
     def erase_cache(self, show_obj):
         try:
             main_db_con = db.DBConnection('cache.db')
-            for cur_provider in app.providers.sortedProviderList():
+            for cur_provider in app.providers.sorted_provider_list():
                 # Let's check if this provider table already exists
                 table_exists = main_db_con.select(
                     b'SELECT name '

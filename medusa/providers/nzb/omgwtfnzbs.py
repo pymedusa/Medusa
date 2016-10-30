@@ -81,7 +81,7 @@ class OmgwtfnzbsProvider(NZBProvider):
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                if not self._check_auth_from_data(response, is_XML=False):
+                if not self._check_auth_from_data(response, is_xml=False):
                     return items
 
                 for item in response:
@@ -108,12 +108,12 @@ class OmgwtfnzbsProvider(NZBProvider):
 
         return True
 
-    def _check_auth_from_data(self, parsed_data, is_XML=True):
+    def _check_auth_from_data(self, parsed_data, is_xml=True):
 
         if not parsed_data:
             return self._check_auth()
 
-        if is_XML:
+        if is_xml:
             # provider doesn't return xml on error
             return True
 
