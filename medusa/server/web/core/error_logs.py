@@ -13,7 +13,7 @@ from .... import logger, ui
 from ....classes import ErrorViewer, WarningViewer
 from ....issuesubmitter import IssueSubmitter
 from ....logger import filter_logline, read_loglines
-from ....versionChecker import CheckVersion
+from ....version_checker import CheckVersion
 
 log_name_filters = {
     None: html_escape('<No Filter>'),

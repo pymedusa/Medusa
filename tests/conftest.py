@@ -16,7 +16,7 @@ from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance
 from medusa.logger import read_loglines as logger_read_loglines
 from medusa.tv import TVEpisode, TVShow
-from medusa.versionChecker import CheckVersion
+from medusa.version_checker import CheckVersion
 from mock.mock import Mock
 import pytest
 
