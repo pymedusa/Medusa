@@ -27,7 +27,6 @@ import medusa as app
 from requests.exceptions import RequestException
 from .generic import GenericClient
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -186,7 +185,8 @@ class DelugeAPI(GenericClient):
 
             if labels is not None:
                 if label not in labels:
-                    logger.debug('{name}: {label} label does not exist in Deluge we must add it', name=self.name, label=label)
+                    logger.debug('{name}: {label} label does not exist in Deluge we must add it', name=self.name,
+                                 label=label)
                     post_data = json.dumps({
                         'method': 'label.add',
                         'params': [
