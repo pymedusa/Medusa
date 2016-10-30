@@ -23,7 +23,7 @@ import re
 import traceback
 
 from requests.compat import urljoin
-from ..TorrentProvider import TorrentProvider
+from ..torrent_provider import TorrentProvider
 from .... import helpers, logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size

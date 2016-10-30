@@ -19,9 +19,9 @@
 
 import sys
 
-from ..metadata import generic, helpers, kodi, kodi_12plus, mede8er, mediabrowser, ps3, tivo, wdtv
+from ..metadata import generic, helpers, kodi, kodi_12plus, mede8er, media_browser, ps3, tivo, wdtv
 
-__all__ = ['generic', 'helpers', 'kodi', 'kodi_12plus', 'mediabrowser', 'ps3', 'wdtv', 'tivo', 'mede8er']
+__all__ = ['generic', 'helpers', 'kodi', 'kodi_12plus', 'media_browser', 'ps3', 'wdtv', 'tivo', 'mede8er']
 
 
 def available_generators():

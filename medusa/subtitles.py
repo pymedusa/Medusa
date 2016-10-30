@@ -37,13 +37,13 @@ from subliminal import (ProviderPool, compute_score, provider_manager, refine, r
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
-from . import db, history, processTV
+from . import db, history, process_tv
 from .cache import cache, memory_cache
 from .common import cpu_presets
 from .helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
 from .helper.exceptions import ex
 from .helpers import isMediaFile, isRarFile
-from .show.Show import Show
+from .show.show import Show
 
 
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiPr
 
 basename = __name__.split('.')[0]
 refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
-refiner_manager.register('tvepisode = {basename}.refiners.tvepisode:refine'.format(basename=basename))
+refiner_manager.register('tvepisode = {basename}.refiners.tv_episode:refine'.format(basename=basename))
 
 subtitle_key = u'subtitle={id}'
 video_key = u'{name}:video|{{video_path}}'.format(name=__name__)
@@ -728,8 +728,8 @@ def unpack_rar_files(dirpath):
             video_files = [video_file for video_file in files if isMediaFile(video_file)]
             if u'_UNPACK' not in root and (not video_files or root == app.TV_DOWNLOAD_DIR):
                 logger.debug(u'Found rar files in post-process folder: %s', rar_files)
-                result = processTV.ProcessResult()
-                processTV.unRAR(root, rar_files, False, result)
+                result = process_tv.ProcessResult()
+                process_tv.unRAR(root, rar_files, False, result)
         elif rar_files and not app.UNPACK:
             logger.warning(u'Unpack is disabled. Skipping: %s', rar_files)
 
@@ -824,12 +824,12 @@ class SubtitlesFinder(object):
                 # and .mkv has one.
                 if not app.PROCESS_AUTOMATICALLY and not run_post_process and (
                         not needs_subtitles(downloaded_languages) or
-                        processTV.has_matching_unknown_subtitles(video_path)):
+                        process_tv.has_matching_unknown_subtitles(video_path)):
                     run_post_process = True
 
         if run_post_process:
             logger.info(u'Starting post-process with default settings now that we found subtitles')
-            processTV.processDir(app.TV_DOWNLOAD_DIR)
+            process_tv.processDir(app.TV_DOWNLOAD_DIR)
 
     def run(self, force=False):  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         """Check for needed subtitles for users' shows.

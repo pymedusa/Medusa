@@ -35,7 +35,7 @@ from six import iteritems, text_type
 from tornado.web import RequestHandler
 from .... import (
     classes, db, helpers, image_cache, logger, network_timezones,
-    processTV, sbdatetime, ui,
+    process_tv, sbdatetime, ui,
 )
 from ....common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, UNAIRED, UNKNOWN, WANTED, \
     statusStrings
@@ -46,16 +46,16 @@ from ....helper.common import (
 from ....helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....helper.quality import get_quality_string
 from ....logger import filter_logline, read_loglines
-from ....media.ShowBanner import ShowBanner
-from ....media.ShowFanArt import ShowFanArt
-from ....media.ShowNetworkLogo import ShowNetworkLogo
-from ....media.ShowPoster import ShowPoster
+from ....media.banner import ShowBanner
+from ....media.fan_art import ShowFanArt
+from ....media.network_logo import ShowNetworkLogo
+from ....media.poster import ShowPoster
 from ....search.queue import BacklogQueueItem, ForcedSearchQueueItem
-from ....show.ComingEpisodes import ComingEpisodes
-from ....show.History import History
-from ....show.Show import Show
-from ....system.Restart import Restart
-from ....system.Shutdown import Shutdown
+from ....show.coming_episodes import ComingEpisodes
+from ....show.history import History
+from ....show.show import Show
+from ....system.restart import Restart
+from ....system.shutdown import Shutdown
 from ....version_checker import CheckVersion
 
 indexer_ids = ["indexerid", "tvdbid"]
@@ -1268,9 +1268,9 @@ class CMD_PostProcess(ApiCall):
         if not self.type:
             self.type = "manual"
 
-        data = processTV.processDir(self.path, process_method=self.process_method, force=self.force_replace,
-                                    is_priority=self.is_priority, delete_on=self.delete_files, failed=self.failed,
-                                    proc_type=self.type)
+        data = process_tv.processDir(self.path, process_method=self.process_method, force=self.force_replace,
+                                     is_priority=self.is_priority, delete_on=self.delete_files, failed=self.failed,
+                                     proc_type=self.type)
 
         if not self.return_data:
             data = ""

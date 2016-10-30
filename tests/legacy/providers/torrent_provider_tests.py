@@ -21,8 +21,8 @@ from __future__ import print_function
 import os
 
 import medusa as app
-from medusa.providers.GenericProvider import GenericProvider
-from medusa.providers.torrent.TorrentProvider import TorrentProvider
+from medusa.providers.generic_provider import GenericProvider
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 from six import iteritems
 from .generic_provider_tests import GenericProviderTests
 

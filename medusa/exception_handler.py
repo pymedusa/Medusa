@@ -17,9 +17,9 @@ def handle(thread_name, err):
     """
     if isinstance(err, OSError):
         if err.errno == 28:
-            logger.warning('Out of disk space: {error_msg}', error_msg=err.message)
+            logger.warning('Out of disk space: {error_msg}', error_msg=err)
         else:
-            logger.warning('OS error: {error_msg}', error_msg=err.message)
+            logger.warning('OS error: {error_msg}', error_msg=err)
     else:
         logger.exception("Exception generated in thread {thread_name}: {error_msg}",
-                         thread_name=thread_name, error_msg=err.message)
+                         thread_name=thread_name, error_msg=err)

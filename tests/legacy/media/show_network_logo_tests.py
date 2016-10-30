@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import os
 
-from medusa.media.ShowNetworkLogo import ShowNetworkLogo
+from medusa.media.network_logo import ShowNetworkLogo
 from .generic_media_tests import GenericMediaTests
 
 

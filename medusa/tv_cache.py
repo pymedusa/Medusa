@@ -29,8 +29,8 @@ from . import db, logger, show_name_helpers
 from .helper.common import episode_num
 from .helper.exceptions import AuthException
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from .rssfeeds import getFeed
-from .show.Show import Show
+from .rss_feeds import getFeed
+from .show.show import Show
 
 
 class CacheDBConnection(db.DBConnection):

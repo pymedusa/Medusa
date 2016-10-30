@@ -87,7 +87,7 @@
             </label>
         </div><br>
 % if enable_anime_options:
-    <% import medusa.blackandwhitelist %>
+    <% import medusa.black_and_white_list %>
     <%include file="/inc_blackwhitelist.mako"/>
 % else:
         <input type="hidden" name="anime" id="anime" value="0" />

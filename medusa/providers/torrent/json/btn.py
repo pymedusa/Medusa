@@ -24,7 +24,7 @@ import time
 import jsonrpclib
 import medusa as app
 from six import itervalues
-from ..TorrentProvider import TorrentProvider
+from ..torrent_provider import TorrentProvider
 from .... import logger, scene_exceptions, tv_cache
 from ....common import cpu_presets
 from ....helper.common import episode_num

@@ -27,7 +27,7 @@ from subliminal import refine, scan_video
 from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
-from . import db, failedProcessor, helpers, logger, notifiers, postProcessor
+from . import db, failed_processor, helpers, logger, notifiers, post_processor
 from .helper.common import is_sync_file, is_torrent_or_nzb_file, subtitle_extensions
 from .helper.encoding import ss
 from .helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
@@ -538,7 +538,7 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
             continue
 
         try:
-            processor = postProcessor.PostProcessor(cur_video_file_path, nzbName, process_method, is_priority)
+            processor = post_processor.PostProcessor(cur_video_file_path, nzbName, process_method, is_priority)
 
             # This feature prevents PP for files that do not have subtitle associated with the video file
             if app.POSTPONE_IF_NO_SUBS:
@@ -616,7 +616,7 @@ def process_failed(dirName, nzbName, result):
         processor = None
 
         try:
-            processor = failedProcessor.FailedProcessor(dirName, nzbName)
+            processor = failed_processor.FailedProcessor(dirName, nzbName)
             result.result = processor.process()
             process_fail_message = u""
         except FailedPostProcessingFailedException as e:

@@ -18,7 +18,7 @@
 
 from os.path import join
 
-from .GenericMedia import GenericMedia
+from .generic import GenericMedia
 
 
 class ShowNetworkLogo(GenericMedia):

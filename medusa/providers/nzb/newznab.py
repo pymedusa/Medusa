@@ -27,7 +27,7 @@ import traceback
 import medusa as app
 from requests.compat import urljoin
 import validators
-from .NZBProvider import NZBProvider
+from .nzb_provider import NZBProvider
 from ... import logger, tv_cache
 from ...bs4_parser import BS4Parser
 from ...common import cpu_presets

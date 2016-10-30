@@ -22,7 +22,7 @@ import os
 import unittest
 
 import medusa as app
-from medusa.media.GenericMedia import GenericMedia
+from medusa.media.generic import GenericMedia
 from six import iteritems
 
 

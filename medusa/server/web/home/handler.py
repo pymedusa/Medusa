@@ -16,7 +16,7 @@ from tornado.routes import route
 from traktor import MissingTokenException, TokenExpiredException, TraktApi, TraktException
 from ..core import PageTemplate, WebRoot
 from .... import clients, config, db, helpers, logger, notifiers, nzbget, sab, show_name_helpers, subtitles, ui
-from ....blackandwhitelist import BlackAndWhiteList, short_group_names
+from ....black_and_white_list import BlackAndWhiteList, short_group_names
 from ....common import FAILED, IGNORED, Overview, Quality, SKIPPED, UNAIRED, WANTED, cpu_presets, statusStrings
 from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
@@ -35,9 +35,9 @@ from ....search.manual import (
 from ....search.queue import (
     BacklogQueueItem, FailedQueueItem, ForcedSearchQueueItem, ManualSnatchQueueItem
 )
-from ....show.Show import Show
-from ....system.Restart import Restart
-from ....system.Shutdown import Shutdown
+from ....show.show import Show
+from ....system.restart import Restart
+from ....system.shutdown import Shutdown
 from ....version_checker import CheckVersion
 
 

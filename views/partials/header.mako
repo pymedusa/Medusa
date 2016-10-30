@@ -3,7 +3,7 @@
     import re
     import medusa as app
     from medusa.helper.common import pretty_file_size
-    from medusa.show.Show import Show
+    from medusa.show.show import Show
     from time import time
 %>
 <!-- BEGIN HEADER -->

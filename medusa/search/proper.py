@@ -36,7 +36,7 @@ from ..helper.common import enabled_providers
 from ..helper.exceptions import AuthException, ex
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from ..search.core import pickBestResult, snatchEpisode
-from ..show.History import History
+from ..show.history import History
 
 
 class ProperFinder(object):  # pylint: disable=too-few-public-methods

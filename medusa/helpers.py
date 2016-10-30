@@ -60,7 +60,7 @@ from . import classes, db
 from .common import USER_AGENT
 from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from .helper.exceptions import ex
-from .show.Show import Show
+from .show.show import Show
 
 
 logger = logging.getLogger(__name__)
@@ -1506,7 +1506,7 @@ def getTVDBFromID(indexer_id, indexer):
 
         with suppress(SyntaxError):
             tree = ET.fromstring(data)
-            for show in tree.getiterator("Series"):
+            for show in tree.iter("Series"):
                 tvdb_id = show.findtext("seriesid")
 
         if tvdb_id:
@@ -1520,7 +1520,7 @@ def getTVDBFromID(indexer_id, indexer):
 
         with suppress(SyntaxError):
             tree = ET.fromstring(data)
-            for show in tree.getiterator("Series"):
+            for show in tree.iter("Series"):
                 tvdb_id = show.findtext("seriesid")
 
         return tvdb_id
