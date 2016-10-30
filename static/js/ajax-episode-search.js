@@ -95,16 +95,6 @@ function checkManualSearches() {
     var url = showId === undefined ? searchStatusUrl : searchStatusUrl + '?show=' + showId;
     $.ajax({
         url: url,
-        done: function(data) {
-            if (data.episodes) {
-                pollInterval = 5000;
-            } else {
-                pollInterval = 15000;
-            }
-
-            updateImages(data);
-            // cleanupManualSearches(data);
-        },
         error: function() {
             pollInterval = 30000;
         },
@@ -114,6 +104,14 @@ function checkManualSearches() {
             setTimeout(checkManualSearches, pollInterval);
         },
         timeout: 15000 // timeout every 15 secs
+    }).done(function(data) {
+        if (data.episodes) {
+            pollInterval = 5000;
+        } else {
+            pollInterval = 15000;
+        }
+        updateImages(data);
+        // cleanupManualSearches(data);
     });
 }
 

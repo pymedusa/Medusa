@@ -90,54 +90,53 @@ MEDUSA.addShows.newShow = function() {
             error: function() {
                 $('#searchResults').empty().html('search timed out, try again or try another indexer');
             },
-            success: function(data) {
-                var firstResult = true;
-                var resultStr = '<fieldset>\n<legend class="legendStep">Search Results:</legend>\n';
-                var checked = '';
+        }).done(function(data) {
+            var firstResult = true;
+            var resultStr = '<fieldset>\n<legend class="legendStep">Search Results:</legend>\n';
+            var checked = '';
 
-                if (data.results.length === 0) {
-                    resultStr += '<b>No results found, try a different search.</b>';
-                } else {
-                    $.each(data.results, function(index, obj) {
-                        if (firstResult) {
-                            checked = ' checked';
-                            firstResult = false;
+            if (data.results.length === 0) {
+                resultStr += '<b>No results found, try a different search.</b>';
+            } else {
+                $.each(data.results, function(index, obj) {
+                    if (firstResult) {
+                        checked = ' checked';
+                        firstResult = false;
+                    } else {
+                        checked = '';
+                    }
+
+                    var whichSeries = obj.join('|');
+
+                    resultStr += '<input type="radio" id="whichSeries" name="whichSeries" value="' + whichSeries.replace(/"/g, '') + '"' + checked + ' /> ';
+                    if (data.langid && data.langid !== '') {
+                        resultStr += '<a href="' + MEDUSA.config.anonRedirect + obj[2] + obj[3] + '&lid=' + data.langid + '" onclick="window.open(this.href, \'_blank\'); return false;" ><b>' + obj[4] + '</b></a>';
+                    } else {
+                        resultStr += '<a href="' + MEDUSA.config.anonRedirect + obj[2] + obj[3] + '" onclick="window.open(this.href, \'_blank\'); return false;" ><b>' + obj[4] + '</b></a>';
+                    }
+
+                    if (obj[5] !== null) {
+                        var startDate = new Date(obj[5]);
+                        var today = new Date();
+                        if (startDate > today) {
+                            resultStr += ' (will debut on ' + obj[5] + ')';
                         } else {
-                            checked = '';
+                            resultStr += ' (started on ' + obj[5] + ')';
                         }
+                    }
 
-                        var whichSeries = obj.join('|');
+                    if (obj[0] !== null) {
+                        resultStr += ' [' + obj[0] + ']';
+                    }
 
-                        resultStr += '<input type="radio" id="whichSeries" name="whichSeries" value="' + whichSeries.replace(/"/g, '') + '"' + checked + ' /> ';
-                        if (data.langid && data.langid !== '') {
-                            resultStr += '<a href="' + MEDUSA.config.anonRedirect + obj[2] + obj[3] + '&lid=' + data.langid + '" onclick="window.open(this.href, \'_blank\'); return false;" ><b>' + obj[4] + '</b></a>';
-                        } else {
-                            resultStr += '<a href="' + MEDUSA.config.anonRedirect + obj[2] + obj[3] + '" onclick="window.open(this.href, \'_blank\'); return false;" ><b>' + obj[4] + '</b></a>';
-                        }
-
-                        if (obj[5] !== null) {
-                            var startDate = new Date(obj[5]);
-                            var today = new Date();
-                            if (startDate > today) {
-                                resultStr += ' (will debut on ' + obj[5] + ')';
-                            } else {
-                                resultStr += ' (started on ' + obj[5] + ')';
-                            }
-                        }
-
-                        if (obj[0] !== null) {
-                            resultStr += ' [' + obj[0] + ']';
-                        }
-
-                        resultStr += '<br>';
-                    });
-                    resultStr += '</ul>';
-                }
-                resultStr += '</fieldset>';
-                $('#searchResults').html(resultStr);
-                updateSampleText();
-                myform.loadsection(0); // eslint-disable-line no-use-before-define
+                    resultStr += '<br>';
+                });
+                resultStr += '</ul>';
             }
+            resultStr += '</fieldset>';
+            $('#searchResults').html(resultStr);
+            updateSampleText();
+            myform.loadsection(0); // eslint-disable-line no-use-before-define
         });
     }
 
