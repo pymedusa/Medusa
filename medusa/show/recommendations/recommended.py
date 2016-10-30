@@ -55,7 +55,7 @@ class RecommendedShow(object):
         try:
             self.indexer_id = int(indexer_id)
         except ValueError:
-            raise MissingTvdbMapping('Could not parse the indexer_id [%s]' % (indexer_id))
+            raise MissingTvdbMapping('Could not parse the indexer_id [%s]' % indexer_id)
 
         self.rating = show_attr.get('rating') or 0
 

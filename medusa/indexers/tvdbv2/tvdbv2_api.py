@@ -362,9 +362,9 @@ class TVDBv2(BaseIndexer):
 
                     for k, v in _images[image_type][image.resolution][bid].items():
                         if k.endswith('path'):
-                            new_key = '_%s' % (k)
+                            new_key = '_%s' % k
                             log().debug('Adding base url for image: %s', v)
-                            new_url = self.config['artwork_prefix'] % (v)
+                            new_url = self.config['artwork_prefix'] % v
                             _images[image_type][image.resolution][bid][new_key] = new_url
 
             except Exception as e:
@@ -439,7 +439,7 @@ class TVDBv2(BaseIndexer):
             get_show_in_language = self.config['language']
 
         # Parse show information
-        log().debug('Getting all series data for %s' % (sid))
+        log().debug('Getting all series data for %s' % sid)
 
         # Parse show information
         series_info = self._get_show_by_id(sid, request_language=get_show_in_language)
@@ -452,7 +452,7 @@ class TVDBv2(BaseIndexer):
         for k, v in series_info['series'].items():
             if v is not None:
                 if k in ['banner', 'fanart', 'poster']:
-                    v = self.config['artwork_prefix'] % (v)
+                    v = self.config['artwork_prefix'] % v
                 else:
                     v = self._clean_data(v)
 
