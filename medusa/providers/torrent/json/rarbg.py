@@ -24,7 +24,7 @@ import traceback
 
 import medusa as app
 from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from .... import logger, tv_cache
 from ....helper.common import convert_size, try_int
 from ....indexers.indexer_config import INDEXER_TVDBV2
 
@@ -60,7 +60,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=10)  # only poll RARBG every 10 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=10)  # only poll RARBG every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals, too-many-statements
         """

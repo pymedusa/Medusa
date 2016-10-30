@@ -23,7 +23,7 @@ import traceback
 import validators
 
 from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....common import USER_AGENT
 from ....helper.common import convert_size, try_int
@@ -53,7 +53,7 @@ class TorrentProjectProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=20)
+        self.cache = tv_cache.TVCache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

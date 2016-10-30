@@ -24,7 +24,7 @@ import traceback
 
 from requests.compat import urljoin
 from ..TorrentProvider import TorrentProvider
-from .... import helpers, logger, tvcache
+from .... import helpers, logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size
 
@@ -52,7 +52,7 @@ class newpctProvider(TorrentProvider):
         # Torrent Stats
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=20)
+        self.cache = tv_cache.TVCache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """

@@ -192,7 +192,7 @@ class TestCacheDBConnection(TestDBConnection, object):
 
 # this will override the normal db connection
 app.db.DBConnection = TestDBConnection
-app.tvcache.CacheDBConnection = TestCacheDBConnection
+app.tv_cache.CacheDBConnection = TestCacheDBConnection
 
 
 # =================

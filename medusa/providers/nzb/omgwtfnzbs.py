@@ -23,7 +23,7 @@ import traceback
 
 import medusa as app
 from .NZBProvider import NZBProvider
-from ... import logger, tvcache
+from ... import logger, tv_cache
 from ...helper.common import convert_size, try_int
 
 
@@ -145,7 +145,7 @@ class OmgwtfnzbsProvider(NZBProvider):
         return try_int(size)
 
 
-class OmgwtfnzbsCache(tvcache.TVCache):
+class OmgwtfnzbsCache(tv_cache.TVCache):
     def _get_title_and_url(self, item):
         title = item.get('title')
         if title:

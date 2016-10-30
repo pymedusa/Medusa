@@ -28,7 +28,7 @@ import medusa as app
 from requests.compat import urljoin
 import validators
 from .NZBProvider import NZBProvider
-from ... import logger, tvcache
+from ... import logger, tv_cache
 from ...bs4_parser import BS4Parser
 from ...common import cpu_presets
 from ...helper.common import convert_size, try_int
@@ -73,7 +73,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         # self.cap_movie_search = None
         # self.cap_audio_search = None
 
-        self.cache = tvcache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
         """

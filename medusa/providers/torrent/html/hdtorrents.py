@@ -24,7 +24,7 @@ import traceback
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
@@ -59,7 +59,7 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=30)
+        self.cache = tv_cache.TVCache(self, min_time=30)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
