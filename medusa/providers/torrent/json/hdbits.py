@@ -27,6 +27,7 @@ from ....helper.exceptions import AuthException
 
 class HDBitsProvider(TorrentProvider):
     """HDBits Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -198,7 +199,8 @@ class HDBitsCache(tv_cache.TVCache):
         results = []
 
         try:
-            parsed_json = self.provider.get_url(self.provider.urls['rss'], post_data=self.provider._make_post_data_json(), returns='json')
+            parsed_json = self.provider.get_url(self.provider.urls['rss'],
+                                                post_data=self.provider._make_post_data_json(), returns='json')
 
             if self.provider._check_auth_from_data(parsed_json):
                 results = parsed_json['data']

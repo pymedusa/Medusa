@@ -30,6 +30,7 @@ from ....helper.common import try_int
 
 class elite_torrent_provider(TorrentProvider):
     """EliteTorrent Torrent provider"""
+
     def __init__(self):
 
         # Provider Init

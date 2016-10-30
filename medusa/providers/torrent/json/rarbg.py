@@ -62,7 +62,8 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=10)  # only poll RARBG every 10 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals, too-many-statements
+    def search(self, search_strings, age=0,
+               ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals, too-many-statements
         """
         Search a provider and parse the results.
 

@@ -31,6 +31,7 @@ from ....helper.common import convert_size, try_int
 
 class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """TorrentBytes Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -133,7 +134,9 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     continue
 
                 try:
-                    download_url = urljoin(self.url, cells[labels.index('Name')].find('a', href=re.compile(r'download.php\?id='))['href'])
+                    download_url = urljoin(self.url,
+                                           cells[labels.index('Name')].find('a', href=re.compile(r'download.php\?id='))[
+                                               'href'])
                     title_element = cells[labels.index('Name')].find('a', href=re.compile(r'details.php\?id='))
                     title = title_element.get('title', '') or title_element.get_text(strip=True)
                     if not all([title, download_url]):

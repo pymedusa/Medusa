@@ -32,6 +32,7 @@ from ....helper.exceptions import AuthException
 
 class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """HDTorrents Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -135,7 +136,8 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 return items
 
             # Cat., Active, Filename, Dl, Wl, Added, Size, Uploader, S, L, C
-            labels = [label.a.get_text(strip=True) if label.a else label.get_text(strip=True) for label in torrent_rows[0]('td')]
+            labels = [label.a.get_text(strip=True) if label.a else label.get_text(strip=True) for label in
+                      torrent_rows[0]('td')]
 
             # Skip column headers
             for row in torrent_rows[1:]:

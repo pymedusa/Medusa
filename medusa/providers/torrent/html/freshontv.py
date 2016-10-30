@@ -33,6 +33,7 @@ from ....helper.common import convert_size, try_int
 
 class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """FreshOnTV Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -251,9 +252,10 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
                     return False
             else:
-                if re.search('Username does not exist in the userbase or the account is not confirmed yet.', response.text) or \
-                    re.search('Username or password is incorrect. If you have an account here please use the'
-                              ' recovery system or try again.', response.text):
+                if re.search('Username does not exist in the userbase or the account is not confirmed yet.',
+                             response.text) or \
+                        re.search('Username or password is incorrect. If you have an account here please use the'
+                                  ' recovery system or try again.', response.text):
                     logger.log('Invalid username or password. Check your settings', logger.WARNING)
 
                 if re.search('DDoS protection by CloudFlare', response.text):

@@ -31,6 +31,7 @@ from ....helper.common import convert_size
 
 class newpct_provider(TorrentProvider):
     """Newpct Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -201,12 +202,13 @@ class newpct_provider(TorrentProvider):
         trickery = kwargs.pop('returns', '')
         if trickery == 'content':
             kwargs['returns'] = 'text'
-            data = super(newpct_provider, self).get_url(url, post_data=post_data, params=params, timeout=timeout, **kwargs)
+            data = super(newpct_provider, self).get_url(url, post_data=post_data, params=params, timeout=timeout,
+                                                        **kwargs)
             url = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', data, re.DOTALL).group()
 
         kwargs['returns'] = trickery
         return super(newpct_provider, self).get_url(url, post_data=post_data, params=params,
-                                                   timeout=timeout, **kwargs)
+                                                    timeout=timeout, **kwargs)
 
     def download_result(self, result):
         """

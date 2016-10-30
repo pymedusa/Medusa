@@ -41,6 +41,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
     compatible api.
     Tested with: newznab, nzedb, spotweb, torznab
     """
+
     # pylint: disable=too-many-arguments
 
     def __init__(self, name, url, key='0', cat_ids='5030,5040', search_mode='eponly',
@@ -75,7 +76,8 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
         self.cache = tv_cache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
+    def search(self, search_strings, age=0,
+               ep_obj=None):  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
         """
         Searches indexer using the params in search_strings, either for latest releases, or a string/id search
         Returns: list of results in dict form
@@ -413,8 +415,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
     def _get_default_providers():
         # name|url|key|cat_ids|enabled|search_mode|search_fallback|enable_daily|enable_backlog|enable_manualsearch
         return 'NZB.Cat|https://nzb.cat/||5030,5040,5010|0|eponly|0|0|0|0!!!' + \
-            'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0|0!!!' + \
-            'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0|0!!!' + \
-            'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0|0!!!' + \
-            'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0'
-
+               'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0|0!!!' + \
+               'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0|0!!!' + \
+               'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0|0!!!' + \
+               'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0'

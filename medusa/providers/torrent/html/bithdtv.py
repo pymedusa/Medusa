@@ -30,6 +30,7 @@ from ....helper.common import convert_size, try_int
 
 class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """BIT-HDTV Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -146,7 +147,8 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = '{size} {unit}'.format(size=cells[6].contents[0], unit=cells[6].contents[1].get_text())
+                    torrent_size = '{size} {unit}'.format(size=cells[6].contents[0],
+                                                          unit=cells[6].contents[1].get_text())
                     size = convert_size(torrent_size, units=units) or -1
 
                     item = {

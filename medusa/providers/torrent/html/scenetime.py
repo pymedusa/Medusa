@@ -31,6 +31,7 @@ from ....helper.common import convert_size, try_int
 
 class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """SceneTime Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -142,7 +143,8 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                     link = cells[labels.index('Name')].find('a')
                     torrent_id = link['href'].replace('details.php?id=', '').split('&')[0]
                     title = link.get_text(strip=True)
-                    download_url = self.urls['download'].format(torrent_id, '{0}.torrent'.format(title.replace(' ', '.')))
+                    download_url = self.urls['download'].format(torrent_id,
+                                                                '{0}.torrent'.format(title.replace(' ', '.')))
                     if not all([title, download_url]):
                         continue
 
