@@ -771,7 +771,7 @@ class PostProcessor(object):
         """Evaluate if the file should be marked as priority."""
         main_db_con = db.DBConnection()
         for episode in episodes:
-            # First: check if the episode status is snatched
+            # First: check if the episode status is snatched or failed
             tv_episodes_result = main_db_con.select(
                 'SELECT status '
                 'FROM tv_episodes '
@@ -780,6 +780,7 @@ class PostProcessor(object):
                 'AND episode = ? '
                 "AND (status LIKE '%02' "
                 "OR status LIKE '%09' "
+                "OR status LIKE '%11' "
                 "OR status LIKE '%12')",
                 [show_id, season, episode])
 
