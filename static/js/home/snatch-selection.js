@@ -102,41 +102,6 @@ MEDUSA.home.snatchSelection = function() {
             type: 'GET',
             data: data,
             contentType: 'application/json',
-            success: function(data) {
-                if (data.result === 'refresh') {
-                    self.refreshResults();
-                    updateSpinner(spinner, 'Refreshed results...', true);
-                    initTableSorter('#showTable');
-                }
-                if (data.result === 'searching') {
-                    // ep is searched, you will get a results any minute now
-                    pollInterval = 5000;
-                    $('.manualSearchButton').prop('disabled', true);
-                    updateSpinner(spinner, 'The episode is being searched, please wait......', true);
-                    initTableSorter('#showTable');
-                }
-                if (data.result === 'queued') {
-                    // ep is queued, this might take some time to get results
-                    pollInterval = 7000;
-                    $('.manualSearchButton').prop('disabled', true);
-                    updateSpinner(spinner, 'The episode has been queued, because another search is taking place. please wait..', true);
-                    initTableSorter('#showTable');
-                }
-                if (data.result === 'finished') {
-                    // ep search is finished
-                    updateSpinner(spinner, 'Search finished', false);
-                    $('.manualSearchButton').removeAttr('disabled');
-                    repeat = false;
-                    initTableSorter('#showTable');
-                }
-                if (data.result === 'error') {
-                    // ep search is finished
-                    console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
-                    $('.manualSearchButton').removeAttr('disabled');
-                    repeat = true;
-                    initTableSorter('#showTable');
-                }
-            },
             error: function() {
                 // repeat = false;
                 console.log('Error occurred!!');
@@ -148,6 +113,40 @@ MEDUSA.home.snatchSelection = function() {
                 }
             },
             timeout: 15000 // timeout after 15s
+        }).done(function(data) {
+            if (data.result === 'refresh') {
+                self.refreshResults();
+                updateSpinner(spinner, 'Refreshed results...', true);
+                initTableSorter('#showTable');
+            }
+            if (data.result === 'searching') {
+                // ep is searched, you will get a results any minute now
+                pollInterval = 5000;
+                $('.manualSearchButton').prop('disabled', true);
+                updateSpinner(spinner, 'The episode is being searched, please wait......', true);
+                initTableSorter('#showTable');
+            }
+            if (data.result === 'queued') {
+                // ep is queued, this might take some time to get results
+                pollInterval = 7000;
+                $('.manualSearchButton').prop('disabled', true);
+                updateSpinner(spinner, 'The episode has been queued, because another search is taking place. please wait..', true);
+                initTableSorter('#showTable');
+            }
+            if (data.result === 'finished') {
+                // ep search is finished
+                updateSpinner(spinner, 'Search finished', false);
+                $('.manualSearchButton').removeAttr('disabled');
+                repeat = false;
+                initTableSorter('#showTable');
+            }
+            if (data.result === 'error') {
+                // ep search is finished
+                console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
+                $('.manualSearchButton').removeAttr('disabled');
+                repeat = true;
+                initTableSorter('#showTable');
+            }
         });
     }
 
