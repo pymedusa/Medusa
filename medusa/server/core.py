@@ -12,7 +12,6 @@ from tornado.routes import route
 from tornado.web import Application, RedirectHandler, StaticFileHandler
 from .api.v1.core import ApiHandler
 from .api.v2.config import ConfigHandler
-from .api.v2.episode import EpisodeHandler
 from .api.v2.log import LogHandler
 from .api.v2.show import ShowHandler
 from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
@@ -117,9 +116,8 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
         # API v2 handlers
         self.app.add_handlers('.*$', [
-            (r'{base}/show(?:/{show_id})?(?:/{query})?/?'.format(base=base, show_id=show_id, query=query), ShowHandler),
-            (r'{base}/show/{show_id}/episode(?:/{ep_id}(?:/{query})?)?/?'.
-             format(base=base, show_id=show_id, ep_id=ep_id, query=query), EpisodeHandler),
+            (r'{base}/show(?:/{show_id}(?:/{ep_id})?(?:/{query})?)?/?'.
+             format(base=base, show_id=show_id, ep_id=ep_id, query=query), ShowHandler),
             (r'{base}/config(?:/{query})?/?'.format(base=base, query=query), ConfigHandler),
             (r'{base}/log(?:/{log_level})?/?'.format(base=base, log_level=log_level), LogHandler),
         ])

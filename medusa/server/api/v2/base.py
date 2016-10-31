@@ -62,12 +62,24 @@ class BaseRequestHandler(RequestHandler):
     def _get_limit(self, default=20, maximum=1000):
         return min(max(1, int(self.get_argument('limit', default=default))), maximum)
 
-    @staticmethod
-    def _paginate(data, arg_sort, arg_sort_order, arg_page, arg_limit):
+    def _paginate(self, data, sort_property):
+        arg_sort = self._get_sort(default=sort_property)
+        arg_sort_order = self._get_sort_order()
+        arg_page = self._get_page()
+        arg_limit = self._get_limit()
+
         results = sorted(data, key=operator.itemgetter(arg_sort), reverse=arg_sort_order == 'desc')
+        count = len(results)
         start = (arg_page - 1) * arg_limit
         end = start + arg_limit
-        return results[start:end]
+        results = results[start:end]
+        headers = {
+            'X-Pagination-Count': count,
+            'X-Pagination-Page': arg_page,
+            'X-Pagination-Limit': arg_limit
+        }
+
+        return self.api_finish(data=results, headers=headers)
 
     @staticmethod
     def _parse(value, function=int):
