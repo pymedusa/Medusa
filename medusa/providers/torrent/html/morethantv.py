@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for MoreThanTV."""
 from __future__ import unicode_literals
 
 import re
@@ -32,11 +32,12 @@ from ....helper.exceptions import AuthException
 
 id_regex = re.compile(r'(?:\/.*)(?:&id\=([0-9]*)&)', re.I)
 
-class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """MoreThanTV Torrent provider"""
-    def __init__(self):
 
-        # Provider Init
+class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+    """MoreThanTV Torrent provider."""
+
+    def __init__(self):
+        """Provider Init."""
         TorrentProvider.__init__(self, 'MoreThanTV')
 
         # Credentials
@@ -65,8 +66,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.cache = tv_cache.TVCache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
-        """
-        Search a provider and parse the results
+        """Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -91,9 +91,9 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
-            if mode == 'Season':     
-                additional_strings = []     
-                for search_string in search_strings[mode]:         
+            if mode == 'Season':
+                additional_strings = []
+                for search_string in search_strings[mode]:
                     additional_strings.append(re.sub(r'(.*)S0?', r'\1Season ', search_string))
                 search_strings[mode].extend(additional_strings)
 
@@ -173,7 +173,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                        "minimum seeders: {0}. Seeders: {1}".format
                                        (title, seeders), logger.DEBUG)
                         continue
-                    
+
                     # If it's a season search, query the torrent's detail page for the "release name" aka directory name.
                     if mode == 'Season':
                         details_url = urljoin(self.url, row.find('span').findNext(title="View torrent")['href'])
@@ -182,7 +182,8 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         with BS4Parser(response.text, 'html5lib') as html:
                             torrent_table = html.find('table', class_='torrent_table')
                             torrent_row = torrent_table.find('tr', id="torrent_{0}".format(torrent_id))
-                            title = torrent_row.find('div', { "class" : "filelist_path"}).get_text(strip=True).strip("/") # Strip leading and trailing slash
+                            # Strip leading and trailing slash
+                            title = torrent_row.find('div', {"class": "filelist_path"}).get_text(strip=True).strip("/")
                             time.sleep(0.50)
 
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
