@@ -30,6 +30,7 @@ from ....helper.common import convert_size
 
 class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """TorrentDay Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -176,7 +177,8 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return items
 
     def login(self):
-        if dict_from_cookiejar(self.session.cookies).get('uid') and dict_from_cookiejar(self.session.cookies).get('pass'):
+        if dict_from_cookiejar(self.session.cookies).get('uid') and \
+                dict_from_cookiejar(self.session.cookies).get('pass'):
             return True
 
         if self.cookies:
@@ -203,7 +205,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         if (dict_from_cookiejar(self.session.cookies).get('uid') and
                 dict_from_cookiejar(self.session.cookies).get('uid') in response.text):
-                return True
+            return True
         else:
             logger.log('Failed to login, check your cookies', logger.WARNING)
             self.session.cookies.clear()

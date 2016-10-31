@@ -137,7 +137,7 @@ class ConfigProviders(Config):
         return '1'
 
     @staticmethod
-    def canAddTorrentRssProvider(name, url, cookies, titleTAG):
+    def canAddTorrentRssProvider(name, url, cookies, title_tag):
         """
         See if a Torrent provider can be added
         """
@@ -147,7 +147,7 @@ class ConfigProviders(Config):
         provider_dict = dict(
             zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
 
-        temp_provider = TorrentRssProvider(name, url, cookies, titleTAG)
+        temp_provider = TorrentRssProvider(name, url, cookies, title_tag)
 
         if temp_provider.get_id() in provider_dict:
             return json.dumps({'error': 'Exists as {name}'.format(name=provider_dict[temp_provider.get_id()].name)})
@@ -159,7 +159,7 @@ class ConfigProviders(Config):
                 return json.dumps({'error': validate['message']})
 
     @staticmethod
-    def saveTorrentRssProvider(name, url, cookies, titleTAG):
+    def saveTorrentRssProvider(name, url, cookies, title_tag):
         """
         Save a Torrent Provider
         """
@@ -173,12 +173,12 @@ class ConfigProviders(Config):
             provider_dict[name].name = name
             provider_dict[name].url = config.clean_url(url)
             provider_dict[name].cookies = cookies
-            provider_dict[name].titleTAG = titleTAG
+            provider_dict[name].title_tag = title_tag
 
             return '|'.join([provider_dict[name].get_id(), provider_dict[name].config_string()])
 
         else:
-            new_provider = TorrentRssProvider(name, url, cookies, titleTAG)
+            new_provider = TorrentRssProvider(name, url, cookies, title_tag)
             app.torrentRssProviderList.append(new_provider)
             return '|'.join([new_provider.get_id(), new_provider.config_string()])
 
@@ -225,7 +225,7 @@ class ConfigProviders(Config):
                 cur_name, cur_url, cur_key, cur_cat = curNewznabProviderStr.split('|')
                 cur_url = config.clean_url(cur_url)
 
-                new_provider = NewznabProvider(cur_name, cur_url, key=cur_key, catIDs=cur_cat)
+                new_provider = NewznabProvider(cur_name, cur_url, key=cur_key, cat_ids=cur_cat)
 
                 cur_id = new_provider.get_id()
 
@@ -234,7 +234,7 @@ class ConfigProviders(Config):
                     newznab_provider_dict[cur_id].name = cur_name
                     newznab_provider_dict[cur_id].url = cur_url
                     newznab_provider_dict[cur_id].key = cur_key
-                    newznab_provider_dict[cur_id].catIDs = cur_cat
+                    newznab_provider_dict[cur_id].cat_ids = cur_cat
                     # a 0 in the key spot indicates that no key is needed
                     if cur_key == '0':
                         newznab_provider_dict[cur_id].needs_auth = False
@@ -318,7 +318,7 @@ class ConfigProviders(Config):
             cur_provider, cur_enabled = cur_providerStr.split(':')
             cur_enabled = try_int(cur_enabled)
 
-            cur_prov_obj = [x for x in app.providers.sortedProviderList() if
+            cur_prov_obj = [x for x in app.providers.sorted_provider_list() if
                             x.get_id() == cur_provider and hasattr(x, 'enabled')]
             if cur_prov_obj:
                 cur_prov_obj[0].enabled = bool(cur_enabled)
@@ -336,7 +336,7 @@ class ConfigProviders(Config):
         provider_list.extend(disabled_list)
 
         # dynamically load provider settings
-        for curTorrentProvider in [prov for prov in app.providers.sortedProviderList() if
+        for curTorrentProvider in [prov for prov in app.providers.sorted_provider_list() if
                                    prov.provider_type == GenericProvider.TORRENT]:
 
             if hasattr(curTorrentProvider, 'custom_url'):
@@ -500,7 +500,7 @@ class ConfigProviders(Config):
                 except (AttributeError, KeyError):
                     pass  # I don't want to configure a default value here, as it can also be configured intially as a custom rss torrent provider
 
-        for curNzbProvider in [prov for prov in app.providers.sortedProviderList() if
+        for curNzbProvider in [prov for prov in app.providers.sorted_provider_list() if
                                prov.provider_type == GenericProvider.NZB]:
 
             if hasattr(curNzbProvider, 'api_key'):

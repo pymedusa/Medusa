@@ -31,6 +31,7 @@ from ....helper.common import convert_size, try_int
 
 class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """SpeedCD Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -150,7 +151,8 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                 try:
                     title = cells[labels.index('Title')].find('a', class_='torrent').get_text()
-                    download_url = urljoin(self.url, cells[labels.index('Download')].find(title='Download').parent['href'])
+                    download_url = urljoin(self.url,
+                                           cells[labels.index('Download')].find(title='Download').parent['href'])
                     if not all([title, download_url]):
                         continue
 

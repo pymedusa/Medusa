@@ -759,7 +759,7 @@ class TVShow(TVObject):
     def load_episodes_from_indexer(self, seasons=None):
         """Load episodes from indexer.
 
-        :param 'seasons': Only load episodes for these seasons (only if supported by the indexer)
+        :param seasons: Only load episodes for these seasons (only if supported by the indexer)
         :type: list of integers or integer
         :return:
         :rtype: dict(int -> dict(int -> bool))
@@ -1871,8 +1871,8 @@ class TVEpisode(TVObject):
 
         :param force:
         :type force: bool
-        :pram lang:
-        :type param: string
+        :param lang:
+        :type lang: string
         """
         if not self.is_location_valid():
             logger.log(u"{id}: {show} {ep} file doesn't exist, can't download subtitles".format

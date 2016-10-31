@@ -88,7 +88,7 @@ app.PROVIDER_ORDER = ["app_index"]
 app.newznabProviderList = NewznabProvider.get_providers_list("'Application Index|http://lolo.medusa.com/|0|5030,5040|0|eponly|0|0|0!!!NZBs.org|"
                                                              "https://nzbs.org/||5030,5040,5060,5070,5090|0|eponly|0|0|0!!!Usenet-Crawler|"
                                                              "https://www.usenet-crawler.com/||5030,5040,5060|0|eponly|0|0|0'")
-app.providerList = providers.makeProviderList()
+app.providerList = providers.make_provider_list()
 
 app.PROG_DIR = os.path.abspath(os.path.join(TEST_DIR, '..'))
 app.DATA_DIR = TEST_DIR

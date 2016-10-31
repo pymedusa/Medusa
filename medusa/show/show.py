@@ -81,6 +81,7 @@ class Show(object):
         """
         Find a show by its indexer id in the provided list of shows
         :param shows: The list of shows to search in
+        :param indexer: shows indexer
         :param show_id: The indexers show id of the desired show
         :return: The desired show if found, ``None`` if not found
         :throw: ``MultipleShowObjectsException`` if multiple shows match the provided ``indexer_id``

@@ -30,6 +30,7 @@ from ....helper.common import convert_size, try_int
 
 class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """BitSnoop Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -117,7 +118,8 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                     # so that proxies work.
                     download_url = row.enclosure['url']
                     if app.TORRENT_METHOD != 'blackhole' or 'torcache' not in download_url:
-                        download_url = row.find('magneturi').next.replace('CDATA', '').strip('[]') + self._custom_trackers
+                        download_url = row.find('magneturi').next.replace('CDATA', '').strip('[]') + \
+                            self._custom_trackers
 
                     if not all([title, download_url]):
                         continue

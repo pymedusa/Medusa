@@ -30,6 +30,7 @@ from ....helper.exceptions import AuthException
 
 class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """TVChaosUK Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -128,7 +129,8 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
 
-            labels = [label.img['title'] if label.img else label.get_text(strip=True) for label in torrent_rows[0]('td')]
+            labels = [label.img['title'] if label.img else label.get_text(strip=True) for label in
+                      torrent_rows[0]('td')]
 
             # Skip column headers
             for row in torrent_rows[1:]:

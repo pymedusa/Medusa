@@ -408,7 +408,7 @@ class TVmaze(object):
             except ImportError:
                 return os.path.join(tempfile.gettempdir(), 'tvmaze_api')
 
-        return os.path.join(tempfile.gettempdir(), 'tvdb_api-%s' % (uid))
+        return os.path.join(tempfile.gettempdir(), 'tvdb_api-%s' % uid)
 
     def _setItem(self, sid, seas, ep, attrib, value):  # pylint: disable=too-many-arguments
         """Creates a new episode, creating Show(), Season() and
@@ -753,7 +753,7 @@ class TVmaze(object):
             for cur_ep in episodes:
                 if self.config['dvdorder']:
                     log().debug('Using DVD ordering.')
-                    use_dvd = cur_ep['dvd_season'] != None and cur_ep['dvd_episodenumber'] != None
+                    use_dvd = cur_ep['dvd_season'] is not None and cur_ep['dvd_episodenumber'] is not None
                 else:
                     use_dvd = False
 
@@ -775,7 +775,7 @@ class TVmaze(object):
 
                     if v is not None:
                         if k == 'filename':
-                            v = self.config['url_artworkPrefix'] % (v)
+                            v = self.config['url_artworkPrefix'] % v
                         else:
                             v = self._cleanData(v)
 

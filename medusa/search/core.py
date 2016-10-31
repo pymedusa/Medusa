@@ -502,6 +502,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
     :param forced_search: Boolean, is this a forced search?
     :param downCurQuality: Boolean, should we re-download currently available quality file
     :param manual_search: Boolean, should we choose what to download?
+    :param manual_search_type: Episode or Season search
     :return: results for search
     """
     foundResults = {}
@@ -517,10 +518,10 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
 
     if manual_search:
         logger.log("Using manual search providers")
-        providers = [x for x in app.providers.sortedProviderList(app.RANDOMIZE_PROVIDERS)
+        providers = [x for x in app.providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
                      if x.is_active() and x.enable_manualsearch]
     else:
-        providers = [x for x in app.providers.sortedProviderList(app.RANDOMIZE_PROVIDERS)
+        providers = [x for x in app.providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
                      if x.is_active() and x.enable_backlog]
 
     if not forced_search:

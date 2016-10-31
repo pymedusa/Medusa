@@ -399,7 +399,7 @@
                         ${statusStrings[status]} ${renderQualityPill(quality)}
                         </td>
                         <td align="center" style="width: auto;">
-                            <% provider = providers.getProviderClass(GenericProvider.make_id(item["provider"])) %>
+                            <% provider = providers.get_provider_class(GenericProvider.make_id(item["provider"])) %>
                             % if provider is not None:
                                 <img src="images/providers/${provider.image_name()}" width="16" height="16" alt="${provider.name}" title="${provider.name}"/> ${item["provider"]}
                             % else:

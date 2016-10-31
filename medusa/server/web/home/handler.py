@@ -885,6 +885,7 @@ class Home(WebRoot):
 
         @param provider: The provider id, passed as usenet_crawler and not the provider name (Usenet-Crawler)
         @param rowid: The provider's cache table's rowid. (currently the implicit sqlites rowid is used, needs to be replaced in future)
+        @param manual_search_type: Episode or Season search
 
         @return: A json with a {'success': true} or false.
         """
@@ -1439,7 +1440,7 @@ class Home(WebRoot):
     def erase_cache(self, show_obj):
         try:
             main_db_con = db.DBConnection('cache.db')
-            for cur_provider in app.providers.sortedProviderList():
+            for cur_provider in app.providers.sorted_provider_list():
                 # Let's check if this provider table already exists
                 table_exists = main_db_con.select(
                     b'SELECT name '

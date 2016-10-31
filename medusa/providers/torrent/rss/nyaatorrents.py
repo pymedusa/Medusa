@@ -45,7 +45,8 @@ class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         self.supports_absolute_numbering = True
         self.anime_only = True
         self.confirmed = False
-        self.regex = re.compile(r'(\d+) seeder\(s\), (\d+) leecher\(s\), \d+ download\(s\) - (\d+.?\d* [KMGT]iB)(.*)', re.DOTALL)
+        self.regex = re.compile(r'(\d+) seeder\(s\), (\d+) leecher\(s\), \d+ download\(s\) - (\d+.?\d* [KMGT]iB)(.*)',
+                                re.DOTALL)
 
         # Torrent Stats
         self.minseed = 0
@@ -93,7 +94,7 @@ class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                     continue
                 if not data['entries']:
                     logger.log('Data returned from provider does not contain any {0}torrents'.format(
-                               'confirmed ' if self.confirmed else ''), logger.DEBUG)
+                        'confirmed ' if self.confirmed else ''), logger.DEBUG)
                     continue
 
                 results += self.parse(data, mode)

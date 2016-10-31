@@ -55,7 +55,7 @@
 </br>
 <form name="processForm" method="post" action="home/postprocess/processEpisode" style="float: right;">
 <table>
-    <input type="hidden" id="type" name="type" value="manual">
+    <input type="hidden" id="proc_type" name="type" value="manual">
     <input type="hidden" id="process_method" name="process_method" value=${app.PROCESS_METHOD}>
     <input type="hidden" id="episodeDir" type="text" name="proc_dir" value=${app.TV_DOWNLOAD_DIR}>
     <input type="hidden" id="force" name="force" value="0">

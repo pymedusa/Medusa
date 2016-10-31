@@ -335,7 +335,7 @@ def enabled_providers(search_type):
     """
     Return providers based on search type: daily, backlog and manualsearch
     """
-    return [x for x in app.providers.sortedProviderList(app.RANDOMIZE_PROVIDERS)
+    return [x for x in app.providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
             if x.is_active() and x.get_id() not in app.BROKEN_PROVIDERS and
             hasattr(x, 'enable_{}'.format(search_type)) and
             getattr(x, 'enable_{}'.format(search_type))]

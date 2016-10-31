@@ -1329,7 +1329,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         MAJOR_DB_VERSION, MINOR_DB_VERSION = db.DBConnection().checkDBVersion()
 
         # initialize NZB and TORRENT providers
-        providerList = providers.makeProviderList()
+        providerList = providers.make_provider_list()
 
         NEWZNAB_DATA = check_setting_str(CFG, 'Newznab', 'newznab_data', '')
         newznabProviderList = NewznabProvider.get_providers_list(NEWZNAB_DATA)
@@ -1337,7 +1337,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         TORRENTRSS_DATA = check_setting_str(CFG, 'TorrentRss', 'torrentrss_data', '')
         torrentRssProviderList = TorrentRssProvider.get_providers_list(TORRENTRSS_DATA)
 
-        all_providers = providers.sortedProviderList()
+        all_providers = providers.sorted_provider_list()
 
         # dynamically load provider settings
         for provider in all_providers:
@@ -1831,7 +1831,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['Blackhole']['torrent_dir'] = TORRENT_DIR
 
     # dynamically save provider settings
-    all_providers = providers.sortedProviderList()
+    all_providers = providers.sorted_provider_list()
     for provider in all_providers:
         name = provider.get_id()
         section = name.upper()

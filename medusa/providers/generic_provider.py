@@ -111,7 +111,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             if url.endswith(GenericProvider.TORRENT) and filename.endswith(GenericProvider.NZB):
                 filename = replace_extension(filename, GenericProvider.TORRENT)
 
-            if download_file(url, filename, session=self.session, headers=self.headers, hooks={'response': self.get_url_hook}):
+            if download_file(url, filename, session=self.session, headers=self.headers,
+                             hooks={'response': self.get_url_hook}):
                 if self._verify_download(filename):
                     logger.log('Saved result to %s' % filename, logger.INFO)
                     return True
@@ -128,7 +129,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         results = []
 
         for proper_candidate in proper_candidates:
-            show_obj = Show.find(app.showList, int(proper_candidate[b'showid'])) if proper_candidate[b'showid'] else None
+            show_obj = Show.find(app.showList,
+                                 int(proper_candidate[b'showid'])) if proper_candidate[b'showid'] else None
 
             if show_obj:
                 episode_obj = show_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
@@ -143,10 +145,11 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                         pubdate = self._get_pubdate(item)
                         torrent_hash = self._get_torrent_hash(item)
 
-                        # This will be retrived from parser
+                        # This will be retrived from the parser
                         proper_tags = ''
 
-                        results.append(Proper(title, url, datetime.today(), show_obj, seeders, leechers, size, pubdate, torrent_hash, proper_tags))
+                        results.append(Proper(title, url, datetime.today(), show_obj, seeders, leechers, size, pubdate,
+                                              torrent_hash, proper_tags))
 
         return results
 
@@ -232,7 +235,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                                 logger.DEBUG
                             )
                             add_cache_entry = True
-                        elif not [ep for ep in episodes if parse_result.season_number == (ep.season, ep.scene_season)[ep.show.is_scene]]:
+                        elif not [ep for ep in episodes if
+                                  parse_result.season_number == (ep.season, ep.scene_season)[ep.show.is_scene]]:
                             logger.log(
                                 'This season result %s is for a season we are not searching for, skipping it' % title,
                                 logger.DEBUG
@@ -240,16 +244,12 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                             add_cache_entry = True
 
                     else:
-                        if not all([
-                            # pylint: disable=bad-continuation
-                            parse_result.season_number is not None,
-                            parse_result.episode_numbers,
-                            [ep for ep in episodes if (ep.season, ep.scene_season)[ep.show.is_scene] ==
-                             parse_result.season_number and
-                             (ep.episode, ep.scene_episode)[ep.show.is_scene] in
-                             parse_result.episode_numbers]
-                        ]):
-
+                        if not all([parse_result.season_number is not None,
+                                    parse_result.episode_numbers,
+                                    [ep for ep in episodes if (ep.season, ep.scene_season)[ep.show.is_scene] ==
+                                     parse_result.season_number and
+                                     (ep.episode, ep.scene_episode)[ep.show.is_scene] in
+                                     parse_result.episode_numbers]]):
                             logger.log(
                                 'The result %s doesn\'t seem to match an episode that we are currently trying to snatch, skipping it' % title,
                                 logger.DEBUG)
@@ -582,8 +582,9 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             if self.cookies:
                 cookie_validator = re.compile(r'^(\w+=\w+)(;\w+=\w+)*$')
                 if not cookie_validator.match(self.cookies):
-                    ui.notifications.message('Failed to validate cookie for provider {provider}'.format(provider=self.name),
-                                             'Cookie is not correctly formatted: {0}'.format(self.cookies))
+                    ui.notifications.message(
+                        'Failed to validate cookie for provider {provider}'.format(provider=self.name),
+                        'Cookie is not correctly formatted: {0}'.format(self.cookies))
                     return {'result': False,
                             'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
 

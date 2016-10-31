@@ -29,6 +29,7 @@ from ....helper.common import convert_size, try_int
 
 class CpasbienProvider(TorrentProvider):
     """Cpasbien Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -71,7 +72,8 @@ class CpasbienProvider(TorrentProvider):
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
-                    search_url = self.url + '/recherche/' + search_string.replace('.', '-').replace(' ', '-') + '.html,trie-seeds-d'
+                    search_url = self.url + '/recherche/' + \
+                        search_string.replace('.', '-').replace(' ', '-') + '.html,trie-seeds-d'
                 else:
                     search_url = self.url + '/view_cat.php?categorie=series&trie=date-d'
 
