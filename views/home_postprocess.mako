@@ -12,7 +12,7 @@
 <div id="postProcess">
     <form name="processForm" method="post" action="home/postprocess/processEpisode" style="line-height: 40px;">
     <table>
-        <input type="hidden" id="type" name="type" value="manual">
+        <input type="hidden" id="proc_type" name="type" value="manual">
         <tr>
             <td style="padding-right:10px;">
                 <b>Enter the folder containing the episode:</b>
