@@ -10,7 +10,6 @@ from six import (
     text_type as _text_type,
     PY3 as _PY3)
 
-from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.primitives.asymmetric import dsa, rsa
 
 from OpenSSL._util import (
@@ -42,6 +41,18 @@ class Error(Exception):
 
 _raise_current_error = partial(_exception_from_error_queue, Error)
 _openssl_assert = _make_assert(Error)
+
+
+def _get_backend():
+    """
+    Importing the backend from cryptography has the side effect of activating
+    the osrandom engine. This mutates the global state of OpenSSL in the
+    process and causes issues for various programs that use subinterpreters or
+    embed Python. By putting the import in this function we can avoid
+    triggering this side effect unless _get_backend is called.
+    """
+    from cryptography.hazmat.backends.openssl.backend import backend
+    return backend
 
 
 def _untested_error(where):
@@ -181,6 +192,7 @@ class PKey(object):
 
         .. versionadded:: 16.1.0
         """
+        backend = _get_backend()
         if self._only_public:
             return backend._evp_pkey_to_public_key(self._pkey)
         else:
@@ -668,7 +680,7 @@ class X509Extension(object):
         :param issuer: Optional X509 certificate to use as issuer.
         :type issuer: :py:class:`X509`
 
-        .. _extension: https://openssl.org/docs/manmaster/apps/
+        .. _extension: https://www.openssl.org/docs/manmaster/apps/
             x509v3_config.html#STANDARD-EXTENSIONS
         """
         ctx = _ffi.new("X509V3_CTX*")
@@ -820,6 +832,8 @@ class X509Req(object):
     def __init__(self):
         req = _lib.X509_REQ_new()
         self._req = _ffi.gc(req, _lib.X509_REQ_free)
+        # Default to version 0.
+        self.set_version(0)
 
     def set_pubkey(self, pkey):
         """
@@ -937,7 +951,7 @@ class X509Req(object):
         :param pkey: The key pair to sign with.
         :type pkey: :py:class:`PKey`
         :param digest: The name of the message digest to use for the signature,
-            e.g. :py:data:`b"sha1"`.
+            e.g. :py:data:`b"sha256"`.
         :type digest: :py:class:`bytes`
         :return: ``None``
         """
@@ -1100,7 +1114,7 @@ class X509(object):
         if digest == _ffi.NULL:
             raise ValueError("No such digest method")
 
-        result_buffer = _ffi.new("char[]", _lib.EVP_MAX_MD_SIZE)
+        result_buffer = _ffi.new("unsigned char[]", _lib.EVP_MAX_MD_SIZE)
         result_length = _ffi.new("unsigned int[]", 1)
         result_length[0] = len(result_buffer)
 
@@ -2071,7 +2085,7 @@ class CRL(object):
             :data:`FILETYPE_ASN1`, or :data:`FILETYPE_TEXT`.
         :param int days: The number of days until the next update of this CRL.
         :param bytes digest: The name of the message digest to use (eg
-            ``b"sha1"``).
+            ``b"sha2566"``).
         :rtype: bytes
         """
 

@@ -11,7 +11,7 @@ __all__ = [
     "__title__", "__uri__", "__version__",
 ]
 
-__version__ = "16.1.0"
+__version__ = "16.2.0"
 
 __title__ = "pyOpenSSL"
 __uri__ = "https://pyopenssl.readthedocs.io/"

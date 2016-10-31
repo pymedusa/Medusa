@@ -109,10 +109,11 @@ SESS_CACHE_NO_INTERNAL = _lib.SSL_SESS_CACHE_NO_INTERNAL
 SSL_ST_CONNECT = _lib.SSL_ST_CONNECT
 SSL_ST_ACCEPT = _lib.SSL_ST_ACCEPT
 SSL_ST_MASK = _lib.SSL_ST_MASK
-SSL_ST_INIT = _lib.SSL_ST_INIT
-SSL_ST_BEFORE = _lib.SSL_ST_BEFORE
-SSL_ST_OK = _lib.SSL_ST_OK
-SSL_ST_RENEGOTIATE = _lib.SSL_ST_RENEGOTIATE
+if _lib.Cryptography_HAS_SSL_ST:
+    SSL_ST_INIT = _lib.SSL_ST_INIT
+    SSL_ST_BEFORE = _lib.SSL_ST_BEFORE
+    SSL_ST_OK = _lib.SSL_ST_OK
+    SSL_ST_RENEGOTIATE = _lib.SSL_ST_RENEGOTIATE
 
 SSL_CB_LOOP = _lib.SSL_CB_LOOP
 SSL_CB_EXIT = _lib.SSL_CB_EXIT
@@ -1160,9 +1161,10 @@ class Connection(object):
                         errno = _ffi.getwinerror()[0]
                     else:
                         errno = _ffi.errno
-                    raise SysCallError(errno, errorcode.get(errno))
-                else:
-                    raise SysCallError(-1, "Unexpected EOF")
+
+                    if errno != 0:
+                        raise SysCallError(errno, errorcode.get(errno))
+                raise SysCallError(-1, "Unexpected EOF")
             else:
                 # TODO: This is untested.
                 _raise_current_error()
@@ -1613,7 +1615,7 @@ class Connection(object):
             return None
         length = _lib.SSL_get_server_random(self._ssl, _ffi.NULL, 0)
         assert length > 0
-        outp = _ffi.new("char[]", length)
+        outp = _ffi.new("unsigned char[]", length)
         _lib.SSL_get_server_random(self._ssl, outp, length)
         return _ffi.buffer(outp, length)[:]
 
@@ -1629,7 +1631,7 @@ class Connection(object):
 
         length = _lib.SSL_get_client_random(self._ssl, _ffi.NULL, 0)
         assert length > 0
-        outp = _ffi.new("char[]", length)
+        outp = _ffi.new("unsigned char[]", length)
         _lib.SSL_get_client_random(self._ssl, outp, length)
         return _ffi.buffer(outp, length)[:]
 
@@ -1645,7 +1647,7 @@ class Connection(object):
 
         length = _lib.SSL_SESSION_get_master_key(session, _ffi.NULL, 0)
         assert length > 0
-        outp = _ffi.new("char[]", length)
+        outp = _ffi.new("unsigned char[]", length)
         _lib.SSL_SESSION_get_master_key(session, outp, length)
         return _ffi.buffer(outp, length)[:]
 

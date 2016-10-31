@@ -54,7 +54,7 @@ def bytes(num_bytes):
     if num_bytes < 0:
         raise ValueError("num_bytes must not be negative")
 
-    result_buffer = _ffi.new("char[]", num_bytes)
+    result_buffer = _ffi.new("unsigned char[]", num_bytes)
     result_code = _lib.RAND_bytes(result_buffer, num_bytes)
     if result_code == -1:
         # TODO: No tests for this code path.  Triggering a RAND_bytes failure
