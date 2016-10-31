@@ -19,6 +19,7 @@
 from __future__ import unicode_literals
 
 import re
+import time
 import traceback
 
 from requests.compat import urljoin
@@ -29,6 +30,7 @@ from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
 
+id_regex = re.compile(r'(?:\/.*)(?:&id\=([0-9]*)&)', re.I)
 
 class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """MoreThanTV Torrent provider"""
@@ -81,6 +83,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             'order_by': 'time',
             'order_way': 'desc',
             'action': 'basic',
+            'group_results': 0,
             'searchsubmit': 1,
             'searchstr': '',
         }
@@ -88,9 +91,11 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
-            if mode == 'Season':
-                for search_string in search_strings[mode]:
-                    search_strings[mode].append(re.sub(r'(.*)S0?', r'\1Season ', search_string))
+            if mode == 'Season':     
+                additional_strings = []     
+                for search_string in search_strings[mode]:         
+                    additional_strings.append(re.sub(r'(.*)S0?', r'\1Season ', search_string))
+                search_strings[mode].extend(additional_strings)
 
             for search_string in search_strings[mode]:
 
@@ -168,6 +173,17 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                        "minimum seeders: {0}. Seeders: {1}".format
                                        (title, seeders), logger.DEBUG)
                         continue
+                    
+                    # If it's a season search, query the torrent's detail page for the "release name" aka directory name.
+                    if mode == 'Season':
+                        details_url = urljoin(self.url, row.find('span').findNext(title="View torrent")['href'])
+                        torrent_id = id_regex.search(download_url).group(1)
+                        response = self.get_url(details_url, returns='response')
+                        with BS4Parser(response.text, 'html5lib') as html:
+                            torrent_table = html.find('table', class_='torrent_table')
+                            torrent_row = torrent_table.find('tr', id="torrent_{0}".format(torrent_id))
+                            title = torrent_row.find('div', { "class" : "filelist_path"}).get_text(strip=True).strip("/") # Strip leading and trailing slash
+                            time.sleep(0.50)
 
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
                     size = convert_size(torrent_size, units=units) or -1
