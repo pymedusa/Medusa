@@ -185,8 +185,8 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
                                 hrefs = show_info[index]('a')
                                 params = parse_qs(hrefs[0].get('href', ''))
                                 properties_string = hrefs[1].get_text().rstrip(' |').replace('|', '.').replace(' ', '')
-                                properties_string = properties_string.replace('h26410-bit',
-                                                                              'h264.hi10p')  # Hack for the h264 10bit stuff
+                                # Hack for the h264 10bit stuff
+                                properties_string = properties_string.replace('h26410-bit', 'h264.hi10p')
                                 properties = properties_string.split('.')
                                 download_url = self.urls['download'].format(torrent_id=params['id'][0],
                                                                             passkey=params['torrent_pass'][0])

@@ -177,8 +177,8 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return items
 
     def login(self):
-        if dict_from_cookiejar(self.session.cookies).get('uid') and dict_from_cookiejar(self.session.cookies).get(
-                'pass'):
+        if dict_from_cookiejar(self.session.cookies).get('uid') and \
+                dict_from_cookiejar(self.session.cookies).get('pass'):
             return True
 
         if self.cookies:

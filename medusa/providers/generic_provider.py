@@ -129,8 +129,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         results = []
 
         for proper_candidate in proper_candidates:
-            show_obj = Show.find(app.showList, int(proper_candidate[b'showid'])) if proper_candidate[
-                b'showid'] else None
+            show_obj = Show.find(app.showList,
+                                 int(proper_candidate[b'showid'])) if proper_candidate[b'showid'] else None
 
             if show_obj:
                 episode_obj = show_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
@@ -145,7 +145,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                         pubdate = self._get_pubdate(item)
                         torrent_hash = self._get_torrent_hash(item)
 
-                        # This will be retrived from parser
+                        # This will be retrived from the parser
                         proper_tags = ''
 
                         results.append(Proper(title, url, datetime.today(), show_obj, seeders, leechers, size, pubdate,

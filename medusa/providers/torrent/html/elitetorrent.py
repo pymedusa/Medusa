@@ -28,7 +28,7 @@ from ....bs4_parser import BS4Parser
 from ....helper.common import try_int
 
 
-class elite_torrent_provider(TorrentProvider):
+class EliteTorrentProvider(TorrentProvider):
     """EliteTorrent Torrent provider"""
 
     def __init__(self):
@@ -187,4 +187,4 @@ class elite_torrent_provider(TorrentProvider):
         return title.strip()
 
 
-provider = elite_torrent_provider()
+provider = EliteTorrentProvider()

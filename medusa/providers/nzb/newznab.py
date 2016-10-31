@@ -76,8 +76,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
         self.cache = tv_cache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
 
-    def search(self, search_strings, age=0,
-               ep_obj=None):  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Searches indexer using the params in search_strings, either for latest releases, or a string/id search
         Returns: list of results in dict form

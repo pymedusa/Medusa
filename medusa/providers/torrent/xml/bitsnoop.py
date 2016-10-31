@@ -118,8 +118,8 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                     # so that proxies work.
                     download_url = row.enclosure['url']
                     if app.TORRENT_METHOD != 'blackhole' or 'torcache' not in download_url:
-                        download_url = row.find('magneturi').next.replace('CDATA', '').strip(
-                            '[]') + self._custom_trackers
+                        download_url = row.find('magneturi').next.replace('CDATA', '').strip('[]') + \
+                            self._custom_trackers
 
                     if not all([title, download_url]):
                         continue
