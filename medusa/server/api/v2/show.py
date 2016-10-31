@@ -44,6 +44,10 @@ class ShowHandler(BaseRequestHandler):
         # @TODO: This should be completely replaced with show_id
         show_indexer = indexer_config.mapping[show_indexer] if show_indexer else None
         indexerid = self._parse(show_id)
+        season = self._parse(season)
+        episode = self._parse(episode)
+        absolute_episode = self._parse(absolute_episode)
+        air_date = self._parse_date(air_date)
 
         # @TODO: https://github.com/SiCKRAGETV/SiCKRAGE/pull/2558
 
@@ -54,7 +58,7 @@ class ShowHandler(BaseRequestHandler):
                 return self.api_finish(status=404, error='Show not found')
 
             ep_id = EpisodeIdentifier(season, episode, absolute_episode, air_date)
-            if ep_id:
+            if ep_id or query == 'episodes':
                 return self._handle_episode(tv_show, ep_id, query)
 
             return self._handle_detailed_show(tv_show, query)
@@ -83,7 +87,7 @@ class ShowHandler(BaseRequestHandler):
         self.api_finish(data=data)
 
     def _handle_episode(self, tv_show, ep_id, query):
-        if (ep_id.episode or ep_id.absolute_episode or ep_id.absolute_episode) is not None:
+        if (ep_id.episode or ep_id.absolute_episode or ep_id.air_date) is not None:
             tv_episode = self._find_tv_episode(tv_show=tv_show, ep_id=ep_id)
             if not tv_episode:
                 return self.api_finish(status=404, error='Episode not found')
@@ -94,7 +98,8 @@ class ShowHandler(BaseRequestHandler):
 
         return self._paginate(data, 'airDate')
 
-    def _find_tv_episode(self, tv_show, ep_id):
+    @staticmethod
+    def _find_tv_episode(tv_show, ep_id):
         """Find TVEpisode based on specified criteria.
 
         :param tv_show:
@@ -104,8 +109,8 @@ class ShowHandler(BaseRequestHandler):
         """
         if ep_id.season is not None and ep_id.episode is not None:
             tv_episode = tv_show.get_episode(season=ep_id.season, episode=ep_id.episode, should_cache=False)
-        elif ep_id.absolute_episode is not None and tv_show.is_anime:
-            tv_episode = tv_show.get_episode(absolute_episode=ep_id.absolute_episode, should_cache=False)
+        elif ep_id.absolute_episode is not None:
+            tv_episode = tv_show.get_episode(absolute_number=ep_id.absolute_episode, should_cache=False)
         elif ep_id.air_date:
             tv_episode = tv_show.get_episode(air_date=ep_id.air_date, should_cache=False)
         else:
