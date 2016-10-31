@@ -1691,12 +1691,13 @@ def canonical_name(obj, fmt=u'{key}:{value}', separator=u'|', ignore_list=frozen
 
 def get_broken_providers():
     """Get broken providers from cdn.pymedusa.com."""
-    # Check if last broken provide's update happened less than 60min
+    # Check if last broken providers update happened less than 60 minutes ago
     if app.BROKEN_PROVIDERS_UPDATE and isinstance(app.BROKEN_PROVIDERS_UPDATE, datetime.datetime) and \
             (datetime.datetime.now() - app.BROKEN_PROVIDERS_UPDATE).seconds < 3600:
         logger.debug('Broken providers already updated in the last hour')
         return
-    # Update last broken provider's update timestamp to avoid update again less than 60min
+
+    # Update last broken providers update-timestamp to avoid updating again in less than 60 minutes
     app.BROKEN_PROVIDERS_UPDATE = datetime.datetime.now()
 
     url = 'https://cdn.pymedusa.com/providers/broken_providers.json'
@@ -1706,5 +1707,6 @@ def get_broken_providers():
                        'This list is used to disable broken providers. '
                        'You may encounter errors in the logfiles if you are using a broken provider.')
         return []
+
     logger.info('Broken providers found: {0}'.format(response))
     return ','.join(response)
