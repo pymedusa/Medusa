@@ -119,12 +119,13 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         items = []
 
         unsorted_torrent_rows = data.get('torrents') if mode != 'RSS' else data
-        torrent_rows = sorted(unsorted_torrent_rows, key=itemgetter('added'), reverse=True)
 
-        if not torrent_rows or not isinstance(torrent_rows, list):
+        if not unsorted_torrent_rows or not isinstance(unsorted_torrent_rows, dict):
             logger.log('Data returned from provider does not contain any {0}torrents'.format(
                 'confirmed ' if self.confirmed else ''), logger.DEBUG)
             return items
+
+        torrent_rows = sorted(unsorted_torrent_rows, key=itemgetter('added'), reverse=True)
 
         for row in torrent_rows:
             if not isinstance(row, dict):
