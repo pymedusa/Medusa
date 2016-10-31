@@ -177,6 +177,7 @@ NEWS_LATEST = None
 NEWS_UNREAD = 0
 
 BROKEN_PROVIDERS = ''
+BROKEN_PROVIDERS_UPDATE = None
 
 INIT_LOCK = Lock()
 started = False
@@ -699,7 +700,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             ANIME_SPLIT_HOME, SCENE_DEFAULT, DOWNLOAD_URL, BACKLOG_DAYS, GIT_USERNAME, GIT_PASSWORD, \
             DEVELOPER, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, BROKEN_PROVIDERS, SOCKET_TIMEOUT, RECENTLY_DELETED, \
             FANART_BACKGROUND, FANART_BACKGROUND_OPACITY, GIT_REMOTE_BRANCHES, RELEASES_IN_PP, PROPERS_SEARCH_DAYS, \
-            LOCALE, OS_USER, OPENSSL_VERSION, APP_VERSION, MAJOR_DB_VERSION, MINOR_DB_VERSION
+            LOCALE, OS_USER, OPENSSL_VERSION, APP_VERSION, MAJOR_DB_VERSION, MINOR_DB_VERSION, BROKEN_PROVIDERS_UPDATE
 
         if __INITIALIZED__:
             return False
@@ -957,7 +958,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         NEWS_LAST_READ = check_setting_str(CFG, 'General', 'news_last_read', '1970-01-01')
         NEWS_LATEST = NEWS_LAST_READ
 
-        BROKEN_PROVIDERS = check_setting_str(CFG, 'General', 'broken_providers', ','.join(helpers.get_broken_providers()) or BROKEN_PROVIDERS)
+        BROKEN_PROVIDERS = check_setting_str(CFG, 'General', 'broken_providers',
+                                             helpers.get_broken_providers() or BROKEN_PROVIDERS)
 
         NZB_DIR = check_setting_str(CFG, 'Blackhole', 'nzb_dir', '')
         TORRENT_DIR = check_setting_str(CFG, 'Blackhole', 'torrent_dir', '')
@@ -1824,7 +1826,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['developer'] = int(DEVELOPER)
     new_config['General']['display_all_seasons'] = int(DISPLAY_ALL_SEASONS)
     new_config['General']['news_last_read'] = NEWS_LAST_READ
-    new_config['General']['broken_providers'] = ','.join(helpers.get_broken_providers()) or BROKEN_PROVIDERS
+    new_config['General']['broken_providers'] = helpers.get_broken_providers() or BROKEN_PROVIDERS
 
     new_config['Blackhole'] = {}
     new_config['Blackhole']['nzb_dir'] = NZB_DIR
