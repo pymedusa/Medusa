@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for SceneTime."""
 from __future__ import unicode_literals
 
 import re
@@ -116,7 +116,6 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
