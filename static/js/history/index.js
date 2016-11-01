@@ -12,7 +12,7 @@ MEDUSA.history.index = function() {
             return {
                 0: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
                 1: function(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
-                2: function(node) { return $(node).attr('provider') === null ? null : $(node).attr('provider'); }, // eslint-disable-line brace-style
+                2: function(node) { return $(node).find('span').text() === null ? null : $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
                 5: function(node) { return $(node).attr('quality').toLowerCase(); } // eslint-disable-line brace-style
             };
         })(),
