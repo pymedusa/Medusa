@@ -54,13 +54,12 @@ import medusa as app
 import requests
 from requests.compat import urlparse
 import shutil_custom
-from six import PY2, string_types, text_type
+from six import string_types, text_type
 from six.moves import http_client
 from . import classes, db
 from .common import USER_AGENT
 from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from .helper.exceptions import ex
-from .init import filesystem
 from .show.show import Show
 
 
@@ -1177,12 +1176,6 @@ def request_defaults(kwargs):
     hooks = kwargs.pop(u'hooks', None)
     cookies = kwargs.pop(u'cookies', None)
     verify = certifi.old_where() if all([app.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
-
-    # Fixes
-    # https://github.com/pyca/pyopenssl/pull/209
-    # https://github.com/pymedusa/Medusa/issues/1422
-    if PY2 and isinstance(verify, text_type):
-        verify = filesystem.encode(verify)
 
     # request session proxies
     if app.PROXY_SETTING:
