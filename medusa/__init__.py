@@ -960,6 +960,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         BROKEN_PROVIDERS = check_setting_str(CFG, 'General', 'broken_providers',
                                              helpers.get_broken_providers() or BROKEN_PROVIDERS)
+        BROKEN_PROVIDERS_UPDATE = check_setting_str(CFG, 'General', 'broken_providers_update', BROKEN_PROVIDERS_UPDATE)
 
         NZB_DIR = check_setting_str(CFG, 'Blackhole', 'nzb_dir', '')
         TORRENT_DIR = check_setting_str(CFG, 'Blackhole', 'torrent_dir', '')
@@ -1827,6 +1828,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['display_all_seasons'] = int(DISPLAY_ALL_SEASONS)
     new_config['General']['news_last_read'] = NEWS_LAST_READ
     new_config['General']['broken_providers'] = helpers.get_broken_providers() or BROKEN_PROVIDERS
+    new_config['General']['broken_providers_update'] = BROKEN_PROVIDERS_UPDATE
 
     new_config['Blackhole'] = {}
     new_config['Blackhole']['nzb_dir'] = NZB_DIR
