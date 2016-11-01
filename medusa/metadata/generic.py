@@ -22,6 +22,7 @@ import os
 import re
 
 import medusa as app
+from medusa import exception_handler
 from six import iterkeys
 from tmdb_api.tmdb_api import TMDB
 from .. import helpers, logger
@@ -408,8 +409,7 @@ class GenericMetadata(object):
             nfo_file.close()
             helpers.chmodAsParent(nfo_file_path)
         except IOError as e:
-            logger.log(u"Unable to write file to " + nfo_file_path + " - are you sure the folder is writable? " + ex(e),
-                       logger.ERROR)
+            exception_handler.handle(e, u'Unable to write file to {location}', location=nfo_file_path)
             return False
 
         return True
@@ -451,8 +451,7 @@ class GenericMetadata(object):
             nfo_file.close()
             helpers.chmodAsParent(nfo_file_path)
         except IOError as e:
-            logger.log(u"Unable to write file to " + nfo_file_path + " - are you sure the folder is writable? " + ex(e),
-                       logger.ERROR)
+            exception_handler.handle(e, u'Unable to write file to {location}', location=nfo_file_path)
             return False
 
         return True
@@ -697,12 +696,7 @@ class GenericMetadata(object):
             outFile.close()
             helpers.chmodAsParent(image_path)
         except IOError as e:
-            if hasattr(e, 'errno') and e.errno in (13, 28):  # Permission denied and No space left on device
-                msg_level = logger.WARNING
-            else:
-                msg_level = logger.ERROR
-            logger.log(u'Unable to write image to {0}. Error: {1}'.format
-                       (image_path, e), msg_level)
+            exception_handler.handle(e, u'Unable to write image to {location}', location=image_path)
             return False
 
         return True

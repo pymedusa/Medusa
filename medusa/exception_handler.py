@@ -7,19 +7,20 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def handle(thread_name, err):
+def handle(err, message='', *args, **kwargs):
     """Single entry point to handle unhandled exceptions.
 
-    :param thread_name:
-    :type thread_name: string
     :param err:
+    :param message:
     :type err: Exception
     """
+    m = message.format(*args, **kwargs) + ': ' if message else ''
     if isinstance(err, OSError):
         if err.errno == 28:
-            logger.warning('Out of disk space: {error_msg}', error_msg=err)
+            logger.warning('{m}Out of disk space: {error_msg}', m=m, error_msg=err)
+        elif err.errno == 13:
+            logger.warning('{m}Permission denied: {error_msg}', m=m, error_msg=err)
         else:
-            logger.warning('OS error: {error_msg}', error_msg=err)
+            logger.warning('{m}OS error: {error_msg}', m=m, error_msg=err)
     else:
-        logger.exception("Exception generated in thread {thread_name}: {error_msg}",
-                         thread_name=thread_name, error_msg=err)
+        logger.exception('{m}Exception generated: {error_msg}', m=m, error_msg=err)

@@ -171,7 +171,7 @@ class Application(object):
         try:
             self._do_start(args)
         except Exception as e:
-            exception_handler.handle('MAIN', e)
+            exception_handler.handle(e)
 
     def _do_start(self, args):
         # do some preliminary stuff
