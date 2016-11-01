@@ -44,8 +44,8 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         # URLs
         self.url = 'https://www.scenetime.com'
         self.urls = {
-            'login': urljoin(self.url, 'takelogin.php'),
-            'search': urljoin(self.url, 'browse.php'),
+            'login': urljoin(self.url, 'login.php'),
+            'search': urljoin(self.url, 'browse_API.php'),
             'download': urljoin(self.url, 'download.php/{0}/{1}'),
         }
 
@@ -77,6 +77,8 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
         # Search Params
         search_params = {
+            'sec': 'jax',
+            'cata': 'yes',
             'c2': 1,  # TV/XviD
             'c43': 1,  # TV/Packs
             'c9': 1,  # TV-HD
@@ -98,7 +100,7 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                (search=search_string), logger.DEBUG)
                     search_params['search'] = search_string
 
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.get_url(self.urls['search'], post_data=search_params, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -119,10 +121,7 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('div', id='torrenttable')
-            torrent_rows = []
-            if torrent_table:
-                torrent_rows = torrent_table.select('tr')
+            torrent_rows = html.find_all('tr')
 
             # Continue only if at least one release is found
             if len(torrent_rows) < 2:
@@ -132,7 +131,7 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             # Scenetime apparently uses different number of cells in #torrenttable based
             # on who you are. This works around that by extracting labels from the first
             # <tr> and using their index to find the correct download/seeders/leechers td.
-            labels = [label.get_text(strip=True) for label in torrent_rows[0]('td')]
+            labels = [label.get_text(strip=True) or label.img['title'] for label in torrent_rows[0]('td')]
 
             # Skip column headers
             for row in torrent_rows[1:]:
@@ -161,6 +160,7 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                         continue
 
                     torrent_size = cells[labels.index('Size')].get_text()
+                    torrent_size = re.sub(r'(\d+\.?\d*)', r'\1 ', torrent_size)
                     size = convert_size(torrent_size) or -1
 
                     item = {
