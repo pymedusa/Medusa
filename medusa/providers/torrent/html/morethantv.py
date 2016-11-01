@@ -192,7 +192,6 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                             # Strip leading and trailing slash
                             title = torrent_row.find('div', class_='filelist_path').get_text(strip=True).strip('/')
 
-
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
 
