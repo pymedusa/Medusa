@@ -161,7 +161,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
+                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True), 1)
                     leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
 
                     # Filter unseeded torrent
