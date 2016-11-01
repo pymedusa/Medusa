@@ -136,7 +136,7 @@
                 <td align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
                     % for cur_action in sorted(hItem.actions):
                         <% composite = Quality.splitCompositeStatus(int(cur_action.action)) %>
-                        % if composite.status == SNATCHED:
+                        % if composite.status in [SNATCHED, FAILED]:
                             <% provider = providers.get_provider_class(GenericProvider.make_id(cur_action.provider)) %>
                             % if provider is not None:
                                 <img src="images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" alt="${provider.name}" style="cursor: help;" title="${provider.name}: ${os.path.basename(cur_action.resource)}"/>
@@ -146,9 +146,6 @@
                             % else:
                                 <img src="images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="missing provider"/>
                             % endif
-                        % endif
-                        % if composite.status == FAILED:
-                                <img src="images/no16.png" width="16" height="16" style="vertical-align:middle;" title="Failed!"/>
                         % endif
                     % endfor
                 </td>
