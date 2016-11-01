@@ -235,23 +235,27 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         details_url = row.find('span').find_next(title='View torrent').get('href')
         torrent_id = parse_qs(download_url).get('id')
         if not all([details_url, torrent_id]):
+            logger.log("Could't parse season pack details page for title: %s", title, logger.DEBUG)
             return title
 
         # Take a break before querying the provider again
         time.sleep(0.5)
         response = self.get_url(urljoin(self.url, details_url), returns='response')
         if not response or not response.text:
+            logger.log("Could't open season pack details page for title: %s", title, logger.DEBUG)
             return title
 
         with BS4Parser(response.text, 'html5lib') as html:
             torrent_table = html.find('table', class_='torrent_table')
             torrent_row = torrent_table.find('tr', id='torrent_{0}'.format(torrent_id[0]))
             if not torrent_row:
+                logger.log("Could't find season pack details for title: %s", title, logger.DEBUG)
                 return title
 
             # Strip leading and trailing slash
             season_title = torrent_row.find('div', class_='filelist_path')
             if not season_title:
+                logger.log("Could't parse season pack title for: %s", title, logger.DEBUG)
                 return title
             return season_title.get_text(strip=True).strip('/')
 
