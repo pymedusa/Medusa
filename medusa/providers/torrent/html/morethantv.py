@@ -24,13 +24,14 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
+from six.moves.urllib_parse import parse_qs
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
-
-id_regex = re.compile(r'&id\=([0-9]*)&', re.I)
 
 
 class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
@@ -151,7 +152,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     continue
 
                 try:
-                    # skip if torrent has been nuked due to poor quality
+                    # Skip if torrent has been nuked due to poor quality
                     if row.find('img', alt='Nuked'):
                         continue
 
@@ -171,26 +172,9 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    # If it's a season search, query the torrent's detail page for the "release name" aka directory name.
+                    # If it's a season search, query the torrent's detail page.
                     if mode == 'Season':
-                        details_url = row.find('span').find_next(title='View torrent').get('href')
-                        torrent_id = id_regex.search(download_url).group(1)
-                        if not all([details_url, torrent_id]):
-                            continue
-
-                        time.sleep(0.5)
-                        response = self.get_url(urljoin(self.url, details_url), returns='response')
-                        if not response or not response.text:
-                            continue
-
-                        with BS4Parser(response.text, 'html5lib') as html:
-                            torrent_table = html.find('table', class_='torrent_table')
-                            torrent_row = torrent_table.find('tr', id='torrent_{0}'.format(torrent_id))
-                            if not torrent_row:
-                                continue
-
-                            # Strip leading and trailing slash
-                            title = torrent_row.find('div', class_='filelist_path').get_text(strip=True).strip('/')
+                        title = self._parse_season(row, download_url, title)
 
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
@@ -245,6 +229,31 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                 ' check your config.'.format(self.name))
 
         return True
+
+    def _parse_season(self, row, download_url, title):
+        """Parse the torrent's detail page and return the season pack title."""
+        details_url = row.find('span').find_next(title='View torrent').get('href')
+        torrent_id = parse_qs(download_url).get('id')
+        if not all([details_url, torrent_id]):
+            return title
+
+        # Take a break before querying the provider again
+        time.sleep(0.5)
+        response = self.get_url(urljoin(self.url, details_url), returns='response')
+        if not response or not response.text:
+            return title
+
+        with BS4Parser(response.text, 'html5lib') as html:
+            torrent_table = html.find('table', class_='torrent_table')
+            torrent_row = torrent_table.find('tr', id='torrent_{0}'.format(torrent_id[0]))
+            if not torrent_row:
+                return title
+
+            # Strip leading and trailing slash
+            season_title = torrent_row.find('div', class_='filelist_path')
+            if not season_title:
+                return title
+            return season_title.get_text(strip=True).strip('/')
 
 
 provider = MoreThanTVProvider()
