@@ -92,10 +92,6 @@ class TorrentProvider(GenericProvider):
             download_url = ''
             title = ''
 
-        if title.endswith('DIAMOND'):
-            logger.log(u'Skipping DIAMOND release for mass fake releases.')
-            download_url = title = u'FAKERELEASE'
-
         if download_url:
             download_url = download_url.replace('&amp;', '&')
 
