@@ -683,6 +683,10 @@ def get_embedded_subtitles(video_path):
     :return:
     :rtype: set of Language
     """
-    subliminal_video = scan_video(video_path)
-    refine(subliminal_video, episode_refiners=('metadata',))
-    return subliminal_video.subtitle_languages
+    try
+        subliminal_video = scan_video(video_path)
+        refine(subliminal_video, episode_refiners=('metadata',))
+        sub_lang = subliminal_video.subtitle_languages
+    except ValueError:
+        sub_lang = ''
+    return sub_lang
