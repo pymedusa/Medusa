@@ -271,7 +271,7 @@ class WebHandler(BaseHandler):
             result = function(**kwargs)
             return result
         except Exception as e:
-            exception_handler.handle('HTTP REQUEST', e)
+            exception_handler.handle(e)
 
     # post uses get method
     post = get

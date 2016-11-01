@@ -109,4 +109,4 @@ class Scheduler(threading.Thread):
             # exiting thread
             self.stop.clear()
         except Exception as e:
-            exception_handler.handle(self.name, e)
+            exception_handler.handle(e)
