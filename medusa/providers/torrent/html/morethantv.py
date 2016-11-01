@@ -30,7 +30,7 @@ from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
 
-id_regex = re.compile(r'(?:\/.*)(?:&id\=([0-9]*)&)', re.I)
+id_regex = re.compile(r'&id\=([0-9]*)&', re.I)
 
 
 class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
