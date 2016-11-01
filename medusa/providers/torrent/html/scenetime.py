@@ -23,6 +23,7 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
@@ -30,11 +31,10 @@ from ....helper.common import convert_size, try_int
 
 
 class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """SceneTime Torrent provider"""
+    """SceneTime Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
+        """Provider Init."""
         TorrentProvider.__init__(self, 'SceneTime')
 
         # Credentials
@@ -52,6 +52,8 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         # Proper Strings
 
         # Miscellaneous Options
+        self.enable_cookies = True
+        self.cookies = ''
 
         # Torrent Stats
         self.minseed = None
@@ -60,9 +62,9 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=20)  # only poll SceneTime every 20 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -184,12 +186,21 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if any(dict_from_cookiejar(self.session.cookies).values()):
+        if dict_from_cookiejar(self.session.cookies).get('uid') and \
+                dict_from_cookiejar(self.session.cookies).get('pass'):
             return True
+
+        if self.cookies:
+            self.add_cookies_from_ui()
+        else:
+            logger.log('Failed to login, you must add your cookies in the provider settings', logger.WARNING)
+            return False
 
         login_params = {
             'username': self.username,
             'password': self.password,
+            'submit.x': 0,
+            'submit.y': 0,
         }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
@@ -201,7 +212,13 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
 
-        return True
+        if (dict_from_cookiejar(self.session.cookies).get('uid') and
+                dict_from_cookiejar(self.session.cookies).get('uid') in response.text):
+            return True
+        else:
+            logger.log('Failed to login, check your cookies', logger.WARNING)
+            self.session.cookies.clear()
+            return False
 
 
 provider = SceneTimeProvider()
