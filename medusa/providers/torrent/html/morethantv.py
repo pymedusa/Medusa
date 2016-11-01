@@ -123,9 +123,6 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         :return: A list of items found
         """
-        # Units
-        units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-
         def process_column_header(td):
             result = ''
             if td.a and td.a.img:
@@ -176,18 +173,28 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                     # If it's a season search, query the torrent's detail page for the "release name" aka directory name.
                     if mode == 'Season':
-                        details_url = urljoin(self.url, row.find('span').findNext(title="View torrent")['href'])
+                        details_url = row.find('span').find_next(title='View torrent').get('href')
                         torrent_id = id_regex.search(download_url).group(1)
-                        response = self.get_url(details_url, returns='response')
+                        if not all([details_url, torrent_id]):
+                            continue
+
+                        time.sleep(0.5)
+                        response = self.get_url(urljoin(self.url, details_url), returns='response')
+                        if not response or not response.text:
+                            continue
+
                         with BS4Parser(response.text, 'html5lib') as html:
                             torrent_table = html.find('table', class_='torrent_table')
-                            torrent_row = torrent_table.find('tr', id="torrent_{0}".format(torrent_id))
+                            torrent_row = torrent_table.find('tr', id='torrent_{0}'.format(torrent_id))
+                            if not torrent_row:
+                                continue
+
                             # Strip leading and trailing slash
-                            title = torrent_row.find('div', {"class": "filelist_path"}).get_text(strip=True).strip("/")
-                            time.sleep(0.50)
+                            title = torrent_row.find('div', class_='filelist_path').get_text(strip=True).strip('/')
+
 
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
-                    size = convert_size(torrent_size, units=units) or -1
+                    size = convert_size(torrent_size) or -1
 
                     item = {
                         'title': title,
