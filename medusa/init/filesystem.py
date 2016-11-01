@@ -15,9 +15,9 @@ fs_encoding = sys.getfilesystemencoding()
 
 
 def _handle_input(arg):
-    """Encode argument to utf-8."""
+    """Encode argument to utf-8 or fs encoding."""
     # on windows the input params for fs operations needs to be encoded using fs encoding
-    return arg.encode('utf-8' if os.name != 'nt' else fs_encoding) if isinstance(arg, text_type) else arg
+    return encode(arg) if isinstance(arg, text_type) else arg
 
 
 def _handle_output(result):
@@ -27,7 +27,7 @@ def _handle_output(result):
 
     if isinstance(result, binary_type):
         # on windows the returned info from fs operations needs to be decoded using fs encoding
-        return text_type(result, 'utf-8' if os.name != 'nt' else fs_encoding)
+        return decode(result)
 
     if isinstance(result, list) or isinstance(result, tuple):
         return map(_handle_output, result)
@@ -41,7 +41,7 @@ def _handle_output(result):
 
 
 def _varargs(*args):
-    """Encode var arguments to utf-8."""
+    """Encode var arguments to utf-8 or fs encoding."""
     return [_handle_input(arg) for arg in args]
 
 
@@ -76,3 +76,13 @@ def initialize():
     for k, v in affected_functions.items():
         for f in v:
             setattr(k, f, make_closure(getattr(k, f), handle_arg))
+
+
+def encode(value):
+    """Encode to bytes."""
+    return value.encode('utf-8' if os.name != 'nt' else fs_encoding)
+
+
+def decode(value):
+    """Decode to unicode."""
+    return text_type(value, 'utf-8' if os.name != 'nt' else fs_encoding)
