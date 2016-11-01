@@ -25,7 +25,7 @@ $(document).ready(function() {
     function setDefault(which, force) {
         console.log('setting default to ' + which);
 
-        if (which !== undefined && which.length !== 0) {
+        if (which !== undefined && which.length === 0) {
             return;
         }
 
