@@ -134,7 +134,7 @@
                     <span><a href="home/displayShow?show=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${'<span class="quality Proper">Proper</span>' if proper_tags else ''}</a></span>
                 </td>
                 <td align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
-                    % for cur_action in sorted(hItem.actions):
+                    % for cur_action in sorted(hItem.actions, key=lambda x: x.date):
                         <% composite = Quality.splitCompositeStatus(int(cur_action.action)) %>
                         % if composite.status == SNATCHED:
                             <% provider = providers.get_provider_class(GenericProvider.make_id(cur_action.provider)) %>
@@ -148,7 +148,7 @@
                             % endif
                         % endif
                         % if composite.status == FAILED:
-                                <img src="images/no16.png" width="16" height="16" style="vertical-align:middle;" title="Failed!"/>
+                                <img src="images/no16.png" width="16" height="16" style="vertical-align:middle;" title="${'Failed: ' + os.path.basename(cur_action.resource)}" />
                         % endif
                     % endfor
                 </td>
