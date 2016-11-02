@@ -17,7 +17,7 @@ Copyright 2015 SmartBear Software
    limitations under the License.
 """
 
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import
 
 import sys
 import os
@@ -47,7 +47,7 @@ class AuthenticationApi(object):
 
     def login_post(self, authentication_string, **kwargs):
         """
-        
+
         Returns a session token to be included in the rest of the requests. Note that API key authentication is required for all subsequent requests and user auth is required for routes in the `User` section
 
         This method makes a synchronous HTTP request by default. To make an
@@ -126,7 +126,7 @@ class AuthenticationApi(object):
 
     def refresh_token_get(self, **kwargs):
         """
-        
+
         Refreshes your current, valid JWT token and returns a new token. Hit this route so that you do not have to post to `/login` with your API key and credentials once you have already been authenticated.
 
         This method makes a synchronous HTTP request by default. To make an
