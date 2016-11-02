@@ -132,7 +132,7 @@ class ShowQueue(generic_queue.GenericQueue):
                 u"can't update again until it's done."
                 .format(show_name=show.name))
 
-        queueItemObj = QueueItemUpdate(show) if not season else QueueItemUpdate(show, season)
+        queueItemObj = QueueItemUpdate(show) if season is None else QueueItemUpdate(show, season)
 
         self.add_item(queueItemObj)
 
@@ -658,9 +658,11 @@ class QueueItemUpdate(ShowQueueItem):
         ShowQueueItem.run(self)
 
         logger.log(u'{id}: Beginning update of {show}{season}'.format
-                   (id=self.show.indexerid, show=self.show.name,
-                    season=u' with season(s)' + u','.join(self.seasons) if self.seasons else u''),
-                   logger.DEBUG)
+                   (id=self.show.indexerid,
+                    show=self.show.name,
+                    season=u' with season(s) [{0}]'.
+                    format(u','.join(str(s) for s in self.seasons) if self.seasons else u'')
+                    ), logger.DEBUG)
 
         logger.log(u'{id}: Retrieving show info from {indexer}'.format
                    (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name),
