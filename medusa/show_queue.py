@@ -234,7 +234,8 @@ class ShowQueueActions(object):
         UPDATE: 'Update',
         RENAME: 'Rename',
         SUBTITLE: 'Subtitle',
-        REMOVE: 'Remove Show'
+        REMOVE: 'Remove Show',
+        SEASON_UPDATE: 'Season Update'
     }
 
 
@@ -642,10 +643,15 @@ class QueueItemSubtitle(ShowQueueItem):
 
 class QueueItemUpdate(ShowQueueItem):
     def __init__(self, show=None, season=None):
-        update_action = ShowQueueActions.UPDATE if not season else ShowQueueActions.SEASON_UDPATE
+        """QueuItem used for full show updates and partly show updates based on season.
+
+        :param show: Show object to update.
+        :param season: Season of the show to update, or list of seasons (int).
+        """
+        update_action = ShowQueueActions.UPDATE if season is None else ShowQueueActions.SEASON_UPDATE
         ShowQueueItem.__init__(self, update_action, show)
         self.priority = generic_queue.QueuePriorities.HIGH
-        self.seasons = [season] if season and not isinstance(season, list) else season
+        self.seasons = [season] if season is not None and not isinstance(season, list) else season
 
     def run(self):
 
@@ -653,7 +659,8 @@ class QueueItemUpdate(ShowQueueItem):
 
         logger.log(u'{id}: Beginning update of {show}{season}'.format
                    (id=self.show.indexerid, show=self.show.name,
-                    season=u' with season(s)' + u','.join(self.seasons) if self.seasons else u''), logger.DEBUG)
+                    season=u' with season(s)' + u','.join(self.seasons) if self.seasons else u''),
+                   logger.DEBUG)
 
         logger.log(u'{id}: Retrieving show info from {indexer}'.format
                    (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name),
