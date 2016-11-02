@@ -601,6 +601,9 @@ def get_subtitle_description(subtitle):
     sub_id = text_type(subtitle.id)
     if hasattr(subtitle, 'hash') and subtitle.hash:
         desc = text_type(subtitle.hash)
+    # addic7ed only
+    if subtitle.provider_name == 'addic7ed' and hasattr(subtitle, 'version') and subtitle.version:
+        desc = text_type(subtitle.version)
     if hasattr(subtitle, 'filename') and subtitle.filename:
         desc = subtitle.filename
     elif hasattr(subtitle, 'name') and subtitle.name:
