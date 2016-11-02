@@ -643,7 +643,7 @@ class QueueItemSubtitle(ShowQueueItem):
 
 class QueueItemUpdate(ShowQueueItem):
     def __init__(self, show=None, season=None):
-        """QueuItem used for full show updates and partly show updates based on season.
+        """Use QueueItem to full show updates and partly show updates based on season.
 
         :param show: Show object to update.
         :param season: Season of the show to update, or list of seasons (int).
