@@ -117,17 +117,22 @@ class ShowQueue(generic_queue.GenericQueue):
 
         if self.isBeingAdded(show):
             raise CantUpdateShowException(
-                str(show.name) + u" is still being added, wait until it is finished before you update.")
+                u"{show_name} is still being added, wait until it is finished before you update."
+                .format(show_name=show.name))
 
         if self.isBeingUpdated(show):
             raise CantUpdateShowException(
-                str(show.name) + u" is already being updated by Post-processor or manually started, can't update again until it's done.")
+                u"{show_name} is already being updated by Post-processor or manually started, "
+                u"can't update again until it's done."
+                .format(show_name=show.name))
 
         if self.isInUpdateQueue(show):
             raise CantUpdateShowException(
-                str(show.name) + u" is in process of being updated by Post-processor or manually started, can't update again until it's done.")
+                u"{show_name} is in process of being updated by Post-processor or manually started, "
+                u"can't update again until it's done."
+                .format(show_name=show.name))
 
-        queueItemObj = QueueItemUpdate(show) if not season else QueueItemUpdate(show, season)
+        queueItemObj = QueueItemUpdate(show) if season is None else QueueItemUpdate(show, season)
 
         self.add_item(queueItemObj)
 
@@ -221,6 +226,7 @@ class ShowQueueActions(object):
     RENAME = 5
     SUBTITLE = 6
     REMOVE = 7
+    SEASON_UPDATE = 8
 
     names = {
         REFRESH: 'Refresh',
@@ -228,7 +234,8 @@ class ShowQueueActions(object):
         UPDATE: 'Update',
         RENAME: 'Rename',
         SUBTITLE: 'Subtitle',
-        REMOVE: 'Remove Show'
+        REMOVE: 'Remove Show',
+        SEASON_UPDATE: 'Season Update'
     }
 
 
@@ -636,17 +643,26 @@ class QueueItemSubtitle(ShowQueueItem):
 
 class QueueItemUpdate(ShowQueueItem):
     def __init__(self, show=None, season=None):
-        ShowQueueItem.__init__(self, ShowQueueActions.UPDATE, show)
+        """Use QueueItem to full show updates and partly show updates based on season.
+
+        :param show: Show object to update.
+        :param season: Season of the show to update, or list of seasons (int).
+        """
+        update_action = ShowQueueActions.UPDATE if season is None else ShowQueueActions.SEASON_UPDATE
+        ShowQueueItem.__init__(self, update_action, show)
         self.priority = generic_queue.QueuePriorities.HIGH
-        self.seasons = [season] if season and not isinstance(season, list) else season
+        self.seasons = [season] if season is not None and not isinstance(season, list) else season
 
     def run(self):
 
         ShowQueueItem.run(self)
 
         logger.log(u'{id}: Beginning update of {show}{season}'.format
-                   (id=self.show.indexerid, show=self.show.name,
-                    season=u' with season(s)' + u','.join(self.seasons) if self.seasons else u''), logger.DEBUG)
+                   (id=self.show.indexerid,
+                    show=self.show.name,
+                    season=u' with season(s) [{0}]'.
+                    format(u','.join(str(s) for s in self.seasons) if self.seasons else u'')
+                    ), logger.DEBUG)
 
         logger.log(u'{id}: Retrieving show info from {indexer}'.format
                    (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name),

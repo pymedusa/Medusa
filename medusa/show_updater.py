@@ -60,7 +60,7 @@ class ShowUpdater(object):
             # TODO: is not working for tvdbapiv2
             last_update = self.last_update.get_last_indexer_update(app.indexerApi(indexer).name)
 
-            if not last_update or last_update < time.time() - 86400 * update_max_weeks:
+            if not last_update or last_update < time.time() - 604800 * update_max_weeks:
                 # no entry in lastUpdate, or last update was too long ago, let's refresh the show for this indexer
                 refresh = True
             else:
@@ -87,27 +87,33 @@ class ShowUpdater(object):
 
         pi_list = []
 
-        try:
-            # Full refreshes
-            for show in refresh_shows:
-                # If the cur_show is not 'paused' then add to the showQueueSchedular
-                if not show.paused:
+        # Full refreshes
+        for show in refresh_shows:
+            # If the cur_show is not 'paused' then add to the showQueueScheduler
+            if not show.paused:
+                logger.info(u'Updating show: {show}', show=show.name)
+                try:
                     pi_list.append(app.showQueueScheduler.action.updateShow(show))
-                else:
-                    logger.info(u'Show update skipped, show: {show} is paused.', show=show.name)
+                except (CantUpdateShowException, CantRefreshShowException) as e:
+                    logger.warning(u'Automatic update failed. Error: {error}', error=e)
+                except Exception as e:
+                    logger.error(u'Automatic update failed: Error: {error}', error=e)
+            else:
+                logger.info(u'Show update skipped, show: {show} is paused.', show=show.name)
 
             # Only update expired season
-            for show in season_updates:
-                # If the cur_show is not 'paused' then add to the showQueueSchedular
-                if not show[0].paused:
-                    logger.info(u'Updating season {season} for show: {show}.', season=show[1], show=show[0].name)
+        for show in season_updates:
+            # If the cur_show is not 'paused' then add to the showQueueScheduler
+            if not show[0].paused:
+                logger.info(u'Updating season {season} for show: {show}.', season=show[1], show=show[0].name)
+                try:
                     pi_list.append(app.showQueueScheduler.action.updateShow(show[0], season=show[1]))
-                else:
-                    logger.info(u'Show update skipped, show: {show} is paused.', show=show[0].name)
-        except (CantUpdateShowException, CantRefreshShowException) as e:
-            logger.warning(u'Automatic update failed. Error: {error}', error=e)
-        except Exception as e:
-            logger.error(u'Automatic update failed: Error: {error}', error=e)
+                except (CantUpdateShowException, CantRefreshShowException) as e:
+                    logger.warning(u'Automatic update failed. Error: {error}', error=e)
+                except Exception as e:
+                    logger.error(u'Automatic update failed: Error: {error}', error=e)
+            else:
+                logger.info(u'Show update skipped, show: {show} is paused.', show=show[0].name)
 
         ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator("Daily Update", pi_list))
 
