@@ -17,8 +17,6 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Base class for indexer api's."""
 
-from __future__ import unicode_literals
-
 import cgi
 import getpass
 import logging

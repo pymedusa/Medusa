@@ -17,7 +17,7 @@ Copyright 2015 SmartBear Software
    limitations under the License.
 """
 
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import
 
 import sys
 import os
@@ -47,7 +47,7 @@ class UsersApi(object):
 
     def user_get(self, **kwargs):
         """
-        
+
         Returns basic information about the currently authenticated user.
 
         This method makes a synchronous HTTP request by default. To make an
@@ -120,7 +120,7 @@ class UsersApi(object):
 
     def user_favorites_get(self, **kwargs):
         """
-        
+
         Returns an array of favorite series for a given user, will be a blank array if no favorites exist.
 
         This method makes a synchronous HTTP request by default. To make an
@@ -193,7 +193,7 @@ class UsersApi(object):
 
     def user_favorites_id_put(self, id, **kwargs):
         """
-        
+
         Adds the supplied series ID to the user’s favorite’s list and returns the updated list.
 
         This method makes a synchronous HTTP request by default. To make an
@@ -272,7 +272,7 @@ class UsersApi(object):
 
     def user_favorites_id_delete(self, id, **kwargs):
         """
-        
+
         Deletes the given series ID from the user’s favorite’s list and returns the updated list.
 
         This method makes a synchronous HTTP request by default. To make an
@@ -351,7 +351,7 @@ class UsersApi(object):
 
     def user_ratings_get(self, **kwargs):
         """
-        
+
         Returns an array of ratings for the given user.
 
         This method makes a synchronous HTTP request by default. To make an
@@ -424,7 +424,7 @@ class UsersApi(object):
 
     def user_ratings_query_get(self, **kwargs):
         """
-        
+
         Returns an array of ratings for a given user that match the query.
 
         This method makes a synchronous HTTP request by default. To make an
@@ -500,7 +500,7 @@ class UsersApi(object):
 
     def user_ratings_query_params_get(self, **kwargs):
         """
-        
+
         Returns a list of query params for use in the `/user/ratings/query` route.
 
         This method makes a synchronous HTTP request by default. To make an
@@ -573,7 +573,7 @@ class UsersApi(object):
 
     def user_ratings_item_type_item_id_delete(self, item_type, item_id, **kwargs):
         """
-        
+
         This route deletes a given rating of a given type.
 
         This method makes a synchronous HTTP request by default. To make an
@@ -658,7 +658,7 @@ class UsersApi(object):
 
     def user_ratings_item_type_item_id_item_rating_put(self, item_type, item_id, item_rating, **kwargs):
         """
-        
+
         This route updates a given rating of a given type.
 
         This method makes a synchronous HTTP request by default. To make an
