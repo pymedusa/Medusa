@@ -100,7 +100,7 @@ class ShowUpdater(object):
             for show in season_updates:
                 # If the cur_show is not 'paused' then add to the showQueueSchedular
                 if not show[0].paused:
-                    logger.info(u'Updating season {season} for show: {show}.', season=show[0], show=show[0].name)
+                    logger.info(u'Updating season {season} for show: {show}.', season=show[1], show=show[0].name)
                     pi_list.append(app.showQueueScheduler.action.updateShow(show[0], season=show[1]))
                 else:
                     logger.info(u'Show update skipped, show: {show} is paused.', show=show[0].name)
