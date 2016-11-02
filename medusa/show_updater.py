@@ -92,16 +92,21 @@ class ShowUpdater(object):
             for show in refresh_shows:
                 # If the cur_show is not 'paused' then add to the showQueueSchedular
                 if not show.paused:
+                    logger.info(u'Updating show: {show}', show=show.name)
                     pi_list.append(app.showQueueScheduler.action.updateShow(show))
                 else:
                     logger.info(u'Show update skipped, show: {show} is paused.', show=show.name)
 
             # Only update expired season
             for show in season_updates:
+                if show[0].indexerid in [show.indexerid for show in refresh_shows]:
+                    logger.info(u'Aborting updating season {season} for show: {show} '
+                                u'because show was already full updated.', season=show[1], show=show[0].name)
+                    continue
                 # If the cur_show is not 'paused' then add to the showQueueSchedular
                 if not show[0].paused:
                     logger.info(u'Updating season {season} for show: {show}.', season=show[1], show=show[0].name)
-                    pi_list.append(app.showQueueScheduler.action.updateShow(show[0], season=show[1]))
+                    pi_list.append(app.showQueueScheduler.action.updateShow(show[0], season=show[1]), force=True)
                 else:
                     logger.info(u'Show update skipped, show: {show} is paused.', show=show[0].name)
         except (CantUpdateShowException, CantRefreshShowException) as e:

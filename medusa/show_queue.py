@@ -113,13 +113,13 @@ class ShowQueue(generic_queue.GenericQueue):
 
     loadingShowList = property(_getLoadingShowList)
 
-    def updateShow(self, show, season=None):
+    def updateShow(self, show, season=None, force=False):
 
         if self.isBeingAdded(show):
             raise CantUpdateShowException(
                 str(show.name) + u" is still being added, wait until it is finished before you update.")
 
-        if self.isBeingUpdated(show):
+        if self.isBeingUpdated(show) and not force:
             raise CantUpdateShowException(
                 str(show.name) + u" is already being updated by Post-processor or manually started, can't update again until it's done.")
 
