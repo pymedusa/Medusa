@@ -90,7 +90,7 @@ class ShowUpdater(object):
         try:
             # Full refreshes
             for show in refresh_shows:
-                # If the cur_show is not 'paused' then add to the showQueueSchedular
+                # If the cur_show is not 'paused' then add to the showQueueScheduler
                 if not show.paused:
                     pi_list.append(app.showQueueScheduler.action.updateShow(show))
                 else:
@@ -98,7 +98,7 @@ class ShowUpdater(object):
 
             # Only update expired season
             for show in season_updates:
-                # If the cur_show is not 'paused' then add to the showQueueSchedular
+                # If the cur_show is not 'paused' then add to the showQueueScheduler
                 if not show[0].paused:
                     logger.info(u'Updating season {season} for show: {show}.', season=show[1], show=show[0].name)
                     pi_list.append(app.showQueueScheduler.action.updateShow(show[0], season=show[1]))

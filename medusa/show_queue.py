@@ -117,15 +117,20 @@ class ShowQueue(generic_queue.GenericQueue):
 
         if self.isBeingAdded(show):
             raise CantUpdateShowException(
-                str(show.name) + u" is still being added, wait until it is finished before you update.")
+                u"{show_name} is still being added, wait until it is finished before you update."
+                .format(show_name=show.name))
 
         if self.isBeingUpdated(show):
             raise CantUpdateShowException(
-                str(show.name) + u" is already being updated by Post-processor or manually started, can't update again until it's done.")
+                u"{show_name} is already being updated by Post-processor or manually started, "
+                u"can't update again until it's done."
+                .format(show_name=show.name))
 
         if self.isInUpdateQueue(show):
             raise CantUpdateShowException(
-                str(show.name) + u" is in process of being updated by Post-processor or manually started, can't update again until it's done.")
+                u"{show_name} is in process of being updated by Post-processor or manually started, "
+                u"can't update again until it's done."
+                .format(show_name=show.name))
 
         queueItemObj = QueueItemUpdate(show) if not season else QueueItemUpdate(show, season)
 
@@ -221,6 +226,7 @@ class ShowQueueActions(object):
     RENAME = 5
     SUBTITLE = 6
     REMOVE = 7
+    SEASON_UPDATE = 8
 
     names = {
         REFRESH: 'Refresh',
@@ -636,7 +642,8 @@ class QueueItemSubtitle(ShowQueueItem):
 
 class QueueItemUpdate(ShowQueueItem):
     def __init__(self, show=None, season=None):
-        ShowQueueItem.__init__(self, ShowQueueActions.UPDATE, show)
+        update_action = ShowQueueActions.UPDATE if not season else ShowQueueActions.SEASON_UDPATE
+        ShowQueueItem.__init__(self, update_action, show)
         self.priority = generic_queue.QueuePriorities.HIGH
         self.seasons = [season] if season and not isinstance(season, list) else season
 
