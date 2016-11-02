@@ -98,6 +98,10 @@ class ShowUpdater(object):
 
             # Only update expired season
             for show in season_updates:
+                if show.indexerid in [show.indexerid for show in refresh_shows]:
+                    logger.info(u'Aborting updating season {season} for show: {show} '
+                                u'because show was already full updated.', season=show[0], show=show[0].name)
+                    continue
                 # If the cur_show is not 'paused' then add to the showQueueSchedular
                 if not show[0].paused:
                     logger.info(u'Updating season {season} for show: {show}.', season=show[1], show=show[0].name)
