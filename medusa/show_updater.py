@@ -87,7 +87,6 @@ class ShowUpdater(object):
 
         pi_list = []
 
-
         # Full refreshes
         for show in refresh_shows:
             # If the cur_show is not 'paused' then add to the showQueueScheduler
@@ -115,7 +114,6 @@ class ShowUpdater(object):
                     logger.error(u'Automatic update failed: Error: {error}', error=e)
             else:
                 logger.info(u'Show update skipped, show: {show} is paused.', show=show[0].name)
-
 
         ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator("Daily Update", pi_list))
 
