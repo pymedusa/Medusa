@@ -453,9 +453,6 @@ class TVDBv2(BaseIndexer):
             if v is not None:
                 if k in ['banner', 'fanart', 'poster']:
                     v = self.config['artwork_prefix'] % v
-                else:
-                    v = self._clean_data(v)
-
             self._set_show_data(sid, k, v)
 
         # get episode data
