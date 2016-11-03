@@ -111,8 +111,10 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             if url.endswith(GenericProvider.TORRENT) and filename.endswith(GenericProvider.NZB):
                 filename = replace_extension(filename, GenericProvider.TORRENT)
 
+            verify = False if self.public else None
+
             if download_file(url, filename, session=self.session, headers=self.headers,
-                             hooks={'response': self.get_url_hook}):
+                             hooks={'response': self.get_url_hook}, verify=verify):
                 if self._verify_download(filename):
                     logger.log('Saved result to %s' % filename, logger.INFO)
                     return True
