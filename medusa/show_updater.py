@@ -40,10 +40,11 @@ class ShowUpdater(object):
 
         self.amActive = True
         refresh_shows = []  # A list of shows, that need to be refreshed
-        season_updates = []
+        season_updates = []  # A list of show seasons that have passed their next_update timestamp
         update_max_weeks = 12
 
         network_timezones.update_network_dict()
+        logger.info(u'Started periodic show updates')
 
         # Initialize the indexer_update table. Add seasons with next_update, if they don't already exist.
         self.last_update.initialize_indexer_update(app.showList)
@@ -52,17 +53,14 @@ class ShowUpdater(object):
         expired_seasons = self.last_update.expired_seasons()
 
         for indexer in expired_seasons:
-
             # Set refresh to True, to force refreshing of the entire show. Making sure per-season
-            # updating is disabled.
-            # TODO: Change to False, when per season updating has been fixed.
-            refresh = True
+            refresh = False
 
             # Query the indexer for changed shows, since last update
             # refresh network timezones
             # network_timezones.update_network_dict()
 
-            # TODO: is not working for tvdbapiv2
+            # Returns in the following format: {dict} {indexer: {indexerid: {season: next_update_timestamp} }}
             last_update = self.last_update.get_last_indexer_update(app.indexerApi(indexer).name)
 
             if not last_update or last_update < time.time() - 604800 * update_max_weeks:
@@ -98,7 +96,7 @@ class ShowUpdater(object):
         for show in refresh_shows:
             # If the cur_show is not 'paused' then add to the showQueueScheduler
             if not show.paused:
-                logger.info(u'Updating show: {show}', show=show.name)
+                logger.info(u'Full update on show: {show}', show=show.name)
                 try:
                     pi_list.append(app.showQueueScheduler.action.updateShow(show))
                 except (CantUpdateShowException, CantRefreshShowException) as e:
@@ -108,7 +106,7 @@ class ShowUpdater(object):
             else:
                 logger.info(u'Show update skipped, show: {show} is paused.', show=show.name)
 
-            # Only update expired season
+        # Only update expired season
         for show in season_updates:
             # If the cur_show is not 'paused' then add to the showQueueScheduler
             if not show[0].paused:
@@ -124,7 +122,10 @@ class ShowUpdater(object):
 
         ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator("Daily Update", pi_list))
 
-        logger.info(u'Completed full update on all shows')
+        if refresh_shows or season_updates:
+            logger.info(u'Completed updates on shows')
+        else:
+            logger.info(u'Completed but there was nothing to update')
 
         self.amActive = False
 
