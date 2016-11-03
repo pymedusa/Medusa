@@ -52,7 +52,12 @@ class ShowUpdater(object):
         expired_seasons = self.last_update.expired_seasons()
 
         for indexer in expired_seasons:
-            refresh = False
+
+            # Set refresh to True, to force refreshing of the entire show. Making sure per-season
+            # updating is disabled.
+            # TODO: Change to False, when per season updating has been fixed.
+            refresh = True
+
             # Query the indexer for changed shows, since last update
             # refresh network timezones
             # network_timezones.update_network_dict()
@@ -68,17 +73,19 @@ class ShowUpdater(object):
                 t = app.indexerApi(indexer).indexer(**indexer_api_params)
                 updated_shows = t.get_last_updated_series(last_update, update_max_weeks)
 
+            # Move through each show from the expired season cache table. And run the full show or per season update.
             for show_id in expired_seasons[indexer]:
-                # Loop through the shows
+                # Loop through the shows.
                 show = Show.find_by_id(app.showList, indexer, show_id)
                 if refresh:
-                    # Marked as a refresh, we don't need to check on season
+                    # Marked as a refresh, we don't need to check on season.
                     refresh_shows.append(show)
                 else:
                     # We know there is a season
                     if updated_shows and show_id in [_.id for _ in updated_shows]:
-                        # Refresh this season, because it was expired AND it's in the indexer updated shows list. Meaning
-                        # A change to a episode occurred. Altough we don't update all seasons. But only the expired one.
+                        # Refresh this season, because it was expired AND it's in the indexer updated shows list.
+                        # Meaning A change to a episode occurred. Altough we don't update all seasons. But only
+                        # the expired one.
                         for season in expired_seasons[indexer][show_id]:
                             season_updates.append((show, season))
 
