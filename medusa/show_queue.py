@@ -700,7 +700,7 @@ class QueueItemUpdate(ShowQueueItem):
             logger.log(traceback.format_exc(), logger.ERROR)
 
         # get episode list from DB
-        DBEpList = self.show.load_episodes_from_db()
+        DBEpList = self.show.load_episodes_from_db(self.seasons)
 
         # get episode list from the indexer
         try:

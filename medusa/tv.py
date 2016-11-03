@@ -666,8 +666,10 @@ class TVShow(TVObject):
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 
-    def load_episodes_from_db(self):
+    def load_episodes_from_db(self, seasons=None):
         """Load episodes from database.
+
+        @param: seasons: list of seasons and their episodes to load from db
 
         :return:
         :rtype: dict(int -> dict(int -> bool))
@@ -684,8 +686,12 @@ class TVShow(TVObject):
                    b'JOIN '
                    b'  tv_shows '
                    b'WHERE '
-                   b'  showid = indexer_id and showid = ?')
-            sql_results = main_db_con.select(sql, [self.indexerid])
+                   b'  showid = indexer_id AND showid = ?')
+            if seasons:
+                sql += b' AND season in ?'
+                sql_results = main_db_con.select(sql, [self.indexerid, ','.join(seasons)])
+            else:
+                sql_results = main_db_con.select(sql, [self.indexerid])
         except Exception as error:
             logger.log(u'{id}: Could not load episodes from the DB. Error: {error_msg}'.format
                        (id=self.indexerid, error_msg=error), logger.ERROR)
