@@ -242,7 +242,6 @@ class ShowQueue(generic_queue.GenericQueue):
         return queue_item_obj
 
 
-
 class ShowQueueItem(generic_queue.QueueItem):
     """
     Represents an item in the queue waiting to be executed

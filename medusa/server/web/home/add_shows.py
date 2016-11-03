@@ -11,7 +11,7 @@ import medusa as app
 from requests.compat import unquote_plus
 from simpleanidb import REQUEST_HOT
 from six import iteritems
-from tornado.routes import route
+from tornroutes import route
 from traktor import TraktApi
 from .handler import Home
 from ..core import PageTemplate

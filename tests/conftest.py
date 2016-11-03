@@ -1,3 +1,4 @@
+# coding=utf-8
 """Configuration for pytest."""
 import logging
 from logging.handlers import RotatingFileHandler
@@ -9,6 +10,7 @@ from github.Issue import Issue
 from github.MainClass import Github
 from github.Organization import Organization
 from github.Repository import Repository
+import medusa as app
 from medusa import cache
 from medusa.common import DOWNLOADED, Quality
 from medusa.helper.common import dateTimeFormat
@@ -77,6 +79,15 @@ def _patch_object(monkeypatch, target, **kwargs):
 @pytest.fixture(scope="session", autouse=True)
 def execute_before_any_test():
     cache.fallback()
+
+
+@pytest.fixture
+def app_config(monkeypatch):
+    def config(name, value):
+        monkeypatch.setattr(app, name, value)
+        return value
+
+    return config
 
 
 @pytest.fixture

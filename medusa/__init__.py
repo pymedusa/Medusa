@@ -95,7 +95,7 @@ RARBG_APPID = 'medusa'
 SECURE_TOKEN = 'medusa_user'
 
 # static configuration
-LOCALE = None
+LOCALE = None, None
 OS_USER = None
 OPENSSL_VERSION = None
 APP_VERSION = None

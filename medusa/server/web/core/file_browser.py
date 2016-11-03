@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import json
 import os
 
-from tornado.routes import route
+from tornroutes import route
 from .base import WebRoot
 from ....browser import list_folders
 

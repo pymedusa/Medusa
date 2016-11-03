@@ -22,8 +22,8 @@ from tornado.escape import utf8
 from tornado.gen import coroutine
 from tornado.ioloop import IOLoop
 from tornado.process import cpu_count
-from tornado.routes import route
 from tornado.web import HTTPError, RequestHandler, authenticated
+from tornroutes import route
 from ...api.v1.core import function_mapper
 from .... import (
     classes, db, exception_handler, helpers, logger, network_timezones, ui
