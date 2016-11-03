@@ -603,6 +603,8 @@ def get_subtitle_description(subtitle):
         desc = text_type(subtitle.hash)
     if hasattr(subtitle, 'filename') and subtitle.filename:
         desc = subtitle.filename
+    elif hasattr(subtitle, 'version') and subtitle.version:
+        desc = text_type(subtitle.version)
     elif hasattr(subtitle, 'name') and subtitle.name:
         desc = subtitle.name
     if hasattr(subtitle, 'release') and subtitle.release:
