@@ -2220,8 +2220,8 @@ class TVEpisode(TVObject):
         elif app.helpers.isMediaFile(self.location):
             # leave propers alone, you have to either post-process them or manually change them back
             if self.status not in Quality.SNATCHED_PROPER + Quality.DOWNLOADED + Quality.SNATCHED + Quality.ARCHIVED:
-                old_status = self.status.upper()
-                self.status = Quality.statusFromName(self.location, anime=self.show.is_anime).upper()
+                old_status = self.status
+                self.status = Quality.statusFromName(self.location, anime=self.show.is_anime)
                 logger.log(u"{id}: {show} {ep} status changed from '{old_status}' to '{new_status}'".format
                            (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
                             old_status=old_status, new_status=self.status), logger.DEBUG)
@@ -2235,7 +2235,7 @@ class TVEpisode(TVObject):
         else:
             logger.log(u"{id}: {show} {ep} status changed from '{old_status}' to 'UNKNOWN'".format
                        (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
-                        old_status=self.status.upper()), logger.WARNING)
+                        old_status=self.status), logger.WARNING)
             self.status = UNKNOWN
 
     def __load_from_nfo(self, location):
