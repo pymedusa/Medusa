@@ -20,10 +20,10 @@
 import os.path
 
 import medusa as app
-from medusa.helpers import get_image_size
 from . import helpers, logger
 from .helper.common import try_int
 from .helper.exceptions import ShowDirectoryNotFoundException
+from .helpers import get_image_size
 from .metadata.generic import GenericMetadata
 
 

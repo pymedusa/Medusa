@@ -22,10 +22,9 @@ import os
 import re
 
 import medusa as app
-from medusa import exception_handler
 from six import iterkeys
 from tmdb_api.tmdb_api import TMDB
-from .. import helpers, logger
+from .. import exception_handler, helpers, logger
 from ..helper.common import replace_extension
 from ..helper.exceptions import ex
 from ..metadata import helpers as metadata_helpers
