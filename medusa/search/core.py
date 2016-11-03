@@ -380,10 +380,6 @@ def wantedEpisodes(show, fromDate):
     :return: list of wanted episodes
     """
     wanted = []
-    if show.paused:
-        logger.log(u"Not checking for episodes of %s because the show is paused" % show.name, logger.DEBUG)
-        return wanted
-
     allowed_qualities, preferred_qualities = common.Quality.splitQuality(show.quality)
     all_qualities = list(set(allowed_qualities + preferred_qualities))
 
@@ -430,8 +426,10 @@ def searchForNeededEpisodes():
     episodes = []
 
     for curShow in show_list:
-        if not curShow.paused:
-            episodes.extend(wantedEpisodes(curShow, fromDate))
+        if curShow.paused:
+            logger.log(u"Not checking for needed episodes of %s because the show is paused" % curShow.name, logger.DEBUG)
+            continue
+        episodes.extend(wantedEpisodes(curShow, fromDate))
 
     if not episodes:
         # nothing wanted so early out, ie: avoid whatever abritrarily
