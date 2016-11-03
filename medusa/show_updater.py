@@ -52,7 +52,12 @@ class ShowUpdater(object):
         expired_seasons = self.last_update.expired_seasons()
 
         for indexer in expired_seasons:
-            refresh = False
+
+            # Set refresh to True, to force refreshing of the entire show. Making sure per-season
+            # updating is disabled.
+            # TODO: Change to False, when per season updating has been fixed.
+            refresh = True
+
             # Query the indexer for changed shows, since last update
             # refresh network timezones
             # network_timezones.update_network_dict()
