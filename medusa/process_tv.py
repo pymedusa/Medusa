@@ -21,9 +21,9 @@ import shutil
 import stat
 
 from babelfish import Language
+import knowit
 import medusa as app
 import shutil_custom
-from subliminal import refine, scan_video
 from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
@@ -683,6 +683,6 @@ def get_embedded_subtitles(video_path):
     :return:
     :rtype: set of Language
     """
-    subliminal_video = scan_video(video_path)
-    refine(subliminal_video, episode_refiners=('metadata',))
-    return subliminal_video.subtitle_languages
+    knowledge = knowit.know(video_path)
+    tracks = knowledge.get('subtitle', [])
+    return [s['language'] for s in tracks if 'language' in s]
