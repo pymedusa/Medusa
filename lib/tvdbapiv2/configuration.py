@@ -18,7 +18,7 @@ Copyright 2015 SmartBear Software
    ref: https://github.com/swagger-api/swagger-codegen
 """
 
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import
 
 import base64
 from requests.packages import urllib3

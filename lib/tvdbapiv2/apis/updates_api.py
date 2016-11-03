@@ -17,7 +17,7 @@ Copyright 2015 SmartBear Software
    limitations under the License.
 """
 
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import
 
 import sys
 import os
@@ -47,7 +47,7 @@ class UpdatesApi(object):
 
     def updated_query_get(self, from_time, **kwargs):
         """
-        
+
         Returns an array of series that have changed in a maximum of one week blocks since the provided `fromTime`.\n\n\nThe user may specify a `toTime` to grab results for less than a week. Any timespan larger than a week will be reduced down to one week automatically.
 
         This method makes a synchronous HTTP request by default. To make an
@@ -132,7 +132,7 @@ class UpdatesApi(object):
 
     def updated_query_params_get(self, **kwargs):
         """
-        
+
         Returns an array of valid query keys for the `/updated/query/params` route.
 
         This method makes a synchronous HTTP request by default. To make an
