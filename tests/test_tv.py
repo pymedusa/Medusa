@@ -1,7 +1,7 @@
 # coding=utf-8
 """Tests for medusa.tv.py."""
 
-from medusa.common import DOWNLOADED, Quality, SNATCHED, SNATCHED_PROPER, WANTED
+from medusa.common import ARCHIVED, DOWNLOADED, Quality, SNATCHED, SNATCHED_PROPER, WANTED
 from medusa.tv import TVEpisode
 import pytest
 
@@ -110,6 +110,14 @@ import pytest
         'allowed_qualities': [Quality.HDTV, Quality.HDBLURAY],
         'preferred_qualities': [],
         'expected': False
+    },
+    {  # p13: Downloaded Unknown and found 720p HDTV: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.UNKNOWN,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.HDTV, Quality.HDBLURAY],
+        'preferred_qualities': [],
+        'expected': True
     }
 ])
 def test_should_replace(p):
