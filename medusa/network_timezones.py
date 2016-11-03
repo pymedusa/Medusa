@@ -41,6 +41,7 @@ missing_network_timezones = set()
 def update_network_dict():
     """Update timezone information from Medusa repositories"""
 
+    logger.log(u'Started updating network timezones', logger.DEBUG)
     url = 'https://cdn.pymedusa.com/sb_network_timezones/network_timezones.txt'
     response = helpers.getURL(url, session=helpers.make_session(), returns='response')
     if not response or not response.text:

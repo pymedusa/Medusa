@@ -45,6 +45,8 @@ class ShowUpdater(object):
 
         network_timezones.update_network_dict()
 
+        logger.info(u'Started full updating on all shows')
+
         # Initialize the indexer_update table. Add seasons with next_update, if they don't already exist.
         self.last_update.initialize_indexer_update(app.showList)
 
