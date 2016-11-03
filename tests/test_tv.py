@@ -102,6 +102,14 @@ import pytest
         'allowed_qualities': [Quality.HDTV, Quality.HDBLURAY],
         'preferred_qualities': [Quality.HDBLURAY],
         'expected': True
+    },
+    {  # p12: Archived 720p HDTV and found 720p BluRay: no
+        'ep_status': ARCHIVED,
+        'cur_quality': Quality.HDTV,
+        'new_quality': Quality.HDBLURAY,
+        'allowed_qualities': [Quality.HDTV, Quality.HDBLURAY],
+        'preferred_qualities': [],
+        'expected': False
     }
 ])
 def test_should_replace(p):
