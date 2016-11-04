@@ -116,7 +116,7 @@ def get_network_timezone(network, _network_dict):
     # Get the name of the networks timezone from _network_dict
     network_tz_name = _network_dict[network] if network in _network_dict else None
 
-    if network_tz_name is None and network not in missing_network_timezones:
+    if not network_tz_name and network and network not in missing_network_timezones:
         missing_network_timezones.add(network)
         if network is not None:
             logger.log(u'Missing time zone for network: %s' % network, logger.ERROR)
