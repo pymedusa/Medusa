@@ -144,11 +144,11 @@
                                     <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${cur_action.proper_tags.replace('|', ', ')}"/>
                                 % endif
                             % else:
-                                <img src="images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="missing provider"/>
+                                <img src="images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="${Missing provider: cur_action.provider}"/>
                             % endif
                         % endif
                         % if composite.status == FAILED:
-                                <img src="images/no16.png" width="16" height="16" style="vertical-align:middle;" title="${provider.name} download failed: ${cur_action.resource}"/>
+                                <img src="images/no16.png" width="16" height="16" style="vertical-align:middle;" title="${provider.name if provider else cur_action.provider} download failed: ${cur_action.resource}"/>
                         % endif
                     % endfor
                 </td>
