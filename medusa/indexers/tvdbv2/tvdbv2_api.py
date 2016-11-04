@@ -312,16 +312,16 @@ class TVDBv2(BaseIndexer):
 
         This interface will be improved in future versions.
         """
-        key_mapping = {'file_name': 'bannerpath', 'language_id': 'language', 'key_type': 'bannertype', 'resolution': 'bannertype2',
-                       'ratings_info': {'count': 'ratingcount', 'average': 'rating'}, 'thumbnail': 'thumbnailpath', 'sub_key': 'sub_key', 'id': 'id'}
+        key_mapping = {'file_name': 'bannerpath', 'language_id': 'language', 'key_type': 'bannertype',
+                       'resolution': 'bannertype2', 'ratings_info': {'count': 'ratingcount', 'average': 'rating'},
+                       'thumbnail': 'thumbnailpath', 'sub_key': 'sub_key', 'id': 'id'}
 
         search_for_image_type = self.config['image_type']
 
         log().debug('Getting show banners for %s', sid)
         _images = {}
 
-        # Let's fget the different type of images available for this series
-
+        # Let's get the different types of images available for this series
         try:
             series_images_count = self.series_api.series_id_images_get(sid, accept_language=self.config['language'])
         except Exception as e:
@@ -331,7 +331,8 @@ class TVDBv2(BaseIndexer):
         for image_type, image_count in self._object_to_dict(series_images_count).iteritems():
             try:
                 if search_for_image_type and search_for_image_type != image_type:
-                    if image_type == 'poster' and search_for_image_type != 'poster_thumb':
+                    # We want to use the 'poster' image also for the 'poster_thumb' type
+                    if image_type != 'poster' or image_type == 'poster' and search_for_image_type != 'poster_thumb':
                         continue
 
                 if not image_count:
@@ -340,7 +341,8 @@ class TVDBv2(BaseIndexer):
                 if image_type not in _images:
                     _images[image_type] = {}
 
-                images = self.series_api.series_id_images_query_get(sid, key_type=image_type)
+                images = self.series_api.series_id_images_query_get(sid, key_type=image_type,
+                                                                    accept_language=self.config['language'])
                 for image in images.data:
                     # Store the images for each resolution available
                     if image.resolution not in _images[image_type]:
