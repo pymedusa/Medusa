@@ -144,7 +144,7 @@
                                     <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${cur_action.proper_tags.replace('|', ', ')}"/>
                                 % endif
                             % else:
-                                <img src="images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="${Missing provider: cur_action.provider}"/>
+                                <img src="images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="Missing provider: ${cur_action.provider}"/>
                             % endif
                         % endif
                         % if composite.status == FAILED:
