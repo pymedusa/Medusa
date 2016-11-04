@@ -551,12 +551,16 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
                         if has_matching_unknown_subtitles(cur_video_file_path):
                             result.output += logHelper(u"Found embedded unknown subtitles and we don't want to ignore them. "
                                                        u"Continuing the post-process of this file: %s" % cur_video_file)
+
                         else:
                             associated_files = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
                             if not [f for f in associated_files if f[-3:] in subtitle_extensions]:
                                 result.output += logHelper(u"No subtitles associated. Postponing the post-process of this file:"
                                                            u" %s" % cur_video_file, logger.DEBUG)
                                 continue
+                            elif get_embedded_subtitles(cur_video_file_path) in app.SUBTITLES_LANGUAGES:
+                                result.output += logHelper(u"Found wanted embedded subtitles. "
+                                                           u"Continuing the post-process of this file: %s" % cur_video_file)
                             else:
                                 result.output += logHelper(u"Found subtitles associated. "
                                                            u"Continuing the post-process of this file: %s" % cur_video_file)
