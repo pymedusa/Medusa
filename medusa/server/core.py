@@ -8,7 +8,7 @@ import threading
 import medusa as app
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
-from tornado.web import Application, RedirectHandler, StaticFileHandler
+from tornado.web import Application, RedirectHandler, StaticFileHandler, url
 from tornroutes import route
 from .api.v1.core import ApiHandler
 from .api.v2.config import ConfigHandler
@@ -120,7 +120,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             (r'{base}/calendar'.format(base=self.options['web_root']), CalendarHandler),
 
             # webui handlers
-        ] + route.get_routes(self.options['web_root']))
+        ] + self._get_webui_routes())
 
         self.app.add_handlers('.*$', get_apiv2_handlers(self.options['api_v2_root']))
 
@@ -154,6 +154,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             (r'{base}/videos/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
              {'path': self.video_root})
         ])
+
+    def _get_webui_routes(self):
+        webroot = self.options['web_root']
+        route._routes = list(reversed([url(webroot + u.regex.pattern, u.handler_class, u.kwargs, u.name) for u in route.get_routes()]))
+        return route.get_routes()
 
     def run(self):
         if self.enable_https:
