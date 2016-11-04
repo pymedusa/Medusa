@@ -143,7 +143,8 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                     if error_code == 5:
                         # 5 = Too many requests per second
                         log_level = logger.INFO
-                    elif error_code not in (8, 10, 12, 14, 20):
+                    elif error_code not in (4, 8, 10, 12, 14, 20):
+                        # 4 = Invalid token. Use get_token for a new one!
                         # 8, 10, 12, 14 = Cant find * in database. Are you sure this * exists?
                         # 20 = No results found
                         log_level = logger.WARNING
