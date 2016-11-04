@@ -74,7 +74,14 @@ class ShowUpdater(object):
             # Move through each show from the expired season cache table. And run the full show or per season update.
             for show_id in expired_seasons[indexer]:
                 # Loop through the shows.
+
+                # Get the show object and check, to prevent issues further down the line.
                 show = Show.find_by_id(app.showList, indexer, show_id)
+                if not show:
+                    logger.warning(u'Could not get show object for indexer id: {show_id} '
+                                   u'and indexer: {indexer}', show_id=show_id, indexer=indexer)
+                    continue
+
                 if refresh:
                     # Marked as a refresh, we don't need to check on season.
                     refresh_shows.append(show)
