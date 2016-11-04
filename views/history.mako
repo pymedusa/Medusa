@@ -148,7 +148,7 @@
                             % endif
                         % endif
                         % if composite.status == FAILED:
-                                <img src="images/no16.png" width="16" height="16" style="vertical-align:middle;" title="${provider.name} download failed: ${cur_action.resource}"/>
+                                <img src="images/no16.png" width="16" height="16" style="vertical-align:middle;" title="${provider.name if provider else 'Unknown provider'} download failed: ${cur_action.resource}"/>
                         % endif
                     % endfor
                 </td>
