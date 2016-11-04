@@ -80,7 +80,7 @@ def config(monkeypatch, app_config):
 
 
 @pytest.mark.gen_test
-def test_config(http_client, create_url, auth_headers, config):
+def test_config_get(http_client, create_url, auth_headers, config):
     # given
     expected = config
 
@@ -102,7 +102,7 @@ def test_config(http_client, create_url, auth_headers, config):
     'githubUrl',
     'dbFilename',
 ])
-def test_config_detailed(http_client, create_url, auth_headers, config, query):
+def test_config_get_detailed(http_client, create_url, auth_headers, config, query):
     # given
     expected = config[query]
     url = create_url('/config/{0}/'.format(query))
@@ -116,7 +116,7 @@ def test_config_detailed(http_client, create_url, auth_headers, config, query):
 
 
 @pytest.mark.gen_test
-def test_config_detailed_not_found(http_client, create_url, auth_headers, config):
+def test_config_get_detailed_not_found(http_client, create_url, auth_headers):
     # given
     url = create_url('/config/abcdef/')
 
