@@ -27,16 +27,18 @@ import os
 import pkgutil
 import re
 import sys
+
+from collections import OrderedDict
 from inspect import getargspec
 from logging import NullHandler
 from logging.handlers import RotatingFileHandler
-
 import medusa as app
 from requests.compat import quote
 from six import itervalues, text_type
 import subliminal
 from tornado.log import access_log, app_log, gen_log
 import traktor
+
 from . import classes
 from .helper.common import dateTimeFormat
 
@@ -323,6 +325,24 @@ class LogLine(object):
         result = self.traceback_lines[-1] if self.traceback_lines else self.message
         return result[:1000]
 
+    def to_json(self):
+        """Dict representation."""
+        result = OrderedDict([
+            ('timestamp', self.timestamp),
+            ('level', self.level_name),
+            ('commit', self.curhash),
+            ('thread', self.thread_name),
+            ('message', self.message),
+        ])
+        if self.thread_id is not None:
+            result['threadId'] = self.thread_id
+        if self.extra:
+            result['extra'] = self.extra
+        if self.traceback_lines:
+            result['traceback'] = self.traceback_lines
+
+        return result
+
     def is_loglevel_valid(self, min_level=None):
         """Return true if the log level is valid and supported also taking into consideration min_level if defined.
 
@@ -463,7 +483,7 @@ class ContextFilter(logging.Filter):
             record.levelname = logging.getLevelName(record.levelno)
 
         # add exception traceback for errors
-        if record.levelno == ERROR:
+        if record.levelno == ERROR and record.exc_info is not False:
             exc_info = sys.exc_info()
             record.exc_info = exc_info if exc_info != (None, None, None) else None
 

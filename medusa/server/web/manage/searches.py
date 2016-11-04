@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 import medusa as app
-from tornado.routes import route
+from tornroutes import route
 from .handler import Manage
 from ..core import PageTemplate
 from .... import (

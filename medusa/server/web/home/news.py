@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 import markdown2
 import medusa as app
-from tornado.routes import route
+from tornroutes import route
 from .handler import Home
 from ..core import PageTemplate
 from .... import logger

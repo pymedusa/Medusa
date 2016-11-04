@@ -10,7 +10,7 @@ import json
 import os
 
 import medusa as app
-from tornado.routes import route
+from tornroutes import route
 from .handler import Config
 from ..core import PageTemplate
 from .... import (

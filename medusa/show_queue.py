@@ -35,7 +35,46 @@ from .helpers import chmodAsParent, get_showname_from_indexer, makeDir
 from .tv import TVShow
 
 
+class ShowQueueActions(object):
+
+    def __init__(self):
+        pass
+
+    REFRESH = 1
+    ADD = 2
+    UPDATE = 3
+    RENAME = 5
+    SUBTITLE = 6
+    REMOVE = 7
+    SEASON_UPDATE = 8
+
+    names = {
+        REFRESH: 'Refresh',
+        ADD: 'Add',
+        UPDATE: 'Update',
+        RENAME: 'Rename',
+        SUBTITLE: 'Subtitle',
+        REMOVE: 'Remove Show',
+        SEASON_UPDATE: 'Season Update',
+    }
+
+
 class ShowQueue(generic_queue.GenericQueue):
+
+    mappings = {
+        ShowQueueActions.ADD: 'This show is in the process of being downloaded - the info below is incomplete.',
+        ShowQueueActions.UPDATE: 'The information on this page is in the process of being updated.',
+        ShowQueueActions.SEASON_UPDATE: 'The information on this page is in the process of being updated.',
+        ShowQueueActions.REFRESH: 'The episodes below are currently being refreshed from disk',
+        ShowQueueActions.SUBTITLE: 'Currently downloading subtitles for this show',
+    }
+    queue_mappings = {
+        ShowQueueActions.REFRESH: 'This show is queued to be refreshed.',
+        ShowQueueActions.UPDATE: 'This show is queued and awaiting an update.',
+        ShowQueueActions.SEASON_UPDATE: 'This show is queued and awaiting a season update.',
+        ShowQueueActions.SUBTITLE: 'This show is queued and awaiting subtitles download.',
+    }
+
     def __init__(self):
         generic_queue.GenericQueue.__init__(self)
         self.queue_name = "SHOWQUEUE"
@@ -86,30 +125,18 @@ class ShowQueue(generic_queue.GenericQueue):
         return [x for x in self.queue + [self.currentItem] if x is not None and x.isLoading]
 
     def getQueueActionMessage(self, show):
-        show_message = None
+        return self.get_queue_action(show)[1]
 
-        if self.isBeingAdded(show):
-            show_message = 'This show is in the process of being downloaded - the info below is incomplete.'
+    def get_queue_action(self, show):
+        for action, message in self.mappings.items():
+            if self._isBeingSomethinged(show, (action, )):
+                return action, message
 
-        elif self.isBeingUpdated(show):
-            show_message = 'The information on this page is in the process of being updated.'
+        for action, message in self.queue_mappings.items():
+            if self._isInQueue(show, (action, )):
+                return action, message
 
-        elif self.isBeingRefreshed(show):
-            show_message = 'The episodes below are currently being refreshed from disk'
-
-        elif self.isBeingSubtitled(show):
-            show_message = 'Currently downloading subtitles for this show'
-
-        elif self.isInRefreshQueue(show):
-            show_message = 'This show is queued to be refreshed.'
-
-        elif self.isInUpdateQueue(show):
-            show_message = 'This show is queued and awaiting an update.'
-
-        elif self.isInSubtitleQueue(show):
-            show_message = 'This show is queued and awaiting subtitles download.'
-
-        return show_message
+        return None, None
 
     loadingShowList = property(_getLoadingShowList)
 
@@ -213,30 +240,6 @@ class ShowQueue(generic_queue.GenericQueue):
         app.RECENTLY_DELETED.update([show.indexerid])
 
         return queue_item_obj
-
-
-class ShowQueueActions(object):
-
-    def __init__(self):
-        pass
-
-    REFRESH = 1
-    ADD = 2
-    UPDATE = 3
-    RENAME = 5
-    SUBTITLE = 6
-    REMOVE = 7
-    SEASON_UPDATE = 8
-
-    names = {
-        REFRESH: 'Refresh',
-        ADD: 'Add',
-        UPDATE: 'Update',
-        RENAME: 'Rename',
-        SUBTITLE: 'Subtitle',
-        REMOVE: 'Remove Show',
-        SEASON_UPDATE: 'Season Update'
-    }
 
 
 class ShowQueueItem(generic_queue.QueueItem):

@@ -23,6 +23,7 @@ setup(
         'pytest',
         'pytest-cov',
         'pytest-flake8',
+        'pytest-tornado',
         'PyYAML',
         'mock',
     ],

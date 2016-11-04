@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 from mako.filters import html_escape
 from six import text_type
-from tornado.routes import route
+from tornroutes import route
 from .base import PageTemplate, WebRoot
 from .... import logger, ui
 from ....classes import ErrorViewer, WarningViewer

@@ -12,7 +12,7 @@ import adba
 import medusa as app
 from requests.compat import quote_plus, unquote_plus
 from six import iteritems
-from tornado.routes import route
+from tornroutes import route
 from traktor import MissingTokenException, TokenExpiredException, TraktApi, TraktException
 from ..core import PageTemplate, WebRoot
 from .... import clients, config, db, helpers, logger, notifiers, nzbget, sab, show_name_helpers, subtitles, ui

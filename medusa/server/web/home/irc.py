@@ -2,7 +2,7 @@
 
 from __future__ import unicode_literals
 
-from tornado.routes import route
+from tornroutes import route
 from .handler import Home
 from ..core import PageTemplate
 
