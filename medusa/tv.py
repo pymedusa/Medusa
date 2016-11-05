@@ -477,7 +477,7 @@ class TVShow(TVObject):
 
             cache_db = db.DBConnection('cache.db')
             cache_db.upsert('indexer_update',
-                            {'next_update': next_update},
+                            {'next_update': int(next_update)},
                             {'indexer': self.indexer, 'indexer_id': self.indexerid, 'season': season})
 
     def should_update(self, update_date=datetime.date.today()):
@@ -684,13 +684,13 @@ class TVShow(TVObject):
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 
-    def load_episodes_from_db(self):
+    def load_episodes_from_db(self, seasons=None):
         """Load episodes from database.
 
+        :param: seasons: list of seasons ([int])
         :return:
         :rtype: dict(int -> dict(int -> bool))
         """
-        logger.log(u'{id}: Loading all episodes from the DB'.format(id=self.indexerid), logger.DEBUG)
         scanned_eps = {}
 
         try:
@@ -702,8 +702,16 @@ class TVShow(TVObject):
                    b'JOIN '
                    b'  tv_shows '
                    b'WHERE '
-                   b'  showid = indexer_id and showid = ?')
-            sql_results = main_db_con.select(sql, [self.indexerid])
+                   b'  showid = indexer_id AND showid = ?')
+            if seasons:
+                sql += b' AND season IN (%s)' % ','.join('?' * len(seasons))
+                sql_results = main_db_con.select(sql, [self.indexerid] + seasons)
+                logger.log(u'{id}: Loading all episodes of season(s) {seasons} from the DB'.format
+                           (id=self.indexerid, seasons=seasons), logger.DEBUG)
+            else:
+                sql_results = main_db_con.select(sql, [self.indexerid])
+                logger.log(u'{id}: Loading all episodes of all seasons from the DB'.format
+                           (id=self.indexerid), logger.DEBUG)
         except Exception as error:
             logger.log(u'{id}: Could not load episodes from the DB. Error: {error_msg}'.format
                        (id=self.indexerid, error_msg=error), logger.ERROR)
@@ -1247,6 +1255,13 @@ class TVShow(TVObject):
 
         main_db_con = db.DBConnection()
         main_db_con.mass_action(sql_l)
+
+        # Clean up the indexer_update table,
+        # making sure we're not trying to update this show in near future.
+        cache_db_con = db.DBConnection('cache.db')
+        cache_db_con.action(b'DELETE FROM indexer_update '
+                            b'WHERE indexer = ? AND indexer_id = ?',
+                            [self.indexer, self.indexerid])
 
         action = ('delete', 'trash')[app.TRASH_REMOVE_SHOW]
 

@@ -20,8 +20,10 @@ import logging
 import threading
 import time
 
-
 import medusa as app
+
+from six import text_type
+
 from . import db, helpers, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from .show.show import Show
@@ -40,10 +42,11 @@ class ShowUpdater(object):
 
         self.amActive = True
         refresh_shows = []  # A list of shows, that need to be refreshed
-        season_updates = []
+        season_updates = []  # A list of show seasons that have passed their next_update timestamp
         update_max_weeks = 12
 
         network_timezones.update_network_dict()
+        logger.info(u'Started periodic show updates')
 
         # Initialize the indexer_update table. Add seasons with next_update, if they don't already exist.
         self.last_update.initialize_indexer_update(app.showList)
@@ -52,17 +55,14 @@ class ShowUpdater(object):
         expired_seasons = self.last_update.expired_seasons()
 
         for indexer in expired_seasons:
-
             # Set refresh to True, to force refreshing of the entire show. Making sure per-season
-            # updating is disabled.
-            # TODO: Change to False, when per season updating has been fixed.
-            refresh = True
+            refresh = False
 
             # Query the indexer for changed shows, since last update
             # refresh network timezones
             # network_timezones.update_network_dict()
 
-            # TODO: is not working for tvdbapiv2
+            # Returns in the following format: {dict} {indexer: {indexerid: {season: next_update_timestamp} }}
             last_update = self.last_update.get_last_indexer_update(app.indexerApi(indexer).name)
 
             if not last_update or last_update < time.time() - 604800 * update_max_weeks:
@@ -76,7 +76,14 @@ class ShowUpdater(object):
             # Move through each show from the expired season cache table. And run the full show or per season update.
             for show_id in expired_seasons[indexer]:
                 # Loop through the shows.
+
+                # Get the show object and check, to prevent issues further down the line.
                 show = Show.find_by_id(app.showList, indexer, show_id)
+                if not show:
+                    logger.warning(u'Could not get show object for indexer id: {show_id} '
+                                   u'and indexer: {indexer}', show_id=show_id, indexer=indexer)
+                    continue
+
                 if refresh:
                     # Marked as a refresh, we don't need to check on season.
                     refresh_shows.append(show)
@@ -98,7 +105,7 @@ class ShowUpdater(object):
         for show in refresh_shows:
             # If the cur_show is not 'paused' then add to the showQueueScheduler
             if not show.paused:
-                logger.info(u'Updating show: {show}', show=show.name)
+                logger.info(u'Full update on show: {show}', show=show.name)
                 try:
                     pi_list.append(app.showQueueScheduler.action.updateShow(show))
                 except (CantUpdateShowException, CantRefreshShowException) as e:
@@ -108,7 +115,7 @@ class ShowUpdater(object):
             else:
                 logger.info(u'Show update skipped, show: {show} is paused.', show=show.name)
 
-            # Only update expired season
+        # Only update expired season
         for show in season_updates:
             # If the cur_show is not 'paused' then add to the showQueueScheduler
             if not show[0].paused:
@@ -124,7 +131,10 @@ class ShowUpdater(object):
 
         ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator("Daily Update", pi_list))
 
-        logger.info(u'Completed full update on all shows')
+        if refresh_shows or season_updates:
+            logger.info(u'Completed updates on shows')
+        else:
+            logger.info(u'Completed but there was nothing to update')
 
         self.amActive = False
 
@@ -137,10 +147,18 @@ class ShowUpdate(db.DBConnection):
         db.DBConnection.__init__(self, 'cache.db')
 
     def initialize_indexer_update(self, show_list):
+        """Add initial next_update to new seasons or shows.
+
+        And cleanup the indexer_update table with shows that have been removed.
+        :param show_list: List of show objects.
+        """
         for show in show_list:
             for season in show.get_all_seasons(True):
                 if not self.get_next_season_update(show.indexer, show.indexerid, season):
                     show.create_next_season_update(season)
+
+        # Cleanup
+        self.clean_expired_seasons(show_list)
 
     def get_next_season_update(self, indexer, indexer_id, season):
         """Get the next season update for a show, the date a season should be refreshed from indexer."""
@@ -170,6 +188,36 @@ class ShowUpdate(db.DBConnection):
 
         return seasons_dict
 
+    def clean_expired_seasons(self, show_list):
+        """Remove show/season combination from the indexer_update table.
+
+        :param show_list: A list of show_objects, used to clean up the indexer_update table.
+        :return: returns a list with show_id's removed.
+        """
+        remove_row = []
+        remove_show = []
+
+        next_updates = self.select(b'SELECT indexer_update_id, indexer, indexer_id FROM indexer_update')
+
+        for row in next_updates:
+            if not [show for show in show_list if
+                    show.indexer == row['indexer'] and
+                    show.indexerid == row['indexer_id']]:
+                remove_row.append(row['indexer_update_id'])
+                remove_show.append(row['indexer_id'])
+
+        if remove_row:
+            remove_show = ','.join(text_type(s) for s in set(remove_show))
+            self.action(
+                b'DELETE FROM indexer_update '
+                b'WHERE indexer_update_id IN (%s)' % ','.join('?' * len(remove_row)),
+                remove_row
+            )
+            logger.info(u'Removed following shows from season update cache: [{shows}]',
+                        shows=remove_show)
+
+        return remove_show
+
     def get_last_indexer_update(self, indexer):
         """Get the last update timestamp from the lastUpdate table.
 
@@ -178,7 +226,7 @@ class ShowUpdate(db.DBConnection):
         :return: epoch timestamp
         :rtype: int
         """
-        last_update_indexer = self.select("SELECT `time` FROM lastUpdate WHERE provider = ?", [indexer])
+        last_update_indexer = self.select('SELECT time FROM lastUpdate WHERE provider = ?', [indexer])
         return last_update_indexer[0]['time'] if last_update_indexer else None
 
     def set_last_indexer_update(self, indexer):
