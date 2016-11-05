@@ -20,8 +20,10 @@ import logging
 import threading
 import time
 
-
 import medusa as app
+
+from six import text_type
+
 from . import db, helpers, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from .show.show import Show
@@ -205,10 +207,10 @@ class ShowUpdate(db.DBConnection):
                 remove_show.append(row['indexer_id'])
 
         if remove_row:
-            remove_show = b','.join(str(s) for s in set(remove_show))
+            remove_show = ','.join(text_type(s) for s in set(remove_show))
             self.action(
                 b'DELETE FROM indexer_update '
-                b'WHERE indexer_update_id IN (%s)' % b','.join(b'?' * len(remove_row)),
+                b'WHERE indexer_update_id IN (%s)' % ','.join('?' * len(remove_row)),
                 remove_row
             )
             logger.info(u'Removed following shows from season update cache: [{shows}]',
@@ -224,7 +226,7 @@ class ShowUpdate(db.DBConnection):
         :return: epoch timestamp
         :rtype: int
         """
-        last_update_indexer = self.select("SELECT `time` FROM lastUpdate WHERE provider = ?", [indexer])
+        last_update_indexer = self.select('SELECT time FROM lastUpdate WHERE provider = ?', [indexer])
         return last_update_indexer[0]['time'] if last_update_indexer else None
 
     def set_last_indexer_update(self, indexer):
