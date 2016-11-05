@@ -20,7 +20,7 @@
 
 import logging
 import warnings
-from .tvdbv2_exceptions import tvdbv2_userabort
+from .tvdbv2_exceptions import Tvdbv2UserAbort
 
 __author__ = 'p0psicles'
 __version__ = '1.0'
