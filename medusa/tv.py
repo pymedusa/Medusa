@@ -1259,11 +1259,9 @@ class TVShow(TVObject):
         # Clean up the indexer_update table,
         # making sure where not trying to update this show in near future.
         cache_db_con = db.DBConnection('cache.db')
-        cache_db_con.action(
-                b'DELETE FROM indexer_update '
-                b'WHERE indexer = ? AND indexer_id = ?',
-                [self.indexer, self.indexerid]
-            )
+        cache_db_con.action(b'DELETE FROM indexer_update '
+                            b'WHERE indexer = ? AND indexer_id = ?',
+                            [self.indexer, self.indexerid])
 
         action = ('delete', 'trash')[app.TRASH_REMOVE_SHOW]
 
