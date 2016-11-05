@@ -216,6 +216,95 @@ class FixDateFollowedByScreenSizeRule(Rule):
                 return to_remove, to_append
 
 
+class FixMissingEpisodeOnSmallerFilepartRule(Rule):
+    """Episode numbers are not detected for some scenarios where season is present in folder name.
+
+    https://github.com/guessit-io/guessit/issues/357
+
+    guessit -t episode "Show.Name.S01.720p.HDTV.DD5.1.x264-GrOuP/show.name.0106.720p-group.mkv"
+
+    Before the rule:
+    For: Show.Name.S01.720p.HDTV.DD5.1.x264-GrOuP/show.name.0106.720p-group.mkv
+    GuessIt found: {
+        "title": "Show Name",
+        "season": 1,
+        "screen_size": "720p",
+        "format": "HDTV",
+        "audio_codec": "DolbyDigital",
+        "audio_channels": "5.1",
+        "video_codec": "h264",
+        "release_group": "GrOuP",
+        "container": "mkv",
+        "mimetype": "video/x-matroska",
+        "type": "episode"
+    }
+
+    After the rule:
+    For: Show.Name.S01.720p.HDTV.DD5.1.x264-GrOuP/show.name.0106.720p-group.mkv
+    GuessIt found: {
+        "title": "Show Name",
+        "season": 1,
+        "episode": 6,
+        "screen_size": "720p",
+        "format": "HDTV",
+        "audio_codec": "DolbyDigital",
+        "audio_channels": "5.1",
+        "video_codec": "h264",
+        "release_group": "GrOuP",
+        "container": "mkv",
+        "mimetype": "video/x-matroska",
+        "type": "episode"
+    }
+    """
+
+    priority = POST_PROCESS
+    consequence = AppendMatch
+    season_episode_re = re.compile(r'\b(?P<season>\d{2})(?P<episode>\d{2})\b')
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        if matches.named('episode'):
+            return
+
+        fileparts = marker_sorted(matches.markers.named('path'), matches)
+        if len(fileparts) < 2:
+            return
+
+        if matches.range(fileparts[1].start, fileparts[1].end, predicate=lambda m: m.name == 'season', index=0):
+            return
+
+        season = matches.range(fileparts[0].start, fileparts[0].end, predicate=lambda m: m.name == 'season', index=0)
+        for hole in matches.holes(fileparts[1].start, fileparts[1].end):
+            if len(hole.value) < 4:
+                continue
+
+            match = self.season_episode_re.search(hole.value)
+            if not match:
+                continue
+
+            new_season = int(match.group('season'))
+            if season and season.value != new_season:
+                continue
+            to_append = []
+            if not season:
+                season = copy.copy(hole)
+                season.name = 'season'
+                season.value = new_season
+                to_append.append(season)
+            episode = copy.copy(hole)
+            episode.name = 'episode'
+            episode.value = int(match.group('episode'))
+            to_append.append(episode)
+            return to_append
+
+
 class FixAnimeReleaseGroup(Rule):
     """Choose the correct Anime release group.
 
@@ -1835,6 +1924,7 @@ def rules():
         BlacklistedReleaseGroup,
         FixTvChaosUkWorkaround,
         EpisodeNumberRule,
+        FixMissingEpisodeOnSmallerFilepartRule,
         FixDateFollowedByScreenSizeRule,
         FixReleaseGroupGuessedAsTitle,
         FixAnimeReleaseGroup,
