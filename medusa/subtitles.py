@@ -230,7 +230,7 @@ def code_from_code(code):
 
 
 def accept_unknown(subtitles):
-    """Whether or not there's any valid unknown embedded subtitle for the specified video.
+    """Whether or not there's any valid unknown subtitle for the specified video.
 
     :param subtitles:
     :type subtitles: set of babelfish.Language
@@ -241,7 +241,7 @@ def accept_unknown(subtitles):
 
 
 def accept_any(subtitles):
-    """Whether or not there's any valid embedded subtitle for the specified video.
+    """Whether or not there's any valid subtitle for the specified video.
 
     :param subtitles:
     :type subtitles: set of babelfish.Language
@@ -844,11 +844,12 @@ class SubtitlesFinder(object):
                 # Don't run post processor unless at least one file has all of the needed subtitles OR
                 # if user don't want to ignore embedded subtitles and wants to consider 'unknown' as wanted sub,
                 # and .mkv has one.
-                if not app.PROCESS_AUTOMATICALLY and not run_post_process and (
-                        not needs_subtitles(downloaded_languages) or
-                        process_tv.has_matching_unknown_subtitles(video_path) or
-                        process_tv.get_embedded_subtitles(video_path) == app.SUBTITLES_LANGUAGES):
-                    run_post_process = True
+                if not app.PROCESS_AUTOMATICALLY and not run_post_process:
+                    if not needs_subtitles(downloaded_languages):
+                        run_post_process = True
+                    elif not app.IGNORE_EMBEDDED_SUBS:
+                        embedded_subs = get_embedded_subtitles()
+                        run_post_process = accept_unknown(embedded_subs) or accept_any(embedded_subs)
 
         if run_post_process:
             logger.info(u'Starting post-process with default settings now that we found subtitles')
